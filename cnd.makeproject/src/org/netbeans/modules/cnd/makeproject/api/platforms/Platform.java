@@ -71,12 +71,12 @@ public abstract class Platform {
     
     public static int getDefaultPlatform() {
         if (defaultPlatform <= 0) {
-            String arch = System.getProperty("os.arch");
+            String arch = System.getProperty("os.arch"); // NOI18N
             if (Utilities.isWindows())
                 defaultPlatform = Platform.PLATFORM_WINDOWS;
             else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX)
                 defaultPlatform = Platform.PLATFORM_LINUX;
-            else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS && arch.indexOf("86") >= 0)
+            else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS && arch.indexOf("86") >= 0) // NOI18N
                 defaultPlatform = Platform.PLATFORM_SOLARIS_INTEL;
             else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS)
                 defaultPlatform = Platform.PLATFORM_SOLARIS_SPARC;

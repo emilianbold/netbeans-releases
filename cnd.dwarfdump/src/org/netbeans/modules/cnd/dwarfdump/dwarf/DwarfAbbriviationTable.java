@@ -30,6 +30,7 @@ import java.util.Iterator;
  */
 public class DwarfAbbriviationTable {
     private ArrayList<DwarfAbbriviationTableEntry> entries = null;
+    private int numOfEntries = 0;
     private long offset;
 
     public DwarfAbbriviationTable(long offset) {
@@ -38,18 +39,19 @@ public class DwarfAbbriviationTable {
     
     public void setEntries(ArrayList<DwarfAbbriviationTableEntry> entries) {
         this.entries = entries;
+        this.numOfEntries = entries.size();
     }
     
     public DwarfAbbriviationTableEntry getEntry(long idx) {
-        return entries.get((int)idx - 1);
+        return (idx > 0 && idx <= numOfEntries) ? entries.get((int)idx - 1) : null;
     }
     
     public int size() {
-        return entries.size();
+        return numOfEntries;
     }
     
     public void dump(PrintStream out) {
-        out.println("  Number TAG");
+        out.println("  Number TAG"); // NOI18N
         
         for (DwarfAbbriviationTableEntry entry : entries) {
             entry.dump(out);

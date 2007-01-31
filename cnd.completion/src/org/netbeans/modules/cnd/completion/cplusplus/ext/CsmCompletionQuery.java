@@ -267,7 +267,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 	    sb.append(type.getText());
 	}
 	if (appendColon) {
-	    sb.append("::"); // NOI18N
+	    sb.append(CsmCompletion.SCOPE);
 	}
 	return sb.toString();
     }
@@ -280,10 +280,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             sb.append(useFullName ? type.getClassifier().getQualifiedName() : type.getClassifier().getName());
         }
         if (appendDblComma) {
-            sb.append("::");
+            sb.append(CsmCompletion.SCOPE);
         }
         if (appendStar) {
-            sb.append('*');
+            sb.append('*'); //NOI18N
         }
         return sb.toString();
     }
@@ -293,7 +293,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         if (CsmKindUtilities.isClass(classifier)) {
             ns = ((CsmClass)classifier).getContainingNamespace();
         }
-        return ns != null ? ns.getQualifiedName() : "";
+        return ns != null ? ns.getQualifiedName() : ""; //NOI18N
     }
     
     /** Finds the fields, methods and the inner classes.
@@ -671,7 +671,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         result = new CsmCompletionResult(component, res, formatType(lastType, true, true, true),
                                                 exp, substPos, 0, cls.getName().length() + 1, isProjectBeeingParsed());
                     } else { // Found package (otherwise ok would be false)
-                        String searchPkg = lastNamespace.getName() + "::";
+                        String searchPkg = lastNamespace.getName() + CsmCompletion.SCOPE;
                         List res;
                         if (openingSource) {
                             res = new ArrayList();
@@ -697,10 +697,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             }
 
                             if (text != null && -1 == text.indexOf("package")) { //NOI18N
-                                res.addAll(finder.findClasses(lastNamespace, "", false)); // package classes
+                                res.addAll(finder.findClasses(lastNamespace, "", false)); // package classes  //NOI18N
                             }
                         }
-                        result = new CsmCompletionResult(component, res, searchPkg + '*',
+                        result = new CsmCompletionResult(component, res, searchPkg + '*',  //NOI18N
                                                 exp, substPos, 0, 0, isProjectBeeingParsed());
                     }
                 }
@@ -824,7 +824,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                                    }
 //                                    
 //                                }
-                                result = new CsmCompletionResult(component, res, var + '*', item, 0, isProjectBeeingParsed());
+                                result = new CsmCompletionResult(component, res, var + '*', item, 0, isProjectBeeingParsed());  //NOI18N
                             } else { // not last item or finding type
                                 lastType = (CsmType)sup.findType(var, varPos);
                                 if (lastType != null) { // variable found
@@ -847,7 +847,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     boolean inner = false;
                                     int ad = lastType.getArrayDepth();
                                     if (staticOnly && ad == 0) { // can be inner class
-                                        CsmClassifier cls = finder.getExactClassifier(lastType.getClassifier().getQualifiedName() + "::" + var); // NOI18N
+                                        CsmClassifier cls = finder.getExactClassifier(lastType.getClassifier().getQualifiedName() + CsmCompletion.SCOPE + var);
                                         if (cls != null) {
                                             lastType = CsmCompletion.getType(cls, 0);
                                             inner = true;
@@ -893,7 +893,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                  isProjectBeeingParsed());
                                 }
                             } else { // currently package
-                                String searchName = lastNamespace.getName() + "::" + var;
+                                String searchName = lastNamespace.getName() + CsmCompletion.SCOPE + var;
                                 if (findType || !last) {
                                     lastNamespace = finder.getExactNamespace(searchName);
                                     if (lastNamespace == null) { // package doesn't exist
@@ -907,7 +907,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     }
                                 } else { // last and searching for completion output
                                     if (last) { // get all matching fields/methods/packages
-                                        String searchPkg = lastNamespace.getName() + "::" + var;
+                                        String searchPkg = lastNamespace.getName() + CsmCompletion.SCOPE + var;
                                         List res = finder.findNamespaces(searchPkg, openingSource, false); // find matching subpackages
                                         res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource)); // matching classes
                                         result = new CsmCompletionResult(component, res, searchPkg + '*', item, 0, isProjectBeeingParsed());
@@ -1273,7 +1273,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 // XXX                    sb.append(t.format(false));
                     sb.append(t.getText());
                 } else {
-                    sb.append('?');
+                    sb.append('?'); //NOI18N
                 }
                 if (i < cntM1) {
                     sb.append(", "); // NOI18N
@@ -1333,7 +1333,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         }
 
         private static String getTitle(List data, String origTitle, boolean isProjectBeeingParsed) {
-            if (CsmUtilities.DEBUG) System.out.println("original title (resolved type) was " + origTitle);
+            if (CsmUtilities.DEBUG) System.out.println("original title (resolved type) was " + origTitle); //NOI18N
             String out = NO_SUGGESTIONS;
             if (data != null && data.size() > 0) {
                 out = origTitle;

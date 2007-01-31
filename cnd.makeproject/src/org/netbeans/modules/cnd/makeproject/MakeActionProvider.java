@@ -210,19 +210,23 @@ public class MakeActionProvider implements ActionProvider {
         private Dialog dialog = null;
         
         BatchConfigurationSelector(Configuration[] confs) {
-            confSelectorPanel = new ConfSelectorPanel(getString("CheckLabel"), confs, new JButton[] {buildButton, rebuildButton, cleanButton});
+            confSelectorPanel = new ConfSelectorPanel(getString("CheckLabel"), getString("CheckLabelMn").charAt(0), confs, new JButton[] {buildButton, rebuildButton, cleanButton});
             
             buildButton.setMnemonic(getString("BuildButtonMn").charAt(0));
+            buildButton.getAccessibleContext().setAccessibleDescription(getString("BuildButtonAD"));
             buildButton.addActionListener(this);
             rebuildButton.setMnemonic(getString("CleanBuildButtonMn").charAt(0));
             rebuildButton.addActionListener(this);
+            rebuildButton.getAccessibleContext().setAccessibleDescription(getString("CleanBuildButtonAD"));
             cleanButton.setMnemonic(getString("CleanButtonMn").charAt(0));
             cleanButton.addActionListener(this);
-            closeButton.setMnemonic(getString("CloseButtonMn").charAt(0));
+            cleanButton.getAccessibleContext().setAccessibleDescription(getString("CleanButtonAD"));
+            closeButton.getAccessibleContext().setAccessibleDescription(getString("CloseButtonAD"));
             // Show the dialog
             DialogDescriptor dd = new DialogDescriptor(confSelectorPanel, getString("BatchBuildTitle"), true, new Object[] {closeButton}, closeButton, 0, null, null);
             //DialogDisplayer.getDefault().notify(dd);
             dialog = DialogDisplayer.getDefault().createDialog(dd);
+            dialog.getAccessibleContext().setAccessibleDescription(getString("BatchBuildDialogAD"));
             dialog.setVisible(true);
         }
         
@@ -331,7 +335,7 @@ public class MakeActionProvider implements ActionProvider {
                             String location = FilePathAdaptor.naturalize((String)iter.next());
                             path = location + ";" + path; // NOI18N
                         }
-                        if (System.getProperty("Env-PATH") != null) { // IZ 77324
+                        if (System.getProperty("Env-PATH") != null) { // IZ 77324 // NOI18N
                             path = path + ";" + System.getProperty("Env-PATH"); // NOI18N
                         }
                         if (!path.equals("")) { // NOI18N

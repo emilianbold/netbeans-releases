@@ -50,7 +50,7 @@ public class TargetNamePanel extends ItemChooser {
      */
     TargetNamePanel(MakefileWizard wd) {
 	super(wd, true);
-	String subtitle = getString("TITLE_TargetName"); //NOI18N
+	String subtitle = getString("TITLE_TargetName"); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
     }
@@ -145,19 +145,19 @@ public class TargetNamePanel extends ItemChooser {
     private void setup(int type, boolean reinit) {
 
 	if (type == MakefileData.EXECUTABLE_MAKEFILE_TYPE) {
-	    label = getString("LBL_ExecutableName");			//NOI18N
-	    mnemonic = getString("MNEM_ExecutableName").charAt(0);	//NOI18N
-	    tname = getString("DFLT_ExecutableName");			//NOI18N
+	    label = getString("LBL_ExecutableName");			// NOI18N
+	    mnemonic = getString("MNEM_ExecutableName").charAt(0);	// NOI18N
+	    tname = getString("DFLT_ExecutableName");			// NOI18N
 
 	} else if (type == MakefileData.ARCHIVE_MAKEFILE_TYPE) {
-	    label = getString("LBL_ArchiveName");			//NOI18N
-	    mnemonic = getString("MNEM_ArchiveName").charAt(0);		//NOI18N
-	    tname = getString("DFLT_ArchiveName");	    		//NOI18N
+	    label = getString("LBL_ArchiveName");			// NOI18N
+	    mnemonic = getString("MNEM_ArchiveName").charAt(0);		// NOI18N
+	    tname = getString("DFLT_ArchiveName");	    		// NOI18N
 
 	} else if (type == MakefileData.SHAREDLIB_MAKEFILE_TYPE) {
-	    label = getString("LBL_ShobjName");				//NOI18N
-	    mnemonic = getString("MNEM_ShobjName").charAt(0);		//NOI18N
-	    tname = getString("DFLT_ShobjName");			//NOI18N
+	    label = getString("LBL_ShobjName");				// NOI18N
+	    mnemonic = getString("MNEM_ShobjName").charAt(0);		// NOI18N
+	    tname = getString("DFLT_ShobjName");			// NOI18N
 
 	} else {
 	    throw(new IllegalStateException());
@@ -185,8 +185,8 @@ public class TargetNamePanel extends ItemChooser {
 
 	if (!initialized) {
 	    setup(type, false);
-	    create(getString("LBL_TargetDirectory"),			//NOI18N
-			getString("MNEM_TargetDirectory").charAt(0),	//NOI18N
+	    create(getString("LBL_TargetDirectory"),			// NOI18N
+			getString("MNEM_TargetDirectory").charAt(0),	// NOI18N
 			label, mnemonic);
 	    target = createTarget(type);
 	    target.setTargetName(tname);

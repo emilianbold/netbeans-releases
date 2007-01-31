@@ -146,8 +146,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             DialogDescriptor.BOTTOM_ALIGN,          // options align
             null,                                   // helpCtx
             null );                                 // listener 
-
-        innerPane.setDialogDescriptor( dialogDescriptor );        
+ 
         dialogDescriptor.setClosingOptions( new Object[] { options[ OPTION_OK ], options[ OPTION_CANCEL ] } );
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );

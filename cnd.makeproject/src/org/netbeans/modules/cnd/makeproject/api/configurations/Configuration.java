@@ -24,6 +24,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.openide.util.NbBundle;
 
 public abstract class Configuration {
     private String baseDir;
@@ -54,7 +55,7 @@ public abstract class Configuration {
                 auxObjects.add(pao);
             }
         }
-        System.err.println("------------------------------551-" + auxObjects.size());
+        //System.err.println("------------------------------551-" + auxObjects.size()); // NOI18N
             
     }
     
@@ -85,7 +86,7 @@ public abstract class Configuration {
     
     public String getDisplayName() {
         if (isDefault())
-            return getName() + " (active)";
+            return getName() + " " + getString("ActiveTxt"); // NOI18N
         else
             return getName();
     }
@@ -158,5 +159,10 @@ public abstract class Configuration {
     
     public RunProfile getProfile() {
         return (RunProfile)getAuxObject(RunProfile.PROFILE_ID);
+    }
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(Configuration.class, s);
     }
 }

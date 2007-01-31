@@ -44,9 +44,15 @@ public class SmartChangeEvent {
     public SmartChangeEvent(CsmChangeEvent e){
         //super(e.getSource());
         changedProjects.addAll(e.getChangedProjects());
-        CsmProject project = (CsmProject)e.getChangedProjects().iterator().next();
+        //CsmProject project = (CsmProject)e.getChangedProjects().iterator().next();
         for(Iterator it = e.getNewNamespaces().iterator(); it.hasNext();){
-            newNamespaces.put((CsmNamespace)it.next(), project);
+            CsmNamespace ns = (CsmNamespace)it.next();
+            for(Iterator it2 = e.getChangedProjects().iterator(); it2.hasNext();){
+                CsmProject project = (CsmProject)it2.next();
+                if (project.findNamespace(ns.getQualifiedName())!=null) {
+                    newNamespaces.put(ns, project);
+                }
+            }
         }
         newDeclarations.addAll(e.getNewDeclarations());
         removedDeclarations.addAll(e.getRemovedDeclarations());
@@ -71,9 +77,15 @@ public class SmartChangeEvent {
     
     private void doAdd(CsmChangeEvent e){
         getChangedProjects().addAll(e.getChangedProjects());
-        CsmProject project = (CsmProject)e.getChangedProjects().iterator().next();
+        //CsmProject project = (CsmProject)e.getChangedProjects().iterator().next();
         for(Iterator it = e.getNewNamespaces().iterator(); it.hasNext();){
-            newNamespaces.put((CsmNamespace)it.next(), project);
+            CsmNamespace ns = (CsmNamespace)it.next();
+            for(Iterator it2 = e.getChangedProjects().iterator(); it2.hasNext();){
+                CsmProject project = (CsmProject)it2.next();
+                if (project.findNamespace(ns.getQualifiedName())!=null) {
+                    newNamespaces.put(ns, project);
+                }
+            }
         }
         getNewDeclarations().addAll(e.getNewDeclarations());
         getChangedDeclarations().addAll(e.getChangedDeclarations());

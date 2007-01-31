@@ -77,10 +77,10 @@ public class VectorConfiguration {
     }
 
     public String getOption(String prependOption) {
-	String option = ""; // NOI8N
+	String option = ""; // NOI18N
 	String[] values = getValueAsArray();
 	for (int i = 0; i < values.length; i++)
-	    option += prependOption + IpeUtils.escapeSpaces(values[i]) + " "; // NOI8N
+	    option += prependOption + IpeUtils.escapeSpaces(values[i]) + " "; // NOI18N
 	return option;
     }
     

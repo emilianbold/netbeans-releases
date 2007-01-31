@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="clean" depends="projectized-common.clean, init-antlr">
         <delete dir="${antlr.apt.output.dir}"/>   
-<!--        <delete file="${antlr.apt.output.tokenTypes}"/> -->
+        <delete file="${antlr.apt.output.tokenTypes}"/>
     </target>
     
     <target name="antlr" depends="init-antlr" unless="up-to-date">
@@ -52,15 +52,23 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${antlr.apt.output.dir}/APTGeneratedTokenTypes.txt" 
                 tofile="${antlr.apt.output.dir}/APTTokenTypes.txt"
                 overwrite="true"/>
-        <!--
-        <patch patchfile="${antlr.apt.grammar.dir}/APTTokenTypes.patch" 
-                originalfile="${antlr.apt.output.dir}/APTGeneratedTokenTypes.java"
-                destfile="${antlr.apt.output.tokenTypes}"
-                quiet="true"/>
-        <copy file="${antlr.apt.output.dir}/APTTokenTypes.java" 
-                todir="${antlr.apt.output.tokenTypes.dir}"
-                overwrite="true">
-        </copy>
-        -->
+
+        <copy file="${antlr.apt.output.dir}/APTGeneratedTokenTypes.java"
+            tofile="${antlr.apt.output.tokenTypes}"/>
+        <!-- change class name -->
+        <replaceregexp file="${antlr.apt.output.tokenTypes}" byline="true">
+            <regexp pattern="APTGeneratedTokenTypes"/>
+            <substitution expression="APTTokenTypes"/>
+        </replaceregexp>
+        <!-- remove unnecessary import statements -->
+        <replaceregexp file="${antlr.apt.output.tokenTypes}" byline="true">
+            <regexp pattern="import.*"/>
+            <substitution expression=""/>
+        </replaceregexp>        
+        <!-- change package name -->
+        <replaceregexp file="${antlr.apt.output.tokenTypes}" byline="true">
+            <regexp pattern="package org.netbeans.modules.cnd.apt.impl.support.generated;"/>
+            <substitution expression="package org.netbeans.modules.cnd.apt.support;"/>
+        </replaceregexp>                
     </target>    
 </project>

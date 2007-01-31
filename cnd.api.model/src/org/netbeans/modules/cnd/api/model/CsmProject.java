@@ -25,7 +25,7 @@ import java.util.Collection;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmProject extends CsmObject {
+public interface CsmProject extends CsmObject, CsmIdentifiable {
 
     CsmNamespace getGlobalNamespace();
     

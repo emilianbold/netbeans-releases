@@ -70,7 +70,7 @@ public class FileCodeModelReader {
         result.setKind(declaration.getKind().toString());
         
         Position declPosition = ((CsmOffsetable)declaration).getStartPosition();
-        String declPositionStr = new String("" + declPosition.getLine() + ":" + declPosition.getColumn());
+        String declPositionStr = new String("" + declPosition.getLine() + ":" + declPosition.getColumn()); // NOI18N
         
         String declarationString = "";
         
@@ -88,25 +88,25 @@ public class FileCodeModelReader {
                 paramsStr.append(paramDecl.getDeclaration());
                 
                 if (j.hasNext()) {
-                    paramsStr.append(", ");
+                    paramsStr.append(", "); // NOI18N
                 }
                 
                 result.addChild(paramDecl);
             }
             
-            declarationString = functionDeclaration.getReturnType().getText() + " " + functionDeclaration.getQualifiedName() + "(" + paramsStr.toString() + ")";
+            declarationString = functionDeclaration.getReturnType().getText() + " " + functionDeclaration.getQualifiedName() + "(" + paramsStr.toString() + ")"; // NOI18N
         } else if (declaration instanceof VariableImpl) {
             VariableImpl variable = (VariableImpl)declaration;
             CsmType type = variable.getType();
             
             if (type != null) {
-                declarationString = type.getText() + " ";
+                declarationString = type.getText() + " "; // NOI18N
             }
             
             declarationString += variable.getQualifiedName();
         } else if (TypedefImpl.class.equals(declaration.getClass())) {
             TypedefImpl typedefImpl = (TypedefImpl)declaration;
-            declarationString = typedefImpl.getType().getText() + " " + typedefImpl.getQualifiedName().toString();
+            declarationString = typedefImpl.getType().getText() + " " + typedefImpl.getQualifiedName().toString(); // NOI18N
         } else {
             declarationString = declaration.getQualifiedName();
         }

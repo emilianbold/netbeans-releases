@@ -79,6 +79,17 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         // init focus
         buildCommandWorkingDirTextField.selectAll();
         buildCommandWorkingDirTextField.requestFocus();
+        
+        // Accessibility
+        getAccessibleContext().setAccessibleDescription(getString("BUILD_ACTIONS_PANEL_AD"));
+        buildCommandTextField.getAccessibleContext().setAccessibleDescription(getString("BUILD_COMMAND_AD"));
+        buildCommandWorkingDirTextField.getAccessibleContext().setAccessibleDescription(getString("WORKING_DIR_AD"));
+        cleanCommandTextField.getAccessibleContext().setAccessibleDescription(getString("CLEAN_COMMAND_AD"));
+        makefileNameTextField.getAccessibleContext().setAccessibleDescription(getString("MAKEFILE_NAME_AD"));
+        outputTextField.getAccessibleContext().setAccessibleDescription(getString("OUTPUT_AD"));
+        buildCommandWorkingDirBrowseButton.getAccessibleContext().setAccessibleDescription(getString("WORKING_DIR_BROWSE_BUTTON_AD"));
+        makefileBrowseButton.getAccessibleContext().setAccessibleDescription(getString("MAKEFILE_BROWSE_BUTTON_AD"));
+        outputBrowseButton.getAccessibleContext().setAccessibleDescription(getString("OUTPUT_BROWSE_BUTTON_AD"));
     }
     
     class MakefileDocumentListener implements DocumentListener {
@@ -243,7 +254,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
         add(buildCommandWorkingDirBrowseButton, gridBagConstraints);
 
-        buildCommandLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("BUILD_COMMAND_LBL").charAt(0));
+        buildCommandLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("BUILD_COMMAND_MN").charAt(0));
         buildCommandLabel.setLabelFor(buildCommandTextField);
         buildCommandLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("BUILD_COMMAND_LBL"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -397,8 +408,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             seed = System.getProperty("user.home"); // NOI18N
         }
         JFileChooser fileChooser = new FileChooser(
-                "Select Makefile",
-                "Select",
+                getString("MAKEFILE_CHOOSER_TITLE_TXT"),
+                getString("MAKEFILE_CHOOSER_BUTTON_TXT"),
                 JFileChooser.FILES_ONLY,
                 new FileFilter[] {MakefileFileFilter.getInstance()},
                 seed,
@@ -424,8 +435,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             seed = System.getProperty("user.home"); // NOI18N
         }
         JFileChooser fileChooser = new FileChooser(
-                "Select Output",
-                "Select",
+                getString("OUTPUT_CHOOSER_TITLE_TXT"),
+                getString("OUTPUT_CHOOSER_BUTTON_TXT"),
                 JFileChooser.FILES_ONLY,
                 new FileFilter[] {ElfExecutableFileFilter.getInstance(), ElfStaticLibraryFileFilter.getInstance(), ElfDynamicLibraryFileFilter.getInstance()},
                 seed,
@@ -452,8 +463,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         }
         
         JFileChooser fileChooser = new FileChooser(
-                "Select Working Directory",
-                "Select",
+                getString("WORKING_DIR_CHOOSER_TITLE_TXT"),
+                getString("WORKING_DIR_BUTTON_TXT"),
                 JFileChooser.DIRECTORIES_ONLY,
                 null,
                 seed,
@@ -488,4 +499,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JTextField outputTextField;
     // End of variables declaration//GEN-END:variables
     
+    private static String getString(String s) {
+        return NbBundle.getBundle(BuildActionsPanel.class).getString(s);
+    }
 }

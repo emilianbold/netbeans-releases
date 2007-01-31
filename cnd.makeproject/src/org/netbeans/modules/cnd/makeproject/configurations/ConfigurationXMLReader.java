@@ -60,11 +60,11 @@ public class ConfigurationXMLReader extends XMLDocReader {
         
         // Try first new style file
         tag = CommonConfigurationXMLCodec.CONFIGURATION_DESCRIPTOR_ELEMENT;
-        FileObject xml = projectDirectory.getFileObject("nbproject/configurations.xml");
+        FileObject xml = projectDirectory.getFileObject("nbproject/configurations.xml"); // NOI18N
         if (xml == null) {
             // then try old style file....
             tag = CommonConfigurationXMLCodec.PROJECT_DESCRIPTOR_ELEMENT;
-            xml = projectDirectory.getFileObject("nbproject/projectDescriptor.xml");
+            xml = projectDirectory.getFileObject("nbproject/projectDescriptor.xml"); // NOI18N
         }
         
         if (xml == null) {
@@ -96,7 +96,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // Now for the auxiliary/private entry
         //
         
-        xml = projectDirectory.getFileObject("nbproject/private/configurations.xml");
+        xml = projectDirectory.getFileObject("nbproject/private/configurations.xml"); // NOI18N
         if (xml == null) {
             // Don't post an error.
             // It's OK to sometimes not have a private config
@@ -116,17 +116,17 @@ public class ConfigurationXMLReader extends XMLDocReader {
         
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
         // the makefiles will be generated before the project is being built
-        FileObject makeImpl = projectDirectory.getFileObject("nbproject/Makefile-impl.mk");
+        FileObject makeImpl = projectDirectory.getFileObject("nbproject/Makefile-impl.mk"); // NOI18N
         configurationDescriptor.setModified(makeImpl == null || relativeOffset != null);
         
         // Check version and display deprecation warning if too old
         if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() <= DEPRECATED_VERSIONS) {
             File projectFile = FileUtil.toFile(projectDirectory);
-            final String message = NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING", projectFile.getName());
+            final String message = NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING", projectFile.getName()); // NOI18N
             Runnable warning = new Runnable() {
                 public void run() {
                     NotifyDescriptor nd = new NotifyDescriptor(message,
-                        NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION,
+                        NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
                         NotifyDescriptor.QUESTION_MESSAGE,
                         null, NotifyDescriptor.YES_OPTION);
                     Object ret = DialogDisplayer.getDefault().notify(nd);

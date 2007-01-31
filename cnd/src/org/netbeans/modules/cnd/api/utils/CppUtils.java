@@ -25,21 +25,21 @@ import java.util.StringTokenizer;
 public class CppUtils {
 
     public static String reformatWhitespaces(String string)  {
-	return reformatWhitespaces(string, "");
+	return reformatWhitespaces(string, ""); // NOI18N
     }
 
     public static String reformatWhitespaces(String string, String prepend)  {
-	return reformatWhitespaces(string, prepend, "");
+	return reformatWhitespaces(string, prepend, ""); // NOI18N
     }
 
     public static String reformatWhitespaces(String string, String prepend, String delimiter)  {
 	if (string == null)
 	    return null;
-	String formattedString = "";
+	String formattedString = ""; // NOI18N
 	StringTokenizer st = new StringTokenizer(string);
 	while (st.hasMoreTokens()) {
 	    String token = st.nextToken();
-	    String append = "";
+	    String append = ""; // NOI18N
 	    if (st.hasMoreTokens())
 		append = delimiter + " "; // NOI18N
 	    formattedString += prepend + token + append;

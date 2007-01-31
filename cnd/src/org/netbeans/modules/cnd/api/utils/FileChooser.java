@@ -81,7 +81,7 @@ public class FileChooser extends JFileChooser {
 	    }
 	}
 	else {
-	    String sd = System.getProperty("spro.pwd");
+	    String sd = System.getProperty("spro.pwd"); // NOI18N
 	    if (sd != null) {
 		File sdFile = new File(sd);
 		if (sdFile.exists()) {

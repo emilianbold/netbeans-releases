@@ -125,8 +125,8 @@ abstract public class XMLDocReader extends XMLDecoder {
 		fmt = Catalog.get("MSG_versionerror");	// NOI18N
 		String errmsg = whileMsg + MessageFormat.format(fmt,
 		    new Object[] {what,
-				  "" + actualVersion,
-				  "" + expectedVersion});
+				  "" + actualVersion, // NOI18N
+				  "" + expectedVersion}); // NOI18N
 
 		NotifyDescriptor.Message msg = new NotifyDescriptor.
 		    Message(errmsg, NotifyDescriptor.ERROR_MESSAGE);
@@ -295,7 +295,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	    String fmt = Catalog.get("MSG_sax_error_location");	// NOI18N
 	    String msg = MessageFormat.format(fmt, new Object[] {
 			    ex.getSystemId(),
-			    "" + ex.getLineNumber()
+			    "" + ex.getLineNumber() // NOI18N
 			});
 	    ErrorManager.getDefault().annotate(ex,
 					       ErrorManager.UNKNOWN,

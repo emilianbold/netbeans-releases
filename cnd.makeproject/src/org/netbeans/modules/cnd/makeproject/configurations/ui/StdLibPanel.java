@@ -25,6 +25,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class StdLibPanel extends javax.swing.JPanel {
@@ -38,7 +39,11 @@ public class StdLibPanel extends javax.swing.JPanel {
 	libraryList.setCellRenderer(myListCellRenderer);
         scrollPane.setViewportView(libraryList);
 	setPreferredSize(new java.awt.Dimension(300, 300));
-	manageLibrariesButton.setEnabled(false);
+        // Accessibility
+        label.setLabelFor(libraryList);
+        libraryList.getAccessibleContext().setAccessibleDescription(getString("LIBRARY_LIST_SD"));
+        libraryList.getAccessibleContext().setAccessibleName(getString("LIBRARY_LIST_NM"));
+        getAccessibleContext().setAccessibleDescription(getString("LIBRARY_LIST_SD"));
     }
 
     private final class MyListCellRenderer extends DefaultListCellRenderer {
@@ -72,11 +77,11 @@ public class StdLibPanel extends javax.swing.JPanel {
         label = new javax.swing.JLabel();
         scrollPane = new javax.swing.JScrollPane();
         libraryList = new javax.swing.JList();
-        manageLibrariesButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
         label.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("STANDARD_LIBRARIES_MN").charAt(0));
+        label.setLabelFor(libraryList);
         label.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("STANDARD_LIBRARIES_TXT"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -95,23 +100,16 @@ public class StdLibPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 12, 0, 12);
         add(scrollPane, gridBagConstraints);
 
-        manageLibrariesButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("MANAGE_LIBRARIES_MN").charAt(0));
-        manageLibrariesButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("MANAGE_LIBRARIES_TXT"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 12, 0, 12);
-        add(manageLibrariesButton, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel label;
     private javax.swing.JList libraryList;
-    private javax.swing.JButton manageLibrariesButton;
     private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
     
+    private static String getString(String s) {
+        return NbBundle.getBundle(StdLibPanel.class).getString(s);
+    }
 }

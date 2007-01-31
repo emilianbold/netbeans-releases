@@ -55,7 +55,7 @@ public class PlatformTypePanel extends MakefileWizardPanel {
      */
     PlatformTypePanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = getString("LBL_PlatformTypePanel"); //NOI18N
+	String subtitle = getString("LBL_PlatformTypePanel"); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 	initialized = false;

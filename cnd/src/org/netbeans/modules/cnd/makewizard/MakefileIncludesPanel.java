@@ -39,7 +39,7 @@ public class MakefileIncludesPanel extends EnterItemsPanel {
      */
     MakefileIncludesPanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = new String(getString("LBL_MakefileIncludesPanel")); //NOI18N
+	String subtitle = new String(getString("LBL_MakefileIncludesPanel")); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 	initialized = false;
@@ -48,18 +48,18 @@ public class MakefileIncludesPanel extends EnterItemsPanel {
 
     /** Defer widget creation until the panel needs to be displayed */
     private void create() {
-	create(getString("LBL_IncDir"), getString("MNEM_IncDir").charAt(0),	//NOI18N
+	create(getString("LBL_IncDir"), getString("MNEM_IncDir").charAt(0),	// NOI18N
 		    DIR_CHOOSER | DYNAMIC_DEFAULT_BUTTONS);
     }
 
     /** Set the label for the Source List */
     protected String getListLabel() {
-	return getString("LBL_IncludesList");				//NOI18N
+	return getString("LBL_IncludesList");				// NOI18N
     }
 
     /** Set the mnemonic for the Source List */
     protected char getListMnemonic() {
-	return getString("MNEM_IncludesList").charAt(0);			//NOI18N
+	return getString("MNEM_IncludesList").charAt(0);			// NOI18N
     }
 
     /** Validate the include directories */
@@ -86,11 +86,11 @@ public class MakefileIncludesPanel extends EnterItemsPanel {
 		}
 		if (dir != null) {
 		    if (!dir.exists()) {
-			dne.add(new StringBuffer("\t").			//NOI18N
-				append(dir.getPath()).append("\n"));	//NOI18N
+			dne.add(new StringBuffer("\t").			// NOI18N
+				append(dir.getPath()).append("\n"));	// NOI18N
 		    } else if (!dir.isDirectory()) {
-			notDir.add(new StringBuffer("\t").		//NOI18N
-				append(dir.getPath()).append("\n"));	//NOI18N
+			notDir.add(new StringBuffer("\t").		// NOI18N
+				append(dir.getPath()).append("\n"));	// NOI18N
 		    }
 		}
 	    }
@@ -101,7 +101,7 @@ public class MakefileIncludesPanel extends EnterItemsPanel {
 		    for (i = 0; i < dne.size(); i++) {
 			msgs.add(dne.get(i));
 		    }
-		    msgs.add(new String("\n"));				//NOI18N
+		    msgs.add(new String("\n"));				// NOI18N
 		} else {
 		    warn(msgs, WARN_DNE_COUNT, target.getName(),
 					new Integer(dne.size()).toString());
@@ -114,7 +114,7 @@ public class MakefileIncludesPanel extends EnterItemsPanel {
 		    for (i = 0; i < notDir.size(); i++) {
 			msgs.add(notDir.get(i));
 		    }
-		    msgs.add(new String("\n"));				//NOI18N
+		    msgs.add(new String("\n"));				// NOI18N
 		} else {
 		    warn(msgs, WARN_INC_NOT_DIR_COUNT, target.getName(),
 					new Integer(notDir.size()).toString());
@@ -126,8 +126,8 @@ public class MakefileIncludesPanel extends EnterItemsPanel {
 
     /** Get the title and message for the error dialog */
     protected ErrorInfo getErrorInfo() {
-	return new ErrorInfo(getString("DLG_MIP_EmptyRE"),		//NOI18N
-			getString("MSG_NoFilesMatched"));		//NOI18N
+	return new ErrorInfo(getString("DLG_MIP_EmptyRE"),		// NOI18N
+			getString("MSG_NoFilesMatched"));		// NOI18N
     }
 
 
@@ -140,7 +140,7 @@ public class MakefileIncludesPanel extends EnterItemsPanel {
      */
     protected String validateInput(String text) {
 
-	if (text.startsWith("-I")) {					//NOI18N
+	if (text.startsWith("-I")) {					// NOI18N
 	    return text.substring(2);
 	} else if (text.charAt(0) == '-') {
 	    return null;

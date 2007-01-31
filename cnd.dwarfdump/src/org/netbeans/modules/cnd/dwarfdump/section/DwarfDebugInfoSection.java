@@ -50,15 +50,15 @@ public class DwarfDebugInfoSection extends ElfSection {
     
     public List<CompilationUnit> getCompilationUnits() throws IOException {
         if (compilationUnits.size() == 0) {
-	    ElfSection arangesSection = reader.getSection(".debug_aranges");
-	    if( arangesSection != null ) {
-		DwarfArangesSection aranges = (DwarfArangesSection) arangesSection.read();
-		for (AddressRange arange : aranges.getRanges()) {
-		    CompilationUnit unit = new CompilationUnit((DwarfReader)reader, header.getSectionOffset(), arange.info_offset);
-		    compilationUnits.add(unit);
-		}
-	    }
-        }        
+            int cuOffset = 0;
+            while (cuOffset != header.sh_size) {
+                CompilationUnit unit = new CompilationUnit((DwarfReader)reader, header.getSectionOffset(), cuOffset);
+                compilationUnits.add(unit);
+                cuOffset += unit.getUnitTotalLength();
+            }
+        }
+        
+        
         return compilationUnits;
     }
     

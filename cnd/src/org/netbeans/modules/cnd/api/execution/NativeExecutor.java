@@ -20,6 +20,8 @@
 package org.netbeans.modules.cnd.api.execution;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
@@ -45,6 +47,7 @@ public class NativeExecutor implements Runnable {
     private String[] envp;
     private String tabName;
     private String actionName;
+    private String rcfile;
     private boolean parseOutputForErrors;
     private boolean showInput;
     
@@ -128,6 +131,10 @@ public class NativeExecutor implements Runnable {
         return IOProvider.getDefault().getIO(tabName, false);
     }
     
+    public void setExitValueOverride(String rcfile) {
+        this.rcfile = rcfile;
+    }
+    
     /**
      *  Call execute(), not this method directly!
      */
@@ -172,6 +179,34 @@ public class NativeExecutor implements Runnable {
 		    ex.printStackTrace();
 		}
 	    }
+        }
+        if (rcfile != null) {
+            File file = null;
+            
+            try {
+                file = new File(rcfile);
+                
+                if (file.exists()) {
+                    FileReader fr = new FileReader(file);
+
+                    if (fr.ready()) {
+                        char[] cbuf = new char[256];
+                        int i = fr.read(cbuf);
+                        if (i > 0) {
+                            rc = Integer.valueOf(String.valueOf(cbuf, 0, i - 1)).intValue();
+                        }
+
+                    }
+                    fr.close();
+                    file.delete();
+                }
+            } catch (FileNotFoundException ex) {
+            } catch (IOException ex) {
+            } finally {
+                if (file != null && file.exists()) {
+                   file.delete(); 
+                }
+            }     
         }
         executionFinished(rc);
         out.close();

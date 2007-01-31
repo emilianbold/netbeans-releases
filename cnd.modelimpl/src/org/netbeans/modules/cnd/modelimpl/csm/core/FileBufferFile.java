@@ -22,28 +22,20 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class FileBufferFile implements FileBuffer {
+public class FileBufferFile extends AbstractFileBuffer {
 
-    private File file;
     private SoftReference bytes;
 
     public FileBufferFile(File file) {
-        this.file = file;
+        super(file);
     }
-
-    public void addChangeListener(ChangeListener listener) {
-    }
-
-    public void removeChangeListener(ChangeListener listener) {
-    }
-
+    
     public String getText() throws IOException {
         return new String(getBytes());
     }
@@ -78,9 +70,10 @@ public class FileBufferFile implements FileBuffer {
     }
 
     private byte[] doGetBytes() throws IOException {
+        File file = getFile();
         long length = file.length();
         if (length > Integer.MAX_VALUE) {
-            new IllegalArgumentException("File is too large: " + file.getAbsolutePath()).printStackTrace(System.err);
+            new IllegalArgumentException("File is too large: " + file.getAbsolutePath()).printStackTrace(System.err); // NOI18N
         }
         byte[] bytes = new byte[(int)length];
         InputStream is = new BufferedInputStream(new FileInputStream(file), TraceFlags.BUF_SIZE);
@@ -98,17 +91,13 @@ public class FileBufferFile implements FileBuffer {
     
 
     public InputStream getInputStream() throws IOException {
-        return new BufferedInputStream(new FileInputStream(file), TraceFlags.BUF_SIZE);
+        return new BufferedInputStream(new FileInputStream(getFile()), TraceFlags.BUF_SIZE);
     }
 
-    public File getFile() {
-        return file;
-    }
-    
     public int getLength() {
-        return (int) file.length();
-    }    
-
+        return (int) getFile().length();
+    } 
+    
     public boolean isFileBased() {
         return true;
     }

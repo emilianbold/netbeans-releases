@@ -33,18 +33,22 @@ public class CsmTracer {
 
     private final int step = 4;
     private StringBuffer indentBuffer = new StringBuffer();
-    private boolean useStdErr;
     private boolean deep = true;
     private boolean testUniqueName = false;
+    private PrintStream printStream;
 
     //TODO: remove as soon as regression tests are fixed
     
     public CsmTracer() {
-        useStdErr = true;
+        printStream = System.out;
     }
     
     public CsmTracer(boolean useStdErr) {
-        this.useStdErr = useStdErr;
+        printStream = useStdErr ? System.err : System.out;
+    }
+    
+    public CsmTracer(PrintStream printStream) {
+        this.printStream = printStream;
     }
     
     public void setDeep(boolean deep) {
@@ -78,8 +82,12 @@ public class CsmTracer {
         print(s, true);
     }
     
+    protected PrintStream getStream() {
+	return printStream;
+    }
+    
     public void print(String s, boolean newline) {
-        PrintStream stream = useStdErr ? System.err : System.out;
+        PrintStream stream = getStream();
         if( newline ) {
             stream.print('\n');
             stream.print(indentBuffer.toString());
@@ -87,14 +95,14 @@ public class CsmTracer {
         stream.print(s);
     }
     
-    public String toString(CsmExpression expr) {
+    public static String toString(CsmExpression expr) {
         if( expr == null ) {
-            return "null";
+            return "null"; // NOI18N
         }
         StringBuffer sb = new StringBuffer();
-        sb.append("text='");
+        sb.append("text='"); // NOI18N
         sb.append(expr.getText());
-        sb.append("'");
+        sb.append("'"); // NOI18N
         return sb.toString();
     }
     
@@ -102,26 +110,26 @@ public class CsmTracer {
 //        return decl == null || decl.getClass().getName().endsWith("Unresolved$UnresolvedClass");
 //    }
     
-    public String toString(CsmInheritance inh) {
+    public static String toString(CsmInheritance inh) {
         StringBuffer sb = new StringBuffer();
         
-        sb.append("CLASS=");
+        sb.append("CLASS="); // NOI18N
         CsmClass cls = inh.getCsmClass();
         //sb.append(isDummyUnresolved(cls) ? "<unresolved>" : cls.getQualifiedName());
-        sb.append(cls == null ? "null" : cls.getQualifiedName());
+        sb.append(cls == null ? "null" : cls.getQualifiedName()); // NOI18N
         
-        sb.append(" VISIBILITY==" + inh.getVisibility());
-        sb.append(" virtual==" + inh.isVirtual());
+        sb.append(" VISIBILITY==" + inh.getVisibility()); // NOI18N
+        sb.append(" virtual==" + inh.isVirtual()); // NOI18N
         
-        sb.append(" text='");
+        sb.append(" text='"); // NOI18N
         sb.append(inh.getText());
-        sb.append("'");
+        sb.append("'"); // NOI18N
         return sb.toString();
     }
     
-    public String toString(CsmCondition condition) {
+    public static String toString(CsmCondition condition) {
         if( condition == null ) {
-            return "null";
+            return "null"; // NOI18N
         }
         StringBuffer sb = new StringBuffer(condition.getKind().toString());
         sb.append(' ');
@@ -134,27 +142,27 @@ public class CsmTracer {
         return sb.toString();
     }
     
-    public String toString(CsmType type) {
+    public static String toString(CsmType type) {
         StringBuffer sb = new StringBuffer();
         if( type == null ) {
-            sb.append("null");
+            sb.append("null"); // NOI18N
         } else {
             if( type.isConst() ) {
-                sb.append("const ");
+                sb.append("const "); // NOI18N
             }
             if( type.isPointer() ) {
                 for( int i = 0; i < type.getPointerDepth(); i++ ) {
-                    sb.append("*");
+                    sb.append("*"); // NOI18N
                 }
             }
-            if( type.isReference() ) sb.append("&");
+            if( type.isReference() ) sb.append("&"); // NOI18N
             CsmClassifier classifier = type.getClassifier();
             //sb.append(isDummyUnresolved(classifier) ? "<unresolved>": classifier.getName());
-            sb.append(classifier != null ? classifier.getQualifiedName() : "<*no_classifier*>");
+            sb.append(classifier != null ? classifier.getQualifiedName() : "<*no_classifier*>"); // NOI18N
             for( int i = 0; i < type.getArrayDepth(); i++ ) {
-                sb.append("[]");
+                sb.append("[]"); // NOI18N
             }
-            sb.append(" TEXT=" + type.getText());
+            sb.append(" TEXT=" + type.getText()); // NOI18N
         }
         if( type instanceof CsmOffsetable ) {
             sb.append(' ');
@@ -163,27 +171,27 @@ public class CsmTracer {
         return sb.toString();
     }
     
-    public String toString(CsmVariable var) {
+    public static String toString(CsmVariable var) {
         if( var == null ) {
-            return "null";
+            return "null"; // NOI18N
         }
         StringBuffer sb = new StringBuffer(var.getName());
         sb.append(getOffsetString(var));
-        sb.append(" type: " + toString(var.getType()));
-        sb.append(" init: " + toString(var.getInitialValue()));
+        sb.append(" type: " + toString(var.getType())); // NOI18N
+        sb.append(" init: " + toString(var.getInitialValue())); // NOI18N
         return sb.toString();
     }
     
-    public String toString(CsmFunction fun) {
+    public static String toString(CsmFunction fun) {
         if( fun == null ) {
-            return "null";
+            return "null"; // NOI18N
         } else {
             return fun.getName() + ' ' + getOffsetString(fun);
         }
     }
     
     public void dumpModel(CsmFunction fun) {
-        print("FUNCTION " + fun.getName() + getOffsetString(fun) + ' ' + getBriefClassName(fun));
+        print("FUNCTION " + fun.getName() + getOffsetString(fun) + ' ' + getBriefClassName(fun)); // NOI18N
         if( fun instanceof CsmFunctionDefinition ) {
             if( deep ) {
                 //indent();
@@ -192,34 +200,34 @@ public class CsmTracer {
             }
         }
         indent();
-        print("DEFINITION: " + toString(fun.getDefinition()));
-        print("SIGNATURE " + fun.getSignature());
-        print("UNIQUE NAME " + fun.getUniqueName());
+        print("DEFINITION: " + toString(fun.getDefinition())); // NOI18N
+        print("SIGNATURE " + fun.getSignature()); // NOI18N
+        print("UNIQUE NAME " + fun.getUniqueName()); // NOI18N
         dumpParameters(fun.getParameters());
-        print("RETURNS " + toString(fun.getReturnType()));
+        print("RETURNS " + toString(fun.getReturnType())); // NOI18N
         unindent();
     }
     
     public void dumpModel(CsmFunctionDefinition fun) {
         CsmFunction decl = fun.getDeclaration();
-        print("FUNCTION DEFINITION " + fun.getName() + ' ' + getOffsetString(fun) + ' ' + getBriefClassName(fun));
+        print("FUNCTION DEFINITION " + fun.getName() + ' ' + getOffsetString(fun) + ' ' + getBriefClassName(fun)); // NOI18N
         indent();
-        print("SIGNATURE " + fun.getSignature());
-        print("UNIQUE NAME " + fun.getUniqueName());
-        print("DECLARATION: " + toString(decl));
+        print("SIGNATURE " + fun.getSignature()); // NOI18N
+        print("UNIQUE NAME " + fun.getUniqueName()); // NOI18N
+        print("DECLARATION: " + toString(decl)); // NOI18N
         dumpParameters(fun.getParameters());
-        print("RETURNS " + toString(fun.getReturnType()));
+        print("RETURNS " + toString(fun.getReturnType())); // NOI18N
         if( deep ) {
             dumpStatement((CsmStatement) fun.getBody());
         }
         unindent();
     }
     
-    public String getOffsetString(CsmOffsetable obj) {
+    public static String getOffsetString(CsmOffsetable obj) {
         //return " [" + obj.getStartOffset() + '-' + obj.getEndOffset() + ']';
 //        CsmOffsetable.Position start = obj.getStartPosition();
 //        CsmOffsetable.Position end = obj.getEndPosition();
-        return " [" + obj.getStartPosition() + '-' + obj.getEndPosition() + ']';
+        return " [" + obj.getStartPosition() + '-' + obj.getEndPosition() + ']'; // NOI18N
     }
     
     public String getBriefClassName(Object o) {
@@ -236,7 +244,7 @@ public class CsmTracer {
     }
     
     public void dumpParameters(List/*<CsmParameter>*/ parameters) {
-        print("PARAMETERS:");
+        print("PARAMETERS:"); // NOI18N
         if( parameters != null && parameters.size() > 0 ) {
             indent();
             for( Iterator iter = parameters.iterator(); iter.hasNext(); ) {
@@ -248,10 +256,10 @@ public class CsmTracer {
     
     public void dumpStatement(CsmStatement stmt) {
         if( stmt == null ) {
-            print("STATEMENT is null");
+            print("STATEMENT is null"); // NOI18N
             return;
         }
-        print("STATEMENT " + stmt.getKind() + ' ' + getOffsetString(stmt));
+        print("STATEMENT " + stmt.getKind() + ' ' + getOffsetString(stmt)); // NOI18N
         indent();
         CsmStatement.Kind kind = stmt.getKind();
         if( kind == CsmStatement.Kind.COMPOUND ) {
@@ -276,15 +284,15 @@ public class CsmTracer {
         } else if( kind == CsmStatement.Kind.CONTINUE ) {
         } else if( kind == CsmStatement.Kind.DEFAULT ) {
         } else if( kind == CsmStatement.Kind.EXPRESSION ) {
-            print(" text: '" + stmt.getText() +'\'', false);
+            print(" text: '" + stmt.getText() +'\'', false); // NOI18N
         } else if( kind == CsmStatement.Kind.GOTO ) {
-            print(" text: '" + stmt.getText() +'\'', false);
+            print(" text: '" + stmt.getText() +'\'', false); // NOI18N
         } else if( kind == CsmStatement.Kind.LABEL ) {
-            print(" text: '" + stmt.getText() +'\'', false);
+            print(" text: '" + stmt.getText() +'\'', false); // NOI18N
         } else if( kind == CsmStatement.Kind.RETURN ) {
-            print(" text: '" + stmt.getText() +'\'', false);
+            print(" text: '" + stmt.getText() +'\'', false); // NOI18N
         } else  {
-            print("unexpected statement kind");
+            print("unexpected statement kind"); // NOI18N
         }
         unindent();
     }
@@ -298,26 +306,26 @@ public class CsmTracer {
     }
     
     public void dumpStatement(CsmTryCatchStatement stmt) {
-        print("TRY:");
+        print("TRY:"); // NOI18N
         dumpStatement(stmt.getTryStatement());
-        print("HANDLERS:");
+        print("HANDLERS:"); // NOI18N
         for( Iterator iter = stmt.getHandlers().iterator(); iter.hasNext(); ) {
             dumpStatement((CsmStatement) iter.next());
         }
     }
     
     public void dumpStatement(CsmExceptionHandler stmt) {
-        print("PARAMETER: " + toString(stmt.getParameter()));
+        print("PARAMETER: " + toString(stmt.getParameter())); // NOI18N
         dumpStatement((CsmCompoundStatement) stmt);
     }
     
     public void dumpStatement(CsmIfStatement stmt) {
-        print("CONDITION " + toString(stmt.getCondition()));
-        print("THEN: ");
+        print("CONDITION " + toString(stmt.getCondition())); // NOI18N
+        print("THEN: "); // NOI18N
         indent();
         dumpStatement(stmt.getThen());
         unindent();
-        print("ELSE: ");
+        print("ELSE: "); // NOI18N
         indent();
         dumpStatement(stmt.getElse());
         unindent();
@@ -330,40 +338,40 @@ public class CsmTracer {
     }
     
     public void dumpStatement(CsmLoopStatement stmt) {
-        print("CONDITION: " + toString(stmt.getCondition()) + " isPostCheck()=" + stmt.isPostCheck());
-        print("BODY:");
+        print("CONDITION: " + toString(stmt.getCondition()) + " isPostCheck()=" + stmt.isPostCheck()); // NOI18N
+        print("BODY:"); // NOI18N
         indent();
         dumpStatement(stmt.getBody());
         unindent();
     }
     
     public void dumpStatement(CsmForStatement stmt) {
-        print("INIT:");
+        print("INIT:"); // NOI18N
         indent();
         dumpStatement(stmt.getInitStatement());
         unindent();
-        print("ITERATION: " + toString(stmt.getIterationExpression()));
-        print("CONDITION: " + toString(stmt.getCondition()));
-        print("BODY:");
+        print("ITERATION: " + toString(stmt.getIterationExpression())); // NOI18N
+        print("CONDITION: " + toString(stmt.getCondition())); // NOI18N
+        print("BODY:"); // NOI18N
         indent();
         dumpStatement(stmt.getBody());
         unindent();
     }
     
     public void dumpStatement(CsmSwitchStatement stmt) {
-        print("CONDITION: " + toString(stmt.getCondition()));
-        print("BODY:");
+        print("CONDITION: " + toString(stmt.getCondition())); // NOI18N
+        print("BODY:"); // NOI18N
         indent();
         dumpStatement(stmt.getBody());
         unindent();
     }
     
     public void dumpStatement(CsmCaseStatement stmt) {
-        print(" EXPRESSION: " + toString(stmt.getExpression()), false);
+        print(" EXPRESSION: " + toString(stmt.getExpression()), false); // NOI18N
     }
     
     public void dumpNamespaceDefinitions(CsmNamespace nsp) {
-        print("NAMESPACE DEFINITIONS for " + nsp.getName() + " (" + nsp.getQualifiedName() + ") ");
+        print("NAMESPACE DEFINITIONS for " + nsp.getName() + " (" + nsp.getQualifiedName() + ") "); // NOI18N
         indent();
         for( Iterator iter = nsp.getDefinitions().iterator(); iter.hasNext(); ) {
             CsmNamespaceDefinition def = (CsmNamespaceDefinition) iter.next();
@@ -374,14 +382,14 @@ public class CsmTracer {
     
     public void dumpModel(CsmProject project) {
         CsmNamespace nsp = project.getGlobalNamespace();
-        print("\n========== Dumping model of PROJECT " + project.getName(), true);
+        print("\n========== Dumping model of PROJECT " + project.getName(), true); // NOI18N
         dumpModel(nsp);
     }
     
     public void dumpModel(CsmNamespace nsp) {
         if( ! nsp.isGlobal() ) {
             dumpNamespaceDefinitions(nsp);
-            print("NAMESPACE " + nsp.getName() + " (" + nsp.getQualifiedName() + ") ");
+            print("NAMESPACE " + nsp.getName() + " (" + nsp.getQualifiedName() + ") "); // NOI18N
             indent();
         }
         for( Iterator iter = getSortedDeclarations(nsp); iter.hasNext(); ) {
@@ -435,26 +443,26 @@ public class CsmTracer {
     }
     
     public void dumpModel(CsmFile file) {
-        print("\n========== Dumping model of FILE " + file.getName());
+        print("\n========== Dumping model of FILE " + file.getName()); // NOI18N
         List includes = file.getIncludes();
-        print("Includes:");
+        print("Includes:"); // NOI18N
         if (includes.size() > 0) {
             for( Iterator iter = includes.iterator(); iter.hasNext(); ) {
                 CsmInclude o = (CsmInclude) iter.next();
                 print(o.toString());
             }
         } else {
-            indent();print("<no includes>");unindent();
+            indent();print("<no includes>");unindent(); // NOI18N
         }
         List macros = file.getMacros();
-        print("Macros:");
+        print("Macros:"); // NOI18N
         if (macros.size() > 0) {
             for( Iterator iter = macros.iterator(); iter.hasNext(); ) {
                 CsmMacro o = (CsmMacro) iter.next();
                 print(o.toString());
             }
         } else {
-            indent();print("<no macros>");unindent();
+            indent();print("<no macros>");unindent(); // NOI18N
         }
         List/*CsmDeclaration*/ objects = file.getDeclarations();
         for( Iterator iter = objects.iterator(); iter.hasNext(); ) {
@@ -463,31 +471,31 @@ public class CsmTracer {
     }
     
     public void dumpModel(CsmVariable var) {
-        print("VARIABLE " + toString(var));
+        print("VARIABLE " + toString(var)); // NOI18N
         CsmVariableDefinition def = var.getDefinition();
         if (def != null){
             indent();
-            print("DEFINITION: " + toString(def));
+            print("DEFINITION: " + toString(def)); // NOI18N
             unindent();
         }
     }
     
     public void dumpModel(CsmVariableDefinition var) {
         CsmVariable decl = var.getDeclaration();
-        print("VARIABLE DEFINITION " + toString(var));
+        print("VARIABLE DEFINITION " + toString(var)); // NOI18N
         indent();
-        print("DECLARATION: " + toString(decl));
+        print("DECLARATION: " + toString(decl)); // NOI18N
         unindent();
     }
 
     
     public void dumpModel(CsmField field) {
-        StringBuffer sb = new StringBuffer("FIELD ");
+        StringBuffer sb = new StringBuffer("FIELD "); // NOI18N
         sb.append(field.getVisibility().toString());
         if( field.isStatic() ) {
-            sb.append(" static ");
+            sb.append(" static "); // NOI18N
         }
-        sb.append(" " + toString(field.getType()));
+        sb.append(" " + toString(field.getType())); // NOI18N
         sb.append(' ');
         sb.append(field.getName());
         sb.append(getOffsetString(field));
@@ -500,13 +508,13 @@ public class CsmTracer {
             CsmProject project = ((CsmOffsetable) decl).getContainingFile().getProject();
             CsmDeclaration found = project.findDeclaration(uname);
             if( found == null ) {
-                print("Unique name check failed: cant't find in project: " + uname);
+                print("Unique name check failed: cant't find in project: " + uname); // NOI18N
             } else if( found != decl ) {
-                print("Unique name check failed: declaration found in project differs " + uname);
+                print("Unique name check failed: declaration found in project differs " + uname); // NOI18N
             }
         }
         if( ! uname.startsWith(decl.getKind().toString()) ) {
-            print("Warning: unique name '" + uname + "' desn't start with " + decl.getKind().toString());
+            print("Warning: unique name '" + uname + "' desn't start with " + decl.getKind().toString()); // NOI18N
         }
     }
     
@@ -581,45 +589,45 @@ public class CsmTracer {
     
     public void dumpModel(CsmNamespaceAlias alias) {
         CsmNamespace referencedNamespace = alias.getReferencedNamespace();
-        String refNsName = (referencedNamespace == null) ? "null" : referencedNamespace.getQualifiedName();
-        print("ALIAS " + alias.getAlias() + ' ' + refNsName + ' ' + getOffsetString(alias));
+        String refNsName = (referencedNamespace == null) ? "null" : referencedNamespace.getQualifiedName(); // NOI18N
+        print("ALIAS " + alias.getAlias() + ' ' + refNsName + ' ' + getOffsetString(alias)); // NOI18N
     }
     
     public void dumpModel(CsmUsingDeclaration ud) {
         CsmDeclaration decl = ud.getReferencedDeclaration();
-        String qname = decl == null ? "null" : decl.getQualifiedName();
-        print("USING DECL. " + qname + ' ' + getOffsetString(ud));
+        String qname = decl == null ? "null" : decl.getQualifiedName(); // NOI18N
+        print("USING DECL. " + qname + ' ' + getOffsetString(ud)); // NOI18N
     }
     
     public void dumpModel(CsmTypedef td) {
-        print("TYPEDEF " + td.getName() + ' ' + getOffsetString(td) + " TYPE: " + toString(td.getType()));
+        print("TYPEDEF " + td.getName() + ' ' + getOffsetString(td) + " TYPE: " + toString(td.getType())); // NOI18N
     }
     
     public void dumpModel(CsmUsingDirective ud) {
         CsmNamespace nsp = ud.getReferencedNamespace();
-        print("USING DECL. " + (nsp == null ? "null" : nsp.getQualifiedName()) + ' ' + getOffsetString(ud));
+        print("USING DECL. " + (nsp == null ? "null" : nsp.getQualifiedName()) + ' ' + getOffsetString(ud)); // NOI18N
     }
     
     public void dumpModel(CsmClass cls) {
         String kw =
-                (cls.getKind() == CsmDeclaration.Kind.CLASS) ? "CLASS" :
-                    (cls.getKind() == CsmDeclaration.Kind.STRUCT) ? "STRUCT" :
-                        (cls.getKind() == CsmDeclaration.Kind.UNION) ? "UNION" :
-                            "<unknown-CsmClass-kind>";
+                (cls.getKind() == CsmDeclaration.Kind.CLASS) ? "CLASS" : // NOI18N
+                    (cls.getKind() == CsmDeclaration.Kind.STRUCT) ? "STRUCT" : // NOI18N
+                        (cls.getKind() == CsmDeclaration.Kind.UNION) ? "UNION" : // NOI18N
+                            "<unknown-CsmClass-kind>"; // NOI18N
         
-        String tmplStr = cls.isTemplate() ? "<>" : "";
-        print(kw + ' ' + cls.getName() + tmplStr + " (" + cls.getQualifiedName() + " )" +
-                getOffsetString(cls) + " lcurly=" + cls.getLeftBracketOffset());
+        String tmplStr = cls.isTemplate() ? "<>" : ""; // NOI18N
+        print(kw + ' ' + cls.getName() + tmplStr + " (" + cls.getQualifiedName() + " )" + // NOI18N
+                getOffsetString(cls) + " lcurly=" + cls.getLeftBracketOffset()); // NOI18N
         
         indent();
-        print("BASE CLASSES:");
+        print("BASE CLASSES:"); // NOI18N
         indent();
         for( Iterator iter = cls.getBaseClasses().iterator(); iter.hasNext(); ) {
             CsmInheritance inh = (CsmInheritance) iter.next();
             print(toString(inh));
         }
         unindent();
-        print("MEMBERS:");
+        print("MEMBERS:"); // NOI18N
         indent();
         List/*<CsmMember>*/ members = cls.getMembers();
         for( Iterator iter = members.iterator(); iter.hasNext(); ) {
@@ -639,7 +647,7 @@ public class CsmTracer {
                 sb.append(' ');
                 sb.append(member.getVisibility().toString());
                 if( member.isStatic() ) {
-                    sb.append(" static");
+                    sb.append(" static"); // NOI18N
                 }
                 sb.append(' ');
                 sb.append(member.getName());
@@ -654,7 +662,7 @@ public class CsmTracer {
     }
     
     public void dumpModel(CsmEnum enumeration) {
-        print("ENUM " + enumeration.getName() + getOffsetString(enumeration));
+        print("ENUM " + enumeration.getName() + getOffsetString(enumeration)); // NOI18N
         indent();
         for( Iterator iter = enumeration.getEnumerators().iterator(); iter.hasNext(); ) {
             CsmEnumerator enumerator = (CsmEnumerator) iter.next();
@@ -669,7 +677,7 @@ public class CsmTracer {
     }
     
     public void dumpModel(CsmNamespaceDefinition nsp) {
-        print("NAMESPACE DEFINITOIN " + nsp.getName() + getOffsetString(nsp));
+        print("NAMESPACE DEFINITOIN " + nsp.getName() + getOffsetString(nsp)); // NOI18N
         indent();
         for( Iterator iter = nsp.getDeclarations().iterator(); iter.hasNext(); ) {
             dumpModel((CsmDeclaration) iter.next());
@@ -678,14 +686,14 @@ public class CsmTracer {
     }
     
     public void dumpModelChangeEvent(CsmChangeEvent e) {
-        print("Model Changed Event:");
-        dumpFilesCollection(e.getNewFiles(), "New files");
-        dumpFilesCollection(e.getRemovedFiles(), "Removed files");
-        dumpFilesCollection(e.getChangedFiles(), "Changed files");
-        dumpDeclarationsCollection(e.getNewDeclarations(), "New declarations");
-        dumpDeclarationsCollection(e.getRemovedDeclarations(), "Removed declarations");
-        dumpDeclarationsCollection(e.getChangedDeclarations(), "Changed declarations");
-        dumpNamespacesCollection(e.getNewNamespaces(), "New namespaces");
+        print("Model Changed Event:"); // NOI18N
+        dumpFilesCollection(e.getNewFiles(), "New files"); // NOI18N
+        dumpFilesCollection(e.getRemovedFiles(), "Removed files"); // NOI18N
+        dumpFilesCollection(e.getChangedFiles(), "Changed files"); // NOI18N
+        dumpDeclarationsCollection(e.getNewDeclarations(), "New declarations"); // NOI18N
+        dumpDeclarationsCollection(e.getRemovedDeclarations(), "Removed declarations"); // NOI18N
+        dumpDeclarationsCollection(e.getChangedDeclarations(), "Changed declarations"); // NOI18N
+        dumpNamespacesCollection(e.getNewNamespaces(), "New namespaces"); // NOI18N
         print("");
     }
     
@@ -699,7 +707,7 @@ public class CsmTracer {
     public void dumpFilesCollection(Collection/*<CsmFile>*/ files) {
         for( Iterator iter = files.iterator(); iter.hasNext(); ) {
             CsmFile file = (CsmFile) iter.next();
-            print(file == null ? "null" : file.getAbsolutePath());
+            print(file == null ? "null" : file.getAbsolutePath()); // NOI18N
         }
     }
     
@@ -713,7 +721,7 @@ public class CsmTracer {
     public void dumpDeclarationsCollection(Collection/*<CsmDeclaration>*/ declarations) {
         for( Iterator iter = declarations.iterator(); iter.hasNext(); ) {
             CsmDeclaration decl = (CsmDeclaration) iter.next();
-            print(decl == null ? "null" : (decl.getUniqueName() + " of kind: " + decl.getKind()));
+            print(decl == null ? "null" : (decl.getUniqueName() + " of kind: " + decl.getKind())); // NOI18N
         }
     }
     
@@ -727,7 +735,7 @@ public class CsmTracer {
     public void dumpNamespacesCollection(Collection/*<CsmNamespace>*/ namespaces) {
         for( Iterator iter = namespaces.iterator(); iter.hasNext(); ) {
             CsmNamespace nsp = (CsmNamespace) iter.next();
-            print(nsp == null ? "null" : nsp.getQualifiedName());
+            print(nsp == null ? "null" : nsp.getQualifiedName()); // NOI18N
         }
     }
 }

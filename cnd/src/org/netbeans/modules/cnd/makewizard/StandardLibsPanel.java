@@ -59,7 +59,7 @@ public class StandardLibsPanel extends MakefileWizardPanel {
      */
     public StandardLibsPanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = new String(getString("LBL_StandardLibsPanel")); //NOI18N
+	String subtitle = new String(getString("LBL_StandardLibsPanel")); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 	initialized = false;
@@ -76,7 +76,7 @@ public class StandardLibsPanel extends MakefileWizardPanel {
         panel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         mainPanel.setLayout(new java.awt.GridBagLayout());
 
-        libsLabel = new JLabel(getString("LBL_StdLibs"));		//NOI18N
+        libsLabel = new JLabel(getString("LBL_StdLibs"));		// NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -195,8 +195,8 @@ public class StandardLibsPanel extends MakefileWizardPanel {
 	gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 0);
 	gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
 	for (int i = 0; i < stdLibs.length; i++) {
-	    checkBoxes[i] = new JCheckBox(stdLibs[i].getName());		//NOI18N
-	    checkBoxes[i].setMnemonic(stdLibs[i].getMnemonic());	//NOI18N
+	    checkBoxes[i] = new JCheckBox(stdLibs[i].getName());		// NOI18N
+	    checkBoxes[i].setMnemonic(stdLibs[i].getMnemonic());	// NOI18N
 	    panel.add(checkBoxes[i], gridBagConstraints);
 	}
 	return panel;

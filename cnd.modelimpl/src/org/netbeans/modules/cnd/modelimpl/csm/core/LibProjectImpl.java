@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -21,8 +21,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.*;
 import java.util.*;
-
-import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocState;
 import org.netbeans.modules.cnd.modelimpl.platform.*;
@@ -31,22 +29,22 @@ import org.netbeans.modules.cnd.modelimpl.platform.*;
  * @author Vladimir Kvasihn
  */
 public class LibProjectImpl extends ProjectBase {
-
+    
     private File includePath;
 //    private ProjectCache projectCache;
     private boolean filled;
 //    private File zipFile;
     
 //    private class LibCache extends ProjectZipCache {
-//        
+//
 //        public LibCache(CsmProject project, String pathBase) throws IOException {
 //            super(project,  pathBase);
 //        }
-//        
+//
 //        protected File findProjectPathFile() throws IOException {
 //            return zipFile;
 //        }
-//        
+//
 //    }
     
     public LibProjectImpl(ModelImpl model, String includePathName) {
@@ -99,12 +97,13 @@ public class LibProjectImpl extends ProjectBase {
         if( impl == null ) {
             synchronized( getFiles() ) {
                 if( impl == null ) {
-					impl = new FileImpl(ModelSupport.instance().getFileBuffer(srcFile), this, fileType, preprocState);
-					putFile(srcFile, impl);
-					//impl.parse();
-					if( scheduleParseIfNeed ) {
-						ParserQueue.instance().addLast(impl);
-					}
+                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(srcFile), this, fileType, preprocState);
+                    putFile(srcFile, impl);
+                    //impl.parse();
+                    if( scheduleParseIfNeed ) {
+                        APTPreprocState.State ppState = preprocState == null ? null : preprocState.getState();
+                        ParserQueue.instance().addLast(impl, ppState);
+                    }
                 }
             }
         }
@@ -117,7 +116,7 @@ public class LibProjectImpl extends ProjectBase {
     }
     
     public void onFileRemoved(NativeFileItem file) {}
-    public void onFileAdded(NativeFileItem file) {} 
+    public void onFileAdded(NativeFileItem file) {}
     
     /**
      * called to inform that file was #included from another file with specific callback
@@ -126,13 +125,13 @@ public class LibProjectImpl extends ProjectBase {
      * @return true if it's first time of file including
      *          false if file was included before
      */
-    public FileImpl onFileIncluded(String file, APTPreprocState preprocState, int mode) { 
-        if( ONLY_LEX_SYS_INCLUDES ) {            
+    public FileImpl onFileIncluded(String file, APTPreprocState preprocState, int mode) {
+        if( ONLY_LEX_SYS_INCLUDES ) {
             return super.onFileIncluded(file, preprocState, GATHERING_MACROS);
         } else {
             return super.onFileIncluded(file, preprocState, mode);
-        }     
-    }      
+        }
+    }
     
     
     protected void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocState.State state) {
@@ -148,7 +147,7 @@ public class LibProjectImpl extends ProjectBase {
         //} else {
         //    return null;
         //}
-
+        
         File file = new File(absPath);
         List dirs = new ArrayList();
         while((file=file.getParentFile())!= null){
@@ -164,5 +163,5 @@ public class LibProjectImpl extends ProjectBase {
             }
         }
         return null;
-    }    
+    }
 }

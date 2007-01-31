@@ -79,7 +79,7 @@ public class IpeFileSystemView extends FileSystemView {
 
 	if (path.charAt(0) == '~') {
 	    if (path.length() == 1 || path.charAt(1) == '/') {
-		newPath.append(System.getProperty("user.home"));	//NOI18N
+		newPath.append(System.getProperty("user.home"));	// NOI18N
 		idx = 1;
 	    } else {
 		end = path.indexOf('/');

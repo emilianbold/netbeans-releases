@@ -60,7 +60,7 @@ public final class Token {
     }
     
     public String toString() {
-        String retValue = tokenID + "[" + tokenStart + ", " + tokenLen + "]" + text;
+        String retValue = tokenID + "[" + tokenStart + ", " + tokenLen + "]" + text; //NOI18N
         return retValue;
     }
 }

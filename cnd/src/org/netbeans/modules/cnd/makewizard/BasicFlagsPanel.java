@@ -74,7 +74,7 @@ public class BasicFlagsPanel extends MakefileWizardPanel {
      */
     public BasicFlagsPanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = getString("LBL_BasicFlagsPanel"); //NOI18N
+	String subtitle = getString("LBL_BasicFlagsPanel"); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 	initialized = false;
@@ -94,25 +94,25 @@ public class BasicFlagsPanel extends MakefileWizardPanel {
 	grid.weightx = 1.0;
 
 	// Create the Development/Final code build section
-	add(new JLabel(getString("LBL_BuildMode")), grid);		//NOI18N
+	add(new JLabel(getString("LBL_BuildMode")), grid);		// NOI18N
 
-	develBuildRB = new JRadioButton(getString("RB_DevelBuild"));	//NOI18N
+	develBuildRB = new JRadioButton(getString("RB_DevelBuild"));	// NOI18N
 	develBuildRB.setSelected(true);
 	develBuildRB.setMnemonic(
-			getString("MNEM_DevelBuild").charAt(0));	//NOI18N
+			getString("MNEM_DevelBuild").charAt(0));	// NOI18N
 	add(develBuildRB, grid);
 
-	develDebugCodeRB = new JRadioButton(getString("RB_DebugFlag"));	//NOI18N
+	develDebugCodeRB = new JRadioButton(getString("RB_DebugFlag"));	// NOI18N
 	develDebugCodeRB.setSelected(true);
 	develDebugCodeRB.setMnemonic(
-			getString("MNEM_DebugFlag").charAt(0));		//NOI18N
+			getString("MNEM_DebugFlag").charAt(0));		// NOI18N
 	grid.insets = new Insets(0, 17, 0, 0);
 	add(develDebugCodeRB, grid);
 
 	develOptDebugCodeRB =
-			new JRadioButton(getString("RB_OptDebugFlag"));	//NOI18N
+			new JRadioButton(getString("RB_OptDebugFlag"));	// NOI18N
 	develOptDebugCodeRB.setMnemonic(
-			getString("MNEM_OptDebugFlag").charAt(0));	//NOI18N
+			getString("MNEM_OptDebugFlag").charAt(0));	// NOI18N
 	add(develOptDebugCodeRB, grid);
 
 	ButtonGroup develGroup = new ButtonGroup();
@@ -121,29 +121,29 @@ public class BasicFlagsPanel extends MakefileWizardPanel {
 
 	/* Not currently part of Krakatoa. I'm leaving the code here in case
 	 * it gets added later (grp - 4/01).
-	sbrowseTB = new JCheckBox(getString("TB_SourceBrowseFlag"));	//NOI18N
+	sbrowseTB = new JCheckBox(getString("TB_SourceBrowseFlag"));	// NOI18N
 	sbrowseTB.setMnemonic(
-			getString("MNEM_SourceBrowseFlag").charAt(0));	//NOI18N
+			getString("MNEM_SourceBrowseFlag").charAt(0));	// NOI18N
 	add(sbrowseTB, grid);
 	 */
 
-	finalBuildRB = new JRadioButton(getString("RB_FinalBuild"));	//NOI18N
+	finalBuildRB = new JRadioButton(getString("RB_FinalBuild"));	// NOI18N
 	finalBuildRB.setMnemonic(
-			getString("MNEM_FinalBuild").charAt(0));	//NOI18N
+			getString("MNEM_FinalBuild").charAt(0));	// NOI18N
 	grid.insets.top = 5;
 	grid.insets.left = 0;
 	add(finalBuildRB, grid);
 
-	finalOptTB = new JCheckBox(getString("TB_OptimizeFlag"));	//NOI18N
+	finalOptTB = new JCheckBox(getString("TB_OptimizeFlag"));	// NOI18N
 	finalOptTB.setMnemonic(
-			getString("MNEM_OptimizeFlag").charAt(0));	//NOI18N
+			getString("MNEM_OptimizeFlag").charAt(0));	// NOI18N
 	finalOptTB.setEnabled(false);
 	grid.insets.top = 0;
 	grid.insets.left = 17;
 	add(finalOptTB, grid);
 
-	finalStripTB = new JCheckBox(getString("TB_StripFlag"));	//NOI18N
-	finalStripTB.setMnemonic(getString("MNEM_StripFlag").charAt(0));//NOI18N
+	finalStripTB = new JCheckBox(getString("TB_StripFlag"));	// NOI18N
+	finalStripTB.setMnemonic(getString("MNEM_StripFlag").charAt(0));// NOI18N
 	finalStripTB.setEnabled(false);
 	add(finalStripTB, grid);
 
@@ -152,15 +152,15 @@ public class BasicFlagsPanel extends MakefileWizardPanel {
 	buildGroup.add(develBuildRB);
 	buildGroup.add(finalBuildRB);
 
-	create64BitTB = new JCheckBox(getString("TB_64BitFlag"));	//NOI18N
-	create64BitTB.setMnemonic(getString("MNEM_64BitFlag").charAt(0));	//NOI18N
+	create64BitTB = new JCheckBox(getString("TB_64BitFlag"));	// NOI18N
+	create64BitTB.setMnemonic(getString("MNEM_64BitFlag").charAt(0));	// NOI18N
 	grid.insets.top = 11;
 	grid.insets.left = 0;
 	add(create64BitTB, grid);
 
-	moduleSupportTB = new JCheckBox(getString("TB_EnableModuleSupport"));	//NOI18N
+	moduleSupportTB = new JCheckBox(getString("TB_EnableModuleSupport"));	// NOI18N
 	moduleSupportTB.setMnemonic(
-			    getString("MNEM_EnableModuleSupport").charAt(0)); //NOI18N
+			    getString("MNEM_EnableModuleSupport").charAt(0)); // NOI18N
 	grid.insets.top = 5;
 	add(moduleSupportTB, grid);
 
@@ -216,7 +216,7 @@ public class BasicFlagsPanel extends MakefileWizardPanel {
 	grid.gridheight = GridBagConstraints.REMAINDER;
 	grid.weightx = 1.0;
 	grid.weighty = 1.0;
-	add(new JLabel(""), grid);
+	add(new JLabel(""), grid); // NOI18N
 
 	develBuildRB.addItemListener(new ItemListener() {
 	    public void itemStateChanged(ItemEvent event) {

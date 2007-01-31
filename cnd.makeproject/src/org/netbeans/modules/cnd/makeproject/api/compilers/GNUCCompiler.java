@@ -92,57 +92,28 @@ public class GNUCCompiler extends CCCCompiler {
         if (systemPreprocessorSymbolsList != null)
             return systemPreprocessorSymbolsList;
         
-        if (parseCompilerOutput) {
-            getSystemIncludesAndDefines(platform);
-            return systemPreprocessorSymbolsList;
-        }
-        
-        Vector list = new Vector();
-        return list;
+        getSystemIncludesAndDefines(platform);
+        return systemPreprocessorSymbolsList;
     }
     
     public List getSystemIncludeDirectories(Platform platform) {
         if (systemIncludeDirectoriesList != null)
             return systemIncludeDirectoriesList;
         
-        if (parseCompilerOutput) {
-            getSystemIncludesAndDefines(platform);
-            return systemIncludeDirectoriesList;
-        }
-        
-        Vector list = new Vector();
-        if (platform.getId() == Platform.PLATFORM_SOLARIS_INTEL || platform.getId() == Platform.PLATFORM_SOLARIS_SPARC) {
-            list.add("/usr/local/include");
-            list.add("/usr/sfw/include");
-            list.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include");
-            list.add("/usr/include");
-        } else if (platform.getId() == Platform.PLATFORM_LINUX) {
-            list.add("/usr/local/include");
-            list.add("/usr/include");
-        } else if (platform.getId() == Platform.PLATFORM_WINDOWS) {
-            if( new File("/usr/").exists() ) {	// NOI18N
-                list.add("/usr/lib/gcc/i686-pc-cygwin/3.4.4/include");
-                list.add("/usr/include");
-                list.add("/usr/lib/gcc/i686-pc-cygwin/3.4.4/../../../../include/w32api");
-            } else if( new File("C:/cygwin").exists() ) {	// NOI18N
-                list.add("C:/cygwin/lib/gcc/i686-pc-cygwin/3.4.4/include");
-                list.add("C:/cygwin/usr/include");
-                list.add("C:/cygwin/lib/gcc/i686-pc-cygwin/3.4.4/../../../../include/w32api");
-            }
-        }
-        return list;
+        getSystemIncludesAndDefines(platform);
+        return systemIncludeDirectoriesList;
     }
     
     public void saveSystemIncludesAndDefines() {
         if (systemIncludeDirectoriesList != null && saveOK)
-            systemIncludeDirectoriesList.saveList(getClass().getName() + "." + "systemIncludeDirectoriesList");
+            systemIncludeDirectoriesList.saveList(getClass().getName() + "." + "systemIncludeDirectoriesList"); // NOI18N
         if (systemPreprocessorSymbolsList != null && saveOK)
-            systemPreprocessorSymbolsList.saveList(getClass().getName() + "." + "systemPreprocessorSymbolsList");
+            systemPreprocessorSymbolsList.saveList(getClass().getName() + "." + "systemPreprocessorSymbolsList"); // NOI18N
     }
     
     private void restoreSystemIncludesAndDefines(Platform platform) {
-        systemIncludeDirectoriesList = PersistentList.restoreList(getClass().getName() + "." + "systemIncludeDirectoriesList");
-        systemPreprocessorSymbolsList = PersistentList.restoreList(getClass().getName() + "." + "systemPreprocessorSymbolsList");
+        systemIncludeDirectoriesList = PersistentList.restoreList(getClass().getName() + "." + "systemIncludeDirectoriesList"); // NOI18N
+        systemPreprocessorSymbolsList = PersistentList.restoreList(getClass().getName() + "." + "systemPreprocessorSymbolsList"); // NOI18N
     }
     
     private void getSystemIncludesAndDefines(Platform platform) {
@@ -161,7 +132,7 @@ public class GNUCCompiler extends CCCCompiler {
             saveOK = true;
     }
         catch (IOException ioe) {
-            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getName());
+            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getName()); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             saveOK = false;
         }
@@ -224,7 +195,7 @@ public class GNUCCompiler extends CCCCompiler {
                 if (line.startsWith("#define ")) { // NOI18N
                     int i = line.indexOf(' ', 8);
                     if (i > 0) {
-                        String token = line.substring(8, i) + "=" + line.substring(i+1);
+                        String token = line.substring(8, i) + "=" + line.substring(i+1); // NOI18N
                         systemPreprocessorSymbolsList.add(token);
                     }
                 }
@@ -237,7 +208,7 @@ public class GNUCCompiler extends CCCCompiler {
     }
     
     private void dumpLists() {
-        System.out.println("==================================" + getDisplayName());
+        System.out.println("==================================" + getDisplayName()); // NOI18N
         for (int i = 0; i < systemIncludeDirectoriesList.size(); i++) {
             System.out.println("-I" + systemIncludeDirectoriesList.get(i)); // NOI18N
         }

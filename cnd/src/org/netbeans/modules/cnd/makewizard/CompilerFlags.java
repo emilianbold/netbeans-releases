@@ -383,16 +383,16 @@ public final class CompilerFlags {
 
     /** Some debug methods */
     public void dump() {
-	println("Dumping CompilerFlags {");				//NOI18N
-	println("    Simple Debug      = ", simpleDebug);		//NOI18N
-	println("    Simple Optimize   = ", simpleOptimize);		//NOI18N
-	println("    OptionSource      = " + optionSource.toString());	//NOI18N
-	println("    Devel Debug       = True");			//NOI18N
-	println("    Devel Optimize    = ", !develDebug);		//NOI18N
-	println("    Final Optimize    = ", finalOptimize);		//NOI18N
-	println("    FinalStrip        = ", finalStrip);		//NOI18N
-	println("    64 Bit            = ", comp64bit);			//NOI18N
-	println("}");							//NOI18N
+	println("Dumping CompilerFlags {");				// NOI18N
+	println("    Simple Debug      = ", simpleDebug);		// NOI18N
+	println("    Simple Optimize   = ", simpleOptimize);		// NOI18N
+	println("    OptionSource      = " + optionSource.toString());	// NOI18N
+	println("    Devel Debug       = True");			// NOI18N
+	println("    Devel Optimize    = ", !develDebug);		// NOI18N
+	println("    Final Optimize    = ", finalOptimize);		// NOI18N
+	println("    FinalStrip        = ", finalStrip);		// NOI18N
+	println("    64 Bit            = ", comp64bit);			// NOI18N
+	println("}");							// NOI18N
     }
     
 

@@ -38,7 +38,7 @@ public class ExeNode extends CCFNode {
 
     public ExeNode(ExeObject obj, Children ch) {
 	super(obj, ch);
-	setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/ExeIcon.gif"); //NOI18N
+	setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/ExeIcon.gif"); // NOI18N
     }
 
     private ExeElfObject getExeElfObject() {
@@ -54,9 +54,9 @@ public class ExeNode extends CCFNode {
 	    set = new Sheet.Set();
 	    set.setName(BinaryExecSupport.PROP_EXECUTION);
 	    set.setDisplayName(NbBundle.getBundle(ExeNode.class).
-		    getString("displayNameForExeElfNodeExecSheet"));  //NOI18N
+		    getString("displayNameForExeElfNodeExecSheet"));  // NOI18N
 	    set.setShortDescription(NbBundle.getBundle(ExeNode.class).
-		    getString("hintForExeElfNodeExecSheet"));   //NOI18N
+		    getString("hintForExeElfNodeExecSheet"));   // NOI18N
 	    BinaryExecSupport es = ((BinaryExecSupport)
 				getCookie(BinaryExecSupport.class));
 	    if (es != null) {
@@ -70,8 +70,8 @@ public class ExeNode extends CCFNode {
 	if (set == null) {
 	    set = new Sheet.Set();
 	    set.setName(CCFSrcNode.PROP_BUILD_OPTIONS);
-	    set.setDisplayName(getString("PROP_Build_Options"));      //NOI18N
-	    set.setShortDescription(getString("HINT_Build_Options")); //NOI18N
+	    set.setDisplayName(getString("PROP_Build_Options"));      // NOI18N
+	    set.setShortDescription(getString("HINT_Build_Options")); // NOI18N
 	    / *
 	    CCFCompilerSupport cs = (CCFCompilerSupport)
 			    getCookie(CCFCompilerSupport.class);

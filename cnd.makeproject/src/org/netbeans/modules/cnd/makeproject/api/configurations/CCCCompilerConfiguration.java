@@ -22,10 +22,10 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.makeproject.configurations.*;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
 
 public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
     public static int MT_LEVEL_NONE = 0;
@@ -33,10 +33,10 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
     public static int MT_LEVEL_AUTOMATIC = 2;
     public static int MT_LEVEL_OPENMP = 3;
     private static final String[] MT_LEVEL_NAMES = {
-	"None",
-	"Safe",
-	"Automatic",
-	"Open MP",
+	getString("NoneTxt"),
+	getString("SafeTxt"),
+	getString("AutomaticTxt"),
+	getString("OpenMPTxt"),
     };
     private static final String[] MT_LEVEL_OPTIONS = null;
     private IntConfiguration mpLevel;
@@ -47,11 +47,11 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
     public static int LIBRARY_LEVEL_BINARY = 3;
     public static int LIBRARY_LEVEL_CONFORMING = 4;
     private static final String[] LIBRARY_LEVEL_NAMES = {
-	"None",
-	"Runtime Only",
-	"Classic Iostreams",
-	"Binary Standard",
-	"Conforming Standard",
+	getString("NoneTxt"),
+	getString("RuntimeOnlyTxt"),
+	getString("ClassicIostreamsTxt"),
+	getString("BinaryStandardTxt"),
+	getString("ConformingStandardTxt"),
     };
     private static final String[] LIBRARY_LEVEL_OPTIONS = null;
     private IntConfiguration libraryLevel;
@@ -61,10 +61,10 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
     public static int STANDARDS_DEFAULT = 2;
     public static int STANDARDS_MODERN = 3;
     private static final String[] STANDARDS_NAMES = {
-	"Old",
-	"Legacy",
-	"Default",
-	"Modern",
+	getString("OldTxt"),
+	getString("LegacyTxt"),
+	getString("DefaultTxt"),
+	getString("ModernTxt"),
     };
     private static final String[] STANDARD_OPTIONS = null;
     private IntConfiguration standardsEvolution;
@@ -73,9 +73,9 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
     public static int LANGUAGE_EXT_DEFAULT = 1;
     public static int LANGUAGE_EXT_ALL = 2;
     private static final String[] LANGUAGE_EXT_NAMES = {
-	"None",
-	"Default",
-	"All",
+	getString("NoneTxt"),
+	getString("DefaultTxt"),
+	getString("AllTxt"),
     };
     private static final String[] LANGUAGE_EXT_OPTIONS = null;
     private IntConfiguration languageExt;
@@ -228,17 +228,17 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
     // Sheet
     public Sheet.Set getSet() {
 	Sheet.Set set1 = new Sheet.Set();
-	set1.setName("General");
-	set1.setDisplayName("General");
-	set1.setShortDescription("General");
+	set1.setName("General"); // NOI18N
+	set1.setDisplayName(getString("GeneralTxt"));
+	set1.setShortDescription(getString("GeneralHint"));
         // Include Dirctories
 	String inheritedValues = null;
 	BooleanConfiguration inheritIncludes = null;
 	if (getMaster() != null) {
-	    inheritedValues = ((CCCCompilerConfiguration)getMaster()).getIncludeDirectories().getOption("");
+	    inheritedValues = ((CCCCompilerConfiguration)getMaster()).getIncludeDirectories().getOption(""); // NOI18N
 	    inheritIncludes = getInheritIncludes();
 	}
-	set1.put(new VectorNodeProp(getIncludeDirectories(), inheritIncludes, getBaseDir(), new String[] {"IncludeDirectories", "Include Directories", "Include Directories (-I)", inheritedValues}, true));
+	set1.put(new VectorNodeProp(getIncludeDirectories(), inheritIncludes, getBaseDir(), new String[] {"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues}, true)); // NOI18N
 	// Preprocessor Macros
 	inheritedValues = null;
 	inheritIncludes = null;
@@ -246,8 +246,8 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
 	    inheritedValues = ((CCCCompilerConfiguration)getMaster()).getPreprocessorConfiguration().getValue();
 	    inheritIncludes = getInheritPreprocessor();
 	}
-	String[] texts = new String[] {"Preprocessor Definitions", "Preprocessor Definitions (-D)", "Preprocessor Definitions:", "Inherited Values:", inheritedValues};
-	set1.put(new OptionsNodeProp(getPreprocessorConfiguration(), inheritIncludes, new PreprocessorOptions(), null, ";", texts));
+	String[] texts = new String[] {getString("PreprocessorDefinitionsTxt1"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsTxt2"), getString("InheritedValuesTxt"), inheritedValues};
+	set1.put(new OptionsNodeProp(getPreprocessorConfiguration(), inheritIncludes, new PreprocessorOptions(), null, ";", texts)); // NOI18N
         
         return set1;
     }
@@ -268,5 +268,10 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
 	Sheet sheet = new Sheet();
 	sheet.put(getSet());
 	return sheet;
+    }
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(CCCCompilerConfiguration.class, s);
     }
 }

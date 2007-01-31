@@ -43,6 +43,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion;
 
 /**
  *
@@ -140,7 +141,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     
     public CsmNamespace getExactNamespace(String namespaceName) {
         
-        // System.out.println ("getExactNamespace: " + packageName);
+        // System.out.println ("getExactNamespace: " + packageName); //NOI18N
         
 //        repository.beginTrans (false);
         try {
@@ -155,7 +156,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     }
 
     public CsmClassifier getExactClassifier(String classFullName) {
-        // System.out.println ("getExactClassifier: " + classFullName);
+        // System.out.println ("getExactClassifier: " + classFullName); //NOI18N
         CsmClassifier cls = csmFile.getProject().findClassifier(classFullName);
 //        Type cls = JavaModel.getDefaultExtent().getType().resolve(classFullName);
 //        if (cls instanceof UnresolvedClass)
@@ -166,7 +167,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     
     public List findNamespaces(String name, boolean exactMatch, boolean subNamespaces) {
         
-        // System.out.println("findNamespaces: " + name);
+        // System.out.println("findNamespaces: " + name); //NOI18N
         
         ArrayList ret = new ArrayList ();
         
@@ -179,8 +180,8 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
                     ret.add (nmsp);
                 }
             } else {
-                int index = name.lastIndexOf("::");
-                String prefix = index > 0 ? name.substring(0, index) : "";
+                int index = name.lastIndexOf(CsmCompletion.SCOPE);
+                String prefix = index > 0 ? name.substring(0, index) : ""; //NOI18N
                 CsmNamespace nmsp = resolveNamespace(prefix, caseSensitive);
                 if (nmsp != null) {
                     Collection subpackages = nmsp.getNestedNamespaces();
@@ -263,7 +264,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     * @return list of the matching classes
     */
     public List findClasses(CsmNamespace nmsp, String name, boolean exactMatch) {
-        // System.out.println("findClasses: " + (nmsp == null ? "null" : nmsp.getName ()) + " " + name);
+        // System.out.println("findClasses: " + (nmsp == null ? "null" : nmsp.getName ()) + " " + name); //NOI18N
         
         List ret = new ArrayList();
 
@@ -358,7 +359,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
 //    public List findFields(CsmClass c, String name, boolean exactMatch,
 //                           boolean staticOnly, boolean inspectOuterClasses) {
 //                
-//        // System.out.println("findFields: " + cls.getFullName ());
+//        // System.out.println("findFields: " + cls.getFullName ()); //NOI18N
 //        
 //        TreeSet ts = naturalSort ? new TreeSet(CsmSortUtilities.NATURAL_MEMBER_NAME_COMPARATOR) : new TreeSet();
 //        
@@ -489,7 +490,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
 //    public List findMethods(CsmClass c, String name, boolean exactMatch,
 //                            boolean staticOnly, boolean inspectOuterClasses) {
 //                                
-//        // System.out.println("findMethods: " + cls.getName ());
+//        // System.out.println("findMethods: " + cls.getName ()); //NOI18N
 //
 //        TreeSet ts = naturalSort ? new TreeSet(CsmSortUtilities.NATURAL_MEMBER_NAME_COMPARATOR) : new TreeSet();
 // 

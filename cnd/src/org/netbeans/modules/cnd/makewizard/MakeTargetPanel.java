@@ -81,7 +81,7 @@ public class MakeTargetPanel extends MakefileWizardPanel
      */
     MakeTargetPanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = new String(getString("LBL_MakeTargetPanel")); //NOI18N
+	String subtitle = new String(getString("LBL_MakeTargetPanel")); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 	initialized = false;
@@ -98,10 +98,10 @@ public class MakeTargetPanel extends MakefileWizardPanel
 	grid.anchor = GridBagConstraints.NORTHWEST;
 	grid.insets = insets;
 
-	tname = new String("");						//NOI18N
-	depends = new String("");					//NOI18N
-	subdir = new String("");					//NOI18N
-	mflags = new String("");					//NOI18N
+	tname = new String("");						// NOI18N
+	depends = new String("");					// NOI18N
+	subdir = new String("");					// NOI18N
+	mflags = new String("");					// NOI18N
 	row = 0;
 
 	JPanel tpanel = createTextFields();
@@ -117,7 +117,7 @@ public class MakeTargetPanel extends MakefileWizardPanel
 			new Dimension(psize.width, psize.height - tsize.height);
 
 	createCommandDisplay(csize,
-		"LBL_CommandDisplay", "MNEM_CommandDisplay");		//NOI18N
+		"LBL_CommandDisplay", "MNEM_CommandDisplay");		// NOI18N
 
 	setupListeners();
     }
@@ -129,13 +129,13 @@ public class MakeTargetPanel extends MakefileWizardPanel
 	JPanel tpanel = new JPanel(new GridBagLayout());
 
 	targetName = createTextField(tpanel,
-			"LBL_TargetName", "MNEM_TargetName");		//NOI18N
+			"LBL_TargetName", "MNEM_TargetName");		// NOI18N
 	dependsOn = createTextField(tpanel,
-			"LBL_DependsOn", "MNEM_DependsOn");		//NOI18N
+			"LBL_DependsOn", "MNEM_DependsOn");		// NOI18N
 	subdirectory = createTextField(tpanel,
-			"LBL_Subdirectory", "MNEM_Subdirectory");	//NOI18N
+			"LBL_Subdirectory", "MNEM_Subdirectory");	// NOI18N
 	makeFlags = createTextField(tpanel,
-			"LBL_MakeFlags", "MNEM_MakeFlags");		//NOI18N
+			"LBL_MakeFlags", "MNEM_MakeFlags");		// NOI18N
 
 	return tpanel;
     }
@@ -350,19 +350,19 @@ public class MakeTargetPanel extends MakefileWizardPanel
 	}
 
 	buf.append(target.getName());
-	buf.append(": ");						//NOI18N
+	buf.append(": ");						// NOI18N
 	if (depends.length() > 0) {
 	    buf.append(depends);
 	}
 
 	dirs = getSubDirList();
 	for (int i = 0; i < dirs.length; i++) {
-	    buf.append("\n\t");						//NOI18N
+	    buf.append("\n\t");						// NOI18N
 	    if (dirs[i].length() > 0) {
-		buf.append("cd ").append(dirs[i]).append("; ");		//NOI18N
+		buf.append("cd ").append(dirs[i]).append("; ");		// NOI18N
 	    }
 
-	    buf.append("$(MAKE) ");					//NOI18N
+	    buf.append("$(MAKE) ");					// NOI18N
 	    if (mflags.length() > 0) {
 		buf.append(mflags).append(' ');
 	    }
@@ -378,11 +378,11 @@ public class MakeTargetPanel extends MakefileWizardPanel
     private String[] getSubDirList() {
 	String[] dirs;
 
-	if (subdir.length() < 1 || subdir.equals(".")) {		//NOI18N
+	if (subdir.length() < 1 || subdir.equals(".")) {		// NOI18N
 	    dirs = new String[1];
-	    dirs[0] = new String("");
+	    dirs[0] = new String(""); // NOI18N
 	} else {
-	    StringTokenizer tok = new StringTokenizer(subdir, " ");	//NOI18N
+	    StringTokenizer tok = new StringTokenizer(subdir, " ");	// NOI18N
 	    int count = tok.countTokens();
 	    int i = 0;
 
@@ -402,7 +402,7 @@ public class MakeTargetPanel extends MakefileWizardPanel
 	String cwd = getMakefileData().getBaseDirectory(MakefileData.EXPAND);
 	File sd = null;
 
-	if (subdir.length() > 0 && !subdir.equals(".")) {		//NOI18N
+	if (subdir.length() > 0 && !subdir.equals(".")) {		// NOI18N
 	    if (subdir.startsWith(File.separator)) {
 		sd = new File(subdir);
 	    } else {

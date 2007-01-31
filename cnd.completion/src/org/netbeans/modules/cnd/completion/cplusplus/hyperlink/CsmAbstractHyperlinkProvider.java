@@ -63,7 +63,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProvider 
                 performAction(doc, target, offset);
             }
         };
-        CsmModelAccessor.getModel().enqueue(run, "Following hyperlink");
+        CsmModelAccessor.getModel().enqueue(run, "Following hyperlink"); //NOI18N
     }
     
     public boolean isHyperlinkPoint(Document doc, int offset) {

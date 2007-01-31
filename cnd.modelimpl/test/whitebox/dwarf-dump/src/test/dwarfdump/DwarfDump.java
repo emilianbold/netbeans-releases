@@ -19,14 +19,18 @@
 
 package test.dwarfdump;
 
+import java.util.TreeSet;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
-import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
+import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
+import org.netbeans.modules.cnd.dwarfdump.section.DwarfArangesSection;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfDebugInfoSection;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import modelutils.Config;
 
@@ -43,10 +47,10 @@ public class DwarfDump {
     
     public static void main(String[] args) {
         try {
-            Config config = new Config("o:", args);
+            Config config = new Config("faido:", args); // NOI18N
             DwarfDump dwarfDump = new DwarfDump(config.getArgument());
             
-            String dumpFile = config.getParameterFor("-o");
+            String dumpFile = config.getParameterFor("-o"); // NOI18N
             PrintStream dumpStream = null;
             
             if (dumpFile != null) {
@@ -56,7 +60,21 @@ public class DwarfDump {
                 dumpStream = System.out;
             }
    
-            dwarfDump.dump(dumpStream);
+            if (config.flagSet("-i")) { // NOI18N
+                dwarfDump.dumpIncludes(dumpStream);
+            }
+            
+            if (config.flagSet("-d")) { // NOI18N
+                dwarfDump.dumpDefines(dumpStream);
+            }
+            
+            if (config.flagSet("-a")) { // NOI18N
+                dwarfDump.dump(dumpStream);
+            }
+            
+            if (config.flagSet("-f")) { // NOI18N
+                dwarfDump.dumpFiles(dumpStream);
+            }
             
         } catch (Exception ex) {
             System.err.println("Fatal error: " + ex.getMessage());
@@ -82,29 +100,99 @@ public class DwarfDump {
     }
 
     public List<CompilationUnit> getCompilationUnits() {
-        DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)reader.getSection(".debug_info");
+        DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)reader.getSection(".debug_info"); // NOI18N
         List<CompilationUnit> result = null;
-        try {
-	    if( debugInfo != null ) {
-		result = debugInfo.getCompilationUnits();
-	    }
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        
+        if( debugInfo != null ) {
+            try {
+                result = debugInfo.getCompilationUnits();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
         
         return result;
     }
     
     public void dump(PrintStream out) {
-        out.println("Dwarf dump for " + reader.getFileName() + "\n");
+        out.println("Dwarf dump for " + reader.getFileName() + "\n"); // NOI18N
+
 //        ElfSection stringsSection = reader.getSection(".shstrtab");
 //        stringsSection.dump(out);
+    
+        DwarfArangesSection aranges = (DwarfArangesSection) reader.getSection(".debug_aranges"); // NOI18N
+        
+        if (aranges != null) {
+            aranges.dump(out);
+        }
         
         for (CompilationUnit cu : getCompilationUnits()) {
-            for (DwarfEntry declaration : cu.getDeclarations()) {
-                System.out.println(declaration.getDeclaration());
+            cu.dump(out);
+        }
+    }
+
+    private void dumpIncludes(PrintStream out) {
+        List<CompilationUnit> CUs = getCompilationUnits();
+        
+        if (CUs == null) {
+            out.println("No Compilation Units found for" + this.reader.getFileName()); // NOI18N
+            return;
+        }
+        
+        for (CompilationUnit cu : CUs) {
+            out.println("Include directories for " + cu.getSourceFileFullName()); // NOI18N
+            List<String> dirs = cu.getStatementList().getIncludeDirectories();
+            String basedir = cu.getCompilationDir();
+            
+            for (String dir : dirs) {
+                if (!(dir.startsWith("/") || dir.startsWith("\\"))) { // NOI18N
+                    dir = basedir + File.separator + dir;
+                }
+                
+                try {
+                    out.println(new File(dir).getCanonicalPath());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
+            out.println();
         }
     }
     
+    private void dumpDefines(PrintStream out) {
+        for (CompilationUnit cu : getCompilationUnits()) {
+            out.println("Defines for " + cu.getSourceFileFullName()); // NOI18N
+            DwarfMacinfoTable macroTable = cu.getMacrosTable();
+            
+            if (macroTable == null) {
+                out.println("No defines found for this CU. Be sure to compile with -g3 -gdwarf-2 flags"); // NOI18N
+            } else {
+                List<String> dirs = macroTable.getCommandLineDefines();
+                for (String dir : dirs) {
+                    out.println(dir);
+                }
+            }
+            out.println();
+        }
+    } 
+
+    private void dumpFiles(PrintStream out) {
+        out.println("Files used for building " + reader.getFileName()); // NOI18N
+
+        TreeSet<String> paths = new TreeSet();
+        
+        for (CompilationUnit cu : getCompilationUnits()) {
+            for (String path : cu.getStatementList().getFilePaths()) {
+                path = path.replaceAll("\\\\", "/"); // NOI18N
+
+                if (!paths.contains(path)) {
+                    paths.add(path);
+                }
+            }
+        }
+        
+        for (String path : paths) {
+            out.println(path);
+        }
+    }
 }

@@ -69,6 +69,14 @@
                 <clean-target>clean</clean-target>
                 <id>module</id>
             </reference>
+            <reference>
+                <foreign-project>org_netbeans_modules_cnd_repository</foreign-project>
+                <artifact-type>jar</artifact-type>
+                <script>build.xml</script>
+                <target>netbeans</target>
+                <clean-target>clean</clean-target>
+                <id>module</id>
+            </reference>
         </references>
     </configuration>
 </project>

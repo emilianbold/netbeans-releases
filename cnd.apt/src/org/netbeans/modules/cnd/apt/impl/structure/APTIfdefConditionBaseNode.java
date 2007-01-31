@@ -52,7 +52,7 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
     public boolean accept(Token token) {
         /** base implementation of #ifdef/#ifndef */        
         if (APTUtils.isID(token)) {
-            assert (macroName == null) : "init macro name only once";            
+            assert (macroName == null) : "init macro name only once"; // NOI18N            
             this.macroName = token;
         }
         // eat all till END_PREPROC_DIRECTIVE     
@@ -69,11 +69,11 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
     }
     
     public String getText() {
-        assert (getToken() != null) : "must have valid preproc directive";
-        assert (getMacroName() != null) : "must have valid macro";
+        assert (getToken() != null) : "must have valid preproc directive"; // NOI18N
+        assert (getMacroName() != null) : "must have valid macro"; // NOI18N
         String retValue = super.getText();
         if (getMacroName() != null) {
-            retValue += " MACRO{" + getMacroName() + "}";
+            retValue += " MACRO{" + getMacroName() + "}"; // NOI18N
         }
         return retValue;
     }

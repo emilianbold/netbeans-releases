@@ -20,7 +20,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.platform;
 
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,16 +33,16 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  * FileBuffer implementation
  * @author Vladimir Kvashin
  */
-public class FileBufferDoc implements FileBuffer {
+public class FileBufferDoc extends AbstractFileBuffer {
     
     private Document doc;
-    private File file;
     private EventListenerList listeners = new EventListenerList();
     private DocumentListener docListener;
     
@@ -109,7 +108,7 @@ public class FileBufferDoc implements FileBuffer {
     }
     
     public FileBufferDoc(File file, Document doc) {
-        this.file = file;
+        super(file);
         this.doc = doc;
     }
     
@@ -176,10 +175,6 @@ public class FileBufferDoc implements FileBuffer {
         catch( BadLocationException e ) {
             throw convert(e);
         }
-    }
-
-    public File getFile() {
-        return file;
     }
     
     public String getText() throws IOException {

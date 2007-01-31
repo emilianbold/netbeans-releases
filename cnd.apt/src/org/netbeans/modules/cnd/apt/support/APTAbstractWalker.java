@@ -68,8 +68,4 @@ public abstract class APTAbstractWalker extends APTWalker {
     protected void onEndif(APT apt, boolean wasInBranch) {
     }
 
-//    protected Token onToken(Token token) {
-//        return token;
-//    }
-//    
 }

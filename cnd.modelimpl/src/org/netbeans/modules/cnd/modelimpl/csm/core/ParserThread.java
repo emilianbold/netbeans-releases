@@ -30,27 +30,27 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 public class ParserThread implements Runnable {
     
     public void run() {
-	if( TraceFlags.TRACE_PARSER_QUEUE ) trace("started");
+	if( TraceFlags.TRACE_PARSER_QUEUE ) trace("started"); // NOI18N
         ParserQueue queue = ParserQueue.instance();
         while( true ) {
-            if( TraceFlags.TRACE_PARSER_QUEUE ) trace("polling queue");
+            if( TraceFlags.TRACE_PARSER_QUEUE ) trace("polling queue"); // NOI18N
             try {
                 ParserQueue.Entry entry = queue.poll();
                 if( entry == null ) {
-                    if( TraceFlags.TRACE_PARSER_QUEUE ) trace("waiting");
+                    if( TraceFlags.TRACE_PARSER_QUEUE ) trace("waiting"); // NOI18N
                     queue.waitReady();
                 }
                 else {
                     FileImpl file = entry.getFile();
                     if( TraceFlags.TRACE_PARSER_QUEUE ) {
-                        trace("parsing started: " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS));
+                        trace("parsing started: " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS)); // NOI18N
                     }
                     Diagnostic.StopWatch stw = (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && ! file.isParsed()) ? new Diagnostic.StopWatch() : null;
                     try {
                             APTPreprocState preprocState = null;
                             if (entry.getPreprocStateState() != null) {
                                 // init from entry
-                                preprocState = file.getProjectImpl().createDefaultPreprocState(null);
+                                preprocState = file.getProjectImpl().createDefaultPreprocState(file.getBuffer().getFile());
                                 preprocState.setState(entry.getPreprocStateState());
                             }
                             file.ensureParsed(preprocState);
@@ -59,19 +59,19 @@ public class ParserThread implements Runnable {
                         thr.printStackTrace(System.err);
                     }
                     finally {
-                        if( stw != null ) stw.stopAndReport("parsing " + file.getAbsolutePath());
+                        if( stw != null ) stw.stopAndReport("parsing " + file.getAbsolutePath()); // NOI18N
                         queue.onFileParsingFinished(file);
-                        if( TraceFlags.TRACE_PARSER_QUEUE ) trace("parsing done: " + file.getAbsolutePath());
+                        if( TraceFlags.TRACE_PARSER_QUEUE ) trace("parsing done: " + file.getAbsolutePath()); // NOI18N
                         Notificator.instance().flush();
-                        if( TraceFlags.TRACE_PARSER_QUEUE ) trace("model event flushed");
+                        if( TraceFlags.TRACE_PARSER_QUEUE ) trace("model event flushed"); // NOI18N
                     }
                 }
             } catch (InterruptedException ex) {
-                if( TraceFlags.TRACE_PARSER_QUEUE ) trace("interrupted");
+                if( TraceFlags.TRACE_PARSER_QUEUE ) trace("interrupted"); // NOI18N
                 break;
             }
         }
-	if( TraceFlags.TRACE_PARSER_QUEUE ) trace("finished");
+	if( TraceFlags.TRACE_PARSER_QUEUE ) trace("finished"); // NOI18N
     }
     
     private void trace(String text) {

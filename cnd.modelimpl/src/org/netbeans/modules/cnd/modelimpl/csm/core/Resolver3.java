@@ -303,7 +303,7 @@ public class Resolver3 implements Resolver {
     
     public CsmObject resolve(String qualified) {
         Vector v = new Vector();
-        for (StringTokenizer t = new StringTokenizer(qualified, ": \t\n\r\f", false); t.hasMoreTokens(); )
+        for (StringTokenizer t = new StringTokenizer(qualified, ": \t\n\r\f", false); t.hasMoreTokens(); ) // NOI18N
             v.add(t.nextToken());
         return resolve((String[])v.toArray(new String[v.size()]));
     }
@@ -337,14 +337,14 @@ public class Resolver3 implements Resolver {
 	    if( result == null ) {
                 CsmClass cls = getContainingClass();
                 if( cls != null ) {
-                    String fqn = cls.getQualifiedName() + "::" + nameTokens[0];
+                    String fqn = cls.getQualifiedName() + "::" + nameTokens[0]; // NOI18N
                     result = findClassifier(fqn);
                 }
             }
 	    if( result == null ) {
                 CsmNamespace ns = getContainingNamespace();
                 if( ns != null ) {
-                    String fqn = ns.getQualifiedName() + "::" + nameTokens[0];
+                    String fqn = ns.getQualifiedName() + "::" + nameTokens[0]; // NOI18N
                     result = findClassifier(fqn);
                 }
 	    }
@@ -370,7 +370,7 @@ public class Resolver3 implements Resolver {
                 if( result == null ) {    
                     for (Iterator iter = usedNamespaces.iterator(); iter.hasNext();) {
                         String nsp = (String) iter.next();
-			String fqn = nsp + "::" + nameTokens[0];
+			String fqn = nsp + "::" + nameTokens[0]; // NOI18N
                         result = findClassifier(fqn);
                         if( result != null ) {
                             break;
@@ -389,7 +389,7 @@ public class Resolver3 implements Resolver {
         else if( nameTokens.length > 1 ) {
             StringBuffer sb = new StringBuffer(nameTokens[0]);
             for (int i = 1; i < nameTokens.length; i++) {
-                sb.append("::");
+                sb.append("::"); // NOI18N
                 sb.append(nameTokens[i]);
             }
             result = findClassifier(sb.toString());
@@ -427,7 +427,7 @@ public class Resolver3 implements Resolver {
                             NamespaceImpl ns = (NamespaceImpl) first;
                             sb = new StringBuffer(ns.getQualifiedName());
                             for (int i = 1; i < nameTokens.length; i++) {
-                                sb.append("::");
+                                sb.append("::"); // NOI18N
                                 sb.append(nameTokens[i]);
                             }
                             result = findClassifier(sb.toString());

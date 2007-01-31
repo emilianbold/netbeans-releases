@@ -51,13 +51,13 @@ public class APTBuilderImpl {
             // it's better for lexer not to fail at all
             // lexer should have special token for "everything else"
             // but for now we use reporting about problems to see, where lexer should be improved
-            APTUtils.LOG.log(Level.SEVERE, "error on building APT\n {0}", new Object[] { ex });
+            APTUtils.LOG.log(Level.SEVERE, "error on building APT\n {0}", new Object[] { ex }); // NOI18N
         } catch (TokenStreamException ex) {
             // it's better for lexer not to fail at all
             // lexer should have special token for "everything else"
             // but for now we use reporting about problems to see, where lexer should be improved
-            APTUtils.LOG.log(Level.SEVERE, "error on converting token stream to text while building APT", ex);
-            APTUtils.LOG.log(Level.SEVERE, "problem file is {0}", new Object[] { path });
+            APTUtils.LOG.log(Level.SEVERE, "error on converting token stream to text while building APT", ex); // NOI18N
+            APTUtils.LOG.log(Level.SEVERE, "problem file is {0}", new Object[] { path }); // NOI18N
         }
         return aptFile;
     }
@@ -203,7 +203,7 @@ public class APTBuilderImpl {
                 break;
             default:
                 assert (!APTUtils.isPreprocessorToken(ttype)) : 
-                    "all preprocessor tokens should be handled above";
+                    "all preprocessor tokens should be handled above"; // NOI18N
                 newNode = new APTStreamNode(token);            
         }        
         assert (newNode != null);
@@ -235,7 +235,7 @@ public class APTBuilderImpl {
                 newNode = new APTEndifNode(token);
                 break;
             default:
-                assert(false) : "unexpected " + ttype;                
+                assert(false) : "unexpected " + ttype; // NOI18N                
         }
         assert (newNode != null);        
         return newNode;

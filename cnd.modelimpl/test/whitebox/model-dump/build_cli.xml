@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 
 <project name="ModelDump" default="jar" basedir=".">
-    <property name="project.ModelUtils" value="../dm-utils"/>
+    <property name="project.dm-utils" value="../dm-utils"/>
 
     <property name="module-jar-name" value="ModelDump.jar"/>
     <property name="src.dir" value="./src"/>
@@ -26,6 +26,8 @@
             <include name="org-netbeans-modules-cnd-antlr.jar"/>
             <include name="org-netbeans-modules-cnd-makeproject.jar"/>
             <include name="org-netbeans-modules-cnd.jar"/>
+            <include name="org-netbeans-modules-cnd-apt.jar"/>
+	    <include name="org-netbeans-modules-cnd-repository.jar"/>
         </fileset>
     </path>
 
@@ -56,7 +58,7 @@
     </path>
 
     <target name="deps-clean">
-        <ant target="clean" inheritall="false" antfile="${project.ModelUtils}/build_cli.xml"/>
+        <ant target="clean" inheritall="false" antfile="${project.dm-utils}/build_cli.xml"/>
     </target>
 
     <target name="clean" depends="deps-clean">
@@ -66,7 +68,7 @@
     </target>
 
     <target name="deps-jar">
-        <ant target="jar" inheritall="false" antfile="${project.ModelUtils}/build_cli.xml"/>
+        <ant target="jar" inheritall="false" antfile="${project.dm-utils}/build_cli.xml"/>
     </target>
 
 
@@ -93,7 +95,7 @@
                         excludes="**/SCCS/*.java" >
                         <classpath refid="nb.jars"/>
                         <classpath>
-                                <pathelement location="${project.ModelUtils}/dist/ModelUtils.jar"/>
+                                <pathelement location="${project.dm-utils}/dist/dm-utils.jar"/>
                         </classpath>
                 </javac>
     </target>
@@ -107,7 +109,7 @@
             <classpath refid="nb.jars"/>
             <classpath>
                 <pathelement location="${dist.dir}/${module-jar-name}"/>
-                <pathelement location="${project.ModelUtils}/dist/ModelUtils.jar"/>
+                <pathelement location="${project.dm-utils}/dist/dm-utils.jar"/>
             </classpath>
             <classpath refid="nb.jars"/>
             <arg line="${args}"/>

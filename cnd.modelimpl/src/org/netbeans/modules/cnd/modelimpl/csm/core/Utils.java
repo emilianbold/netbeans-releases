@@ -31,8 +31,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  */
 public class Utils {
     
-    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.modelimpl");
-    private static final int LOG_LEVEL = Integer.getInteger("org.netbeans.modules.cnd.modelimpl.level", -1).intValue();
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.modelimpl"); // NOI18N
+    private static final int LOG_LEVEL = Integer.getInteger("org.netbeans.modules.cnd.modelimpl.level", -1).intValue(); // NOI18N
     
     static {
         // command line param has priority for logging
@@ -51,7 +51,7 @@ public class Utils {
 	StringBuffer sb = new StringBuffer(name);
 	while(parent != null ) {
 	    if( ! parent.isGlobal() ) {
-		sb.insert(0, "::");
+		sb.insert(0, "::"); // NOI18N
 		sb.insert(0, parent.getName());
 	    }
 	    parent = parent.getParent();
@@ -60,7 +60,7 @@ public class Utils {
     }
     
     public static String toString(String[] a) {
-	StringBuffer sb = new StringBuffer("[");
+	StringBuffer sb = new StringBuffer("["); // NOI18N
 	for (int i = 0; i < a.length; i++) {
 	    if( i > 0 ) {
 		sb.append(',');

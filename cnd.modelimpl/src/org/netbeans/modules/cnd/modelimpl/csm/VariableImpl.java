@@ -88,7 +88,7 @@ public class VariableImpl extends OffsetableDeclarationBase implements CsmVariab
     public String getQualifiedName() {
         CsmScope scope = getScope();
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) ) {
-            return ((CsmQualifiedNamedElement) scope).getQualifiedName() + "::" + getName();
+            return ((CsmQualifiedNamedElement) scope).getQualifiedName() + "::" + getName(); // NOI18N
         }
         return getName();
     }

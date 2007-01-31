@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.dwarfdump;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfDebugInfoSection;
@@ -55,13 +56,17 @@ public class Dwarf {
     }
     
     public List<CompilationUnit> getCompilationUnits() {
-        DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)reader.getSection(".debug_info");
+        DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)reader.getSection(".debug_info"); // NOI18N
         List<CompilationUnit> result = null;
         try {
             if (debugInfo != null) {
                 result = debugInfo.getCompilationUnits();
             }
+	    else {
+		result = new LinkedList<CompilationUnit>();
+	    }
         } catch (IOException ex) {
+            System.err.println("Exception in file: " + reader.getFileName());
             ex.printStackTrace();
         }
         

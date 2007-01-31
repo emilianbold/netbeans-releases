@@ -47,9 +47,10 @@ import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
 /**
- * Panel for customizing function breakpoints.
+ * Panel for customizing function breakpoints. 
+ * This panel is a part of "New Breakpoint" dialog.
  *
- * @author  Maros Sandor (original code)
+ * @author Nik Molchanov (copied and modified from JDPA debugger).
  */
 
 // Implement HelpCtx.Provider interface to provide help ids for help system
@@ -181,6 +182,7 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
         pSettings.setLayout(new java.awt.GridBagLayout());
 
         pSettings.setBorder(javax.swing.BorderFactory.createTitledBorder(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("L_Function_Breakpoint_BorderTitle")));
+        pSettings.setMinimumSize(new java.awt.Dimension(249, 80));
         jLabel5.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Function_Breakpoint_Condition").charAt(0));
         jLabel5.setLabelFor(tfCondition);
         jLabel5.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("L_Function_Breakpoint_Condition"));
@@ -214,16 +216,16 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(tfLineNumber, gridBagConstraints);
-        tfLineNumber.getAccessibleContext().setAccessibleName("Line number");
+        tfLineNumber.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_TF_Function_Breakpoint_Function_Name"));
         tfLineNumber.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_TF_Function_Breakpoint_Function_Name"));
 
         spCondition.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(FunctionBreakpointPanel.class, "ACSD_TF_Function_Breakpoint_Condition"));
         tfCondition.setEditable(false);
-        tfCondition.setText("Not implemented yet.");
         tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(FunctionBreakpointPanel.class, "HINT_UnimplementedCondition"));
-        tfCondition.setContentType("text/x-java");
         spCondition.setViewportView(tfCondition);
+        tfCondition.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_TF_Function_Breakpoint_Condition"));
+        tfCondition.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_TF_Function_Breakpoint_Condition"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

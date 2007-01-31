@@ -19,20 +19,20 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-//import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 
-
 /**
- * @author  jj97931
+ * Panel for customizing breakpoints. 
+ * This panel is a part of "New Breakpoint" dialog.
+ *
+ * @author Nik Molchanov (copied and modified from JDPA debugger).
  */
 public class ActionsPanel extends javax.swing.JPanel {
     
-    //private JPDABreakpoint  breakpoint;
     private GdbBreakpoint  breakpoint;
     
     /** Creates new form LineBreakpointPanel */
-    public ActionsPanel (/*JPDABreakpoint*/ GdbBreakpoint b) {
+    public ActionsPanel (GdbBreakpoint b) {
         breakpoint = b;
         initComponents ();
         
@@ -73,6 +73,8 @@ public class ActionsPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(javax.swing.BorderFactory.createTitledBorder(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("L_Actions_Panel_BorderTitle")));
+        getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSN_Actions_Panel"));
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_Actions_Panel"));
         tfPrintText.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("TTT_TF_Actions_Panel_Print_Text"));
         tfPrintText.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -87,6 +89,7 @@ public class ActionsPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(tfPrintText, gridBagConstraints);
+        tfPrintText.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSN_TF_Actions_Panel_Print_Text"));
         tfPrintText.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_TF_Actions_Panel_Print_Text"));
 
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Actions_Panel_Suspend").charAt(0));
@@ -97,7 +100,8 @@ public class ActionsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ASCD_L_Actions_Panel_Suspend"));
+        jLabel1.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_L_Actions_Panel_Suspend"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_L_Actions_Panel_Suspend"));
 
         cbSuspend.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("TTT_CB_Actions_Panel_Suspend"));
         cbSuspend.addActionListener(new java.awt.event.ActionListener() {
@@ -110,7 +114,8 @@ public class ActionsPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(cbSuspend, gridBagConstraints);
-        cbSuspend.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ASCD_CB_Actions_Panel_Suspend"));
+        cbSuspend.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSN_CB_Actions_Panel_Suspend"));
+        cbSuspend.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_CB_Actions_Panel_Suspend"));
 
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Actions_Panel_Print_Text").charAt(0));
         jLabel2.setLabelFor(tfPrintText);
@@ -120,6 +125,8 @@ public class ActionsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(jLabel2, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_L_Actions_Panel_Print_Text"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_L_Actions_Panel_Print_Text"));
 
     }// </editor-fold>//GEN-END:initComponents
 

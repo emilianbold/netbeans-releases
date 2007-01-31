@@ -23,6 +23,7 @@ import antlr.TokenStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.SoftReference;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class APTDriverImpl {
     /** map of active creators */
     private static Map/*<String, APTSyncCreator>*/ file2creator = new HashMap();
     /** static shared sync map */
-    private static Map/*<String, APTFile>*/ file2apt = Collections.synchronizedMap(new HashMap());
+    private static Map/*<String, SoftReference<APTFile>>*/ file2apt = Collections.synchronizedMap(new HashMap());
     
     /** instance fields */
     
@@ -57,7 +58,7 @@ public class APTDriverImpl {
     public static APTFile findAPT(APTFileBuffer buffer, boolean withTokens) throws IOException {
         File file = buffer.getFile();
         String path = file.getAbsolutePath();
-        APTFile apt = (APTFile) file2apt.get(path);
+        APTFile apt = _getAPTFile(path);
         if (apt == null) {
             APTSyncCreator creator = null;
             synchronized (file2creator) {
@@ -98,7 +99,7 @@ public class APTDriverImpl {
             String path = file.getAbsolutePath();
             // quick exti: check if already was added by another creator
             // during wait
-            APTFile apt = (APTFile) file2apt.get(path);
+            APTFile apt = _getAPTFile(path);
             if (apt == null) {
                 // ok, create new apt
                 
@@ -115,22 +116,41 @@ public class APTDriverImpl {
                             if (test != null) {
                                 apt = test;
                             } else {
-                                System.err.println("error on serialization apt for file " + file.getAbsolutePath());
+                                System.err.println("error on serialization apt for file " + file.getAbsolutePath()); // NOI18N
                             }
                         }
-                        file2apt.put(path, apt);
+                        _putAPTFile(path, apt);
                     }
                 } finally {
                     if (stream != null) {
                         try {
                             stream.close();
                         } catch (IOException ex) {
-                            APTUtils.LOG.log(Level.SEVERE, "exception on closing stream", ex);
+                            APTUtils.LOG.log(Level.SEVERE, "exception on closing stream", ex); // NOI18N
                         }
                     }
                 }
             }
             return apt;
         }       
-    }    
+    } 
+    
+    private static APTFile _getAPTFile(String path) {
+        APTFile apt;
+        if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
+            SoftReference<APTFile> aptRef = (SoftReference)file2apt.get(path);
+            apt = aptRef == null ? null : aptRef.get();
+        } else {
+            apt = (APTFile)file2apt.get(path);
+        }        
+        return apt;
+    }
+    
+    private static void _putAPTFile(String path, APTFile apt) {
+        if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
+            file2apt.put(path, new SoftReference(apt));
+        } else {
+            file2apt.put(path, apt);
+        }        
+    }
 }

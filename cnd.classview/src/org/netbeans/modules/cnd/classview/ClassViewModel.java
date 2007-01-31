@@ -33,13 +33,13 @@ import org.netbeans.modules.cnd.classview.model.*;
  */
 /*package-local*/ class ClassViewModel {
     
-    private static final boolean showLibs = Boolean.getBoolean("cnd.classview.sys-includes");
+    private static final boolean showLibs = Boolean.getBoolean("cnd.classview.sys-includes"); // NOI18N
     
     private RequestProcessor requestProcessor;
     private ClassViewUpdater updater;
     
     public ClassViewModel() {
-        requestProcessor = new RequestProcessor("Class View Updater", 1);
+        requestProcessor = new RequestProcessor("Class View Updater", 1); // NOI18N
         updater = new ClassViewUpdater(this);
         requestProcessor.post(updater);
     }
@@ -204,7 +204,7 @@ import org.netbeans.modules.cnd.classview.model.*;
     
     private void dump(Project[] projects) {
         if( Diagnostic.DEBUG ) {
-            Diagnostic.trace("Dumping projects:");
+            Diagnostic.trace("Dumping projects:"); // NOI18N
             for( int i = 0; i < projects.length; i++ ) {
                 dump(projects[i]);
             }
@@ -214,11 +214,11 @@ import org.netbeans.modules.cnd.classview.model.*;
     private void dump(Project p) {
         if( Diagnostic.DEBUG ) {
             ProjectInformation pi = ProjectUtils.getInformation(p);
-            Diagnostic.trace("Project " + pi.getName() + " (" + pi.getDisplayName() + ')');
+            Diagnostic.trace("Project " + pi.getName() + " (" + pi.getDisplayName() + ')'); // NOI18N
             SourceGroup[] sg = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
-            Diagnostic.trace("  Source groups are");
+            Diagnostic.trace("  Source groups are"); // NOI18N
             for( int i = 0; i < sg.length; i++ ) {
-                Diagnostic.trace("    " + sg[i].getName() + " (" + sg[i].getDisplayName() + ") " + sg[i].getRootFolder().getName());
+                Diagnostic.trace("    " + sg[i].getName() + " (" + sg[i].getDisplayName() + ") " + sg[i].getRootFolder().getName()); // NOI18N
             }
         }
     }

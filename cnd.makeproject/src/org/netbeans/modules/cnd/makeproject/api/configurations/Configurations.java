@@ -27,8 +27,8 @@ import java.util.List;
 
 public class Configurations {
 
-    public static final String PROP_DEFAULT = "default";
-    public static final String PROP_ACTIVE_CONFIGURATION = "activeconfiguration";
+    public static final String PROP_DEFAULT = "default"; // NOI18N
+    public static final String PROP_ACTIVE_CONFIGURATION = "activeconfiguration"; // NOI18N
 
     private PropertyChangeSupport pcs;
     private List configurations;
@@ -63,7 +63,7 @@ public class Configurations {
     /*
     public Confs init(String configurationNames, String defaultConf) {
 	configurations = new ArrayList();
-	StringTokenizer st = new StringTokenizer(configurationNames, ",");
+	StringTokenizer st = new StringTokenizer(configurationNames, ","); // NOI18N
 	while (st.hasMoreTokens()) {
 	    String displayName = st.nextToken();
 	    configurations.add(new Conf(displayName));

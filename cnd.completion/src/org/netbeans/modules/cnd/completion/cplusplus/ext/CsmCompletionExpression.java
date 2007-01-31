@@ -424,7 +424,7 @@ public class CsmCompletionExpression {
 
     private static void appendSpaces(StringBuffer sb, int spaceCount) {
         while (--spaceCount >= 0) {
-            sb.append(' ');
+            sb.append(' '); //NOI18N
         }
     }
 
@@ -520,7 +520,7 @@ public class CsmCompletionExpression {
         sb.append(parmCnt);
         if (parmCnt > 0) {
             for (int i = 0; i < parmCnt; i++) {
-                sb.append('\n');
+                sb.append('\n'); //NOI18N
                 appendSpaces(sb, indent + 4);
                 sb.append("parm" + i + "=[" + getParameter(i).toString(indent + 4) + "]"); // NOI18N
             }

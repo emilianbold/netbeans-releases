@@ -66,11 +66,11 @@ public class MakeOptions extends SystemOption implements PropertyChangeListener 
     static private boolean fortran = false;
     
     // Save
-    static final String SAVE = "save";
+    static final String SAVE = "save";  // NOI18N
     static private boolean save = true;
     
     // Reuse
-    static final String REUSE = "reuse";
+    static final String REUSE = "reuse";  // NOI18N
     static private boolean reuse = true;
     
     static public MakeOptions getInstance() {

@@ -59,7 +59,7 @@ public class OptionsConfiguration {
 	return commandLineModified;
     }
     public String getDefault() {
-	return "";
+	return ""; // NOI18N
     }
     public void optionsReset() {
 	commandLine = getDefault();

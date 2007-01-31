@@ -58,14 +58,14 @@ public class ShellDataLoader extends UniFileLoader {
     static final long serialVersionUID = -7173746465817543299L;
 
     /** The suffix list for shell files */
-    private static final String[] shellExtensions = {"bash", "csh", "ksh", "sh", "zsh", "bat", "cmd"};	//NOI18N
+    private static final String[] shellExtensions = {"bash", "csh", "ksh", "sh", "zsh", "bat", "cmd"};	// NOI18N
 
 
     /**
      *  Default constructor
      */
     public ShellDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.ShellDataObject");   //NOI18N
+	super("org.netbeans.modules.cnd.loaders.ShellDataObject");   // NOI18N
 	instance = this;
 	createExtentions();
     }
@@ -163,15 +163,15 @@ public class ShellDataLoader extends UniFileLoader {
 	}
 	protected java.text.Format createFormat(FileObject target, String name, String ext) {
 	    Map map = ((CppSettings)CppSettings.findObject(CppSettings.class, true)).getReplaceableStringsProps();
-	    map.put("NAME", name);	//NOI18N
-	    map.put("DATE", DateFormat.getDateInstance	//NOI18N
+	    map.put("NAME", name);	// NOI18N
+	    map.put("DATE", DateFormat.getDateInstance	// NOI18N
 		     (DateFormat.LONG).format(new Date()));
-	    map.put("TIME", DateFormat.getTimeInstance	//NOI18N
+	    map.put("TIME", DateFormat.getTimeInstance	// NOI18N
 		     (DateFormat.SHORT).format(new Date()));
-	    //	    map.put("USER", System.getProperty("user.name"));	//NOI18N
-	    map.put("NBDIR", System.getProperty("netbeans.home")); //NOI18N
-	    map.put("QUOTES","\""); //NOI18N
-	    map.put("EXTENSION", ext); //NOI18N
+	    //	    map.put("USER", System.getProperty("user.name"));	// NOI18N
+	    map.put("NBDIR", System.getProperty("netbeans.home")); // NOI18N
+	    map.put("QUOTES","\""); // NOI18N
+	    map.put("EXTENSION", ext); // NOI18N
  	  
 	    org.openide.util.MapFormat format = new org.openide.util.MapFormat(map);
 	    
@@ -180,8 +180,8 @@ public class ShellDataLoader extends UniFileLoader {
 	    // any conflicts with valid code. For example, __FILE__ is a valid
 	    // construct in Sun C++ files and the compiler will replace the
 	    // current file name during compilation.
-	    format.setLeftBrace("%<%");	//NOI18N
-	    format.setRightBrace("%>%");    //NOI18N
+	    format.setLeftBrace("%<%");	// NOI18N
+	    format.setRightBrace("%>%");    // NOI18N
 	    return format;
 	}
 

@@ -212,8 +212,8 @@ public class ItemChooser extends MakefileWizardPanel
 	}
 	else {
 	// The directory chooser button
-	dirChooser = new JButton(getString("BTN_Chooser"));		//NOI18N
-	dirChooser.setMnemonic(getString("MNEM_Chooser").charAt(0));	//NOI18N
+	dirChooser = new JButton(getString("BTN_Chooser"));		// NOI18N
+	dirChooser.setMnemonic(getString("MNEM_Chooser").charAt(0));	// NOI18N
 	grid.gridx = 2;
 	grid.gridwidth = GridBagConstraints.REMAINDER;
 	grid.fill = GridBagConstraints.NONE;
@@ -227,8 +227,8 @@ public class ItemChooser extends MakefileWizardPanel
 		String cwd = getMakefileData().getBaseDirectory(MakefileData.EXPAND);
 	    
 		fc = new JFileChooser();
-		fc.setApproveButtonText(getString("BTN_Approve"));	//NOI18N
-		fc.setDialogTitle(getString("TITLE_DirChooser"));	//NOI18N
+		fc.setApproveButtonText(getString("BTN_Approve"));	// NOI18N
+		fc.setDialogTitle(getString("TITLE_DirChooser"));	// NOI18N
 		fc.setCurrentDirectory(new File(cwd));
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		fc.setFileSystemView(new IpeFileSystemView(fc.getFileSystemView()));
@@ -262,7 +262,7 @@ public class ItemChooser extends MakefileWizardPanel
 	grid.fill = GridBagConstraints.HORIZONTAL;
 	grid.anchor = GridBagConstraints.WEST;
 	add(text, grid);
-	Keymap km = text.addKeymap("ItemChooserKeymap",			//NOI18N
+	Keymap km = text.addKeymap("ItemChooserKeymap",			// NOI18N
 				text.getKeymap());
 	km.addActionForKeyStroke(KeyStroke.getKeyStroke('/'),
 		new DefaultEditorKit.BeepAction());
@@ -275,7 +275,7 @@ public class ItemChooser extends MakefileWizardPanel
 	grid.gridheight = GridBagConstraints.REMAINDER;
 	grid.weightx = 1.0;
 	grid.weighty = 1.0;
-	add(new JLabel(""), grid);                                      //NOI18N
+	add(new JLabel(""), grid);                                      // NOI18N
     }
 
     final void convertLabel(String nlabel, char nmnem) {

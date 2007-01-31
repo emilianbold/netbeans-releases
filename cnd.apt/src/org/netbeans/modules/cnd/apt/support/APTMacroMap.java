@@ -33,7 +33,13 @@ public interface APTMacroMap extends APTMacroCallback {
      */
     public State getState();
     public void setState(State state);
-    public interface State {};    
+    public interface State {
+        /**
+         * clear cached restorable information of state
+         * @return true if there were cleaned information which will need further restoring
+         */
+        public boolean clean();
+    };    
     
     /** 
      * APTWalker context methods to (un)define macros 

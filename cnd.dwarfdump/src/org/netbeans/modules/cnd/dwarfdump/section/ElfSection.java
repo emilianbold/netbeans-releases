@@ -31,7 +31,9 @@ public class ElfSection {
     }
     
     public void dump(PrintStream out) {
-        out.println("Content of the section " + sectionName + "\n");
+        out.println("\n** Section " + sectionName); // NOI18N
+        header.dump(out);
+        out.println("\nContent of the section " + sectionName + "\n"); // NOI18N
     }
     
     public ElfSection read() throws IOException {

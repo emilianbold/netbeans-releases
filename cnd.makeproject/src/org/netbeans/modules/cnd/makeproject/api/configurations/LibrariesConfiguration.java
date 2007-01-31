@@ -31,11 +31,11 @@ public class LibrariesConfiguration extends VectorConfiguration {
     }
 
     public String getOptions(MakeConfiguration conf) {
-	String options = "";
+	String options = ""; // NOI18N
 	
 	LibraryItem[] items = getLibraryItemsAsArray();
 	for (int i = 0; i < items.length; i++) {
-	    options += items[i].getOption(conf) + " ";
+	    options += items[i].getOption(conf) + " "; // NOI18N
 	}
 
 	return options;

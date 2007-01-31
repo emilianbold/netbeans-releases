@@ -34,7 +34,7 @@ public class Printf {
             sb.append(pattern.substring(from,  pos));
             from = pos + 2;
             if( argNumber < args.length ) {
-                sb.append(args[argNumber] == null ? "null" : args[argNumber].toString());
+                sb.append(args[argNumber] == null ? "null" : args[argNumber].toString()); // NOI18N
             }
             argNumber++;
             pos = pattern.indexOf('%',  from);

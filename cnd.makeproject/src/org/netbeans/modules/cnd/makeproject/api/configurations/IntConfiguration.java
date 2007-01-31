@@ -83,7 +83,7 @@ public class IntConfiguration {
 	if (getValue() < names.length)
 	    return names[getValue()];
 	else
-	    return "???"; // FIXUP
+	    return "???"; // FIXUP // NOI18N
     }
 
     public String[] getNames() {
@@ -91,7 +91,7 @@ public class IntConfiguration {
     }
 
     public String getOption() {
-	return options[getValue()] + " ";
+	return options[getValue()] + " "; // NOI18N
     }
 
     // Clone and Assign

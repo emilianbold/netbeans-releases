@@ -59,12 +59,12 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     }
     
     public boolean goToInclude(BaseDocument doc, JTextComponent target, int offset) {
-        if (!preJump(doc, target, offset, "opening-include-element")) {
+        if (!preJump(doc, target, offset, "opening-include-element")) { //NOI18N
             return false;
         }
         CsmInclude incl = findInclude(doc, offset);
         CsmOffsetable item = incl == null ? null : new IncludeTarget(incl);
-        return postJump(item, "goto_source_source_not_found", "cannot-open-include-element");
+        return postJump(item, "goto_source_source_not_found", "cannot-open-include-element"); //NOI18N
     }
     
     private CsmInclude findInclude(BaseDocument doc, int offset) {

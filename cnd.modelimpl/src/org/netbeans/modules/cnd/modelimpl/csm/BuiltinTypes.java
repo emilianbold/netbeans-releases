@@ -22,7 +22,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 
@@ -37,7 +37,7 @@ public class BuiltinTypes {
         private String name;
         
         private BuiltinImpl(String name) {
-            this.name = name;
+            this.name = TextCache.getString(name);
         }
         
         public String getQualifiedName() {
@@ -61,7 +61,9 @@ public class BuiltinTypes {
             return null;
         }
         
-        
+        public CsmUID getUID() {
+            throw new UnsupportedOperationException("getUID is not yet supported in built-in type " + getName()); // NOI18N
+        }
     }
     
     private static Map types = new HashMap();
@@ -83,7 +85,7 @@ public class BuiltinTypes {
         CsmBuiltIn builtIn = (CsmBuiltIn) types.get(text);
         if( builtIn == null ) {
             builtIn = new BuiltinImpl(text);
-            types.put(text, builtIn);
+            types.put(TextCache.getString(text), builtIn);
         }
         return builtIn;
     }

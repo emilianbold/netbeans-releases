@@ -31,6 +31,7 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 public class LibraryItem {
     public static final int PROJECT_ITEM = 0;
@@ -54,12 +55,12 @@ public class LibraryItem {
 
     // Should be overridden
     public String getToolTip() {
-	return "Should be overridden";
+	return "Should be overridden"; // NOI18N
     }
 
     // Should be overridden
     public String getIconName() {
-	return "org/netbeans/modules/cnd/resources/blank.gif";
+	return "org/netbeans/modules/cnd/resources/blank.gif"; // NOI18N
     }
 
     // Should be overridden
@@ -68,17 +69,17 @@ public class LibraryItem {
 
     // Should be overridden
     public String toString() {
-	return "Should be overridden";
+	return "Should be overridden"; // NOI18N
     }
 
     // Should be overridden
     public String getOption() {
-	return "";
+	return ""; // NOI18N
     }
     
     // Should be overridden
     public String getOption(MakeConfiguration conf) {
-	return "" + getOption();
+	return "" + getOption(); // NOI18N
     }
 
     // Should be overridden
@@ -124,15 +125,15 @@ public class LibraryItem {
 	}
 
 	public String getToolTip() {
-	    return "Project: " + getMakeArtifact().getProjectLocation() + " (" + getMakeArtifact().getOutput() + ")";
+	    return getString("ProjectTxt") + " " + getMakeArtifact().getProjectLocation() + " (" + getMakeArtifact().getOutput() + ")"; // NOI18N
 	}
 
 	public String getIconName() {
-	    return "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif";
+	    return "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
 	}
 
 	public String toString() {
-	    return IpeUtils.getBaseName(getMakeArtifact().getProjectLocation()) + " (" + getMakeArtifact().getOutput() + ")";
+	    return IpeUtils.getBaseName(getMakeArtifact().getProjectLocation()) + " (" + getMakeArtifact().getOutput() + ")"; // NOI18N
 	}
 
 	public void setValue(String value) {
@@ -199,11 +200,11 @@ public class LibraryItem {
 	}
 
 	public String getToolTip() {
-	    return "Standard Library: " + getDisplayName() + " (" + getOption() + ")";
+	    return getString("StandardLibraryTxt") + " " + getDisplayName() + " (" + getOption() + ")"; // NOI18N
 	}
 
 	public String getIconName() {
-	    return "org/netbeans/modules/cnd/resources/stdLibrary.gif";
+	    return "org/netbeans/modules/cnd/resources/stdLibrary.gif"; // NOI18N
 	}
 
 	public String toString() {
@@ -215,12 +216,12 @@ public class LibraryItem {
 	}
 
 	public String getOption() {
-	    String options = "";
+	    String options = ""; // NOI18N
 	    for (int i = 0; i < libs.length; i++) {
 		if (libs[i].charAt(0) != '-')
-		    options += "-l" + libs[i] + " ";
+		    options += "-l" + libs[i] + " "; // NOI18N
 		else
-		    options += libs[i] + " ";
+		    options += libs[i] + " "; // NOI18N
 	    }
 	    return options;
 	}
@@ -252,11 +253,11 @@ public class LibraryItem {
 	}
 
 	public String getToolTip() {
-	    return "Library: " + getLibName() + " (" + getOption() + ")";
+	    return getString("LibraryTxt") + "  " + getLibName() + " (" + getOption() + ")"; // NOI18N
 	}
 
 	public String getIconName() {
-	    return "org/netbeans/modules/cnd/loaders/LibraryIcon.gif";
+	    return "org/netbeans/modules/cnd/loaders/LibraryIcon.gif"; // NOI18N
 	}
 
 	public String toString() {
@@ -268,7 +269,7 @@ public class LibraryItem {
 	}
 
 	public String getOption() {
-	    return "-l" + getLibName();
+	    return "-l" + getLibName(); // NOI18N
 	}
 
 	public boolean canEdit() {
@@ -297,16 +298,16 @@ public class LibraryItem {
 	}
 
 	public String getToolTip() {
-	    return "Library File: " + getPath() + " (" + getOption() + ")";
+	    return getString("LibraryFileTxt") + " "  + getPath() + " (" + getOption() + ")"; // NOI18N
 	}
 
 	public String getIconName() {
-	    if (getPath().endsWith(".so"))
-		return "org/netbeans/modules/cnd/loaders/DllIcon.gif";
-	    else if (getPath().endsWith(".a"))
-		return "org/netbeans/modules/cnd/loaders/static_library.gif";
+	    if (getPath().endsWith(".so") || getPath().endsWith(".dll")) // NOI18N
+		return "org/netbeans/modules/cnd/loaders/DllIcon.gif"; // NOI18N
+	    else if (getPath().endsWith(".a")) // NOI18N
+		return "org/netbeans/modules/cnd/loaders/static_library.gif"; // NOI18N
 	    else
-		return "org/netbeans/modules/cnd/loaders/unknown.gif";
+		return "org/netbeans/modules/cnd/loaders/unknown.gif"; // NOI18N
 	}
 
 	public String toString() {
@@ -347,11 +348,11 @@ public class LibraryItem {
 	}
 
 	public String getToolTip() {
-	    return "Library Option: " + getLibraryOption() + " (" + getOption() + ")";
+	    return getString("LibraryOptionTxt") + " "  + getLibraryOption() + " (" + getOption() + ")"; // NOI18N
 	}
 
 	public String getIconName() {
-	    return "org/netbeans/modules/cnd/makeproject/ui/resources/general.gif";
+	    return "org/netbeans/modules/cnd/makeproject/ui/resources/general.gif"; // NOI18N
 	}
 
 	public String toString() {
@@ -373,5 +374,10 @@ public class LibraryItem {
 	public Object clone() {
 	    return new OptionItem(getLibraryOption());
 	}
+    }
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(LibraryItem.class, s);
     }
 }

@@ -57,6 +57,12 @@ public class EnvPanel extends javax.swing.JPanel implements HelpCtx.Provider, Pr
         
         propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         propenv.addPropertyChangeListener(this);
+        
+        // Accessibility
+        environmentLabel.setLabelFor(envvarTable);
+        envvarTable.getAccessibleContext().setAccessibleDescription(getString("ACSD_ENV_VAR_TABLE"));   
+        addButton.getAccessibleContext().setAccessibleDescription(getString("ACSD_ADD_BUTTON"));
+        removeButton.getAccessibleContext().setAccessibleDescription(getString("ACSD_REMOVE_BUTTON"));
     }
 
     public void initValues(Env env) {
@@ -102,10 +108,11 @@ public class EnvPanel extends javax.swing.JPanel implements HelpCtx.Provider, Pr
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EtchedBorder());
+        setBorder(javax.swing.BorderFactory.createEtchedBorder());
         environmentPanel.setLayout(new java.awt.GridBagLayout());
 
         environmentLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/runprofiles/ui/Bundle").getString("ENVIRONMENT_MNE").charAt(0));
+        environmentLabel.setLabelFor(envvarScrollPane);
         environmentLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/runprofiles/ui/Bundle").getString("ENVIRONMENT_LBL"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -171,8 +178,7 @@ public class EnvPanel extends javax.swing.JPanel implements HelpCtx.Provider, Pr
         gridBagConstraints.insets = new java.awt.Insets(8, 12, 0, 12);
         add(environmentPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
 	int[] selRows = envvarTable.getSelectedRows();

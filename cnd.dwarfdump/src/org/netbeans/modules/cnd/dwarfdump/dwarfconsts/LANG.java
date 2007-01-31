@@ -63,16 +63,16 @@ public enum LANG {
     
     public String toString() {
         switch(this) {
-            case DW_LANG_C89: return "C 89";
-            case DW_LANG_C: return "C";
-            case DW_LANG_Ada83: return "Ada 83";
-            case DW_LANG_C_plus_plus: return "C++"; 
-            case DW_LANG_Cobol74: return "Cobol 74";
-            case DW_LANG_Cobol85: return "Cobol 85";
-            case DW_LANG_Fortran77: return "Fortran 77";
-            case DW_LANG_Fortran90: return "Fortran 90";
-            case DW_LANG_Pascal83: return "Fortran 83";
-            case DW_LANG_Modula2: return "Modula 2";
+            case DW_LANG_C89: return "C 89"; // NOI18N
+            case DW_LANG_C: return "C"; // NOI18N
+            case DW_LANG_Ada83: return "Ada 83"; // NOI18N
+            case DW_LANG_C_plus_plus: return "C++";  // NOI18N
+            case DW_LANG_Cobol74: return "Cobol 74"; // NOI18N
+            case DW_LANG_Cobol85: return "Cobol 85"; // NOI18N
+            case DW_LANG_Fortran77: return "Fortran 77"; // NOI18N
+            case DW_LANG_Fortran90: return "Fortran 90"; // NOI18N
+            case DW_LANG_Pascal83: return "Fortran 83"; // NOI18N
+            case DW_LANG_Modula2: return "Modula 2"; // NOI18N
             default:
                 return null;
         }

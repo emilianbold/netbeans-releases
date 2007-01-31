@@ -83,12 +83,12 @@ public class DwarfAbbriviationTableEntry {
     }
 
     public void dump(PrintStream out, DwarfEntry dwarfEntry) {
-        out.println("Abbrev Number: " + index + " (" + getKind() + ") " + " : " + (hasChildren ? "[has children]" : "[no children]"));
+        out.println("Abbrev Number: " + index + " (" + getKind() + ") " + " : " + (hasChildren ? "[has children]" : "[no children]")); // NOI18N
         
         if (dwarfEntry != null) {
             String qname = dwarfEntry.getQualifiedName();
             if (qname != null) {
-                out.println("\tQualified Name: " + qname);
+                out.println("\tQualified Name: " + qname); // NOI18N
             }
         }
         

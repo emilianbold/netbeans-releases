@@ -42,7 +42,7 @@ public class BuildOutputPanel extends DirectoryChooserPanel {
      */
     public BuildOutputPanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = getString("LBL_BuildOutputPanel"); //NOI18N
+	String subtitle = getString("LBL_BuildOutputPanel"); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 	initialized = false;
@@ -52,11 +52,11 @@ public class BuildOutputPanel extends DirectoryChooserPanel {
     /** Defer widget creation until the panel needs to be displayed */
     private void create() {
 
-	//create(getString("LBL_TargetDirectory"), NAME_ONLY);		//NOI18N
-	create(getString("LBL_TargetDirectory"), RELATIVE_PATH);	//NOI18N
+	//create(getString("LBL_TargetDirectory"), NAME_ONLY);		// NOI18N
+	create(getString("LBL_TargetDirectory"), RELATIVE_PATH);	// NOI18N
 	getLabel().setLabelFor(getText());
 	getLabel().setDisplayedMnemonic(
-		    getString("MNEM_TargetDirectory").charAt(0));	//NOI18N
+		    getString("MNEM_TargetDirectory").charAt(0));	// NOI18N
     }
 
 

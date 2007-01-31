@@ -57,8 +57,8 @@ public class ClassViewTopComponent extends TopComponent  {
             TopComponent tc = WindowManager.getDefault().findTopComponent(PREFERRED_ID); // NOI18N
             //if( ! (tc instanceof ClassViewTopComponent) ) {
             if( DEFAULT == null ) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(
-                    "Can not find project component for its ID. Returned " + tc)); // NOI18N
+                ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                        "Cannot find ClassView component. It will not be located properly in the window system."); // NOI18N
 //                DEFAULT = new ClassViewTopComponent();
 //                // XXX Look into getDefault method.
 //                DEFAULT.scheduleValidation();
@@ -138,6 +138,11 @@ public class ClassViewTopComponent extends TopComponent  {
         if( view != null ) { // paranoia
             view.shutdown();
         }
+    }
+
+    protected void componentActivated() {
+	super.componentActivated();
+	view.requestFocus();
     }
     
 }

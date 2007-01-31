@@ -33,7 +33,7 @@ public class CCSourceFileFilter extends SourceFileFilter{
     }
     
     public String getDescription() {
-        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_CC_SOURCES_FILEFILTER", getSuffixesAsString());
+        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_CC_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
     
     public String[] getSuffixes() {

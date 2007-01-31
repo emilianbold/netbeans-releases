@@ -61,7 +61,7 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
         returnType = initReturnType(ast);
         parameters = initParameters(ast);
         if( name == null ) {
-            name = "<null>"; // just to avoid NPE
+            name = "<null>"; // just to avoid NPE // NOI18N
         }
         initBeforeRegister(ast);
         registerInProject();
@@ -154,7 +154,7 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) ) {
 	    String scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
 	    if( scopeQName != null && scopeQName.length() > 0 ) {
-		return scopeQName + "::" + getName();
+		return scopeQName + "::" + getName(); // NOI18N
 	    }
 	    else {
 		return getName();
@@ -168,7 +168,7 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
     }
     
     public String toString() {
-        return "" + getKind() + ' ' + name /*+ " rawName=" + Utils.toString(getRawName())*/;
+        return "" + getKind() + ' ' + name /*+ " rawName=" + Utils.toString(getRawName())*/; // NOI18N
     }
     
     public String getUniqueNameWithoutPrefix() {
@@ -253,7 +253,7 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
             ret = AstRenderer.renderType(token, getContainingFile());
         }
         if( ret == null ) {
-            ret = TypeImpl.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, getContainingFile());
+            ret = TypeImpl.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, getContainingFile()); // NOI18N
         }
         return ret;
     }
@@ -323,7 +323,7 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
         }
         sb.append(')');
         if( isConst() ) {
-            sb.append(" const");
+            sb.append(" const"); // NOI18N
         }
         return sb.toString();
     }

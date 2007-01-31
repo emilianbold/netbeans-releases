@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 
 <project name="DwarfDump" default="jar" basedir=".">
-    <property name="project.ModelUtils" value="../dm-utils"/>
+    <property name="project.dm-utils" value="../dm-utils"/>
+    <property name="project.DwarfDump" value="../../../../dwarfdump"/>
 
     <property name="module-jar-name" value="DwarfDump.jar"/>
     <property name="src.dir" value="./src"/>
@@ -16,7 +17,7 @@
     <property name="main.class" value="test.dwarfdump.DwarfDump"/>
 
     <target name="deps-clean">
-        <ant target="clean" inheritall="false" antfile="${project.ModelUtils}/build_cli.xml"/>
+        <ant target="clean" inheritall="false" antfile="${project.dm-utils}/build_cli.xml"/>
     </target>
 
     <target name="clean" depends="deps-clean">
@@ -26,7 +27,7 @@
     </target>
 
     <target name="deps-jar">
-        <ant target="jar" inheritall="false" antfile="${project.ModelUtils}/build_cli.xml"/>
+        <ant target="jar" inheritall="false" antfile="${project.dm-utils}/build_cli.xml"/>
     </target>
 
 
@@ -44,15 +45,18 @@
 
     <target name="compile">
                 <mkdir dir="${classes.dir}" />
-                <javac
-                        srcdir="${src.dir}"
+                <javac  
                         source="1.5"
                         destdir="${classes.dir}"
                         deprecation="${build.compiler.deprecation}"
                         debug="${build.compiler.debug}"
                         excludes="**/SCCS/*.java" >
+                        <src>
+                                <pathelement location="${project.DwarfDump}/src"/>
+                                <pathelement location="${src.dir}"/>
+                        </src>
                         <classpath>
-                                <pathelement location="${project.ModelUtils}/dist/ModelUtils.jar"/>
+                                <pathelement location="${project.dm-utils}/dist/dm-utils.jar"/>
                         </classpath>
                 </javac>
     </target>
@@ -65,7 +69,7 @@
             dir="${test.dir}">
             <classpath>
                 <pathelement location="${dist.dir}/${module-jar-name}"/>
-                <pathelement location="${project.ModelUtils}/dist/ModelUtils.jar"/>
+                <pathelement location="${project.dm-utils}/dist/dm-utils.jar"/>
             </classpath>
             <arg line="${args}"/>
         </java>

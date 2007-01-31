@@ -58,8 +58,8 @@ public abstract class APTContainerNode extends APTBaseNode implements Serializab
     // implementation details
     
     public final void setFirstChild(APT child) {
-        assert (child != null) : "why added null child?";
-        assert (this.child == null) : "why do you change immutable APT?";
+        assert (child != null) : "why added null child?"; // NOI18N
+        assert (this.child == null) : "why do you change immutable APT?"; // NOI18N
         this.child = child;
     }    
 }

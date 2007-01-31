@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 
-<project name="ModelUtils" default="jar" basedir=".">
-    <property name="module-jar-name" value="ModelUtils.jar"/>
+<project name="am-utils" default="jar" basedir=".">
+    <property name="module-jar-name" value="dm-utils.jar"/>
     <property name="src.dir" value="./src"/>
     <property name="build.dir" value="./build"/>
     <property name="dist.dir" value="./dist"/>
@@ -9,7 +9,6 @@
 
     <property name="build.compiler.debug" value="yes"/>
     <property name="test.args" value=""/>
-    <property name="main.class" value="modelutils.ModelUtils"/>
 
     <target name="clean">
         <delete dir="${classes.dir}"/>
@@ -46,20 +45,6 @@
                         </classpath>
                 </javac>
     </target>
-
-    <target name="run" depends="jar">
-        <echo message="Running ${main.class} with parameters ${test.args}"/>
-        <java
-                        classname="${main.class}"
-                        fork="true"
-                        dir="${test.dir}">
-            <classpath>
-                    <pathelement location="${dist.dir}/${module-jar-name}"/>
-            </classpath>
-            <arg line="${test.args}"/>
-        </java>
-    </target>
-
 
 </project>
 

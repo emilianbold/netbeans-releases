@@ -85,7 +85,7 @@ public final class BinaryExecSupport extends ExecutionSupport {
 	String dir = (String) getEntry().getFile().getAttribute(PROP_RUN_DIRECTORY);
 
 	if (dir == null) {
-	    dir = "."; //NOI18N
+	    dir = "."; // NOI18N
 	    setRunDirectory(dir);
 	}
 

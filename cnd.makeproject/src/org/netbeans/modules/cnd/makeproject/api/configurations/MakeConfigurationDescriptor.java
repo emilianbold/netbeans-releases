@@ -47,16 +47,17 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
-    public static final String EXTERNAL_FILES_FOLDER = "ExternalFiles";
-    public static final String SOURCE_FILES_FOLDER = "SourceFiles";
-    public static final String HEADER_FILES_FOLDER = "HeaderFiles";
-    public static final String RESOURCE_FILES_FOLDER = "ResourceFiles";
+    public static final String EXTERNAL_FILES_FOLDER = "ExternalFiles"; // NOI18N
+    public static final String SOURCE_FILES_FOLDER = "SourceFiles"; // NOI18N
+    public static final String HEADER_FILES_FOLDER = "HeaderFiles"; // NOI18N
+    public static final String RESOURCE_FILES_FOLDER = "ResourceFiles"; // NOI18N
     
-    public static final String ICONBASE = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject";
-    public static final String ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif";
+    public static final String ICONBASE = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject"; // NOI18N
+    public static final String ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
     public static final Icon MAKEFILE_ICON = new ImageIcon(Utilities.loadImage(ICON)); // NOI18N
     
     private Project project = null;
@@ -75,7 +76,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
     public MakeConfigurationDescriptor(String baseDir) {
         super();
         this.baseDir = baseDir;
-        rootFolder = new Folder(this, null, "root", "root", true);
+        rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
         projectItems = new HashMap();
         projectItemsChangeListeners = new Vector();
         setModified(true);
@@ -112,11 +113,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
     
     public void initLogicalFolders(Iterator sourceFileFolders, boolean createLogicalFolders, Iterator importantItems) {
         if (createLogicalFolders) {
-            rootFolder.addNewFolder(SOURCE_FILES_FOLDER, "Source Files", true);
-            rootFolder.addNewFolder(HEADER_FILES_FOLDER, "Header Files", true);
-            rootFolder.addNewFolder(RESOURCE_FILES_FOLDER, "Resource Files", true);
+            rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true);
+            rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true);
+            rootFolder.addNewFolder(RESOURCE_FILES_FOLDER, getString("ResourceFilesTxt"), true);
         }
-        externalFileItems = rootFolder.addNewFolder(EXTERNAL_FILES_FOLDER, "Important Files", false);
+        externalFileItems = rootFolder.addNewFolder(EXTERNAL_FILES_FOLDER, getString("ImportantFilesTxt"), false);
 //        if (sourceFileFolders != null)
 //            setExternalFileItems(sourceFileFolders); // From makefile wrapper wizard
         externalFileItems.addItem(new Item(getProjectMakefileName())); // NOI18N
@@ -384,12 +385,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         // Check metadata files are writable
         Vector metadataFiles = new Vector();
         Vector notOkFiles = new Vector();
-        metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "project.xml");
-        metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "configurations.xml");
-        metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "Makefile-impl.mk");
+        metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "project.xml"); // NOI18N
+        metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "configurations.xml"); // NOI18N
+        metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "Makefile-impl.mk"); // NOI18N
         Configuration[] confs = getConfs().getConfs();
         for (int i = 0; i < confs.length; i++)
-            metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "Makefile-" + confs[i].getName() + ".mk");
+            metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "Makefile-" + confs[i].getName() + ".mk"); // NOI18N
         boolean allOk = true;
         for (int i = 0; i < metadataFiles.size(); i++) {
             File file = new File((String)metadataFiles.elementAt(i));
@@ -402,12 +403,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         }
         if (!allOk) {
             String projectName = IpeUtils.getBaseName(getBaseDir());
-            String text = "The project '" + projectName + "' cannot be saved because the following files are write-protected:";
+            String text = getString("CannotSaveTxt", projectName);
             for (int i = 0; i < notOkFiles.size(); i++) {
-                text += "\n" + notOkFiles.elementAt(i);
+                text += "\n" + notOkFiles.elementAt(i); // NOI18N
             }
             if (extraMessage != null) {
-                text += "\n\n" + extraMessage;
+                text += "\n\n" + extraMessage; // NOI18N
             }
             NotifyDescriptor d = new NotifyDescriptor.Message(text, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
@@ -490,7 +491,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         AddFilesThread(Iterator iterator, Folder folder) {
             this.iterator = iterator;
             this.folder = folder;
-            handle = ProgressHandleFactory.createHandle("Adding files...");
+            handle = ProgressHandleFactory.createHandle(getString("AddingFilesTxt"));
         }
         public void run() {
             handle.setInitialDelay(500);
@@ -533,5 +534,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
                 }
             }
         }
+    }
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(MakeConfigurationDescriptor.class, s);
+    }
+    private static String getString(String s, String a1) {
+        return NbBundle.getMessage(MakeConfigurationDescriptor.class, s, a1);
     }
 }

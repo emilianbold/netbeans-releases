@@ -36,7 +36,7 @@ public final class APTStreamNode extends APTStreamBaseNode
     /** Copy constructor */
     /**package*/ APTStreamNode(APTStreamNode orig) {
         super(orig);
-        assert (false) : "are you sure it's correct to make copy of stream node?";
+        assert (false) : "are you sure it's correct to make copy of stream node?"; // NOI18N
     }
     
     /** Constructor for serialization **/
@@ -46,7 +46,7 @@ public final class APTStreamNode extends APTStreamBaseNode
     /** Creates a new instance of APTStreamNode */
     public APTStreamNode(Token token) {
         super(token);
-        assert (validToken(token)) : "must init only from valid tokens";
+        assert (validToken(token)) : "must init only from valid tokens"; // NOI18N
     }
     
     public final int getType() {
@@ -58,7 +58,7 @@ public final class APTStreamNode extends APTStreamBaseNode
             return false;
         }
         int ttype = t.getType();
-        assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers";
+        assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers"; // NOI18N
         return !APTUtils.isPreprocessorToken(ttype);
     }    
 }

@@ -80,6 +80,6 @@ public class CsmToken extends APTBaseToken implements Serializable {
     }
         
     public String toString() {
-        return "[\"" + getText() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename();
+        return "[\"" + getText() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename(); // NOI18N
     }
 }

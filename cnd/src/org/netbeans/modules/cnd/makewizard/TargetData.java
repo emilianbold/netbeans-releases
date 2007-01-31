@@ -438,7 +438,7 @@ final public class TargetData {
 
 	/*
 	if (UsageTracking.enabled) {
-	    UsageTracking.sendAction("Convert MFW Target", null);	//NOI18N
+	    UsageTracking.sendAction("Convert MFW Target", null);	// NOI18N
 	}
 	*/
     }
@@ -464,7 +464,7 @@ final public class TargetData {
 
 	/*
 	if (UsageTracking.enabled) {
-	    UsageTracking.sendAction("Convert MFW Target", null);	//NOI18N
+	    UsageTracking.sendAction("Convert MFW Target", null);	// NOI18N
 	}
 	*/
     }
@@ -560,7 +560,7 @@ final public class TargetData {
 
     /** Check if a file is a X-Designer file */
     public boolean isXdFile(String file) {
-	return file.endsWith(".xd");					//NOI18N
+	return file.endsWith(".xd");					// NOI18N
     }
 
 
@@ -629,67 +629,67 @@ final public class TargetData {
     }
 	
 
-    private String indent = new String("");
+    private String indent = new String(""); // NOI18N
 
     /** Default dump has no indent */
     public void dump() {
 	int i;
 
-	//println("Dumping target[" + key + "]:");			//NOI18N
-	println("    name            = \"" + name + "\"");		//NOI18N
-	println("    type            = " + (String)			//NOI18N
-	    (targetType == SIMPLE_EXECUTABLE     ? "SIMPLE_EXECUTABLE" ://NOI18N
-	     targetType == SIMPLE_ARCHIVE        ? "SIMPLE_ARCHIVE" :	//NOI18N
-	     targetType == SIMPLE_SHAREDLIB      ? "SIMPLE_SHAREDLIB" :	//NOI18N
-	     targetType == COMPLEX_EXECUTABLE    ? "COMPLEX_EXECUTABLE"://NOI18N
-	     targetType == COMPLEX_ARCHIVE       ? "COMPLEX_ARCHIVE" :	//NOI18N
-	     targetType == COMPLEX_SHAREDLIB     ? "COMPLEX_SHAREDLIB" ://NOI18N
-	     targetType == COMPLEX_MAKE_TARGET ? "COMPLEX_MAKE_TARGET" ://NOI18N
+	//println("Dumping target[" + key + "]:");			// NOI18N
+	println("    name            = \"" + name + "\"");		// NOI18N
+	println("    type            = " + (String)			// NOI18N
+	    (targetType == SIMPLE_EXECUTABLE     ? "SIMPLE_EXECUTABLE" :// NOI18N
+	     targetType == SIMPLE_ARCHIVE        ? "SIMPLE_ARCHIVE" :	// NOI18N
+	     targetType == SIMPLE_SHAREDLIB      ? "SIMPLE_SHAREDLIB" :	// NOI18N
+	     targetType == COMPLEX_EXECUTABLE    ? "COMPLEX_EXECUTABLE":// NOI18N
+	     targetType == COMPLEX_ARCHIVE       ? "COMPLEX_ARCHIVE" :	// NOI18N
+	     targetType == COMPLEX_SHAREDLIB     ? "COMPLEX_SHAREDLIB" :// NOI18N
+	     targetType == COMPLEX_MAKE_TARGET ? "COMPLEX_MAKE_TARGET" :// NOI18N
 	     targetType == COMPLEX_CUSTOM_TARGET ?
-			    "COMPLEX_CUSTOM_TARGET" : "Unknown"));	//NOI18N
+			    "COMPLEX_CUSTOM_TARGET" : "Unknown"));	// NOI18N
 
-	println("    key             = " + key);			//NOI18N
-	println("    outputDirectory = \"" + outputDirectory + "\"");	//NOI18N
+	println("    key             = " + key);			// NOI18N
+	println("    outputDirectory = \"" + outputDirectory + "\"");	// NOI18N
 	if (sourcesList == null || sourcesList.length == 0) {
-	    println("    sourcesList     = {}");			//NOI18N
+	    println("    sourcesList     = {}");			// NOI18N
 	} else {
-	    println("    sourcesList     = {");				//NOI18N
+	    println("    sourcesList     = {");				// NOI18N
 	    for (i = 0; i < sourcesList.length; i++) {
-		println("        \"" + sourcesList[i] + "\"");		//NOI18N
+		println("        \"" + sourcesList[i] + "\"");		// NOI18N
 	    }
-	    println("    }");						//NOI18N
+	    println("    }");						// NOI18N
 	}
 	if (includesList == null || includesList.length == 0) {
-	    println("    includesList    = {}");			//NOI18N
+	    println("    includesList    = {}");			// NOI18N
 	} else {
-	    println("    includesList    = {");				//NOI18N
+	    println("    includesList    = {");				// NOI18N
 	    for (i = 0; i < includesList.length; i++) {
-		println("        \"" + includesList[i] + "\"");		//NOI18N
+		println("        \"" + includesList[i] + "\"");		// NOI18N
 	    }
-	    println("    }");						//NOI18N
+	    println("    }");						// NOI18N
 	}
 	stdLibFlags.dump();
 	if (userLibsList == null || userLibsList.length == 0) {
-	    println("    userLibsList    = {}");			//NOI18N
+	    println("    userLibsList    = {}");			// NOI18N
 	} else {
-	    println("    userLibsList    = {");				//NOI18N
+	    println("    userLibsList    = {");				// NOI18N
 	    for (i = 0; i < userLibsList.length; i++) {
-		println("        \"" + userLibsList[i] + "\"");		//NOI18N
+		println("        \"" + userLibsList[i] + "\"");		// NOI18N
 	    }
-	    println("    }");						//NOI18N
+	    println("    }");						// NOI18N
 	}
-	println("    targetName      = \"" + targetName + "\"");	//NOI18N
-	println("    dependsOn       = \"" + dependsOn + "\"");		//NOI18N
-	println("    subdirectory    = \"" + subdirectory + "\"");	//NOI18N
-	println("    makeFlags       = \"" + makeFlags + "\"");		//NOI18N
+	println("    targetName      = \"" + targetName + "\"");	// NOI18N
+	println("    dependsOn       = \"" + dependsOn + "\"");		// NOI18N
+	println("    subdirectory    = \"" + subdirectory + "\"");	// NOI18N
+	println("    makeFlags       = \"" + makeFlags + "\"");		// NOI18N
 	if (actions == null || actions.size() == 0) {
-	    println("    actions         = {}");			//NOI18N
+	    println("    actions         = {}");			// NOI18N
 	} else {
-	    println("    actions         = {");    			//NOI18N
+	    println("    actions         = {");    			// NOI18N
 	    for (i = 0; i < actions.size(); i++) {
-		println("        " + actions.get(i).toString());	//NOI18N
+		println("        " + actions.get(i).toString());	// NOI18N
 	    }
-	    println("    }");						//NOI18N
+	    println("    }");						// NOI18N
 	}
 		
     }

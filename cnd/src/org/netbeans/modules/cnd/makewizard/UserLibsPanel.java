@@ -54,7 +54,7 @@ public class UserLibsPanel extends EnterItemsPanel {
      */
     UserLibsPanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = new String(getString("LBL_UserLibsPanel")); //NOI18N
+	String subtitle = new String(getString("LBL_UserLibsPanel")); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 	initialized = false;
@@ -63,7 +63,7 @@ public class UserLibsPanel extends EnterItemsPanel {
 
     /** Defer widget creation until the panel needs to be displayed */
     private void create() {
-	create(getString("LBL_UserLibs"), getString("MNEM_UserLibs").charAt(0), //NOI18N
+	create(getString("LBL_UserLibs"), getString("MNEM_UserLibs").charAt(0), // NOI18N
 		    DYNAMIC_DEFAULT_BUTTONS | ADD_BEGINNING);
 
 	// Create (read-only) system libs textfield. Dynamically add it if target is complex exeutable.
@@ -125,13 +125,13 @@ public class UserLibsPanel extends EnterItemsPanel {
 
     /** Set the label for the Source List */
     protected String getListLabel() {
-	return getString("LBL_LibraryList");				//NOI18N
+	return getString("LBL_LibraryList");				// NOI18N
     }
 
 
     /** Set the mnemonic for the Source List */
     protected char getListMnemonic() {
-	return getString("MNEM_LibraryList").charAt(0);			//NOI18N
+	return getString("MNEM_LibraryList").charAt(0);			// NOI18N
     }
 
 
@@ -175,8 +175,8 @@ public class UserLibsPanel extends EnterItemsPanel {
 
     /** Get the title and message for the error dialog */
     protected ErrorInfo getErrorInfo() {
-	return new ErrorInfo(getString("DLG_ULP_EmptyRE"),		//NOI18N
-			getString("MSG_NoFilesMatched"));		//NOI18N
+	return new ErrorInfo(getString("DLG_ULP_EmptyRE"),		// NOI18N
+			getString("MSG_NoFilesMatched"));		// NOI18N
     }
 
     /**
@@ -226,7 +226,7 @@ public class UserLibsPanel extends EnterItemsPanel {
 	if (targetType == TargetData.COMPLEX_EXECUTABLE) {
 	    MakeVarName var = new MakeVarName();
 	    var.setTargetName(target.getName());
-	    String s = var.makeRef("SYSLIBS_");		//NOI18N
+	    String s = var.makeRef("SYSLIBS_");		// NOI18N
 
 	    // If new, add $(SYSLIBS_...) to list
 	    if (target.getUserLibsList() == null) {
@@ -242,7 +242,7 @@ public class UserLibsPanel extends EnterItemsPanel {
 	    stdLibsText.setToolTipText(txt);
 
 	    // Change the label to include correct target
-	    String ltxt = NbBundle.getMessage(UserLibsPanel.class, "LBL_SYSLIB", s);
+	    String ltxt = NbBundle.getMessage(UserLibsPanel.class, "LBL_SYSLIB", s); // NOI18N
 	    stdLibsLabel.setText(ltxt);
 
 	    addStdLibPanel();

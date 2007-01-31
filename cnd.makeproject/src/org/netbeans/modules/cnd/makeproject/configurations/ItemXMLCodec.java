@@ -32,16 +32,16 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
 
     private ItemConfiguration item;
 
-    public final static String ITEM_ELEMENT = "item";
-    public final static String PATH_ATTR = "path";
-    public final static String EXCLUDED_ELEMENT = "excluded"; // FIXUP: < 7
-    public final static String TOOL_ELEMENT = "tool"; // FIXUP: < 7
-    public final static String ITEM_EXCLUDED_ELEMENT = "itemExcluded";
-    public final static String ITEM_TOOL_ELEMENT = "itemTool";
-    public final static String DEBUGGING_ELEMENT = "justfordebugging";
+    public final static String ITEM_ELEMENT = "item"; // NOI18N
+    public final static String PATH_ATTR = "path"; // NOI18N
+    public final static String EXCLUDED_ELEMENT = "excluded"; // FIXUP: < 7 // NOI18N
+    public final static String TOOL_ELEMENT = "tool"; // FIXUP: < 7 // NOI18N
+    public final static String ITEM_EXCLUDED_ELEMENT = "itemExcluded"; // NOI18N
+    public final static String ITEM_TOOL_ELEMENT = "itemTool"; // NOI18N
+    public final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
 
-    public final static String TRUE_VALUE = "true";
-    public final static String FALSE_VALUE = "false";
+    public final static String TRUE_VALUE = "true"; // NOI18N
+    public final static String FALSE_VALUE = "false"; // NOI18N
 
     public ItemXMLCodec(ItemConfiguration item) {
 	this.item = item;
@@ -54,7 +54,7 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
 
     // interface XMLDecoder
     public void start(Attributes atts) throws VersionException {
-        String what = "item";
+        String what = "item"; // NOI18N
         int maxVersion = 1;
         checkVersion(atts, what, maxVersion);
     }
@@ -75,19 +75,16 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
     public void encode(XMLEncoderStream xes) {
 	xes.elementOpen(ITEM_ELEMENT, new AttrValuePair[] {new AttrValuePair(PATH_ATTR, item.getItem().getPath())});
 	if (item.getExcluded().getModified())
-	    xes.element(ITEM_EXCLUDED_ELEMENT, "" + item.getExcluded().getValue());
-	xes.element(ITEM_TOOL_ELEMENT, "" + item.getTool());
+	    xes.element(ITEM_EXCLUDED_ELEMENT, "" + item.getExcluded().getValue()); // NOI18N
+	xes.element(ITEM_TOOL_ELEMENT, "" + item.getTool()); // NOI18N
 	if (item.getTool() == Tool.CCompiler) {
 	    CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, item.getCCompilerConfiguration());
-	    //xes.element(DEBUGGING_ELEMENT, "" + item.getCCompilerConfiguration().getTool().getValue() + " " + item.getCCompilerConfiguration().getOptions());
 	}
 	else if (item.getTool() == Tool.CCCompiler) {
 	    CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, item.getCCCompilerConfiguration());
-	    //xes.element(DEBUGGING_ELEMENT, "" + item.getCCCompilerConfiguration().getTool().getValue() + " " + item.getCCCompilerConfiguration().getOptions());
 	}
 	else if (item.getTool() == Tool.CustomTool) {
 	    CommonConfigurationXMLCodec.writeCustomToolConfiguration(xes, item.getCustomToolConfiguration());
-	    //xes.element(DEBUGGING_ELEMENT, "" + item.getCustomToolConfiguration().getCommandLine().getValue());
 	}
 	xes.elementClose(ITEM_ELEMENT);
     } 

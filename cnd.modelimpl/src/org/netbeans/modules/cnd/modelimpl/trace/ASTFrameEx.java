@@ -48,9 +48,9 @@ public class ASTFrameEx extends JFrame {
 //                System.out.print("->" + elements[i]);
 //            }
             AST ast = (AST) path.getLastPathComponent();
-            displayText("name:\t" + ast.getText());
-            appendText("\ntype:\t" + TraceUtils.getTokenTypeName(ast));
-            appendText("\npos:\t" + ast.getLine() + ':' + ast.getColumn());
+            displayText("name:\t" + ast.getText()); // NOI18N
+            appendText("\ntype:\t" + TraceUtils.getTokenTypeName(ast)); // NOI18N
+            appendText("\npos:\t" + ast.getLine() + ':' + ast.getColumn()); // NOI18N
         }
     }
 
@@ -69,7 +69,7 @@ public class ASTFrameEx extends JFrame {
 
         JTreeASTModel model = new JTreeASTModel(r);
         tree = new JTree(model);
-        tree.putClientProperty("JTree.lineStyle", "Angled");
+        tree.putClientProperty("JTree.lineStyle", "Angled"); // NOI18N
 
         TreeSelectionListener listener = new MyTreeSelectionListener();
         tree.addTreeSelectionListener(listener);

@@ -233,7 +233,7 @@ public class OutputWindowOutputStream extends OutputStream {
         
         // OutputListener:
         public void outputLineAction(OutputEvent ev) {
-            System.err.println("outputLineAction: " + ev.getLine());
+            System.err.println("outputLineAction: " + ev.getLine()); // NOI18N
             if (dead) return;
             if (! file.isValid()) { // #13115
                 Toolkit.getDefaultToolkit().beep();
@@ -251,7 +251,7 @@ public class OutputWindowOutputStream extends OutputStream {
                         ed.open();
                     } else {
                         ed.openDocument(); // XXX getLineSet does not do it for you!
-                        CndModule.err.log("opened document for " + file);
+                        CndModule.err.log("opened document for " + file); // NOI18N
                         Line l = ed.getLineSet().getOriginal(line1);
                         if (! l.isDeleted()) {
                             attachAsNeeded(l, ed);
@@ -277,7 +277,7 @@ public class OutputWindowOutputStream extends OutputStream {
         
         
         public void outputLineSelected(OutputEvent ev) {
-            System.err.println("outputLineSelected: " + ev.getLine());
+            System.err.println("outputLineSelected: " + ev.getLine()); // NOI18N
             if (dead) return;
             if (! file.isValid()) {
                 return;
@@ -289,10 +289,10 @@ public class OutputWindowOutputStream extends OutputStream {
                     if (ed.getDocument() == null) {
                         // The document is not opened, don't bother with it.
                         // The Line.Set will be corrupt anyway, currently.
-                        CndModule.err.log("no document for " + file);
+                        CndModule.err.log("no document for " + file); // NOI18N
                         return;
                     }
-                    CndModule.err.log("got document for " + file);
+                    CndModule.err.log("got document for " + file); // NOI18N
                     if (line1 != -1) {
                         Line l = ed.getLineSet().getOriginal(line1);
                         if (! l.isDeleted()) {
@@ -320,22 +320,22 @@ public class OutputWindowOutputStream extends OutputStream {
                 Annotatable ann;
                 // Text of the line, incl. trailing newline.
                 String text = l.getText();
-                System.err.println("attachAsNeeded: " + text);
-                if (log) CndModule.err.log("Attaching to line " + l.getDisplayName() + " text=`" + text + "' line1=" + line1 + " line2=" + line2 + " col1=" + col1 + " col2=" + col2);
+                System.err.println("attachAsNeeded: " + text); // NOI18N
+                if (log) CndModule.err.log("Attaching to line " + l.getDisplayName() + " text=`" + text + "' line1=" + line1 + " line2=" + line2 + " col1=" + col1 + " col2=" + col2); // NOI18N
                 if (text != null && (line2 == -1 || line1 == line2) && col1 != -1) {
-                    if (log) CndModule.err.log("\tfits on one line");
+                    if (log) CndModule.err.log("\tfits on one line"); // NOI18N
                     if (col2 != -1 && col2 >= col1 && col2 < text.length()) {
-                        if (log) CndModule.err.log("\tspecified section of the line");
+                        if (log) CndModule.err.log("\tspecified section of the line"); // NOI18N
                         ann = l.createPart(col1, col2 - col1 + 1);
                     } else if (col1 < text.length()) {
-                        if (log) CndModule.err.log("\tspecified column to end of line");
+                        if (log) CndModule.err.log("\tspecified column to end of line"); // NOI18N
                         ann = l.createPart(col1, text.length() - col1);
                     } else {
-                        if (log) CndModule.err.log("\tcolumn numbers are bogus");
+                        if (log) CndModule.err.log("\tcolumn numbers are bogus"); // NOI18N
                         ann = l;
                     }
                 } else {
-                    if (log) CndModule.err.log("\tmultiple lines, something wrong with line, or no column given");
+                    if (log) CndModule.err.log("\tmultiple lines, something wrong with line, or no column given"); // NOI18N
                     ann = l;
                 }
                 attach(ann);
@@ -348,7 +348,7 @@ public class OutputWindowOutputStream extends OutputStream {
             Annotatable ann = getAttachedAnnotatable();
             if (ann != null) {
                 if (CndModule.err.isLoggable(ErrorManager.UNKNOWN)) {
-                    CndModule.err.log("Detaching from " + ann + " `" + ann.getText() + "'");
+                    CndModule.err.log("Detaching from " + ann + " `" + ann.getText() + "'"); // NOI18N
                 }
                 ann.removePropertyChangeListener(this);
                 detach();
@@ -370,7 +370,7 @@ public class OutputWindowOutputStream extends OutputStream {
                 // Affected line has changed.
                 // Assume user has edited & corrected the error.
                 if (CndModule.err.isLoggable(ErrorManager.UNKNOWN)) {
-                    CndModule.err.log("Received Annotatable property change: " + prop);
+                    CndModule.err.log("Received Annotatable property change: " + prop); // NOI18N
                 }
                 doDetach();
             }

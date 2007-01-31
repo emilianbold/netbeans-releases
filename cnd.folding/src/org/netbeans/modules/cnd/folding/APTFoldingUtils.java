@@ -33,7 +33,7 @@ public class APTFoldingUtils {
 
     private static final boolean STANDALONE;
     static {
-        STANDALONE = !APTFoldingUtils.class.getClassLoader().getClass().getName().startsWith("org.netbeans.");
+        STANDALONE = !APTFoldingUtils.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
     }
     
     public static boolean isStandalone() {

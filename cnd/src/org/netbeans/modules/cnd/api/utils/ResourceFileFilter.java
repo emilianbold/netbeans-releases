@@ -35,7 +35,7 @@ public class ResourceFileFilter extends SourceFileFilter {
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_RESOURCE_FILEFILTER", getSuffixesAsString());
+        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_RESOURCE_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
     
     public String getSuffixesAsString() {

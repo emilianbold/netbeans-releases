@@ -69,7 +69,7 @@ final class FileCacheSyncBridge {
 
     public APTFile findAPT() {   
         if (TraceFlags.TRACE_CACHE) {
-            System.out.println("CACHE: findAPT for " + fileImpl.getAbsolutePath());
+            System.err.println("CACHE: findAPT for " + fileImpl.getAbsolutePath());
         }         
         APTFile apt = null;
         synchronized (aptLock) {
@@ -80,12 +80,12 @@ final class FileCacheSyncBridge {
                         apt = storage.getAPT();
                         if (apt == null && validCache && aptMaybeOnDisk) {    
                             if (TraceFlags.TRACE_CACHE) {
-                                System.out.println("CACHE: findAPT loading from disk for " + fileImpl.getAbsolutePath());
+                                System.err.println("CACHE: findAPT loading from disk for " + fileImpl.getAbsolutePath());
                             }                              
                             FileCache loaded = loadValidCache();
                             if (loaded != null) {
                                 if (TraceFlags.TRACE_CACHE) {
-                                    System.out.println("CACHE: findAPT loaded from disk for " + fileImpl.getAbsolutePath());
+                                    System.err.println("CACHE: findAPT loaded from disk for " + fileImpl.getAbsolutePath());
                                 }                                 
                                 apt = loaded.getAPT();
                             }
@@ -108,7 +108,7 @@ final class FileCacheSyncBridge {
     
     public APTFile findAPTLight() {
         if (TraceFlags.TRACE_CACHE) {
-            System.out.println("CACHE: findAPTLight for " + fileImpl.getAbsolutePath());
+            System.err.println("CACHE: findAPTLight for " + fileImpl.getAbsolutePath());
         }        
         APTFile aptLight = null;
         synchronized (aptLightLock) {
@@ -119,12 +119,12 @@ final class FileCacheSyncBridge {
                         aptLight = storage.getAPTLight();
                         if (aptLight == null && validCache && aptLightMaybeOnDisk) {   
                             if (TraceFlags.TRACE_CACHE) {
-                                System.out.println("CACHE: findAPTLight loading from disk for " + fileImpl.getAbsolutePath());
+                                System.err.println("CACHE: findAPTLight loading from disk for " + fileImpl.getAbsolutePath());
                             }                              
                             FileCache loaded = loadValidCache();
                             if (loaded != null) {
                                 if (TraceFlags.TRACE_CACHE) {
-                                    System.out.println("CACHE: findAPTLight loaded from disk for " + fileImpl.getAbsolutePath());
+                                    System.err.println("CACHE: findAPTLight loaded from disk for " + fileImpl.getAbsolutePath());
                                 }                                 
                                 aptLight = loaded.getAPTLight();                 
                             }
@@ -142,7 +142,7 @@ final class FileCacheSyncBridge {
         }
         if (TraceFlags.TRACE_CACHE) {
             if (aptLight == null) {
-                System.out.println("CACHE: WARNING!!! No APT Light for " + fileImpl.getAbsolutePath());
+                System.err.println("CACHE: WARNING!!! No APT Light for " + fileImpl.getAbsolutePath());
             }
         }
         return aptLight;
@@ -150,7 +150,7 @@ final class FileCacheSyncBridge {
     
     public FileCache findCacheWithAST(APTPreprocState preprocState) {
         if (TraceFlags.TRACE_CACHE) {
-            System.out.println("CACHE: findCacheWithAST for " + fileImpl.getAbsolutePath());
+            System.err.println("CACHE: findCacheWithAST for " + fileImpl.getAbsolutePath());
         }            
         AST ast = null;
         APTFile aptLight = null;
@@ -160,34 +160,34 @@ final class FileCacheSyncBridge {
             ast = storage.getAST(preprocState);
             if (ast == null) {
                 if (TraceFlags.TRACE_CACHE) {
-                    System.out.println("CACHE: findCacheWithAST AST not in memory for " + fileImpl.getAbsolutePath());
+                    System.err.println("CACHE: findCacheWithAST AST not in memory for " + fileImpl.getAbsolutePath());
                 }                 
                 if (validCache && astMaybeOnDisk) {
                     synchronized (loadLock) {                       
                         ast = storage.getAST(preprocState);
                         if (ast == null && validCache && astMaybeOnDisk) {
                             if (TraceFlags.TRACE_CACHE) {
-                                System.out.println("CACHE: findCacheWithAST loading AST for " + fileImpl.getAbsolutePath());
+                                System.err.println("CACHE: findCacheWithAST loading AST for " + fileImpl.getAbsolutePath()); 
                             }                                   
                             loaded = loadValidCache();
                             if (loaded != null) {
                                 ast = loaded.getAST(preprocState);                                   
                                 if (TraceFlags.TRACE_CACHE) {
-                                    System.out.println("CACHE: findCacheWithAST loaded AST from disk for " + fileImpl.getAbsolutePath());
+                                    System.err.println("CACHE: findCacheWithAST loaded AST from disk for " + fileImpl.getAbsolutePath());
                                 }                                 
                             }
                         }
                     }
                 } else {
                     if (TraceFlags.TRACE_CACHE) {
-                        System.out.println("CACHE: findCacheWithAST not necessary load cache, because AST not in it for " + fileImpl.getAbsolutePath());
+                        System.err.println("CACHE: findCacheWithAST not necessary load cache, because AST not in it for " + fileImpl.getAbsolutePath());
                     }                      
                 }
                 if (loaded == null) {
                     aptFull = storage.getAPT();
                     if (aptFull == null) {
                         if (TraceFlags.TRACE_CACHE) {
-                            System.out.println("CACHE: findCacheWithAST (AST preparation) creating APT for " + fileImpl.getAbsolutePath());
+                            System.err.println("CACHE: findCacheWithAST (AST preparation) creating APT for " + fileImpl.getAbsolutePath());
                         }                    
                         aptFull = createAPT(true);
                         if (aptFull != null) {
@@ -198,7 +198,7 @@ final class FileCacheSyncBridge {
                         }
                     } else {
                         if (TraceFlags.TRACE_CACHE) {
-                            System.out.println("CACHE: findCacheWithAST (AST preparation) got APT from memory for " + fileImpl.getAbsolutePath());
+                            System.err.println("CACHE: findCacheWithAST (AST preparation) got APT from memory for " + fileImpl.getAbsolutePath());
                         }
                         aptLight = storage.getAPTLight();
                     }
@@ -208,7 +208,7 @@ final class FileCacheSyncBridge {
             }
             // clear full APT and AST on requesting AST to save memory
             if (TraceFlags.TRACE_CACHE) {
-                System.out.println("CACHE: findCacheWithAST clear APT and AST after request to AST");
+                System.err.println("CACHE: findCacheWithAST clear APT and AST after request to AST");
             }
             storage.setAPT(null);
             storage.setAST(null, null);
@@ -217,7 +217,7 @@ final class FileCacheSyncBridge {
 
         if (TraceFlags.TRACE_CACHE) {
             if (aptLight == null && loaded == null) {                    
-                System.out.println("CACHE: no APT light while getting AST for " + fileImpl.getAbsolutePath());
+                System.err.println("CACHE: no APT light while getting AST for " + fileImpl.getAbsolutePath());
             }
         }        
         return loaded == null ? new FileCacheImpl(aptLight, aptFull, ast) : loaded;
@@ -260,21 +260,21 @@ final class FileCacheSyncBridge {
     
     private APTFile createAPTFull() {
         if (TraceFlags.TRACE_CACHE) {
-            System.out.println("CACHE: creating full APT for " + fileImpl.getAbsolutePath());
+            System.err.println("CACHE: creating full APT for " + fileImpl.getAbsolutePath());
         }
         return createAPT(true);
     }
     
     private APTFile createAPTLight() {
         if (TraceFlags.TRACE_CACHE) {
-            System.out.println("CACHE: creating APT light for " + fileImpl.getAbsolutePath());
+            System.err.println("CACHE: creating APT light for " + fileImpl.getAbsolutePath());
         }        
         return createAPT(false);
     }
     
     private Object createAPTLock = new Object() {
         public String toString() {
-            return "APT creating lock for " + fileImpl.getAbsolutePath();
+            return "APT creating lock for " + fileImpl.getAbsolutePath(); // NOI18N
         }
     };
     
@@ -302,13 +302,13 @@ final class FileCacheSyncBridge {
                         out = full ? aptFull : aptLight;
                     }
                 } catch (IOException ex) {
-                    APTUtils.LOG.log(Level.SEVERE, "create stream: {0}", new Object[] {ex.getMessage()});
+                    APTUtils.LOG.log(Level.SEVERE, "create stream: {0}", new Object[] {ex.getMessage()});// NOI18N
                 } finally {
                     if (stream != null) {
                         try {
                             stream.close();
                         } catch (IOException ex) {
-                            APTUtils.LOG.log(Level.SEVERE, "closing stream: {0}", new Object[] {ex.getMessage()});
+                            APTUtils.LOG.log(Level.SEVERE, "closing stream: {0}", new Object[] {ex.getMessage()});// NOI18N
                         }
                     }
                 }
@@ -339,20 +339,20 @@ final class FileCacheSyncBridge {
 
     private Object aptLock = new Object() {
         public String toString() {
-            return "APT lock for " + fileImpl.getAbsolutePath();
+            return "APT lock for " + fileImpl.getAbsolutePath(); // NOI18N
         }
     };
 
     private Object aptLightLock = new Object() {
         public String toString() {
-            return "APT Light lock for " + fileImpl.getAbsolutePath();
+            return "APT Light lock for " + fileImpl.getAbsolutePath(); // NOI18N
         }
     };
     
 
     private Object astLock = new Object() {
         public String toString() {
-            return "AST lock for " + fileImpl.getAbsolutePath();
+            return "AST lock for " + fileImpl.getAbsolutePath(); // NOI18N
         }
     };    
 }

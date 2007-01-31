@@ -49,7 +49,7 @@ public class CompilerTypePanel extends MakefileWizardPanel {
      */
     CompilerTypePanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = getString("LBL_CompilerTypePanel"); //NOI18N
+	String subtitle = getString("LBL_CompilerTypePanel"); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 	initialized = false;

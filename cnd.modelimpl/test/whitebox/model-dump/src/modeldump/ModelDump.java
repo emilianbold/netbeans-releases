@@ -32,6 +32,11 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
 import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
+import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.makeproject.api.compilers.GNUCCCompiler;
+import org.netbeans.modules.cnd.makeproject.api.compilers.GNUCCompiler;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTPreprocStateImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
@@ -60,8 +65,8 @@ public class ModelDump {
     static ArrayList<String> sys_cpp_defines = new ArrayList<String>();
     
     static {
-        getSystemPredefines("c", sys_c_includes, sys_c_defines);
-        getSystemPredefines("c++", sys_cpp_includes, sys_cpp_defines);
+        getSystemPredefines("c", sys_c_includes, sys_c_defines); // NOI18N
+        getSystemPredefines("c++", sys_cpp_includes, sys_cpp_defines); // NOI18N
     }
     
     public ModelDump(PrintStream log) {
@@ -69,66 +74,93 @@ public class ModelDump {
         model = new ModelImpl();
     }
     
-    // Get predefined includes and defines...
-    
-    private static void getSystemPredefines(String lang, ArrayList<String> includes, ArrayList<String> defines) {
-        Process gcc = null;
-        boolean inSearchList = false;
-        boolean waitingDefinitions = true;
-        
-        try {
-            gcc = Runtime.getRuntime().exec("gcc -v -E -x " + lang + " /dev/null");
-            
-            InputStream in = gcc.getErrorStream();
-            StringBuffer str = new StringBuffer();
-            int i;
-            char c;
-            
-            while((i = in.read()) != -1) {
-                c = (char)i;
-                
-                if (c == '-' && (char)in.read() == 'D') {
-                    do {
-                        str = new StringBuffer();
-                        while ((c = (char)in.read()) != ' ') {
-                            str.append(c);
-                        }
-                        defines.add(str.toString());
-                        
-                    } while ((char)in.read() == '-' && (char)in.read() == 'D');
-                } else {
-                    if (c == '\n') {
-                        String string = str.toString();
-                        if (string.matches("#include <.*")) {
-                            inSearchList = true;
-                        } else if (string.matches("End of search list.*")) {
-                            inSearchList = false;
-                        } else if (inSearchList) {
-                            includes.add(string.trim());
-                        }
-                        str = new StringBuffer();
-                    } else {
-                        str.append(c);
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+    public void setLog(PrintStream log) {
+	this.log = log;
     }
+    
+    // Get predefined includes and defines...
+
+    private static void getSystemPredefines(String lang, ArrayList<String> includes, ArrayList<String> defines) {
+	BasicCompiler compiler;
+	if( "c".equals(lang) ) { // NOI18N
+	    compiler = new GNUCCompiler();
+	}
+	else if( "c++".equals(lang) ) { // NOI18N
+	    compiler = new GNUCCCompiler();
+	}
+	else {
+	    return;
+	}
+	Platform platform = Platforms.getPlatform(Platform.getDefaultPlatform());
+	for( Object o : compiler.getSystemIncludeDirectories(platform) ) {
+	    includes.add((String) o);
+	}
+	for( Object o : compiler.getSystemPreprocessorSymbols(platform) ) {
+	    defines.add((String) o);
+	}
+    }
+
+//
+// NB!!!: The function below "eats" dashes ("-" symbols)
+//    
+//    private static void getSystemPredefines(String lang, ArrayList<String> includes, ArrayList<String> defines) {
+//        Process gcc = null;
+//        boolean inSearchList = false;
+//        boolean waitingDefinitions = true;
+//        
+//        try {
+//            gcc = Runtime.getRuntime().exec("gcc -v -E -x " + lang + " /dev/null"); // NOI18N
+//            
+//            InputStream in = gcc.getErrorStream();
+//            StringBuffer str = new StringBuffer();
+//            int i;
+//            char c;
+//            
+//            while((i = in.read()) != -1) {
+//                c = (char)i;
+//                
+//                if (c == '-' && (char)in.read() == 'D') {
+//                    do {
+//                        str = new StringBuffer();
+//                        while ((c = (char)in.read()) != ' ') {
+//                            str.append(c);
+//                        }
+//                        defines.add(str.toString());
+//                        
+//                    } while ((char)in.read() == '-' && (char)in.read() == 'D');
+//                } else {
+//                    if (c == '\n') {
+//                        String string = str.toString();
+//                        if (string.matches("#include <.*")) { // NOI18N
+//                            inSearchList = true;
+//                        } else if (string.matches("End of search list.*")) { // NOI18N
+//                            inSearchList = false;
+//                        } else if (inSearchList) {
+//                            includes.add(string.trim());
+//                        }
+//                        str = new StringBuffer();
+//                    } else {
+//                        str.append(c);
+//                    }
+//                }
+//            }
+//        } catch (IOException ex) {
+//            ex.printStackTrace();
+//        }
+//    }
     
     public void startModel() {
         if (!modelStarted) {
-            log.println("Starting model...");
+            log.println("Starting model..."); // NOI18N
             model.startup();
-            project = model.addProject("DummyProjectID", "Dummy Project");
+            project = model.addProject("DummyProjectID", "Dummy Project"); // NOI18N
             modelStarted = true;
         }
     }
     
     public void stopModel() {
         if (modelStarted) {
-            log.println("Stopping model...");
+            log.println("Stopping model..."); // NOI18N
             model.shutdown();
             modelStarted = false;
         }
@@ -136,19 +168,19 @@ public class ModelDump {
     
     public static void main(String[] args) {
         try {
-            Config config = new Config("l:i:d:vh", args);
+            Config config = new Config("l:i:d:vh", args); // NOI18N
             
-            if (config.flagSet("-h")) {
+            if (config.flagSet("-h")) { // NOI18N
                 outUsage();
                 return;
             }
             
-            String logFile = config.getParameterFor("-l");
+            String logFile = config.getParameterFor("-l"); // NOI18N
             PrintStream log = (logFile == null) ? System.out : new PrintStream(logFile);
             
             String sourceFile = config.getArgument();
-            List<String> includes = config.getParametersFor("-i");
-            List<String> defines = config.getParametersFor("-d");
+            List<String> includes = config.getParametersFor("-i"); // NOI18N
+            List<String> defines = config.getParametersFor("-d"); // NOI18N
             
             if (includes == null) {
                 includes = new ArrayList<String>();
@@ -162,7 +194,7 @@ public class ModelDump {
             CsmFile csmFile = modelDump.process(sourceFile, includes, defines);
             FileCodeModel codeModel = modelDump.modelReader.getModelFor(csmFile);
             
-            if (config.flagSet("-v")) {
+            if (config.flagSet("-v")) { // NOI18N
                 codeModel.dump();
             }
             
@@ -175,14 +207,14 @@ public class ModelDump {
     }
     
     public FileImpl process(String fileName, List<String> includes, List<String> defines) {
-        log.println("\nGetting model data for " + fileName + " ...");
+        log.println("\nGetting model data for " + fileName + " ..."); // NOI18N
         
         if (!modelStarted) {
             startModel();
         }
         
         ArrayList<String> sysIncludes = null;
-        if (fileName.endsWith(".c")) {
+        if (fileName.endsWith(".c")) { // NOI18N
             sysIncludes = sys_c_includes;
             defines.addAll(sys_c_defines);
         } else {
@@ -192,7 +224,7 @@ public class ModelDump {
         
         FileImpl fileImpl = parseFile(fileName, sysIncludes, includes, defines);
         
-        log.println("\t... done.\n");
+        log.println("\t... done.\n"); // NOI18N
         
         return fileImpl;
     }
@@ -201,17 +233,17 @@ public class ModelDump {
         File file = new File(fileName);
         FileImpl fileImpl = null;
         
-        log.println("Processing file: " + fileName);
-        log.println("System includes: " + sysIncludes);
-        log.println("Quote includes: " + quoteIncludes);
-        log.println("Definitions: " + defines);
+        log.println("Processing file: " + fileName); // NOI18N
+        log.println("System includes: " + sysIncludes); // NOI18N
+        log.println("Quote includes: " + quoteIncludes); // NOI18N
+        log.println("Definitions: " + defines); // NOI18N
         
         APTSystemStorage aptSystemStorage = new APTSystemStorage();
         APTMacroMap map = new APTFileMacroMap();
         APTMacroUtils.fillMacroMap(map, defines);
         
-        List checkedSysIncludes = aptSystemStorage.getIncludes("TraceModelSysIncludes", sysIncludes);
-        APTIncludeHandler aptIncludeHandler = new APTIncludeHandlerImpl(quoteIncludes, checkedSysIncludes);
+        List checkedSysIncludes = aptSystemStorage.getIncludes("TraceModelSysIncludes", sysIncludes); // NOI18N
+        APTIncludeHandler aptIncludeHandler = new APTIncludeHandlerImpl(file.getAbsolutePath(), quoteIncludes, checkedSysIncludes);
         
         APTPreprocState preprocState = new APTPreprocStateImpl(map, aptIncludeHandler, true);
         fileImpl = (FileImpl) project.testAPTParseFile(file.getAbsolutePath(), preprocState);

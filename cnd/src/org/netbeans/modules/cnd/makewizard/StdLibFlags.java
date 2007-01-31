@@ -25,18 +25,18 @@ import org.openide.util.NbBundle;
 /** The Standard Libraries flags are stored here */
 public final class StdLibFlags {
 
-    public StdLib motif= new StdLib(getString("TB_Motif"), getString("MNEM_Motif").charAt(0), "-lXm -lXt -lXext -lX11");
-    public StdLib math = new StdLib(getString("TB_Math"), getString("MNEM_Math").charAt(0), "-lm");
-    public StdLib socketnsl = new StdLib(getString("TB_Nsl"), getString("MNEM_Nsl").charAt(0), "-lsocket -lnsl");
-    public StdLib solthread = new StdLib(getString("TB_SolThreads"), getString("MNEM_SolThreads").charAt(0), "-lthread");
-    public StdLib posixthread = new StdLib(getString("TB_PosixThreads"), getString("MNEM_PosixThreads").charAt(0), "-lpthread");
-    public StdLib posix4 = new StdLib(getString("TB_Posix4"), getString("MNEM_Posix4").charAt(0), "-lposix4");
-    public StdLib i18n = new StdLib(getString("TB_I18n"), getString("MNEM_I18n").charAt(0), "-lintl");
-    public StdLib genlib = new StdLib(getString("TB_GenLib"), getString("MNEM_GenLib").charAt(0), "-lm");
-    public StdLib dynamiclib = new StdLib(getString("TB_DynamicLib"), getString("MNEM_DynamicLib").charAt(0), "-ldl");
-    public StdLib curses = new StdLib(getString("TB_Curses"), getString("MNEM_Curses").charAt(0), "-lcurses");
-    public StdLib rwtools = new StdLib(getString("TB_RWTools"), getString("MNEM_RWTools").charAt(0), "-library=rwtools7,iostream");
-    public StdLib perflib = new StdLib(getString("TB_PerfLib"), getString("MNEM_PerfLib").charAt(0), "-xlic_lib=sunperf");
+    public StdLib motif= new StdLib(getString("TB_Motif"), getString("MNEM_Motif").charAt(0), "-lXm -lXt -lXext -lX11"); // NOI18N
+    public StdLib math = new StdLib(getString("TB_Math"), getString("MNEM_Math").charAt(0), "-lm"); // NOI18N
+    public StdLib socketnsl = new StdLib(getString("TB_Nsl"), getString("MNEM_Nsl").charAt(0), "-lsocket -lnsl"); // NOI18N
+    public StdLib solthread = new StdLib(getString("TB_SolThreads"), getString("MNEM_SolThreads").charAt(0), "-lthread"); // NOI18N
+    public StdLib posixthread = new StdLib(getString("TB_PosixThreads"), getString("MNEM_PosixThreads").charAt(0), "-lpthread"); // NOI18N
+    public StdLib posix4 = new StdLib(getString("TB_Posix4"), getString("MNEM_Posix4").charAt(0), "-lposix4"); // NOI18N
+    public StdLib i18n = new StdLib(getString("TB_I18n"), getString("MNEM_I18n").charAt(0), "-lintl"); // NOI18N
+    public StdLib genlib = new StdLib(getString("TB_GenLib"), getString("MNEM_GenLib").charAt(0), "-lm"); // NOI18N
+    public StdLib dynamiclib = new StdLib(getString("TB_DynamicLib"), getString("MNEM_DynamicLib").charAt(0), "-ldl"); // NOI18N
+    public StdLib curses = new StdLib(getString("TB_Curses"), getString("MNEM_Curses").charAt(0), "-lcurses"); // NOI18N
+    public StdLib rwtools = new StdLib(getString("TB_RWTools"), getString("MNEM_RWTools").charAt(0), "-library=rwtools7,iostream"); // NOI18N
+    public StdLib perflib = new StdLib(getString("TB_PerfLib"), getString("MNEM_PerfLib").charAt(0), "-xlic_lib=sunperf"); // NOI18N
 
     private StdLib[] solarisStdLibs = {
 	motif,
@@ -125,7 +125,7 @@ public final class StdLibFlags {
 
 	if (getLinkType() == StdLibFlags.DYNAMIC_LINK_TYPE) {
 	    if (toolset == MakefileData.SUN_TOOLSET_TYPE) {
-		//buf.append("-Bdynamic ");					//NOI18N
+		//buf.append("-Bdynamic ");					// NOI18N
 		; // nothing
 	    }
 	    else {
@@ -133,10 +133,10 @@ public final class StdLibFlags {
 	    }
 	} else if (getLinkType() == StdLibFlags.STATIC_LINK_TYPE) {
 	    if (toolset == MakefileData.SUN_TOOLSET_TYPE) {
-		buf.append("-Bstatic ");					//NOI18N
+		buf.append("-Bstatic ");					// NOI18N
 	    }
 	    else {
-		buf.append("-static ");					//NOI18N
+		buf.append("-static ");					// NOI18N
 	    }
 	}
 
@@ -144,22 +144,22 @@ public final class StdLibFlags {
 	if (isMotifLibs() && !t.containsXdFiles()) {
 	    if (os == MakefileData.SOLARIS_OS_TYPE) {
 		if (is64Bit) {
-		    buf.append("-L/usr/openwin/lib/sparcv9 ");		//NOI18N
-		    buf.append("-L/usr/dt/lib/sparcv9 ");		 	//NOI18N
-		    buf.append("-R/usr/openwin/lib/sparcv9 ");		//NOI18N
-		    buf.append("-R/usr/dt/lib/sparcv9 ");		 	//NOI18N
+		    buf.append("-L/usr/openwin/lib/sparcv9 ");		// NOI18N
+		    buf.append("-L/usr/dt/lib/sparcv9 ");		 	// NOI18N
+		    buf.append("-R/usr/openwin/lib/sparcv9 ");		// NOI18N
+		    buf.append("-R/usr/dt/lib/sparcv9 ");		 	// NOI18N
 		} else {
-		    buf.append("-L/usr/openwin/lib -L/usr/dt/lib ");	//NOI18N
-		    buf.append("-R/usr/openwin/lib -R/usr/dt/lib ");	//NOI18N
+		    buf.append("-L/usr/openwin/lib -L/usr/dt/lib ");	// NOI18N
+		    buf.append("-R/usr/openwin/lib -R/usr/dt/lib ");	// NOI18N
 		}
 	    }
 	    else if (os == MakefileData.LINUX_OS_TYPE) {
 		if (is64Bit) {
 		    // ???
-		    buf.append("-L/usr/X11R6/lib ");	//NOI18N
+		    buf.append("-L/usr/X11R6/lib ");	// NOI18N
 		}
 		else {
-		    buf.append("-L/usr/X11R6/lib ");	//NOI18N
+		    buf.append("-L/usr/X11R6/lib ");	// NOI18N
 		}
 	    }
 	    else {
@@ -193,12 +193,12 @@ public final class StdLibFlags {
     }
 
 
-    private String indent = new String("    ");				//NOI18N
+    private String indent = new String("    ");				// NOI18N
 
     /** Default dump has no indent */
     protected void dump() {
-	println("    stdLibFlags = {");					//NOI18N
-	println("    }\n");						//NOI18N
+	println("    stdLibFlags = {");					// NOI18N
+	println("    }\n");						// NOI18N
     }
 
 

@@ -56,7 +56,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase implements Csm
                     col = child.getColumn();
                 }
                 System.err.println("Corrupted AST for namespace alias in " + 
-                file.getAbsolutePath() + ' ' + ln + ":" + col);
+                file.getAbsolutePath() + ' ' + ln + ":" + col); // NOI18N
             }
             namespace = "";
         }
@@ -120,7 +120,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase implements Csm
     }
     
     public String toString() {
-        return "" + getKind() + ' ' + alias + '=' + namespace /*+ " rawName=" + Utils.toString(getRawName())*/;
+        return "" + getKind() + ' ' + alias + '=' + namespace /*+ " rawName=" + Utils.toString(getRawName())*/; // NOI18N
     }
     
     public CsmScope getScope() {

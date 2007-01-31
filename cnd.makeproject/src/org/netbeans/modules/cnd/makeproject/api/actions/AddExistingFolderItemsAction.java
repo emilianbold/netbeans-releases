@@ -72,7 +72,8 @@ public class AddExistingFolderItemsAction extends NodeAction {
             seed = makeConfigurationDescriptor.getBaseDir();
         }
         
-        JButton addButton = new JButton("Add");
+        JButton addButton = new JButton(getString("AddButtonText"));
+        addButton.getAccessibleContext().setAccessibleDescription(getString("AddButtonAD"));
         Object[] options = new Object[] {
             addButton,
             DialogDescriptor.CANCEL_OPTION,
@@ -103,9 +104,12 @@ public class AddExistingFolderItemsAction extends NodeAction {
         panel.add(instructionsTextArea, gridBagConstraints);
         
         sourceFilesPanel.setSeed(makeConfigurationDescriptor.getBaseDir(), null);
+//        sourceFilesPanel.requestFocus();
+//        sourceFilesPanel.initFocus();
+        panel.getAccessibleContext().setAccessibleDescription(getString("AddFilesDialogAD"));
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 panel,
-                "Add Files", 
+                getString("AddFilesDialogText"), 
                 true,
                 options,
                 addButton,

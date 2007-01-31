@@ -54,7 +54,7 @@ public final class APTElseNode extends APTTokenAndChildBasedNode
     public boolean accept(Token token) {
         assert (token != null);
         int ttype = token.getType();
-        assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers";
+        assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers"; // NOI18N
         // eat all till END_PREPROC_DIRECTIVE
         return !APTUtils.isEndDirectiveToken(ttype);
     }

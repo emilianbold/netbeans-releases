@@ -203,7 +203,7 @@ public class GoToDeclarationAction extends AbstractAction {
     } 
     
     private static String getElementJumpName(CsmOffsetable element) {
-        String text = "";
+        String text = ""; // NOI18N
         if (element != null) {
             text = (element instanceof CsmNamedElement) ? 
                         ((CsmNamedElement) element).getName() : 

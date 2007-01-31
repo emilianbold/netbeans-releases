@@ -1893,7 +1893,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                 sb.append(i);
                 sb.append("]: "); // NOI18N
                 sb.append(e.toString(0));
-                sb.append('\n');
+                sb.append('\n'); //NOI18N
             }
         }
         return sb.toString();

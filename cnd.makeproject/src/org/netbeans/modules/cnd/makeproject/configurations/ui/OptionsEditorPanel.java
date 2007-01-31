@@ -25,6 +25,7 @@ import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.util.NbBundle;
 
 public class OptionsEditorPanel extends javax.swing.JPanel implements PropertyChangeListener {
     private BooleanConfiguration inheritValues;
@@ -48,6 +49,10 @@ public class OptionsEditorPanel extends javax.swing.JPanel implements PropertyCh
         
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         env.addPropertyChangeListener(this);
+        
+        // Accessibility
+        additionalOptionsTextArea.getAccessibleContext().setAccessibleDescription(getString("ADDITIONAL_OPTIONS_AD"));
+        inheritCheckBox.getAccessibleContext().setAccessibleDescription(getString("INHERIT_AD"));
     }
     
     /** This method is called from within the constructor to
@@ -175,4 +180,7 @@ public class OptionsEditorPanel extends javax.swing.JPanel implements PropertyCh
     private javax.swing.JCheckBox inheritCheckBox;
     // End of variables declaration//GEN-END:variables
     
+    private static String getString(String s) {
+        return NbBundle.getBundle(OptionsEditorPanel.class).getString(s);
+    }
 }

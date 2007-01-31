@@ -26,13 +26,9 @@ import java.util.*;
 
 import antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.deep.*;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-
-import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
-
-import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 /**
@@ -141,7 +137,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
 //        if( text == null ) {
             StringBuffer sb = new StringBuffer();
             if( isConst() ) {
-                sb.append("const ");
+                sb.append("const "); // NOI18N
             }
             sb.append(classifierText);
             for( int i = 0; i < getPointerDepth(); i++ ) {
@@ -151,7 +147,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
                 sb.append('&');
             }
             for( int i = 0; i < getArrayDepth(); i++ ) {
-                sb.append("[]");
+                sb.append("[]"); // NOI18N
             }
 //            text = sb.toString();
 //        }
@@ -166,7 +162,8 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         else {
             StringBuffer sb = new StringBuffer();
             addText(sb, AstRenderer.getFirstSiblingSkipQualifiers(node));
-            return sb.toString();
+            return TextCache.getString(sb.toString());
+//            return sb.toString();
         }
     }
     
@@ -245,8 +242,8 @@ public class TypeImpl extends OffsetableBase implements CsmType {
                                 StringBuffer tokenText = new StringBuffer();
                                 tokenText.append('[').append(namePart.getText());
                                 if (namePart.getNumberOfChildren() == 0) {
-                                    tokenText.append(", line=").append(namePart.getLine());
-                                    tokenText.append(", column=").append(namePart.getColumn());
+                                    tokenText.append(", line=").append(namePart.getLine()); // NOI18N
+                                    tokenText.append(", column=").append(namePart.getColumn()); // NOI18N
                                 }
                                 tokenText.append(']');
                                 System.err.println("Incorect token: expected '::', found " + tokenText.toString());

@@ -259,7 +259,7 @@ public class CPPParserEx extends CPPParser {
                 
                 String tmp_str = enclosingClass;                
                 { 
-                     int tmp_int = enclosingClass.lastIndexOf("::");
+                     int tmp_int = enclosingClass.lastIndexOf("::"); // NOI18N
                      if(tmp_int != -1 && tmp_int + 2 < tmp_str.length()) {
                           tmp_str = enclosingClass.substring(tmp_int + 2);
                      }
@@ -613,7 +613,7 @@ public class CPPParserEx extends CPPParser {
 	    // DW 21/05/04 Check consistency of local qi with global _td with view to
 	    // removing test for global _td
 	    if (reportOddWarnings && !(qi == qiType && _td)) {
-		printf("declaratorID[%d]: Warning qi %d, _td %d inconsistent for %s\n",
+		printf("declaratorID[%d]: Warning qi %d, _td %d inconsistent for %s\n", // NOI18N
 			    getLine(1), qi, _td, id);
 	    }
 	    
@@ -622,8 +622,8 @@ public class CPPParserEx extends CPPParser {
 	    symbols.defineInScope(id, c, externalScope);
              */
 	    if(statementTrace >= 2) {
-		    printf("declaratorID[%d]: Declare %s in external scope 1, " +
-			    "ObjectType %d\n", getLine(1), id, c.getType());
+		    printf("declaratorID[%d]: Declare %s in external scope 1, " + // NOI18N
+			    "ObjectType %d\n", getLine(1), id, c.getType()); // NOI18N
 	    }
 	    // DW 04/08/03 Scoping not fully implemented
 	    // Typedefs all recorded in 'external' scope and therefor never removed
@@ -633,13 +633,13 @@ public class CPPParserEx extends CPPParser {
 	    symbols.define(id, c);	// Add to current scope
              */
 	    if(statementTrace >= 2) {
-		printf("declaratorID[%d]: Declare %s in current scope %d, " +
-			    "ObjectType %d\n", getLine(1), id,
+		printf("declaratorID[%d]: Declare %s in current scope %d, " + // NOI18N
+			    "ObjectType %d\n", getLine(1), id, // NOI18N
 			    /*symbols.getCurrentScopeIndex()*/0, c.getType());
 	    }
 	} else {
 	    if (reportOddWarnings && qi != qiVar) {
-		printf("declaratorID[%d]: Warning qi (%d) not qiVar (%d) for %s\n",
+		printf("declaratorID[%d]: Warning qi (%d) not qiVar (%d) for %s\n", // NOI18N
 			    getLine(1), qi, qiVar, id); 
 	    }
 
@@ -649,8 +649,8 @@ public class CPPParserEx extends CPPParser {
 	    symbols.define(id, c);	// Add to current scope
              */
 	    if(statementTrace >= 2) {
-		    printf("declaratorID[%d]: Declare %s in current scope %d, " +
-			    "ObjectType %d\n", getLine(1),
+		    printf("declaratorID[%d]: Declare %s in current scope %d, " + // NOI18N
+			    "ObjectType %d\n", getLine(1), // NOI18N
 			    id, /*symbols.getCurrentScopeIndex()*/0, c.getType());
 	    }
 	}
@@ -768,17 +768,17 @@ public class CPPParserEx extends CPPParser {
 	    c = new CPPSymbol(tag, CPPSymbol.otClass);
 	    break;
         case tsInvalid:
-            reportError("classForwardDeclaration: invalid TypeSpecifier");
+            reportError("classForwardDeclaration: invalid TypeSpecifier"); // NOI18N
         default:
-           throw new IllegalArgumentException("Illegal argument: " + ts);
+           throw new IllegalArgumentException("Illegal argument: " + ts); // NOI18N
 	}
 
         /* TODO: revive the original code:
 	symbols->defineInScope(tag, c, externalScope);
          */
 	if (statementTrace >= 2) {
-	    printf("classForwardDeclaration[%d]: Declare %s in external scope, " +
-			"ObjectType %d\n", getLine(1), tag, c.getType());
+	    printf("classForwardDeclaration[%d]: Declare %s in external scope, " + // NOI18N
+			"ObjectType %d\n", getLine(1), tag, c.getType()); // NOI18N
 	}
 
 	// If it's a friend class forward decl, put in global scope also.
@@ -829,20 +829,20 @@ public class CPPParserEx extends CPPParser {
 	    c = new CPPSymbol(tag, CPPSymbol.otClass);
 	    break;
         case tsInvalid:
-            reportError("classForwardDeclaration: invalid TypeSpecifier");
+            reportError("classForwardDeclaration: invalid TypeSpecifier"); // NOI18N
         default:
-           throw new IllegalArgumentException("Illegal argument: " + ts);
+           throw new IllegalArgumentException("Illegal argument: " + ts); // NOI18N
 	}
         
         /* TODO: revive the original code:
 	symbols->defineInScope(tag, c, externalScope);
          */
 	if (statementTrace >= 2) {
-	    printf("beginClassDefinition[%d]: Define %s in external scope (1), " +
-			"ObjectType %d\n", getLine(1),tag,c.getType());
+	    printf("beginClassDefinition[%d]: Define %s in external scope (1), " + // NOI18N
+			"ObjectType %d\n", getLine(1),tag,c.getType()); // NOI18N
 	}
 	qualifierPrefix.append(tag);
-	qualifierPrefix.append("::");
+	qualifierPrefix.append("::"); // NOI18N
 
 	// add all member type symbols into the global scope (not correct, but
 	// will work for most code).
@@ -862,7 +862,7 @@ public class CPPParserEx extends CPPParser {
 
 	// remove final T:: from A::B::C::T::
 	// upon backing out of last class, qualifierPrefix is set to ""
-        int pos = qualifierPrefix.lastIndexOf("::");
+        int pos = qualifierPrefix.lastIndexOf("::"); // NOI18N
         if( pos >= 0 ) {
             qualifierPrefix.setLength(pos);
         }
@@ -890,8 +890,8 @@ public class CPPParserEx extends CPPParser {
 	symbols->defineInScope(e, c, externalScope);
          */
 	if (statementTrace >= 2) { 
-	    printf("beginEnumDefinition[%d]: %s define in external scope, " +
-			"ObjectType %d\n", getLine(1),e,c.getType());
+	    printf("beginEnumDefinition[%d]: %s define in external scope, " + // NOI18N
+			"ObjectType %d\n", getLine(1),e,c.getType()); // NOI18N
 	}
     }
     
@@ -907,8 +907,8 @@ public class CPPParserEx extends CPPParser {
 	symbols->defineInScope(t, e, templateParameterScope);
          */
 	if (statementTrace >= 2) {
-	    printf("templateTypeParameter[%d]: Declare %s in " + 
-			"template parameter scope (0), ObjectType %d\n",
+	    printf("templateTypeParameter[%d]: Declare %s in " + // NOI18N
+			"template parameter scope (0), ObjectType %d\n", // NOI18N
 			getLine(1),t,e.getType());
 	}
     }
@@ -1062,7 +1062,7 @@ public class CPPParserEx extends CPPParser {
     /** overrides base implementation to make indentation 2 instead of 1 */
     public void traceIndent() {
         for (int i = 0; i < traceDepth; i++)
-            System.out.print("  ");
+            System.out.print("  "); // NOI18N
     }    
     
     /** 

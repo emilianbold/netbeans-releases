@@ -47,7 +47,7 @@ public class BaseDirectoryPanel extends DirectoryChooserPanel {
      */
     public BaseDirectoryPanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = getString("LBL_BaseDirectoryPanel"); //NOI18N
+	String subtitle = getString("LBL_BaseDirectoryPanel"); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 	initialized = false;
@@ -118,9 +118,9 @@ public class BaseDirectoryPanel extends DirectoryChooserPanel {
      */
     private void create() {
 
-	create(getString("LBL_BaseDirectory"),			//NOI18N
+	create(getString("LBL_BaseDirectory"),			// NOI18N
 			FileChooserPanel.ABSOLUTE_PATH,
-			getString("HLP_BaseDirectory"));		//NOI18N
+			getString("HLP_BaseDirectory"));		// NOI18N
 
 	JTextField tf = getText();
 	tf.getDocument().addDocumentListener(new DocumentListener() {
@@ -140,7 +140,7 @@ public class BaseDirectoryPanel extends DirectoryChooserPanel {
 
 	getLabel().setLabelFor(tf);
 	getLabel().setDisplayedMnemonic(
-		    getString("MNEM_BaseDirectory").charAt(0));	//NOI18N
+		    getString("MNEM_BaseDirectory").charAt(0));	// NOI18N
     }
 
     private final void checkit() {

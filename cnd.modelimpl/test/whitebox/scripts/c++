@@ -1,0 +1,3 @@
+#!/bin/bash
+export DWARF_TEST_GCC=${GNU_PATH}/g++
+substitute.sh $@

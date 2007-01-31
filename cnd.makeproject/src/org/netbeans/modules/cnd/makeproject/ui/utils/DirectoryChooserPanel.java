@@ -32,6 +32,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener { 
     private MyListEditorPanel myListEditorPanel;
@@ -67,6 +68,9 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
         
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         env.addPropertyChangeListener(this);
+        
+        // Accessibility
+        inheritCheckBox.getAccessibleContext().setAccessibleDescription(getString("INHERIT_CHECKBOX_AD"));
     }
 
     public void setInstructionsText(String txt) {
@@ -133,6 +137,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
         scrollPanel.setBorder(null);
         panel.setLayout(new java.awt.GridBagLayout());
 
+        inheritLabel.setLabelFor(inheritTextArea);
         inheritLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle").getString("INHERITED_VALUES_LBL"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -202,7 +207,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
 		seed = FileChooser.getCurrectChooserFile().getPath();
 	    if (seed == null)
 		seed = baseDir;
-	    FileChooser fileChooser = new FileChooser("Select Directory", "Select", JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+	    FileChooser fileChooser = new FileChooser(getString("ADD_DIRECTORY_DIALOG_TITLE"), getString("ADD_DIRECTORY_BUTTON_TXT"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
 	    PathPanel pathPanel = null;
 	    if (addPathPanel)
 		pathPanel = new PathPanel();
@@ -227,24 +232,24 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
 	}
 
 	public String getListLabelText() {
-	    return "Directories:";
+	    return getString("DIRECTORIES_LABEL_TXT");
 	}
 	public char getListLabelMnemonic() {
-	    return 'I';
+	    return getString("DIRECTORIES_LABEL_MN").charAt(0);
 	}
     
 	public String getAddButtonText() {
-	    return "Add Directory";
+	    return getString("ADD_BUTTON_TXT");
 	}
 	public char getAddButtonMnemonics() {
-	    return 'A';
+	    return getString("ADD_BUTTON_MN").charAt(0);
 	}
     
 	public String getRenameButtonText() {
-	    return "Edit";
+	    return getString("EDIT_BUTTON_TXT");
 	}
 	public char getRenameButtonMnemonics() {
-	    return 'E';
+	    return getString("EDIT_BUTTON_MN").charAt(0);
 	}
 
 	public Object copyAction(Object o) {
@@ -254,7 +259,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
 	public void editAction(Object o) {
 	    String s = (String)o;
 
-	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine("", "Edit");
+	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
 	    notifyDescriptor.setInputText(s);
 	    DialogDisplayer.getDefault().notify(notifyDescriptor);
 	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
@@ -282,4 +287,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
     private javax.swing.JScrollPane scrollPanel;
     // End of variables declaration//GEN-END:variables
     
+    private static String getString(String key) {
+        return NbBundle.getMessage(DirectoryChooserPanel.class, key);
+    }
 }

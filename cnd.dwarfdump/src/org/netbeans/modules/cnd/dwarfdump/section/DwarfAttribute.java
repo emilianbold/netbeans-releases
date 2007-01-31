@@ -26,20 +26,24 @@ public class DwarfAttribute {
     }
     
     public void dump(PrintStream out, Object value) {
-        out.print("\t" + attrName + " [" + valueForm + "]");
+        out.print("\t" + attrName + " [" + valueForm + "]"); // NOI18N
         
         if (value != null) {
-            String val;
-            
             if (valueForm.equals(FORM.DW_FORM_ref4)) {
-                val = "<" + Integer.toHexString(((Integer)value).intValue()) + ">";
+                out.printf(" <%x>", value); // NOI18N
+            } else if (valueForm.equals(FORM.DW_FORM_block1)) {
+                byte[] data = (byte[])value;
+                out.printf(" %d bytes: ", data.length); // NOI18N
+                for (int i = 0; i < data.length; i++) {
+                    out.printf(" 0x%x", data[i]); // NOI18N
+                }
             } else {
-                val = value.toString();
+                out.printf(" %s", value.toString()); // NOI18N
             }
             
-            out.println("  " +  val);
+            out.printf("\n"); // NOI18N
         } else {
-            out.println("");
+            out.println(""); // NOI18N
         }
     }
     

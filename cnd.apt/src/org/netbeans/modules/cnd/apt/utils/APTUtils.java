@@ -45,11 +45,11 @@ import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
  * @author Vladimir Voskresensky
  */
 public class APTUtils {
-    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.apt");
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.apt"); // NOI18N
     
     static {
         // command line param has priority for logging
-        String level = System.getProperty("org.netbeans.modules.cnd.apt.level");
+        String level = System.getProperty("org.netbeans.modules.cnd.apt.level"); // NOI18N
         // do not change it
         if (level == null) {
             // command line param has priority for logging
@@ -74,17 +74,17 @@ public class APTUtils {
             return APTTraceFlags.USE_APT_TEST_TOKEN ? (APTToken)new APTTestToken() : new APTBaseToken();
         }
         switch (type) {
-                // IDs
-            case APTTokenTypes.ID: 
+            // IDs
+            case APTTokenTypes.ID:
             case APTTokenTypes.ID_DEFINED:
                 // Strings and chars
-            case APTTokenTypes.STRING_LITERAL: 
-            case APTTokenTypes.CHAR_LITERAL: 
+            case APTTokenTypes.STRING_LITERAL:
+            case APTTokenTypes.CHAR_LITERAL:
                 // Numbers
-            case APTTokenTypes.DECIMALINT: 
-            case APTTokenTypes.HEXADECIMALINT: 
-            case APTTokenTypes.FLOATONE: 
-            case APTTokenTypes.FLOATTWO: 
+            case APTTokenTypes.DECIMALINT:
+            case APTTokenTypes.HEXADECIMALINT:
+            case APTTokenTypes.FLOATONE:
+            case APTTokenTypes.FLOATTWO:
             case APTTokenTypes.OCTALINT:
             case APTTokenTypes.NUMBER:
                 // Include strings
@@ -99,43 +99,63 @@ public class APTUtils {
             case APTTokenTypes.COMMENT:
                 return new APTCommentToken();
                 
-            default: /*assert(APTConstTextToken.constText[type] != null) : "Do not know text for constText token of type " + type;*/
+            default: /*assert(APTConstTextToken.constText[type] != null) : "Do not know text for constText token of type " + type;  // NOI18N*/
                 return new APTConstTextToken();
         }
     }
     
     public static String toString(TokenStream ts) {
-        StringBuffer retValue = new StringBuffer(); 
+        StringBuffer retValue = new StringBuffer();
         try {
             for (Token token = ts.nextToken();!isEOF(token);) {
-                assert(token != null) : "list of tokens must not have 'null' elements";
+                assert(token != null) : "list of tokens must not have 'null' elements"; // NOI18N
                 retValue.append(token.toString());
                 
                 token=ts.nextToken();
                 
-                if (token != null) {
-                    retValue.append(" ");
+                if (!isEOF(token)) {
+                    retValue.append(" "); // NOI18N
                 }
             }
         } catch (TokenStreamException ex) {
-            LOG.log(Level.SEVERE, "error on converting token stream to text", ex);
-        }       
-        return retValue.toString();        
-    }    
-
+            LOG.log(Level.SEVERE, "error on converting token stream to text", ex); // NOI18N
+        }
+        return retValue.toString();
+    }
+    
+    public static String stringize(TokenStream ts) {
+        StringBuffer retValue = new StringBuffer();
+        try {
+            for (APTToken token = (APTToken)ts.nextToken();!isEOF(token);) {
+                assert(token != null) : "list of tokens must not have 'null' elements"; // NOI18N
+                retValue.append(token.getText());
+                APTToken next =(APTToken)ts.nextToken();
+                if (!isEOF(next)) {
+                    // if tokens were without spaces => no space
+                    // if were with spaces => insert only one space
+                    retValue.append(next.getOffset() == token.getEndOffset() ? "" : ' ');// NOI18N
+                }
+                token = next;
+            }
+        } catch (TokenStreamException ex) {
+            LOG.log(Level.SEVERE, "error on stringizing token stream", ex); // NOI18N
+        }
+        return retValue.toString();
+    }
+    
     public static String macros2String(Map/*<getTokenTextKey(token), APTMacro>*/ macros) {
         StringBuffer retValue = new StringBuffer();
-        retValue.append("MACROS (sorted):\n");
+        retValue.append("MACROS (sorted):\n"); // NOI18N
         List macrosSorted = new ArrayList(macros.keySet());
-        Collections.sort(macrosSorted);        
+        Collections.sort(macrosSorted);
         for (Iterator it = macrosSorted.iterator(); it.hasNext();) {
             String key = (String) it.next();
             APTMacro macro = (APTMacro) macros.get(APTUtils.getTokenTextKey(new APTBaseToken(key)));
             assert(macro != null);
             retValue.append(macro);
-            retValue.append("'\n");
+            retValue.append("'\n"); // NOI18N
         }
-        return retValue.toString();        
+        return retValue.toString();
     }
     
     public static String includes2String(List/*<String>*/ includePaths) {
@@ -144,7 +164,7 @@ public class APTUtils {
             String path = (String) it.next();
             retValue.append(path);
             if (it.hasNext()) {
-                retValue.append('\n');
+                retValue.append('\n'); // NOI18N
             }
         }
         return retValue.toString();
@@ -185,45 +205,45 @@ public class APTUtils {
         assert (token != null);
         return token == null || isEOF(token.getType());
     }
-  
+    
     public static boolean isEOF(int ttype) {
         return ttype == APTTokenTypes.EOF;
     }
     
     public static boolean isStartCondition(Token token) {
         return isStartCondition(token.getType());
-    }    
+    }
     
     public static boolean isStartCondition(int/*APTTokenTypes*/ ttype) {
         switch (ttype) {
             case APTTokenTypes.IFDEF:
             case APTTokenTypes.IFNDEF:
             case APTTokenTypes.IF:
-                return true;        
+                return true;
             default:
                 return false;
         }
     }
-
+    
     public static boolean isStartConditionNode(int/*APT.Type*/ ntype) {
         switch (ntype) {
             case APT.Type.IFDEF:
             case APT.Type.IFNDEF:
             case APT.Type.IF:
-                return true;        
+                return true;
             default:
                 return false;
         }
-    }    
-
+    }
+    
     public static boolean isStartOrSwitchConditionNode(int/*APT.Type*/ ntype) {
         switch (ntype) {
             case APT.Type.IFDEF:
             case APT.Type.IFNDEF:
             case APT.Type.IF:
             case APT.Type.ELIF:
-            case APT.Type.ELSE:                
-                return true;        
+            case APT.Type.ELSE:
+                return true;
             default:
                 return false;
         }
@@ -231,21 +251,21 @@ public class APTUtils {
     
     public static boolean isEndCondition(Token token) {
         return isEndCondition(token.getType());
-    }  
+    }
     
     public static boolean isEndCondition(int/*APTTokenTypes*/ ttype) {
         switch (ttype) {
             case APTTokenTypes.ELIF:
             case APTTokenTypes.ELSE:
             case APTTokenTypes.ENDIF:
-                return true;         
+                return true;
             default:
                 return false;
         }
     }
     
     public static boolean isConditionsBlockToken(Token token) {
-        assert (token != null);        
+        assert (token != null);
         return isConditionsBlockToken(token.getType());
     }
     
@@ -257,12 +277,12 @@ public class APTUtils {
             case APTTokenTypes.ELIF:
             case APTTokenTypes.ELSE:
             case APTTokenTypes.ENDIF:
-                return true;            
+                return true;
             default:
                 return false;
         }
-    }    
-
+    }
+    
     public static boolean isCommentToken(Token token) {
         assert (token != null);
         return isCommentToken(token.getType());
@@ -286,19 +306,19 @@ public class APTUtils {
         }
         return false;
     }
-
+    
     public static List toList(TokenStream ts) {
         List tokens = new ArrayList();
         try {
             Token token = ts.nextToken();
             while (!isEOF(token)) {
-                assert(token != null) : "list of tokens must not have 'null' elements";
+                assert(token != null) : "list of tokens must not have 'null' elements"; // NOI18N
                 tokens.add(token);
                 token = ts.nextToken();
             }
         } catch (TokenStreamException ex) {
-            LOG.log(Level.SEVERE, "error on converting token stream to list", ex);
-        } 
+            LOG.log(Level.SEVERE, "error on converting token stream to list", ex); // NOI18N
+        }
         return tokens;
     }
     
@@ -324,7 +344,7 @@ public class APTUtils {
         }
         return newToken;
     }
-
+    
     public static APTToken createAPTToken(Token token) {
         return createAPTToken(token, token.getType());
     }
@@ -344,55 +364,55 @@ public class APTUtils {
     public static final TokenStream EMPTY_STREAM = new TokenStream() {
         public Token nextToken() throws TokenStreamException {
             return EOF_TOKEN;
-        }        
+        }
     };
     
     private static class APTEOFToken extends APTTokenAbstact {
         public APTEOFToken() {
         }
-
+        
         public int getOffset() {
-            throw new UnsupportedOperationException("getOffset must not be used");
+            throw new UnsupportedOperationException("getOffset must not be used"); // NOI18N
         }
-
+        
         public void setOffset(int o) {
-            throw new UnsupportedOperationException("setOffset must not be used");
+            throw new UnsupportedOperationException("setOffset must not be used"); // NOI18N
         }
-
+        
         public int getEndOffset() {
-            throw new UnsupportedOperationException("getEndOffset must not be used");
+            throw new UnsupportedOperationException("getEndOffset must not be used"); // NOI18N
         }
-
+        
         public void setEndOffset(int o) {
-            throw new UnsupportedOperationException("setEndOffset must not be used");
+            throw new UnsupportedOperationException("setEndOffset must not be used"); // NOI18N
         }
-
+        
         public int getTextID() {
-            throw new UnsupportedOperationException("getTextID must not be used");
+            throw new UnsupportedOperationException("getTextID must not be used"); // NOI18N
         }
-
+        
         public void setTextID(int id) {
-            throw new UnsupportedOperationException("setTextID must not be used");
+            throw new UnsupportedOperationException("setTextID must not be used"); // NOI18N
         }
-
+        
         public int getEndColumn() {
-            throw new UnsupportedOperationException("getEndColumn must not be used");
+            throw new UnsupportedOperationException("getEndColumn must not be used"); // NOI18N
         }
-
+        
         public void setEndColumn(int c) {
-            throw new UnsupportedOperationException("setEndColumn must not be used");
+            throw new UnsupportedOperationException("setEndColumn must not be used"); // NOI18N
         }
-
+        
         public int getEndLine() {
-            throw new UnsupportedOperationException("getEndLine must not be used");
+            throw new UnsupportedOperationException("getEndLine must not be used"); // NOI18N
         }
-
+        
         public void setEndLine(int l) {
-            throw new UnsupportedOperationException("setEndLine must not be used");
+            throw new UnsupportedOperationException("setEndLine must not be used"); // NOI18N
         }
-
+        
         public int getType() {
             return APTTokenTypes.EOF;
         }
-    }    
+    }
 }

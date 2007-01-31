@@ -30,7 +30,7 @@ class LoadingNode extends BaseNode {
 
     public LoadingNode() {
         super(Children.LEAF);
-        setName("dummy");
+        setName("dummy"); // NOI18N
         setDisplayName(I18n.getMessage("Loading")); // NOI18N
     }
     
@@ -40,7 +40,7 @@ class LoadingNode extends BaseNode {
     }
 
     public Image getIcon(int param) {
-        return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/waitNode.gif");
+        return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/waitNode.gif"); // NOI18N
     }
     protected int getWeight() {
         return LOADING_WEIGHT;

@@ -334,12 +334,12 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
     /** Override for custom label */
     protected String getListLabel() {
-	return getString("LBL_ListLabel");				//NOI18N
+	return getString("LBL_ListLabel");				// NOI18N
     }
 
     /** Override for custom mnemonic */
     protected char getListMnemonic() {
-	return getString("MNEM_ListLabel").charAt(0);			//NOI18N
+	return getString("MNEM_ListLabel").charAt(0);			// NOI18N
     }
 
 
@@ -353,7 +353,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 	// In some cases the label is multiline. Since a JLabel is single line
 	// we need to break up the label and create multiple JLabels.
-	StringTokenizer tok = new StringTokenizer(wholeLabel, "\n");	//NOI18N
+	StringTokenizer tok = new StringTokenizer(wholeLabel, "\n");	// NOI18N
 	label = tok.nextToken();
 
 	// Create the textfield, its label and buttons.
@@ -379,8 +379,8 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 	grid.weightx = 1.0;
 	panel.add(entryText, grid);
 
-        entryChooser = new JButton(getString("BTN_Chooser"));		//NOI18N
-	entryChooser.setMnemonic(getString("MNEM_Chooser").charAt(0));	//NOI18N
+        entryChooser = new JButton(getString("BTN_Chooser"));		// NOI18N
+	entryChooser.setMnemonic(getString("MNEM_Chooser").charAt(0));	// NOI18N
 	grid.fill = GridBagConstraints.NONE;
 	grid.gridx = GridBagConstraints.RELATIVE;
 	grid.gridwidth = GridBagConstraints.REMAINDER;
@@ -397,13 +397,13 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
     private JPanel createButtonRow1() {
 	JPanel row = new JPanel(new GridLayout(1, 2, 6, 0));
 
-	addBtn = new JButton(getString("BTN_Add"));			//NOI18N
-	addBtn.setMnemonic(getString("MNEM_Add").charAt(0));		//NOI18N
+	addBtn = new JButton(getString("BTN_Add"));			// NOI18N
+	addBtn.setMnemonic(getString("MNEM_Add").charAt(0));		// NOI18N
 	addBtn.setEnabled(false);
 	row.add(addBtn);
 
-	changeBtn = new JButton(getString("BTN_Change"));		//NOI18N
-	changeBtn.setMnemonic(getString("MNEM_Change").charAt(0));	//NOI18N
+	changeBtn = new JButton(getString("BTN_Change"));		// NOI18N
+	changeBtn.setMnemonic(getString("MNEM_Change").charAt(0));	// NOI18N
 	changeBtn.setEnabled(false);
 	row.add(changeBtn);
 
@@ -415,18 +415,18 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
     private JPanel createButtonRow2() {
 	JPanel row = new JPanel(new GridLayout(1, 3, 6, 0));
 
-	removeBtn = new JButton(getString("BTN_Remove"));		//NOI18N
-	removeBtn.setMnemonic(getString("MNEM_Remove").charAt(0));	//NOI18N
+	removeBtn = new JButton(getString("BTN_Remove"));		// NOI18N
+	removeBtn.setMnemonic(getString("MNEM_Remove").charAt(0));	// NOI18N
 	removeBtn.setEnabled(false);
 	row.add(removeBtn);
 
-	upArrow = new JButton(getString("BTN_Up"));			//NOI18N
-	upArrow.setMnemonic(getString("MNEM_Up").charAt(0));		//NOI18N
+	upArrow = new JButton(getString("BTN_Up"));			// NOI18N
+	upArrow.setMnemonic(getString("MNEM_Up").charAt(0));		// NOI18N
 	upArrow.setEnabled(false);
 	row.add(upArrow);
 
-	downArrow = new JButton(getString("BTN_Down"));			//NOI18N
-	downArrow.setMnemonic(getString("MNEM_Down").charAt(0));	//NOI18N
+	downArrow = new JButton(getString("BTN_Down"));			// NOI18N
+	downArrow.setMnemonic(getString("MNEM_Down").charAt(0));	// NOI18N
 	downArrow.setEnabled(false);
 	row.add(downArrow);
 
@@ -629,7 +629,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 	    try {
 		re = new UnixRE(pattern);
 	    } catch (PatternSyntaxException e) {
-		if (Boolean.getBoolean("netbeans.debug.exceptions")) {	//NOI18N
+		if (Boolean.getBoolean("netbeans.debug.exceptions")) {	// NOI18N
 		    e.printStackTrace();
 		}
 		return null;
@@ -740,8 +740,8 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 	}
 
 	File[] augmented = new File[files.length + 2];
-	augmented[0] = new File(".");					//NOI18N
-	augmented[1] = new File("..");					//NOI18N
+	augmented[0] = new File(".");					// NOI18N
+	augmented[1] = new File("..");					// NOI18N
 	for (int i = 0; i < files.length; i++) {
 	    augmented[i + 2] = files[i];
 	}
@@ -765,14 +765,14 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 	// Ask the user what to do
 	String msg = MessageFormat.format(
-			    getString("MSG_CREATE_SOURCE_DIRECTORY"),	//NOI18N
+			    getString("MSG_CREATE_SOURCE_DIRECTORY"),	// NOI18N
 			    new Object[] { name });
-	JButton subdirs = new JButton(getString("BTN_Subdirs"));	//NOI18N
-	subdirs.setMnemonic(getString("MNEM_Subdirs").charAt(0));	//NOI18N
-	JButton dirs = new JButton(getString("BTN_Dirs"));		//NOI18N
-	dirs.setMnemonic(getString("MNEM_Dirs").charAt(0));		//NOI18N
-	JButton cancel = new JButton(getString("BTN_Cancel"));		//NOI18N
-	String TITLE = getString("LBL_QUESTION_WINDOW");		//NOI18N
+	JButton subdirs = new JButton(getString("BTN_Subdirs"));	// NOI18N
+	subdirs.setMnemonic(getString("MNEM_Subdirs").charAt(0));	// NOI18N
+	JButton dirs = new JButton(getString("BTN_Dirs"));		// NOI18N
+	dirs.setMnemonic(getString("MNEM_Dirs").charAt(0));		// NOI18N
+	JButton cancel = new JButton(getString("BTN_Cancel"));		// NOI18N
+	String TITLE = getString("LBL_QUESTION_WINDOW");		// NOI18N
 	
 	NotifyDescriptor nd = new NotifyDescriptor(msg,
 		    TITLE, NotifyDescriptor.DEFAULT_OPTION,
@@ -895,7 +895,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 	    
 		if (fc == null) {
 		    fc = new JFileChooser();
-		    fc.setApproveButtonText(getString("BTN_Approve"));	//NOI18N
+		    fc.setApproveButtonText(getString("BTN_Approve"));	// NOI18N
 		    fc.setMultiSelectionEnabled(true);
 		    fc.setFileSystemView(new IpeFileSystemView(fc.getFileSystemView()));
 		    if (mspFilter) {
@@ -903,10 +903,10 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 		    }
 		    if (dirChooser) {
 			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		        fc.setDialogTitle(getString("TITLE_DirChooser"));	//NOI18N
+		        fc.setDialogTitle(getString("TITLE_DirChooser"));	// NOI18N
 		    }
 		    else {
-		        fc.setDialogTitle(getString("DLG_FILE_CHOOSER_TITLE"));	//NOI18N
+		        fc.setDialogTitle(getString("DLG_FILE_CHOOSER_TITLE"));	// NOI18N
 		    }
 		}
 
@@ -1214,7 +1214,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 	/** Constructor for MspFileFilter */
 	public MspFileFilter() {
-	    filterString = getString("DFLT_SourceFilter");		//NOI18N
+	    filterString = getString("DFLT_SourceFilter");		// NOI18N
 	}
 
 	/**
@@ -1277,7 +1277,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 	/** Constructor for SrcsFileFilter */
 	public SrcsFileFilter() {
-	    filterString = getString("DFLT_SourceFilter");		//NOI18N
+	    filterString = getString("DFLT_SourceFilter");		// NOI18N
 	}
 
 	/**

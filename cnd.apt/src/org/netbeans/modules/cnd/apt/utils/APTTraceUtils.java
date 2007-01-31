@@ -37,14 +37,14 @@ public class APTTraceUtils {
     public static String toStringList(APT t) {
         StringBuffer ts = new StringBuffer();
         if (t.getFirstChild() != null) {
-            ts.append(" (");
+            ts.append(" ("); // NOI18N
         }
-        ts.append(" ").append(t.toString());
+        ts.append(" ").append(t.toString()); // NOI18N
         if (t.getFirstChild() != null) {
             ts.append(toStringList(t.getFirstChild()));
         }
         if (t.getFirstChild() != null) {
-            ts.append(" )");
+            ts.append(" )"); // NOI18N
         }
         if (t.getNextSibling() != null) {
             ts.append(toStringList(t.getNextSibling()));
@@ -55,14 +55,14 @@ public class APTTraceUtils {
     public static String toStringTree(APT t) {
         StringBuffer ts = new StringBuffer();
         if (t.getFirstChild() != null) {
-            ts.append(" (");
+            ts.append(" ("); // NOI18N
         }
-        ts.append(" ").append(t.toString());
+        ts.append(" ").append(t.toString()); // NOI18N
         if (t.getFirstChild() != null) {
             ts.append(toStringTree(t.getFirstChild()));
         }
         if (t.getFirstChild() != null) {
-            ts.append(" )");
+            ts.append(" )"); // NOI18N
         }
         return ts.toString();
     }
@@ -93,22 +93,22 @@ public class APTTraceUtils {
     // help implementations
     
     private static void xmlSerializeNode(APT t, Writer out) throws IOException {
-        out.write("<" + xmlNodeText(t) + "\"/>\n");
+        out.write("<" + xmlNodeText(t) + "\"/>\n"); // NOI18N
     }
 
     private static void xmlSerializeRootOpen(APT t, Writer out) throws IOException {
-        out.write("<" + xmlNodeText(t) + "\">\n");
+        out.write("<" + xmlNodeText(t) + "\">\n"); // NOI18N
     }
     
     private static void xmlSerializeRootClose(APT t, Writer out) throws IOException {
-        out.write("</" + t.getClass().getSimpleName() + ">\n");
+        out.write("</" + t.getClass().getSimpleName() + ">\n"); // NOI18N
     }
 
     private static String xmlNodeText(APT t) {
         StringBuffer buf = new StringBuffer(100);
         buf.append(t.getClass().getSimpleName());
-        buf.append(" type=\"").append(encode(getTypeName(t)));
-        buf.append("\" text=\"").append(encode(t.toString()));
+        buf.append(" type=\"").append(encode(getTypeName(t))); // NOI18N
+        buf.append("\" text=\"").append(encode(t.toString())); // NOI18N
         return buf.toString();
     }
     
@@ -125,29 +125,29 @@ public class APTTraceUtils {
                 c5 = text.charAt(i + 5);
 
                 if (c1 == 'a' && c2 == 'm' && c3 == 'p' && c4 == ';') {
-                    n.append("&");
+                    n.append("&"); // NOI18N
                     i += 5;
                 }
                 else if (c1 == 'l' && c2 == 't' && c3 == ';') {
-                    n.append("<");
+                    n.append("<"); // NOI18N
                     i += 4;
                 }
                 else if (c1 == 'g' && c2 == 't' && c3 == ';') {
-                    n.append(">");
+                    n.append(">"); // NOI18N
                     i += 4;
                 }
                 else if (c1 == 'q' && c2 == 'u' && c3 == 'o' &&
                     c4 == 't' && c5 == ';') {
-                    n.append("\"");
+                    n.append("\""); // NOI18N
                     i += 6;
                 }
                 else if (c1 == 'a' && c2 == 'p' && c3 == 'o' &&
                     c4 == 's' && c5 == ';') {
-                    n.append("'");
+                    n.append("'"); // NOI18N
                     i += 6;
                 }
                 else
-                    n.append("&");
+                    n.append("&"); // NOI18N
             }
             else
                 n.append(c);
@@ -163,27 +163,27 @@ public class APTTraceUtils {
             switch (c) {
                 case '&':
                     {
-                        n.append("&amp;");
+                        n.append("&amp;"); // NOI18N
                         break;
                     }
                 case '<':
                     {
-                        n.append("&lt;");
+                        n.append("&lt;"); // NOI18N
                         break;
                     }
                 case '>':
                     {
-                        n.append("&gt;");
+                        n.append("&gt;"); // NOI18N
                         break;
                     }
                 case '"':
                     {
-                        n.append("&quot;");
+                        n.append("&quot;"); // NOI18N
                         break;
                     }
                 case '\'':
                     {
-                        n.append("&apos;");
+                        n.append("&apos;"); // NOI18N
                         break;
                     }
                 default :
@@ -198,61 +198,61 @@ public class APTTraceUtils {
 
     public static String getTypeName(APT t) {
         int/*APT.Type*/ type = t.getType();
-        String str="<unknown>";
+        String str="<unknown>"; // NOI18N
         switch (type) {
             case APT.Type.INVALID:
-                str = "INVALID";
+                str = "INVALID"; // NOI18N
                 break;
             case APT.Type.FILE:
-                str = "FILE";
+                str = "FILE"; // NOI18N
                 break;
             case APT.Type.TOKEN_STREAM:
-                str = "TOKEN_STREAM";
+                str = "TOKEN_STREAM"; // NOI18N
                 break;
             case APT.Type.INCLUDE:
-                str = "INCLUDE";
+                str = "INCLUDE"; // NOI18N
                 break;
             case APT.Type.INCLUDE_NEXT:
-                str = "INCLUDE_NEXT";
+                str = "INCLUDE_NEXT"; // NOI18N
                 break;
             case APT.Type.DEFINE:
-                str = "DEFINE";
+                str = "DEFINE"; // NOI18N
                 break;
             case APT.Type.UNDEF:
-                str = "UNDEF";
+                str = "UNDEF"; // NOI18N
                 break;
             case APT.Type.CONDITION_CONTAINER:
-                str = "CONDITION_CONTAINER";
+                str = "CONDITION_CONTAINER"; // NOI18N
                 break;
             case APT.Type.IFDEF:
-                str = "IFDEF";
+                str = "IFDEF"; // NOI18N
                 break;
             case APT.Type.IFNDEF:
-                str = "IFNDEF";
+                str = "IFNDEF"; // NOI18N
                 break;
             case APT.Type.IF:
-                str = "IF";
+                str = "IF"; // NOI18N
                 break;
             case APT.Type.ELIF:
-                str = "ELIF";
+                str = "ELIF"; // NOI18N
                 break;
             case APT.Type.ELSE:
-                str = "ELSE";
+                str = "ELSE"; // NOI18N
                 break;
             case APT.Type.ENDIF:
-                str = "ENDIF";
+                str = "ENDIF"; // NOI18N
                 break;
             case APT.Type.PRAGMA:
-                str = "PRAGMA";
+                str = "PRAGMA"; // NOI18N
                 break;
             case APT.Type.LINE:
-                str = "LINE";
+                str = "LINE"; // NOI18N
                 break;
             case APT.Type.ERROR:
-                str = "ERROR";
+                str = "ERROR"; // NOI18N
                 break;
             case APT.Type.PREPROC_UNKNOWN:
-                str = "PREPROC_UNKNOWN";
+                str = "PREPROC_UNKNOWN"; // NOI18N
                 break;
             default:
         }

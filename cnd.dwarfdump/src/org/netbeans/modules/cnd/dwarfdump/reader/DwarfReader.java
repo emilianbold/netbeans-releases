@@ -43,14 +43,14 @@ public class DwarfReader extends ElfReader {
     
     public DwarfReader(String fname) throws FileNotFoundException, IOException {
         super(fname);
-        getSection(".debug_str");
+        getSection(".debug_str"); // NOI18N
     }
     
     public Object readAttrValue(DwarfAttribute attr) throws IOException {
         Object value = readForm(attr.valueForm);
         
-        if (attr.attrName.equals(ATTR.DW_AT_language)) {
-            return LANG.get(((Byte)value).byteValue());
+        if (attr.attrName.equals(ATTR.DW_AT_language)) {            
+            return LANG.get(((Number)value).intValue());
         }
         
         if (attr.attrName.equals(ATTR.DW_AT_encoding)) {
@@ -58,10 +58,11 @@ public class DwarfReader extends ElfReader {
         }
         
         if (attr.attrName.equals(ATTR.DW_AT_decl_line)) {
-            if (attr.valueForm.equals(FORM.DW_FORM_data2)) {
-                byte[] val = (byte[])value;
-                return new Integer((0xFF & val[0]) | ((0xFF & val[1]) << 8));
-            }
+//            if (attr.valueForm.equals(FORM.DW_FORM_data2)) {
+//                byte[] val = (byte[])value;
+//                return new Integer((0xFF & val[0]) | ((0xFF & val[1]) << 8));
+//            }
+            return new Integer(((Number)value).intValue());
         }
         
         return value;
@@ -75,7 +76,9 @@ public class DwarfReader extends ElfReader {
         } else if (form.equals(FORM.DW_FORM_block4)) {
             return read(new byte[readInt()]);
         } else if (form.equals(FORM.DW_FORM_data2)) {
-            return read(new byte[2]);
+            //TODO: check on all architectures!
+            //return read(new byte[2]);
+            return readShort();
         } else if (form.equals(FORM.DW_FORM_data4)) {
             //TODO: check on all architectures!
             //return read(new byte[4]);
@@ -87,7 +90,7 @@ public class DwarfReader extends ElfReader {
         } else if (form.equals(FORM.DW_FORM_block)) {
             return read(new byte[(int)readUnsignedLEB128()]);
         } else if (form.equals(FORM.DW_FORM_block1)) {
-            return read(new byte[readByte()]);
+            return read(new byte[readUnsignedByte()]);
         } else if (form.equals(FORM.DW_FORM_data1)) {
             return readByte();
         } else if (form.equals(FORM.DW_FORM_flag)) {
@@ -95,13 +98,13 @@ public class DwarfReader extends ElfReader {
         } else if (form.equals(FORM.DW_FORM_sdata)) {
             return readSignedLEB128();
         } else if (form.equals(FORM.DW_FORM_strp)) {
-            return ((StringTableSection)getSection(".debug_str")).getString(readInt());
+            return ((StringTableSection)getSection(".debug_str")).getString(readInt()); // NOI18N
         } else if (form.equals(FORM.DW_FORM_udata)) {
             return readUnsignedLEB128();
         } else if (form.equals(FORM.DW_FORM_ref_addr)) {
             return read(new byte[getAddressSize()]);
         } else if (form.equals(FORM.DW_FORM_ref1)) {
-            return read(new byte[readByte()]);
+            return read(new byte[readUnsignedByte()]);
         } else if (form.equals(FORM.DW_FORM_ref2)) {
             return read(new byte[2]);
         } else if (form.equals(FORM.DW_FORM_ref4)) {
@@ -113,36 +116,36 @@ public class DwarfReader extends ElfReader {
         } else if (form.equals(FORM.DW_FORM_indirect)) {
             return readForm(FORM.get(readUnsignedLEB128()));
         } else {
-            throw new IOException("unknown type " + form);
+            throw new IOException("unknown type " + form); // NOI18N
         }
     }
 
     ElfSection initSection(Integer sectionIdx, String sectionName) {
-        if (sectionName.equals(".debug_str")) {
+        if (sectionName.equals(".debug_str")) { // NOI18N
             return new StringTableSection(this, sectionIdx);
         }
         
-        if (sectionName.equals(".debug_aranges")) {
+        if (sectionName.equals(".debug_aranges")) { // NOI18N
             return new DwarfArangesSection(this, sectionIdx);
         }
         
-        if (sectionName.equals(".debug_info")) {
+        if (sectionName.equals(".debug_info")) { // NOI18N
             return new DwarfDebugInfoSection(this, sectionIdx);
         }
         
-        if (sectionName.equals(".debug_abbrev")) {
+        if (sectionName.equals(".debug_abbrev")) { // NOI18N
             return new DwarfAbbriviationTableSection(this, sectionIdx);
         }
         
-        if (sectionName.equals(".debug_line")) {
+        if (sectionName.equals(".debug_line")) { // NOI18N
             return new DwarfLineInfoSection(this, sectionIdx);
         }
         
-        if (sectionName.equals(".debug_macinfo")) {
+        if (sectionName.equals(".debug_macinfo")) { // NOI18N
             return new DwarfMacroInfoSection(this, sectionIdx);
         }
         
-        if (sectionName.equals(".debug_pubnames")) {
+        if (sectionName.equals(".debug_pubnames")) { // NOI18N
             return new DwarfNameLookupTableSection(this, sectionIdx);
         }
         

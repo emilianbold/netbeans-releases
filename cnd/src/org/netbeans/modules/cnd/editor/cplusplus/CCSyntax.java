@@ -342,8 +342,13 @@ public class CCSyntax extends Syntax {
                     state = ISI_USR_START_INCLUDE;
                     break;
                 default:
-                    offset++;
-                    state = INIT;
+                    if (Character.isJavaIdentifierStart(actChar)) {
+                        state = ISI_IDENTIFIER;
+                        break;
+                    } else {                    
+                        offset++;
+                        state = INIT;
+                    }
                 }
                 return CCTokenContext.WHITESPACE;
                 

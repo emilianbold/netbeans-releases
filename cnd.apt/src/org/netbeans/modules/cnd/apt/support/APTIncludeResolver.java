@@ -27,7 +27,7 @@ import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
  * @author Vladimir Voskresensky
  */
 public interface APTIncludeResolver {
-    public String resolveInclude(APTInclude apt);
+    public String resolveInclude(APTInclude apt, APTMacroCallback callback);
    
-    public String resolveIncludeNext(APTIncludeNext apt);
+    public String resolveIncludeNext(APTIncludeNext apt, APTMacroCallback callback);
 }

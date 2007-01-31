@@ -36,7 +36,7 @@ public class StringConfiguration {
 
     public void setValue(String b) {
 	if (b == null)
-	    b = "";
+	    b = ""; // NOI18N
 	this.value = b;
 	if (master != null)
 	    setModified(true);
@@ -60,7 +60,7 @@ public class StringConfiguration {
 	    return value;
     }
     public String getValue(String delim) {
-	String ret = "";
+	String ret = ""; // NOI18N
 	StringTokenizer tokenizer = new StringTokenizer(getValue());
 	while (tokenizer.hasMoreTokens()) {
 	    ret += tokenizer.nextToken();

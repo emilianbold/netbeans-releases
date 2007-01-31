@@ -53,6 +53,10 @@ public class TableEditorPanel extends ListEditorPanel {
     private String baseDir;
     private JTable targetList;
     private MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
+
+    public char getDownButtonMnemonics() {
+        return getString("DOWN_OPTION_BUTTON_MN").charAt(0);
+    }
     
     /*
     public TableEditorPanel(Object[] objects) {
@@ -127,6 +131,8 @@ public class TableEditorPanel extends ListEditorPanel {
 	    //setTableHeader(null); // Hides table headers
 	    if (getRowHeight() < 19)
 		setRowHeight(19);
+            getAccessibleContext().setAccessibleDescription(""); // NOI18N
+            getAccessibleContext().setAccessibleName(""); // NOI18N
 	}
 
 	public boolean getShowHorizontalLines() {

@@ -74,10 +74,10 @@ public class MakefileReviewPanel extends MakefileWizardPanel
      */
     MakefileReviewPanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = new String(getString("LBL_MakefileReviewPanel")); //NOI18N
+	String subtitle = new String(getString("LBL_MakefileReviewPanel")); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle +
-	                            getString("ACSD_MakefileReview")); //NOI18N
+	                            getString("ACSD_MakefileReview")); // NOI18N
 	initialized = false;
     }
 
@@ -90,10 +90,10 @@ public class MakefileReviewPanel extends MakefileWizardPanel
 	// Create the review label
 	reviewLabel = new JLabel();
 	reviewLabel.setText(NbBundle.getMessage(MakefileReviewPanel.class, 
-						"LBL_Summary")); //NOI18N
+						"LBL_Summary")); // NOI18N
 	reviewLabel.setDisplayedMnemonic((NbBundle.getMessage(
                                      MakefileReviewPanel.class,
-                                    "MNEM_Summary")).charAt(0)); //NOI18N
+                                    "MNEM_Summary")).charAt(0)); // NOI18N
 
 	// Set the GridBagLayout constraints for the label
 	GridBagConstraints grid = new GridBagConstraints();
@@ -149,8 +149,8 @@ public class MakefileReviewPanel extends MakefileWizardPanel
 	String name = getMakefileName(makefile);
 
 	summary = new StringBuffer(1024);
-	append("LBL_MakefileSummaryDir", dir); //NOI18N
-	append("LBL_MakefileSummaryName", name);	//NOI18N
+	append("LBL_MakefileSummaryDir", dir); // NOI18N
+	append("LBL_MakefileSummaryName", name);	// NOI18N
 	append("LBL_BuildInstructions"); // NOI18N
 	append("LBL_BuildInstruction1", name, dir); // NOI18N
 	append("LBL_BuildInstruction2", name); // NOI18N
@@ -161,33 +161,33 @@ public class MakefileReviewPanel extends MakefileWizardPanel
 	    TargetData td = (TargetData) md.getTargetList().get(0);
 
 	    if (td.isExecutable()) {
-		append("LBL_SingleExe", td.getName());			//NOI18N
+		append("LBL_SingleExe", td.getName());			// NOI18N
 	    } else if (td.isArchive()) {
-		append("LBL_SingleArchive", td.getName());		//NOI18N
+		append("LBL_SingleArchive", td.getName());		// NOI18N
 	    } else if (td.isSharedLib()) {
-		append("LBL_SingleSharedLib", td.getName());		//NOI18N
+		append("LBL_SingleSharedLib", td.getName());		// NOI18N
 	    } else if (td.isMakeTarget()) {
-		append("LBL_SingleMake", td.getName());			//NOI18N
+		append("LBL_SingleMake", td.getName());			// NOI18N
 	    } else if (td.isCustomTarget()) {
-		append("LBL_SingleCustom", td.getName());		//NOI18N
+		append("LBL_SingleCustom", td.getName());		// NOI18N
 	    } else if (IpeUtils.IfdefDiagnostics) {
 		System.out.println(
-			    "Error: Unknown target type in summary");	//NOI18N
+			    "Error: Unknown target type in summary");	// NOI18N
 	    }
 	    if (td.getSourcesList() == null) {
-		append("LBL_SingleTargetSrcs", new Integer(0));		//NOI18N
+		append("LBL_SingleTargetSrcs", new Integer(0));		// NOI18N
 	    } else {
 		if (td.getSourcesList().length == 1) {
-		    append("LBL_SingleTargetSrcs1");			//NOI18N
+		    append("LBL_SingleTargetSrcs1");			// NOI18N
 		} else {
-		    append("LBL_SingleTargetSrcs",			//NOI18N
+		    append("LBL_SingleTargetSrcs",			// NOI18N
 			    new Integer(td.getSourcesList().length));
 		}
 	    }
 	} else {
 	    ArrayList tlist = md.getTargetList();
 
-	    append("LBL_MultiTarget");					//NOI18N
+	    append("LBL_MultiTarget");					// NOI18N
 	    for (int i = 0; i < tlist.size(); i++) {
 		TargetData td = (TargetData) tlist.get(i);
 
@@ -200,53 +200,53 @@ public class MakefileReviewPanel extends MakefileWizardPanel
 
 		if (td.isExecutable()) {
 		    if (srcCnt == 1) {
-			append("LBL_MultiExe1", td.getName());		//NOI18N
+			append("LBL_MultiExe1", td.getName());		// NOI18N
 		    } else {
-			append("LBL_MultiExe", td.getName(),		//NOI18N
+			append("LBL_MultiExe", td.getName(),		// NOI18N
 				    new Integer(srcCnt));
 		    }
 		} else if (td.isArchive()) {
 		    if (srcCnt == 1) {
-			append("LBL_MultiArchive1", td.getName());	//NOI18N
+			append("LBL_MultiArchive1", td.getName());	// NOI18N
 		    } else {
-			append("LBL_MultiArchive", td.getName(),	//NOI18N
+			append("LBL_MultiArchive", td.getName(),	// NOI18N
 				    new Integer(srcCnt));
 		    }
 		} else if (td.isSharedLib()) {
 		    if (srcCnt == 1) {
-			append("LBL_MultiSharedLib1", td.getName());	//NOI18N
+			append("LBL_MultiSharedLib1", td.getName());	// NOI18N
 		    } else {
-			append("LBL_MultiSharedLib", td.getName(),	//NOI18N
+			append("LBL_MultiSharedLib", td.getName(),	// NOI18N
 				    new Integer(srcCnt));
 		    }
 		} else if (td.isMakeTarget()) {
-		    append("LBL_MultiMake", td.getName());		//NOI18N
+		    append("LBL_MultiMake", td.getName());		// NOI18N
 		} else if (td.isCustomTarget()) {
 		    if (srcCnt == 1) {
-			append("LBL_MultiCustom1", td.getName());	//NOI18N
+			append("LBL_MultiCustom1", td.getName());	// NOI18N
 		    } else {
-			append("LBL_MultiCustom", td.getName(),		//NOI18N
+			append("LBL_MultiCustom", td.getName(),		// NOI18N
 				    new Integer(srcCnt));
 		    }
 		} else if (IpeUtils.IfdefDiagnostics) {
 		    System.out.println(
-			"Error: Unknown target type in summary");	//NOI18N
+			"Error: Unknown target type in summary");	// NOI18N
 		}
 	    }
 	}
 
 	if (isDebug() && !isOptimize()) {
-	    append("LBL_DebugCompile");					//NOI18N
+	    append("LBL_DebugCompile");					// NOI18N
 	} else if (isDebug() && isOptimize()) {
-	    append("LBL_DebugOptCompile");				//NOI18N
+	    append("LBL_DebugOptCompile");				// NOI18N
 	} else if (isOptimize()) {
-	    append("LBL_OptimizeCompile");				//NOI18N
+	    append("LBL_OptimizeCompile");				// NOI18N
 	} else if (IpeUtils.IfdefDiagnostics) {
-	    append("LBL_NoOptDebugCompile");				//NOI18N
+	    append("LBL_NoOptDebugCompile");				// NOI18N
 	}
 
 	validateAllData();
-	append("LBL_Finish");						//NOI18N
+	append("LBL_Finish");						// NOI18N
 
 	return summary.toString();
     }
@@ -324,9 +324,9 @@ public class MakefileReviewPanel extends MakefileWizardPanel
     private void validateAllData() {
 	ArrayList msgs = MakefileWizard.getMakefileWizard().validateAllData();
 
-	append("LBL_Warnings");						//NOI18N
+	append("LBL_Warnings");						// NOI18N
 	if (msgs.size() == 0) {
-	    append("LBL_NoWarnings");					//NOI18N
+	    append("LBL_NoWarnings");					// NOI18N
 	} else {
 	    for (int i = 0; i < msgs.size(); i++) {
 		append(msgs.get(i));
@@ -406,7 +406,7 @@ public class MakefileReviewPanel extends MakefileWizardPanel
     private void append(String msg, Object arg1) {
 
 	if (arg1 instanceof Integer && ((Integer) arg1).intValue() == 1) {
-	    msg = msg + "1";						//NOI18N
+	    msg = msg + "1";						// NOI18N
 	}
 
 	summary.append(
@@ -418,7 +418,7 @@ public class MakefileReviewPanel extends MakefileWizardPanel
     private void append(String msg, Object arg1, Object arg2) {
 
 	if (arg2 instanceof Integer && ((Integer) arg2).intValue() == 1) {
-	    msg = msg + "1";						//NOI18N
+	    msg = msg + "1";						// NOI18N
 	}
 
 	summary.append(NbBundle.getMessage(MakefileReviewPanel.class,

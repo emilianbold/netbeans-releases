@@ -23,16 +23,16 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
 public class PlatformWindows extends Platform {
-    public static final String NAME = "Windows";
+    public static final String NAME = "Windows"; // NOI18N
 
     public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
-        new LibraryItem.StdLibItem("Mathematics", "Mathematics", new String[] {"m"}),
-        new LibraryItem.StdLibItem("DataCompression", "Data Compression", new String[] {"z"}),
-        new LibraryItem.StdLibItem("PosixThreads", "Posix Threads", new String[] {"pthread"}),
+        new LibraryItem.StdLibItem("Mathematics", "Mathematics", new String[] {"m"}), // NOI18N
+        new LibraryItem.StdLibItem("DataCompression", "Data Compression", new String[] {"z"}), // NOI18N
+        new LibraryItem.StdLibItem("PosixThreads", "Posix Threads", new String[] {"pthread"}), // NOI18N
     };
     
     public PlatformWindows() {
-        super(NAME, "Windows", Platform.PLATFORM_WINDOWS);
+        super(NAME, "Windows", Platform.PLATFORM_WINDOWS); // NOI18N
     }
     
     public LibraryItem.StdLibItem[] getStandardLibraries() {
@@ -40,17 +40,17 @@ public class PlatformWindows extends Platform {
     }
     
     public String getLibraryName(String baseName) {
-        return "cyg" + baseName + ".dll"; // NOI18N // FIXUP: cyg hardcoded...
+        return "cyg" + baseName + ".dll"; // NOI18N // FIXUP: cyg hardcoded... // NOI18N
     }
     
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
-        if (libName.endsWith(".dll")) {
-            int i = libName.indexOf(".dll");
+        if (libName.endsWith(".dll")) { // NOI18N
+            int i = libName.indexOf(".dll"); // NOI18N
             if (i > 0)
                 libName = libName.substring(0, i);
-            if (libName.startsWith("cyg"))// NOI18N // FIXUP: cyg hardcoded...
+            if (libName.startsWith("cyg"))// NOI18N // FIXUP: cyg hardcoded... // NOI18N
                 libName = libName.substring(3);
-            return compilerSet.getLibrarySearchOption() + libDir + " " + "-l" + libName;
+            return compilerSet.getLibrarySearchOption() + libDir + " " + "-l" + libName; // NOI18N
         } else {
             return libPath;
         }

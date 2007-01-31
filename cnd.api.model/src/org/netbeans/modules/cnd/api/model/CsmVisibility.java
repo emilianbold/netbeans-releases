@@ -31,12 +31,12 @@ public class CsmVisibility extends TypeSafeEnum  {
         super(value);
     }
 
-    public static final CsmVisibility PUBLIC    = new CsmVisibility("public");
+    public static final CsmVisibility PUBLIC    = new CsmVisibility("public"); // NOI18N
 
-    public static final CsmVisibility PROTECTED = new CsmVisibility("protected");
+    public static final CsmVisibility PROTECTED = new CsmVisibility("protected"); // NOI18N
     
-    public static final CsmVisibility PRIVATE   = new CsmVisibility("private");
+    public static final CsmVisibility PRIVATE   = new CsmVisibility("private"); // NOI18N
 
-    public static final CsmVisibility NONE      = new CsmVisibility("none");
+    public static final CsmVisibility NONE      = new CsmVisibility("none"); // NOI18N
     
 }

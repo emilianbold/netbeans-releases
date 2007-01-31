@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class RunProfile implements ConfigurationAuxObject {
-    public static final String PROFILE_ID = "runprofile";
+    public static final String PROFILE_ID = "runprofile"; // NOI18N
     
     /** Property name: runargs (args, cd, etc.) have changed */
     public static final String PROP_RUNARGS_CHANGED = "runargs-ch"; // NOI18N
@@ -119,7 +119,7 @@ public class RunProfile implements ConfigurationAuxObject {
         argsFlat = ""; // NOI18N
         argsFlatValid = true;
         argsArrayValid = false;
-        runDir = "";
+        runDir = ""; // NOI18N
         buildFirst = true;
         dorun = getDorunScript();
         termPaths = new HashMap();
@@ -165,8 +165,10 @@ public class RunProfile implements ConfigurationAuxObject {
                 list.add(name); 
                 termPaths.put(name, termPath);
                 termPaths.put(def, termPath);
-                termOptions.put(name, "-e \"\\\"" + dorun + "\\\" \\\"" + getString("LBL_RunPrompt") + " \\\" {0} {1}\""); // NOI18N
-                termOptions.put(def,  "-e \"\\\"" + dorun + "\\\" \\\"" + getString("LBL_RunPrompt") + " \\\" {0} {1}\""); // NOI18N
+                termOptions.put(name, "--disable-factory --hide-menubar " + "--title=\"{0} {1}\" " + // NOI18N
+                        "-e \"\\\"" + dorun + "\\\" \\\"" + getString("LBL_RunPrompt") + " \\\" {0} {1}\""); // NOI18N
+                termOptions.put(def,  "--disable-factory --hide-menubar " + "--title=\"{0} {1}\" " + // NOI18N
+                       "-e \"\\\"" + dorun + "\\\" \\\"" + getString("LBL_RunPrompt") + " \\\" {0} {1}\""); // NOI18N
             }
             termPath = searchPath(path, "konsole"); // NOI18N
             if (termPath != null) {
@@ -277,11 +279,11 @@ public class RunProfile implements ConfigurationAuxObject {
     
     public String getArgsFlat() {
         if (!argsFlatValid) {
-            argsFlat = "";
+            argsFlat = ""; // NOI18N
             for (int i = 0; i < argsArray.length; i++) {
                 argsFlat += IpeUtils.quoteIfNecessary(argsArray[i]);
                 if (i < (argsArray.length-1))
-                    argsFlat += " ";
+                    argsFlat += " "; // NOI18N
             }
             argsFlatValid = true;
         }
@@ -330,7 +332,7 @@ public class RunProfile implements ConfigurationAuxObject {
          */
     public String getRunDir() {
         if (runDir == null)
-            runDir = "";
+            runDir = ""; // NOI18N
         return runDir;
     }
     
@@ -340,7 +342,7 @@ public class RunProfile implements ConfigurationAuxObject {
          */
     public void setRunDir(String runDir) {
         if (runDir == null)
-            runDir = "";
+            runDir = ""; // NOI18N
         if (this.runDir == runDir)
             return;
         if (this.runDir != null && this.runDir.equals(runDir)) {
@@ -366,7 +368,7 @@ public class RunProfile implements ConfigurationAuxObject {
         if (IpeUtils.isPathAbsolute(runDir2))
             runDirectory = runDir2;
         else
-            runDirectory = getBaseDir() + "/" + runDir2;
+            runDirectory = getBaseDir() + "/" + runDir2; // NOI18N
         
         // convert to canonical path
         File runDirectoryFile = new File(runDirectory);
@@ -389,7 +391,7 @@ public class RunProfile implements ConfigurationAuxObject {
          */
     public void setRunDirectory(String newRunDir) {
         if (newRunDir == null || newRunDir.length() == 0) {
-            newRunDir = ".";
+            newRunDir = "."; // NOI18N
         }
         setRunDir(IpeUtils.toAbsoluteOrRelativePath(getBaseDir(), newRunDir));
     }
@@ -576,9 +578,9 @@ public class RunProfile implements ConfigurationAuxObject {
         Sheet sheet = new Sheet();
         
         Sheet.Set set = new Sheet.Set();
-        set.setName("Action");
-        set.setDisplayName("Action");
-        set.setShortDescription("Action");
+        set.setName("General"); // NOI18N
+        set.setDisplayName(getString("GeneralName"));
+        set.setShortDescription(getString("GeneralTT"));
         set.put(new ArgumentsNodeProp());
         set.put(new RunDirectoryNodeProp());
         set.put(new EnvNodeProp());
@@ -598,7 +600,7 @@ public class RunProfile implements ConfigurationAuxObject {
     
     private class ArgumentsNodeProp extends PropertySupport {
         public ArgumentsNodeProp() {
-            super("Arguments", String.class, "Arguments", "Arguments", true, true);
+            super("Arguments", String.class, getString("ArgumentsName"), getString("ArgumentsHint"), true, true); // NOI18N
         }
         
         public Object getValue() {
@@ -612,7 +614,7 @@ public class RunProfile implements ConfigurationAuxObject {
     
     private class RunDirectoryNodeProp extends PropertySupport {
         public RunDirectoryNodeProp() {
-            super("Run Directory", String.class, "Run Directory", "Run Directory", true, true);
+            super("Run Directory", String.class, getString("RunDirectoryName"), getString("RunDirectoryHint"), true, true); // NOI18N
         }
         
         public Object getValue() {
@@ -706,7 +708,7 @@ public class RunProfile implements ConfigurationAuxObject {
     
     private class BuildFirstNodeProp extends PropertySupport {
         public BuildFirstNodeProp() {
-            super("Build First", Boolean.class, "Build First", "Build First", true, true);
+            super("Build First", Boolean.class, getString("BuildFirstName"), getString("BuildFirstHint"), true, true); // NOI18N
         }
         
         public Object getValue() {
@@ -720,7 +722,7 @@ public class RunProfile implements ConfigurationAuxObject {
     
     private class EnvNodeProp extends PropertySupport {
         public EnvNodeProp() {
-            super("Environment", Env.class, "Environment", "Environment", true, true);
+            super("Environment", Env.class, getString("EnvironmentName"), getString("EnvironmentHint"), true, true); // NOI18N
         }
         
         public Object getValue() {
@@ -736,7 +738,7 @@ public class RunProfile implements ConfigurationAuxObject {
         }
         
         public Object getValue(String attributeName) {
-            if (attributeName.equals("canEditAsText"))
+            if (attributeName.equals("canEditAsText")) // NOI18N
                 return Boolean.FALSE;
             return super.getValue(attributeName);
         }

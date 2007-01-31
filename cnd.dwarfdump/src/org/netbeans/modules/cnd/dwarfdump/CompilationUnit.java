@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.cnd.dwarfdump;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfAbbriviationTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfAbbriviationTableEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
@@ -60,6 +63,9 @@ public class CompilationUnit {
     private DwarfMacinfoTable macrosTable = null;
     private DwarfNameLookupTable pubnamesTable = null;
     private long debugInfoOffset;
+    
+    private Map<Long, Long> specifications = new HashMap<Long, Long>();
+    private Map<Long, DwarfEntry> entries = new HashMap<Long, DwarfEntry>();
 
     /** Creates a new instance of CompilationUnit */
     public CompilationUnit(DwarfReader reader, long sectionOffset, long unitOffset) throws IOException {
@@ -82,11 +88,21 @@ public class CompilationUnit {
         return (String)root.getAttributeValue(ATTR.DW_AT_name);
     }
     
+    public String getCommandLine() {
+        Object cl = root.getAttributeValue(ATTR.DW_AT_SUN_command_line);
+        return (cl == null) ? null : (String)cl;
+    }
+    
     public String getSourceFileFullName() {
         String result = null;
         
         try {
-            result = new File(getCompilationDir() + File.separator + getSourceFileName()).getCanonicalPath();
+            String dir = getCompilationDir();
+            if (dir != null) {
+                result = new File(getCompilationDir() + File.separator + getSourceFileName()).getCanonicalPath();
+            } else {
+                result = new File(getSourceFileName()).getCanonicalPath();
+            }
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -95,20 +111,26 @@ public class CompilationUnit {
     }
     
     public String getSourceLanguage() {
-        return root.getAttributeValue(ATTR.DW_AT_language).toString();
+        if (root != null) {
+            Object lang = root.getAttributeValue(ATTR.DW_AT_language);
+            if (lang != null) {
+                return lang.toString();
+            }
+        }
+        return null;
     }
     
     public String getType(DwarfEntry entry) {
         TAG entryKind = entry.getKind();
         
         if (entryKind.equals(TAG.DW_TAG_unspecified_parameters)) {
-            return "null";
+            return "null"; // NOI18N
         }
         
         Integer typeRef = (Integer)entry.getAttributeValue(ATTR.DW_AT_type);
         
         if (typeRef == null) {
-            return "void";
+            return "void"; // NOI18N
         }
         
         DwarfEntry typeEntry = getEntry(typeRef);
@@ -118,10 +140,10 @@ public class CompilationUnit {
             String name = typeEntry.getName();
             
             // TODO: Is it OK?
-            if (name.equals("long unsigned int")) {
-                name = "unsigned long";
-            } else if (name.equals("long int")) {
-                name = "long";
+            if (name.equals("long unsigned int")) { // NOI18N
+                name = "unsigned long"; // NOI18N
+            } else if (name.equals("long int")) { // NOI18N
+                name = "long"; // NOI18N
             }
             
             return name;
@@ -129,36 +151,47 @@ public class CompilationUnit {
         
         if (kind.equals(TAG.DW_TAG_structure_type) ||
                 kind.equals(TAG.DW_TAG_enumeration_type) ||
+                kind.equals(TAG.DW_TAG_union_type) ||
                 kind.equals(TAG.DW_TAG_typedef)) {
             return typeEntry.getName();
         }
         
         if (kind.equals(TAG.DW_TAG_const_type)) {
             // TODO: Check algorithm!
-            Integer constTypeRef = (Integer)typeEntry.getAttributeValue(ATTR.DW_AT_type);
-            DwarfEntry refTypeEntry = getEntry(constTypeRef);
-            typeEntry.getKind();
-            if (refTypeEntry.getKind().equals(TAG.DW_TAG_reference_type) ||
-                    refTypeEntry.getKind().equals(TAG.DW_TAG_array_type)) {
-                return getType(typeEntry);
-            } else {
-                return "const " + getType(typeEntry);
+            
+            Object atType = typeEntry.getAttributeValue(ATTR.DW_AT_type);
+            
+            if (atType == null) { 
+                return "const void";
             }
             
-//            return "const " + getType(typeEntry);
+            if (atType instanceof Integer) {
+                Integer constTypeRef = (Integer)typeEntry.getAttributeValue(ATTR.DW_AT_type);
+                
+                DwarfEntry refTypeEntry = getEntry(constTypeRef);
+                typeEntry.getKind();
+                if (refTypeEntry.getKind().equals(TAG.DW_TAG_reference_type) ||
+                        refTypeEntry.getKind().equals(TAG.DW_TAG_array_type)) {
+                    return getType(typeEntry);
+                } else {
+                    return "const " + getType(typeEntry); // NOI18N
+                }
+            }
+            
+//            return "const " + getType(typeEntry); // NOI18N
             
         }
         
         if (kind.equals(TAG.DW_TAG_reference_type)) {
-            return getType(typeEntry) + "&";
+            return getType(typeEntry) + "&"; // NOI18N
         }
         
         if (kind.equals(TAG.DW_TAG_array_type)) {
-            return getType(typeEntry) + "[]";
+            return getType(typeEntry) + "[]"; // NOI18N
         }
         
-        if (kind.equals(TAG.DW_TAG_pointer_type)) {
-            return getType(getEntry(typeEntry.getRefference())) + "*";
+        if (kind.equals(TAG.DW_TAG_pointer_type) || kind.equals(TAG.DW_TAG_ptr_to_member_type)) {
+            return getType(typeEntry) + "*"; // NOI18N
         }
         
         if (kind.equals(TAG.DW_TAG_subroutine_type)) {
@@ -169,11 +202,29 @@ public class CompilationUnit {
             return getType(typeEntry);
         }
         
-        return "<" + kind + ">";
+        if (kind.equals(TAG.DW_TAG_union_type)) {
+            return getType(typeEntry);
+        }
+        
+        return "<" + kind + ">"; // NOI18N
     }
     
     public DwarfEntry getEntry(long sectionOffset) {
-        return entryLookup(getDebugInfo(true), sectionOffset);
+        //return entryLookup(getDebugInfo(true), sectionOffset);
+	DwarfEntry entry = entries.get(sectionOffset);
+	if( entry == null ) {
+	    entry = entryLookup(getDebugInfo(true), sectionOffset);
+	    entries.put(sectionOffset, entry);
+	}
+	return entry;
+    }
+    
+    public DwarfEntry getDefinition(DwarfEntry entry) {
+	Long ref = specifications.get(entry.getRefference());
+	if( ref != null ) {
+	    return getEntry(ref);
+	}
+	return null;
     }
     
     private DwarfEntry entryLookup(DwarfEntry entry, long refference) {
@@ -213,6 +264,17 @@ public class CompilationUnit {
         
         return null;
     }
+    
+    /**
+     * unit_length represents the length of the .debug_info contribution for
+     * this compilation unit, not including the length field itself. So this
+     * method returns unit_length + 4.
+     * @return the total bytes number occupied by this CU.
+     */
+    
+    public long getUnitTotalLength() {
+        return unit_length + 4;
+    }
 
     private void readCompilationUnitHeader() throws IOException {
         reader.seek(debugInfoSectionOffset + unit_offset);
@@ -226,7 +288,7 @@ public class CompilationUnit {
         
         reader.setAddressSize(address_size);
 
-        DwarfAbbriviationTableSection abbrSection = (DwarfAbbriviationTableSection)reader.getSection(".debug_abbrev");
+        DwarfAbbriviationTableSection abbrSection = (DwarfAbbriviationTableSection)reader.getSection(".debug_abbrev"); // NOI18N
         abbr_table = abbrSection.getAbbriviationTable(debug_abbrev_offset);
         
     }
@@ -263,12 +325,28 @@ public class CompilationUnit {
                 reader.seek(debugInfoOffset);
                 root = readEntry(0, readChildren);
                 reader.seek(currPos);
+                
+                if (root == null) {
+                    return null;
+                }
+                
+		setSpecializations(root);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
         
         return root;
+    }
+    
+    private void setSpecializations(DwarfEntry entry) {
+	Object o = entry.getAttributeValue(ATTR.DW_AT_specification);
+	if( o instanceof Integer ) {
+	    specifications.put( new Long(((Integer) o).intValue()), entry.getRefference());
+	}
+	for( DwarfEntry child : entry.getChildren() ) {
+	    setSpecializations(child);
+	}
     }
     
     private DwarfEntry readEntry(int level, boolean readChildren) throws IOException {
@@ -281,7 +359,12 @@ public class CompilationUnit {
         
         DwarfAbbriviationTableEntry abbreviationEntry = abbr_table.getEntry(idx);
         
+        if (abbreviationEntry == null) {
+            return null;
+        }
+        
         DwarfEntry entry = new DwarfEntry(this, abbreviationEntry, refference, level);
+	entries.put(refference, entry);
         
         for (int i = 0; i < abbreviationEntry.getAttributesCount(); i++) {
             DwarfAttribute attr = abbreviationEntry.getAttribute(i);
@@ -294,12 +377,17 @@ public class CompilationUnit {
                 entry.addChild(child);
             }
         }
-
+        
         return entry;
     }
 
     private void initStatementList() {
-        DwarfLineInfoSection lineInfoSection = (DwarfLineInfoSection)reader.getSection(".debug_line");
+        DwarfLineInfoSection lineInfoSection = (DwarfLineInfoSection)reader.getSection(".debug_line"); // NOI18N
+        
+        if (root == null) { 
+            return;
+        }
+        
         Integer statementListOffset = (Integer)root.getAttributeValue(ATTR.DW_AT_stmt_list);
         if (statementListOffset != null) {
             statement_list = lineInfoSection.getStatementList(statementListOffset.longValue());
@@ -307,76 +395,109 @@ public class CompilationUnit {
     }
 
     private void initMacrosTable() {
-        DwarfMacroInfoSection macroInfoSection = (DwarfMacroInfoSection)reader.getSection(".debug_macinfo");
+        DwarfMacroInfoSection macroInfoSection = (DwarfMacroInfoSection)reader.getSection(".debug_macinfo"); // NOI18N
+        
+        if (macroInfoSection == null) {
+            return;
+        }
+        
         Integer macroInfoOffset = (Integer)root.getAttributeValue(ATTR.DW_AT_macro_info);
         
-        if (macroInfoOffset != null) {
-            macrosTable = macroInfoSection.getMacinfoTable(macroInfoOffset);
+        if (macroInfoOffset == null) {
+            return;
         }
+        
+        macrosTable = macroInfoSection.getMacinfoTable(macroInfoOffset);
     }
 
     private void initPubnamesTable() {
-        DwarfNameLookupTableSection dwarfNameLookupTableSection = (DwarfNameLookupTableSection)reader.getSection(".debug_pubnames");
-        pubnamesTable = dwarfNameLookupTableSection.getNameLookupTableFor(unit_offset);
+        DwarfNameLookupTableSection dwarfNameLookupTableSection = (DwarfNameLookupTableSection)reader.getSection(".debug_pubnames"); // NOI18N
+        
+        if (dwarfNameLookupTableSection != null) {
+            pubnamesTable = dwarfNameLookupTableSection.getNameLookupTableFor(unit_offset);
+        }
     }
     
-    public ArrayList<DwarfEntry> getDeclarations() {
-
+    public List<DwarfEntry> getDeclarations() {
+        return getDeclarations(true);
+    }
+    /**
+     * Used to get a list of declarations defined/used in this CU.
+     * @param limitedToFile <code>true</code> means return declarations defined in the current source file only
+     * @return returns a list of declarations defined/used in this CU. 
+     */
+    public List<DwarfEntry> getDeclarations(boolean limitedToFile) {
+        boolean reportExcluded = false;
+        int fileEntryIdx = 0;
+        
         // make sure that pubnames table has been read ...
         getPubnamesTable();
 
         ArrayList<DwarfEntry> result = new ArrayList<DwarfEntry>();
-        ArrayList<DwarfEntry> excludedDeclarations = new ArrayList<DwarfEntry>();
         
-        int fileEntryIdx = getStatementList().getFileEntryIdx(getSourceFileName());
+        if (limitedToFile) {
+            fileEntryIdx = getStatementList().getFileEntryIdx(getSourceFileName());
+        }
         
         for (DwarfEntry child : getDebugInfo(true).getChildren()) {
-            if (child.isEntryDefinedInFile(fileEntryIdx)) {
+            if ((!limitedToFile) || (limitedToFile && child.isEntryDefinedInFile(fileEntryIdx))) {
                 // TODO: Check algorythm
                 // Do not add definitions that have DW_AT_abstract_origin attribute.
                 // Do not add entries that's names start with _GLOBAL__F | _GLOBAL__I | _GLOBAL__D
 
-                boolean entryAdded = false;
-
-                if (child.getAttributeValue(ATTR.DW_AT_abstract_origin) == null) {
+                if (!child.hasAbastractOrigin()) {
                     String qname = child.getQualifiedName();
-                    if (qname != null && !qname.startsWith("_GLOBAL__")) {
+                    if (qname != null && !qname.startsWith("_GLOBAL__")) { // NOI18N
                         result.add(child);
-                        entryAdded = true;
+                    } else if (reportExcluded) {
+                        System.out.println("Exclude declaration: " + child.getDeclaration()); // NOI18N
                     }
                 }
-
-                if (!entryAdded) {
-                    excludedDeclarations.add(child);
-                }
             }
         }
 
-        if (excludedDeclarations.size() > 0) {
-            System.out.println("Excluding following abstract declarations from DWARF:");
-            for (DwarfEntry declaration : excludedDeclarations) {
-                System.out.println("\t" + declaration.getDeclaration());
-            }
-        }
-        
         return result;
     }
     
+    
     public void dump(PrintStream out) {
-        out.println("*** " + getSourceFileFullName() + " ***");
-        out.println("  Compilation Unit @ offset " + Long.toHexString(unit_offset) + ":");
-        out.println("    Length: " + unit_length);
-        out.println("    Version: " + version);
-        out.println("    Abbrev Offset: " + debug_abbrev_offset);
-        out.println("    Pointer Size: " + address_size);
+        if (root == null) {
+            out.println("*** No compilation units for " + reader.getFileName()); // NOI18N
+            return;
+        }
+        
+        out.println("*** " + getSourceFileFullName() + " ***"); // NOI18N
+        out.println("  Compilation Unit @ offset " + Long.toHexString(unit_offset) + ":"); // NOI18N
+        out.println("    Length: " + unit_length); // NOI18N
+        out.println("    Version: " + version); // NOI18N
+        out.println("    Abbrev Offset: " + debug_abbrev_offset); // NOI18N
+        out.println("    Pointer Size: " + address_size); // NOI18N
+        
+        /*
+         * getPubnamesTable() will not only set pubnamesTable (if not set yet)
+         * but also setup qualified names from appropriate pubnames table.
+         */
         
         getPubnamesTable();
-        
+
         getDebugInfo(true).dump(out);
         getStatementList().dump(out);
-        pubnamesTable.dump(out);
+
+        // Still pubnamesTable could be null (if not present for this 
+        // Compilation Unit)
+        
+        if (pubnamesTable != null) {
+            pubnamesTable.dump(out);
+        }
+        
+        DwarfMacinfoTable macinfoTable = getMacrosTable();
+	if( macinfoTable != null ) {
+	    macinfoTable.dump(out);
+	}
         
         out.println();
-    }    
+    } 
+    
+    
 
 }

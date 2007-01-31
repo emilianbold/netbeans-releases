@@ -62,7 +62,7 @@ public final class APTEndifNode extends APTTokenBasedNode
     public boolean accept(Token token) {
         assert (token != null);
         int ttype = token.getType();
-        assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers";
+        assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers"; // NOI18N
         // eat all till END_PREPROC_DIRECTIVE        
         if (APTUtils.isEndDirectiveToken(ttype)) {
             endOffset = ((APTToken)token).getOffset();
@@ -77,6 +77,6 @@ public final class APTEndifNode extends APTTokenBasedNode
       
     public void setFirstChild(APT child) {
         // do nothing
-        assert (false) : "endif doesn't support children";
+        assert (false) : "endif doesn't support children"; // NOI18N
     }    
 }

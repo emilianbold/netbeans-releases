@@ -395,7 +395,7 @@ public class CsmSortUtilities {
                         order = param1[i].isVarArgs() ? -1 : 1;
                     } else if (!param1[i].isVarArgs()) {
                         System.err.println("CsmSortUtilities.compareFunctions: error while checking parameter " + i 
-                                + "of functions" + fun1 + " and " + fun2);
+                                + "of functions" + fun1 + " and " + fun2); // NOI18N
                         ex.printStackTrace(System.err);
                     }                    
                 }

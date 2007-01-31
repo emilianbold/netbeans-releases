@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
  */
 public class Diagnostic {
     
-    private static int STATISTICS_LEVEL=Integer.getInteger("cnd.modelimpl.stat.level", 0).intValue();  
+    private static int STATISTICS_LEVEL=Integer.getInteger("cnd.modelimpl.stat.level", 0).intValue(); // NOI18N
     
     private static DiagnosticUnresolved diagnosticUnresolved = null;
 
@@ -161,14 +161,14 @@ public class Diagnostic {
     public static void traceThreads(String message) {
 	if( TraceFlags.DEBUG ) {
 	    trace(message);
-	    trace("Threads are:");
+	    trace("Threads are:"); // NOI18N
 	    int cnt = Thread.activeCount();
 	    Thread[] threads = new Thread[cnt];
 	    Thread.enumerate(threads);
 	    for (int i = 0; i < cnt; i++) {
-		String s = threads[i].getName() + " " + threads[i].getPriority();
+		String s = threads[i].getName() + " " + threads[i].getPriority(); // NOI18N
 		if (threads[i] == Thread.currentThread()) {
-		    s += " (current)";
+		    s += " (current)"; // NOI18N
 		}
 		trace(s);
 	    }
@@ -336,52 +336,52 @@ public class Diagnostic {
         public void dump(PrintStream dumpFile) {
             if (lexerProblems.isEmpty() && parserProblems.isEmpty() &&
                     includes.isEmpty()) {
-                trace(dumpFile, "*** No errors found in file " + handledFile);
+                trace(dumpFile, "*** No errors found in file " + handledFile); // NOI18N
             } else {
-                trace(dumpFile, "*** Statistics of file " + handledFile);
+                trace(dumpFile, "*** Statistics of file " + handledFile); // NOI18N
                 if (lastError != null) {
-                    trace(dumpFile, "****** First and last lexer/parser errors ******");
+                    trace(dumpFile, "****** First and last lexer/parser errors ******"); // NOI18N
                     indent();
-                    trace(dumpFile, "[FIRST ERROR MSG]: (" + firstError.getSourceName() + ")");
+                    trace(dumpFile, "[FIRST ERROR MSG]: (" + firstError.getSourceName() + ")"); // NOI18N
                     trace(dumpFile,  firstError.e.toString());
-                    trace(dumpFile, "[LAST ERROR MSG]: (" + lastError.getSourceName() + ")");
+                    trace(dumpFile, "[LAST ERROR MSG]: (" + lastError.getSourceName() + ")"); // NOI18N
                     trace(dumpFile,  lastErrorMsg);
                     if (Diagnostic.getStatisticsLevel() > 1) {
-                        trace(dumpFile, "+++ More details +++ ");
+                        trace(dumpFile, "+++ More details +++ "); // NOI18N
                         if (lastError != firstError) {
-                            trace(dumpFile, "[FIRST ERROR] "+firstError);
-                            trace(dumpFile, "[LAST ERROR] "+lastError);
+                            trace(dumpFile, "[FIRST ERROR] "+firstError); // NOI18N
+                            trace(dumpFile, "[LAST ERROR] "+lastError); // NOI18N
                         } else {
-                            trace(dumpFile, "[ERROR] " + lastError);
+                            trace(dumpFile, "[ERROR] " + lastError); // NOI18N
                         }                        
                     }
                     unindent();
                 }     
                 if (hasOtherProblems()) {
-                    trace(dumpFile, "****** All unclassified errors ******");
+                    trace(dumpFile, "****** All unclassified errors ******"); // NOI18N
                     indent();
                     dumpExceptions(dumpFile, otherProblems);
                     unindent();                    
                 }
                 if (hasLexerProblems()) {
-                    trace(dumpFile, "****** All Lexer errors ******");
+                    trace(dumpFile, "****** All Lexer errors ******"); // NOI18N
                     indent();
                     dumpExceptions(dumpFile, lexerProblems);
                     unindent();
                 }
                 if (hasParserProblems()) {
-                    trace(dumpFile, "****** All Parser errors ******");
+                    trace(dumpFile, "****** All Parser errors ******"); // NOI18N
                     indent();
                     dumpExceptions(dumpFile, parserProblems);
                     unindent();
                 }              
                 if ((Diagnostic.getStatisticsLevel() > 1) || hasIncludeProblems()) {
-                    trace(dumpFile, "****** Inclusions ******");
+                    trace(dumpFile, "****** Inclusions ******"); // NOI18N
                     indent();
                     dumpIncludes(dumpFile, includes);
                     unindent();                    
                 }
-                trace(dumpFile, "*** End of statistics for " + handledFile + '\n');
+                trace(dumpFile, "*** End of statistics for " + handledFile + '\n'); // NOI18N
             }
         }
         
@@ -518,32 +518,32 @@ public class Diagnostic {
             public String toString() {
                 StringBuffer retValue = new StringBuffer();
                 
-                retValue.append("===> ").append(include);
+                retValue.append("===> ").append(include); // NOI18N
                 if (this.isFailedInclude()) {
-                    retValue.append(" (FAILED)");
+                    retValue.append(" (FAILED)"); // NOI18N
                 } else if (this.hasRecursionInclude()) {
-                    retValue.append(" (HAS RECURSION)");
+                    retValue.append(" (HAS RECURSION)"); // NOI18N
                 }
-                retValue.append(" included ");
-                retValue.append(counter).append(" time(s)");
+                retValue.append(" included "); // NOI18N
+                retValue.append(counter).append(" time(s)"); // NOI18N
                 if (Diagnostic.getStatisticsLevel() == 1) {
                     // only first include is interested for failed or recursive inclusion
                     // and no any info except above counter for good inclusions
                     if (this.isFailedInclude() || this.hasRecursionInclude()) {
-                        retValue.append("\n").append(indentBuffer.toString()).append(indentBuffer.toString());
+                        retValue.append("\n").append(indentBuffer.toString()).append(indentBuffer.toString()); // NOI18N
                         String from;
                         if (hasRecursionInclude()) {
                             assert (recursionFrom.size() > 0);
                             assert (recursionFrom.iterator().hasNext());   
                             from = (String) recursionFrom.iterator().next();                            
-                            retValue.append(" [RECURSION] ");
+                            retValue.append(" [RECURSION] "); // NOI18N
                         } else {
                             assert (includedFrom.size() > 0);
                             assert (includedFrom.keySet().iterator().hasNext());   
                             from = (String) includedFrom.keySet().iterator().next();
-                            retValue.append(" where [").append(includedFrom.get(from)).append("] time(s) ");
+                            retValue.append(" where [").append(includedFrom.get(from)).append("] time(s) "); // NOI18N
                         }
-                        retValue.append("from ").append(from);
+                        retValue.append("from ").append(from); // NOI18N
                     }                   
                 } else {
                     // sort "from" files
@@ -551,14 +551,14 @@ public class Diagnostic {
                     Collections.sort(files);
                     for (Iterator it = files.iterator(); it.hasNext();) {
                         String from = (String) it.next();
-                        retValue.append("\n").append(indentBuffer.toString());
+                        retValue.append("\n").append(indentBuffer.toString()); // NOI18N
                         retValue.append(indentBuffer.toString());
                         if (recursionFrom.contains(from)) {
-                            retValue.append(" [RECURSION] ");
+                            retValue.append(" [RECURSION] "); // NOI18N
                         } else {
-                            retValue.append(" [").append(includedFrom.get(from)).append("] ");
+                            retValue.append(" [").append(includedFrom.get(from)).append("] "); // NOI18N
                         }
-                        retValue.append("from ").append(from);
+                        retValue.append("from ").append(from); // NOI18N
                     }
                 }
                 return retValue.toString();
@@ -665,23 +665,23 @@ public class Diagnostic {
             
             public String toString() {
                 StringBuffer retValue = new StringBuffer();
-                retValue.append("===> [").append(counter).append("] similar ");
-                retValue.append(getSourceName()).append(" error(s) with the first :\n");
+                retValue.append("===> [").append(counter).append("] similar "); // NOI18N
+                retValue.append(getSourceName()).append(" error(s) with the first :\n"); // NOI18N
                 retValue.append(indentBuffer.toString()).append(e.toString());
                 if (getStatisticsLevel() > 2) {  
                     String indent = indentBuffer.toString() + indentBuffer.toString() + indentBuffer.toString();
                     StackTraceElement[] stack = e.getStackTrace();
                     for (int i = 0; i < stack.length; i++) {
-                        retValue.append("\n").append(indent);
-                        retValue.append("at ").append(stack[i]);
+                        retValue.append("\n").append(indent); // NOI18N
+                        retValue.append("at ").append(stack[i]); // NOI18N
                     }
                 }
                 if (getStatisticsLevel() > 1) {
                     // trace all error messages if more than one
                     if (errorMessages.size() > 1) {
                         String indent = indentBuffer.toString() + indentBuffer.toString();
-                        retValue.append("\n").append(indent);
-                        retValue.append("+++ all error messages:");
+                        retValue.append("\n").append(indent); // NOI18N
+                        retValue.append("+++ all error messages:"); // NOI18N
                         List values = new ArrayList(errorMessages);
                         Collections.sort(values);
                         for (Iterator it = values.iterator(); it.hasNext();) {
@@ -727,7 +727,7 @@ public class Diagnostic {
                 // we are not interested in stack before lexer call
                 if (!curElem.getClassName().equals(APTLexer.class.getName())) {
                     return true;
-                } else if (curElem.getMethodName().equals("nextToken")) {
+                } else if (curElem.getMethodName().equals("nextToken")) { // NOI18N
                     // also we stop on nextToken()
                     return true;
                 }
@@ -745,7 +745,7 @@ public class Diagnostic {
                 // we are not interested in stack before parser call
                 if (!curElem.getClassName().equals(CPPParser.class.getName())) {
                     return true;
-                } else if (curElem.getMethodName().equals("translation_unit")) {
+                } else if (curElem.getMethodName().equals("translation_unit")) { // NOI18N
                     // aslo we stop on translation_unit()
                     return true;
                 }

@@ -55,20 +55,5 @@ public class FIndentEngine extends FormatterIndentEngine {
     public HelpCtx getHelpCtx() {
         return new HelpCtx("Welcome_opt_indent_fortran"); // NOI18N
     }
-    /*
-    
-    public boolean getFreeFormat() {
-        Boolean b = (Boolean)getValue(FSettingsNames.FREE_FORMAT);
-        if (b == null) {
-            b = FSettingsDefaults.defaultFreeFormat;
-        }
-        return b.booleanValue();
-    }
-
-    public void setFreeFormat(boolean b) {
-        setValue(FSettingsNames.FREE_FORMAT, b ? Boolean.TRUE : Boolean.FALSE);
-    }
-    */
-
 }
 

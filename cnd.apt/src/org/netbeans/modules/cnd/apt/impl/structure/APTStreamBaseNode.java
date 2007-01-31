@@ -53,7 +53,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
      */
     public APTStreamBaseNode(Token token) {
         super(token);
-        assert (validToken(token)) : "must init only from valid tokens";
+        assert (validToken(token)) : "must init only from valid tokens"; // NOI18N
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -79,26 +79,26 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
      * APTStream node doesn't have children
      */
     public void setFirstChild(APT child) {
-        assert(false) : "stream node doesn't support children";
+        assert(false) : "stream node doesn't support children"; // NOI18N
     }
     
     /** returns list of tokens */
     public String getText() {
-        StringBuffer retValue = new StringBuffer("TOKENS{");
+        StringBuffer retValue = new StringBuffer("TOKENS{"); // NOI18N
         try {
             TokenStream ts = getTokenStream();
             for (Token token = ts.nextToken(); !APTUtils.isEOF(token);) {
-                assert(token != null) : "list of tokens must not have 'null' elements";
+                assert(token != null) : "list of tokens must not have 'null' elements"; // NOI18N
                 retValue.append(token.toString());
                 token = ts.nextToken();
                 if (!APTUtils.isEOF(token)) {
-                    retValue.append("; ");
+                    retValue.append("; "); // NOI18N
                 }
             }
         } catch (TokenStreamException ex) {
             assert(false);
         }
-        return retValue.append('}').toString();
+        return retValue.append('}').toString(); // NOI18N
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -126,7 +126,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     // help implementation methods
     
     private void appendToken(Token token) {
-        assert (validToken(token)) : "must append only valid tokens";
+        assert (validToken(token)) : "must append only valid tokens"; // NOI18N
         if (tokens == null) {
             tokens = new ArrayList();
         }

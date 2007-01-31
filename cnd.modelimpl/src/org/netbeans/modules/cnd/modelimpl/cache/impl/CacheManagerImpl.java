@@ -38,13 +38,9 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
-import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTPreprocState;
-import org.netbeans.modules.cnd.apt.utils.APTStringManager;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.FileCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -72,10 +68,10 @@ public final class CacheManagerImpl {
         } else {
             cacheDir = System.getProperty("netbeans.user");// NOI18N
         }
-        cacheDir = cacheDir + File.separatorChar + "var" + File.separatorChar + 
-                "cache" + File.separatorChar + "cndcache";
+        cacheDir = cacheDir + File.separatorChar + "var" + File.separatorChar + // NOI18N
+                "cache" + File.separatorChar + "cndcache"; // NOI18N
         new File(cacheDir).mkdirs();
-        if (TraceFlags.TRACE_CACHE) System.out.println("CACHE: Cache dir:" + cacheDir);
+        if (TraceFlags.TRACE_CACHE) System.out.println("CACHE: Cache dir:" + cacheDir); // NOI18N
         load();      
     }
     
@@ -158,7 +154,7 @@ public final class CacheManagerImpl {
             prjCache = (ProjectCache) projectCache.get(project);
             if (prjCache == null && create) {
                 if (TraceFlags.TRACE_CACHE) {
-                    System.out.println("CACHE: creating Project cache for " + project.getName());
+                    System.out.println("CACHE: creating Project cache for " + project.getName()); // NOI18N
                 }                
                 // check if can load from disk
                 // prjDir is non absolute
@@ -210,7 +206,7 @@ public final class CacheManagerImpl {
             }
         } else {
             if (TraceFlags.TRACE_CACHE) {
-                System.out.println("CACHE: no cache dir for project " + file.getProject().getName());
+                System.out.println("CACHE: no cache dir for project " + file.getProject().getName()); // NOI18N
             }            
         }
         return out;
@@ -226,16 +222,16 @@ public final class CacheManagerImpl {
             loaded = loadFile(cacheFile);
             if (TraceFlags.TRACE_CACHE) {
                 if (loaded == null) {
-                    System.out.println("CACHE: Failed load cache " + cacheFile.getAbsolutePath() + 
-                            " for:" + file.getAbsolutePath());
+                    System.out.println("CACHE: Failed load cache " + cacheFile.getAbsolutePath() + // NOI18N
+                            " for:" + file.getAbsolutePath()); // NOI18N
                 }
             }
         } else {
             if (TraceFlags.TRACE_CACHE) {
                 if (((FileImpl)file).getBuffer().isFileBased()) {
-                    System.out.println("CACHE: not found valid cache for:" + file.getAbsolutePath());
+                    System.out.println("CACHE: not found valid cache for:" + file.getAbsolutePath()); // NOI18N
                 } else {
-                    System.out.println("CACHE: do not load cache for document based file-buffer:" + file.getAbsolutePath());
+                    System.out.println("CACHE: do not load cache for document based file-buffer:" + file.getAbsolutePath()); // NOI18N
                 }
             }
         }
@@ -266,7 +262,7 @@ public final class CacheManagerImpl {
             } catch (IOException io) {
                 // null cache
             } catch (ClassNotFoundException e) {
-                APTUtils.LOG.log(Level.SEVERE, "load cache file: {0}", new Object[] { e.getMessage() });
+                APTUtils.LOG.log(Level.SEVERE, "load cache file: {0}", new Object[] { e.getMessage() });// NOI18N
             } finally {
                 if (ois != null) {
                     try {
@@ -289,15 +285,15 @@ public final class CacheManagerImpl {
         FileCacheSyncBridge syncCache = getSyncCacheBridge((FileImpl) file);
         assert (cacheFile != null);
         if (save2File(cacheFile, cache)) {
-            if (TraceFlags.TRACE_CACHE) System.out.println("CACHE: saved cache for:" + file.getAbsolutePath());
+            if (TraceFlags.TRACE_CACHE) System.out.println("CACHE: saved cache for:" + file.getAbsolutePath()); // NOI18N
             syncCache.updateStorage(cache);
         } else {
             if (TraceFlags.TRACE_CACHE) {
                 if (((FileImpl)file).getBuffer().isFileBased()) {
-                    System.out.println("CACHE: FAILED saving cache " + cacheFile.getAbsolutePath() +
-                            " for:" + file.getAbsolutePath());
+                    System.out.println("CACHE: FAILED saving cache " + cacheFile.getAbsolutePath() + // NOI18N
+                            " for:" + file.getAbsolutePath()); // NOI18N
                 } else {
-                    System.out.println("CACHE: do not save cache for document based file-buffer:" + file.getAbsolutePath());
+                    System.out.println("CACHE: do not save cache for document based file-buffer:" + file.getAbsolutePath()); // NOI18N
                 }
             }            
             
@@ -349,7 +345,7 @@ public final class CacheManagerImpl {
         }
         
         public String toString() {
-            return "read/write cache lock for " + path;
+            return "read/write cache lock for " + path; // NOI18N
         }        
     };
     
@@ -375,7 +371,7 @@ public final class CacheManagerImpl {
     private boolean loaded = false;
     
     // we need exclusive copy of string => use "new String(String)" constructor
-    private final String loadLock = new String("CacheManagerImpl load lock");
+    private final String loadLock = new String("CacheManagerImpl load lock"); // NOI18N
     
     private void load() {
         if (!loaded) {
@@ -391,7 +387,7 @@ public final class CacheManagerImpl {
     
     private void store() {
         if (TraceFlags.TRACE_CACHE) {
-            System.out.println("CACHE: saving cache manager data in " + cacheDir);
+            System.out.println("CACHE: saving cache manager data in " + cacheDir); // NOI18N
         }
         synchronized (loadLock) {
             // store master index 
@@ -424,10 +420,10 @@ public final class CacheManagerImpl {
         boolean loaded = index.load(file);
         if (TraceFlags.TRACE_CACHE) {
             if (loaded) {
-                System.out.println("CACHE: loaded master index:" + file.getAbsolutePath());
-                System.out.println("CACHE: index value" + index);
+                System.out.println("CACHE: loaded master index:" + file.getAbsolutePath()); // NOI18N
+                System.out.println("CACHE: index value" + index); // NOI18N
             } else {
-                System.out.println("CACHE: master index not found:" + file.getAbsolutePath());
+                System.out.println("CACHE: master index not found:" + file.getAbsolutePath()); // NOI18N
             }
         }
     }
@@ -438,16 +434,16 @@ public final class CacheManagerImpl {
         boolean saved = index.save(file);
         if (TraceFlags.TRACE_CACHE) {
             if (saved) {
-                System.out.println("CACHE: saved master index:" + file.getAbsolutePath());
-                System.out.println("index value:" + index.toString());
+                System.out.println("CACHE: saved master index:" + file.getAbsolutePath()); // NOI18N
+                System.out.println("index value:" + index.toString()); // NOI18N
             } else {
-                System.out.println("CACHE: errors on saving master index:" + file.getAbsolutePath());
+                System.out.println("CACHE: errors on saving master index:" + file.getAbsolutePath()); // NOI18N
             }
         }
     }
     
     private File getMasterIndexFile(String baseDir) {
-        String cache = baseDir + File.separatorChar + "index.dat";
+        String cache = baseDir + File.separatorChar + "index.dat"; // NOI18N
         File file = new File(cache);
         return file;        
     }
@@ -464,12 +460,15 @@ public final class CacheManagerImpl {
             Map.Entry entry = (Entry) it.next();
             CsmProject project = (CsmProject) entry.getKey();
             String prjDir = (String) index.getProjectDir(project);
-            assert (prjDir != null);
-            // create project cache and pass full cache path to load own cache
-            String prjCachePath = cacheDir + File.separatorChar + prjDir;   
-            ProjectCache cache = (ProjectCache) entry.getValue();
-            assert (cache != null);
-            cache.store(prjCachePath);
+            if (prjDir != null) {
+                // create project cache and pass full cache path to load own cache
+                String prjCachePath = cacheDir + File.separatorChar + prjDir;   
+                ProjectCache cache = (ProjectCache) entry.getValue();
+                assert (cache != null);
+                cache.store(prjCachePath);
+            } else {
+                System.err.println("SEVERE: CACHE (saveProjects): not found cache directory for project " + project.getName()); // NOI18N
+            }
         }         
     }
 }

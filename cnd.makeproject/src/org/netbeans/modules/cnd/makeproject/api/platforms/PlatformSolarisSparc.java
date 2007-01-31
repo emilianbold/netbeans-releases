@@ -20,9 +20,9 @@
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
 public class PlatformSolarisSparc extends PlatformSolaris {
-    public static final String NAME = "Solaris-Sparc";
+    public static final String NAME = "Solaris-Sparc"; // NOI18N
 
     public PlatformSolarisSparc() {
-        super(NAME, "Solaris Sparc", Platform.PLATFORM_SOLARIS_SPARC);
+        super(NAME, "Solaris Sparc", Platform.PLATFORM_SOLARIS_SPARC); // NOI18N
     }
 }

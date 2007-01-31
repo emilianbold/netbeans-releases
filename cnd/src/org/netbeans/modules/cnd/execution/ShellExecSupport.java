@@ -124,7 +124,7 @@ public class ShellExecSupport extends ExecutionSupport {
 	String dir = (String) getEntry().getFile().getAttribute(PROP_RUN_DIRECTORY);
 
 	if (dir == null) {
-	    dir = "."; //NOI18N
+	    dir = "."; // NOI18N
 	    setRunDirectory(dir);
 	}
 
@@ -158,7 +158,7 @@ public class ShellExecSupport extends ExecutionSupport {
     public String getShellCommand() {
 	String shellCommand = (String) getEntry().getFile().getAttribute(PROP_SHELL_COMMAND);
 	if (shellCommand == null || shellCommand.length() == 0) {
-	    shellCommand = ""; //NOI18N
+	    shellCommand = ""; // NOI18N
 	}
 
 	return shellCommand;
@@ -202,7 +202,7 @@ public class ShellExecSupport extends ExecutionSupport {
 	    if (ext != null && ext.length() > 0) {
                 if ((ext.equals("bat") || ext.equals("cmd")) && Utilities.isWindows()) {// NOI18N
                     argvParsed = new String[1];
-                    argvParsed[0] = "";
+                    argvParsed[0] = ""; // NOI18N
                     return argvParsed;
                 } else {
                     shellCommand = "/bin/" + ext; // NOI18N

@@ -71,7 +71,7 @@ public class APTSerializeUtils {
     private static final int END_APT = 3;
     
     static private void writeTree(ObjectOutputStream out, APT root) throws IOException {
-        assert (root != null) : "there must be something to write";
+        assert (root != null) : "there must be something to write"; // NOI18N
         APT node = root;
         do {
             APT child = node.getFirstChild();
@@ -95,7 +95,7 @@ public class APTSerializeUtils {
     }
 
     static private void readTree(ObjectInputStream in, APT root) throws IOException, ClassNotFoundException {
-        assert (root != null) : "there must be something to read";
+        assert (root != null) : "there must be something to read"; // NOI18N
         APT node = root;
         do {
             int kind = in.readInt();
@@ -121,11 +121,11 @@ public class APTSerializeUtils {
         File file = buffer.getFile();
         APT aptRead = null;
         // testing caching ast
-        String prefix = "cnd_apt_"+(fileIndex++);
+        String prefix = "cnd_apt_"+(fileIndex++); // NOI18N
         String suffix = file.getName();
         try {
             File out = File.createTempFile(prefix, suffix);                
-            if (false) System.out.println("...saving APT of file " + file.getAbsolutePath() + " into tmp file " + out);
+            if (false) System.out.println("...saving APT of file " + file.getAbsolutePath() + " into tmp file " + out); // NOI18N
             long astTime = System.currentTimeMillis();
             // write
             ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(out), APTTraceFlags.BUF_SIZE));
@@ -135,7 +135,7 @@ public class APTSerializeUtils {
                 oos.close();
             }
             long writeTime = System.currentTimeMillis() - astTime;
-            if (false) System.out.println("saved APT of file " + file.getAbsolutePath() + " withing " + writeTime + "ms");
+            if (false) System.out.println("saved APT of file " + file.getAbsolutePath() + " withing " + writeTime + "ms"); // NOI18N
             astTime = System.currentTimeMillis();
             // read
             ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(out), APTTraceFlags.BUF_SIZE));
@@ -147,7 +147,7 @@ public class APTSerializeUtils {
                 ois.close();                
             }
             long readTime = System.currentTimeMillis() - astTime;
-            if (false) System.out.println("read APT of file " + file.getAbsolutePath() + " withing " + readTime + "ms");
+            if (false) System.out.println("read APT of file " + file.getAbsolutePath() + " withing " + readTime + "ms"); // NOI18N
             out.delete();
         } catch (IOException ex) {
             ex.printStackTrace();

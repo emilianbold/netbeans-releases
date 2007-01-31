@@ -28,7 +28,7 @@ import org.netbeans.modules.cnd.api.model.*;
  */
 public class ClassViewUpdater implements Runnable {
     
-    private static final boolean traceEvents = Boolean.getBoolean("cnd.classview.updater-events");
+    private static final boolean traceEvents = Boolean.getBoolean("cnd.classview.updater-events"); // NOI18N
    
     private static class BlockingQueue {
         
@@ -152,12 +152,12 @@ public class ClassViewUpdater implements Runnable {
                 if (traceEvents) {
                     long end = System.nanoTime();
                     long time = (end-start)/1000000;
-                    System.out.println("Compose change event contains "+compose.getCount()+
-                                       " events and +"+compose.getNewDeclarations().size()+
-                                       "-"+compose.getRemovedDeclarations().size()+
-                                       "/"+compose.getChangedDeclarations().size()+
-                                       "*"+compose.getNewNamespaces().size()+
-                                       " declarations. Time = "+((float)(time)/1000.));
+                    System.out.println("Compose change event contains "+compose.getCount()+ // NOI18N
+                                       " events and +"+compose.getNewDeclarations().size()+ // NOI18N
+                                       "-"+compose.getRemovedDeclarations().size()+ // NOI18N
+                                       "/"+compose.getChangedDeclarations().size()+ // NOI18N
+                                       "*"+compose.getNewNamespaces().size()+ // NOI18N
+                                       " declarations. Time = "+((float)(time)/1000.)); // NOI18N
                 }
             }
         } catch( InterruptedException e ) {

@@ -51,7 +51,7 @@ public class IpeUtils {
      * Global flag which when set, generated additional diagnostic messages
      * on standard output. Used for development purposes only.
      */
-    static public final boolean IfdefDiagnostics = Boolean.getBoolean( "ifdef.debug.diagnostics"); //NOI18N
+    static public final boolean IfdefDiagnostics = Boolean.getBoolean( "ifdef.debug.diagnostics"); // NOI18N
     
     /** Same as the C library dirname function: given a path, return
      * its directory name. Unlike dirname, however, return null if
@@ -130,15 +130,15 @@ public class IpeUtils {
                 // path is a substring of
                 StringBuffer s = new StringBuffer();
                 for (int cnt = 0; cnt < (bnames.length - match-1); cnt++) {
-                    s.append(".." + File.separator);					//NOI18N
+                    s.append(".." + File.separator);					// NOI18N
                 }
-                s.append("..");					//NOI18N
+                s.append("..");					// NOI18N
                 return s.toString();
             } else if (match > 1) {
                 StringBuffer s = new StringBuffer();
                 
                 for (int cnt = bnames.length - match; cnt > 0; cnt--) {
-                    s.append(".." + File.separator);					//NOI18N
+                    s.append(".." + File.separator);					// NOI18N
                 }
                 for (int i = match; i < pnames.length; i++) {
                     if (s.charAt(s.length()-1) != File.separatorChar)
@@ -400,7 +400,7 @@ public class IpeUtils {
                     // Empty string
                     dp.append('$');
                     if (braces) {
-                        dp.append("{}");				//NOI18N
+                        dp.append("{}");				// NOI18N
                     }
                 }
             } else {

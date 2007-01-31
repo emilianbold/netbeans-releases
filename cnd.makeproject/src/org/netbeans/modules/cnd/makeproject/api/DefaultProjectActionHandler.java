@@ -143,6 +143,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                 return;
             
             final ProjectActionEvent pae = paes[currentAction];
+            String rcfile = null;
             
             // Validate executable
             if (pae.getID() == ProjectActionEvent.RUN ||
@@ -192,6 +193,11 @@ public class DefaultProjectActionHandler implements ActionListener {
                             conType = pae.getProfile().getDefaultConsoleType();
                         }
                         if (conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+                            try {
+                                rcfile = File.createTempFile("nbcnd_rc", "").getAbsolutePath(); // NOI18N
+                                pae.getProfile().getEnvironment().putenv("NBCND_RC=" + rcfile); // NOI18N
+                            } catch (IOException ex) {
+                            }
                             if (pae.getProfile().getTerminalPath().indexOf("gnome-terminal") != -1) { // NOI18N
                                 /* gnome-terminal has differnt quoting rules... */
                                 StringBuffer b = new StringBuffer();
@@ -218,6 +224,9 @@ public class DefaultProjectActionHandler implements ActionListener {
                         pae.getID() == ProjectActionEvent.BUILD,
                         showInput);
                 projectExecutor.addExecutionListener(this);
+                if (rcfile != null) {
+                    projectExecutor.setExitValueOverride(rcfile);
+                }
                 try {
                     projectExecutor.execute(getTab());
                 } catch (java.io.IOException ioe) {
@@ -225,7 +234,7 @@ public class DefaultProjectActionHandler implements ActionListener {
             } else if (pae.getID() == ProjectActionEvent.DEBUG ||
                     pae.getID() == ProjectActionEvent.DEBUG_STEPINTO ||
                     pae.getID() == ProjectActionEvent.DEBUG_LOAD_ONLY) {
-                System.err.println("No built-in debugging");
+                System.err.println("No built-in debugging"); // NOI18N
             } else {
                 assert false;
             }

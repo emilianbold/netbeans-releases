@@ -20,10 +20,12 @@
 package org.netbeans.modules.cnd.makeproject.ui.utils;
 
 import java.awt.GridBagConstraints;
+import java.util.ResourceBundle;
 import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.openide.util.NbBundle;
 
 public class ConfSelectorPanel extends javax.swing.JPanel {
 
@@ -34,7 +36,7 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
 
     JButton[] actionButtons;
 
-    public ConfSelectorPanel(String labelText, Configuration[] configurationItems, JButton[] actionButtons) {
+    public ConfSelectorPanel(String labelText, char mn, Configuration[] configurationItems, JButton[] actionButtons) {
         initComponents();
         GridBagConstraints gridBagConstraints;
         
@@ -43,6 +45,7 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
         
         // Set the label
         label.setText(labelText);
+        label.setDisplayedMnemonic(mn);
         
         // Add the comboboxes
         CheckBoxActionListener checkBoxActionListener = new CheckBoxActionListener();
@@ -66,6 +69,7 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
             }
             innerPanel.add(checkBox, gridBagConstraints);
             checkBoxes[i] = checkBox;
+            checkBox.getAccessibleContext().setAccessibleDescription(""); // NOI18N
         }
         
         // Add the action buttons
@@ -86,6 +90,12 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
         
         // Set size
         setPreferredSize(new java.awt.Dimension(350, 250));
+        
+        // Accessibility
+        getAccessibleContext().setAccessibleDescription(getString("SELECTED_CONF_AD"));
+        label.setDisplayedMnemonic(getString("SELECTED_CONF_MN").charAt(0));
+        selectAllButton.getAccessibleContext().setAccessibleDescription(getString("SELECT_ALL_BUTTON_AD"));
+        deselectAllButton.getAccessibleContext().setAccessibleDescription(getString("DESELECT_ALL_BUTTON_AD"));
     }
 
     private boolean sameAsLastTime(Configuration[] configurationItems) {
@@ -156,6 +166,7 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         label.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle").getString("SELECTED_CONF_MN").charAt(0));
+        label.setLabelFor(innerPanel);
         label.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle").getString("SELECTED_CONF_LBL"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -250,4 +261,12 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
     private javax.swing.JButton selectAllButton;
     // End of variables declaration//GEN-END:variables
     
+    /** Look up i18n strings here */
+    private static ResourceBundle bundle;
+    private static String getString(String s) {
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(ConfSelectorPanel.class);
+        }
+        return bundle.getString(s);
+    }
 }

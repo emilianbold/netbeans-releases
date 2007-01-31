@@ -8,61 +8,83 @@
 
 package org.netbeans.modules.cnd.dwarfdump.section;
 
-import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import org.netbeans.modules.cnd.dwarfdump.section.AddressRangeSet;
 
 /**
  *
  * @author ak119685
  */
 public class DwarfArangesSection extends ElfSection {
-    ArrayList<AddressRange> ranges = new ArrayList<AddressRange>();
+    ArrayList<AddressRangeSet> addressRangeSets = new ArrayList<AddressRangeSet>();
     
     /** Creates a new instance of DwarfArangesSection */
     public DwarfArangesSection(DwarfReader reader, int sectionIdx) {
         super(reader, sectionIdx);
     }
     
-    void addAddressRange(AddressRange arange) {
-        ranges.add(arange);
+    void addAddressRangeSet(AddressRangeSet addressRangeSet) {
+        addressRangeSets.add(addressRangeSet);
     }
     
-    public ArrayList<AddressRange> getRanges() {
-        return ranges;
+    public ArrayList<AddressRangeSet> getAddressRangeSets() {
+        if (addressRangeSets.size() == 0) {
+            try {
+                read();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
+        return addressRangeSets;
     }
     
     public DwarfArangesSection read() throws IOException {
-        reader.seek(header.getSectionOffset());
+        long sectionStart = header.getSectionOffset();
+        long sectionEnd = header.getSectionSize() + sectionStart;
         
-        while (header.getSectionSize() != reader.getFilePointer() - header.getSectionOffset()) {
-            AddressRange arange = new AddressRange();
-            arange.length = reader.readInt();
-            arange.version = reader.readShort();
-            arange.info_offset = reader.readInt();
-            arange.address_size = (byte)(0xff & reader.readByte());
-            arange.segment_descriptor_size = (byte)(0xff & reader.readByte());
+        reader.seek(sectionStart);
+        
+        while (reader.getFilePointer() != sectionEnd) {
+            AddressRangeSet addressRangeSet = new AddressRangeSet();
+            addressRangeSet.length = reader.readInt();
+            addressRangeSet.version = reader.readShort();
+            addressRangeSet.info_offset = reader.readInt();
+            addressRangeSet.address_size = (byte)(0xff & reader.readByte());
+            addressRangeSet.segment_descriptor_size = (byte)(0xff & reader.readByte());
             
-            reader.skipBytes(arange.address_size);
+            //  The first tuple following the header in each set begins at an
+            // offset that is a multiple of the size of a single tuple
             
-            long address = -1, length = -1;
+            int tupleSize = addressRangeSet.address_size * 2;
+            int alligment = addressRangeSet.address_size;
             
-            while (address !=0 || length !=0) {
-                address = reader.readNumber(arange.address_size);
-                length = reader.readNumber(arange.address_size);
-            }
+            reader.skipBytes(alligment);
             
-            addAddressRange(arange);
+            long address, length;
+            
+            do {
+                address = reader.readNumber(addressRangeSet.address_size);
+                length = reader.readNumber(addressRangeSet.address_size);
+                addressRangeSet.addRange(address, length);
+            } while (address != 0 || length != 0);
+
+            addAddressRangeSet(addressRangeSet);
         }
         
         return this;
     }
     
     public void dump(PrintStream out) {
-        for (AddressRange range : ranges) {
-            out.println("arange: " + Long.toHexString(range.info_offset));
+        super.dump(out);
+        
+        for (AddressRangeSet addressRangeSet : getAddressRangeSets()) {
+            addressRangeSet.dump(out);
         }
+        
+        out.println();
     }
 }

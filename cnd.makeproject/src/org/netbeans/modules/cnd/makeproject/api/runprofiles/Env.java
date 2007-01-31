@@ -57,7 +57,7 @@ public class Env {
     public String getenvEntry(String name) {
 	String value = (String) getenv(name);
 	if (value != null)
-	    return name + "=" + value;
+	    return name + "=" + value; // NOI18N
 	else
 	    return null;
     } 
@@ -91,7 +91,7 @@ public class Env {
     public String toString() {
 	String[] envStrings = getenv();
 	boolean addSep = false;
-	String envString = "";
+	String envString = ""; // NOI18N
 	for (int i = 0; i < envStrings.length; i++) {
 	    if (addSep)
 	    envString += ";"; // NOI18N
@@ -126,7 +126,7 @@ public class Env {
      * Takes <code>name=value</code> format.
      */
     public void putenv(String entry) {
-	int equalx = entry.indexOf('=');
+	int equalx = entry.indexOf('='); // NOI18N
 	if (equalx == -1) {
 	    System.err.println("Env.putenv(): odd entry '" + entry + "'"); // NOI18N
 	    return;
@@ -157,7 +157,7 @@ public class Env {
 	int index = 0;
 	for (Enumeration e = environ.elements() ; e.hasMoreElements() ;) {
 	    String[] nameValue  = (String[])e.nextElement();
-	    array[index++] = nameValue[0] + "=" + nameValue[1];
+	    array[index++] = nameValue[0] + "=" + nameValue[1]; // NOI18N
 	}
 	return array;
     } 

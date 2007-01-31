@@ -123,15 +123,15 @@ public class CsmContext {
      */
     public String toString() {
         StringBuffer buf = new StringBuffer();
-        buf.append("context for offset ").append(offset);
+        buf.append("context for offset ").append(offset); //NOI18N
         if (isEmpty()) {
-            buf.append(" empty");
+            buf.append(" empty"); //NOI18N
         } else {
-            buf.append(" with ").append(size()).append(" elements:\n");
+            buf.append(" with ").append(size()).append(" elements:\n"); //NOI18N
             for (Iterator it = context.iterator(); it.hasNext();) {
                 CsmContextEntry elem = (CsmContextEntry) it.next();
                 buf.append(elem);
-                buf.append("\n");
+                buf.append("\n"); //NOI18N
             }
         }
         return buf.toString();
@@ -176,36 +176,36 @@ public class CsmContext {
          */
         public String toString() {
             StringBuffer buf = new StringBuffer();
-            buf.append("[");
+            buf.append("["); //NOI18N
             if (isWholeScope()) {
-                buf.append("whole scope");
+                buf.append("whole scope"); //NOI18N
             } else {
-                buf.append("jump in ").append(getOffset());
+                buf.append("jump in ").append(getOffset()); //NOI18N
             }
             CsmOffsetable offs = (CsmKindUtilities.isOffsetable(scope)) ? (CsmOffsetable)scope : null;
             if (offs != null) {
                 // add range of scope
-                buf.append(" (");
+                buf.append(" ("); //NOI18N
                 // start as line:col,offset
                 CsmOffsetable.Position pos=offs.getStartPosition();
-                buf.append(pos.getLine()).append(":").append(pos.getColumn()).append(",").append(pos.getOffset());
-                buf.append(";");
+                buf.append(pos.getLine()).append(":").append(pos.getColumn()).append(",").append(pos.getOffset()); //NOI18N
+                buf.append(";"); //NOI18N
                 // end as line:col,offset
                 pos=offs.getEndPosition();
-                buf.append(pos.getLine()).append(":").append(pos.getColumn()).append(",").append(pos.getOffset());
-                buf.append(")");
+                buf.append(pos.getLine()).append(":").append(pos.getColumn()).append(",").append(pos.getOffset()); //NOI18N
+                buf.append(")"); //NOI18N
             }
             // add name 
             buf.append(CsmUtilities.getCsmName(scope));
             // add scope info
-            buf.append(" scope - ");
+            buf.append(" scope - "); //NOI18N
             if (CsmKindUtilities.isScope(scope)) {
-                buf.append(" [scope object] ");
+                buf.append(" [scope object] "); //NOI18N
             }  
             if (CsmKindUtilities.isScopeElement(scope)) {
-                buf.append(" [scope element] ");
+                buf.append(" [scope element] "); //NOI18N
             }  
-            buf.append("]");
+            buf.append("]"); //NOI18N
             return buf.toString();
         }
         

@@ -146,7 +146,7 @@ public class FunctionDefinitionImpl extends FunctionImpl implements CsmFunctionD
 	CsmObject owner = findOwner();
 	if( owner instanceof CsmQualifiedNamedElement  ) {
 	    qualifiedNameIsFake = false;
-	    return ((CsmQualifiedNamedElement) owner).getQualifiedName() + "::" + getName();
+	    return ((CsmQualifiedNamedElement) owner).getQualifiedName() + "::" + getName(); // NOI18N
 	}
 	else {
 	    qualifiedNameIsFake = true;
@@ -159,15 +159,15 @@ public class FunctionDefinitionImpl extends FunctionImpl implements CsmFunctionD
 	    if( cnn != null ) {
 		for (int i = 0; i < cnn.length; i++) {
 		    if( sb.length() > 0 ) {
-			sb.append("::");
+			sb.append("::"); // NOI18N
 		    }
 		    sb.append(cnn[i]);
 		}
 	    }
 	    if( sb.length() == 0 ) {
-		sb.append("unknown>");
+		sb.append("unknown>"); // NOI18N
 	    }
-	    sb.append("::");
+	    sb.append("::"); // NOI18N
 	    sb.append(getName());
 	    return sb.toString();
 	}

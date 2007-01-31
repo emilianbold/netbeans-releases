@@ -122,7 +122,7 @@ public class CsmAST extends BaseAST implements Serializable {
         if (token instanceof APTToken) {
             return ((APTToken)token).getFilename();
         } else {
-            return "<undef_file>";
+            return "<undef_file>"; // NOI18N
         }
     }
     

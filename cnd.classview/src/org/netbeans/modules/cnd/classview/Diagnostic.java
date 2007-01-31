@@ -28,8 +28,8 @@ import org.netbeans.modules.cnd.modelutil.Tracer;
  */
 public class Diagnostic {
     
-    public static final boolean DEBUG = Boolean.getBoolean("cnd.classview.trace");
-    public static final boolean DUMP_MODEL = Boolean.getBoolean("cnd.classview.dumpmodel");
+    public static final boolean DEBUG = Boolean.getBoolean("cnd.classview.trace"); // NOI18N
+    public static final boolean DUMP_MODEL = Boolean.getBoolean("cnd.classview.dumpmodel"); // NOI18N
     
     private static Tracer tracer = new Tracer(System.err);
     

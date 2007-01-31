@@ -24,17 +24,17 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
 public class PlatformSolaris  extends Platform {
     public static final LibraryItem.StdLibItem[] standardLibrariesSolaris = {
-	new LibraryItem.StdLibItem("Motif", "Motif", new String[] {"Xm", "Xt", "Xext", "X11"}),
-	new LibraryItem.StdLibItem("Mathematics", "Mathematics", new String[] {"m"}),
-	new LibraryItem.StdLibItem("Yacc", "Yacc", new String[] {"y"}),
-	new LibraryItem.StdLibItem("Lex", "Lex", new String[] {"l"}),
-	new LibraryItem.StdLibItem("SocketsNetworkServices", "Sockets and Network Services Library", new String[] {"socket", "nsl"}),
-	new LibraryItem.StdLibItem("SolarisThreads", "Solaris Threads", new String[] {"thread"}),
-	new LibraryItem.StdLibItem("PosixThreads", "Posix Threads", new String[] {"pthread"}),
-	new LibraryItem.StdLibItem("Posix4", "Posix 4", new String[] {"possix4"}),
-	new LibraryItem.StdLibItem("Internationalization", "Internationalization", new String[] {"intl"}),
-	new LibraryItem.StdLibItem("PatternMatching", "Pattern Matching and Pathname Manipulation", new String[] {"gen"}),
-	new LibraryItem.StdLibItem("Curses", "Curses: CRT Screen Handling", new String[] {"curses"}),
+	new LibraryItem.StdLibItem("Motif", "Motif", new String[] {"Xm", "Xt", "Xext", "X11"}), // NOI18N
+	new LibraryItem.StdLibItem("Mathematics", "Mathematics", new String[] {"m"}), // NOI18N
+	new LibraryItem.StdLibItem("Yacc", "Yacc", new String[] {"y"}), // NOI18N
+	new LibraryItem.StdLibItem("Lex", "Lex", new String[] {"l"}), // NOI18N
+	new LibraryItem.StdLibItem("SocketsNetworkServices", "Sockets and Network Services Library", new String[] {"socket", "nsl"}), // NOI18N
+	new LibraryItem.StdLibItem("SolarisThreads", "Solaris Threads", new String[] {"thread"}), // NOI18N
+	new LibraryItem.StdLibItem("PosixThreads", "Posix Threads", new String[] {"pthread"}), // NOI18N
+	new LibraryItem.StdLibItem("Posix4", "Posix 4", new String[] {"possix4"}), // NOI18N
+	new LibraryItem.StdLibItem("Internationalization", "Internationalization", new String[] {"intl"}), // NOI18N
+	new LibraryItem.StdLibItem("PatternMatching", "Pattern Matching and Pathname Manipulation", new String[] {"gen"}), // NOI18N
+	new LibraryItem.StdLibItem("Curses", "Curses: CRT Screen Handling", new String[] {"curses"}), // NOI18N
     };
     
     public PlatformSolaris(String name, String displayName, int id) {
@@ -50,13 +50,13 @@ public class PlatformSolaris  extends Platform {
     }
     
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
-        if (libName.endsWith(".so")) {
-            int i = libName.indexOf(".so");
+        if (libName.endsWith(".so")) { // NOI18N
+            int i = libName.indexOf(".so"); // NOI18N
             if (i > 0)
                 libName = libName.substring(0, i);
-            if (libName.startsWith("lib"))
+            if (libName.startsWith("lib")) // NOI18N
                 libName = libName.substring(3);
-            return compilerSet.getDynamicLibrarySearchOption() + libDir + " " + compilerSet.getLibrarySearchOption() + libDir + " " + compilerSet.getLibraryOption() + libName;
+            return compilerSet.getDynamicLibrarySearchOption() + libDir + " " + compilerSet.getLibrarySearchOption() + libDir + " " + compilerSet.getLibraryOption() + libName; // NOI18N
         } else {
             return libPath;
         }

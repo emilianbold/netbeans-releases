@@ -50,12 +50,12 @@ public class ExeLoader extends UniFileLoader {
     private static FileObject lastFo;
 
     private static final String KNOWN_EXEFILE_TYPE =
-	    "org.netbeans.modules.cnd.ExeLoader.KNOWN_EXEFILE_TYPE";	//NOI18N
+	    "org.netbeans.modules.cnd.ExeLoader.KNOWN_EXEFILE_TYPE";	// NOI18N
 
     private static ExeLoader DEFAULT = null;
 
     public ExeLoader() {
-	super("org.netbeans.modules.cnd.loaders.ExeObject");            //NOI18N
+	super("org.netbeans.modules.cnd.loaders.ExeObject");            // NOI18N
 	DEFAULT = this;
     }
 
@@ -264,26 +264,26 @@ public class ExeLoader extends UniFileLoader {
 	    mime = o.toString();
 	} else {
 	    mime = fo.getMIMEType();
-	    if (mime.equals("application/x-exe")) { //NOI18N
+	    if (mime.equals("application/x-exe")) { // NOI18N
 		mime = MIMENames.EXE_MIME_TYPE;
-	    } else if (mime.equals("application/x-exe+dll")) { //NOI18N
+	    } else if (mime.equals("application/x-exe+dll")) { // NOI18N
 		mime = MIMENames.DLL_MIME_TYPE;
-	    } else if (mime.equals("application/x-executable+elf")) { //NOI18N
+	    } else if (mime.equals("application/x-executable+elf")) { // NOI18N
 		mime = MIMENames.ELF_EXE_MIME_TYPE;
-	    } else if (mime.equals("application/x-core+elf")) { //NOI18N
+	    } else if (mime.equals("application/x-core+elf")) { // NOI18N
 		mime = MIMENames.ELF_CORE_MIME_TYPE;
-	    } else if (mime.equals("application/x-shobj+elf")) { //NOI18N
+	    } else if (mime.equals("application/x-shobj+elf")) { // NOI18N
 		mime = MIMENames.ELF_SHOBJ_MIME_TYPE;
-	    } else if (mime.equals("application/x-object+elf")) { //NOI18N
+	    } else if (mime.equals("application/x-object+elf")) { // NOI18N
 		mime = MIMENames.ELF_OBJECT_MIME_TYPE;
-	    } else if ("application/x-elf".equals(mime)) { //NOI18N
+	    } else if ("application/x-elf".equals(mime)) { // NOI18N
 		// Fallback matching. We shouldn't see this anymore.
 		String name = fo.getNameExt();
-		if (name.startsWith("core") || name.endsWith(".core")) { //NOI18N
+		if (name.startsWith("core") || name.endsWith(".core")) { // NOI18N
 		    mime = MIMENames.ELF_CORE_MIME_TYPE;
-		} else if (name.endsWith(".o")) { //NOI18N
+		} else if (name.endsWith(".o")) { // NOI18N
 		    mime = MIMENames.ELF_OBJECT_MIME_TYPE;
-		} else if (name.endsWith(".so") || name.indexOf(".so.") >= 0) { //NOI18N
+		} else if (name.endsWith(".so") || name.indexOf(".so.") >= 0) { // NOI18N
 		    mime = MIMENames.ELF_SHOBJ_MIME_TYPE;
 		} else {
 		    mime = MIMENames.ELF_EXE_MIME_TYPE;

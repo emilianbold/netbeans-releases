@@ -36,6 +36,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -74,7 +75,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     private Project project;
     
-    private DialogDescriptor dialogDescriptor;
     private MakeCustomizer makeCustomizer;
     
     private ConfigurationDescriptor projectDescriptor;
@@ -112,7 +112,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         calculateSelectedConfs();
         
         HelpCtx.setHelpIDString( customizerPanel, "org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer" ); // NOI18N
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizer.class,"AD_MakeCustomizer"));
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizer.class,"AD_MakeCustomizer")); // NOI18N
         fillConstraints = new GridBagConstraints();
         fillConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         fillConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -120,9 +120,13 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         fillConstraints.weightx = 1.0;
         fillConstraints.weighty = 1.0;
         currentCategoryView = new CategoryView(createRootNode(project, projectDescriptor, item), preselectedNodeName );
-        currentCategoryView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MakeCustomizer.class,"AN_BeanTreeViewCategories"));
-        currentCategoryView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizer.class,"AD_BeanTreeViewCategories"));
+        currentCategoryView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MakeCustomizer.class,"AN_BeanTreeViewCategories")); // NOI18N
+        currentCategoryView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizer.class,"AD_BeanTreeViewCategories")); // NOI18N
         categoryPanel.add( currentCategoryView, fillConstraints );
+        
+        // Accessibility
+        configurationsButton.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATIONS_BUTTON_AD"));
+        configurationComboBox.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATION_COMBOBOX_AD"));
     }
     
     /** This method is called from within the constructor to
@@ -138,7 +142,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         configurationLabel = new javax.swing.JLabel();
         configurationComboBox = new javax.swing.JComboBox();
         configurationsButton = new javax.swing.JButton();
+        categoryLabel = new javax.swing.JLabel();
         categoryPanel = new javax.swing.JPanel();
+        propertiesLabel = new javax.swing.JLabel();
         customizerPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -159,9 +165,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        configurationPanel.add(configurationComboBox, gridBagConstraints);
+        configurationPanel.add(configurationComboBox, new java.awt.GridBagConstraints());
 
         configurationsButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/customizer/Bundle").getString("CONFIGURATIONS_BUTTON_MNE").charAt(0));
         configurationsButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/customizer/Bundle").getString("CONFIGURATIONS_BUTTON_LBL"));
@@ -180,37 +184,56 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
         add(configurationPanel, gridBagConstraints);
+
+        categoryLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/customizer/Bundle").getString("CATEGORIES_LABEL_MN").charAt(0));
+        categoryLabel.setLabelFor(categoryPanel);
+        categoryLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/customizer/Bundle").getString("CATEGORIES_LABEL_TXT"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 0);
+        add(categoryLabel, gridBagConstraints);
 
         categoryPanel.setLayout(new java.awt.GridBagLayout());
 
-        categoryPanel.setBorder(new javax.swing.border.EtchedBorder());
+        categoryPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         categoryPanel.setMinimumSize(new java.awt.Dimension(220, 4));
         categoryPanel.setPreferredSize(new java.awt.Dimension(220, 4));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 8);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 8, 8);
         add(categoryPanel, gridBagConstraints);
         categoryPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MakeCustomizer.class, "ACSN_MakeCustomizer_categoryPanel"));
         categoryPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakeCustomizer.class, "ACSD_MakeCustomizer_categoryPanel"));
+
+        propertiesLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/customizer/Bundle").getString("PROPERTIES_LABEL_MN").charAt(0));
+        propertiesLabel.setLabelFor(customizerPanel);
+        propertiesLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/customizer/Bundle").getString("PROPERTIES_LABEL_TXT"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 4, 0, 8);
+        add(propertiesLabel, gridBagConstraints);
 
         customizerPanel.setLayout(new java.awt.GridBagLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 4, 8, 8);
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 8, 8);
         add(customizerPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void configurationsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configurationsButtonActionPerformed
         MyListEditorPanel configurationsEditor = new MyListEditorPanel(projectDescriptor.getConfs().getConfs());
@@ -229,6 +252,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         DialogDisplayer dialogDisplayer = DialogDisplayer.getDefault();
         java.awt.Dialog dl = dialogDisplayer.createDialog(dd);
         //dl.setPreferredSize(new java.awt.Dimension(400, (int)dl.getPreferredSize().getHeight()));
+        dl.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATIONS_EDITOR_AD"));
         dl.pack();
         dl.setSize(new java.awt.Dimension(400, (int)dl.getPreferredSize().getHeight()));
         dl.setVisible(true);
@@ -271,18 +295,15 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel categoryLabel;
     private javax.swing.JPanel categoryPanel;
     private javax.swing.JComboBox configurationComboBox;
     private javax.swing.JLabel configurationLabel;
     private javax.swing.JPanel configurationPanel;
     private javax.swing.JButton configurationsButton;
     private javax.swing.JPanel customizerPanel;
+    private javax.swing.JLabel propertiesLabel;
     // End of variables declaration//GEN-END:variables
-    
-    
-    public void setDialogDescriptor( DialogDescriptor dialogDescriptor ) {
-        this.dialogDescriptor = dialogDescriptor;
-    }
     
     // HelpCtx.Provider implementation -----------------------------------------
     
@@ -320,6 +341,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             btv.setPreferredSize( size );
             btv.setMaximumSize( size );
             btv.setDragSource(false);
+            btv.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MakeCustomizer.class,"AN_BeanTreeViewCategories"));
+            btv.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizer.class,"AD_BeanTreeViewCategories"));
             this.add( btv, BorderLayout.CENTER );
             manager.setRootContext( rootNode );
             ManagerChangeListener managerChangeListener = new ManagerChangeListener();
@@ -423,7 +446,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                     customizerPanel.repaint();
                     currentCustomizer = panel;
                     
-                    btv.requestFocus();
+                    IpeUtils.requestFocus(btv);
                     
                     return;
                 }
@@ -443,7 +466,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         } else {
             // Some Selected
             while (true) {
-                ConfSelectorPanel confSelectorPanel = new ConfSelectorPanel(getString("SELECTED_CONFIGURATIONS_LBL"), configurationItems, null);
+                ConfSelectorPanel confSelectorPanel = new ConfSelectorPanel(getString("SELECTED_CONFIGURATIONS_LBL"), 'v', configurationItems, null);
                 DialogDescriptor dd = new DialogDescriptor(confSelectorPanel, getString("MULTIPLE_CONFIGURATIONS_TITLE"));
                 DialogDisplayer.getDefault().notify(dd);
                 if (dd.getValue() != DialogDescriptor.OK_OPTION) {
@@ -718,7 +741,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         if (isCompilerConfiguration) {
             nodeLabel = MakeOptions.getInstance().getFortran() ? getString("LBL_CCPPFORTRAN_NODE") : getString("LBL_CCPP_NODE");
         } else {
-            nodeLabel = "Parser Configuration";
+            nodeLabel = getString("LBL_PARSER_NODE");
         }
         
         CustomizerNode rootDescription = new CustomizerNode(
@@ -1092,7 +1115,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         public void editAction(Object o) {
             Configuration c = (Configuration)o;
             
-            NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine("", getString("CONFIGURATION_RENAME_DIALOG_TITLE")); // NOI18N
+            NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("CONFIGURATION_RENAME_DIALOG_LABEL"), getString("CONFIGURATION_RENAME_DIALOG_TITLE")); // NOI18N
             notifyDescriptor.setInputText(c.getName());
             // Rename conf
             DialogDisplayer.getDefault().notify(notifyDescriptor);

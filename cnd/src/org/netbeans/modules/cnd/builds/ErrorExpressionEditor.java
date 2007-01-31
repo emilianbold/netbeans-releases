@@ -85,7 +85,7 @@ public class ErrorExpressionEditor extends PropertyEditorSupport {
     }
 
     public String getAsText() {
-	return "";//value.getName(); // FIXUP - TRUNK - THP
+	return "";//value.getName(); // FIXUP - TRUNK - THP // NOI18N
     }
 
 

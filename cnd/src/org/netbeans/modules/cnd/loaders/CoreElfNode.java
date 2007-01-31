@@ -51,9 +51,9 @@ public class CoreElfNode extends CCFNode {
 	    set = new Sheet.Set();
 	    set.setName(BinaryExecSupport.PROP_EXECUTION);
 	    set.setDisplayName(NbBundle.getBundle(CoreElfNode.class).
-		    getString("displayNameForExeElfNodeExecSheet"));  //NOI18N
+		    getString("displayNameForExeElfNodeExecSheet"));  // NOI18N
 	    set.setShortDescription(NbBundle.getBundle(CoreElfNode.class).
-		    getString("hintForExeElfNodeExecSheet"));   //NOI18N
+		    getString("hintForExeElfNodeExecSheet"));   // NOI18N
 	    BinaryExecSupport es = ((BinaryExecSupport)
 				getCookie(BinaryExecSupport.class));
 	    if (es != null) {

@@ -94,7 +94,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     
     // interface XMLDecoder
     public void start(Attributes atts) throws VersionException {
-        String what = "project configuration";
+        String what = "project configuration"; // NOI18N
         checkVersion(atts, what, CURRENT_VERSION);
         String versionString = atts.getValue("version");        // NOI18N
         if (versionString != null) {
@@ -119,13 +119,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (index < 0) {
                 // Old type. Only makefile was really working...
                 confType = MakeConfiguration.TYPE_MAKEFILE;
-            } else if (atts.getValue(index).equals("0")) // FIXUP
+            } else if (atts.getValue(index).equals("0")) // FIXUP // NOI18N
                 confType = MakeConfiguration.TYPE_MAKEFILE;
-            else if (atts.getValue(index).equals("1")) // FIXUP
+            else if (atts.getValue(index).equals("1")) // FIXUP // NOI18N
                 confType = MakeConfiguration.TYPE_APPLICATION;
-            else if (atts.getValue(index).equals("2")) // FIXUP
+            else if (atts.getValue(index).equals("2")) // FIXUP // NOI18N
                 confType = MakeConfiguration.TYPE_DYNAMIC_LIB;
-            else if (atts.getValue(index).equals("3")) // FIXUP
+            else if (atts.getValue(index).equals("3")) // FIXUP // NOI18N
                 confType = MakeConfiguration.TYPE_STATIC_LIB;
             else {
                 ; // FIXUP
@@ -138,7 +138,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentConf = new MakeConfiguration(FileUtil.toFile(projectDirectory).getPath(), atts.getValue(0), MakeConfiguration.TYPE_MAKEFILE);
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP:  < version 5
             currentList = new Vector();
-            currentFolder = new Folder(projectDescriptor, ((MakeConfigurationDescriptor)projectDescriptor).getLogicalFolders(), "ExternalFiles", "Important Files", false); // FIXUP
+            currentFolder = new Folder(projectDescriptor, ((MakeConfigurationDescriptor)projectDescriptor).getLogicalFolders(), "ExternalFiles", "Important Files", false); // NOI18N
             ((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentFolder);
             ((MakeConfigurationDescriptor)projectDescriptor).getLogicalFolders().addFolder(currentFolder);
         } else if (element.equals(LOGICAL_FOLDER_ELEMENT)) {

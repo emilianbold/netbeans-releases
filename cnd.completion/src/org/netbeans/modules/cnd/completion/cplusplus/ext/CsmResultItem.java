@@ -81,7 +81,7 @@ public abstract class CsmResultItem
      */
     public String toString() {
         Component comp = getPaintComponent(false);
-        return comp != null ? comp.toString() : "";
+        return comp != null ? comp.toString() : ""; //NOI18N
     }    
     
     public Object getAssociatedObject(){
@@ -265,7 +265,7 @@ public abstract class CsmResultItem
         
         public java.awt.Component getPaintComponent(boolean isSelected) {
             CsmPaintComponent.FieldPaintComponent comp = null;
-            assert (CsmKindUtilities.isCsmObject(getAssociatedObject())) : "must be csm object";
+            assert (CsmKindUtilities.isCsmObject(getAssociatedObject())) : "must be csm object"; //NOI18N
             CsmObject var = (CsmObject)getAssociatedObject();
             if (CsmKindUtilities.isField(var)) {
                 if (fieldComponent == null) {
@@ -284,7 +284,7 @@ public abstract class CsmResultItem
                 comp = fileLocalVarComponent;    
             } else {
                 assert (CsmKindUtilities.isLocalVariable(var)) : 
-                    "support only global var, local var, file local var and class fields";
+                    "support only global var, local var, file local var and class fields"; //NOI18N
                 if (localVarComponent == null) {
                     localVarComponent = createPaintComponent();
                 }
@@ -357,7 +357,7 @@ public abstract class CsmResultItem
         
         public Component getPaintComponent(boolean isSelected) {
             CsmPaintComponent.MethodPaintComponent comp = null;
-            assert (CsmKindUtilities.isCsmObject(getAssociatedObject())) : "must be csm object";
+            assert (CsmKindUtilities.isCsmObject(getAssociatedObject())) : "must be csm object"; //NOI18N
             CsmObject mtd = (CsmObject)getAssociatedObject();
             if (CsmKindUtilities.isMethod(mtd)) {
                 if (mtdComponent == null) {
@@ -365,7 +365,7 @@ public abstract class CsmResultItem
                 }
                 comp = mtdComponent;
             } else {
-                assert (CsmKindUtilities.isGlobalFunction(mtd)) : "support only global fun and class methods";
+                assert (CsmKindUtilities.isGlobalFunction(mtd)) : "support only global fun and class methods"; //NOI18N
                 if (globFunComponent == null) {
                     globFunComponent = (CsmPaintComponent.MethodPaintComponent)createPaintComponent();
                 }
@@ -404,7 +404,7 @@ public abstract class CsmResultItem
                 if (type == null) {
                     // only var args parameters could have null types
                     assert (prm.isVarArgs());
-                    params.add(new ParamStr("", "" , prm.getName(), KEYWORD_COLOR));
+                    params.add(new ParamStr("", "" , prm.getName(), KEYWORD_COLOR)); //NOI18N
                 } else {
                     // XXX may be need full name as the first param
                     // FIXUP: too expensive to call getClassifier here!
@@ -755,7 +755,7 @@ public abstract class CsmResultItem
         
         public String getItemText() {
             // TODO: do we need name of enum?
-            return (displayFQN ? enmtr.getEnumeration().getQualifiedName() + "::" : "") + enmtr.getName();
+            return (displayFQN ? enmtr.getEnumeration().getQualifiedName() + CsmCompletion.SCOPE : "") + enmtr.getName(); //NOI18N
         }
         
         protected CsmPaintComponent.EnumeratorPaintComponent createPaintComponent(){

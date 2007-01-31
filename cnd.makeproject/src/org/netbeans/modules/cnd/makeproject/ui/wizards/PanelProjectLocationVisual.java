@@ -63,6 +63,9 @@ public class PanelProjectLocationVisual extends SettingsPanel
             makefileTextField.setVisible(false);
             makefileLabel.setVisible(false);
         }
+        
+        // Accessibility
+        makefileTextField.getAccessibleContext().setAccessibleDescription(getString("AD_MAKEFILE"));
     }
     
     
@@ -71,7 +74,7 @@ public class PanelProjectLocationVisual extends SettingsPanel
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("NewAppWizard");
+        return new HelpCtx("NewAppWizard"); // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -133,7 +136,6 @@ public class PanelProjectLocationVisual extends SettingsPanel
         add(projectLocationTextField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
-        browseButton.setActionCommand("BROWSE");
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseLocationAction(evt);
@@ -196,25 +198,22 @@ public class PanelProjectLocationVisual extends SettingsPanel
     }// </editor-fold>//GEN-END:initComponents
     
     private void browseLocationAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocationAction
-        String command = evt.getActionCommand();
-        if ( "BROWSE".equals( command ) ) { // NOI18N
-            JFileChooser chooser = new JFileChooser();
-            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-            chooser.setDialogTitle(NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_NWP1_SelectProjectLocation")); // NOI18N
-            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            String path = this.projectLocationTextField.getText();
-            if (path.length() > 0) {
-                File f = new File(path);
-                if (f.exists()) {
-                    chooser.setSelectedFile(f);
-                }
+        JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setDialogTitle(NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_NWP1_SelectProjectLocation")); // NOI18N
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        String path = this.projectLocationTextField.getText();
+        if (path.length() > 0) {
+            File f = new File(path);
+            if (f.exists()) {
+                chooser.setSelectedFile(f);
             }
-            if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
-                File projectDir = chooser.getSelectedFile();
-                projectLocationTextField.setText( projectDir.getAbsolutePath() );
-            }
-            panel.fireChangeEvent();
         }
+        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
+            File projectDir = chooser.getSelectedFile();
+            projectLocationTextField.setText( projectDir.getAbsolutePath() );
+        }
+        panel.fireChangeEvent();
     }//GEN-LAST:event_browseLocationAction
     
     

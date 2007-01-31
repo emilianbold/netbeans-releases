@@ -48,13 +48,13 @@ public abstract class APTTokenAbstact implements APTToken {
     public String getFilename() {return null;};
     public void setFilename(String name) {};
     
-    public String getText() {return "<empty>";};
+    public String getText() {return "<empty>";};// NOI18N
     public void setText(String t) {};
 
     public int getType() {return INVALID_TYPE;};
     public void setType(int t) {};
     
     public String toString() {
-        return "[\"" + getText() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename();
+        return "[\"" + getText() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename(); // NOI18N
     }
 }

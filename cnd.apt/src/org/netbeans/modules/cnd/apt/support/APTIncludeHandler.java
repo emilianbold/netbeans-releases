@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import java.util.Stack;
+
 /**
  *
  * @author Vladimir Voskresensky
@@ -29,13 +31,28 @@ public interface APTIncludeHandler {
      */
     public State getState();
     public void setState(State state);
-    public interface State {};     
+    public interface State {
+        /**
+         * clear cached restorable information of state
+         * @return true if there were cleaned information which will need further restoring
+         */
+        public boolean cleanExceptIncludeStack();
+
+        /**
+         * get include stack and clean this information internally
+         */
+        public Stack/*<IncludeInfo>*/ cleanIncludeStack();
+    
+    };     
     
     /*
+     * 
      * notify about inclusion
+     * @param path included file absolute path
+     * @param directiveLine line number of #include directive in original file (1-based)
      * @return false if inclusion is recursive and was prohibited
      */
-    public boolean pushInclude(String path);
+    public boolean pushInclude(String path, int directiveLine);
     
     /*
      * notify about finished inclusion
@@ -46,4 +63,20 @@ public interface APTIncludeHandler {
      * get resolver for path
      */
     public APTIncludeResolver getResolver(String path);
+
+    /**
+     * returns the first file where include stack started
+     */
+    public String getStartFile();
+    
+    /**
+     * include stack entry
+     * - line where #include directive was
+     * - resolved #include directive as absolute included path
+     */
+    public interface IncludeInfo {
+        public String getIncludedPath();
+        public int getIncludeDirectiveLine();
+    } 
+    
 }

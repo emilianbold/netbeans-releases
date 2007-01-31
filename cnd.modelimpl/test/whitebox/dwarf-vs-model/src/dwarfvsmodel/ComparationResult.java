@@ -20,6 +20,8 @@
 package dwarfvsmodel;
 
 import java.io.PrintStream;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**
  *
@@ -29,33 +31,48 @@ public class ComparationResult {
     private int files;
     private int total;
     private int matched;
-    
-    /** Creates a new instance of ComparationResult */
-    public ComparationResult() {
-        this(0, 0, 0);
+    private String label;
+    private int errors;
+
+    public ComparationResult(CsmFile file, int total, int matched) {
+	this(file.getName() + "  " + file.getAbsolutePath(), total, matched, 1);
+	this.errors = (file instanceof  FileImpl) ? ((FileImpl) file).getErrorCount() : 0;
     }
-    
-    public ComparationResult(int filesProcessed, int total, int matched) {
+
+    public ComparationResult(String label, int total, int matched, int files) {
         if (total < matched || total < 0 || matched < 0) {
-            throw new IllegalArgumentException("Wrong arguments for result initialization.");
+            throw new IllegalArgumentException("Wrong arguments for result initialization."); // NOI18N
         }
-    
+	this.label = label;
         this.total = total;
         this.matched = matched;
-        this.files = filesProcessed;
+        this.files = files;
     }
     
     public void add(ComparationResult result) {
         files += result.files;
         total += result.total;
         matched += result.matched;
+	errors += result.errors;
     }
+    
+//    public void dump(PrintStream out) {
+//        if (total == 0) {
+//            out.println("Pass rating undefined. Total == 0"); // NOI18N
+//        } else {
+//            out.printf("\n%d files processed. Pass rating %.2f%% (%d/%d)\n\n", files, (((double)matched) / total * 100), matched, total); // NOI18N
+//        }
+//    }
     
     public void dump(PrintStream out) {
         if (total == 0) {
-            out.println("Pass rating undefined. Total == 0");
-        } else {
-            out.printf("\n%d files processed. Pass rating %.2f%% (%d/%d)\n\n", files, (((double)matched) / total * 100), matched, total);
+            out.printf("%s   n/a  %d of %d  delta %d errors %d\n", label, matched, total, total - matched, errors); // NOI18N
+	} else {
+            out.printf("%s   %.2f%%  %d of %d  delta %d errors %d\n", label, (((double)matched) / total * 100), matched, total, total - matched, errors); // NOI18N
+	}
+        if( files > 1 ) {
+            out.printf("Files processed: %d\n\n", files); // NOI18N
         }
     }
+
 }

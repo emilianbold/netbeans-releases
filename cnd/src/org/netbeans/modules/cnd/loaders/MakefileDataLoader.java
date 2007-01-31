@@ -50,23 +50,23 @@ public class MakefileDataLoader extends MultiFileLoader {
     private static int count = 0;
 
     /** Mark a file as a Makefile */
-    public static final String PROP_MAKEFILE_TYPE = "MAKEFILE_TYPE";	//NOI18N
+    public static final String PROP_MAKEFILE_TYPE = "MAKEFILE_TYPE";	// NOI18N
 
     /** store the popup menu actions here */
     protected static SystemAction[] standardActions;
     
     /** a list of well known file extensions */
     protected static String extensionsList[] = 
-                               { "cc", "c", "cpp", "h", "java",      //NOI18N
-                                 "c++", "gif", "xml", "ser",         //NOI18N
-                                 "html", "instance", "settings",     //NOI18N
-                                 "f", "f90", "f95", "for", };        //NOI18N
+                               { "cc", "c", "cpp", "h", "java",      // NOI18N
+                                 "c++", "gif", "xml", "ser",         // NOI18N
+                                 "html", "instance", "settings",     // NOI18N
+                                 "f", "f90", "f95", "for", };        // NOI18N
 
     /**
      *  Default constructor
      */
     public MakefileDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.MakefileDataObject");   //NOI18N
+	super("org.netbeans.modules.cnd.loaders.MakefileDataObject");   // NOI18N
     }
     
     public MakefileDataLoader(String recognizedClassName) {
@@ -224,13 +224,13 @@ public class MakefileDataLoader extends MultiFileLoader {
 	//
 	// I will disable this code for now.
 	//
-	/*if (fullname.startsWith(".make.state")) {			//NOI18N
+	/*if (fullname.startsWith(".make.state")) {			// NOI18N
 	    FileObject fm = null;
 
 	    if (fullname.length() == 11) {
-		fm = findMakefile(fo, "Makefile");			//NOI18N
+		fm = findMakefile(fo, "Makefile");			// NOI18N
 		if (fm == null) {
-		    fm = findMakefile(fo, "makefile");			//NOI18N
+		    fm = findMakefile(fo, "makefile");			// NOI18N
 		}
 	    } else if (fullname.length() > 12 && fullname.charAt(11) == '.') {
 		fm = findMakefile(fo, fullname.substring(12));
@@ -243,10 +243,10 @@ public class MakefileDataLoader extends MultiFileLoader {
 	    return fm;
 	} else */
 	// Check for various (somewhat) standard Makefile names.
-	if (ext.equals("mk") ||	      			        //NOI18N
-		name.startsWith("makefile") ||                      //NOI18N
-		name.endsWith("makefile") ||			//NOI18N
-		name.startsWith("gnumakefile")) {			//NOI18N
+	if (ext.equals("mk") ||	      			        // NOI18N
+		name.startsWith("makefile") ||                      // NOI18N
+		name.endsWith("makefile") ||			// NOI18N
+		name.startsWith("gnumakefile")) {			// NOI18N
 	    countFile();
 	    return fo;
 	}
@@ -259,7 +259,7 @@ public class MakefileDataLoader extends MultiFileLoader {
      *  @return true if the extension is in the list of well known extensions.
      */
     private static boolean isWellKnownExtension(String extension) {
-	if (extension != null && !extension.equals("")) {           //NOI18N
+	if (extension != null && !extension.equals("")) {           // NOI18N
 	    String ext = extension.toLowerCase();
 	    for (int i = 0; i < extensionsList.length; i++) {
 		if (ext.equals(extensionsList[i])) {

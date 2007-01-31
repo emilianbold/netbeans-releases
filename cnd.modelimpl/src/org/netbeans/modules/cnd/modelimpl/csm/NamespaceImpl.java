@@ -19,21 +19,32 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import java.util.*;
-
-import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 /**
  * CsmNamespace implementation
  * @author Vladimir Kvashin
  */
-public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer {
+public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer,
+                                        Persistent {
 
-    private ProjectBase project;
-    private CsmNamespace parent;
+    // only one of project/projectUID must be used (based on USE_REPOSITORY)
+    private ProjectBase projectOLD;
+    private CsmUID projectUID;
+    
+    // only one of parent/parentUID must be used (based on USE_REPOSITORY)
+    private CsmNamespace parentOLD;
+    private CsmUID parentUID;
+    
     private String name;
     private String qualifiedName;
 
@@ -52,9 +63,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     public NamespaceImpl(ProjectBase project, boolean global) {
         this.name = "";
         this.qualifiedName = "";
-        this.parent = null;
+        _setParentNamespace(null);
         this.global = global;
-        this.project = project;
+        this._setProject(project);
         project.registerNamespace(this);
         notifyCreation();
     }
@@ -62,7 +73,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     public NamespaceImpl(ProjectBase project, NamespaceImpl parent, String name) {
         this.name = name;
         this.global = false;
-        this.project = project;
+        this._setProject(project);
         this.qualifiedName = getQualifiedName(parent,  name);
         // TODO: rethink once more
         // now all classes do have namespaces
@@ -71,12 +82,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
 //        // Probably the CsmProject should have 2 methods: 
 //        // getGlobalNamespace() and getTopLevelNamespaces()
 //        this.parent = (parent == null || parent.isGlobal()) ? null : parent;
-        this.parent = parent;
+        _setParentNamespace(parent);
+        project.registerNamespace(this);
         if( parent != null ) {
             // nb: this.parent should be set first, since getQualidfiedName request parent's fqn
             parent.addNestedNamespace(this);
         }
-        project.registerNamespace(this);
         notifyCreation();
     }
     
@@ -88,12 +99,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     
     private static int unnamedNr = 0;
     public static String getQualifiedName(NamespaceImpl parent, String name) {
-        return (parent == null || parent.isGlobal()) ? name : parent.getQualifiedName() + "::" + 
-                (name.length()==0 ? ("<unnamed>"+unnamedNr++):name);
+        return (parent == null || parent.isGlobal()) ? name : parent.getQualifiedName() + "::" + // NOI18N
+                (name.length()==0 ? ("<unnamed>"+unnamedNr++):name); // NOI18N
     }
     
     public CsmNamespace getParent() {
-        return parent;
+        return parentOLD;
     }
     
     public Collection/*<CsmNamespace>*/ getNestedNamespaces() {
@@ -131,7 +142,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         String fqn = Utils.getQualifiedName(name,  this);
         NamespaceImpl impl = (NamespaceImpl) nestedMap.get(fqn);
         if( impl == null ) {
-                impl = new NamespaceImpl(project, this, name);
+                impl = new NamespaceImpl(_getProject(), this, name);
                 // it would register automatically
                 //nestedMap.put(fqn, impl);
                 //nestedNamespaces.add(impl);
@@ -243,6 +254,67 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     public List getScopeElements() {
         return (List) getDeclarations();
     }
+
+    public CsmProject getProject() {
+        return _getProject();
+    }
+
+    private CsmUID uid = null;
+    public CsmUID getUID() {
+        if (uid == null) {
+            uid = UIDUtilities.createNamespaceUID(this);
+        }
+        return uid;
+    }   
     
+    /**
+     * Repository Serialization 
+     */
+    public void write(OutputStream out) {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+    }
     
+    /**
+     * Repository Deserialization 
+     */
+    public void read(InputStream in) {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N        
+    }    
+
+    private void _setProject(ProjectBase project) {
+        if (TraceFlags.USE_REPOSITORY) {
+            this.projectUID = UIDCsmConverter.ProjectToUID(project);
+        } else {
+            this.projectOLD = project;
+        }
+    }
+    
+    private ProjectBase _getProject() {
+        ProjectBase prj = this.projectOLD;
+        if (TraceFlags.USE_REPOSITORY) {
+            prj = (ProjectBase)UIDCsmConverter.UIDtoProject(projectUID);
+        }        
+        return prj;
+    }
+
+    private void _setParentNamespace(CsmNamespace ns) {
+        if (TraceFlags.USE_REPOSITORY) {
+            if (parentUID != null) {
+                RepositoryUtils.remove(parentUID);
+                parentUID = null;
+            }
+            parentUID = RepositoryUtils.put(ns);
+        } else {
+            this.parentOLD = ns;
+        }
+    }
+    
+    private CsmNamespace _getParentNamespace() {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmNamespace ns = UIDCsmConverter.UIDtoNamespace(parentUID);
+            return ns;
+        } else {
+            return parentOLD;
+        }        
+    }
 }

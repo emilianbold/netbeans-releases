@@ -29,7 +29,7 @@ import java.util.List;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmNamespace extends CsmQualifiedNamedElement, CsmObject, CsmScope {
+public interface CsmNamespace extends CsmQualifiedNamedElement, CsmScope, CsmIdentifiable {
 
     CsmNamespace getParent();
     Collection/*<CsmNamespace>*/ getNestedNamespaces();
@@ -50,4 +50,6 @@ public interface CsmNamespace extends CsmQualifiedNamedElement, CsmObject, CsmSc
     /** returns true if this is default namespace */
     boolean isGlobal();
     
+    /** the project where the namespace (or it's particular part) is defined */
+    CsmProject getProject();
 }

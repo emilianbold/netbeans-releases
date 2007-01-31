@@ -35,7 +35,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 }
 
 options {
-	language = "Java";
+	language = "Java"; // NOI18N
 } 
 
 class APTExprParser extends Parser;
@@ -46,7 +46,65 @@ options {
 	codeGenMakeSwitchThreshold = 2;
 	codeGenBitsetTestThreshold = 3;
 //	noConstructors = true;
-	buildAST = true;
+	buildAST = false;
+}
+
+{
+    private APTMacroCallback callback = null;
+    
+    public APTExprParser(TokenStream lexer, APTMacroCallback callback) {
+        this(lexer,1);
+        this.callback = callback;
+    }
+
+    private boolean isDefined(Token id) {
+        if (id != null && callback != null) {
+            return callback.isDefined(id);
+        }
+        return false;
+    }
+
+    private boolean toBoolean(long r) {
+        return r == 0 ? false : true;
+    }
+
+    private long toLong(boolean b) {
+        return b ? 1 : 0;
+    }
+
+    private long toLong(String str) {
+        long val = Long.MAX_VALUE;
+        try {
+            val = Long.decode(remSuffix(str)).longValue();
+        } catch (NumberFormatException ex) {
+            //ex.printStackTrace(System.err);
+        }
+        return val;
+    }
+
+    private String remSuffix(String num) {
+        int len = num.length();
+        boolean stop;
+        do {
+            stop = true;
+            if (len > 0) {
+                char last = num.charAt(len - 1);
+                // remove postfix like u, U, l, L
+                if (last == 'u' || last == 'U' || last == 'l' || last == 'L') {
+                    num = num.substring(0, len - 1);
+                    len--;
+                    stop = false;
+                }
+            }
+        } while (!stop);
+        return num;
+    }
+
+    private long evalID(Token id) {
+        // each not expanded ID in expression is '0' by specification
+        return 0;
+    }
+
 }
 
 imaginaryTokenDefinitions :
@@ -54,55 +112,78 @@ imaginaryTokenDefinitions :
    SIGN_PLUS
 ;
 
-expr        :   ternCondExpr | EOF;
+expr      returns [long r] {r=0;} : r=ternCondExpr | EOF;
 // ternCondExpr uses * because ? generates incorrect code in ANTLR 2.7.5
 // don't want to use guessing, because it slows down code
-ternCondExpr:   orExpr 
+ternCondExpr returns [long r] : {long b,c;}   r=orExpr 
                 (options{generateAmbigWarnings = false;}:
-                    QUESTIONMARK^ ternCondExpr COLON! ternCondExpr
+                    QUESTIONMARK^ b=ternCondExpr COLON! c=ternCondExpr { r = toBoolean(r)?b:c;}
                 )*
         ;
 //rule        :   QUESTIONMARK^ ternCondExpr COLON! ternCondExpr;
-orExpr      :   andExpr (OR^ andExpr)*;
-andExpr     :   borExpr (AND^ borExpr)*;
-borExpr     :   xorExpr (BITWISEOR^ xorExpr)*;
-xorExpr     :   bandExpr (BITWISEXOR^ bandExpr)*;
-bandExpr    :   eqExpr  (AMPERSAND^ eqExpr)*;
-eqExpr      :   relExpr ((EQUAL^|NOTEQUAL^) relExpr)*;
-relExpr     :   shiftExpr ((LESSTHAN^|LESSTHANOREQUALTO^|GREATERTHAN^|GREATERTHANOREQUALTO^) shiftExpr)*;
-shiftExpr   :   sumExpr ((SHIFTLEFT^|SHIFTRIGHT^) sumExpr)*;
-sumExpr     :   prodExpr ((PLUS^|MINUS^) prodExpr)* ;
-prodExpr    :   signExpr ((STAR^|DIVIDE^|MOD^) signExpr)* ;
-signExpr    :   (
-                      m:MINUS^ {#m.setType(SIGN_MINUS);}
-                    | p:PLUS^  {#p.setType(SIGN_PLUS);}
-                    | NOT^
-                    | TILDE^
-                )? atom ;
-atom        : constant | defined | (LPAREN^ expr RPAREN!) ;
+orExpr    returns [long r] : {long b;}  r=andExpr (OR^ b=andExpr {r=toLong(toBoolean(r) || toBoolean(b));})*;
+andExpr   returns [long r] : {long b;}  r=borExpr (AND^ b=borExpr {r=toLong(toBoolean(r) && toBoolean(b));})*;
+borExpr   returns [long r] : {long b;}  r=xorExpr (BITWISEOR^ b=xorExpr {r=r|b;})*;
+xorExpr   returns [long r] : {long b;}  r=bandExpr (BITWISEXOR^ b=bandExpr {r=r^b;})*;
+bandExpr  returns [long r] : {long b;}  r=eqExpr  (AMPERSAND^ b=eqExpr {r=r&b;})*;
+eqExpr    returns [long r] : {long b;}  r=relExpr (EQUAL^ b=relExpr {r= toLong(r == b);} 
+                                                 | NOTEQUAL^ b=relExpr {r= toLong(r != b);})*;
+relExpr   returns [long r] : {long b;}  r=shiftExpr (LESSTHAN^ b=shiftExpr { r= toLong(r < b); }
+                                                    |LESSTHANOREQUALTO^ b=shiftExpr { r= toLong(r <= b); }
+                                                    |GREATERTHAN^ b=shiftExpr { r= toLong(r > b); }
+                                                    |GREATERTHANOREQUALTO^ b=shiftExpr { r= toLong(r >= b); })*;
+shiftExpr returns [long r] : {long b;}  r=sumExpr (SHIFTLEFT^ b=sumExpr { r= r << b; }
+                                                  |SHIFTRIGHT^ b=sumExpr { r= r >> b; })*;
+sumExpr   returns [long r] : {long b;}  r=prodExpr (PLUS^ b=prodExpr { r= r + b; }
+                                                   |MINUS^ b=prodExpr { r= r - b; })* ;
+prodExpr  returns [long r] : {long b;}  r=signExpr (STAR^ b=signExpr { r=r*b; }
+                                                   |DIVIDE^ b=signExpr
+                                                                     {
+                                                                        try {
+                                                                            r=r/b;
+                                                                        } catch (ArithmeticException ex) {
+                                                                            //System.err.println(ex);
+                                                                            r = 0;
+                                                                        }
+                                                                    }
+                                                   |MOD^ b=signExpr {
+                                                                        try {
+                                                                            r=r%b;
+                                                                        } catch (ArithmeticException ex) {
+                                                                            //System.err.println(ex);
+                                                                            r = 0;
+                                                                        }})* ;
+signExpr  returns [long r] {r=0;}:   
+                      m:MINUS^ /*{#m.setType(SIGN_MINUS);}*/ r=atom { r=-1*r; }
+                    | p:PLUS^  /*{#p.setType(SIGN_PLUS);}*/ r=atom { r= (r<0) ? 0-r : r; }
+                    | NOT^ r=atom { r=toLong(!toBoolean(r)); }
+                    | TILDE^ r=atom { r=~r; }
+                | r=atom ;
+atom returns [long r]  {r=0;}     : r=constant | r=defined | (LPAREN^ r=expr RPAREN!) ;
 //atom        : constant | NUMBER | defined | ID | (LPAREN^ expr RPAREN!) ;
 
-defined: 
+defined returns [long r] {r=0;} : 
         DEFINED^
         (
-            (LPAREN! ID_DEFINED RPAREN!) 
-            | ID_DEFINED
-        ) 
+            (LPAREN! id_1:ID_DEFINED RPAREN!) { r = toLong(isDefined(id_1)); }
+            | id_2:ID_DEFINED { r = toLong(isDefined(id_2)); }
+        )
 ;
 
-constant
-            :	LITERAL_true
-            |	LITERAL_false
-            |   NUMBER
-            |   ID
-            |   OCTALINT
-            |	DECIMALINT
-            |	HEXADECIMALINT
-            |   CHAR_LITERAL     
-//            |	FLOATONE
-//            |	FLOATTWO
+constant returns [long r] {r=0;}
+            :	LITERAL_true { r=toLong(true);}
+            |	LITERAL_false { r=toLong(false);}
+            |   n:NUMBER {r=toLong(n.getText());}
+            |   id:ID {r=evalID(id);}
+            | o:OCTALINT {r=toLong(o.getText());}
+            | d:DECIMALINT {r=toLong(d.getText());}
+            | x:HEXADECIMALINT {r=toLong(x.getText());}
+            | c: CHAR_LITERAL { r=c.getText().charAt(1); }
+//          | f1: FLOATONE {r=Integer.parseInt(f1.getText());}
+//          | f2: FLOATTWO {r=Integer.parseInt(f2.getText());}
 	;
 
+/* APTExpressionWalker is not used any more, because all evaluations are done in APTExprParser
 class APTExpressionWalker extends TreeParser;
 {
     private APTMacroCallback callback = null;

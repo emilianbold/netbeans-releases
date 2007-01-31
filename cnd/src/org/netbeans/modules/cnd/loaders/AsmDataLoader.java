@@ -38,10 +38,10 @@ public class AsmDataLoader extends CCFSrcLoader{
 
     /** The suffix list for Asm primary files */
     private static final String[] asmExtensions =
-				{ "s" };	//NOI18N
+				{ "s" };	// NOI18N
 
     protected AsmDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.AssemSrcObject");         //NOI18N
+	super("org.netbeans.modules.cnd.loaders.AssemSrcObject");         // NOI18N
 	instance = this;
         createExtentions(asmExtensions);
     }

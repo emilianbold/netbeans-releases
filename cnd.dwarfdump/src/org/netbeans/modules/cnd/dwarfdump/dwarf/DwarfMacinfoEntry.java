@@ -37,6 +37,6 @@ public class DwarfMacinfoEntry {
     }
 
     public void dump(PrintStream out) {
-        out.printf("%s\t%d\t[%d]\t%s\n", type, fileIdx, lineNum, definition);
+        out.printf("%s\t%d\t[%d]\t%s\n", type, fileIdx, lineNum, definition); // NOI18N
     }
 }

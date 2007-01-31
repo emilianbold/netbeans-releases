@@ -89,7 +89,7 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
     }
     
     public boolean gotoDeclaration(final JTextComponent target) {
-        final String taskName = "Go to declaration";
+        final String taskName = "Go to declaration";  //NOI18N
         Runnable run = new Runnable() {
             public void run() {
                 if (SwingUtilities.isEventDispatchThread()) {

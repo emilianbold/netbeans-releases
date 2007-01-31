@@ -85,7 +85,7 @@ public class MakeVarName {
 	    } else {
 		buffer.replace(0, buffer.length(), suffix);
 		buffer.append(targetName);
-		buffer.append("_");					//NOI18N
+		buffer.append("_");					// NOI18N
 		buffer.append(extra);
 		lastName.replace(0, lastName.length(), buffer.toString());
 		return buffer.toString();
@@ -103,10 +103,10 @@ public class MakeVarName {
 	    if (suffix.equals(lastSuffix.toString())) {
 		return lastRef.toString();
 	    } else {
-		buffer.replace(0, buffer.length(), "$(");		//NOI18N
+		buffer.replace(0, buffer.length(), "$(");		// NOI18N
 		buffer.append(suffix);
 		buffer.append(targetName);
-		buffer.append(")");					//NOI18N
+		buffer.append(")");					// NOI18N
 		lastRef.replace(0, lastRef.length(), buffer.toString());
 		return buffer.toString();
 	    }
@@ -122,12 +122,12 @@ public class MakeVarName {
 	    if (suffix.equals(lastSuffix.toString())) {
 		return lastRef.toString();
 	    } else {
-		buffer.replace(0, buffer.length(), "$(");		//NOI18N
+		buffer.replace(0, buffer.length(), "$(");		// NOI18N
 		buffer.append(suffix);
 		buffer.append(targetName);
-		buffer.append("_");					//NOI18N
+		buffer.append("_");					// NOI18N
 		buffer.append(extra);
-		buffer.append(")");					//NOI18N
+		buffer.append(")");					// NOI18N
 		lastRef.replace(0, lastRef.length(), buffer.toString());
 		return buffer.toString();
 	    }

@@ -29,7 +29,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  * CsmEnumerator implementation
  * @author Vladimir Kvashin
  */
-public class EnumeratorImpl extends OffsetableBase implements CsmEnumerator {
+public class EnumeratorImpl extends OffsetableDeclarationBase implements CsmEnumerator {
     private final String name;
     private final CsmEnum enumeration;    
 
@@ -54,5 +54,13 @@ public class EnumeratorImpl extends OffsetableBase implements CsmEnumerator {
     
     public CsmScope getScope() {
         return getEnumeration();
+    }
+
+    public CsmDeclaration.Kind getKind() {
+        return CsmDeclaration.Kind.ENUMERATOR;
+    }
+
+    public String getQualifiedName() {
+	    return enumeration.getQualifiedName() + "::" + getName(); // NOI18N    
     }
 }

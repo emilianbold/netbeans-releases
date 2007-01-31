@@ -61,113 +61,113 @@ abstract class CommonConfigurationXMLCodec
     protected final static int CURRENT_VERSION = 31;
 
     // Generic
-    protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor";
-    protected final static String DEBUGGING_ELEMENT = "justfordebugging";
+    protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
+    protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
  // Old style. FIXUP: should be removed....
-    protected final static String CONFIGURATION_DESCRIPTOR_ELEMENT = "configurationDescriptor";
-    protected final static String DEFAULT_CONF_ELEMENT = "defaultConf";
-    protected final static String CONFS_ELEMENT = "confs";
-    protected final static String CONF_ELEMENT = "conf";
-    protected final static String DIRECTORY_PATH_ELEMENT = "directoryPath";
-    protected final static String FOLDER_PATH_ELEMENT = "folderPath"; // Old style. FIXUP : < version 5
-    protected final static String SOURCE_FOLDERS_ELEMENT = "sourceFolders"; // Old style. FIXUP : < version 5
-    protected final static String LOGICAL_FOLDER_ELEMENT = "logicalFolder";
-    protected final static String ITEM_PATH_ELEMENT = "itemPath";
-    protected final static String PROJECT_MAKEFILE_ELEMENT = "projectmakefile";
+    protected final static String CONFIGURATION_DESCRIPTOR_ELEMENT = "configurationDescriptor"; // NOI18N
+    protected final static String DEFAULT_CONF_ELEMENT = "defaultConf"; // NOI18N
+    protected final static String CONFS_ELEMENT = "confs"; // NOI18N
+    protected final static String CONF_ELEMENT = "conf"; // NOI18N
+    protected final static String DIRECTORY_PATH_ELEMENT = "directoryPath"; // NOI18N
+    protected final static String FOLDER_PATH_ELEMENT = "folderPath"; // Old style. FIXUP : < version 5 // NOI18N
+    protected final static String SOURCE_FOLDERS_ELEMENT = "sourceFolders"; // Old style. FIXUP : < version 5 // NOI18N
+    protected final static String LOGICAL_FOLDER_ELEMENT = "logicalFolder"; // NOI18N
+    protected final static String ITEM_PATH_ELEMENT = "itemPath"; // NOI18N
+    protected final static String PROJECT_MAKEFILE_ELEMENT = "projectmakefile"; // NOI18N
     // Tools Set (Compiler set and platform)
-    protected final static String TOOLS_SET_ELEMENT = "toolsSet";
-    protected final static String COMPILER_SET_ELEMENT = "compilerSet";
-    protected final static String PLATFORM_ELEMENT = "platform";
+    protected final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
+    protected final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
+    protected final static String PLATFORM_ELEMENT = "platform"; // NOI18N
     // Compile Type
-    protected final static String NEO_CONF_ELEMENT = "neoConf"; // Old style. FIXUP : should be removed....
-    protected final static String COMPILE_TYPE_ELEMENT = "compileType";
+    protected final static String NEO_CONF_ELEMENT = "neoConf"; // Old style. FIXUP : should be removed.... // NOI18N
+    protected final static String COMPILE_TYPE_ELEMENT = "compileType"; // NOI18N
     // Makefile Type
-    protected final static String EXT_CONF_ELEMENT = "extConf"; // Old style. FIXUP : should be removed....
-    protected final static String MAKEFILE_TYPE_ELEMENT = "makefileType";
-    protected final static String MAKETOOL_ELEMENT = "makeTool";
-    protected final static String BUILD_COMMAND_ELEMENT = "buildCommand";
-    protected final static String BUILD_COMMAND_WORKING_DIR_ELEMENT = "buildCommandWorkingDir";
-    protected final static String CLEAN_COMMAND_ELEMENT = "cleanCommand";
-    protected final static String EXECUTABLE_PATH_ELEMENT = "executablePath";
+    protected final static String EXT_CONF_ELEMENT = "extConf"; // Old style. FIXUP : should be removed.... // NOI18N
+    protected final static String MAKEFILE_TYPE_ELEMENT = "makefileType"; // NOI18N
+    protected final static String MAKETOOL_ELEMENT = "makeTool"; // NOI18N
+    protected final static String BUILD_COMMAND_ELEMENT = "buildCommand"; // NOI18N
+    protected final static String BUILD_COMMAND_WORKING_DIR_ELEMENT = "buildCommandWorkingDir"; // NOI18N
+    protected final static String CLEAN_COMMAND_ELEMENT = "cleanCommand"; // NOI18N
+    protected final static String EXECUTABLE_PATH_ELEMENT = "executablePath"; // NOI18N
     // Common
-    protected final static String COMMANDLINE_TOOL_ELEMENT = "commandlineTool";
-    protected final static String ADDITIONAL_DEP_ELEMENT = "additionalDep";
-    protected final static String OUTPUT_ELEMENT = "output";
-    protected final static String INHERIT_INC_VALUES_ELEMENT = "inheritIncValues";
-    protected final static String INHERIT_PRE_VALUES_ELEMENT = "inheritPreValues";
+    protected final static String COMMANDLINE_TOOL_ELEMENT = "commandlineTool"; // NOI18N
+    protected final static String ADDITIONAL_DEP_ELEMENT = "additionalDep"; // NOI18N
+    protected final static String OUTPUT_ELEMENT = "output"; // NOI18N
+    protected final static String INHERIT_INC_VALUES_ELEMENT = "inheritIncValues"; // NOI18N
+    protected final static String INHERIT_PRE_VALUES_ELEMENT = "inheritPreValues"; // NOI18N
     // Compiler (Generic) Tool
-    protected final static String INCLUDE_DIRECTORIES_ELEMENT = "includeDirectories";
-    protected final static String COMPILERTOOL_ELEMENT = "compilerTool"; // OLD style. FIXUP < version 11
-    protected final static String DEBUGGING_SYMBOLS_ELEMENT = "debuggingSymbols";
-    protected final static String OPTIMIZATION_LEVEL_ELEMENT = "optimizationLevel";
-    protected final static String DEVELOPMENT_MODE_ELEMENT = "developmentMode";
-    protected final static String COMMAND_LINE_ELEMENT = "commandLine";
-    protected final static String STRIP_SYMBOLS_ELEMENT = "stripSymbols";
-    protected final static String SIXTYFOUR_BITS_ELEMENT = "sixtyfourBits";
-    protected final static String PREPROCESSOR_ELEMENT = "preprocessor";
-    protected final static String SUPRESS_WARNINGS_ELEMENT = "supressWarnings";
-    protected final static String WARNING_LEVEL_ELEMENT = "warningLevel";
-    protected final static String MT_LEVEL_ELEMENT = "mtLevel";
-    protected final static String STANDARDS_EVOLUTION_ELEMENT = "standardsEvolution";
-    protected final static String LANGUAGE_EXTENSION_ELEMENT = "languageExtension";
+    protected final static String INCLUDE_DIRECTORIES_ELEMENT = "includeDirectories"; // NOI18N
+    protected final static String COMPILERTOOL_ELEMENT = "compilerTool"; // OLD style. FIXUP < version 11 // NOI18N
+    protected final static String DEBUGGING_SYMBOLS_ELEMENT = "debuggingSymbols"; // NOI18N
+    protected final static String OPTIMIZATION_LEVEL_ELEMENT = "optimizationLevel"; // NOI18N
+    protected final static String DEVELOPMENT_MODE_ELEMENT = "developmentMode"; // NOI18N
+    protected final static String COMMAND_LINE_ELEMENT = "commandLine"; // NOI18N
+    protected final static String STRIP_SYMBOLS_ELEMENT = "stripSymbols"; // NOI18N
+    protected final static String SIXTYFOUR_BITS_ELEMENT = "sixtyfourBits"; // NOI18N
+    protected final static String PREPROCESSOR_ELEMENT = "preprocessor"; // NOI18N
+    protected final static String SUPRESS_WARNINGS_ELEMENT = "supressWarnings"; // NOI18N
+    protected final static String WARNING_LEVEL_ELEMENT = "warningLevel"; // NOI18N
+    protected final static String MT_LEVEL_ELEMENT = "mtLevel"; // NOI18N
+    protected final static String STANDARDS_EVOLUTION_ELEMENT = "standardsEvolution"; // NOI18N
+    protected final static String LANGUAGE_EXTENSION_ELEMENT = "languageExtension"; // NOI18N
     // C Compiler Tool
-    protected final static String SUN_CCOMPILERTOOL_OLD_ELEMENT = "sunCCompilerTool"; // FIXUP <=23
-    protected final static String CCOMPILERTOOL_ELEMENT = "cCompilerTool";
-    protected final static String CONFORMANCE_LEVEL_ELEMENT = "conformanceLevel"; // FIXUP: <=21
-    protected final static String CPP_STYLE_COMMENTS_ELEMENT = "cppstylecomments"; // FIXUP: <=21
+    protected final static String SUN_CCOMPILERTOOL_OLD_ELEMENT = "sunCCompilerTool"; // FIXUP <=23 // NOI18N
+    protected final static String CCOMPILERTOOL_ELEMENT = "cCompilerTool"; // NOI18N
+    protected final static String CONFORMANCE_LEVEL_ELEMENT = "conformanceLevel"; // FIXUP: <=21 // NOI18N
+    protected final static String CPP_STYLE_COMMENTS_ELEMENT = "cppstylecomments"; // FIXUP: <=21 // NOI18N
     // CC Compiler Tool
-    protected final static String SUN_CCCOMPILERTOOL_OLD_ELEMENT = "sunCCCompilerTool"; // FIXUP <=23
-    protected final static String CCCOMPILERTOOL_ELEMENT = "ccCompilerTool";
-    protected final static String COMPATIBILITY_MODE_ELEMENT = "compatibilityMode"; // FIXUP: <=21
-    protected final static String LIBRARY_LEVEL_ELEMENT = "libraryLevel";
+    protected final static String SUN_CCCOMPILERTOOL_OLD_ELEMENT = "sunCCCompilerTool"; // FIXUP <=23 // NOI18N
+    protected final static String CCCOMPILERTOOL_ELEMENT = "ccCompilerTool"; // NOI18N
+    protected final static String COMPATIBILITY_MODE_ELEMENT = "compatibilityMode"; // FIXUP: <=21 // NOI18N
+    protected final static String LIBRARY_LEVEL_ELEMENT = "libraryLevel"; // NOI18N
     // Fortran Compiler Tool
-    protected final static String FORTRANCOMPILERTOOL_ELEMENT = "fortranCompilerTool";
+    protected final static String FORTRANCOMPILERTOOL_ELEMENT = "fortranCompilerTool"; // NOI18N
     // Custom Tool
-    protected final static String CUSTOMTOOL_ELEMENT = "customTool";
-    protected final static String CUSTOMTOOL_COMMANDLINE_ELEMENT = "customToolCommandline";
-    protected final static String CUSTOMTOOL_DESCRIPTION_ELEMENT = "customToolDescription";
-    protected final static String CUSTOMTOOL_OUTPUTS_ELEMENT = "customToolOutputs";
-    protected final static String CUSTOMTOOL_ADDITIONAL_DEP_ELEMENT = "customToolAdditionalDep";
+    protected final static String CUSTOMTOOL_ELEMENT = "customTool"; // NOI18N
+    protected final static String CUSTOMTOOL_COMMANDLINE_ELEMENT = "customToolCommandline"; // NOI18N
+    protected final static String CUSTOMTOOL_DESCRIPTION_ELEMENT = "customToolDescription"; // NOI18N
+    protected final static String CUSTOMTOOL_OUTPUTS_ELEMENT = "customToolOutputs"; // NOI18N
+    protected final static String CUSTOMTOOL_ADDITIONAL_DEP_ELEMENT = "customToolAdditionalDep"; // NOI18N
     // Linker Tool
-    protected final static String LINKERTOOL_ELEMENT = "linkerTool";
-    protected final static String LINKER_KPIC_ELEMENT = "linkerKpic";
-    protected final static String LINKER_NORUNPATH_ELEMENT = "linkerNorunpath";
-    protected final static String LINKER_ASSIGN_ELEMENT = "linkerAssign";
-    protected final static String LINKER_ADD_LIB_ELEMENT = "linkerAddLib";
-    protected final static String LINKER_DYN_SERCH_ELEMENT = "linkerDynSerch";
-    protected final static String LINKER_LIB_ELEMENT = "linkerLib";
-    protected final static String LINKER_LIB_ITEMS_ELEMENT = "linkerLibItems";
-    protected final static String LINKER_LIB_PROJECT_ITEM_ELEMENT = "linkerLibProjectItem";
-    protected final static String LINKER_LIB_STDLIB_ITEM_ELEMENT = "linkerLibStdlibItem";
-    protected final static String LINKER_LIB_LIB_ITEM_ELEMENT = "linkerLibLibItem";
-    protected final static String LINKER_LIB_FILE_ITEM_ELEMENT = "linkerLibFileItem";
-    protected final static String LINKER_LIB_OPTION_ITEM_ELEMENT = "linkerOptionItem";
+    protected final static String LINKERTOOL_ELEMENT = "linkerTool"; // NOI18N
+    protected final static String LINKER_KPIC_ELEMENT = "linkerKpic"; // NOI18N
+    protected final static String LINKER_NORUNPATH_ELEMENT = "linkerNorunpath"; // NOI18N
+    protected final static String LINKER_ASSIGN_ELEMENT = "linkerAssign"; // NOI18N
+    protected final static String LINKER_ADD_LIB_ELEMENT = "linkerAddLib"; // NOI18N
+    protected final static String LINKER_DYN_SERCH_ELEMENT = "linkerDynSerch"; // NOI18N
+    protected final static String LINKER_LIB_ELEMENT = "linkerLib"; // NOI18N
+    protected final static String LINKER_LIB_ITEMS_ELEMENT = "linkerLibItems"; // NOI18N
+    protected final static String LINKER_LIB_PROJECT_ITEM_ELEMENT = "linkerLibProjectItem"; // NOI18N
+    protected final static String LINKER_LIB_STDLIB_ITEM_ELEMENT = "linkerLibStdlibItem"; // NOI18N
+    protected final static String LINKER_LIB_LIB_ITEM_ELEMENT = "linkerLibLibItem"; // NOI18N
+    protected final static String LINKER_LIB_FILE_ITEM_ELEMENT = "linkerLibFileItem"; // NOI18N
+    protected final static String LINKER_LIB_OPTION_ITEM_ELEMENT = "linkerOptionItem"; // NOI18N
     // Make Artifact
-    protected final static String MAKE_ARTIFACT_ELEMENT = "makeArtifact";
-    protected final static String MAKE_ARTIFACT_PL_ELEMENT = "PL";
-    protected final static String MAKE_ARTIFACT_CT_ELEMENT = "CT";
-    protected final static String MAKE_ARTIFACT_CN_ELEMENT = "CN";
-    protected final static String MAKE_ARTIFACT_AC_ELEMENT = "AC";
-    protected final static String MAKE_ARTIFACT_BL_ELEMENT = "BL";
-    protected final static String MAKE_ARTIFACT_WD_ELEMENT = "WD";
-    protected final static String MAKE_ARTIFACT_BC_ELEMENT = "BC";
-    protected final static String MAKE_ARTIFACT_CC_ELEMENT = "CC";
-    protected final static String MAKE_ARTIFACT_OP_ELEMENT = "OP";
+    protected final static String MAKE_ARTIFACT_ELEMENT = "makeArtifact"; // NOI18N
+    protected final static String MAKE_ARTIFACT_PL_ELEMENT = "PL"; // NOI18N
+    protected final static String MAKE_ARTIFACT_CT_ELEMENT = "CT"; // NOI18N
+    protected final static String MAKE_ARTIFACT_CN_ELEMENT = "CN"; // NOI18N
+    protected final static String MAKE_ARTIFACT_AC_ELEMENT = "AC"; // NOI18N
+    protected final static String MAKE_ARTIFACT_BL_ELEMENT = "BL"; // NOI18N
+    protected final static String MAKE_ARTIFACT_WD_ELEMENT = "WD"; // NOI18N
+    protected final static String MAKE_ARTIFACT_BC_ELEMENT = "BC"; // NOI18N
+    protected final static String MAKE_ARTIFACT_CC_ELEMENT = "CC"; // NOI18N
+    protected final static String MAKE_ARTIFACT_OP_ELEMENT = "OP"; // NOI18N
     // Archiver Tool
-    protected final static String ARCHIVERTOOL_ELEMENT = "archiverTool";
-    protected final static String ARCHIVERTOOL_RUN_RANLIB_ELEMENT = "runRanlib";
-    protected final static String ARCHIVERTOOL_VERBOSE_ELEMENT = "archiverVerbose";
-    protected final static String ARCHIVERTOOL_SUPRESS_ELEMENT = "archiverSupress";
+    protected final static String ARCHIVERTOOL_ELEMENT = "archiverTool"; // NOI18N
+    protected final static String ARCHIVERTOOL_RUN_RANLIB_ELEMENT = "runRanlib"; // NOI18N
+    protected final static String ARCHIVERTOOL_VERBOSE_ELEMENT = "archiverVerbose"; // NOI18N
+    protected final static String ARCHIVERTOOL_SUPRESS_ELEMENT = "archiverSupress"; // NOI18N
 
-    protected final static String VERSION_ATTR = "version";
-    protected final static String TYPE_ATTR = "type";
-    protected final static String NAME_ATTR = "name";
-    protected final static String SET_ATTR = "set";
-    protected final static String DISPLAY_NAME_ATTR = "displayName";
-    protected final static String PROJECT_FILES_ATTR = "projectFiles";
+    protected final static String VERSION_ATTR = "version"; // NOI18N
+    protected final static String TYPE_ATTR = "type"; // NOI18N
+    protected final static String NAME_ATTR = "name"; // NOI18N
+    protected final static String SET_ATTR = "set"; // NOI18N
+    protected final static String DISPLAY_NAME_ATTR = "displayName"; // NOI18N
+    protected final static String PROJECT_FILES_ATTR = "projectFiles"; // NOI18N
 
-    protected final static String TRUE_VALUE = "true";
-    protected final static String FALSE_VALUE = "false";
+    protected final static String TRUE_VALUE = "true"; // NOI18N
+    protected final static String FALSE_VALUE = "false"; // NOI18N
 
 
     private ConfigurationDescriptor projectDescriptor;
@@ -186,7 +186,7 @@ abstract class CommonConfigurationXMLCodec
 		writeLogicalFolders(xes);
 	    }
 	    xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor)projectDescriptor).getProjectMakefileName());
-	    xes.element(DEFAULT_CONF_ELEMENT, "" + projectDescriptor.getConfs().getActiveAsIndex());
+	    xes.element(DEFAULT_CONF_ELEMENT, "" + projectDescriptor.getConfs().getActiveAsIndex()); // NOI18N
 	    writeConfsBlock(xes);
 	xes.elementClose(CONFIGURATION_DESCRIPTOR_ELEMENT);
     }
@@ -202,8 +202,8 @@ abstract class CommonConfigurationXMLCodec
 
 	    xes.elementOpen(CONF_ELEMENT,
 		new AttrValuePair[] {
-		    new AttrValuePair(NAME_ATTR, "" + makeConfiguration.getName()),
-		    new AttrValuePair(TYPE_ATTR, "" + makeConfiguration.getConfigurationType().getValue()),
+		    new AttrValuePair(NAME_ATTR, "" + makeConfiguration.getName()), // NOI18N
+		    new AttrValuePair(TYPE_ATTR, "" + makeConfiguration.getConfigurationType().getValue()), // NOI18N
 		});
 	    
 	    if (publicLocation) {
@@ -238,8 +238,8 @@ abstract class CommonConfigurationXMLCodec
     
     private void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
 	xes.elementOpen(TOOLS_SET_ELEMENT);
-	xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getValue());
-	xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getPlatform().getValue());
+	xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getValue()); // NOI18N
+	xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getPlatform().getValue()); // NOI18N
 	xes.elementClose(TOOLS_SET_ELEMENT);
     }
 
@@ -277,9 +277,9 @@ abstract class CommonConfigurationXMLCodec
     private void writeLogicalFolder(XMLEncoderStream xes, Folder folder) {
 	xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
 		new AttrValuePair[] {
-		    new AttrValuePair(NAME_ATTR, "" + folder.getName()),
-		    new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName()),
-		    new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()),
+		    new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
+		    new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName()), // NOI18N
+		    new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
 	});
 	// write out subfolders
 	Folder[] subfolders = folder.getFoldersAsArray();
@@ -297,85 +297,85 @@ abstract class CommonConfigurationXMLCodec
     public static void writeCCompilerConfiguration(XMLEncoderStream xes, CCompilerConfiguration cCompilerConfiguration) {
 	xes.elementOpen(CCOMPILERTOOL_ELEMENT);
 	if (cCompilerConfiguration.getDevelopmentMode().getModified())
-	    xes.element(DEVELOPMENT_MODE_ELEMENT, "" + cCompilerConfiguration.getDevelopmentMode().getValue());
+	    xes.element(DEVELOPMENT_MODE_ELEMENT, "" + cCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
 	if (cCompilerConfiguration.getStrip().getModified())
-	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + cCompilerConfiguration.getStrip().getValue());
+	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + cCompilerConfiguration.getStrip().getValue()); // NOI18N
 	if (cCompilerConfiguration.getSixtyfourBits().getModified())
-	    xes.element(SIXTYFOUR_BITS_ELEMENT, "" + cCompilerConfiguration.getSixtyfourBits().getValue());
+	    xes.element(SIXTYFOUR_BITS_ELEMENT, "" + cCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
 	if (cCompilerConfiguration.getTool().getModified())
-	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + cCompilerConfiguration.getTool().getValue());
+	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + cCompilerConfiguration.getTool().getValue()); // NOI18N
 	if (cCompilerConfiguration.getIncludeDirectories().getModified())
 	    writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT, cCompilerConfiguration.getIncludeDirectories().getValueAsArray());
 	if (cCompilerConfiguration.getStandardsEvolution().getModified())
-	    xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + cCompilerConfiguration.getStandardsEvolution().getValue());
+	    xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + cCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
 	if (cCompilerConfiguration.getLanguageExt().getModified())
-	    xes.element(LANGUAGE_EXTENSION_ELEMENT, "" + cCompilerConfiguration.getLanguageExt().getValue());
+	    xes.element(LANGUAGE_EXTENSION_ELEMENT, "" + cCompilerConfiguration.getLanguageExt().getValue()); // NOI18N
 	if (cCompilerConfiguration.getInheritIncludes().getModified())
-	    xes.element(INHERIT_INC_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritIncludes().getValue());
+	    xes.element(INHERIT_INC_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
 	if (cCompilerConfiguration.getCommandLineConfiguration().getModified())
-	    xes.element(COMMAND_LINE_ELEMENT, "" + cCompilerConfiguration.getCommandLineConfiguration().getValue());
+	    xes.element(COMMAND_LINE_ELEMENT, "" + cCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
 	if (cCompilerConfiguration.getPreprocessorConfiguration().getModified())
-	    xes.element(PREPROCESSOR_ELEMENT, "" + cCompilerConfiguration.getPreprocessorConfiguration().getValue());
+	    xes.element(PREPROCESSOR_ELEMENT, "" + cCompilerConfiguration.getPreprocessorConfiguration().getValue()); // NOI18N
 	if (cCompilerConfiguration.getInheritPreprocessor().getModified())
-	    xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritPreprocessor().getValue());
+	    xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
 	if (cCompilerConfiguration.getWarningLevel().getModified())
-	    xes.element(WARNING_LEVEL_ELEMENT, "" + cCompilerConfiguration.getWarningLevel().getValue());
+	    xes.element(WARNING_LEVEL_ELEMENT, "" + cCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
 	if (cCompilerConfiguration.getMTLevel().getModified())
-	    xes.element(MT_LEVEL_ELEMENT, "" + cCompilerConfiguration.getMTLevel().getValue());
+	    xes.element(MT_LEVEL_ELEMENT, "" + cCompilerConfiguration.getMTLevel().getValue()); // NOI18N
 	if (cCompilerConfiguration.getAdditionalDependencies().getModified())
-	    xes.element(ADDITIONAL_DEP_ELEMENT, "" + cCompilerConfiguration.getAdditionalDependencies().getValue());
+	    xes.element(ADDITIONAL_DEP_ELEMENT, "" + cCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
 	xes.elementClose(CCOMPILERTOOL_ELEMENT);
     }
 
     public static void writeCCCompilerConfiguration(XMLEncoderStream xes, CCCompilerConfiguration ccCompilerConfiguration) {
 	xes.elementOpen(CCCOMPILERTOOL_ELEMENT);
 	if (ccCompilerConfiguration.getDevelopmentMode().getModified())
-	    xes.element(DEVELOPMENT_MODE_ELEMENT, "" + ccCompilerConfiguration.getDevelopmentMode().getValue());
+	    xes.element(DEVELOPMENT_MODE_ELEMENT, "" + ccCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getStrip().getModified())
-	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + ccCompilerConfiguration.getStrip().getValue());
+	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + ccCompilerConfiguration.getStrip().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getSixtyfourBits().getModified())
-	    xes.element(SIXTYFOUR_BITS_ELEMENT, "" + ccCompilerConfiguration.getSixtyfourBits().getValue());
+	    xes.element(SIXTYFOUR_BITS_ELEMENT, "" + ccCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getTool().getModified())
-	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + ccCompilerConfiguration.getTool().getValue());
+	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + ccCompilerConfiguration.getTool().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getIncludeDirectories().getModified())
-	    writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT, ccCompilerConfiguration.getIncludeDirectories().getValueAsArray());
+	    writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT, ccCompilerConfiguration.getIncludeDirectories().getValueAsArray()); // NOI18N
 	if (ccCompilerConfiguration.getStandardsEvolution().getModified())
-	    xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + ccCompilerConfiguration.getStandardsEvolution().getValue());
+	    xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + ccCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getLanguageExt().getModified())
-	    xes.element(LANGUAGE_EXTENSION_ELEMENT, "" + ccCompilerConfiguration.getLanguageExt().getValue());
+	    xes.element(LANGUAGE_EXTENSION_ELEMENT, "" + ccCompilerConfiguration.getLanguageExt().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getInheritIncludes().getModified())
-	    xes.element(INHERIT_INC_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritIncludes().getValue());
+	    xes.element(INHERIT_INC_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getCommandLineConfiguration().getModified())
-	    xes.element(COMMAND_LINE_ELEMENT, "" + ccCompilerConfiguration.getCommandLineConfiguration().getValue());
+	    xes.element(COMMAND_LINE_ELEMENT, "" + ccCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getPreprocessorConfiguration().getModified())
-	    xes.element(PREPROCESSOR_ELEMENT, "" + ccCompilerConfiguration.getPreprocessorConfiguration().getValue());
+	    xes.element(PREPROCESSOR_ELEMENT, "" + ccCompilerConfiguration.getPreprocessorConfiguration().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getInheritPreprocessor().getModified())
-	    xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritPreprocessor().getValue());
+	    xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getWarningLevel().getModified())
-	    xes.element(WARNING_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getWarningLevel().getValue());
+	    xes.element(WARNING_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getMTLevel().getModified())
-	    xes.element(MT_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getMTLevel().getValue());
+	    xes.element(MT_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getMTLevel().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getLibraryLevel().getModified())
-	    xes.element(LIBRARY_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getLibraryLevel().getValue());
+	    xes.element(LIBRARY_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getLibraryLevel().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getAdditionalDependencies().getModified())
-	    xes.element(ADDITIONAL_DEP_ELEMENT, "" + ccCompilerConfiguration.getAdditionalDependencies().getValue());
+	    xes.element(ADDITIONAL_DEP_ELEMENT, "" + ccCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
 	xes.elementClose(CCCOMPILERTOOL_ELEMENT);
     }
     
     public static void writeFortranCompilerConfiguration(XMLEncoderStream xes, FortranCompilerConfiguration fortranCompilerConfiguration) {
 	xes.elementOpen(FORTRANCOMPILERTOOL_ELEMENT);
 	if (fortranCompilerConfiguration.getDevelopmentMode().getModified())
-	    xes.element(DEVELOPMENT_MODE_ELEMENT, "" + fortranCompilerConfiguration.getDevelopmentMode().getValue());
+	    xes.element(DEVELOPMENT_MODE_ELEMENT, "" + fortranCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
 	if (fortranCompilerConfiguration.getStrip().getModified())
-	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + fortranCompilerConfiguration.getStrip().getValue());
+	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + fortranCompilerConfiguration.getStrip().getValue()); // NOI18N
 	if (fortranCompilerConfiguration.getSixtyfourBits().getModified())
-	    xes.element(SIXTYFOUR_BITS_ELEMENT, "" + fortranCompilerConfiguration.getSixtyfourBits().getValue());
+	    xes.element(SIXTYFOUR_BITS_ELEMENT, "" + fortranCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
 	if (fortranCompilerConfiguration.getTool().getModified())
-	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + fortranCompilerConfiguration.getTool().getValue());
+	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + fortranCompilerConfiguration.getTool().getValue()); // NOI18N
 	if (fortranCompilerConfiguration.getCommandLineConfiguration().getModified())
-	    xes.element(COMMAND_LINE_ELEMENT, "" + fortranCompilerConfiguration.getCommandLineConfiguration().getValue());
+	    xes.element(COMMAND_LINE_ELEMENT, "" + fortranCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
 	if (fortranCompilerConfiguration.getWarningLevel().getModified())
-	    xes.element(WARNING_LEVEL_ELEMENT, "" + fortranCompilerConfiguration.getWarningLevel().getValue());
+	    xes.element(WARNING_LEVEL_ELEMENT, "" + fortranCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
 	xes.elementClose(FORTRANCOMPILERTOOL_ELEMENT);
     }
 
@@ -384,13 +384,13 @@ abstract class CommonConfigurationXMLCodec
 	    return;
 	xes.elementOpen(CUSTOMTOOL_ELEMENT);
 	if (customToolConfiguration.getCommandLine().getModified())
-	    xes.element(CUSTOMTOOL_COMMANDLINE_ELEMENT, "" + customToolConfiguration.getCommandLine().getValue());
+	    xes.element(CUSTOMTOOL_COMMANDLINE_ELEMENT, "" + customToolConfiguration.getCommandLine().getValue()); // NOI18N
 	if (customToolConfiguration.getDescription().getModified())
-	    xes.element(CUSTOMTOOL_DESCRIPTION_ELEMENT, "" + customToolConfiguration.getDescription().getValue());
+	    xes.element(CUSTOMTOOL_DESCRIPTION_ELEMENT, "" + customToolConfiguration.getDescription().getValue()); // NOI18N
 	if (customToolConfiguration.getOutputs().getModified())
-	    xes.element(CUSTOMTOOL_OUTPUTS_ELEMENT, "" + customToolConfiguration.getOutputs().getValue());
+	    xes.element(CUSTOMTOOL_OUTPUTS_ELEMENT, "" + customToolConfiguration.getOutputs().getValue()); // NOI18N
 	if (customToolConfiguration.getAdditionalDependencies().getModified())
-	    xes.element(CUSTOMTOOL_ADDITIONAL_DEP_ELEMENT, "" + customToolConfiguration.getAdditionalDependencies().getValue());
+	    xes.element(CUSTOMTOOL_ADDITIONAL_DEP_ELEMENT, "" + customToolConfiguration.getAdditionalDependencies().getValue()); // NOI18N
 	xes.elementClose(CUSTOMTOOL_ELEMENT);
     }
 
@@ -403,21 +403,21 @@ abstract class CommonConfigurationXMLCodec
 	if (linkerConfiguration.getDynamicSearch().getModified())
 	    writeDirectories(xes, LINKER_DYN_SERCH_ELEMENT, linkerConfiguration.getDynamicSearch().getValueAsArray());
 	if (linkerConfiguration.getStripOption().getModified())
-	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + linkerConfiguration.getStripOption().getValue());
+	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + linkerConfiguration.getStripOption().getValue()); // NOI18N
 	if (linkerConfiguration.getKpicOption().getModified())
-	    xes.element(LINKER_KPIC_ELEMENT, "" + linkerConfiguration.getKpicOption().getValue());
+	    xes.element(LINKER_KPIC_ELEMENT, "" + linkerConfiguration.getKpicOption().getValue()); // NOI18N
 	if (linkerConfiguration.getNorunpathOption().getModified())
-	    xes.element(LINKER_NORUNPATH_ELEMENT, "" + linkerConfiguration.getNorunpathOption().getValue());
+	    xes.element(LINKER_NORUNPATH_ELEMENT, "" + linkerConfiguration.getNorunpathOption().getValue()); // NOI18N
 	if (linkerConfiguration.getNameassignOption().getModified())
-	    xes.element(LINKER_ASSIGN_ELEMENT, "" + linkerConfiguration.getNameassignOption().getValue());
+	    xes.element(LINKER_ASSIGN_ELEMENT, "" + linkerConfiguration.getNameassignOption().getValue()); // NOI18N
 	if (linkerConfiguration.getAdditionalDependencies().getModified())
-	    xes.element(ADDITIONAL_DEP_ELEMENT, "" + linkerConfiguration.getAdditionalDependencies().getValue());
+	    xes.element(ADDITIONAL_DEP_ELEMENT, "" + linkerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
 	if (linkerConfiguration.getTool().getModified())
 	    xes.element(COMMANDLINE_TOOL_ELEMENT, linkerConfiguration.getTool().getValue());
 	writeLibrariesConfiguration(xes, linkerConfiguration.getLibrariesConfiguration());
 	if (linkerConfiguration.getCommandLineConfiguration().getModified())
-	    xes.element(COMMAND_LINE_ELEMENT, "" + linkerConfiguration.getCommandLineConfiguration().getValue());
-	//xes.element(DEBUGGING_ELEMENT, "" + linkerConfiguration.getTool().getValue() + " " + linkerConfiguration.getOptions());
+	    xes.element(COMMAND_LINE_ELEMENT, "" + linkerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
+	//xes.element(DEBUGGING_ELEMENT, "" + linkerConfiguration.getTool().getValue() + " " + linkerConfiguration.getOptions()); // NOI18N
 	xes.elementClose(LINKERTOOL_ELEMENT);
     }
 
@@ -450,10 +450,10 @@ abstract class CommonConfigurationXMLCodec
 	xes.elementOpen(MAKE_ARTIFACT_ELEMENT,
 		new AttrValuePair[] {
 		    new AttrValuePair(MAKE_ARTIFACT_PL_ELEMENT, makeArtifact.getProjectLocation()),
-		    new AttrValuePair(MAKE_ARTIFACT_CT_ELEMENT, "" + makeArtifact.getConfigurationType()),
+		    new AttrValuePair(MAKE_ARTIFACT_CT_ELEMENT, "" + makeArtifact.getConfigurationType()), // NOI18N
 		    new AttrValuePair(MAKE_ARTIFACT_CN_ELEMENT, makeArtifact.getConfigurationName()),
-		    new AttrValuePair(MAKE_ARTIFACT_AC_ELEMENT, "" + makeArtifact.getActive()),
-		    new AttrValuePair(MAKE_ARTIFACT_BL_ELEMENT, "" + makeArtifact.getBuild()),
+		    new AttrValuePair(MAKE_ARTIFACT_AC_ELEMENT, "" + makeArtifact.getActive()), // NOI18N
+		    new AttrValuePair(MAKE_ARTIFACT_BL_ELEMENT, "" + makeArtifact.getBuild()), // NOI18N
 		    new AttrValuePair(MAKE_ARTIFACT_WD_ELEMENT, makeArtifact.getWorkingDirectory()),
 		    new AttrValuePair(MAKE_ARTIFACT_BC_ELEMENT, makeArtifact.getBuildCommand()),
 		    new AttrValuePair(MAKE_ARTIFACT_CC_ELEMENT, makeArtifact.getCleanCommand()),
@@ -462,9 +462,9 @@ abstract class CommonConfigurationXMLCodec
 	/*
 	xes.elementOpen(MAKE_ARTIFACT_ELEMENT);
 	xes.element(MAKE_ARTIFACT_PL_ELEMENT, makeArtifact.getProjectLocation());
-	xes.element(MAKE_ARTIFACT_CT_ELEMENT, "" + makeArtifact.getConfigurationType());
+	xes.element(MAKE_ARTIFACT_CT_ELEMENT, "" + makeArtifact.getConfigurationType()); // NOI18N
 	xes.element(MAKE_ARTIFACT_CN_ELEMENT, makeArtifact.getConfigurationName());
-	xes.element(MAKE_ARTIFACT_AC_ELEMENT, "" + makeArtifact.getActive());
+	xes.element(MAKE_ARTIFACT_AC_ELEMENT, "" + makeArtifact.getActive()); // NOI18N
 	xes.element(MAKE_ARTIFACT_WD_ELEMENT, makeArtifact.getWorkingDirectory());
 	xes.element(MAKE_ARTIFACT_BC_ELEMENT, makeArtifact.getBuildCommand());
 	xes.element(MAKE_ARTIFACT_CC_ELEMENT, makeArtifact.getCleanCommand());
@@ -478,18 +478,18 @@ abstract class CommonConfigurationXMLCodec
 	if (archiverConfiguration.getOutput().getModified())
 	    xes.element(OUTPUT_ELEMENT, archiverConfiguration.getOutput().getValue());
 	if (archiverConfiguration.getRunRanlib().getModified())
-	    xes.element(ARCHIVERTOOL_RUN_RANLIB_ELEMENT, "" + archiverConfiguration.getRunRanlib().getValue());
+	    xes.element(ARCHIVERTOOL_RUN_RANLIB_ELEMENT, "" + archiverConfiguration.getRunRanlib().getValue()); // NOI18N
 	if (archiverConfiguration.getVerboseOption().getModified())
-	    xes.element(ARCHIVERTOOL_VERBOSE_ELEMENT, "" + archiverConfiguration.getVerboseOption().getValue());
+	    xes.element(ARCHIVERTOOL_VERBOSE_ELEMENT, "" + archiverConfiguration.getVerboseOption().getValue()); // NOI18N
 	if (archiverConfiguration.getSupressOption().getModified())
-	    xes.element(ARCHIVERTOOL_SUPRESS_ELEMENT, "" + archiverConfiguration.getSupressOption().getValue());
+	    xes.element(ARCHIVERTOOL_SUPRESS_ELEMENT, "" + archiverConfiguration.getSupressOption().getValue()); // NOI18N
 	if (archiverConfiguration.getAdditionalDependencies().getModified())
-	    xes.element(ADDITIONAL_DEP_ELEMENT, "" + archiverConfiguration.getAdditionalDependencies().getValue());
+	    xes.element(ADDITIONAL_DEP_ELEMENT, "" + archiverConfiguration.getAdditionalDependencies().getValue()); // NOI18N
 	if (archiverConfiguration.getTool().getModified())
-	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + archiverConfiguration.getTool().getValue());
+	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + archiverConfiguration.getTool().getValue()); // NOI18N
 	if (archiverConfiguration.getCommandLineConfiguration().getModified())
-	    xes.element(COMMAND_LINE_ELEMENT, "" + archiverConfiguration.getCommandLineConfiguration().getValue());
-	//xes.element(DEBUGGING_ELEMENT, "" + archiverConfiguration.getTool().getValue() + " " + archiverConfiguration.getOptions());
+	    xes.element(COMMAND_LINE_ELEMENT, "" + archiverConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
+	//xes.element(DEBUGGING_ELEMENT, "" + archiverConfiguration.getTool().getValue() + " " + archiverConfiguration.getOptions()); // NOI18N
 	xes.elementClose(ARCHIVERTOOL_ELEMENT);
     }
 

@@ -82,7 +82,7 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
 	    // change AST kind from lazy to normal and change the lazy subtree 
 	    // with new resolved tree
 	    curAst.setType(CPPTokenTypes.CSM_COMPOUND_STATEMENT);
-	    curAst.setText("CSM_COMPOUND_STATEMENT_LAZY (RESOLVED)");
+	    curAst.setText("CSM_COMPOUND_STATEMENT_LAZY (RESOLVED)"); // NOI18N
 	    curAst.setFirstChild(resolvedAst == null ? null : resolvedAst.getFirstChild());
         }
         renderStatements(curAst);
@@ -112,7 +112,7 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         FileImpl file = (FileImpl) getContainingFile();
         TokenStream  stream = file.getTokenStream();
         if( stream == null ) {
-	    Utils.LOG.severe("Can't create compound statement: can't create token stream for file " + file.getAbsolutePath());
+	    Utils.LOG.severe("Can't create compound statement: can't create token stream for file " + file.getAbsolutePath()); // NOI18N
         }
 	else {
 	    try {
@@ -123,7 +123,7 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
                         return new PushBackTokenStream(stream, next);
                     }
 		}
-	        Utils.LOG.severe("Can't find token at offset " + firstTokenOffset + " in file: " + getContainingFile().getAbsolutePath() + " while restoring function body");
+	        Utils.LOG.severe("Can't find token at offset " + firstTokenOffset + " in file: " + getContainingFile().getAbsolutePath() + " while restoring function body"); // NOI18N
 	    } catch (TokenStreamException ex) {
 		Utils.LOG.severe("Can't create compound statement: " + ex.getMessage());
 		return null;

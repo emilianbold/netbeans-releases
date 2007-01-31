@@ -83,7 +83,7 @@ public class ModelSupport implements PropertyChangeListener {
     public File locateFile(String fileName) {
         InstalledFileLocator locator = InstalledFileLocator.getDefault();
         if( locator != null ) {
-            File file = locator.locate(fileName, "com.sun.tools.swdev.parser.impl/1", false);
+            File file = locator.locate(fileName, "com.sun.tools.swdev.parser.impl/1", false); // NOI18N
             if( file != null ) {
                 return file;
             }
@@ -219,11 +219,11 @@ public class ModelSupport implements PropertyChangeListener {
     
     private void trace(NativeFileItem nativeFile) {
         try {
-            Diagnostic.trace("  native file item" + nativeFile.getFile().getAbsolutePath());
-            Diagnostic.trace("    user includes: " + nativeFile.getUserIncludePaths());
-            Diagnostic.trace("    user macros: " + nativeFile.getUserMacroDefinitions());
-            Diagnostic.trace("    system includes: " + nativeFile.getSystemIncludePaths());
-            Diagnostic.trace("    system macros: " + nativeFile.getSystemMacroDefinitions());
+            Diagnostic.trace("  native file item" + nativeFile.getFile().getAbsolutePath()); // NOI18N
+            Diagnostic.trace("    user includes: " + nativeFile.getUserIncludePaths()); // NOI18N
+            Diagnostic.trace("    user macros: " + nativeFile.getUserMacroDefinitions()); // NOI18N
+            Diagnostic.trace("    system includes: " + nativeFile.getSystemIncludePaths()); // NOI18N
+            Diagnostic.trace("    system macros: " + nativeFile.getSystemMacroDefinitions()); // NOI18N
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
         }
@@ -281,7 +281,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     public void visitProjectFiles(ProjectBase csmProjectImpl, Object platformProject, FileVisitor visitor) {
-        if( TraceFlags.DEBUG ) Diagnostic.trace("ModelSupport.visitProjectFiles for " + csmProjectImpl.getName());
+        if( TraceFlags.DEBUG ) Diagnostic.trace("ModelSupport.visitProjectFiles for " + csmProjectImpl.getName()); // NOI18N
         NativeProject nativeProject = platformProject instanceof NativeProject ? (NativeProject)platformProject : null;
         if (platformProject instanceof Project ) {
             Project project = (Project) platformProject;
@@ -289,11 +289,19 @@ public class ModelSupport implements PropertyChangeListener {
         }
         if( nativeProject != null ) {
             try {
-                if( TraceFlags.DEBUG ) Diagnostic.trace("Using new NativeProject API");
+                if( TraceFlags.DEBUG ) Diagnostic.trace("Using new NativeProject API"); // NOI18N
                 // first of all visit sources, then headers
+		
+		if( TraceFlags.TIMING ) System.err.println("Getting files from project system");
+		long time = System.currentTimeMillis();
+		
                 List/*<NativeFileItem>*/ sources = nativeProject.getAllSourceFiles();
                 List/*<NativeFileItem>*/ headers = nativeProject.getAllHeaderFiles();
+		
+		
                 if( TraceFlags.TIMING ) {
+		    time = System.currentTimeMillis() - time;
+		    System.err.println("Got files from project system. Time = " + time);
                     System.err.println("FILES COUNT:\nSource files:\t" + sources.size() + "\nHeader files:\t" + headers.size() + "\nTotal files:\t" + (sources.size() + headers.size()));
                 }
                 if(TraceFlags.DUMP_PROJECT_ON_OPEN ) {
@@ -315,8 +323,8 @@ public class ModelSupport implements PropertyChangeListener {
         StringBuffer sb = new StringBuffer();
         ProjectInformation  pi = ProjectUtils.getInformation(project);
         if( pi != null ) {
-            sb.append(" Name=" + pi.getName());
-            sb.append(" DisplayName=" + pi.getDisplayName());
+            sb.append(" Name=" + pi.getName()); // NOI18N
+            sb.append(" DisplayName=" + pi.getDisplayName()); // NOI18N
         }
 //        SourceGroup[] sg = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
 //        for( int i = 0; i < sg.length; i++ ) {
@@ -326,7 +334,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     private void addProject(Project project) {
-        if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.addProject: " + toString(project));
+        if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.addProject: " + toString(project)); // NOI18N
         NativeProject nativeProject = (NativeProject) project.getLookup().lookup(NativeProject.class);
         if (nativeProject != null) {
             openedProjects.add(project);
@@ -339,12 +347,12 @@ public class ModelSupport implements PropertyChangeListener {
     
     private void dumpProjectFiles(NativeProject nativeProject) {
         if( TraceFlags.DEBUG ) {
-            Diagnostic.trace("+++ Sources:");
+            Diagnostic.trace("+++ Sources:"); // NOI18N
             for (Iterator it = nativeProject.getAllSourceFiles().iterator(); it.hasNext();) {
                 NativeFileItem elem = (NativeFileItem) it.next();
                 trace(elem);
             }
-            Diagnostic.trace("+++ Headers:");
+            Diagnostic.trace("+++ Headers:"); // NOI18N
             for (Iterator it = nativeProject.getAllHeaderFiles().iterator(); it.hasNext();) {
                 NativeFileItem elem = (NativeFileItem) it.next();
                 trace(elem);
@@ -353,7 +361,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     private void removeProject(Project project) {
-        if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.removeProject: " + toString(project));
+        if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.removeProject: " + toString(project)); // NOI18N
         NativeProject nativeProject = (NativeProject) project.getLookup().lookup(NativeProject.class);
         if (nativeProject != null) {
             model.removeProject(nativeProject);
@@ -463,30 +471,30 @@ public class ModelSupport implements PropertyChangeListener {
         
         public void stateChanged(ChangeEvent e) {
             if( TraceFlags.DEBUG ) {
-                Diagnostic.trace("state of registry changed:");
+                Diagnostic.trace("state of registry changed:"); // NOI18N
                 Diagnostic.indent();
                 if (e != null) {
                     DataObject[] objs = DataObject.getRegistry().getModified();
                     if (objs.length == 0) {
-                        Diagnostic.trace("all objects are saved");
+                        Diagnostic.trace("all objects are saved"); // NOI18N
                     } else {
-                        Diagnostic.trace("set of edited objects:");
+                        Diagnostic.trace("set of edited objects:"); // NOI18N
                         for (int i = 0; i < objs.length; i++) {
                             DataObject curObj = objs[i];
-                            Diagnostic.trace("object " + i + ":" + curObj.getName());
+                            Diagnostic.trace("object " + i + ":" + curObj.getName()); // NOI18N
                             Diagnostic.indent();
-                            Diagnostic.trace("with file: " + curObj.getPrimaryFile());
+                            Diagnostic.trace("with file: " + curObj.getPrimaryFile()); // NOI18N
                             Project prj = FileOwnerQuery.getOwner(curObj.getPrimaryFile());
-                            Diagnostic.trace("from project: " + prj);
+                            Diagnostic.trace("from project: " + prj); // NOI18N
                             EditorCookie editor = (EditorCookie) curObj.getCookie(EditorCookie.class);
-                            Diagnostic.trace("has editor support: " + editor);
+                            Diagnostic.trace("has editor support: " + editor); // NOI18N
                             Document doc = editor != null ? editor.getDocument() : null;
-                            Diagnostic.trace("with document: " + doc);
+                            Diagnostic.trace("with document: " + doc); // NOI18N
                             Diagnostic.unindent();
                         }
                     }
                 } else {
-                    Diagnostic.trace("no additional info from event object");
+                    Diagnostic.trace("no additional info from event object"); // NOI18N
                 }
                 Diagnostic.unindent();
             }

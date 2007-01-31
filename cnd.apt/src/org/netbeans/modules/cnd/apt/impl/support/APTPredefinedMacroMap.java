@@ -38,7 +38,7 @@ import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
 public class APTPredefinedMacroMap implements APTMacroMap {
        
     private static String []preMacro = new String [] { 
-         "__FILE__", "__LINE__", "__DATE__", "__TIME__" 
+         "__FILE__", "__LINE__", "__DATE__", "__TIME__"  // NOI18N
     };
     
     public APTPredefinedMacroMap() {
@@ -73,19 +73,19 @@ public class APTPredefinedMacroMap implements APTMacroMap {
     
 
     public void setState(APTMacroMap.State state) {
-        APTUtils.LOG.log(Level.SEVERE, "setState is not supported", new IllegalAccessException());
+        APTUtils.LOG.log(Level.SEVERE, "setState is not supported", new IllegalAccessException()); // NOI18N
     }
 
     public void define(Token name, List value) {
-        APTUtils.LOG.log(Level.SEVERE, "define is not supported", new IllegalAccessException());
+        APTUtils.LOG.log(Level.SEVERE, "define is not supported", new IllegalAccessException()); // NOI18N
     }
 
     public void define(Token name, Collection params, List value) {
-        APTUtils.LOG.log(Level.SEVERE, "define is not supported", new IllegalAccessException());
+        APTUtils.LOG.log(Level.SEVERE, "define is not supported", new IllegalAccessException()); // NOI18N
     }
 
     public void undef(Token name) {
-        APTUtils.LOG.log(Level.SEVERE, "undef is not supported", new IllegalAccessException());
+        APTUtils.LOG.log(Level.SEVERE, "undef is not supported", new IllegalAccessException()); // NOI18N
     }
    
     protected APTMacro createMacro(Token name, Collection params, List/*<Token>*/ value) {
@@ -93,16 +93,16 @@ public class APTPredefinedMacroMap implements APTMacroMap {
     }
     
     public boolean pushExpanding(Token token) {
-        APTUtils.LOG.log(Level.SEVERE, "pushExpanding is not supported", new IllegalAccessException());
+        APTUtils.LOG.log(Level.SEVERE, "pushExpanding is not supported", new IllegalAccessException()); // NOI18N
         return false;
     }
 
     public void popExpanding() {
-        APTUtils.LOG.log(Level.SEVERE, "popExpanding is not supported", new IllegalAccessException());
+        APTUtils.LOG.log(Level.SEVERE, "popExpanding is not supported", new IllegalAccessException()); // NOI18N
     }
 
     public boolean isExpanding(Token token) {
-        APTUtils.LOG.log(Level.SEVERE, "isExpanding is not supported", new IllegalAccessException());
+        APTUtils.LOG.log(Level.SEVERE, "isExpanding is not supported", new IllegalAccessException()); // NOI18N
         return false;
     }     
     
@@ -137,12 +137,12 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         public TokenStream getBody() {
             Token tok = APTUtils.createAPTToken(macro, APTTokenTypes.STRING_LITERAL);            
             
-            if (!macro.getText().equals("__LINE__")) {
+            if (!macro.getText().equals("__LINE__")) { // NOI18N
                 tok.setType(APTTokenTypes.STRING_LITERAL);
             }
             else {
                 tok.setType(APTTokenTypes.DECIMALINT);
-                tok.setText("" + macro.getLine());
+                tok.setText("" + macro.getLine()); // NOI18N
             }
                         
             return new TokenBasedTokenStream(tok);
@@ -150,7 +150,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         
         public String toString() {
             StringBuffer retValue = new StringBuffer();
-            retValue.append("<P>");            
+            retValue.append("<P>"); // NOI18N     
             retValue.append(getName());                       
             return retValue.toString(); 
         }

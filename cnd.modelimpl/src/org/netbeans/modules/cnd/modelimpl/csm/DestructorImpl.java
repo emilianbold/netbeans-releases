@@ -40,7 +40,7 @@ public class DestructorImpl extends MethodImpl{
     }
 
     public static String getDestructorName(CsmMethod method) {
-        return "~" + method.getContainingClass().getName();
+        return "~" + method.getContainingClass().getName(); // NOI18N
     }
     
    

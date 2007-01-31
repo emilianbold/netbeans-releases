@@ -20,7 +20,9 @@
 /*
  * GdbMemoryWindow.java
  *
- * Created on June 6, 2006, 3:15 PM
+ * @author Nik Molchanov
+ * Created on June 6, 2006
+ * Updated on Jan 11, 2007 (all known a11y problems are fixed)
  */
 
 package org.netbeans.modules.cnd.debugger.gdb;
@@ -160,6 +162,12 @@ public final class GdbMemoryWindow extends TopComponent
     
     protected String preferredID() {
         return this.getClass().getName();
+    }
+    
+    protected void componentActivated() {
+	super.componentActivated();
+	if (cp_addressList != null) 
+            cp_addressList.requestFocus();
     }
     
     protected void componentShowing() {
@@ -406,9 +414,20 @@ public final class GdbMemoryWindow extends TopComponent
             tree.add(hp, BorderLayout.NORTH);
             tree.add(ta_sp, BorderLayout.CENTER);
             tree.add(cp, BorderLayout.SOUTH);
+            
+            // Accessibility: LabelFor, Tab navigation, AC name and description
+            JLabel invLabel = new JLabel(getString("LBL_GdbMemoryView")); //NOI18N
+            invLabel.setDisplayedMnemonic(getString("MN_L_GdbMemoryView").charAt(0)); //NOI18N
+            invLabel.setLabelFor(tree);
+            invLabel.setVisible(false);
+            add(invLabel);
+            tree.setEnabled(true);
+            tree.setFocusCycleRoot(true);
+            tree.setFocusable(true);
             AccessibleContext ac = tree.getAccessibleContext();
             ac.setAccessibleDescription(getString("AD_GdbMemoryView")); //NOI18N
             ac.setAccessibleName(getString("TITLE_GdbMemoryView")); // NOI18N
+            
             add(tree, "Center");  //NOI18N
             
             //Create the popup menu.

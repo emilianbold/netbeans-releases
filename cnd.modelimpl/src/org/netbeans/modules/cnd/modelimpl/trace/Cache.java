@@ -72,7 +72,7 @@ public class Cache {
         private File cacheDir;
         
         public Plain() {
-            cacheDir = new File("test-model-cache");
+            cacheDir = new File("test-model-cache"); // NOI18N
             cacheDir.mkdirs();
         }
         
@@ -92,7 +92,7 @@ public class Cache {
         
         protected String getEntryName(File sourceFile) {
             //return sourceFile.getName() + ".ast";
-            return sourceFile.getAbsolutePath().substring(1) + ".ast";
+            return sourceFile.getAbsolutePath().substring(1) + ".ast"; // NOI18N
         }
         
     }
@@ -102,14 +102,14 @@ public class Cache {
         private ZipFile zip;
         
         public Zipped() throws IOException {
-            zip = new ZipFile(new File("test-model-cache.zip"), ZipFile.OPEN_READ);
+            zip = new ZipFile(new File("test-model-cache.zip"), ZipFile.OPEN_READ); // NOI18N
         }
         
         protected InputStream getFileInputStream(File srcFile) throws IOException {
             String entryName = getEntryName(srcFile);
             ZipEntry entry = zip.getEntry(entryName);
             if( entry == null ) {
-                throw new ZipException("Entry not found: " + entryName);
+                throw new ZipException("Entry not found: " + entryName); // NOI18N
             }
             else {
                 InputStream is = zip.getInputStream(entry);

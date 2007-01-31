@@ -33,9 +33,9 @@ public interface CsmTemplateParameter extends CsmObject {
             super(id);
         }
 
-        public static final Kind DECLARATION = new Kind("DECLARATION");
-        public static final Kind CLASS = new Kind("CLASS");
-        public static final Kind TEMPLATE = new Kind("TEMPLATE");
+        public static final Kind DECLARATION = new Kind("DECLARATION"); // NOI18N
+        public static final Kind CLASS = new Kind("CLASS"); // NOI18N
+        public static final Kind TEMPLATE = new Kind("TEMPLATE"); // NOI18N
     }
     
     /** Gets this template parameter kin */

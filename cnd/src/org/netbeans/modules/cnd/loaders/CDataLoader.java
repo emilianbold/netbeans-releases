@@ -38,10 +38,10 @@ public class CDataLoader extends CCFSrcLoader {
 
     /** The suffix list for C primary files */
     private static final String[] cExtensions =
-				{ "c", "m" };	//NOI18N
+				{ "c", "m" };	// NOI18N
 
     protected CDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.CSrcObject");         //NOI18N
+	super("org.netbeans.modules.cnd.loaders.CSrcObject");         // NOI18N
 	instance = this;
         createExtentions(cExtensions);
     }

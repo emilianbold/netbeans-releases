@@ -38,10 +38,10 @@ public class FortranDataLoader extends CCFSrcLoader {
 
     /** The suffix list for Fortran primary files */
     private static final String[] fortranExtensions =
-	   { "f", "F", "f90", "F90", "f95", "F95", "for", "il", "mod" };//NOI18N
+	   { "f", "F", "f90", "F90", "f95", "F95", "for", "il", "mod" };// NOI18N
 
     protected FortranDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.FortranSrcObject");         //NOI18N
+	super("org.netbeans.modules.cnd.loaders.FortranSrcObject");         // NOI18N
 	instance = this;
         createExtentions(fortranExtensions);
     }

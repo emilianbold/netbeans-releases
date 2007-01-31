@@ -129,7 +129,7 @@ public class DiagnosticUnresolved {
         public void dumpStatistics(PrintStream out) {
             
             out.println(getName() + ' ' + getCount());
-            out.println(" By files:");
+            out.println(" By files:"); // NOI18N
             
             Comparator comp = new Comparator() {
                 public int compare(Object o1, Object o2) {
@@ -155,7 +155,7 @@ public class DiagnosticUnresolved {
                 CsmFile file = (CsmFile) it.next();
                 IntArray ia = (IntArray) files.get(file);
                 int cnt = (ia == null) ? -1 : ia.size();
-                out.println("    " +  file.getAbsolutePath() + ' ' + cnt);
+                out.println("    " +  file.getAbsolutePath() + ' ' + cnt); // NOI18N
             }
 
         }
@@ -173,7 +173,7 @@ public class DiagnosticUnresolved {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < nameTokens.length; i++) {
             if( i > 0 ) {
-                sb.append("::");
+                sb.append("::"); // NOI18N
             }
             sb.append(nameTokens[i]);
         }
@@ -205,7 +205,7 @@ public class DiagnosticUnresolved {
     
     protected void dumpStatictics(PrintStream out) {
             
-        out.println("\n**** Unresolved names statistics\n");
+        out.println("\n**** Unresolved names statistics\n"); // NOI18N
         
         Comparator comp = new Comparator() {
             public int compare(Object o1, Object o2) {
@@ -234,7 +234,7 @@ public class DiagnosticUnresolved {
             total += ui.getCount();
         }
         
-        out.println("Totally " + total + " unresolved");
+        out.println("Totally " + total + " unresolved"); // NOI18N
     }
     
 }

@@ -33,6 +33,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Provider{
     private SourceFoldersDescriptorPanel sourceFoldersDescriptorPanel;
@@ -50,6 +51,13 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.weighty = 1.0;
         headerFoldersOuterPanel.add(sourceFilesPanel, gridBagConstraints);
         instructionsTextArea.setBackground(instructionPanel.getBackground());
+        
+        // Accessibility
+        getAccessibleContext().setAccessibleDescription(getString("INCLUDE_LABEL_AD"));
+        includeTextField.getAccessibleContext().setAccessibleDescription(getString("INCLUDE_LABEL_AD"));
+        includeEditButton.getAccessibleContext().setAccessibleDescription(getString("INCLUDE_BROWSE_BUTTON_AD"));
+        macroTextField.getAccessibleContext().setAccessibleDescription(getString("MACRO_LABEL_AD"));
+        macroEditButton.getAccessibleContext().setAccessibleDescription(getString("MACRO_EDIT_BUTTON_AD"));
     }
 
     public HelpCtx getHelpCtx() {
@@ -248,7 +256,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
             list.add((String)tokenizer.nextToken());
         }
         IncludesListPanel panel = new IncludesListPanel(list.toArray());
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(addOuterPanel(panel), "Include Directories"); // NOI18N
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(addOuterPanel(panel), getString("INCLUDE_DIRIRECTORIES_TXT"));
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
             Vector newList = panel.getListData();
@@ -264,6 +272,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
     
     private JPanel addOuterPanel(JPanel innerPanel) {
         JPanel outerPanel = new JPanel();
+        outerPanel.getAccessibleContext().setAccessibleDescription(getString("DIALOG_AD"));
         outerPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
@@ -282,8 +291,12 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
 	}
 
 	public Object addAction() {
-	    String seed = FileChooser.getCurrectChooserFile().getPath();
-	    FileChooser fileChooser = new FileChooser("Select Directory", "Select", JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+	    String seed = null;
+            if (FileChooser.getCurrectChooserFile() != null)
+                seed = FileChooser.getCurrectChooserFile().getPath();
+            if (seed == null)
+                seed = System.getProperty("user.home"); // NOI18N
+	    FileChooser fileChooser = new FileChooser(getString("INCLUDE_DIR_DIALOG_TITLE_TXT"), getString("INCLUDE_DIR_DIALOG_BUTTON_TXT"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
 	    int ret = fileChooser.showOpenDialog(this);
 	    if (ret == JFileChooser.CANCEL_OPTION)
 		return null;
@@ -293,24 +306,24 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
 	}
 
 	public String getListLabelText() {
-	    return "Directories:";
+	    return getString("DIR_LIST_TXT");
 	}
 	public char getListLabelMnemonic() {
-	    return 'I';
+	    return getString("DIR_LIST_MN").charAt(0);
 	}
     
 	public String getAddButtonText() {
-	    return "Add Directory";
+	    return getString("ADD_BUTTON_TXT");
 	}
 	public char getAddButtonMnemonics() {
-	    return 'A';
+	    return getString("ADD_BUTTON_MN").charAt(0);
 	}
     
 	public String getRenameButtonText() {
-	    return "Edit";
+	    return getString("EDIT_BUTTON_TXT");
 	}
 	public char getRenameButtonMnemonics() {
-	    return 'E';
+	    return getString("EDIT_BUTTON_MN").charAt(0);
 	}
 
 	public Object copyAction(Object o) {
@@ -320,7 +333,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
 	public void editAction(Object o) {
 	    String s = (String)o;
 
-	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine("", "Edit");
+	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
 	    notifyDescriptor.setInputText(s);
 	    DialogDisplayer.getDefault().notify(notifyDescriptor);
 	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
@@ -345,7 +358,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
 	}
 
 	public Object addAction() {
-	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine("", "Add");
+	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("ADD_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
 	    DialogDisplayer.getDefault().notify(notifyDescriptor);
 	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
 		return null;
@@ -354,24 +367,24 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
 	}
 
 	public String getListLabelText() {
-	    return "Macros:";
+	    return getString("MACROS_LIST_TXT");
 	}
 	public char getListLabelMnemonic() {
-	    return 'M';
+	    return getString("MACROS_LIST_MN").charAt(0);
 	}
     
 	public String getAddButtonText() {
-	    return "Add";
+	    return getString("ADD_BUTTON_TXT");
 	}
 	public char getAddButtonMnemonics() {
-	    return 'A';
+	    return getString("ADD_BUTTON_MN").charAt(0);
 	}
     
 	public String getRenameButtonText() {
-	    return "Edit";
+	    return getString("EDIT_BUTTON_TXT");
 	}
 	public char getRenameButtonMnemonics() {
-	    return 'E';
+	    return getString("EDIT_BUTTON_MN").charAt(0);
 	}
 
 	public Object copyAction(Object o) {
@@ -381,7 +394,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
 	public void editAction(Object o) {
 	    String s = (String)o;
 
-	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine("", "Edit");
+	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
 	    notifyDescriptor.setInputText(s);
 	    DialogDisplayer.getDefault().notify(notifyDescriptor);
 	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
@@ -413,4 +426,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
     private javax.swing.JTextField macroTextField;
     // End of variables declaration//GEN-END:variables
     
+    private static String getString(String s) {
+        return NbBundle.getBundle(PanelProjectLocationVisual.class).getString(s);
+    }
 }

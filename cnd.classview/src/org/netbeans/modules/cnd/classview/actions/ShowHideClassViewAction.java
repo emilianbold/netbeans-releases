@@ -64,7 +64,7 @@ public class ShowHideClassViewAction extends CallableSystemAction {
     }
 
     protected String iconResource() {
-		return "org/netbeans/modules/cnd/classview/resources/class_view.png";
+		return "org/netbeans/modules/cnd/classview/resources/class_view.png"; // NOI18N
     }
 	
 }

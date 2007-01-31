@@ -32,8 +32,8 @@ public class BooleanConfiguration {
     public BooleanConfiguration(BooleanConfiguration master, boolean def) {
 	this.master = master;
 	this.def = def;
-	falseValue = "";
-	trueValue = "";
+	falseValue = ""; // NOI18N
+	trueValue = ""; // NOI18N
 	reset();
     }
 

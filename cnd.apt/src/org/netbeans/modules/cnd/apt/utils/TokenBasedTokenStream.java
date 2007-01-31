@@ -34,7 +34,7 @@ public class TokenBasedTokenStream implements TokenStream {
     /** Creates a new instance of TokenBasedTokenStream */
     public TokenBasedTokenStream(Token token) {
         if (token == null) {
-            throw new NullPointerException("not possible to create token stream for null token");
+            throw new NullPointerException("not possible to create token stream for null token"); // NOI18N
         }
         this.token = token;
         this.first = true;

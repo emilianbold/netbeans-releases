@@ -62,7 +62,7 @@ public class FileCodeModelDeclaration {
     }
     
     private void dump(int level) {
-        String formatString = ((level > 0) ? ("%" + (level * 2) + "s") : ("%s")) + "%s %s %s\n";
+        String formatString = ((level > 0) ? ("%" + (level * 2) + "s") : ("%s")) + "%s %s %s\n"; // NOI18N
         System.out.printf(formatString, "", kind, declarationString, declarationPosition);
         for (Iterator<FileCodeModelDeclaration> i = children.iterator(); i.hasNext(); ) {
             i.next().dump(level + 1);
@@ -70,7 +70,7 @@ public class FileCodeModelDeclaration {
     }
     
     public String toString() {
-        return kind + " " + declarationString + " " + declarationPosition;
+        return kind + " " + declarationString + " " + declarationPosition; // NOI18N
     }
 }
 

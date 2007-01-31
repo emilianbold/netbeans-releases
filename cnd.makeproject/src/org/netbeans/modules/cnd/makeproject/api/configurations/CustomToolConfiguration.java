@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
 
 public class CustomToolConfiguration {
     // Custom tool
@@ -31,10 +32,10 @@ public class CustomToolConfiguration {
 
     public CustomToolConfiguration() {
 	// Custom Tool
-	commandLine = new StringConfiguration(null, "");
-	description = new StringConfiguration(null, "Performing Custom Build Step");
-	outputs = new StringConfiguration(null, "");
-	additionalDependencies = new StringConfiguration(null, "");
+	commandLine = new StringConfiguration(null, ""); // NOI18N
+	description = new StringConfiguration(null, getString("PerformingStepTxt"));
+	outputs = new StringConfiguration(null, ""); // NOI18N
+	additionalDependencies = new StringConfiguration(null, ""); // NOI18N
     }
 
     public boolean getModified() {
@@ -96,15 +97,21 @@ public class CustomToolConfiguration {
 	Sheet sheet = new Sheet();
 
 	Sheet.Set set = new Sheet.Set();
-	set.setName("Custom Build");
-	set.setDisplayName("Custom Build");
-	set.setShortDescription("Custom Build");
-	set.put(new StringNodeProp(getCommandLine(), "Command Line", "Command Line", "Command Line"));
-	set.put(new StringNodeProp(getDescription(), "Description", "Description", "Description"));
-	set.put(new StringNodeProp(getOutputs(), "Outputs", "Outputs", "Outputs"));
-	set.put(new StringNodeProp(getAdditionalDependencies(), "Additional Dependencies", "Additional Dependencies", "Additional Dependencies"));
+	set.setName("CustomBuild"); // NOI18N
+	set.setDisplayName(getString("CustomBuildTxt"));
+	set.setShortDescription(getString("CustomBuildHint"));
+	set.put(new StringNodeProp(getCommandLine(), "Command Line", getString("CommandLineTxt2"), getString("CommandLineHint2"))); // NOI18N
+	set.put(new StringNodeProp(getDescription(), "Description", getString("DescriptionTxt"), getString("DescriptionHint"))); // NOI18N
+	set.put(new StringNodeProp(getOutputs(), "Outputs", getString("OutputsTxt"), getString("OutputsNint"))); // NOI18N
+	set.put(new StringNodeProp(getAdditionalDependencies(), "AdditionalDependencies", getString("AdditionalDependenciesTxt1"), getString("AdditionalDependenciesHint"))); // NOI18N
 	sheet.put(set);
 
 	return sheet;
+    }
+    
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(CustomToolConfiguration.class, s);
     }
 }

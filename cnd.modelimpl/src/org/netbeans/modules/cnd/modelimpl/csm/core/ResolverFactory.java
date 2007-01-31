@@ -30,7 +30,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 public class ResolverFactory {
 
     //private static final boolean useNewResolver = Boolean.getBoolean("cnd.modelimpl.resolver2");
-    public static final int resolver = Integer.getInteger("cnd.modelimpl.resolver", 3).intValue();
+    public static final int resolver = Integer.getInteger("cnd.modelimpl.resolver", 3).intValue(); // NOI18N
 
     /** prevents creation */
     private ResolverFactory() {

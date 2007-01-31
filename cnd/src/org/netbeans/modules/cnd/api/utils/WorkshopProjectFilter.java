@@ -46,7 +46,7 @@ public class WorkshopProjectFilter extends javax.swing.filechooser.FileFilter {
 	    if (f.isDirectory()) {
 		return true;
 	    }
-	    return f.getName().endsWith(".prd"); //NOI18N
+	    return f.getName().endsWith(".prd"); // NOI18N
 	}
 	return false;
     }

@@ -48,8 +48,9 @@ import org.openide.util.Utilities;
 
 /**
  * Panel for customizing line breakpoints.
+ * This panel is a part of "New Breakpoint" dialog.
  *
- * @author  Maros Sandor (original code)
+ * @author Nik Molchanov (copied and modified from JDPA debugger).
  */
 
 // Implement HelpCtx.Provider interface to provide help ids for help system
@@ -60,8 +61,6 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
     private ActionsPanel                actionsPanel; 
     private LineBreakpoint              breakpoint;
     private boolean                     createBreakpoint = false;
-    
-    
     
     /** 
      * Creates new form LineBreakpointPanel
@@ -210,6 +209,8 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         pSettings.setLayout(new java.awt.GridBagLayout());
 
         pSettings.setBorder(javax.swing.BorderFactory.createTitledBorder(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("L_Line_Breakpoint_BorderTitle")));
+        pSettings.setMinimumSize(new java.awt.Dimension(249, 105));
+        pSettings.setPreferredSize(new java.awt.Dimension(144, 105));
         jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Line_Breakpoint_File_Name").charAt(0));
         jLabel3.setLabelFor(tfFileName);
         jLabel3.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("L_Line_Breakpoint_File_Name"));
@@ -236,7 +237,6 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
 
         tfFileName.setEditable(false);
         tfFileName.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("TTT_TF_Line_Breakpoint_File_Name"));
-        tfFileName.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -245,6 +245,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(tfFileName, gridBagConstraints);
+        tfFileName.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_TF_Line_Breakpoint_File_Name"));
         tfFileName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_TF_Line_Breakpoint_File_Name"));
 
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Line_Breakpoint_Line_Number").charAt(0));
@@ -268,17 +269,19 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(tfLineNumber, gridBagConstraints);
-        tfLineNumber.getAccessibleContext().setAccessibleName("Line number");
+        tfLineNumber.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_TF_Line_Breakpoint_Line_Number"));
         tfLineNumber.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_TF_Line_Breakpoint_Line_Number"));
 
         spCondition.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(LineBreakpointPanel.class, "ACSD_TF_Line_Breakpoint_Condition"));
+        spCondition.setMinimumSize(new java.awt.Dimension(11, 19));
         tfCondition.setEditable(false);
-        tfCondition.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("HINT_UnimplementedCondition"));
-        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(LineBreakpointPanel.class, "ACSD_TF_Line_Breakpoint_Condition"));
-        tfCondition.setContentType("text/x-java");
-        tfCondition.setEnabled(false);
+        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(LineBreakpointPanel.class, "HINT_UnimplementedCondition"));
+        tfCondition.setMinimumSize(new java.awt.Dimension(116, 17));
+        tfCondition.setPreferredSize(new java.awt.Dimension(11, 19));
         spCondition.setViewportView(tfCondition);
+        tfCondition.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_TF_Line_Breakpoint_Condition"));
+        tfCondition.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("ACSD_TF_Line_Breakpoint_Condition"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

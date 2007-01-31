@@ -23,7 +23,7 @@ import antlr.Token;
 import antlr.collections.AST;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.utils.APTStringManager;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 
 /**
  * Fake AST managing text
@@ -40,7 +40,7 @@ public class NamedFakeAST extends FakeAST implements Serializable {
     /** Set the token text for this node */
     public void setText(String text_) {
         if (APTTraceFlags.APT_SHARE_TEXT) {
-            text_ = APTStringManager.instance().getString(text_);
+            text_ = TextCache.getString(text_);
         }
         text = text_;
     } 

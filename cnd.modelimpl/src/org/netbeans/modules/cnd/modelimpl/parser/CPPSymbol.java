@@ -66,15 +66,15 @@ public class CPPSymbol {
         }
     }
     
-    public static final ObjectType otInvalid = new ObjectType("otInvalid");
-    public static final ObjectType otFunction = new ObjectType("otFunction");
-    public static final ObjectType otVariable = new ObjectType("otVariable");
-    public static final ObjectType otTypedef = new ObjectType("otTypedef");
-    public static final ObjectType otStruct = new ObjectType("otStruct");
-    public static final ObjectType otUnion = new ObjectType("otUnion");
-    public static final ObjectType otEnum = new ObjectType("otEnum");
-    public static final ObjectType otClass = new ObjectType("otClass");
-    public static final ObjectType otEnumElement = new ObjectType("otEnumElement");
+    public static final ObjectType otInvalid = new ObjectType("otInvalid"); // NOI18N
+    public static final ObjectType otFunction = new ObjectType("otFunction"); // NOI18N
+    public static final ObjectType otVariable = new ObjectType("otVariable"); // NOI18N
+    public static final ObjectType otTypedef = new ObjectType("otTypedef"); // NOI18N
+    public static final ObjectType otStruct = new ObjectType("otStruct"); // NOI18N
+    public static final ObjectType otUnion = new ObjectType("otUnion"); // NOI18N
+    public static final ObjectType otEnum = new ObjectType("otEnum"); // NOI18N
+    public static final ObjectType otClass = new ObjectType("otClass"); // NOI18N
+    public static final ObjectType otEnumElement = new ObjectType("otEnumElement"); // NOI18N
 
     
     public static class ObjectFunction extends Enum {
@@ -82,9 +82,9 @@ public class CPPSymbol {
             super(id);
         }
     }
-    public static final ObjectFunction ofNormal = new ObjectFunction("ofNormal");
-    public static final ObjectFunction ofAddress = new ObjectFunction("ofAddress");
-    public static final ObjectFunction ofPointer = new ObjectFunction("ofPointer");
+    public static final ObjectFunction ofNormal = new ObjectFunction("ofNormal"); // NOI18N
+    public static final ObjectFunction ofAddress = new ObjectFunction("ofAddress"); // NOI18N
+    public static final ObjectFunction ofPointer = new ObjectFunction("ofPointer"); // NOI18N
     
     private ObjectType type;
     private ObjectFunction function;	// Not fully used yet

@@ -53,7 +53,7 @@ public class Notificator {
     public void startTransaction() {
 	synchronized( this ) {
 	    transactionLevel++;
-            if( TraceFlags.DEBUG ) Diagnostic.trace("    > " + transactionLevel + ' ' + getCurrThreadString());
+            if( TraceFlags.DEBUG ) Diagnostic.trace("    > " + transactionLevel + ' ' + getCurrThreadString()); // NOI18N
 	    resetEvent();
 	}
     }
@@ -61,7 +61,7 @@ public class Notificator {
     public void endTransaction() {
 	synchronized( this ) {
 	    transactionLevel--;
-            if( TraceFlags.DEBUG ) Diagnostic.trace("    < " + transactionLevel + ' ' + getCurrThreadString());
+            if( TraceFlags.DEBUG ) Diagnostic.trace("    < " + transactionLevel + ' ' + getCurrThreadString()); // NOI18N
 	    if( transactionLevel <= 0 ) {
 		flush();
 	    }

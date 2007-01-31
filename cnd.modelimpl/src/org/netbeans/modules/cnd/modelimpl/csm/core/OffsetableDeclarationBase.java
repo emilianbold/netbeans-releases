@@ -21,16 +21,10 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.csm.DeclarationBase;
-
-import org.netbeans.modules.cnd.modelimpl.platform.*;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 /**
  *
- * @author vk155633
+ * @author Vladimir Kvashin
  */
 public abstract class OffsetableDeclarationBase extends OffsetableBase implements CsmDeclaration {
     
@@ -52,4 +46,7 @@ public abstract class OffsetableDeclarationBase extends OffsetableBase implement
         return getQualifiedName();
     }
     
+    public CsmUID getUID() {
+        throw new UnsupportedOperationException("getUID is not yet supported in offsetable declaration " + this.getClass().getName()); // NOI18N
+    }
 }

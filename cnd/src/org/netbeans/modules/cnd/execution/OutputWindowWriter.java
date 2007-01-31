@@ -96,7 +96,7 @@ public class OutputWindowWriter extends Writer {
             //replace /cygdrive/<something> prefix with <something>:/ prefix:
             if (fileName.startsWith("/cygdrive/")) { // NOI18N
                 fileName = fileName.substring("/cygdrive/".length()); // NOI18N
-                fileName = "" + fileName.charAt(0) + ':' + fileName.substring(1);
+                fileName = "" + fileName.charAt(0) + ':' + fileName.substring(1); // NOI18N
                 fileName = fileName.replace('/', File.separatorChar);
             }
         }
@@ -256,7 +256,7 @@ public class OutputWindowWriter extends Writer {
                     delegate.println( line, new OutputListenerImpl( fo, lineNumber.intValue() - 1 ), true );
                     
                     if( !failed ) {
-//                        relativeTo.createData( ".fail" );
+//                        relativeTo.createData( ".fail" ); // NOI18N
                         failed = true;
                     }
                     
@@ -304,7 +304,7 @@ public class OutputWindowWriter extends Writer {
                     if( fo != null ) {
                         delegate.println( line, new OutputListenerImpl( fo, lineNumber.intValue() - 1 ), important );
                         if( !failed ) {
-//                            relativeTo.createData( ".fail" );
+//                            relativeTo.createData( ".fail" ); // NOI18N
                             failed = true;
                         }
                         return true;
@@ -440,7 +440,7 @@ public class OutputWindowWriter extends Writer {
                             errorInludes.clear();
                             delegate.println(line, new OutputListenerImpl(fo, lineNumber.intValue() - 1), important);
                             if( !failed ) {
-//                            relativeToFO.createData( ".fail" );
+//                            relativeToFO.createData( ".fail" ); // NOI18N
                                 failed = true;
                             }
                             return true;
@@ -548,7 +548,7 @@ public class OutputWindowWriter extends Writer {
         /** Returns the tooltip text for this annotation.
          * @return  tooltip for this annotation */
         public String getShortDescription() {
-            return NbBundle.getMessage(OutputWindowWriter.class, "HINT_CompilerError"); //NOI18N
+            return NbBundle.getMessage(OutputWindowWriter.class, "HINT_CompilerError"); // NOI18N
         }
         
         public void attach(Line line) {

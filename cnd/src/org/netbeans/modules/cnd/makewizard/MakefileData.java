@@ -53,7 +53,7 @@ final public class MakefileData {
     private int conformLevelCSun = 1; // Default
     public final static String[] conformLevelsCSun = {
 			    "-Xc", // ISO C (-Xc) // NOI18N
-			    "", // ISO C plus K&R C (-Xa)
+			    "", // ISO C plus K&R C (-Xa) // NOI18N
 			    "-Xs", // K&R C (-Xs) // NOI18N
 			    };
 
@@ -61,21 +61,21 @@ final public class MakefileData {
     private int conformLevelCppSun = 1; // Default
     public final static String[] conformLevelsCppSun = {
 			    "-compat=4", // 4.2 compatible // NOI18N
-			    "",		 // Standard
+			    "",		 // Standard // NOI18N
 			    };
 
     // Conformance Level C GNU
     private int conformLevelCGNU = 1; // Default
     public final static String[] conformLevelsCGNU = {
 			    "-ansi", // Ansi // NOI18N
-			    "",	     // Ansi plus GNU extentions
+			    "",	     // Ansi plus GNU extentions // NOI18N
 			    };
 
     // Conformance Level Cpp GNU
     private int conformLevelCppGNU = 1; // Default
     public final static String[] conformLevelsCppGNU = {
 			    "-ansi", // Ansi // NOI18N
-			    "",	     // Ansi plus GNU extentions
+			    "",	     // Ansi plus GNU extentions // NOI18N
 			    };
 
     /** The type of Makefile this data could make (complex, single executbale, ...)*/
@@ -155,8 +155,8 @@ final public class MakefileData {
 	makefileType = MakefileData.COMPLEX_MAKEFILE_TYPE;
 	toolset = MakefileData.SUNGNU_TOOLSET_TYPE;
 	makefileOS = MakefileData.UNIX_OS_TYPE;
-	baseDirectory = new String(System.getProperty("user.dir"));	//NOI18N
-	makefileName = getString("DFLT_MakefileName");			//NOI18N
+	baseDirectory = new String(System.getProperty("user.dir"));	// NOI18N
+	makefileName = getString("DFLT_MakefileName");			// NOI18N
 	targetList = new ArrayList();
 	compilerFlags = new CompilerFlags();
 	binDir = null;
@@ -215,20 +215,20 @@ final public class MakefileData {
 	String dir = null;
 
 	if (getToolset() == SUN_TOOLSET_TYPE) {
-	    toolset = "Sun"; //NOI18N
+	    toolset = "Sun"; // NOI18N
 	} else if (getToolset() == GNU_TOOLSET_TYPE) {
-	    toolset = "GNU"; //NOI18N
+	    toolset = "GNU"; // NOI18N
 	}
 
 	if (getMakefileOS() == SOLARIS_OS_TYPE) {
-	    OS = "Solaris"; //NOI18N
+	    OS = "Solaris"; // NOI18N
 	} else if (getMakefileOS() == LINUX_OS_TYPE) {
-	    OS = "Linux"; //NOI18N
+	    OS = "Linux"; // NOI18N
 	} else if (getMakefileOS() == WINDOWS_OS_TYPE) {
-	    OS = "Windows"; //NOI18N
+	    OS = "Windows"; // NOI18N
 	}
 
-	dir = toolset + "-" + System.getProperty("os.arch") + "-" + OS; //NOI18N
+	dir = toolset + "-" + System.getProperty("os.arch") + "-" + OS; // NOI18N
 	return dir;
     }
 
@@ -639,22 +639,22 @@ final public class MakefileData {
 
     public void dump() {
 
-	setIndent("");
-	println("\n\nDumping Makefile:");				//NOI18N
-	println("    makefileType     = " + makefileType);		//NOI18N
-	println("    toolset " + toolset);				//NOI18N
-	println("    makefileOS     = " + makefileOS);			//NOI18N
-	println("    baseDirectory = \"" + baseDirectory + "\"");	//NOI18N
-	println("    makefileName     = \"" + makefileName + "\"");	//NOI18N
-	println("    makefileDirName  = \"" + makefileDirName + "\"");	//NOI18N
-	compilerFlags.dump(indent + "    ");				//NOI18N
-	println("    targetList.size  = " + targetList.size());		//NOI18N
+	setIndent(""); // NOI18N
+	println("\n\nDumping Makefile:");				// NOI18N
+	println("    makefileType     = " + makefileType);		// NOI18N
+	println("    toolset " + toolset);				// NOI18N
+	println("    makefileOS     = " + makefileOS);			// NOI18N
+	println("    baseDirectory = \"" + baseDirectory + "\"");	// NOI18N
+	println("    makefileName     = \"" + makefileName + "\"");	// NOI18N
+	println("    makefileDirName  = \"" + makefileDirName + "\"");	// NOI18N
+	compilerFlags.dump(indent + "    ");				// NOI18N
+	println("    targetList.size  = " + targetList.size());		// NOI18N
 
 	for (int i = 0; i < targetList.size(); i++) {
-	    println("    targetList[" + i + "]    = {");		//NOI18N
+	    println("    targetList[" + i + "]    = {");		// NOI18N
 	    ((TargetData) targetList.get(i)).dump(
-		    new StringBuffer(indent).append("    ").toString());//NOI18N
-	    println("    }");						//NOI18N
+		    new StringBuffer(indent).append("    ").toString());// NOI18N
+	    println("    }");						// NOI18N
 	}
     }
 

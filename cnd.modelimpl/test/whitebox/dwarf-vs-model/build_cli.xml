@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 
 <project name="Dwarf-vs-Model" default="jar" basedir=".">
-    <property name="project.ModelUtils" value="../dm-utils"/>
+    <property name="project.dm-utils" value="../dm-utils"/>
     <property name="project.ModelDump" value="../model-dump"/>
     <property name="project.DwarfDump" value="../dwarf-dump"/>
 
@@ -14,7 +14,7 @@
     <property name="args" value=""/>
     <property name="jvmargs" value="-Xmx512M"/>
     <property name="test.dir" value="."/>
-    <property name="main.class" value="dwarfvsmodel.ModelComparator"/>
+    <property name="main.class" value="dwarfvsmodel.DwarfVsModelMain"/>
     <property name="build.compiler.debug" value="yes"/>
 
     <property name="nbdist.path" value="/opt/netbeans/5.5"/>
@@ -32,6 +32,7 @@
             <include name="org-netbeans-modules-cnd-makeproject.jar"/>
             <include name="org-netbeans-modules-cnd-apt.jar"/>
             <include name="org-netbeans-modules-cnd.jar"/>
+	    <include name="org-netbeans-modules-cnd-repository.jar"/>
         </fileset>
     </path>
 
@@ -39,6 +40,7 @@
         <fileset dir="${nbdist.path}/${platform}/modules">
             <include name="org-openide-loaders.jar"/>
             <include name="org-openide-nodes.jar"/>
+	    <include name="org-openide-dialogs.jar"/>
         </fileset>
         <fileset dir="${nbdist.path}/${platform}/lib">
             <include name="org-openide-util.jar"/>
@@ -62,7 +64,7 @@
     </path>
 
     <target name="deps-clean">
-        <ant target="clean" inheritall="false" antfile="${project.ModelUtils}/build_cli.xml"/>
+        <ant target="clean" inheritall="false" antfile="${project.dm-utils}/build_cli.xml"/>
         <ant target="clean" inheritall="false" antfile="${project.ModelDump}/build_cli.xml"/>
         <ant target="clean" inheritall="false" antfile="${project.DwarfDump}/build_cli.xml"/>
     </target>
@@ -74,7 +76,7 @@
     </target>
 
     <target name="deps-jar">
-        <ant target="jar" inheritall="false" antfile="${project.ModelUtils}/build_cli.xml"/>
+        <ant target="jar" inheritall="false" antfile="${project.dm-utils}/build_cli.xml"/>
         <ant target="jar" inheritall="false" antfile="${project.ModelDump}/build_cli.xml"/>
         <ant target="jar" inheritall="false" antfile="${project.DwarfDump}/build_cli.xml"/>
     </target>
@@ -103,7 +105,7 @@
                         excludes="**/SCCS/*.java" >
                         <classpath refid="nb.jars"/>
                         <classpath>
-                                <pathelement location="${project.ModelUtils}/dist/ModelUtils.jar"/>
+                                <pathelement location="${project.dm-utils}/dist/dm-utils.jar"/>
                                 <pathelement location="${project.ModelDump}/dist/ModelDump.jar"/>
                                 <pathelement location="${project.DwarfDump}/dist/DwarfDump.jar"/>
                         </classpath>
@@ -118,11 +120,12 @@
         <java
             classname="${main.class}"
             fork="true"
+	    maxmemory="1024m"
             dir="${test.dir}">
             <classpath refid="nb.jars"/>
             <classpath>
                 <pathelement location="${dist.dir}/${module-jar-name}"/>
-                <pathelement location="${project.ModelUtils}/dist/ModelUtils.jar"/>
+                <pathelement location="${project.dm-utils}/dist/dm-utils.jar"/>
                 <pathelement location="${project.ModelDump}/dist/ModelDump.jar"/>
                 <pathelement location="${project.DwarfDump}/dist/DwarfDump.jar"/>
 

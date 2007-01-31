@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.dwarfdump.dwarf;
 
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfDeclaration;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ACCESS;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import java.io.PrintStream;
@@ -40,6 +41,7 @@ public class DwarfEntry {
     private int hierarchyLevel;
     private String qualifiedName = null;
     private String name = null;
+    private DwarfEntry parent;
     
     /** Creates a new instance of DwarfEntry */
 
@@ -56,7 +58,8 @@ public class DwarfEntry {
     
     public String getName() {
         if (name == null) {
-            name = (String)getAttributeValue(ATTR.DW_AT_name);
+            Object nameAttr = getAttributeValue(ATTR.DW_AT_name);
+            name = (nameAttr == null) ? "" : (String)nameAttr; // NOI18N
         }
         
         return name;
@@ -64,6 +67,14 @@ public class DwarfEntry {
     
     public String getQualifiedName() {
         return (qualifiedName) == null ? getName() : qualifiedName;
+    }
+    
+    public String constructQualifiedName() {
+        if (parent == null || parent.getKind().equals(TAG.DW_TAG_compile_unit)) {
+            return getName();
+        }
+        
+        return parent.constructQualifiedName() + "/" + getName(); // NOI18N
     }
     
     public void setQualifiedName(String qualifiedName) {
@@ -121,7 +132,13 @@ public class DwarfEntry {
                 offset = (Integer)getAttributeValue(ATTR.DW_AT_specification);
             }
             
-            attrValue = (offset == -1) ? null : compilationUnit.getEntry(offset).getAttributeValue(attr);
+            //attrValue = (offset == -1) ? null : compilationUnit.getEntry(offset).getAttributeValue(attr);
+	    if( offset >=  0 ) {
+		DwarfEntry attrEntry = compilationUnit.getEntry(offset);
+		if( attrEntry != null ) {
+		    attrValue = attrEntry.getAttributeValue(attr);
+		}
+	    }
         } else {
             // Attribute has been found
             attrValue = values.get(attrIdx);
@@ -138,55 +155,101 @@ public class DwarfEntry {
         return children;
     }
     
+    /** 
+     * Gets an entry, for which this entry is referred as specification
+     * (via DW_AT_specification).
+     * Note that this works only after all entries have been read.
+     */
+    public DwarfEntry getDefinition() {
+	return compilationUnit.getDefinition(this);
+    }
+    
+    /**
+     * Gets an entry that is referred by this is entry as specification
+     * (via DW_AT_specification).
+     * Note that this works only after all entries have been read.
+     */
+    public DwarfEntry getSpecification() {
+	Object o = getAttributeValue(ATTR.DW_AT_specification);
+	if( o instanceof Integer ) {
+	    return compilationUnit.getEntry(((Integer) o).intValue());
+	}
+	return null;
+    }
+    
     public boolean hasChildren() {
         return abbriviationTableEntry.hasChildren();
     }
     
     public void addChild(DwarfEntry child) {
         children.add(child);
+	child.setParent(this);
+    }
+    
+    public DwarfEntry getParent() {
+	return parent;
+    }
+    
+    private void setParent(DwarfEntry parent) {
+	this.parent = parent;
     }
     
     public long getRefference() {
         return refference;
     }
     
+    public String getParametersString() {
+        ArrayList<DwarfEntry> params = getParameters();
+        String paramStr = "("; // NOI18N
+        DwarfEntry param = null;
+
+        for (Iterator<DwarfEntry> i = params.iterator(); i.hasNext(); ) {
+            param = i.next();
+            
+            if (param.getKind().equals(TAG.DW_TAG_unspecified_parameters)) {
+                paramStr += "..."; // NOI18N
+            } else {
+                paramStr += param.getType() + " " + param.getName(); // NOI18N
+            }
+            
+            if (i.hasNext()) {
+                paramStr += ", "; // NOI18N
+            }
+        }
+        
+        paramStr += ")"; // NOI18N
+        return paramStr;
+    }
+
     public DwarfDeclaration getDeclaration() {
         TAG kind = getKind();
         String name = getQualifiedName();
         String type = getType();
-        String paramStr = "";
+        String paramStr = ""; // NOI18N
         
         if (kind.equals(TAG.DW_TAG_subprogram)) {
-            ArrayList<DwarfEntry> params = getParameters();
-            paramStr = "(";
-            DwarfEntry param = null;
-            for (Iterator<DwarfEntry> i = params.iterator(); i.hasNext(); ) {
-                param = i.next();
-                
-                if (param.getKind().equals(TAG.DW_TAG_unspecified_parameters)) {
-                    paramStr += "...";
-                } else {
-                    paramStr += param.getType() + " " + param.getName();
-                }
-                
-                if (i.hasNext()) {
-                    paramStr += ", ";
-                }
-            }
-            paramStr += ")";
+            paramStr += getParametersString();
         }
         
-        String declarationString = type + " " + name + paramStr;
+        String declarationString = type + " " + (name == null ? getName() : name) + paramStr; // NOI18N
         
-        int declarationLine = getUintAttributeValue(ATTR.DW_AT_decl_line);
-        int declarationColumn = getUintAttributeValue(ATTR.DW_AT_decl_column);
+        int declarationLine = getLine();
+        int declarationColumn = getColumn();
         
         String declarationPosition = ((declarationLine == -1) ? "" : declarationLine) +
-                ((declarationColumn == -1) ? "" : ":" + declarationColumn);
+                ((declarationColumn == -1) ? "" : ":" + declarationColumn); // NOI18N
         
-        declarationPosition += " <" + refference + " (0x" + Long.toHexString(refference) + ")>";
+        declarationPosition += " <" + refference + " (0x" + Long.toHexString(refference) + ")>"; // NOI18N
         
         return new DwarfDeclaration(kind.toString(), declarationString, declarationPosition);
+    }
+    
+    public int getLine() {
+	return getUintAttributeValue(ATTR.DW_AT_decl_line);
+    }
+    
+    public int getColumn() {
+	return getUintAttributeValue(ATTR.DW_AT_decl_column);
     }
     
     public ArrayList<DwarfEntry> getParameters() {
@@ -225,7 +288,7 @@ public class DwarfEntry {
     }
     
     public void dump(PrintStream out) {
-        out.print("<" + hierarchyLevel + "><" + Long.toHexString(refference) + ">: ");
+        out.print("<" + hierarchyLevel + "><" + Long.toHexString(refference) + ">: "); // NOI18N
         abbriviationTableEntry.dump(out, this);
         
         for (int i = 0; i < children.size(); i++) {
@@ -233,32 +296,46 @@ public class DwarfEntry {
         }
     }
     
-    private boolean isArtifitial() {
+    public boolean isArtifitial() {
         Object isArt = getAttributeValue(ATTR.DW_AT_artificial);
         return ((isArt != null) && ((Boolean)isArt).booleanValue());
     }
     
-    private boolean isParameter() {
+    public boolean hasAbastractOrigin() {
+        Object abastractOrigin = getAttributeValue(ATTR.DW_AT_abstract_origin);
+        return (abastractOrigin != null);
+    }
+    
+    public boolean isExternal() {
+        Object result = getAttributeValue(ATTR.DW_AT_external);
+        return ((result != null) && ((Boolean)result).booleanValue());
+    }
+    
+    public ACCESS getAccessibility() {
+        Object result = getAttributeValue(ATTR.DW_AT_accessibility);
+        return (result == null) ? null : ACCESS.get(((Number)result).intValue());
+    }
+    
+    public boolean isParameter() {
         TAG kind = getKind();
         return kind.equals(TAG.DW_TAG_formal_parameter) || kind.equals(TAG.DW_TAG_unspecified_parameters);
     }
     
-    private boolean isMember() {
+    public boolean isMember() {
         TAG kind = getKind();
         //return kind.equals(TAG.DW_TAG_member);
         return !kind.equals(TAG.DW_TAG_inheritance);
     }
-
+    
     public boolean isEntryDefinedInFile(int fileEntryIdx) {
         int fileIdx = getUintAttributeValue(ATTR.DW_AT_decl_file);
         return (fileIdx == fileEntryIdx);
     }
 
-//    public String getFile() {
-//        int fileIdx = (Integer)getUintAttributeValue(ATTR.DW_AT_decl_file);
-//        DwarfLineInfoSection lineSection = compilationUnit.getDwarfDebugInfoSection().getLineInfoSection();
-//        return lineSection.getFilePath(fileIdx);
-//    }
+    public String getDeclarationFilePath() {
+        int fileIdx = (Integer)getUintAttributeValue(ATTR.DW_AT_decl_file);
+        return (fileIdx == -1) ? null : compilationUnit.getStatementList().getFilePath(fileIdx);
+    }
 
     public String getTypeDef() {
         if (getKind().equals(TAG.DW_TAG_typedef)) {

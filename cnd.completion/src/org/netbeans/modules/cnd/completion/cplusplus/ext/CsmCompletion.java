@@ -39,6 +39,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 
 /**
@@ -144,6 +145,7 @@ abstract public class CsmCompletion extends Completion {
     public static final CsmField[] EMPTY_FIELDS = new CsmField[0];
     public static final CsmConstructor[] EMPTY_CONSTRUCTORS = new CsmConstructor[0];
     public static final CsmMethod[] EMPTY_METHODS = new CsmMethod[0];
+    public static final String SCOPE = "::";  //NOI18N
 
     private static CsmFinder finder;
 
@@ -267,7 +269,7 @@ abstract public class CsmCompletion extends Completion {
     }
 
     public static CsmClassifier createSimpleClass(String fullClassName) {
-        int nameInd = fullClassName.lastIndexOf("::") + 1;
+        int nameInd = fullClassName.lastIndexOf(CsmCompletion.SCOPE) + 1;
         return createSimpleClass(fullClassName.substring(nameInd),
                                  (nameInd > 0) ? fullClassName.substring(0, nameInd - 1) : ""); // NOI18N
     }
@@ -483,9 +485,9 @@ abstract public class CsmCompletion extends Completion {
             return fullName;
         }
 	
-	public String getUniqueName() {
-	    return getQualifiedName();
-	}
+        public String getUniqueName() {
+            return getQualifiedName();
+        }
 
         public int getTagOffset() {
             return -1;
@@ -569,6 +571,13 @@ abstract public class CsmCompletion extends Completion {
         public CsmScope getScope() {
             if (clazz != null) {
                 return clazz.getScope();
+            }
+            return null;
+        }
+
+        public CsmUID getUID() {
+            if (clazz != null) {
+                return clazz.getUID();
             }
             return null;
         }
@@ -1023,11 +1032,11 @@ abstract public class CsmCompletion extends Completion {
 //
 //        String toString(String returnTypeName, String methodName) {
 //            StringBuffer sb = new StringBuffer(Modifier.toString(modifiers));
-//            sb.append(' ');
+//            sb.append(' '); //NOI18N
 //            sb.append(returnTypeName);
 //            sb.append(methodName);
 //            // Add parameters
-//            sb.append('(');
+//            sb.append('('); //NOI18N
 //            int cntM1 = parameters.length - 1;
 //            for (int i = 0; i <= cntM1; i++) {
 //                sb.append(parameters[i].toString());

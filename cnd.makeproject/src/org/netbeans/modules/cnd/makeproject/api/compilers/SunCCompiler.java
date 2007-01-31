@@ -110,42 +110,16 @@ public class SunCCompiler extends CCCCompiler {
         if (systemPreprocessorSymbolsList != null)
             return systemPreprocessorSymbolsList;
         
-        if (parseCompilerOutput) {
-            getSystemIncludesAndDefines(platform);
-            return systemPreprocessorSymbolsList;
-        }
-        
-        // FIXUP: should use 'platform' and not System.getProperty("os.arch")
-        Vector list = new Vector();
-        String arch = System.getProperty("os.arch", "").toLowerCase(); // NOI18N
-        list.add("__SVR4"); // NOI18N
-        list.add("__unix"); // NOI18N
-        list.add("__sun"); // NOI18N
-        if (arch.indexOf("sparc") >= 0) // NOI18N // FIXUP: need to take this from platform
-            list.add("__sparc"); // NOI18N
-        else if (arch.indexOf("86") >= 0) // NOI18N // FIXUP: need to take this from platform
-            list.add("__i386"); // NOI18N
-        list.add("unix"); // NOI18N
-        list.add("sun"); // NOI18N
-        if (arch.indexOf("sparc") >= 0)  // NOI18N
-            list.add("sparc"); // NOI18N
-        if (arch.indexOf("86") >= 0)  // NOI18N
-            list.add("i386"); // NOI18N
-        return list;
+        getSystemIncludesAndDefines(platform);
+        return systemPreprocessorSymbolsList;
     }
     
     public List getSystemIncludeDirectories(Platform platform) {
         if (systemIncludeDirectoriesList != null)
             return systemIncludeDirectoriesList;
         
-        if (parseCompilerOutput) {
-            getSystemIncludesAndDefines(platform);
-            return systemIncludeDirectoriesList;
-        }
-        
-        Vector list = new Vector();
-        list.add("/opt/SUNWspro/prod/include/cc"); // NOI18N
-        return list;
+        getSystemIncludesAndDefines(platform);
+        return systemIncludeDirectoriesList;
     }
     
     // To be overridden
@@ -165,14 +139,14 @@ public class SunCCompiler extends CCCCompiler {
     
     public void saveSystemIncludesAndDefines() {
         if (systemIncludeDirectoriesList != null && saveOK)
-            systemIncludeDirectoriesList.saveList(getClass().getName() + "." + "systemIncludeDirectoriesList");
+            systemIncludeDirectoriesList.saveList(getClass().getName() + "." + "systemIncludeDirectoriesList"); // NOI18N
         if (systemPreprocessorSymbolsList != null && saveOK)
-            systemPreprocessorSymbolsList.saveList(getClass().getName() + "." + "systemPreprocessorSymbolsList");
+            systemPreprocessorSymbolsList.saveList(getClass().getName() + "." + "systemPreprocessorSymbolsList"); // NOI18N
     }
     
     private void restoreSystemIncludesAndDefines(Platform platform) {
-        systemIncludeDirectoriesList = PersistentList.restoreList(getClass().getName() + "." + "systemIncludeDirectoriesList");
-        systemPreprocessorSymbolsList = PersistentList.restoreList(getClass().getName() + "." + "systemPreprocessorSymbolsList");
+        systemIncludeDirectoriesList = PersistentList.restoreList(getClass().getName() + "." + "systemIncludeDirectoriesList"); // NOI18N
+        systemPreprocessorSymbolsList = PersistentList.restoreList(getClass().getName() + "." + "systemPreprocessorSymbolsList"); // NOI18N
     }
     
     private void getSystemIncludesAndDefines(Platform platform) {
@@ -191,7 +165,7 @@ public class SunCCompiler extends CCCCompiler {
             saveOK = true;
     }
         catch (IOException ioe) {
-            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getName());
+            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getName()); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             saveOK = false;
         }
@@ -237,7 +211,7 @@ public class SunCCompiler extends CCCCompiler {
     }
     
     private void dumpLists() {
-        System.out.println("==================================" + getDisplayName());
+        System.out.println("==================================" + getDisplayName()); // NOI18N
         for (int i = 0; i < systemIncludeDirectoriesList.size(); i++) {
             System.out.println("-I" + systemIncludeDirectoriesList.get(i)); // NOI18N
         }

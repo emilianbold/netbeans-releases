@@ -20,17 +20,29 @@
 package org.netbeans.modules.cnd.apt.structure;
 
 import antlr.TokenStream;
+import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 
 /**
  * #include <string.h>
  * #include "user.h"
+ * #include MACRO_EXPRESSION
  *
  * @author Vladimir Voskresensky
  */
 public interface APTInclude extends APT {
-    // include can contain TokenStream 
-    // which will be expanded later based on macro map
-    public TokenStream getInclide();
-    public String getFileName();
-    public boolean isSystem();
+    /* 
+     * include can contain TokenStream 
+     * which will be expanded later based on macro map
+     */
+    public TokenStream getInclude();
+    
+    /* 
+     * pass callback to correctly expand macros
+     */
+    public String getFileName(APTMacroCallback callback);
+    
+    /* 
+     * pass callback to correctly expand macros
+     */
+    public boolean isSystem(APTMacroCallback callback);
 }

@@ -42,7 +42,7 @@ public class MemberNode extends ObjectNode {
             isTemplate = fun.isTemplate();
             text = CVUtil.getSignature(fun);
             if( ((CsmMethod) mem).isConst() ) {
-                text += " const";
+                text += " const"; // NOI18N
             }
         } 
         if( CsmKindUtilities.isClassifier(mem) || CsmKindUtilities.isEnum(mem) || CsmKindUtilities.isTypedef(mem)) {
@@ -55,7 +55,7 @@ public class MemberNode extends ObjectNode {
             weight = OTHER_WEIGHT;
         }
         
-        String name = text + (isTemplate ? "<>" : "");
+        String name = text + (isTemplate ? "<>" : ""); // NOI18N
         setName(name);
         setDisplayName(name);
         setShortDescription(name);

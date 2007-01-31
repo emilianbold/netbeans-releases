@@ -39,12 +39,13 @@ public abstract class APTWalker {
     private APTMacroMap macros;
     private APT root;  
     private boolean walkerInUse = false;
+    private boolean stopped = false;
     
     /**
      * Creates a new instance of APTWalker
      */
     public APTWalker(APT apt, APTMacroMap macros) {
-        assert (apt != null) : "how can we work on null tree?";
+        assert (apt != null) : "how can we work on null tree?"; // NOI18N
         this.root = apt;
         this.macros = macros;
     }
@@ -52,7 +53,7 @@ public abstract class APTWalker {
     /** fast visit APT without generating token stream */
     public void visit() {
         if (walkerInUse) {
-            throw new IllegalStateException("walker could be used only once");
+            throw new IllegalStateException("walker could be used only once"); // NOI18N
         }  
         if (APTTraceFlags.APT_NON_RECURSE_VISIT) {
             nonRecurseVisit();
@@ -71,7 +72,7 @@ public abstract class APTWalker {
     
     public TokenStream getTokenStream() {
         if (walkerInUse) {
-            throw new IllegalStateException("walker could be used only once");
+            throw new IllegalStateException("walker could be used only once"); // NOI18N
         }
         return new WalkerTokenStream();
     }
@@ -125,14 +126,34 @@ public abstract class APTWalker {
     
     // preproc conditions
     
+    /*
+     * @return true if infrastructure can continue visiting children
+     *         false if infrastructure should not visit children
+     */
     protected abstract boolean onIf(APT apt);
     
+    /*
+     * @return true if infrastructure can continue visiting children
+     *         false if infrastructure should not visit children
+     */
     protected abstract boolean onIfdef(APT apt);
     
+    /*
+     * @return true if infrastructure can continue visiting children
+     *         false if infrastructure should not visit children
+     */
     protected abstract boolean onIfndef(APT apt);
     
+    /*
+     * @return true if infrastructure can continue visiting children
+     *         false if infrastructure should not visit children
+     */
     protected abstract boolean onElif(APT apt, boolean wasInPrevBranch);
     
+    /*
+     * @return true if infrastructure can continue visiting children
+     *         false if infrastructure should not visit children
+     */
     protected abstract boolean onElse(APT apt, boolean wasInPrevBranch);
     
     protected abstract void onEndif(APT apt, boolean wasInBranch);
@@ -143,7 +164,7 @@ public abstract class APTWalker {
     }
     
     protected void onOtherNode(APT apt) {
-        // do nothing 
+        // do nothing
     }
     
     // tokens stream generating/callback for token
@@ -154,11 +175,11 @@ public abstract class APTWalker {
     
     /** fast recursive walker to be used when token stream is not interested */
     private void visit(APT t) {
-        if (t == null) {
+        if (t == null || isStopped()) {
             return;
         }
         boolean wasInChild = false;
-        for (APT node = t; node != null; node = node.getNextSibling()) {
+        for (APT node = t; node != null && !isStopped(); node = node.getNextSibling()) {
             if (node.getType() == APT.Type.CONDITION_CONTAINER) {
                 assert(node.getFirstChild() != null);
                 visit(node.getFirstChild());
@@ -217,13 +238,13 @@ public abstract class APTWalker {
                 onOtherNode(node);
                 break;
             default:
-                assert(false) : "unsupported " + APTTraceUtils.getTypeName(node);
+                assert(false) : "unsupported " + APTTraceUtils.getTypeName(node); // NOI18N
         }   
-        APTUtils.LOG.log(Level.FINE, "onAPT: {0}; {1} {2}", 
+        APTUtils.LOG.log(Level.FINE, "onAPT: {0}; {1} {2}",  // NOI18N
                 new Object[]    {
                                 node, 
-                                (wasInBranch ? "Was before;" : ""),
-                                (visitChild ? "Will visit children" : "")
+                                (wasInBranch ? "Was before;" : ""), // NOI18N
+                                (visitChild ? "Will visit children" : "") // NOI18N
                                 }
                         );
         return visitChild;
@@ -282,7 +303,7 @@ public abstract class APTWalker {
         }
         if (curAPT == null) {
             // we are in APT of incomplete file
-            APTUtils.LOG.log(Level.SEVERE, "incomplete APT {0}", new Object[] { root });
+            APTUtils.LOG.log(Level.SEVERE, "incomplete APT {0}", new Object[] { root });// NOI18N
             do {
                 popState();
                 curAPT = curAPT.getNextSibling();
@@ -326,7 +347,9 @@ public abstract class APTWalker {
                 // end of condition block
                 popState();
                 if (curAPT.getType() != APT.Type.CONDITION_CONTAINER) {
-                    APTUtils.LOG.log(Level.SEVERE, "#endif directive {0} without starting #if in APT {1}", new Object[] { endif, root });
+                    APTUtils.LOG.log(Level.SEVERE, 
+                            "#endif directive {0} without starting #if in APT {1}", // NOI18N
+                            new Object[] { endif, root });
                 }
                 curWasInChild = false;
             }
@@ -351,7 +374,7 @@ public abstract class APTWalker {
     }
     
     private boolean finished() {
-        return curAPT == null && visits.isEmpty();
+        return (curAPT == null && visits.isEmpty()) || isStopped();
     }
     
     protected APTMacroMap getMacroMap() {
@@ -376,4 +399,12 @@ public abstract class APTWalker {
             this.wasInChild = wasInChildState;
         }
     }     
+
+    protected final boolean isStopped() {
+        return stopped;
+    }
+
+    protected final void stop() {
+        this.stopped = true;
+    }
 }

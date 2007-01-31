@@ -49,7 +49,7 @@ public class SelectPreferencesPanel extends MakefileWizardPanel {
      */
     SelectPreferencesPanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = getString("LBL_SelectPreferencesPanel"); //NOI18N
+	String subtitle = getString("LBL_SelectPreferencesPanel"); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 	initialized = false;
@@ -83,11 +83,11 @@ public class SelectPreferencesPanel extends MakefileWizardPanel {
 	gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
 	gridBagConstraints.gridheight = GridBagConstraints.REMAINDER;
 	gridBagConstraints.fill = GridBagConstraints.BOTH;
-	add(new JLabel(""), gridBagConstraints);
+	add(new JLabel(""), gridBagConstraints); // NOI18N
 
         panel2.setLayout(new java.awt.GridBagLayout());
 
-        compilerMsg.setText(getString("LBL_CompilerFlagsMsg"));		//NOI18N
+        compilerMsg.setText(getString("LBL_CompilerFlagsMsg"));		// NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -95,8 +95,8 @@ public class SelectPreferencesPanel extends MakefileWizardPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panel2.add(compilerMsg, gridBagConstraints);
 
-        debugCheckBox.setText(getString("RB_DebugMsg"));			//NOI18N
-	debugCheckBox.setMnemonic(getString("MNEM_DebugMsg").charAt(0));	//NOI18N
+        debugCheckBox.setText(getString("RB_DebugMsg"));			// NOI18N
+	debugCheckBox.setMnemonic(getString("MNEM_DebugMsg").charAt(0));	// NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -105,8 +105,8 @@ public class SelectPreferencesPanel extends MakefileWizardPanel {
         gridBagConstraints.weightx = 1.0;
         panel2.add(debugCheckBox, gridBagConstraints);
 
-        optimizeCheckBox.setText(getString("RB_OptMsg"));			//NOI18N
-	optimizeCheckBox.setMnemonic(getString("MNEM_OptMsg").charAt(0));	//NOI18N
+        optimizeCheckBox.setText(getString("RB_OptMsg"));			// NOI18N
+	optimizeCheckBox.setMnemonic(getString("MNEM_OptMsg").charAt(0));	// NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -118,7 +118,7 @@ public class SelectPreferencesPanel extends MakefileWizardPanel {
         compilerMsg2.setLineWrap(true);
         compilerMsg2.setWrapStyleWord(true);
         compilerMsg2.setFocusable(false);
-        compilerMsg2.setText(getString("LBL_CompilerFlagsMsg2"));		//NOI18N
+        compilerMsg2.setText(getString("LBL_CompilerFlagsMsg2"));		// NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;

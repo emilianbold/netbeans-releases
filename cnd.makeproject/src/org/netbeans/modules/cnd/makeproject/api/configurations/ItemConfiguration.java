@@ -196,7 +196,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
     
     static public String getId(String path) {
-        return "item-" + path;
+        return "item-" + path; // NOI18N
     }
     
     public void assign(ConfigurationAuxObject profileAuxObject) {
@@ -254,27 +254,27 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         Sheet sheet = new Sheet();
         
         Sheet.Set set = new Sheet.Set();
-        set.setName("Item");
-        set.setDisplayName("Item");
-        set.setShortDescription("Item");
-        set.put(new StringRONodeProp("Name", IpeUtils.getBaseName(item.getPath())));
-        set.put(new StringRONodeProp("File Path", item.getPath()));
+        set.setName("Item"); // NOI18N
+        set.setDisplayName(getString("ItemTxt"));
+        set.setShortDescription(getString("ItemHint"));
+        set.put(new StringRONodeProp(getString("NameTxt"), IpeUtils.getBaseName(item.getPath())));
+        set.put(new StringRONodeProp(getString("FilePathTxt"), item.getPath()));
         String fullPath = IpeUtils.toAbsolutePath(((MakeConfiguration)configuration).getBaseDir(), item.getPath());
-        String mdate = "";
+        String mdate = ""; // NOI18N
         File itemFile = new File(fullPath);
         if (itemFile.exists()) {
             mdate = DateFormat.getDateInstance().format(new Date(itemFile.lastModified()));
-            mdate += " " + DateFormat.getTimeInstance().format(new Date(itemFile.lastModified()));
+            mdate += " " + DateFormat.getTimeInstance().format(new Date(itemFile.lastModified())); // NOI18N
         }
-        set.put(new StringRONodeProp("Full File Path", fullPath));
-        set.put(new StringRONodeProp("Last Modified", mdate));
+        set.put(new StringRONodeProp(getString("FullFilePathTxt"), fullPath));
+        set.put(new StringRONodeProp(getString("LastModifiedTxt"), mdate));
         sheet.put(set);
         
         set = new Sheet.Set();
-        set.setName("ItemConfiguration");
-        set.setDisplayName("ItemConfiguration");
-        set.setShortDescription("ItemConfiguration");
-        set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", "Excluded From Build", "Excluded From Build"));
+        set.setName("ItemConfiguration"); // NOI18N
+        set.setDisplayName(getString("ItemConfigurationTxt"));
+        set.setShortDescription(getString("ItemConfigurationHint"));
+        set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromBuildTxt"), getString("ExcludedFromBuildHint"))); // NOI18N
         set.put(new ToolNodeProp());
         sheet.put(set);
         
@@ -287,7 +287,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         }
         
         public String getName() {
-            return "Tool";
+            return getString("ToolTxt1");
         }
         
         public Object getValue() {

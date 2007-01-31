@@ -94,13 +94,13 @@ public class MakefileGenerator {
 
     /* LINE1 is the first line of a generated Makefile */
     private static final String LINE1 =
-			new String("## -*- Makefile -*-");		//NOI18N
+			new String("## -*- Makefile -*-");		// NOI18N
 
     /* BLANKCOMMENT is the second line of a generated Makefile */
-    private static final String BLANKCOMMENT = new String("##");	//NOI18N
+    private static final String BLANKCOMMENT = new String("##");	// NOI18N
 
     /* LINE_PREFIX is the start of the 3rd line of a generated Makefile */
-    private static final String LINE_PREFIX = new String("## ");	//NOI18N
+    private static final String LINE_PREFIX = new String("## ");	// NOI18N
 
     /** Define the suffix list used in make. Only used for Fortran builds */
     private static final String SUFFIX_LIST =
@@ -168,8 +168,8 @@ public class MakefileGenerator {
 		    System.out.println("Failure in Makefile Generation"); // NOI18N
 		}
 		fmakefile.delete();		    // remove partial Makefile
-		String msg = getString("MSG_MakefileOutputError");	//NOI18N
-		String title = getString("TITLE_MakefileOutputError");	//NOI18N
+		String msg = getString("MSG_MakefileOutputError");	// NOI18N
+		String title = getString("TITLE_MakefileOutputError");	// NOI18N
 		NotifyDescriptor nd = new NotifyDescriptor(msg,
 			    title, NotifyDescriptor.OK_CANCEL_OPTION,
 			    NotifyDescriptor.ERROR_MESSAGE,
@@ -207,7 +207,7 @@ public class MakefileGenerator {
 	if (bundle == null) {
 	    bundle = NbBundle.getBundle(MakefileGenerator.class);
 	}
-	title = getString("DLG_ErrorDialogTitle");			//NOI18N
+	title = getString("DLG_ErrorDialogTitle");			// NOI18N
 
 	checkTargetFlags();
 
@@ -228,12 +228,12 @@ public class MakefileGenerator {
 		msg = null;
 		if (!generatedMakefile(fmakefile)) {
 		    msg = MessageFormat.format(
-				getString("MSG_NonGeneratedMakefile"),	//NOI18N
+				getString("MSG_NonGeneratedMakefile"),	// NOI18N
 				new Object[] { md.getMakefileName() });
 		}
 	    } else {
 		msg = MessageFormat.format(
-			    getString("MSG_CannotReadMakefile"),	//NOI18N
+			    getString("MSG_CannotReadMakefile"),	// NOI18N
 			    new Object[] { md.getMakefileName() });
 	    }
 
@@ -256,7 +256,7 @@ public class MakefileGenerator {
 	 */
 	if (targetIsIncomplete()) {
 	    msg = MessageFormat.format(
-			    getString("MSG_TargetIsIncomplete"),	//NOI18N
+			    getString("MSG_TargetIsIncomplete"),	// NOI18N
 			    new Object[] { md.getMakefileName() });
 	    nd = new NotifyDescriptor(msg,
 			title, NotifyDescriptor.DEFAULT_OPTION,
@@ -276,7 +276,7 @@ public class MakefileGenerator {
 	    out = new BufferedWriter(new FileWriter(fmakefile));
 	} catch (IOException e) {
 	    msg = MessageFormat.format(
-				getString("MSG_CannotCreateMakefile"),	//NOI18N
+				getString("MSG_CannotCreateMakefile"),	// NOI18N
 				new Object[] { md.getMakefileName() });
 	    
 	    nd = new NotifyDescriptor(msg,
@@ -297,7 +297,7 @@ public class MakefileGenerator {
 
 	if (out != null &&
 			(doC || doXd || doCpp || doFortran || doAssembly)) {
-	    String line = getString("MFG_CompilerFlags");		//NOI18N
+	    String line = getString("MFG_CompilerFlags");		// NOI18N
 	    out.write(line, 0, line.length());
 
 	    /*
@@ -328,7 +328,7 @@ public class MakefileGenerator {
 		out.write(buf.toString(), 0, buf.length());
 	    }
 	    if (doAssembly) {
-		buf.replace(0, buf.length(), "AS=");			//NOI18N
+		buf.replace(0, buf.length(), "AS=");			// NOI18N
 		buf.append(md.getAsmPath());
 		buf.append('\n');
 		out.write(buf.toString(), 0, buf.length());
@@ -375,16 +375,16 @@ public class MakefileGenerator {
 		 * we are using we create it with several X resources set to the
 		 * desired CFLAGS/CCFLAGS.
 		 */
-		buf.replace(0, buf.length(), "XDESIGNER=xdesigner");		//NOI18N
-		buf.append(" -xrm \"xdesigner.cDebugFlags: $(CFLAGS)\" ");	//NOI18N
-		buf.append("-xrm \"xdesigner.cppDebugFlags: $(CCFLAGS)\"\n");//NOI18N
-		buf.append("XDROOT=");				//NOI18N
+		buf.replace(0, buf.length(), "XDESIGNER=xdesigner");		// NOI18N
+		buf.append(" -xrm \"xdesigner.cDebugFlags: $(CFLAGS)\" ");	// NOI18N
+		buf.append("-xrm \"xdesigner.cppDebugFlags: $(CCFLAGS)\"\n");// NOI18N
+		buf.append("XDROOT=");				// NOI18N
 		buf.append(System.getProperty("netbeans.home"));    // NOI18N
 		buf.append("/platform/$(OSVARIANT)/prod");  // NOI18N
 		buf.append("\nXDFLAGS = $(MAKEFLAGS) "); // NOI18N
 		buf.append("XDROOT=$(XDROOT) CC=$(CC) CCC=$(CCC) ");	// NOI18N
 		if (md.getConformLevelCppSun() != 0) {	    // FIXUP ???
-		    buf.append("ABICCFLAGS=-features=no%conststrings");	//NOI18N
+		    buf.append("ABICCFLAGS=-features=no%conststrings");	// NOI18N
 		}
 		out.write(buf.toString(), 0, buf.length());
 		out.newLine();
@@ -414,18 +414,18 @@ public class MakefileGenerator {
 	if (out != null) {
 	    ArrayList tlist = md.getTargetList();
 
-	    buf.replace(0, buf.length(), "all:");			//NOI18N
+	    buf.replace(0, buf.length(), "all:");			// NOI18N
 	    for (int i = 0; i < tlist.size(); i++) {
 		TargetData t = (TargetData) tlist.get(i);
-		buf.append(" ");					//NOI18N
+		buf.append(" ");					// NOI18N
 		String dir = getOutputDirectory(t);
 		if (t.isCompilable() &&
-			dir.length() > 0 && !dir.equals(".")) {		//NOI18N
+			dir.length() > 0 && !dir.equals(".")) {		// NOI18N
 		    var.setTargetName(t.getName());
-		    buf.append(var.makeRef("TARGETDIR_"));		//NOI18N
+		    buf.append(var.makeRef("TARGETDIR_"));		// NOI18N
 		    buf.append("/"); // always unix separator // NOI18N
 		} else {
-		    if (t.getName().compareTo("all") == 0) {		//NOI18N
+		    if (t.getName().compareTo("all") == 0) {		// NOI18N
 		        /* Target 'all' is already in the list - nothing to do */
 		        buf.delete(0, buf.length());
 		        return;
@@ -450,23 +450,23 @@ public class MakefileGenerator {
 	    out.write(BLANKCOMMENT, 0, BLANKCOMMENT.length());
 	    out.newLine();
 
-	    buf.replace(0, buf.length(), getString("MFG_User"));	//NOI18N
+	    buf.replace(0, buf.length(), getString("MFG_User"));	// NOI18N
 	    buf.append(getUserName());
 	    buf.append('\n');
 	    out.write(buf.toString(), 0, buf.length());
 
-	    buf.replace(0, buf.length(), getString("MFG_Time"));	//NOI18N
+	    buf.replace(0, buf.length(), getString("MFG_Time"));	// NOI18N
 	    buf.append(getTimestamp());
 	    buf.append('\n');
 	    out.write(buf.toString(), 0, buf.length());
 
-	    buf.replace(0, buf.length(), getString("MFG_CreateMsg"));	//NOI18N
+	    buf.replace(0, buf.length(), getString("MFG_CreateMsg"));	// NOI18N
 	    out.write(buf.toString(), 0, buf.length());
 
 	    out.write(BLANKCOMMENT, 0, BLANKCOMMENT.length());
 	    out.newLine();
 
-	    buf.replace(0, buf.length(), getString("MFG_DoNotEditMsg"));//NOI18N
+	    buf.replace(0, buf.length(), getString("MFG_DoNotEditMsg"));// NOI18N
 	    out.write(buf.toString(), 0, buf.length());
 
 	    out.write(BLANKCOMMENT, 0, BLANKCOMMENT.length());
@@ -564,7 +564,7 @@ public class MakefileGenerator {
 	ArrayList tlist = md.getTargetList();
 
 	if (doC || doXd || doCpp || doFortran || doAssembly) {
-	    String com = getString("MFG_TargetDirectories");		//NOI18N
+	    String com = getString("MFG_TargetDirectories");		// NOI18N
 	    out.write(com, 0, com.length());
 	    for (int i = 0; i < tlist.size(); i++) {
 		TargetData t = (TargetData) tlist.get(i);
@@ -580,14 +580,14 @@ public class MakefileGenerator {
 		     * the build directory). If we need the create target we
 		     * set a boolean here and create it later.
 		     */
-		    buf.replace(0, buf.length(), "TARGETDIR_");		//NOI18N
+		    buf.replace(0, buf.length(), "TARGETDIR_");		// NOI18N
 		    buf.append(t.getName());
-		    buf.append("=");					//NOI18N
+		    buf.append("=");					// NOI18N
 		    String targetDir = getOutputDirectory(t);
 		    if (targetDir.length() == 0 || targetDir.equals(cwd) ||
 			    (targetDir.length() == 1 &&
 			    targetDir.charAt(0) == '.')) {
-			buf.append(new String(".\n"));			//NOI18N
+			buf.append(new String(".\n"));			// NOI18N
 		    } else {
 			buf.append(targetDir);
 			buf.append('\n');
@@ -608,7 +608,7 @@ public class MakefileGenerator {
 	if (out != null) {
 	    var.setTargetName(t.getName());
 
-	    buf.replace(0, buf.length(), getString("MFG_Target"));	//NOI18N
+	    buf.replace(0, buf.length(), getString("MFG_Target"));	// NOI18N
 	    buf.append(t.getName());
 	    buf.append('\n');
 	    out.write(buf.toString(), 0, buf.length());
@@ -652,15 +652,15 @@ public class MakefileGenerator {
 		// Build the HashSet used in creating TARGETDIR_<tname> dirs
 		dir = getOutputDirectory(t);
 		if (t.isCompilable() && dir.length() > 0 &&
-			    !dir.equals(".") && !dir.equals(cwd)) {	//NOI18N
+			    !dir.equals(".") && !dir.equals(cwd)) {	// NOI18N
 		    mkhash.add(t);
 		}
 
 		// Gather the lines to be be $(RM)'ed by the clean target
 		if (t.getTargetType() != TargetData.COMPLEX_MAKE_TARGET &&
 			t.getTargetType() != TargetData.COMPLEX_CUSTOM_TARGET) {
-		    cb.append(" \\\n\t\t");				//NOI18N
-		    cb.append(var.makeRef("TARGETDIR_"));		//NOI18N
+		    cb.append(" \\\n\t\t");				// NOI18N
+		    cb.append(var.makeRef("TARGETDIR_"));		// NOI18N
 		    cb.append('/');
 		    cb.append(t.getName());
 		    String[] srcs = t.getSourcesList();
@@ -668,15 +668,15 @@ public class MakefileGenerator {
 			if (!t.isHdrFile(srcs[j]) && !t.isXdFile(srcs[j])) {
 			    String newobj = objectOf(srcs[j]);
 			    if (newobj != null) {
-				cb.append(" \\\n\t\t");			//NOI18N
-				cb.append(var.makeRef("TARGETDIR_"));	//NOI18N
+				cb.append(" \\\n\t\t");			// NOI18N
+				cb.append(var.makeRef("TARGETDIR_"));	// NOI18N
 				cb.append('/');
 				cb.append(newobj);
 			    }
 			}
 		    }
 		} else {
-		    if (t.getName().compareTo("clean") == 0) {		//NOI18N
+		    if (t.getName().compareTo("clean") == 0) {		// NOI18N
 		        /* Target 'clean' is already in the list */
 		        wasClean = true;
 		    }
@@ -687,9 +687,9 @@ public class MakefileGenerator {
 	    boolean doClean = false;
 	    if (cb.length() > 0) {
 		doClean = true;
-		String com = getString("MFG_CleanTarget");		//NOI18N
+		String com = getString("MFG_CleanTarget");		// NOI18N
 		out.write(com, 0, com.length());
-		buf.replace(0, buf.length(), "clean:\n\trm -f");	//NOI18N
+		buf.replace(0, buf.length(), "clean:\n\trm -f");	// NOI18N
 		out.write(buf.toString(), 0, buf.length());
 		out.write(cb.toString(), 0, cb.length());
 		out.write('\n');
@@ -698,18 +698,18 @@ public class MakefileGenerator {
 	    if (mkhash.size() > 0) {
 		if (doClean && doCpp) {
 		    buf.replace(0, buf.length(),
-				"\t$(CCADMIN)\n");		//NOI18N
+				"\t$(CCADMIN)\n");		// NOI18N
 		    out.write(buf.toString(), 0, buf.length());
 		}
 		cb.delete(0, cb.length());
 
 		if (doClean && doFortran) {
-		    buf.replace(0, buf.length(), "\trm -f *.mod\n");	//NOI18N
+		    buf.replace(0, buf.length(), "\trm -f *.mod\n");	// NOI18N
 		    out.write(buf.toString(), 0, buf.length());
 		}
 
 		buf.replace(0, buf.length(),
-				getString("MFG_CreateTargetDir"));	//NOI18N
+				getString("MFG_CreateTargetDir"));	// NOI18N
 		Iterator iter = mkhash.iterator();
 
 		while (iter.hasNext()) {
@@ -717,38 +717,38 @@ public class MakefileGenerator {
 		    var.setTargetName(t.getName());
 
 		    // Create a rmdir command the directory
-		    cb.append("\trm -f -r ");				//NOI18N
+		    cb.append("\trm -f -r ");				// NOI18N
 		    cb.append(var.makeRef("TARGETDIR_")); // NOI18N
 		    cb.append('\n');
 			
 		    // Create $(TARGETDIR) if its not "." or cwd
 		    buf.append(var.makeRef("TARGETDIR_")); // NOI18N
-		    buf.append(":\n\tmkdir -p ");			//NOI18N
+		    buf.append(":\n\tmkdir -p ");			// NOI18N
 		    buf.append(var.makeRef("TARGETDIR_")); // NOI18N
-		    buf.append("\n");					//NOI18N
+		    buf.append("\n");					// NOI18N
 		}
 
 		// Emit the rmdir commands
 		if (doClean) {
-		    cb.append("\n\n");					//NOI18N
+		    cb.append("\n\n");					// NOI18N
 		    out.write(cb.toString(), 0, cb.length());
 		}
-		buf.append("\n\n");					//NOI18N
+		buf.append("\n\n");					// NOI18N
 		out.write(buf.toString(), 0, buf.length());
 	    }
 	    if ((doClean == false) && (wasClean == false)) {
 		/* Add empty target clean: (for consistency) */
-		String com = getString("MFG_CleanTarget");		//NOI18N
+		String com = getString("MFG_CleanTarget");		// NOI18N
 		out.write(com, 0, com.length());
-		buf.replace(0, buf.length(), "clean:\n\n");		//NOI18N
+		buf.replace(0, buf.length(), "clean:\n\n");		// NOI18N
 		out.write(buf.toString(), 0, buf.length());
 	    }
 
 	    /* Emit the KEEP_STATE stuff */
-	    buf.replace(0, buf.length(), getString("MFG_KeepState"));	//NOI18N
-	    buf.append(".KEEP_STATE:\n");		    		//NOI18N
-	    buf.append(".KEEP_STATE_FILE:.make.state." + md.defaultOutputDirectory() + "\n"); //NOI18N
-	    buf.append("\n");		    		//NOI18N
+	    buf.replace(0, buf.length(), getString("MFG_KeepState"));	// NOI18N
+	    buf.append(".KEEP_STATE:\n");		    		// NOI18N
+	    buf.append(".KEEP_STATE_FILE:.make.state." + md.defaultOutputDirectory() + "\n"); // NOI18N
+	    buf.append("\n");		    		// NOI18N
 	    out.write(buf.toString(), 0, buf.length());
 
 	    status = true;
@@ -779,7 +779,7 @@ public class MakefileGenerator {
 	    String[] includesList = t.getIncludesList();
 	    if (includesList != null && includesList.length > 0) {
 		String incs = doList(
-			var.makeName("CPPFLAGS_"), "-I", includesList);	//NOI18N
+			var.makeName("CPPFLAGS_"), "-I", includesList);	// NOI18N
 		out.write(incs, 0, incs.length());
 	    }
 
@@ -788,13 +788,13 @@ public class MakefileGenerator {
 	     * will be handled later).
 	     */
 	    StringBuffer lbuf = new StringBuffer(80);
-	    lbuf.append(" \\\n\t");					//NOI18N
-	    lbuf.append(var.makeRef("TARGETDIR_"));			//NOI18N
+	    lbuf.append(" \\\n\t");					// NOI18N
+	    lbuf.append(var.makeRef("TARGETDIR_"));			// NOI18N
 	    lbuf.append('/');
 	    String tdir = lbuf.toString();
 
-	    buf.replace(0, buf.length(), var.makeName("OBJS_"));	//NOI18N
-	    buf.append(" = ");						//NOI18N
+	    buf.replace(0, buf.length(), var.makeName("OBJS_"));	// NOI18N
+	    buf.append(" = ");						// NOI18N
 
 	    if (doFortran && md.isModuleEnabled()) {
 		srcs = getOrderedSources(t);
@@ -835,11 +835,11 @@ public class MakefileGenerator {
 		}
 		if (needLDLIBS) {
 		    buf.replace(0, buf.length(),
-				    var.makeName("LDLIBS_"));		//NOI18N
-		    buf.append(" = ");					//NOI18N
-		    buf.append(var.makeRef("USERLIBS_"));		//NOI18N
+				    var.makeName("LDLIBS_"));		// NOI18N
+		    buf.append(" = ");					// NOI18N
+		    buf.append(var.makeRef("USERLIBS_"));		// NOI18N
 		    //buf.append(' ');
-		    //buf.append(var.makeRef("SYSLIBS_"));		//NOI18N
+		    //buf.append(var.makeRef("SYSLIBS_"));		// NOI18N
 		    buf.append('\n');
 		    out.write(buf.toString(), 0, buf.length());
 		}
@@ -865,7 +865,7 @@ public class MakefileGenerator {
      */
     private String generateXdTargetVars(TargetData t) {
 
-	buf.replace(0, buf.length(), getString("MFG_XDesignerTargetVars"));	//NOI18N
+	buf.replace(0, buf.length(), getString("MFG_XDesignerTargetVars"));	// NOI18N
 
 	String[] srcs = t.getSourcesList();
 	for (int i = 0; i < srcs.length; i++) {
@@ -881,37 +881,37 @@ public class MakefileGenerator {
     private void xdTargetFile(TargetData t, String file) {
 	String vname = getXdTargetName(t, file);
 
-	buf.append("XDMAKEFILE_");					//NOI18N
+	buf.append("XDMAKEFILE_");					// NOI18N
 	buf.append(vname);
-	buf.append(" = ");						//NOI18N
+	buf.append(" = ");						// NOI18N
 	buf.append(vname);
-	buf.append("_Makefile\nXD_OBJS_FILE_");			//NOI18N
+	buf.append("_Makefile\nXD_OBJS_FILE_");			// NOI18N
 	buf.append(vname);
-	buf.append(" = xd_objs_");					//NOI18N
+	buf.append(" = xd_objs_");					// NOI18N
 	buf.append(vname);
-	buf.append("\nXD_OBJS_");					//NOI18N
+	buf.append("\nXD_OBJS_");					// NOI18N
 	buf.append(vname);
-	buf.append(" = `/bin/cat -s ");					//NOI18N
+	buf.append(" = `/bin/cat -s ");					// NOI18N
 	buf.append(getOutputDirectory(t));
-	buf.append("/xd_objs_");					//NOI18N
+	buf.append("/xd_objs_");					// NOI18N
 	buf.append(vname);
 	buf.append(" | \\\n\tawk 'BEGIN { RS=\" \"} {if (NF > 0) { print \"");	// NOI18N
 	buf.append(var.makeRef("TARGETDIR_"));	// NOI18N
-	buf.append("/\" $$0 }}'`\nXD_LINK_ARGS_FILE_");    //NOI18N
+	buf.append("/\" $$0 }}'`\nXD_LINK_ARGS_FILE_");    // NOI18N
 	buf.append(vname);
-	buf.append(" = xd_link_args_");				//NOI18N
+	buf.append(" = xd_link_args_");				// NOI18N
 	buf.append(vname);
-	buf.append("\nXD_LINK_ARGS_");				//NOI18N
+	buf.append("\nXD_LINK_ARGS_");				// NOI18N
 	buf.append(vname);
-	buf.append(" = `/bin/cat -s ");					//NOI18N
+	buf.append(" = `/bin/cat -s ");					// NOI18N
 	buf.append(getOutputDirectory(t));
-	buf.append("/xd_link_args_");					//NOI18N
+	buf.append("/xd_link_args_");					// NOI18N
 	buf.append(vname);
-	buf.append("; exit 0`\nXDFLAGS_");				//NOI18N
+	buf.append("; exit 0`\nXDFLAGS_");				// NOI18N
 	buf.append(vname);
-	buf.append(" = -f $(XDMAKEFILE_");				//NOI18N
+	buf.append(" = -f $(XDMAKEFILE_");				// NOI18N
 	buf.append(vname);
-	buf.append(") $(XDFLAGS)\n\n");				//NOI18N
+	buf.append(") $(XDFLAGS)\n\n");				// NOI18N
     }
 
 
@@ -945,19 +945,19 @@ public class MakefileGenerator {
 	if (out != null &&
 		    type != TargetData.COMPLEX_MAKE_TARGET &&
 		    type != TargetData.COMPLEX_CUSTOM_TARGET) {
-	    out.write(getString("MFG_LinkOrArchive"));			//NOI18N
+	    out.write(getString("MFG_LinkOrArchive"));			// NOI18N
 
-	    buf.replace(0, buf.length(), var.makeRef("TARGETDIR_"));	//NOI18N
+	    buf.replace(0, buf.length(), var.makeRef("TARGETDIR_"));	// NOI18N
 	    buf.append('/');
 	    buf.append(t.getName());
-	    buf.append(": ");						//NOI18N
-	    buf.append(var.makeRef("TARGETDIR_"));			//NOI18N
+	    buf.append(": ");						// NOI18N
+	    buf.append(var.makeRef("TARGETDIR_"));			// NOI18N
 	    buf.append(' ');
-	    buf.append(var.makeRef("OBJS_"));				//NOI18N
+	    buf.append(var.makeRef("OBJS_"));				// NOI18N
 	    if (type == TargetData.COMPLEX_EXECUTABLE ||
 			    type == TargetData.COMPLEX_SHAREDLIB) {
 		buf.append(' ');
-		buf.append(var.makeRef("DEPLIBS_"));			//NOI18N
+		buf.append(var.makeRef("DEPLIBS_"));			// NOI18N
 	    }
 	    if (t.containsXdFiles()) {
 		buf.append(xdLinkDependencies(t));
@@ -975,15 +975,15 @@ public class MakefileGenerator {
 	    case TargetData.SIMPLE_ARCHIVE:
 	    case TargetData.COMPLEX_ARCHIVE:
 		if (t.containsCppFiles()) {
-		    //buf.append("$(CCC) -xar -o $@ ");			//NOI18N
+		    //buf.append("$(CCC) -xar -o $@ ");			// NOI18N
 		    StringBuffer bufx = new StringBuffer(1024);
 		    appendToolsetDepMacro(bufx, "ARCPP", "$(CCC) -xar -o $@ ", "$(AR) $(ARFLAGS) $@ "); // NOI18N
 		    out.write(bufx.toString(), 0, bufx.length());
-		    buf.append("$(ARCPP) ");			//NOI18N
+		    buf.append("$(ARCPP) ");			// NOI18N
 		} else {
-		    buf.append("$(AR) $(ARFLAGS) $@ ");			//NOI18N
+		    buf.append("$(AR) $(ARFLAGS) $@ ");			// NOI18N
 		}
-		buf.append(var.makeRef("OBJS_"));			//NOI18N
+		buf.append(var.makeRef("OBJS_"));			// NOI18N
 		buf.append('\n');
 		break;
 
@@ -1005,7 +1005,7 @@ public class MakefileGenerator {
 	if (out != null) {
 	    int i;
 
-	    String msg = getString("MFG_CompileRuleComment");		//NOI18N
+	    String msg = getString("MFG_CompileRuleComment");		// NOI18N
 	    out.write(msg, 0, msg.length());
 
 	    // Create a compile line for each source file
@@ -1018,7 +1018,7 @@ public class MakefileGenerator {
 	    out.newLine();
 
 	    if (t.containsXdFiles()) {
-		msg = getString("MFG_XDesignerCompileRule");			//NOI18N
+		msg = getString("MFG_XDesignerCompileRule");			// NOI18N
 		out.write(msg, 0, msg.length());
 		buf.delete(0, buf.length());
 		for (i = 0; i < srcs.length; i++) {
@@ -1041,13 +1041,13 @@ public class MakefileGenerator {
 	String vname = getXdTargetName(t, file);
 
 	String l1 = MessageFormat.format(
-		"$(TARGETDIR_{0})/$(XDMAKEFILE_{1}): $(TARGETDIR_{0}) {2}\n\t$(XDESIGNER) -m $(TARGETDIR_{0})/$(XDMAKEFILE_{1}) {2}\n\n",			//NOI18N
+		"$(TARGETDIR_{0})/$(XDMAKEFILE_{1}): $(TARGETDIR_{0}) {2}\n\t$(XDESIGNER) -m $(TARGETDIR_{0})/$(XDMAKEFILE_{1}) {2}\n\n",			// NOI18N
 		new Object[] { t.getName(), vname, file });
 	String l2 = MessageFormat.format(
-		"$(TARGETDIR_{0})/$(XD_OBJS_FILE_{1}): $(TARGETDIR_{0}) $(TARGETDIR_{0})/$(XDMAKEFILE_{1}) {2}\n\t$(XDESIGNER) -G $(TARGETDIR_{0}) {2}\n",	//NOI18N
+		"$(TARGETDIR_{0})/$(XD_OBJS_FILE_{1}): $(TARGETDIR_{0}) $(TARGETDIR_{0})/$(XDMAKEFILE_{1}) {2}\n\t$(XDESIGNER) -G $(TARGETDIR_{0}) {2}\n",	// NOI18N
 		new Object[] { t.getName(), vname, file });
 	String l3 = MessageFormat.format(
-		"\tcd $(TARGETDIR_{0}); $(MAKE) $(XDFLAGS_{1}) info-objects > $(XD_OBJS_FILE_{1})\n\tcd $(TARGETDIR_{0}); $(MAKE) $(XDFLAGS_{1}) info-link > $(XD_LINK_ARGS_FILE_{1})\n\tcd $(TARGETDIR_{0}); $(MAKE) $(XDFLAGS_{1}) all-objects\ntest::\n\n",						//NOI18N
+		"\tcd $(TARGETDIR_{0}); $(MAKE) $(XDFLAGS_{1}) info-objects > $(XD_OBJS_FILE_{1})\n\tcd $(TARGETDIR_{0}); $(MAKE) $(XDFLAGS_{1}) info-link > $(XD_LINK_ARGS_FILE_{1})\n\tcd $(TARGETDIR_{0}); $(MAKE) $(XDFLAGS_{1}) all-objects\ntest::\n\n",						// NOI18N
 		new Object[] { t.getName(), vname, file });
 	return new
 		StringBuffer(1024).append(l1).append(l2).append(l3).toString();
@@ -1059,13 +1059,13 @@ public class MakefileGenerator {
 
 	buf.replace(0, buf.length(), t.getName());
 	/* Why this???
-	if (t.getName().equals("clean")) {				//NOI18N
-	    buf.append(":: ");						//NOI18N
+	if (t.getName().equals("clean")) {				// NOI18N
+	    buf.append(":: ");						// NOI18N
 	} else {
-	    buf.append(": ");						//NOI18N
+	    buf.append(": ");						// NOI18N
 	}
 	*/
-	buf.append(": ");						//NOI18N
+	buf.append(": ");						// NOI18N
 	String dependsOn = t.getDependsOn();
 	if (dependsOn != null && dependsOn.length() > 0) {
 	    buf.append(dependsOn);
@@ -1075,11 +1075,11 @@ public class MakefileGenerator {
 	if (t.getTargetType() == TargetData.COMPLEX_MAKE_TARGET) {
 	    String dir = t.getSubdirectory();
 	    if (dir != null && dir.length() > 0) {
-		buf.append("\tcd ");					//NOI18N
+		buf.append("\tcd ");					// NOI18N
 		buf.append(dir);
-		buf.append("; $(MAKE) ");				//NOI18N
+		buf.append("; $(MAKE) ");				// NOI18N
 	    } else {
-		buf.append("\t$(MAKE) ");				//NOI18N
+		buf.append("\t$(MAKE) ");				// NOI18N
 	    }
 	    String mflags = t.getMakeFlags();
 	    if (mflags != null && mflags.length() > 0) {
@@ -1104,7 +1104,7 @@ public class MakefileGenerator {
 		buf.append('\n');
 	    }
 	}
-	buf.append("\n\n");						//NOI18N
+	buf.append("\n\n");						// NOI18N
 	out.write(buf.toString(), 0, buf.length());
     }
 
@@ -1121,21 +1121,21 @@ public class MakefileGenerator {
 
 	// First, see what language we are generating
 	if (t.isCppFile(src)) {
-	    compiler = "$(COMPILE.cc)";					//NOI18N
-	    flagBase = "CCFLAGS_";					//NOI18N
+	    compiler = "$(COMPILE.cc)";					// NOI18N
+	    flagBase = "CCFLAGS_";					// NOI18N
 	} else if (t.isCFile(src)) {
-	    compiler = "$(COMPILE.c)";					//NOI18N
-	    flagBase = "CFLAGS_";					//NOI18N
+	    compiler = "$(COMPILE.c)";					// NOI18N
+	    flagBase = "CFLAGS_";					// NOI18N
 	} else if (t.isFortranFile(src)) {
-	    compiler = "$(COMPILE.f)";				//NOI18N
-	    flagBase = "FFLAGS_";					//NOI18N
+	    compiler = "$(COMPILE.f)";				// NOI18N
+	    flagBase = "FFLAGS_";					// NOI18N
 	} else if (t.isHdrFile(src)) {
 	    return;			    // don't try and compile .h files
 	} else if (t.isXdFile(src)) {
 	    return;			    // do X-Designer files in separate section
 	} else if (t.isAssemblyFile(src)) {
-	    compiler = "$(AS)";						//NOI18N
-	    flagBase = "ASFLAGS_";					//NOI18N
+	    compiler = "$(AS)";						// NOI18N
+	    flagBase = "ASFLAGS_";					// NOI18N
 	} else {
 	    if (IpeUtils.IfdefDiagnostics) {
 		System.out.println("Generator: Can't determine language of " + src); // NOI18N
@@ -1149,20 +1149,20 @@ public class MakefileGenerator {
 	}
 
 	// Now generate the target line
-	buf.replace(0, buf.length(), var.makeRef("TARGETDIR_"));	//NOI18N
+	buf.replace(0, buf.length(), var.makeRef("TARGETDIR_"));	// NOI18N
 	buf.append('/');
 	buf.append(newobj);
-	buf.append(": ");						//NOI18N
-	buf.append(var.makeRef("TARGETDIR_"));				//NOI18N
+	buf.append(": ");						// NOI18N
+	buf.append(var.makeRef("TARGETDIR_"));				// NOI18N
 	buf.append(' ');
 	buf.append(src);
-	buf.append("\n\t");						//NOI18N
+	buf.append("\n\t");						// NOI18N
 	buf.append(compiler);
 	buf.append(' ');
 	buf.append(var.makeRef(flagBase));
 	buf.append(' ');
-	buf.append(var.makeRef("CPPFLAGS_"));				//NOI18N
-	buf.append(" -o $@ ");						//NOI18N
+	buf.append(var.makeRef("CPPFLAGS_"));				// NOI18N
+	buf.append(" -o $@ ");						// NOI18N
 	buf.append(src);
 	buf.append("\n\n");	// NOI18N
 
@@ -1196,7 +1196,7 @@ public class MakefileGenerator {
 		if (list == null) {
 		    if (firstTime) {
 			firstTime = false;
-			String title = getString("DLG_ErrorDialogTitle");	//NOI18N
+			String title = getString("DLG_ErrorDialogTitle");	// NOI18N
 			String msg = getString("MSG_ModuleDependencyError");	// NOI18N
 			NotifyDescriptor nd = new NotifyDescriptor(msg,
 				    title, NotifyDescriptor.DEFAULT_OPTION,
@@ -1227,7 +1227,7 @@ public class MakefileGenerator {
 				    firstTime = false;
 				    String title, msg;
 
-				    title = getString("DLG_ErrorDialogTitle");    //NOI18N
+				    title = getString("DLG_ErrorDialogTitle");    // NOI18N
 				    msg = MessageFormat.format(
 					    getString("MSG_DuplicateModuleError"), // NOI18N
 					    new Object[] {
@@ -1302,7 +1302,7 @@ public class MakefileGenerator {
 
 		if (firstTime) {
 		    firstTime = false;
-		    String title = getString("DLG_ErrorDialogTitle");		//NOI18N
+		    String title = getString("DLG_ErrorDialogTitle");		// NOI18N
 		    String msg = getString("MSG_CircularDependency");	// NOI18N
 		    NotifyDescriptor nd = new NotifyDescriptor(msg,
 				title, NotifyDescriptor.DEFAULT_OPTION,
@@ -1470,23 +1470,23 @@ public class MakefileGenerator {
 
 	// Set compiler and flags
 	if (t.containsCppFiles()) {
-	    linker = "$(LINK.cc) ";					//NOI18N
-	    flags = "CCFLAGS_";						//NOI18N
+	    linker = "$(LINK.cc) ";					// NOI18N
+	    flags = "CCFLAGS_";						// NOI18N
 	} else if (t.containsFortranFiles()) {
-	    linker = "$(LINK.f) ";					//NOI18N
-	    flags = "FFLAGS_";					//NOI18N
+	    linker = "$(LINK.f) ";					// NOI18N
+	    flags = "FFLAGS_";					// NOI18N
 	} else {
-	    linker = "$(LINK.c) ";					//NOI18N
-	    flags = "CFLAGS_";						//NOI18N
+	    linker = "$(LINK.c) ";					// NOI18N
+	    flags = "CFLAGS_";						// NOI18N
 	}
 
 	// Now start emiting the link line
 	lbuf.append(linker);
 	lbuf.append(var.makeRef(flags));
 	lbuf.append(' ');
-	lbuf.append(var.makeRef("CPPFLAGS_"));				//NOI18N
-	lbuf.append(" -o $@ ");						//NOI18N
-	lbuf.append(var.makeRef("OBJS_"));				//NOI18N
+	lbuf.append(var.makeRef("CPPFLAGS_"));				// NOI18N
+	lbuf.append(" -o $@ ");						// NOI18N
+	lbuf.append(var.makeRef("OBJS_"));				// NOI18N
 	lbuf.append(' ');
 
 	if (type == TargetData.SIMPLE_SHAREDLIB || type == TargetData.COMPLEX_SHAREDLIB) {
@@ -1495,7 +1495,7 @@ public class MakefileGenerator {
 	    lbuf.append("$(" + var.makeName("SHAREDLIB_FLAGS_") + ") "); // NOI18N
 	}
 
-	lbuf.append(var.makeRef("LDLIBS_"));				//NOI18N
+	lbuf.append(var.makeRef("LDLIBS_"));				// NOI18N
 	if (t.containsXdFiles()) {
 	    lbuf.append(xdLinkMagic(t));
 	}
@@ -1522,10 +1522,10 @@ public class MakefileGenerator {
 	    if (t.isXdFile(srcs[i])) {
 		String vname = getXdTargetName(t, file);
 		
-		lbuf.append(" \\\n\t\t");				//NOI18N
-		lbuf.append("$(XD_OBJS_");				//NOI18N
+		lbuf.append(" \\\n\t\t");				// NOI18N
+		lbuf.append("$(XD_OBJS_");				// NOI18N
 		lbuf.append(vname);
-		lbuf.append(") $(XD_LINK_ARGS_");			//NOI18N
+		lbuf.append(") $(XD_LINK_ARGS_");			// NOI18N
 		lbuf.append(vname);
 		lbuf.append(')');
 	    }
@@ -1547,13 +1547,13 @@ public class MakefileGenerator {
 	    if (t.isXdFile(srcs[i])) {
 		String vname = getXdTargetName(t, file);
 		
-		lbuf.append(" \\\n\t\t");				//NOI18N
-		lbuf.append(var.makeRef("TARGETDIR_"));			//NOI18N
-		lbuf.append("/$(XD_OBJS_FILE_");			//NOI18N
+		lbuf.append(" \\\n\t\t");				// NOI18N
+		lbuf.append(var.makeRef("TARGETDIR_"));			// NOI18N
+		lbuf.append("/$(XD_OBJS_FILE_");			// NOI18N
 		lbuf.append(vname);
-		lbuf.append(") $(TARGETDIR_");				//NOI18N
+		lbuf.append(") $(TARGETDIR_");				// NOI18N
 		lbuf.append(t.getName());
-		lbuf.append(")/$(XD_LINK_ARGS_FILE_");		//NOI18N
+		lbuf.append(")/$(XD_LINK_ARGS_FILE_");		// NOI18N
 		lbuf.append(vname);
 		lbuf.append(')');
 	    }
@@ -1576,7 +1576,7 @@ public class MakefileGenerator {
 	/*
 	if (flags.getLinkType() == StdLibFlags.DYNAMIC_LINK_TYPE) {
 	    if (md.getToolset() == MakefileData.SUN_TOOLSET_TYPE) {
-		//buf.append("-Bdynamic ");					//NOI18N
+		//buf.append("-Bdynamic ");					// NOI18N
 		; // nothing
 	    }
 	    else {
@@ -1584,10 +1584,10 @@ public class MakefileGenerator {
 	    }
 	} else if (flags.getLinkType() == StdLibFlags.STATIC_LINK_TYPE) {
 	    if (md.getToolset() == MakefileData.SUN_TOOLSET_TYPE) {
-		buf.append("-Bstatic ");					//NOI18N
+		buf.append("-Bstatic ");					// NOI18N
 	    }
 	    else {
-		buf.append("-static ");					//NOI18N
+		buf.append("-static ");					// NOI18N
 	    }
 	}
 
@@ -1597,22 +1597,22 @@ public class MakefileGenerator {
 
 	    if (md.getMakefileOS() == MakefileData.SOLARIS_OS_TYPE) {
 		if (cflags.is64Bit()) {
-		    buf.append("-L/usr/openwin/lib/sparcv9 ");		//NOI18N
-		    buf.append("-L/usr/dt/lib/sparcv9 ");		 	//NOI18N
-		    buf.append("-R/usr/openwin/lib/sparcv9 ");		//NOI18N
-		    buf.append("-R/usr/dt/lib/sparcv9 ");		 	//NOI18N
+		    buf.append("-L/usr/openwin/lib/sparcv9 ");		// NOI18N
+		    buf.append("-L/usr/dt/lib/sparcv9 ");		 	// NOI18N
+		    buf.append("-R/usr/openwin/lib/sparcv9 ");		// NOI18N
+		    buf.append("-R/usr/dt/lib/sparcv9 ");		 	// NOI18N
 		} else {
-		    buf.append("-L/usr/openwin/lib -L/usr/dt/lib ");	//NOI18N
-		    buf.append("-R/usr/openwin/lib -R/usr/dt/lib ");	//NOI18N
+		    buf.append("-L/usr/openwin/lib -L/usr/dt/lib ");	// NOI18N
+		    buf.append("-R/usr/openwin/lib -R/usr/dt/lib ");	// NOI18N
 		}
 	    }
 	    else if (md.getMakefileOS() == MakefileData.LINUX_OS_TYPE) {
 		if (cflags.is64Bit()) {
 		    // ???
-		    buf.append("-L/usr/X11R6/lib ");	//NOI18N
+		    buf.append("-L/usr/X11R6/lib ");	// NOI18N
 		}
 		else {
-		    buf.append("-L/usr/X11R6/lib ");	//NOI18N
+		    buf.append("-L/usr/X11R6/lib ");	// NOI18N
 		}
 	    }
 	    else {
@@ -1642,8 +1642,8 @@ public class MakefileGenerator {
 	*/
 
 	if (buf.length() > 0) {
-	    buf.insert(0, " = ");					//NOI18N
-	    buf.insert(0, var.makeName("SYSLIBS_"));			//NOI18N
+	    buf.insert(0, " = ");					// NOI18N
+	    buf.insert(0, var.makeName("SYSLIBS_"));			// NOI18N
 	    buf.append('\n');
 	}
 	return buf.toString();
@@ -1669,8 +1669,8 @@ public class MakefileGenerator {
 	}
 
 	if (buf.length() > 0) {
-	    buf.insert(0, " = ");					//NOI18N
-	    buf.insert(0, var.makeName("USERLIBS_"));			//NOI18N
+	    buf.insert(0, " = ");					// NOI18N
+	    buf.insert(0, var.makeName("USERLIBS_"));			// NOI18N
 	    buf.append('\n');
 	}
 	return buf.toString();
@@ -1697,7 +1697,7 @@ public class MakefileGenerator {
 		String lib = ulibs[i];
 
 		if (lib.charAt(0) !=  '-' && lib.charAt(0) != '/' &&
-			(lib.endsWith(".a") || lib.endsWith(".so"))) {	//NOI18N
+			(lib.endsWith(".a") || lib.endsWith(".so"))) {	// NOI18N
 		    buf.append(lib);
 		    buf.append(' ');
 		}
@@ -1706,8 +1706,8 @@ public class MakefileGenerator {
 	}
 
 	if (buf.length() > 0) {
-	    buf.insert(0, " = ");					//NOI18N
-	    buf.insert(0, var.makeName("DEPLIBS_"));			//NOI18N
+	    buf.insert(0, " = ");					// NOI18N
+	    buf.insert(0, var.makeName("DEPLIBS_"));			// NOI18N
 	    buf.append('\n');
 	}
 	return buf.toString();
@@ -1727,14 +1727,14 @@ public class MakefileGenerator {
 	StringBuffer lbuf = new StringBuffer(256);
 
 	if (prefix == null) {
-	    prefix = " \\\n\t";						//NOI18N
+	    prefix = " \\\n\t";						// NOI18N
 	} else {
 	    prefix = new
-		    StringBuffer(" \\\n\t").append(prefix).toString();	//NOI18N
+		    StringBuffer(" \\\n\t").append(prefix).toString();	// NOI18N
 	}
 
 	lbuf.append(var);
-	lbuf.append(" =");						//NOI18N
+	lbuf.append(" =");						// NOI18N
 	for (int i = 0; i < list.length; i++) {
 	    lbuf.append(prefix);
 	    lbuf.append(list[i]);
@@ -1755,7 +1755,7 @@ public class MakefileGenerator {
 	 */
 	if (t.getTargetType() == TargetData.COMPLEX_SHAREDLIB ||
 			t.getTargetType() == TargetData.SIMPLE_SHAREDLIB) {
-	    flagsSun.append("-Kpic ");					//NOI18N
+	    flagsSun.append("-Kpic ");					// NOI18N
 	}
 
 	buf.delete(0, buf.length());
@@ -1873,7 +1873,7 @@ public class MakefileGenerator {
 
 
 	return validateOrCreateDir(cwd, fcwd,
-			getString("MSG_CwdNotDir"));			//NOI18N
+			getString("MSG_CwdNotDir"));			// NOI18N
     }
 
 
@@ -1891,7 +1891,7 @@ public class MakefileGenerator {
 	File fparent = fmakefile.getParentFile();
 
 	return validateOrCreateDir(parent, fparent,
-			getString("MSG_MakefileDirNotDir"));		//NOI18N
+			getString("MSG_MakefileDirNotDir"));		// NOI18N
     }
 
 
@@ -1914,7 +1914,7 @@ public class MakefileGenerator {
 
 	if (fdir.exists() && !fdir.isDirectory()) {
 	    s = MessageFormat.format(msg, new Object[] { dir });
-	    title = getString("DLG_ErrorDialogTitle");			//NOI18N
+	    title = getString("DLG_ErrorDialogTitle");			// NOI18N
 	    nd = new NotifyDescriptor(s,
 			title, NotifyDescriptor.DEFAULT_OPTION,
 			NotifyDescriptor.ERROR_MESSAGE,
@@ -1928,9 +1928,9 @@ public class MakefileGenerator {
 
 	if (!fdir.exists()) {
 	    s = MessageFormat.format(
-			getString("MSG_CreateDirectory"),		//NOI18N
+			getString("MSG_CreateDirectory"),		// NOI18N
 			new Object[] { dir });
-	    title = getString("DLG_QuestionDialogTitle");		//NOI18N
+	    title = getString("DLG_QuestionDialogTitle");		// NOI18N
 	    nd = new NotifyDescriptor(s,
 			title, NotifyDescriptor.YES_NO_OPTION,
 			NotifyDescriptor.QUESTION_MESSAGE,
@@ -1953,7 +1953,7 @@ public class MakefileGenerator {
 	StringBuffer timestamp = new StringBuffer(80);
 
 	timestamp.append(DateFormat.getDateInstance().format(date));
-	timestamp.append(" ");						//NOI18N
+	timestamp.append(" ");						// NOI18N
 	timestamp.append(DateFormat.getTimeInstance().format(date));
 
 	return timestamp.toString();
@@ -1962,13 +1962,13 @@ public class MakefileGenerator {
     /** Get the user name from the Unix environment */
     private String getUserName() {
 
-	String user = System.getProperty("Env-USER");			//NOI18N
+	String user = System.getProperty("Env-USER");			// NOI18N
 	if (user == null) {
-	    user = System.getProperty("Env-LOGNAME");			//NOI18N
+	    user = System.getProperty("Env-LOGNAME");			// NOI18N
 	    if (user == null) {
-		user = System.getProperty("user.name");			//NOI18N
+		user = System.getProperty("user.name");			// NOI18N
 		if (user == null) {
-		    user = getString("UNKNOWN_USER");			//NOI18N
+		    user = getString("UNKNOWN_USER");			// NOI18N
 		}
 	    }
 	}
@@ -1982,9 +1982,9 @@ public class MakefileGenerator {
 
 	if (file.mkdirs() == false) {
 	    String msg = MessageFormat.format(
-			getString("MSG_CannotCreateDirectory"),		//NOI18N
+			getString("MSG_CannotCreateDirectory"),		// NOI18N
 			new Object[] { name });
-	    String title = getString("DLG_ErrorDialogTitle");		//NOI18N
+	    String title = getString("DLG_ErrorDialogTitle");		// NOI18N
 	    NotifyDescriptor nd = new NotifyDescriptor(msg,
 			title, NotifyDescriptor.DEFAULT_OPTION,
 			NotifyDescriptor.ERROR_MESSAGE,
@@ -2103,7 +2103,7 @@ public class MakefileGenerator {
 	    } else {
 		buffer.replace(0, buffer.length(), suffix);
 		buffer.append(targetName);
-		buffer.append("_");					//NOI18N
+		buffer.append("_");					// NOI18N
 		buffer.append(extra);
 		lastName.replace(0, lastName.length(), buffer.toString());
 		return buffer.toString();
@@ -2121,10 +2121,10 @@ public class MakefileGenerator {
 	    if (suffix.equals(lastSuffix.toString())) {
 		return lastRef.toString();
 	    } else {
-		buffer.replace(0, buffer.length(), "$(");		//NOI18N
+		buffer.replace(0, buffer.length(), "$(");		// NOI18N
 		buffer.append(suffix);
 		buffer.append(targetName);
-		buffer.append(")");					//NOI18N
+		buffer.append(")");					// NOI18N
 		lastRef.replace(0, lastRef.length(), buffer.toString());
 		return buffer.toString();
 	    }
@@ -2140,12 +2140,12 @@ public class MakefileGenerator {
 	    if (suffix.equals(lastSuffix.toString())) {
 		return lastRef.toString();
 	    } else {
-		buffer.replace(0, buffer.length(), "$(");		//NOI18N
+		buffer.replace(0, buffer.length(), "$(");		// NOI18N
 		buffer.append(suffix);
 		buffer.append(targetName);
-		buffer.append("_");					//NOI18N
+		buffer.append("_");					// NOI18N
 		buffer.append(extra);
-		buffer.append(")");					//NOI18N
+		buffer.append(")");					// NOI18N
 		lastRef.replace(0, lastRef.length(), buffer.toString());
 		return buffer.toString();
 	    }
@@ -2202,26 +2202,26 @@ public class MakefileGenerator {
 	int toolset = md.getToolset();
 	if (toolset == MakefileData.SUN_TOOLSET_TYPE) {
 	    sbuf.append(macro);
-	    sbuf.append(" = ");	//NOI18N
+	    sbuf.append(" = ");	// NOI18N
 	    sbuf.append(sunVal);
-	    sbuf.append('\n');	//NOI18N
+	    sbuf.append('\n');	// NOI18N
 	}
 	else if (toolset == MakefileData.GNU_TOOLSET_TYPE) {
 	    sbuf.append(macro);
-	    sbuf.append(" = ");	//NOI18N
+	    sbuf.append(" = ");	// NOI18N
 	    sbuf.append(gnuVal);
-	    sbuf.append('\n');	//NOI18N
+	    sbuf.append('\n');	// NOI18N
 	}
 	else if (toolset == MakefileData.SUNGNU_TOOLSET_TYPE) {
-	    sbuf.append(macro + "-SUN");			//NOI18N
-	    sbuf.append(" = ");					//NOI18N
+	    sbuf.append(macro + "-SUN");			// NOI18N
+	    sbuf.append(" = ");					// NOI18N
 	    sbuf.append(sunVal);
 	    sbuf.append('\n');
-	    sbuf.append(macro + "-GNU");			//NOI18N
-	    sbuf.append(" = ");					//NOI18N
+	    sbuf.append(macro + "-GNU");			// NOI18N
+	    sbuf.append(" = ");					// NOI18N
 	    sbuf.append(gnuVal);
 	    sbuf.append('\n');
-	    sbuf.append(macro + " = $(" + macro + "-$(TOOLSET))");		//NOI18N
+	    sbuf.append(macro + " = $(" + macro + "-$(TOOLSET))");		// NOI18N
 	    sbuf.append('\n');
 	}
 	else {
@@ -2244,15 +2244,15 @@ public class MakefileGenerator {
 	int toolset = md.getToolset();
 	if (toolset == MakefileData.SUN_TOOLSET_TYPE || toolset == MakefileData.SUNGNU_TOOLSET_TYPE) {
 	    sbuf.append(sunMacro);
-	    sbuf.append(" = ");	//NOI18N
+	    sbuf.append(" = ");	// NOI18N
 	    sbuf.append(sunVal);
-	    sbuf.append('\n');	//NOI18N
+	    sbuf.append('\n');	// NOI18N
 	}
 	if (toolset == MakefileData.GNU_TOOLSET_TYPE || toolset == MakefileData.SUNGNU_TOOLSET_TYPE) {
 	    sbuf.append(gnuMacro);
-	    sbuf.append(" = ");	//NOI18N
+	    sbuf.append(" = ");	// NOI18N
 	    sbuf.append(gnuVal);
-	    sbuf.append('\n');	//NOI18N
+	    sbuf.append('\n');	// NOI18N
 	}
     }
     /**
@@ -2267,9 +2267,9 @@ public class MakefileGenerator {
      */
     private void appendMacro(StringBuffer sbuf, String macro, String val) {
 	sbuf.append(macro);
-	sbuf.append(" = ");	//NOI18N
+	sbuf.append(" = ");	// NOI18N
 	sbuf.append(val);
-	sbuf.append('\n');	//NOI18N
+	sbuf.append('\n');	// NOI18N
     }
 
     /**
@@ -2286,26 +2286,26 @@ public class MakefileGenerator {
 	int os = md.getMakefileOS();
 	if (os == MakefileData.SOLARIS_OS_TYPE) {
 	    sbuf.append(macro);
-	    sbuf.append(" = ");	//NOI18N
+	    sbuf.append(" = ");	// NOI18N
 	    sbuf.append(sunVal);
-	    sbuf.append('\n');	//NOI18N
+	    sbuf.append('\n');	// NOI18N
 	}
 	else if (os == MakefileData.LINUX_OS_TYPE) {
 	    sbuf.append(macro);
-	    sbuf.append(" = ");	//NOI18N
+	    sbuf.append(" = ");	// NOI18N
 	    sbuf.append(gnuVal);
-	    sbuf.append('\n');	//NOI18N
+	    sbuf.append('\n');	// NOI18N
 	}
 	else if (os == MakefileData.UNIX_OS_TYPE) {
-	    sbuf.append(macro + "-SunOS");			//NOI18N
-	    sbuf.append(" = ");					//NOI18N
+	    sbuf.append(macro + "-SunOS");			// NOI18N
+	    sbuf.append(" = ");					// NOI18N
 	    sbuf.append(sunVal);
 	    sbuf.append('\n');
-	    sbuf.append(macro + "-Linux");			//NOI18N
-	    sbuf.append(" = ");					//NOI18N
+	    sbuf.append(macro + "-Linux");			// NOI18N
+	    sbuf.append(" = ");					// NOI18N
 	    sbuf.append(gnuVal);
 	    sbuf.append('\n');
-	    sbuf.append(macro + " = $(" + macro + "-$(OS))");		//NOI18N
+	    sbuf.append(macro + " = $(" + macro + "-$(OS))");		// NOI18N
 	    sbuf.append('\n');
 	}
 	else {

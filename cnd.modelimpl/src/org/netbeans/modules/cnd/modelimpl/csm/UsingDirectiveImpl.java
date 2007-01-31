@@ -85,7 +85,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase implements Csm
     }
     
     public String toString() {
-        return "" + getKind() + ' ' + name /*+ " rawName=" + Utils.toString(getRawName())*/;
+        return "" + getKind() + ' ' + name /*+ " rawName=" + Utils.toString(getRawName())*/; // NOI18N
     }
     
     public CsmScope getScope() {

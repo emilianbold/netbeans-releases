@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.SimpleOffsetableImpl;
  */
 public class APTParseFileWalker extends APTWalker {
     private APTPreprocState preprocState;
-    private String path;
+    private String startPath;
     private FileImpl file;  
     private int mode;
     private boolean createMacroAndIncludes;
@@ -59,7 +59,7 @@ public class APTParseFileWalker extends APTWalker {
     public APTParseFileWalker(APTFile apt, FileImpl file, APTPreprocState preprocState) {
         super(apt, preprocState == null ? null: preprocState.getMacroMap());
         this.file = file;
-        this.path = file.getAbsolutePath();
+        this.startPath = file.getAbsolutePath();
         this.preprocState = preprocState;
         this.mode = ProjectBase.GATHERING_MACROS;
         this.createMacroAndIncludes = false;
@@ -97,15 +97,17 @@ public class APTParseFileWalker extends APTWalker {
     
     protected void onInclude(APT apt) {
         if (getIncludeHandler() != null) {
-            APTIncludeResolver resolver = getIncludeHandler().getResolver(path);
-            String resolvedPath = resolver.resolveInclude((APTInclude)apt);
+            APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);
+            String resolvedPath = resolver.resolveInclude((APTInclude)apt, getMacroMap());
             if (resolvedPath == null) {
                 if (ParserThreadManager.instance().isStandalone()) {
                     if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
-                        System.err.println("FAILED INCLUDE: from " + file.getName() + " for:\n\t" + apt);
+                        System.err.println("FAILED INCLUDE: from " + file.getName() + " for:\n\t" + apt);// NOI18N
                     }
                 } else {
-                    APTUtils.LOG.log(Level.WARNING, "failed resolving path from {0} for {1}", new Object[] { path, apt });
+                    APTUtils.LOG.log(Level.WARNING, 
+                            "failed resolving path from {0} for {1}", // NOI18N
+                            new Object[] { startPath, apt });
                 }
             }
             include(resolvedPath, (APTInclude)apt);
@@ -114,15 +116,17 @@ public class APTParseFileWalker extends APTWalker {
 
     protected void onIncludeNext(APT apt) {
         if (getIncludeHandler() != null) {
-            APTIncludeResolver resolver = getIncludeHandler().getResolver(path);           
-            String resolvedPath = resolver.resolveIncludeNext((APTIncludeNext)apt);
+            APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);           
+            String resolvedPath = resolver.resolveIncludeNext((APTIncludeNext)apt, getMacroMap());
             if (resolvedPath == null) {
                 if (ParserThreadManager.instance().isStandalone()) {
                     if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
-                        System.err.println("FAILED INCLUDE: from " + file.getName() + " for:\n\t" + apt);
+                        System.err.println("FAILED INCLUDE: from " + file.getName() + " for:\n\t" + apt);// NOI18N
                     }
                 } else {
-                    APTUtils.LOG.log(Level.WARNING, "failed resolving path from {0} for {1}", new Object[] { path, apt });
+                    APTUtils.LOG.log(Level.WARNING, 
+                            "failed resolving path from {0} for {1}", // NOI18N
+                            new Object[] { startPath, apt });
                 }
             }
 	    // TODO: reflect include next in API and add implementation here
@@ -208,43 +212,48 @@ public class APTParseFileWalker extends APTWalker {
     // implementation details
     
     private boolean eval(APT apt) {
-        APTUtils.LOG.log(Level.FINE, "eval condition for {0}", new Object[] {apt});
+        APTUtils.LOG.log(Level.FINE, "eval condition for {0}", new Object[] {apt});// NOI18N
         boolean res = false;
         try {
             res = APTConditionResolver.evaluate(apt, getMacroMap());
         } catch (TokenStreamException ex) {
-            APTUtils.LOG.log(Level.SEVERE, "error on evaluating condition node " + apt, ex);
+            APTUtils.LOG.log(Level.SEVERE, "error on evaluating condition node " + apt, ex);// NOI18N
         }
         return res;
     }
 
-    private CsmFile include(String path, APTInclude apt) {
+    private void include(String path, APTInclude apt) {
         FileImpl included = null;
-        if (path != null && getIncludeHandler().pushInclude(path)) {
-            boolean res = false;
-            try {
-                ProjectBase curProject = file.getProjectImpl();
+        if (path != null && getIncludeHandler().pushInclude(path, apt.getToken().getLine())) {
+            ProjectBase curProject = file.getProjectImpl();
+            if (curProject != null) {
                 ProjectBase inclFileOwner = curProject.resolveFileProjectOnInclude(path);
-                try {
-                    included = inclFileOwner.onFileIncluded(path, preprocState, mode);
-                } catch (NullPointerException ex) {
-                    APTUtils.LOG.log(Level.SEVERE, "file without project!!!", ex);
-                }
-            } finally {
-                getIncludeHandler().popInclude(); 
+                included = includeAction(inclFileOwner, path, preprocState, mode, apt);
+            } else {
+                APTUtils.LOG.log(Level.SEVERE, "file {0} without project!!!", new Object[] {file});// NOI18N
             }
         }
         
         if (needMacroAndIncludes()) {
             file.addInclude(createInclude(apt, included));
         }
-        return included;
     }
 
+    protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, APTPreprocState preprocState, int mode, APTInclude apt) {
+        try {
+            return inclFileOwner.onFileIncluded(inclPath, preprocState, mode);
+        } catch (NullPointerException ex) {
+            APTUtils.LOG.log(Level.SEVERE, "file without project!!!", ex);// NOI18N
+        } finally {
+            getIncludeHandler().popInclude(); 
+        }    
+        return null;
+    }
+    
     private IncludeImpl createInclude(final APTInclude apt, final FileImpl included) {  
         SimpleOffsetableImpl inclPos = getOffsetable((APTToken)apt.getToken());
-        setEndPosition(inclPos, (APTToken)getLastToken(apt.getInclide()));
-        IncludeImpl incImpl = new IncludeImpl(apt.getFileName(), apt.isSystem(), included, file, inclPos);
+        setEndPosition(inclPos, (APTToken)getLastToken(apt.getInclude()));
+        IncludeImpl incImpl = new IncludeImpl(apt.getFileName(getMacroMap()), apt.isSystem(getMacroMap()), included, file, inclPos);
         return incImpl;
     }
 
@@ -253,7 +262,7 @@ public class APTParseFileWalker extends APTWalker {
     }
     
     private void setEndPosition(SimpleOffsetableImpl offsetable, APTToken token) {
-	if( token != null ) {
+	if( token != null && !APTUtils.isEOF(token)) {
 	    offsetable.setEndPosition(token.getEndLine(), token.getEndColumn(), token.getEndOffset());
 	}
     }

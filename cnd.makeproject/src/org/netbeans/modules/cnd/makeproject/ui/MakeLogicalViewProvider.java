@@ -58,6 +58,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
+import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProviders;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -87,6 +89,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle;
@@ -95,6 +98,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.Utilities;
+import org.openide.util.actions.NodeAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openidex.search.SearchInfo;
 
@@ -112,10 +116,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     private static Project currentProject = null;
     private static Folder currentFolder = null;
     
-    private static final MessageFormat ITEM_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd; class=org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider$ViewItemNode; mask={0}"); //NOI18N
-    static final String PRIMARY_TYPE = "application";   //NOI18N
-    static final String SUBTYPE = "x-org-netbeans-modules-cnd-makeproject-uidnd";    //NOI18N
-    static final String MASK = "mask";  //NOI18N
+    private static final MessageFormat ITEM_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd; class=org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider$ViewItemNode; mask={0}"); // NOI18N
+    static final String PRIMARY_TYPE = "application"; // NOI18N
+    static final String SUBTYPE = "x-org-netbeans-modules-cnd-makeproject-uidnd"; // NOI18N
+    static final String MASK = "mask"; // NOI18N
     
     public MakeLogicalViewProvider(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
@@ -127,7 +131,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         this.spp = spp;
         assert spp != null;
         this.resolver = resolver;
-        
     }
     
     public Node createLogicalView() {
@@ -328,6 +331,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             // Handle annotations
             setForceAnnotation(true);
             updateAnnotationFiles();
+            
+//            // Test Logical View Providers
+//            if (LogicalViewNodeProviders.getInstance().getProviders().size() < 1)
+//                LogicalViewNodeProviders.getInstance().addProvider(new ExperimentsLogicalViewNodeProvider());
+//            // Test Logical View Providers
         }
         
         public Folder getFolder() {
@@ -388,8 +396,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             Action[] standardActions = getAdditionalActions();
             for (int i = 0; i < standardActions.length; i++)
                 actions.add(standardActions[i]);
-            addActionsFromLayers(actions, "NativeProjects/Actions");
-            addActionsFromLayers(actions, "Projects/Actions");
+            addActionsFromLayers(actions, "NativeProjects/Actions"); // NOI18N
+            addActionsFromLayers(actions, "Projects/Actions"); // NOI18N
             // Add remaining actions
             actions.add(null);
             actions.add(SystemAction.get(ToolsAction.class));
@@ -619,6 +627,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 } else {
                     node = new BrokenViewItemNode(this, folder, item);
                 }
+            } else if (key instanceof AbstractNode) {
+                node = (AbstractNode)key;
             }
             return new Node[] {node};
         }
@@ -630,7 +640,20 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         // Private methods -----------------------------------------------------
         
         private Collection getKeys() {
-            return folder.getElements();
+            Collection collection = folder.getElements();
+            
+            if (folder.getName() == "root") { // NOI18N
+                LogicalViewNodeProvider[] providers = LogicalViewNodeProviders.getInstance().getProvidersAsArray();
+                if (providers.length > 0) {
+                    for (int i = 0; i < providers.length; i++) {
+                        AbstractNode node = providers[i].getLogicalViewNode(project);
+                        if (node != null)
+                            collection.add(node);
+                    }
+                }
+            }
+            
+            return collection;
         }
         
         public void refreshItem(Item item) {
@@ -1297,6 +1320,213 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         
         public Iterator objectsToSearch() {
             return folder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
+        }
+    }
+    
+    //-----------------------------------------------------------------------------------------------------------------------------
+    // Test Logical View Providers
+    
+    private class ExperimentsLogicalViewNodeProvider implements LogicalViewNodeProvider {
+        public AbstractNode getLogicalViewNode(Project project) {
+            return new ExperimentsRootNode(project);
+        }   
+    }
+    
+    private final class ExperimentsRootNode extends AbstractNode {
+        public ExperimentsRootNode(Project projct) {
+            super(new ExperimentsRootNodeChildren(project));
+            setName("Experiments"); // NOI18N
+            setDisplayName("Experiments"); // NOI18N
+        }
+        
+        public Image getIcon( int type ) {
+            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
+        }
+        
+        public Image getOpenedIcon( int type) {
+            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolderOpen.gif"); // NOI18N
+        }
+        
+        public boolean canRename() {
+            return false;
+        }
+    }
+    
+    private class ExperimentsRootNodeChildren extends Children.Keys implements ChangeListener {
+        Project project;
+        
+        public ExperimentsRootNodeChildren(Project project) {
+            this.project = project;
+        }
+        
+        protected void addNotify() {
+            super.addNotify();
+            setKeys(getKeys());
+        }
+        
+        protected void removeNotify() {
+            setKeys(Collections.EMPTY_SET);
+            super.removeNotify();
+        }
+        
+        protected Node[] createNodes( Object key ) {
+            Node node = null;
+            if (key instanceof ExperimentsGroupNode) {
+                node = (Node)key;
+            } else {
+                ; // FIXUP: error
+            }
+            return new Node[] {node};
+        }
+        
+        public void stateChanged( ChangeEvent e ) {
+            setKeys( getKeys() );
+        }
+        
+        private Collection getKeys() {
+            Vector v = new Vector();
+            v.add(new ExperimentsGroupNode(project, "Heap Tracing")); // NOI18N
+            v.add(new ExperimentsGroupNode(project, "Data Race Detection")); // NOI18N
+            v.add(new ExperimentsGroupNode(project, "Runtime Checking")); // NOI18N
+            return v;
+        }
+    }
+    
+    
+    private final class ExperimentsGroupNode extends AbstractNode {
+        public ExperimentsGroupNode(Project project, String name) {
+            super(new ExperimentsGroupNodeChildren(project));
+            setName(name);
+            setDisplayName(name);
+        }
+        
+        public Image getIcon( int type ) {
+            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
+        }
+        
+        public Image getOpenedIcon( int type) {
+            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolderOpen.gif"); // NOI18N
+        }
+        
+        public boolean canRename() {
+            return false;
+        }
+        
+        public Action[] getActions( boolean context ) {
+            return new Action[] {
+                new ImportExperimentAction(),
+            };
+        }
+    }
+    
+    private class ExperimentsGroupNodeChildren extends Children.Keys implements ChangeListener {
+        Project project;
+        
+        public ExperimentsGroupNodeChildren(Project project) {
+            this.project = project;
+        }
+        
+        protected void addNotify() {
+            super.addNotify();
+            setKeys(getKeys());
+        }
+        
+        protected void removeNotify() {
+            setKeys(Collections.EMPTY_SET);
+            super.removeNotify();
+        }
+        
+        protected Node[] createNodes( Object key ) {
+            Node node = null;
+            if (key instanceof Experiment) {
+                node = (Node)key;
+            } else {
+                ; // FIXUP: error
+            }
+            return new Node[] {node};
+        }
+        
+        public void stateChanged( ChangeEvent e ) {
+            setKeys( getKeys() );
+        }
+        
+        private Collection getKeys() {
+            // FIXUP: add per project...
+            Vector v = new Vector();
+            v.add(new Experiment("Experiment-01212007-1422")); // NOI18N
+            v.add(new Experiment("Experiment-01212007-1427")); // NOI18N
+            v.add(new Experiment("Experiment-01212007-1532")); // NOI18N
+            return v;
+        }
+    }
+    
+    private final class Experiment extends AbstractNode {
+        public Experiment(String name) {
+            super(Children.LEAF);
+            setName(name);
+            setDisplayName(name);
+        }
+        
+        public Image getIcon( int type ) {
+            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
+        }
+        
+        public boolean canRename() {
+            return true;
+        }
+        
+        public boolean canDestroy() {
+            return true;
+        }
+        
+        public Action[] getActions( boolean context ) {
+            return new Action[] {
+                new OpenExperimentAction(),
+                SystemAction.get(DeleteAction.class),
+                SystemAction.get(RenameAction.class),
+                null,
+                SystemAction.get(PropertiesAction.class),
+            };
+        }
+    }
+    
+    private class ImportExperimentAction extends DummyAction {
+        public ImportExperimentAction() {
+            super("Import Experiment..."); // NOI18N
+        }
+    }
+    
+    private class OpenExperimentAction extends DummyAction {
+        public OpenExperimentAction() {
+            super("Open Experiment..."); // NOI18N
+        }
+    }
+    
+    private class DummyAction extends NodeAction {
+        private String name;
+        
+        public DummyAction(String name) {
+            this.name = name;
+        }
+        
+        protected boolean enable(Node[] activatedNodes)  {
+            return true;
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public void performAction(Node[] activatedNodes) {
+            ;//...
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
+        
+        protected boolean asynchronous() {
+            return false;
         }
     }
 }

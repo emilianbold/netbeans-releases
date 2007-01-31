@@ -68,4 +68,7 @@ public interface TraceFlags {
     
     public static final boolean DEBUG = Boolean.getBoolean("org.netbeans.modules.cnd.modelimpl.trace")  || Boolean.getBoolean("cnd.modelimpl.trace");
     
+    public static final boolean USE_REPOSITORY = DebugUtils.getBoolean("cnd.modelimpl.use.repository", false);
+
+    public static final boolean CLEAN_MACROS_AFTER_PARSE = DebugUtils.getBoolean("cnd.clean.macros.after.parse", true);
 }

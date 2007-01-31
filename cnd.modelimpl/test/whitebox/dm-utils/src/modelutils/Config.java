@@ -53,7 +53,7 @@ public class Config {
                         if (i < args.length) {
                             addParam(param, args[i++]);
                         } else {
-                            throw new RuntimeException("Option " + param + " requires argument");
+                            throw new RuntimeException("Option " + param + " requires argument"); // NOI18N
                         }
                     } else {
                         addParam(param.substring(0, 2), param.substring(2));
@@ -83,7 +83,7 @@ public class Config {
     private boolean isOption(String arg) {
         char option;
         
-        if (arg.startsWith("-")) {
+        if (arg.startsWith("-")) { // NOI18N
             option = arg.charAt(1);
             for (int i = 0; i < argsTemplate.length; i++) {
                 if (option == argsTemplate[i]) {
@@ -92,7 +92,7 @@ public class Config {
                 }
             }
             
-            throw new RuntimeException("Invalid option " + arg);
+            throw new RuntimeException("Invalid option " + arg); // NOI18N
         }
         
         return false;
@@ -105,6 +105,15 @@ public class Config {
     public ArrayList<String> getParametersFor(String option) {
         return options.get(option);
     }
+
+    public String getParameterFor(String option, String defaultValue) {
+	String result = getParameterFor(option);
+	if( result == null ) {
+	    result = defaultValue;
+	}
+	return result;
+    }
+    
     
     public String getParameterFor(String option) {
         ArrayList<String> allParams = options.get(option);

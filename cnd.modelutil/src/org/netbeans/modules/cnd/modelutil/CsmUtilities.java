@@ -495,7 +495,7 @@ public class CsmUtilities {
         int start = jumpLineStart ? lineToPosition(pane, element.getStartPosition().getLine()-1) : element.getStartOffset();
         if(pane.getDocument() != null && start >= 0 && start < pane.getDocument().getLength()) {
             pane.setCaretPosition(start);
-            if (DEBUG) System.out.println("I'm going to "+start+" for element"+getElementJumpName(element));
+            if (DEBUG) System.err.println("I'm going to "+start+" for element"+getElementJumpName(element));
         }
         StatusDisplayer.getDefault().setStatusText(""); // NOI18N
     }
@@ -546,7 +546,7 @@ public class CsmUtilities {
                 text = element.getText();
             }
             if (text.length() > 0) {
-                text = "\"" + text + "\"";
+                text = "\"" + text + "\""; // NOI18N
             }
         }
         return text;
@@ -565,15 +565,15 @@ public class CsmUtilities {
         StringBuffer buf = new StringBuffer();
         if (CsmKindUtilities.isNamedElement(obj)) {
             CsmNamedElement named = (CsmNamedElement)obj;
-            buf.append(" [name] ").append(named.getName());
+            buf.append(" [name] ").append(named.getName()); // NOI18N
         } else {
             String simpleName = obj.getClass().getName();
-            simpleName = simpleName.substring(simpleName.lastIndexOf(".")+1);
-            buf.append(" [class] ").append(simpleName);
+            simpleName = simpleName.substring(simpleName.lastIndexOf(".")+1); // NOI18N
+            buf.append(" [class] ").append(simpleName); // NOI18N
         }
         if (CsmKindUtilities.isDeclaration(obj)) {
             CsmDeclaration decl = (CsmDeclaration)obj;
-            buf.append(" [kind] ").append(decl.getKind());
+            buf.append(" [kind] ").append(decl.getKind()); // NOI18N
         }  
         return buf.toString();
     }    

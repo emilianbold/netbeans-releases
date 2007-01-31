@@ -28,7 +28,8 @@ import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
 
 //TODO: FINISH!
 
-public interface CsmDeclaration extends CsmQualifiedNamedElement, CsmObject, CsmScopeElement {
+public interface CsmDeclaration extends CsmQualifiedNamedElement, 
+        CsmScopeElement, CsmIdentifiable {
 
     //TODO: fill in accordance to C++ standard
 
@@ -38,32 +39,33 @@ public interface CsmDeclaration extends CsmQualifiedNamedElement, CsmObject, Csm
             super(id);
         }
 
-        public static final Kind BUILT_IN = new Kind("Built-in");
+        public static final Kind BUILT_IN = new Kind("Built-in"); // NOI18N
 
-        public static final Kind CLASS = new Kind("class");
-        public static final Kind UNION = new Kind("union");
-        public static final Kind STRUCT = new Kind("struct");
+        public static final Kind CLASS = new Kind("class"); // NOI18N
+        public static final Kind UNION = new Kind("union"); // NOI18N
+        public static final Kind STRUCT = new Kind("struct"); // NOI18N
         
-        public static final Kind ENUM = new Kind("Enum");
-        public static final Kind MACRO = new Kind("Macro");
+        public static final Kind ENUM = new Kind("Enum"); // NOI18N
+        public static final Kind ENUMERATOR = new Kind("Enumerator"); // NOI18N
+        public static final Kind MACRO = new Kind("Macro"); // NOI18N
         
-        public static final Kind VARIABLE = new Kind("VARIABLE");
-        public static final Kind VARIABLE_DEFINITION = new Kind("VARIABLE_DEFINITION");
+        public static final Kind VARIABLE = new Kind("VARIABLE"); // NOI18N
+        public static final Kind VARIABLE_DEFINITION = new Kind("VARIABLE_DEFINITION"); // NOI18N
         
-        public static final Kind FUNCTION = new Kind("FUNCTION");
-        public static final Kind FUNCTION_DEFINITION = new Kind("FUNCTION_DEFINITION");
+        public static final Kind FUNCTION = new Kind("FUNCTION"); // NOI18N
+        public static final Kind FUNCTION_DEFINITION = new Kind("FUNCTION_DEFINITION"); // NOI18N
         
-        public static final Kind TEMPLATE_SPECIALIZATION = new Kind("TEMPLATE_SPECIALIZATION");
-        public static final Kind TYPEDEF = new Kind("TYPEDEF");
-        public static final Kind ASM = new Kind("ASM");
-        public static final Kind TEMPLATE_DECLARATION = new Kind("TEMPLATE_DECLARATION");
-        public static final Kind NAMESPACE_DEFINITION = new Kind("NAMESPACE_DEFINITION");
+        public static final Kind TEMPLATE_SPECIALIZATION = new Kind("TEMPLATE_SPECIALIZATION"); // NOI18N
+        public static final Kind TYPEDEF = new Kind("TYPEDEF"); // NOI18N
+        public static final Kind ASM = new Kind("ASM"); // NOI18N
+        public static final Kind TEMPLATE_DECLARATION = new Kind("TEMPLATE_DECLARATION"); // NOI18N
+        public static final Kind NAMESPACE_DEFINITION = new Kind("NAMESPACE_DEFINITION"); // NOI18N
         
-        public static final Kind NAMESPACE_ALIAS = new Kind("NAMESPACE_ALIAS");
-        public static final Kind USING_DIRECTIVE = new Kind("USING_DIRECTIVE");
-        public static final Kind USING_DECLARATION = new Kind("USING_DECLARATION");
+        public static final Kind NAMESPACE_ALIAS = new Kind("NAMESPACE_ALIAS"); // NOI18N
+        public static final Kind USING_DIRECTIVE = new Kind("USING_DIRECTIVE"); // NOI18N
+        public static final Kind USING_DECLARATION = new Kind("USING_DECLARATION"); // NOI18N
         
-        public static final Kind CLASS_FORWARD_DECLARATION = new Kind("CLASS_FORWARD_DECLARATION");
+        public static final Kind CLASS_FORWARD_DECLARATION = new Kind("CLASS_FORWARD_DECLARATION"); // NOI18N
     }
     
     Kind getKind();
@@ -73,6 +75,8 @@ public interface CsmDeclaration extends CsmQualifiedNamedElement, CsmObject, Csm
      * within a projec.
      * For classes, enums and variables such names equals to their qualified name;
      * for functions the signature should be added
+     * 
+     * deprecated getUID() must be used
      */
     String getUniqueName();
 }

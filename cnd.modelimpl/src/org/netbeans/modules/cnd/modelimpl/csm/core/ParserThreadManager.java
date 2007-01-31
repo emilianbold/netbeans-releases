@@ -33,7 +33,7 @@ public class ParserThreadManager  {
     
     private static ParserThreadManager instance;
     
-    private static final String threadNameBase = "Code Model Parser";
+    private static final String threadNameBase = "Code Model Parser"; // NOI18N
     private RequestProcessor processor;
     private Set/*<Thread>*/ threads = Collections.synchronizedSet(new HashSet()/*<Thread>*/);
     private int currThread = 0;
@@ -82,7 +82,7 @@ public class ParserThreadManager  {
 
         // TODO: now we disable multithreading and by default use only one parsing thread.
         // user must pass explicitly the property to test/use multithreading
-        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", 1).intValue();
+        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", 1).intValue(); // NOI18N
         if (threadCount < 1) {
             threadCount = 1;
         }

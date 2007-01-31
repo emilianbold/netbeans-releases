@@ -26,6 +26,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
 
 public class BasicCompilerConfiguration {
     private String baseDir;
@@ -39,14 +40,14 @@ public class BasicCompilerConfiguration {
     public static int DEVELOPMENT_MODE_RELEASE = 5;
     public static int DEVELOPMENT_MODE_RELEASE_PERF = 6;
     private static final String[] DEVELOPMENT_MODE_NAMES = {
-	"Fast Build",
-	"Debug",
-	"Performance Debug",
-	"Test Coverage",
-	"Diagnosable Release",
-	"Release",
-	"Performance Release",
-    }; // FIXUP: from Bundle
+	getString("FastBuildTxt"),
+	getString("DebugTxt"),
+	getString("PerformanceDebugTxt"),
+	getString("TestCoverageTxt"),
+	getString("DiagnosableReleaseTxt"),
+	getString("ReleaseTxt"),
+	getString("PerformanceReleaseTxt"),
+    };
     private IntConfiguration developmentMode;
 
     public static int WARNING_LEVEL_NO = 0;
@@ -56,10 +57,10 @@ public class BasicCompilerConfiguration {
     public static int WARNING_LEVEL_CONVERT = 4;
     public static int WARNING_LEVEL_32_64 = 5;
     private static final String[] WARNING_LEVEL_NAMES = {
-	"No Warnings",
-	"Some Warnings",
-	"More Warnings",
-	"Convert Warnings to Errors",
+	getString("NoWarningsTxt"),
+	getString("SomeWarningsTxt"),
+	getString("MoreWarningsTxt"),
+	getString("ConvertWarningsTxt"),
     }; // FIXUP: from Bundle
     private IntConfiguration warningLevel;
 
@@ -75,9 +76,9 @@ public class BasicCompilerConfiguration {
 	this.master = master;
 	developmentMode = new IntConfiguration(master != null ? master.getDevelopmentMode() : null, DEVELOPMENT_MODE_DEBUG, DEVELOPMENT_MODE_NAMES, null);
 	warningLevel = new IntConfiguration(master != null ? master.getWarningLevel() : null, WARNING_LEVEL_DEFAULT, WARNING_LEVEL_NAMES, null);
-	sixtyfourBits = new BooleanConfiguration(master != null ? master.getSixtyfourBits() : null, false, "", "");
-	strip = new BooleanConfiguration(master != null ? master.getStrip() : null, false, "", "");
-	additionalDependencies = new StringConfiguration(master != null ? master.getAdditionalDependencies() : null, "");
+	sixtyfourBits = new BooleanConfiguration(master != null ? master.getSixtyfourBits() : null, false, "", ""); // NOI18N
+	strip = new BooleanConfiguration(master != null ? master.getStrip() : null, false, "", ""); // NOI18N
+	additionalDependencies = new StringConfiguration(master != null ? master.getAdditionalDependencies() : null, ""); // NOI18N
 	tool = new StringConfiguration(master != null ? master.getTool() : null, ""); // NOI18N
 	commandLineConfiguration = new OptionsConfiguration();
     }
@@ -165,11 +166,11 @@ public class BasicCompilerConfiguration {
 
     public String getOutputFile(String filePath, MakeConfiguration conf) {
 	String fileName = filePath;
-	int i = fileName.lastIndexOf(".");
+	int i = fileName.lastIndexOf("."); // NOI18N
 	if (i >= 0)
-	    fileName = fileName.substring(0, i) + ".o";
+	    fileName = fileName.substring(0, i) + ".o"; // NOI18N
 	else
-	    fileName = fileName + ".o";
+	    fileName = fileName + ".o"; // NOI18N
 
 	String dirName = MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + '/' + conf.getVariant(); // UNIX path
 	if (IpeUtils.isPathAbsolute(fileName)) {
@@ -181,7 +182,7 @@ public class BasicCompilerConfiguration {
             absPath = absPath.replace(' ', '_');
             return absPath;
         }
-	else if (filePath.startsWith("..")) {
+	else if (filePath.startsWith("..")) { // NOI18N
             String absPath = IpeUtils.toAbsolutePath(getBaseDir(), fileName);
             absPath = FilePathAdaptor.normalize(absPath);
             absPath = absPath.replace(':', '_');
@@ -222,22 +223,27 @@ public class BasicCompilerConfiguration {
     // Sheets
     public Sheet.Set getBasicSet() {
 	Sheet.Set set = new Sheet.Set();
-	set.setName("Basic Options");
-	set.setDisplayName("Basic Options");
-	set.setShortDescription("Basic Options");
-	set.put(new IntNodeProp(getDevelopmentMode(), true, "DevelopmentMode", "Development Mode", "Development Mode ..."));
-	set.put(new IntNodeProp(getWarningLevel(), true, "WarningLevel", "Warning Level", "Warning Level ..."));
-	set.put(new BooleanNodeProp(getSixtyfourBits(), getMaster() != null ? false : true, "64BitArchitecture", "64 Bit Architecture", "64 Bit Architecture ..."));
-	set.put(new BooleanNodeProp(getStrip(), true, "StripSymbols", "Strip Symbols", "Strip Symbols ..."));
+	set.setName("BasicOptions"); // NOI18N
+	set.setDisplayName(getString("BasicOptionsTxt"));
+	set.setShortDescription(getString("BasicOptionsHint"));
+	set.put(new IntNodeProp(getDevelopmentMode(), true, "DevelopmentMode", getString("DevelopmentModeTxt"), getString("DevelopmentModeHint"))); // NOI18N
+	set.put(new IntNodeProp(getWarningLevel(), true, "WarningLevel", getString("WarningLevelTxt"), getString("WarningLevelHint"))); // NOI18N
+	set.put(new BooleanNodeProp(getSixtyfourBits(), getMaster() != null ? false : true, "64BitArchitecture", getString("64BitArchitectureTxt"), getString("64BitArchitectureHint"))); // NOI18N
+	set.put(new BooleanNodeProp(getStrip(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
 	return set;
     }
 
     public Sheet.Set getInputSet() {
 	Sheet.Set set = new Sheet.Set();
-	set.setName("Input");
-	set.setDisplayName("Input");
-	set.setShortDescription("Input");
-	set.put(new StringNodeProp(getAdditionalDependencies(), "Additional Dependencies", "Additional Dependencies", "Additional Dependencies ..."));
+	set.setName("Input"); // NOI18N
+	set.setDisplayName(getString("InputTxt"));
+	set.setShortDescription(getString("InputHint"));
+	set.put(new StringNodeProp(getAdditionalDependencies(), "AdditionalDependencies", getString("AdditionalDependenciesTxt1"), getString("AdditionalDependenciesHint")));  // NOI18N
 	return set;
+    }
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(BasicCompilerConfiguration.class, s);
     }
 }

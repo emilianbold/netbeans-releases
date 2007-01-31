@@ -62,7 +62,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     }
     
     public boolean goToDeclaration(BaseDocument doc, JTextComponent target, int offset) {
-        if (!preJump(doc, target, offset, "opening-csm-element")) {
+        if (!preJump(doc, target, offset, "opening-csm-element")) { //NOI18N
             return false;
         }
         CsmOffsetable item = null;
@@ -102,6 +102,6 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 }
             }
         }
-        return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element");
+        return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
     }    
 }

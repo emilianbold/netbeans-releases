@@ -209,7 +209,7 @@ public class MakeExecSupport extends ExecutionSupport {
     public String getMakeCommand() {
         String make = (String) getEntry().getFile().getAttribute(PROP_MAKE_COMMAND);
         
-        if (make == null || make.equals("")) {
+        if (make == null || make.equals("")) { // NOI18N
             make = MakeSettings.getDefault().getDefaultMakeCommand();
             setMakeCommand(make);
         }

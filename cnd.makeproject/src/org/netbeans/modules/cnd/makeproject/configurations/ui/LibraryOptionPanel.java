@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
+import org.openide.util.NbBundle;
 
 public class LibraryOptionPanel extends javax.swing.JPanel {
 
@@ -32,6 +33,13 @@ public class LibraryOptionPanel extends javax.swing.JPanel {
         buttonGroup.add(otherRadioButton);
         staticRadioButton.setSelected(true);
         otherTextField.setEnabled(false);
+        
+        // Accessibility
+        getAccessibleContext().setAccessibleDescription(getString("LINKER_OPTIONS_PANEL_SD"));
+        dynamicRadioButton.getAccessibleContext().setAccessibleDescription(getString("LINKER_OPTIONS_DYNAMIC_RB_SD"));
+        otherRadioButton.getAccessibleContext().setAccessibleDescription(getString("LINKER_OPTIONS_OTHER_RB_SD"));
+        otherTextField.getAccessibleContext().setAccessibleDescription(getString("LINKER_OPTIONS_OTHER_TF_SD"));
+        staticRadioButton.getAccessibleContext().setAccessibleDescription(getString("LINKER_OPTIONS_STATIC_RB_SD"));
     }
     
     /** This method is called from within the constructor to
@@ -150,4 +158,7 @@ public class LibraryOptionPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton staticRadioButton;
     // End of variables declaration//GEN-END:variables
     
+    private static String getString(String s) {
+        return NbBundle.getBundle(LibraryOptionPanel.class).getString(s);
+    }
 }

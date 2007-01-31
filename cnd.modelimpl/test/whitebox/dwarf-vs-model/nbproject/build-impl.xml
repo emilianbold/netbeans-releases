@@ -241,6 +241,7 @@ is divided into following sections:
         <ant target="netbeans" inheritall="false" antfile="${project.org_netbeans_modules_cnd_apt}/build.xml"/>
         <ant target="netbeans" inheritall="false" antfile="${project.org_netbeans_modules_cnd_dwarfdump}/build.xml"/>
         <ant target="netbeans" inheritall="false" antfile="${project.org_netbeans_modules_cnd_modelimpl}/build.xml"/>
+        <ant target="netbeans" inheritall="false" antfile="${project.org_netbeans_modules_cnd_repository}/build.xml"/>
     </target>
     <target name="-pre-pre-compile" depends="init,deps-jar">
         <mkdir dir="${build.classes.dir}"/>
@@ -544,6 +545,7 @@ is divided into following sections:
         <ant target="clean" inheritall="false" antfile="${project.org_netbeans_modules_cnd_apt}/build.xml"/>
         <ant target="clean" inheritall="false" antfile="${project.org_netbeans_modules_cnd_dwarfdump}/build.xml"/>
         <ant target="clean" inheritall="false" antfile="${project.org_netbeans_modules_cnd_modelimpl}/build.xml"/>
+        <ant target="clean" inheritall="false" antfile="${project.org_netbeans_modules_cnd_repository}/build.xml"/>
     </target>
     <target name="-do-clean" depends="init">
         <delete dir="${build.dir}"/>

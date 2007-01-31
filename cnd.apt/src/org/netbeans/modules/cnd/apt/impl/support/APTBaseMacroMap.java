@@ -97,14 +97,27 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
     
     protected static class StateImpl implements State {
-        public final APTMacroMapSnapshot snap;
+        public APTMacroMapSnapshot snap;
         
         public StateImpl(APTMacroMapSnapshot snap) {
             this.snap = snap;
         }
         
         public String toString() {
-            return snap != null ? snap.toString() : "<no snap>";
+            return snap != null ? snap.toString() : "<no snap>"; // NOI18N
+        }
+
+        public boolean clean() {
+            boolean cleaned = false;
+            if (snap != null) {
+                if (snap.parent != null) {
+                    cleaned = true;
+                }
+                while (snap.parent != null) {
+                    snap = snap.parent;
+                }
+            }
+            return cleaned;
         }
     }
     
@@ -152,7 +165,11 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
         return retValue;
     }*/
     
-    protected static final APTMacroMap EMPTY = new APTMacroMap() {
+    protected static final APTMacroMap EMPTY = new EmptyMacroMap();
+    private static final class EmptyMacroMap implements APTMacroMap {
+        private EmptyMacroMap() {
+        }
+        
         protected APTMacro createMacro(Token name, Token[] params, List value) {
             return null;
         }

@@ -24,6 +24,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 
 /**
  * cache index support for project cache manager
@@ -78,12 +79,14 @@ final class ProjectIndex extends AbstractCacheIndex implements Serializable {
 
     protected String getIndexKey(Object obj) {
         // use absolute path os the key
+        String key;
         if (obj instanceof String) {
-            return (String)obj;
+            key = (String)obj;
         } else {
             CsmFile file = (CsmFile)obj;
-            return file.getAbsolutePath();
+            key = file.getAbsolutePath();
         }
+        return FilePathCache.getString(key);
     }  
 
     protected String getBaseCacheName(Object obj) {
@@ -133,7 +136,7 @@ final class ProjectIndex extends AbstractCacheIndex implements Serializable {
         public String toString() {
             String retValue;
             
-            retValue = "["+cacheFileName+";"+lastModified+"]";
+            retValue = "["+cacheFileName+";"+lastModified+"]"; // NOI18N
             return retValue;
         }
          private void writeObject(java.io.ObjectOutputStream out) throws IOException {

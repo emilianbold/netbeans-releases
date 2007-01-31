@@ -36,19 +36,20 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
 
 public class MakeConfiguration extends Configuration {
-    public static final String MAKEFILE_IMPL = "Makefile-impl.mk";
-    public static final String BUILD_FOLDER = "build";
-    public static final String DIST_FOLDER = "dist";
-    public static final String EXT_FOLDER = "_ext";
+    public static final String MAKEFILE_IMPL = "Makefile-impl.mk"; // NOI18N
+    public static final String BUILD_FOLDER = "build"; // NOI18N
+    public static final String DIST_FOLDER = "dist"; // NOI18N
+    public static final String EXT_FOLDER = "_ext"; // NOI18N
     
     // Project Types
     private static String[] TYPE_NAMES = {
-        "Makefile",
-        "Application",
-        "Dynamic Library (.so)",
-        "Static Library (.a)",
+        getString("MakefileName"),
+        getString("ApplicationName"),
+        getString("DynamicLibraryName"),
+        getString("StaticLibraryName"),
     };
     public static final int TYPE_MAKEFILE = 0;
     public static final int TYPE_APPLICATION = 1;
@@ -257,13 +258,13 @@ public class MakeConfiguration extends Configuration {
         Sheet sheet = new Sheet();
         
         Sheet.Set set = new Sheet.Set();
-        set.setName("Project Defaults");
-        set.setDisplayName("Project Defaults");
-        set.setShortDescription("Project Defaults");
+        set.setName("Project Defaults"); // NOI18N
+        set.setDisplayName(getString("ProjectDefaultsTxt"));
+        set.setShortDescription(getString("ProjectDefaultsHint"));
         set.put(new ProjectLocationNodeProp(project));
-        set.put(new IntNodeProp(getCompilerSet(), true, "CompilerSCollection", "Compiler Collection", "Compiler Collection..."));
-        set.put(new IntNodeProp(getPlatform(), true, "Platform", "Platform", "Platform"));
-        set.put(new IntNodeProp(getConfigurationType(), true, "ConfigurationType", "Configuration Type", "Configuration Type..."));
+        set.put(new IntNodeProp(getCompilerSet(), true, "CompilerSCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
+        set.put(new IntNodeProp(getPlatform(), true, "Platform", getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
+        set.put(new IntNodeProp(getConfigurationType(), true, "ConfigurationType", getString("ConfigurationTypeTxt"), getString("ConfigurationTypeHint"))); // NOI18N
         sheet.put(set);
         
         return sheet;
@@ -273,10 +274,10 @@ public class MakeConfiguration extends Configuration {
         Sheet sheet = new Sheet();
         
         Sheet.Set set = new Sheet.Set();
-        set.setName("Compiler Collection");
-        set.setDisplayName("Compiler Collection");
-        set.setShortDescription("Compiler Collection");
-        set.put(new IntNodeProp(getCompilerSet(), true, "CompilerCollection", "Compiler Collection", "Compiler Collection ..."));
+        set.setName("Compiler Collection"); // NOI18N
+        set.setDisplayName(getString("CompilerCollectionTxt"));
+        set.setShortDescription(getString("CompilerCollectionHint"));
+        set.put(new IntNodeProp(getCompilerSet(), true, "CompilerCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
         sheet.put(set);
         
         return sheet;
@@ -293,7 +294,7 @@ public class MakeConfiguration extends Configuration {
         }
         
         public String getName() {
-            return "Project Location";
+            return getString("ProjectLocationTxt");
         }
         
         public Object getValue() {
@@ -340,8 +341,8 @@ public class MakeConfiguration extends Configuration {
     }
     
     public String getVariant() {
-        String ret = "";
-        ret += CompilerSets.getCompilerSet(getCompilerSet().getValue()).getName() + "-";
+        String ret = ""; // NOI18N
+        ret += CompilerSets.getCompilerSet(getCompilerSet().getValue()).getName() + "-"; // NOI18N
         ret += Platforms.getPlatform(getPlatform().getValue()).getName();
         return ret;
     }
@@ -413,5 +414,10 @@ public class MakeConfiguration extends Configuration {
             output = FilePathAdaptor.normalize(output);
             return output;
         }
+    }
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(MakeConfiguration.class, s);
     }
 }

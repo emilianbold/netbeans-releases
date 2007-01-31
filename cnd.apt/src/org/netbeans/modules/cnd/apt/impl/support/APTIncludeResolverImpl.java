@@ -23,6 +23,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
+import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 
 /**
@@ -49,12 +50,12 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
         this.baseFileIncludeDir = baseFileIncludeDir;
     }       
 
-    public String resolveInclude(APTInclude apt) {
-        return resolveFilePath(apt.getFileName(), apt.isSystem(), false);
+    public String resolveInclude(APTInclude apt, APTMacroCallback callback) {
+        return resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), false);
     }
 
-    public String resolveIncludeNext(APTIncludeNext apt) {
-        return resolveFilePath(apt.getFileName(), apt.isSystem(), true);
+    public String resolveIncludeNext(APTIncludeNext apt, APTMacroCallback callback) {
+        return resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), true);
     }
 
     public String getBasePath() {

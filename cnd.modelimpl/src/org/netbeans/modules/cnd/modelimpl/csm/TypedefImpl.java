@@ -29,11 +29,14 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
-
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 /**
  * Implements CsmTypedef
@@ -43,11 +46,16 @@ public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypede
     
     private final String name;
     private final CsmType type;
-    private CsmObject container;
+    
+    // only one of containerOLD/containerUID must be used (based on USE_REPOSITORY)
+    private CsmObject containerOLD;
+    private CsmUID    containerUID;
+    // but for now only namespace is under UID => class is handled as TEMP reference
+    private CsmObject    containerTEMP;
             
     public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name) {
         super(ast, file);
-	this.container = container;
+	this._setContainer(container);
         if (type == null) {
             this.type = createType(ast);
         } else {
@@ -64,11 +72,12 @@ public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypede
     public CsmScope getScope() {
         // TODO: ???
         //return getContainingFile();
+        CsmObject container = _getContainer();
         if( container instanceof CsmNamespace ) {
             return (CsmNamespace) container;
         }
         else if( container instanceof CsmClass ) {
-            return (CsmClass) container;
+            return (CsmClass)container;
         }
         else {
             return getContainingFile();
@@ -83,13 +92,14 @@ public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypede
     }
 
     public String getQualifiedName() {
+        CsmObject container = _getContainer();
         if( CsmKindUtilities.isClass(container) ) {
-	    return ((CsmClass) container).getQualifiedName() + "::" + getName();
+	    return ((CsmClass) container).getQualifiedName() + "::" + getName(); // NOI18N
 	}
 	else if( CsmKindUtilities.isNamespace(container) ) {
 	    String nsName = ((CsmNamespace) container).getQualifiedName();
 	    if( nsName != null && nsName.length() > 0 ) {
-		return nsName + "::" + getName();
+		return nsName + "::" + getName(); // NOI18N
 	    }
 	}
         return getName();
@@ -157,6 +167,35 @@ public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypede
     
     public CsmType getType() {
         return type;
+    }
+
+    private CsmObject _getContainer() {
+        if (TraceFlags.USE_REPOSITORY) {
+            if (containerUID != null) {
+                return UIDCsmConverter.UIDtoCsmObject(containerUID);
+            } else {
+                return containerTEMP;
+            }
+        } else {
+            return containerOLD;
+        }
+    }
+
+    private void _setContainer(CsmObject container) {
+        if (TraceFlags.USE_REPOSITORY) {
+            containerTEMP = null;
+            if (containerUID != null) {
+                RepositoryUtils.remove(containerUID);
+                containerUID = null;
+            }
+            if (container instanceof CsmNamespace) {
+                containerUID = RepositoryUtils.put((CsmNamespace)container);
+            } else {
+                containerTEMP = container;
+            }
+        } else {
+            this.containerOLD = container;
+        }
     }
     
 }

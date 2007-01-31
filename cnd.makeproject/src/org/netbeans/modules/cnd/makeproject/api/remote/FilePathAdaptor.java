@@ -62,14 +62,14 @@ public class FilePathAdaptor {
 
         public String normalize(String path) {
             // Always use Unix file separators
-            return path.replaceAll("\\\\", "/");
+            return path.replaceAll("\\\\", "/"); // NOI18N
         }
         
         public String naturalize(String path) {
             if (Utilities.isUnix())
-                return path.replaceAll("\\\\", "/");
+                return path.replaceAll("\\\\", "/"); // NOI18N
             else if (Utilities.isWindows())
-                return path.replaceAll("/", "\\\\");
+                return path.replaceAll("/", "\\\\"); // NOI18N
             else
                 return path;
         }

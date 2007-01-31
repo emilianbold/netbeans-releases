@@ -24,9 +24,10 @@ import java.util.*;
 
 import antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
-
-import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 /**
  * Implements CsmNamespaceDefinition
@@ -37,15 +38,19 @@ public class NamespaceDefinitionImpl extends OffsetableDeclarationBase
 
     private List declarations = Collections.synchronizedList(new ArrayList());
     private String name;
-    private NamespaceImpl namespace;
+    
+    // only one of namespaceOLD/namespaceUID must be used (based on USE_REPOSITORY)
+    private NamespaceImpl namespaceOLD;
+    private CsmUID namespaceUID;
     
     public NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
         super(ast, file);
         assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
         name = ast.getText();
-        namespace = ((ProjectBase) file.getProject()).findNamespace(parent, name, true);
-        if( namespace instanceof NamespaceImpl ) {
-            ((NamespaceImpl) namespace).addNamespaceDefinition(this);
+        NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespace(parent, name, true);
+        _setNamespaceImpl(nsImpl);
+        if( nsImpl instanceof NamespaceImpl ) {
+            nsImpl.addNamespaceDefinition(this);
         }
     }
 
@@ -75,7 +80,7 @@ public class NamespaceDefinitionImpl extends OffsetableDeclarationBase
 //    }
 
     public CsmNamespace getNamespace() {
-        return namespace;
+        return _getNamespaceImpl();
     }
 
     public String getName() {
@@ -95,6 +100,26 @@ public class NamespaceDefinitionImpl extends OffsetableDeclarationBase
             }
         }
         declarations.clear();    
+    }
+
+    private NamespaceImpl _getNamespaceImpl() {
+        if (TraceFlags.USE_REPOSITORY) {
+            return (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(namespaceUID);
+        } else {
+            return namespaceOLD;
+        }
+    }
+
+    private void _setNamespaceImpl(NamespaceImpl namespace) {
+        if (TraceFlags.USE_REPOSITORY) {
+            if (namespaceUID != null) {
+                RepositoryUtils.remove(namespaceUID);
+                namespaceUID = null;
+            }
+            namespaceUID = RepositoryUtils.put(namespace);
+        } else {
+            this.namespaceOLD = namespace;
+        }
     }
     
     

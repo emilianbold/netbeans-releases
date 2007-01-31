@@ -372,8 +372,24 @@ public class CsmKindUtilities {
         } else {
             return false;
         }
-    }     
+    }
     
+    public static boolean isMethodDeclaration(CsmObject obj) {
+        if (isFunctionDeclaration(obj)) {
+            return isClassMember(obj);
+        } else {
+            return false;
+        }
+    }     
+
+    public static boolean isMethodDefinition(CsmObject obj) {
+        if (isFunctionDefinition(obj)) {
+            return isClassMember(CsmBaseUtilities.getFunctionDeclaration((CsmFunction)obj));
+        } else {
+            return false;
+        }
+    }     
+
 //    public static boolean isMethodDefinition(CsmObject obj) {
 //        if (isFunctionDefinition(obj)) {
 //            return isClassMember(getFunctionDeclaration((CsmFunction)obj));

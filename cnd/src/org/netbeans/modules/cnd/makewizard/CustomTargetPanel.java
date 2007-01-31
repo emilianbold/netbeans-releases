@@ -82,7 +82,7 @@ public class CustomTargetPanel extends MakefileWizardPanel {
      */
     CustomTargetPanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = getString("LBL_CustomTargetPanel"); //NOI18N
+	String subtitle = getString("LBL_CustomTargetPanel"); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 	initialized = false;
@@ -98,9 +98,9 @@ public class CustomTargetPanel extends MakefileWizardPanel {
 	GridBagConstraints grid = new GridBagConstraints();
 
 	// Set the GridBagLayout constraints for the first label
-        JLabel label = new JLabel(getString("LBL_DependsOn"));		//NOI18N
+        JLabel label = new JLabel(getString("LBL_DependsOn"));		// NOI18N
 	label.setDisplayedMnemonic(
-			getString("MNEM_DependsOn").charAt(0));		//NOI18N
+			getString("MNEM_DependsOn").charAt(0));		// NOI18N
 	grid.anchor = GridBagConstraints.WEST;
 	grid.gridx = 0;
 	grid.gridy = 0;
@@ -118,9 +118,9 @@ public class CustomTargetPanel extends MakefileWizardPanel {
 	panel.add(dependsOn, grid);
 
 	// Create the actionText's label
-	label = new JLabel(getString("LBL_ActionDisplay"));		//NOI18N
+	label = new JLabel(getString("LBL_ActionDisplay"));		// NOI18N
 	label.setDisplayedMnemonic(
-			getString("MNEM_ActionDisplay").charAt(0));	//NOI18N
+			getString("MNEM_ActionDisplay").charAt(0));	// NOI18N
 	grid.gridx = 0;
 	grid.gridy = 1;
 	grid.gridwidth = 1;
@@ -131,7 +131,7 @@ public class CustomTargetPanel extends MakefileWizardPanel {
 	add(panel, BorderLayout.NORTH);
 
 	// Finally, create the actionText
-	actionText = new JEditorPane(MIMENames.MAKEFILE_MIME_TYPE, "");
+	actionText = new JEditorPane(MIMENames.MAKEFILE_MIME_TYPE, ""); // NOI18N
 	label.setLabelFor(actionText);
 	// FIXUP:
 	if (!(actionText.getDocument() instanceof StyledDocument)) {
@@ -178,9 +178,9 @@ public class CustomTargetPanel extends MakefileWizardPanel {
 		actionDoc.insertString(off, nuePart, null);
 	    } catch (BadLocationException ex) {
 		if (IpeUtils.IfdefDiagnostics) {
-		    System.out.println("BadLocationException: " +	//NOI18N
+		    System.out.println("BadLocationException: " +	// NOI18N
 			    ex.getMessage() +
-			    "\n\toffset = " + ex.offsetRequested());	//NOI18N
+			    "\n\toffset = " + ex.offsetRequested());	// NOI18N
 		    ex.printStackTrace();
 		}
 	    }
@@ -206,9 +206,9 @@ public class CustomTargetPanel extends MakefileWizardPanel {
 		actionDoc.remove(off, e.getLength());
 	    } catch (BadLocationException ex) {
 		if (IpeUtils.IfdefDiagnostics) {
-		    System.out.println("BadLocationException[6]: " +	//NOI18N
+		    System.out.println("BadLocationException[6]: " +	// NOI18N
 			    ex.getMessage() +
-			    "\n\toffset = " + ex.offsetRequested());	//NOI18N
+			    "\n\toffset = " + ex.offsetRequested());	// NOI18N
 		    ex.printStackTrace();
 		}
 	    }
@@ -230,20 +230,20 @@ public class CustomTargetPanel extends MakefileWizardPanel {
 	    action = doc.getText(0, doc.getLength());
 	} catch (BadLocationException e) {
 	    // Shouldn't happen but this will suppress NPE if it does
-	    action = "";//NOI18N
+	    action = "";// NOI18N
 	    if (IpeUtils.IfdefDiagnostics) {
 		System.out.println("BadLocationException validating target"); // NOI18N
 		e.printStackTrace();
 	    }
 	}
 
-	StringTokenizer st = new StringTokenizer(action, "\n");		//NOI18N
+	StringTokenizer st = new StringTokenizer(action, "\n");		// NOI18N
 	st.nextToken();			    // skip target line
 	while (st.hasMoreTokens()) {
 	    String line = st.nextToken();
 	    if (line.length() == 0 || extraLines > 0) {
 		extraLines++;
-	    } else if (!line.startsWith("\t")) {			//NOI18N
+	    } else if (!line.startsWith("\t")) {			// NOI18N
 		invalidLines++;
 	    }
 	}
@@ -273,7 +273,7 @@ public class CustomTargetPanel extends MakefileWizardPanel {
 	inAddNotify = true;
 	depends = target.getDependsOn();
 	if (depends == null) {
-	    depends = "";//NOI18N
+	    depends = "";// NOI18N
 	}
 	dependsOn.setText(depends);		    // set the textfield
 	Element elem = actionDoc.getParagraphElement(0);
@@ -283,32 +283,32 @@ public class CustomTargetPanel extends MakefileWizardPanel {
 	    actionDoc.remove(0, actionDoc.getLength());
 	} catch (BadLocationException e) {
 	    if (IpeUtils.IfdefDiagnostics) {
-		System.out.println("BadLocationException[1]: " +	//NOI18N
+		System.out.println("BadLocationException[1]: " +	// NOI18N
 			e.getMessage() +
-			"\n\toffset = " + e.offsetRequested());		//NOI18N
+			"\n\toffset = " + e.offsetRequested());		// NOI18N
 		e.printStackTrace();
 	    }
 	}
 
 	// Compute the strings for the action are and display them
 	StringBuffer depline = new StringBuffer(target.getName());
-	if (target.getName().equals("clean")) {				//NOI18N
+	if (target.getName().equals("clean")) {				// NOI18N
 	    // This allows the user to add duplicate clean targets
-	    depline.append(":: ");					//NOI18N
+	    depline.append(":: ");					// NOI18N
 	} else {
-	    depline.append(": ");					//NOI18N
+	    depline.append(": ");					// NOI18N
 	}
 	if (depends.length() > 0) {
 	    depline.append(depends);
 	}
-	depline.append("\n");						//NOI18N
+	depline.append("\n");						// NOI18N
 	try {
 	    actionDoc.insertString(0, depline.toString(), null);
 	} catch (BadLocationException e) {
 	    if (IpeUtils.IfdefDiagnostics) {
-		System.out.println("BadLocationException[2]: " +	//NOI18N
+		System.out.println("BadLocationException[2]: " +	// NOI18N
 			e.getMessage() +
-			"\n\toffset = " + e.offsetRequested());		//NOI18N
+			"\n\toffset = " + e.offsetRequested());		// NOI18N
 		e.printStackTrace();
 	    }
 	}
@@ -320,20 +320,20 @@ public class CustomTargetPanel extends MakefileWizardPanel {
 	for (i = 0; i < list.size(); i++) {
 	    String line = list.get(i).toString();
 	    // XXX - Will the "\t" be needed when we get an indentation engine?
-	    action.append("\t").append(line).append("\n");		//NOI18N
+	    action.append("\t").append(line).append("\n");		// NOI18N
 	}
 	if (action.length() == 0) {  
 	    // initial tab (XXX - until indentation engine?)
-	    action.append("\t");					//NOI18N
+	    action.append("\t");					// NOI18N
 	}
 
 	try {
 	    actionDoc.insertString(depline.length(), action.toString(), null);
 	} catch (BadLocationException e) {
 	    if (IpeUtils.IfdefDiagnostics) {
-		System.out.println("BadLocationException[3]: " +	//NOI18N
+		System.out.println("BadLocationException[3]: " +	// NOI18N
 			e.getMessage() +
-			"\n\toffset = " + e.offsetRequested());		//NOI18N
+			"\n\toffset = " + e.offsetRequested());		// NOI18N
 		e.printStackTrace();
 	    }
 	}
@@ -355,16 +355,16 @@ public class CustomTargetPanel extends MakefileWizardPanel {
 	    action = actionDoc.getText(0, actionDoc.getLength());
 	} catch (BadLocationException e) {
 	    if (IpeUtils.IfdefDiagnostics) {
-		System.out.println("BadLocationException[4]: " +	//NOI18N
+		System.out.println("BadLocationException[4]: " +	// NOI18N
 			e.getMessage() +
-			"\n\toffset = " + e.offsetRequested());		//NOI18N
+			"\n\toffset = " + e.offsetRequested());		// NOI18N
 		e.printStackTrace();
 	    }
 	}
 
 	if (action != null) {
 	    ArrayList list = new ArrayList();
-	    StringTokenizer st = new StringTokenizer(action, "\n");	//NOI18N
+	    StringTokenizer st = new StringTokenizer(action, "\n");	// NOI18N
 
 	    st.nextToken();			    // skip target line
 	    while (st.hasMoreTokens()) {

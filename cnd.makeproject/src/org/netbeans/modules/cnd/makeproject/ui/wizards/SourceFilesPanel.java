@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.ResourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.SourceFileFilter;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.openide.util.NbBundle;
 
 public class SourceFilesPanel extends javax.swing.JPanel {
     private Vector data = new Vector();
@@ -72,12 +73,20 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         filterComboBox.addItem(AllFileFilter.getInstance());
         filterComboBox.setSelectedItem(AllSourceFileFilter.getInstance());
         
+        getAccessibleContext().setAccessibleDescription(getString("SourceFilesPanelAD"));
+        addButton.getAccessibleContext().setAccessibleDescription(getString("AddButtonAD"));
+        deleteButton.getAccessibleContext().setAccessibleDescription(getString("DeleteButtonAD"));
         refresh();
+        initFocus();
     }
     
     public void setSeed(String baseDir, String wd) {
         this.baseDir = baseDir;
         this.wd = wd;
+    }
+    
+    public void initFocus() {
+        IpeUtils.requestFocus(addButton);
     }
     
     public Vector getListData() {
@@ -145,6 +154,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             
             getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             getSelectionModel().addListSelectionListener(new TargetSelectionListener());
+            getAccessibleContext().setAccessibleDescription(getString("SourceFileTableAD"));
         }
         
         public boolean getShowHorizontalLines() {
@@ -175,9 +185,9 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     class MyTableModel extends DefaultTableModel {
         public String getColumnName(int col) {
             if (col == 0)
-                return " Add subfolders";
+                return " " + getString("TABLE_COLUMN_0_TXT"); // NOI18N
             else
-                return " Source File Folder";
+                return " " + getString("TABLE_COLUMN_1_TXT"); // NOI18N
         }
         
         public int getColumnCount() {
@@ -238,6 +248,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         sourceFilesLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("SourceFileFoldersMN").charAt(0));
+        sourceFilesLabel.setLabelFor(list);
         sourceFilesLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("SourceFileFoldersLbl"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -246,11 +257,6 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(sourceFilesLabel, gridBagConstraints);
 
-        list.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         scrollPane.setViewportView(list);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -313,7 +319,6 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         add(filterText, gridBagConstraints);
 
         filterComboBox.setEditable(true);
-        filterComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         filterComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterComboBoxActionPerformed(evt);
@@ -368,7 +373,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             else
                 seed = baseDir;
         }
-        FileChooser fileChooser = new FileChooser("Select Source File Folder", "Select", FileChooser.DIRECTORIES_ONLY, null, seed, true);
+        FileChooser fileChooser = new FileChooser(getString("FOLDER_CHOOSER_TITLE_TXT"), getString("FOLDER_CHOOSER_BUTTON_TXT"), FileChooser.DIRECTORIES_ONLY, null, seed, true);
         int ret = fileChooser.showOpenDialog(this);
         if (ret == FileChooser.CANCEL_OPTION)
             return;
@@ -388,4 +393,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     private javax.swing.JLabel sourceFilesLabel;
     // End of variables declaration//GEN-END:variables
     
+    private static String getString(String s) {
+        return NbBundle.getMessage(SourceFilesPanel.class, s);
+    }
 }

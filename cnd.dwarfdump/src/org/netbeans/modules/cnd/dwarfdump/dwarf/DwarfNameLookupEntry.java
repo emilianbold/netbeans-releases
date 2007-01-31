@@ -35,6 +35,6 @@ public class DwarfNameLookupEntry {
     }
 
     void dump(PrintStream out) {
-        out.printf("%d (0x%s)\t%s\n", offset, Long.toHexString(offset), string);
+        out.printf("%d (0x%x)\t%s\n", offset, offset, string); // NOI18N
     }
 }

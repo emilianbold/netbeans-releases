@@ -59,11 +59,27 @@ public class RunDialogPanel extends javax.swing.JPanel {
     
     public RunDialogPanel() {
         initialize(null, false);
+        errorLabel.setText(""); //NOI18N
+        initAccessibility();
+    }
+    
+    private void initAccessibility() {
+        // Accessibility
+        getAccessibleContext().setAccessibleDescription(getString("RUN_DIALOG_PANEL_AD"));
+        executableTextField.getAccessibleContext().setAccessibleDescription(getString("EXECUTABLE_AD"));
+        executableBrowseButton.getAccessibleContext().setAccessibleDescription(getString("BROWSE_BUTTON_AD"));
+        projectComboBox.getAccessibleContext().setAccessibleDescription(getString("ASSOCIATED_PROJECT_AD"));
+        runDirectoryTextField.getAccessibleContext().setAccessibleDescription(getString("RUN_DIRECTORY_LABEL_AD"));
+        runDirectoryBrowseButton.getAccessibleContext().setAccessibleDescription(getString("RUN_DIRECTORY_BUTTON_AD"));
+        argumentTextField.getAccessibleContext().setAccessibleDescription(getString("ARGUMENTS_LABEL_AD"));
+        environmentTextField.getAccessibleContext().setAccessibleDescription(getString("ENVIRONMENT_LABEL_AD"));
     }
     
     public RunDialogPanel(String exePath, boolean executableReadOnly, JButton actionButton) {
         this.actionButton = actionButton;
         initialize(exePath, executableReadOnly);
+        errorLabel.setText(""); //NOI18N
+        initAccessibility();
     }
     
     protected  void initialize(String exePath, boolean executableReadOnly) {
@@ -137,6 +153,7 @@ public class RunDialogPanel extends javax.swing.JPanel {
         add(guidanceTextarea, gridBagConstraints);
 
         executableLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("EXECUTABLE_MN").charAt(0));
+        executableLabel1.setLabelFor(executableTextField);
         executableLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("EXECUTABLE_LBL"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -195,7 +212,7 @@ public class RunDialogPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 6, 12);
         add(projectComboBox, gridBagConstraints);
 
-        errorLabel.setText(" ");
+        errorLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("ERROR_NOTAEXEFILE"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -287,7 +304,7 @@ public class RunDialogPanel extends javax.swing.JPanel {
             seed = getExecutablePath();
         // Show the file chooser
         FileChooser fileChooser = new FileChooser(
-                getString("SelectExecutable"),
+                getString("SelectWorkingDir"),
                 getString("SelectLabel"),
                 FileChooser.DIRECTORIES_ONLY,
                 null,
@@ -409,11 +426,11 @@ public class RunDialogPanel extends javax.swing.JPanel {
         File runDirectoryFile = new File(runDirectoryTextField.getText());
      
         if (!runDirectoryFile.exists()) {
-            setError("ERROR_RUNDIR_DONTEXIST", false);
+            setError("ERROR_RUNDIR_DONTEXIST", false); // NOI18N
             return false;
         }
         if (!runDirectoryFile.isDirectory()) {
-            setError("ERROR_RUNDIR_INVALID", false);
+            setError("ERROR_RUNDIR_INVALID", false); // NOI18N
             return false;
         }
         return true;

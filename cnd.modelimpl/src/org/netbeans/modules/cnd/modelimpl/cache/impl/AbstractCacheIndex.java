@@ -30,7 +30,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -43,7 +42,7 @@ abstract class AbstractCacheIndex implements Serializable {
     private static final long serialVersionUID = -7790789617759717718L;
 
     private Object indexLock = new Object();
-    private Map/*<String, Object>*/ index;
+    private Map<String, Object> index;
 
     protected AbstractCacheIndex() {
         index = new HashMap();

@@ -41,8 +41,8 @@ public class UnixRE {
 	StringBuffer unixText = new StringBuffer(256);
 	char prev = 0;
 
-	if (Boolean.getBoolean("ifdef.debug.unixre") &&	//NOI18N
-			pattern.startsWith("[[[")) {	//NOI18N
+	if (Boolean.getBoolean("ifdef.debug.unixre") &&	// NOI18N
+			pattern.startsWith("[[[")) {	// NOI18N
 	    // OLD re = new RE(pattern.substring(3));
 	    re = Pattern.compile(pattern.substring(3));
 	    return;
@@ -60,11 +60,11 @@ public class UnixRE {
 	    char c = pattern.charAt(i);
 
 	    if (c == '*' && prev != '\\') {
-		unixText.append(".*");					//NOI18N
+		unixText.append(".*");					// NOI18N
 	    } else if (c == '?' && prev != '\\') {
-		unixText.append(".{1}");				//NOI18N
+		unixText.append(".{1}");				// NOI18N
 	    } else if (c == '.' && prev != '\\') {
-		unixText.append("\\.");					//NOI18N
+		unixText.append("\\.");					// NOI18N
 	    } else {
 		unixText.append(c);
 	    }

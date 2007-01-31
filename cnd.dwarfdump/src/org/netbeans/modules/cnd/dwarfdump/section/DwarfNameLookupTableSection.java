@@ -9,6 +9,7 @@
 package org.netbeans.modules.cnd.dwarfdump.section;
 
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfNameLookupEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfNameLookupTable;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
@@ -46,10 +47,11 @@ public class DwarfNameLookupTableSection extends ElfSection {
         long currPos = reader.getFilePointer();
         reader.seek(header.getSectionOffset());
 
-        DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)reader.getSection(".debug_info");
+        DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)reader.getSection(".debug_info"); // NOI18N
 
-
-        for (int i = 0; i < debugInfo.getCompilationUnitsNumber(); i++) {
+        long bytesToRead = header.getSectionSize();
+        
+        while (bytesToRead > 0) {
             DwarfNameLookupTable table = new DwarfNameLookupTable();
             
             table.unit_length = reader.readInt();
@@ -57,8 +59,14 @@ public class DwarfNameLookupTableSection extends ElfSection {
             table.debug_info_offset = reader.readInt();
             table.debug_info_length = reader.readInt();
             
+            bytesToRead -= table.unit_length + 4; // 4 is a size of unit_length itself
+            
             CompilationUnit cu = debugInfo.getCompilationUnit(table.debug_info_offset);
             
+            if( cu == null ) {
+		continue;
+	    }
+	    
             for (;;) {
                 int entryOffset = reader.readInt();
                 
@@ -69,9 +77,13 @@ public class DwarfNameLookupTableSection extends ElfSection {
                 String name = reader.readString();
                 table.entries.add(new DwarfNameLookupEntry(entryOffset, name));
                 
-                cu.getEntry(entryOffset).setQualifiedName(name);
+		DwarfEntry entry = cu.getEntry(entryOffset);
+                
+		if (entry != null) {
+		    entry.setQualifiedName(name);
+		}
             }
-            
+
             result.add(table);
         }
         

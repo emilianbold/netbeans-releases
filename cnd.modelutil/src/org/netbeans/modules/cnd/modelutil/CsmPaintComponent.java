@@ -106,15 +106,15 @@ public abstract class CsmPaintComponent extends JPanel {
         draw(g);
         
         if(!postfixes.isEmpty()) {
-            drawString(g, " (", POSTFIX_COLOR);
+            drawString(g, " (", POSTFIX_COLOR); // NOI18N
             Iterator iter = postfixes.iterator();
             while(iter.hasNext()) {
                 ((PostfixString) iter.next()).Draw(g);
                 if(iter.hasNext()) {
-                    drawString(g, ",  ", POSTFIX_COLOR);
+                    drawString(g, ",  ", POSTFIX_COLOR); // NOI18N
                 }
             } 
-            drawString(g, ")", POSTFIX_COLOR);                        
+            drawString(g, ")", POSTFIX_COLOR); // NOI18N
         }        
     }
     

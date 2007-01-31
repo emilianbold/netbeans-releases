@@ -63,7 +63,7 @@ public class CompilerPathPanel extends MakefileWizardPanel implements FocusListe
      */
     public CompilerPathPanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = getString("LBL_CompilerPathPanel"); //NOI18N
+	String subtitle = getString("LBL_CompilerPathPanel"); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 	initialized = false;
@@ -77,17 +77,17 @@ public class CompilerPathPanel extends MakefileWizardPanel implements FocusListe
 	GridBagConstraints grid = new GridBagConstraints();
 	grid.fill = GridBagConstraints.HORIZONTAL;
 
-	JLabel pathLabel = new JLabel(getString("LBL_CompilerPaths"));	//NOI18N
+	JLabel pathLabel = new JLabel(getString("LBL_CompilerPaths"));	// NOI18N
 	grid.anchor = GridBagConstraints.NORTHWEST;
 	grid.gridx = 0;
 	grid.gridy = 0;
 	grid.gridwidth = GridBagConstraints.REMAINDER;
 	add(pathLabel, grid, -1);
 
-	c = createLine(1, getString("LBL_C"), getString("MNEM_C"));	    //NOI18N
-	cpp = createLine(2, getString("LBL_Cpp"), getString("MNEM_Cpp"));   //NOI18N
-	f95 = createLine(4, getString("LBL_F95"), getString("MNEM_F95"));   //NOI18N
-	asm = createLine(5, getString("LBL_Asm"), getString("MNEM_Asm"));   //NOI18N
+	c = createLine(1, getString("LBL_C"), getString("MNEM_C"));	    // NOI18N
+	cpp = createLine(2, getString("LBL_Cpp"), getString("MNEM_Cpp"));   // NOI18N
+	f95 = createLine(4, getString("LBL_F95"), getString("MNEM_F95"));   // NOI18N
+	asm = createLine(5, getString("LBL_Asm"), getString("MNEM_Asm"));   // NOI18N
 
 	c.addFocusListener(this);
 	cpp.addFocusListener(this);
@@ -100,7 +100,7 @@ public class CompilerPathPanel extends MakefileWizardPanel implements FocusListe
 	grid.gridheight = GridBagConstraints.REMAINDER;
 	grid.weightx = 1.0;
 	grid.weighty = 1.0;
-	add(new JLabel(""), grid);					//NOI18N
+	add(new JLabel(""), grid);					// NOI18N
     }
 
     private JTextField createLine(int lnum, String label, String mnemonic) {
@@ -129,8 +129,8 @@ public class CompilerPathPanel extends MakefileWizardPanel implements FocusListe
 	grid.insets = new Insets(11, 12, 0, 0);
 	add(nueText, grid);
 
-	JButton chooser = new JButton(getString("BTN_Chooser"));	//NOI18N
-	String mnem = "MNEM_Chooser" +			//NOI18N
+	JButton chooser = new JButton(getString("BTN_Chooser"));	// NOI18N
+	String mnem = "MNEM_Chooser" +			// NOI18N
 				new Integer(lnum);
 	chooser.setMnemonic(getString(mnem).charAt(0));
 	grid.anchor = GridBagConstraints.WEST;
@@ -156,11 +156,11 @@ public class CompilerPathPanel extends MakefileWizardPanel implements FocusListe
 	    
 		if (fc == null) {
 		    fc = new JFileChooser();
-		    fc.setApproveButtonText(getString("BTN_Approve"));	//NOI18N
+		    fc.setApproveButtonText(getString("BTN_Approve"));	// NOI18N
 		    fc.setFileSystemView(new
 				IpeFileSystemView(fc.getFileSystemView()));
 		    fc.setDialogTitle(
-				getString("DLG_FILE_CHOOSER_TITLE"));	//NOI18N
+				getString("DLG_FILE_CHOOSER_TITLE"));	// NOI18N
 		}
 
 		if (chooserDir == null) {

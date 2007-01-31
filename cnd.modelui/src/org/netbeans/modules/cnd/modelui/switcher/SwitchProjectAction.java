@@ -61,7 +61,7 @@ public class SwitchProjectAction extends NodeAction {
     }
     
     public String getName() {
-	return i18n("CTL_SwitchProjectAction"); 
+	return i18n("CTL_SwitchProjectAction"); // NOI18N
     }
     
     private String i18n(String id) {

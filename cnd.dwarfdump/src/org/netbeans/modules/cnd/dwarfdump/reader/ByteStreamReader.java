@@ -19,18 +19,13 @@
 
 package org.netbeans.modules.cnd.dwarfdump.reader;
 
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATE;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
+import java.io.ByteArrayInputStream;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.FORM;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
-import org.netbeans.modules.cnd.dwarfdump.section.DwarfAttribute;
-import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
 import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 
 /**
  * I decided not to extend RandomAccessFile because in this case I cannot
@@ -50,7 +45,7 @@ public class ByteStreamReader implements DataInput {
     public static final int MSB = 2;
     
     public ByteStreamReader(String fname) throws FileNotFoundException {
-        file = new RandomAccessFile(fname, "r");
+        file = new RandomAccessFile(fname, "r"); // NOI18N
         this.fileName = fname;
     }
     
@@ -62,7 +57,7 @@ public class ByteStreamReader implements DataInput {
         if (encoding == LSB || encoding == MSB) {
             dataEncoding = encoding;
         } else {
-            throw new IllegalArgumentException("Wrong Data Encoding specified (" + encoding + ").");
+            throw new IllegalArgumentException("Wrong Data Encoding specified (" + encoding + ")."); // NOI18N
         }
     }
     
@@ -184,6 +179,30 @@ public class ByteStreamReader implements DataInput {
         return file.readUTF();
     }
     
+    /**
+     * Reads null-padded limited-lenght UTF-8 string from file. If the string is
+     * exactly len characters long, terminating null is not required.
+     * Note: this function will read len bytes from the stream in ANY case.
+     * @param len bytes to be read
+     * @return Read string
+     */
+    public String readUTF(int len) throws IOException {
+        /* 
+         * ReadUTF from DataInputStream will be used for reading. 
+         * This assumes that string is represented in modified UTF-8 encoding 
+         * of a Unicode string in a file. This, in case, assumes that first 2 
+         * bytes indicate length of the string.
+         * So, add 2 bytes and add length
+         */ 
+        
+        byte[] bytes = new byte[len + 2];
+        bytes[1] = (byte)(0xFF & len);
+        bytes[0] = (byte)(0xFF & (len >> 8));
+        readFully(bytes, 2, len);
+        
+        return new DataInputStream(new ByteArrayInputStream(bytes)).readUTF();
+    }
+    
     // Little Endian Base 128 (LEB128)
     private int readLEB128(boolean signed) throws IOException {
         int result = 0;
@@ -219,7 +238,7 @@ public class ByteStreamReader implements DataInput {
         if (fileClass == ElfConstants.ELFCLASS32 || fileClass == ElfConstants.ELFCLASS64) {
             this.fileClass = fileClass;
         } else {
-            throw new IllegalArgumentException("Wrong File Class specified (" + fileClass + ").");
+            throw new IllegalArgumentException("Wrong File Class specified (" + fileClass + ")."); // NOI18N
         }
     }
     

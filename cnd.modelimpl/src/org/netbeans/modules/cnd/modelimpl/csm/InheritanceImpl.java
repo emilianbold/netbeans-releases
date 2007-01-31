@@ -99,7 +99,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
                     else 
                     {
                         if (TraceFlags.DEBUG && !(o instanceof CsmNamespace))
-                            System.out.println( "Unknown token instead of Namespace/Class: " + token.getText());
+                            System.err.println( "Unknown token instead of Namespace/Class: " + token.getText()); // NOI18N
                     }
                     return; // it's definitely the last!; besides otherwise we get NPE in for 
                     //break;

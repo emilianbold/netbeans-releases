@@ -145,8 +145,8 @@ public abstract class FileChooserPanel extends MakefileWizardPanel
 	add(text, grid);
 
 	// Next, the file chooser button
-        JButton chooser = new JButton(getString("BTN_Chooser"));	//NOI18N
-	chooser.setMnemonic(getString("MNEM_Chooser").charAt(0));	//NOI18N
+        JButton chooser = new JButton(getString("BTN_Chooser"));	// NOI18N
+	chooser.setMnemonic(getString("MNEM_Chooser").charAt(0));	// NOI18N
 	grid.gridx = 2;
 	grid.weightx = 0.0;
 	grid.gridwidth = GridBagConstraints.REMAINDER;
@@ -160,11 +160,11 @@ public abstract class FileChooserPanel extends MakefileWizardPanel
 	    
 		if (fc == null) {
 		    fc = new JFileChooser();
-		    fc.setApproveButtonText(getString("BTN_Approve"));	//NOI18N
+		    fc.setApproveButtonText(getString("BTN_Approve"));	// NOI18N
 		    fc.setFileSystemView(new
 				IpeFileSystemView(fc.getFileSystemView()));
 		    fc.setDialogTitle(
-				getString("DLG_FILE_CHOOSER_TITLE"));	//NOI18N
+				getString("DLG_FILE_CHOOSER_TITLE"));	// NOI18N
 		}
 
 		// See if the user has already typed a directory. If so use it.
@@ -228,7 +228,7 @@ public abstract class FileChooserPanel extends MakefileWizardPanel
 	    grid.fill = GridBagConstraints.BOTH;
 	    grid.insets = new Insets(11, 0, 0, 0);
 	    helpText = new JTextArea(help);
-	    helpText.getAccessibleContext().setAccessibleName("ACSN_DirHelp"); //NOI18N
+	    helpText.getAccessibleContext().setAccessibleName("ACSN_DirHelp"); // NOI18N
 	    helpText.addFocusListener(this);
 	    helpText.setEditable(false);
 	    helpText.setFocusable(false);
@@ -243,7 +243,7 @@ public abstract class FileChooserPanel extends MakefileWizardPanel
 	    grid.gridheight = GridBagConstraints.REMAINDER;
 	    grid.weightx = 1.0;
 	    grid.weighty = 1.0;
-	    add(new JLabel(""), grid);
+	    add(new JLabel(""), grid); // NOI18N
 	}
     }
 

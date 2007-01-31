@@ -100,26 +100,26 @@ public class MacroImpl extends LineColOffsetableBase implements CsmMacro {
 
     public String toString() {
         StringBuffer retValue = new StringBuffer();
-        retValue.append("#define '");
+        retValue.append("#define '"); // NOI18N
         retValue.append(getName());
         if (getParameters() != null) {
-            retValue.append("[");
+            retValue.append("["); // NOI18N
             for (Iterator it = getParameters().iterator(); it.hasNext();) {
                 String param = (String) it.next();
                 retValue.append(param);
                 if (it.hasNext()) {
-                    retValue.append(", ");
+                    retValue.append(", "); // NOI18N
                 }                
             }
-            retValue.append("]");
+            retValue.append("]"); // NOI18N
         }
         if (getBody().length() > 0) {
-            retValue.append("'='");
+            retValue.append("'='"); // NOI18N
             retValue.append(getBody());
         }
-        retValue.append("' [");
-        retValue.append(getStartPosition()).append("-").append(getEndPosition());
-        retValue.append("]");
+        retValue.append("' ["); // NOI18N
+        retValue.append(getStartPosition()).append("-").append(getEndPosition()); // NOI18N
+        retValue.append("]"); // NOI18N
         return retValue.toString();
     }   
     

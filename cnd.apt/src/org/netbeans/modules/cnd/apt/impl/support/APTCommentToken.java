@@ -39,7 +39,7 @@ public class APTCommentToken extends APTTokenAbstact {
     protected int endLine;
 
     public String getText() {
-        return "<comment text skipped>";
+        return "<comment text skipped>"; // NOI18N
     }
     
     public int getEndOffset() {

@@ -30,9 +30,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 public class Folder {
-    public static final String DEFAULT_FOLDER_NAME = "New Folder";
+    public static final String DEFAULT_FOLDER_NAME = getString("NewFolderName");
     
     private ConfigurationDescriptor configurationDescriptor;
     private String name;
@@ -142,7 +143,7 @@ public class Folder {
             return item;
         // Check if already in project. Silently ignore if already there.
         if (isProjectFiles() && ((MakeConfigurationDescriptor)configurationDescriptor).findProjectItemByPath(item.getPath()) != null) {
-            System.err.println("Folder - addItem - item ignored, already added: " + item);
+            System.err.println("Folder - addItem - item ignored, already added: " + item); // NOI18N  // FIXUP: correct?
             return item;
         }
         // Add it to the folder
@@ -453,5 +454,10 @@ public class Folder {
             ((ChangeListener)it.next()).stateChanged(ev);
         }
         configurationDescriptor.setModified();
+    }
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(Folder.class, s);
     }
 }

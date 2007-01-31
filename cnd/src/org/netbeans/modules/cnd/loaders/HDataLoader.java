@@ -53,10 +53,10 @@ public final class HDataLoader extends UniFileLoader {
 
     /** The suffix list for C/C++ header files */
     private static final String[] hdrExtensions =
-				{ "h", "H", "hpp", "hxx" };		//NOI18N
+				{ "h", "H", "hpp", "hxx" };		// NOI18N
 
     public HDataLoader() {
-       super("org.netbeans.modules.cnd.loaders.HDataObject");           //NOI18N
+       super("org.netbeans.modules.cnd.loaders.HDataObject");           // NOI18N
        instance = this;
        createExtentions();
     }

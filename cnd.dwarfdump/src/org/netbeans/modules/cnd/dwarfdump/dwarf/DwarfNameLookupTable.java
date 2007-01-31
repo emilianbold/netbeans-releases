@@ -35,12 +35,12 @@ public class DwarfNameLookupTable {
     public ArrayList<DwarfNameLookupEntry> entries = new ArrayList<DwarfNameLookupEntry>();
     
     public void dump(PrintStream out) {
-        out.println("\nPublic names:\n");
-        out.printf("  %-40s %s\n", "Length:", unit_length);
-        out.printf("  %-40s %s\n", "Version:", version);
-        out.printf("  %-40s %s\n", "Offset into .debug_info section:", debug_info_offset);
-        out.printf("  %-40s %s\n", "Size of area in .debug_info section:", debug_info_length);
-        out.println("\n    Offset      Name");
+        out.println("\nPublic names:\n"); // NOI18N
+        out.printf("  %-40s %s\n", "Length:", unit_length); // NOI18N
+        out.printf("  %-40s %s\n", "Version:", version); // NOI18N
+        out.printf("  %-40s %s\n", "Offset into .debug_info section:", debug_info_offset); // NOI18N
+        out.printf("  %-40s %s\n", "Size of area in .debug_info section:", debug_info_length); // NOI18N
+        out.println("\n    Offset      Name"); // NOI18N
     
         for (DwarfNameLookupEntry entry : entries) {
             entry.dump(out);

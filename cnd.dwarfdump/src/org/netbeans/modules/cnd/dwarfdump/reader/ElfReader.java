@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.dwarfdump.reader;
 
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
 import org.netbeans.modules.cnd.dwarfdump.elf.ElfHeader;
+import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
 import org.netbeans.modules.cnd.dwarfdump.elf.ProgramHeaderTable;
 import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
@@ -64,21 +65,21 @@ public class ElfReader extends ByteStreamReader {
     
     public String getSectionName(int sectionIdx) {
         if (stringTableSection == null) {
-            return ".shstrtab";
+            return ".shstrtab"; // NOI18N
         }
         
-        int nameOffset = sectionHeadersTable[sectionIdx].sh_name;
+        long nameOffset = sectionHeadersTable[sectionIdx].sh_name;
         return stringTableSection.getString(nameOffset);
     }
     
-    public void readElfHeader() throws IOException {
+    public void readElfHeader() throws WrongFileFormatException, IOException {
         elfHeader = new ElfHeader();
         
         byte[] bytes = new byte[16];
         read(bytes);
         
         if (bytes[0] != 0x7f || bytes[1] != 'E' || bytes[2] != 'L' || bytes[3] != 'F') {
-            throw new IOException("Not an ELF file");
+            throw new WrongFileFormatException("Not an ELF file"); // NOI18N
         }
         
         elfHeader.elfClass = bytes[4];
@@ -89,7 +90,7 @@ public class ElfReader extends ByteStreamReader {
         
         if ((elfHeader.elfClass != ElfConstants.ELFCLASS32 && elfHeader.elfClass != ElfConstants.ELFCLASS64) ||
                 (elfHeader.elfData != ElfConstants.ELFDATA2LSB && elfHeader.elfData != ElfConstants.ELFDATA2MSB)) {
-            throw new IOException("unknown ELF format");
+            throw new WrongFileFormatException("unknown ELF format"); // NOI18N
         }
         
         setDataEncoding(elfHeader.elfData);
@@ -141,27 +142,26 @@ public class ElfReader extends ByteStreamReader {
     private SectionHeader readSectionHeader() throws IOException {
         SectionHeader h = new SectionHeader();
         
-        h.sh_name = readInt();
-        h.sh_type = readInt();
-        h.sh_flags = readInt();
-        
         if (getFileClass() == ElfConstants.ELFCLASS32) {
+            h.sh_name = readInt();
+            h.sh_type = readInt();
+            h.sh_flags = readInt();
             h.sh_addr = readInt();
             h.sh_offset = readInt();
             h.sh_size = readInt();
-        } else {
-            h.sh_addr = readLong();
-            h.sh_offset = readLong();
-            h.sh_size = readLong();
-        }
-        
-        h.sh_link = readInt();
-        h.sh_info = readInt();
-        
-        if (getFileClass() == ElfConstants.ELFCLASS32) {
+            h.sh_link = readInt();
+            h.sh_info = readInt();
             h.sh_addralign = readInt();
             h.sh_entsize = readInt();
         } else {
+            h.sh_name = readLong();
+            h.sh_type = readLong();
+            h.sh_flags = readLong();
+            h.sh_addr = readLong();
+            h.sh_offset = readLong();
+            h.sh_size = readLong();
+            h.sh_link = readLong();
+            h.sh_info = readLong();
             h.sh_addralign = readLong();
             h.sh_entsize = readLong();
         }

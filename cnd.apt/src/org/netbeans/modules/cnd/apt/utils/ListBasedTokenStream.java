@@ -36,7 +36,7 @@ public class ListBasedTokenStream implements TokenStream {
     
     /** Creates a new instance of ListBasedTokenStream */
     public ListBasedTokenStream(List/*<Token>*/ tokens) {
-        assert(tokens != null) : "not valid to pass null list";
+        assert(tokens != null) : "not valid to pass null list"; // NOI18N
         this.tokens = tokens;
         position = tokens.iterator();
     }

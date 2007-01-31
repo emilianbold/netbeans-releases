@@ -19,28 +19,113 @@
 
 package org.netbeans.modules.cnd.dwarfdump.dwarf;
 
+import java.io.IOException;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Iterator;
+import org.netbeans.modules.cnd.dwarfdump.section.DwarfMacroInfoSection;
 
 /**
  *
  * @author ak119685
  */
 public class DwarfMacinfoTable {
-    private long offset;
-    ArrayList<DwarfMacinfoEntry> table = new ArrayList<DwarfMacinfoEntry>();
+    private long baseSourceTableOffset = -1;
+    private long fileSourceTableOffset = -1;
+    private DwarfMacroInfoSection section;
+    ArrayList<DwarfMacinfoEntry> baseSourceTable = new ArrayList<DwarfMacinfoEntry>();
+    ArrayList<DwarfMacinfoEntry> fileSourceTable = new ArrayList<DwarfMacinfoEntry>();
+    private boolean baseSourceTableRead;
+    private boolean fileSourceTableRead;
     
-    public DwarfMacinfoTable(long offset) {
-        this.offset = offset;
+    public DwarfMacinfoTable(DwarfMacroInfoSection section, long offset) {
+        this.section = section;
+        this.baseSourceTableRead = false;
+        this.fileSourceTableRead = false;
+        baseSourceTableOffset = fileSourceTableOffset = offset;
     }
     
     public void addEntry(DwarfMacinfoEntry entry) {
-        table.add(entry);
+        if (entry.fileIdx == -1) {
+            baseSourceTable.add(entry);
+        } else {
+            fileSourceTable.add(entry);
+        }
+    }
+    
+    private ArrayList<DwarfMacinfoEntry> getBaseSourceTable() {
+        
+        if (baseSourceTableRead) {
+            return baseSourceTable;
+        }
+        
+        try {
+            readBaseSourceTable();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        
+        return baseSourceTable;
+    }
+    
+    private ArrayList<DwarfMacinfoEntry> getFileSourceTable() {
+        if (fileSourceTableRead) {
+            return fileSourceTable;
+        }
+        
+        try {
+            readFileSourceTable();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        return fileSourceTable;
+    }
+    
+    private void readBaseSourceTable() throws IOException {
+        long length = section.readMacinfoTable(this, baseSourceTableOffset, true);
+        fileSourceTableOffset = baseSourceTableOffset + length;
+        baseSourceTableRead = true;
+    }
+    
+    private void readFileSourceTable() throws IOException {
+        long length = section.readMacinfoTable(this, fileSourceTableOffset, false);
+        fileSourceTableRead = true;
     }
     
     public ArrayList<DwarfMacinfoEntry> getCommandLineMarcos() {
-        return getMacros(-1);
+        ArrayList<DwarfMacinfoEntry> entries = getBaseSourceTable();
+        int size = entries.size();
+        
+        if (size == 0 || entries.get(0).lineNum == 0) {
+            return entries;
+        }
+        
+        ArrayList<DwarfMacinfoEntry> result = new ArrayList<DwarfMacinfoEntry>();
+        int idx = 0;
+        int currLine = entries.get(0).lineNum;
+        int prevLine = -1;
+        
+        // Skip non-command-line entries... 
+        
+        while (currLine > prevLine && idx < size) {
+            prevLine = currLine;
+            if (idx == size -1){
+                return result;
+            }
+            currLine = entries.get(++idx).lineNum;
+        }
+                
+        DwarfMacinfoEntry entry = entries.get(idx);
+
+        do {
+            result.add(entry);
+            currLine = entry.lineNum;
+            idx++;
+        } while (idx < size && (entry = entries.get(idx)).lineNum - currLine == 1);
+        
+        return result;
     }
     
     public ArrayList<String> getCommandLineDefines() {
@@ -48,20 +133,16 @@ public class DwarfMacinfoTable {
         ArrayList<DwarfMacinfoEntry> macros = getCommandLineMarcos();
         
         for (DwarfMacinfoEntry macro : macros) {
-            result.add(macro.definition.replaceFirst(" ", "="));
+            result.add(macro.definition.replaceFirst(" ", "=")); // NOI18N
         }
         
         return result;
-    }
-
-    public ArrayList<DwarfMacinfoEntry> getMacros() {
-        return table;
     }
     
     public ArrayList<DwarfMacinfoEntry> getMacros(int fileIdx) {
         ArrayList<DwarfMacinfoEntry> result = new ArrayList<DwarfMacinfoEntry>();
         
-        for (DwarfMacinfoEntry entry : table) {
+        for (DwarfMacinfoEntry entry : getFileSourceTable()) {
             if (entry.fileIdx == fileIdx && (entry.type.equals(MACINFO.DW_MACINFO_define) || entry.type.equals(MACINFO.DW_MACINFO_undef))) {
                 result.add(entry);
             }
@@ -69,11 +150,17 @@ public class DwarfMacinfoTable {
         
         return result;
     }
-    
+        
     public void dump(PrintStream out) {
-        for (DwarfMacinfoEntry entry : table) {
+        out.printf("\nMACRO Table (offset = %d [0x%08x]):\n\n", baseSourceTableOffset, baseSourceTableOffset); // NOI18N
+        
+        for (DwarfMacinfoEntry entry : getBaseSourceTable()) {
             entry.dump(out);
         }
-    }    
+        
+        for (DwarfMacinfoEntry entry : getFileSourceTable()) {
+            entry.dump(out);
+        }
+    }
     
 }

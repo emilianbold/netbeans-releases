@@ -140,7 +140,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
     public MakefileWizard() {
 	makefileWizard = this;
 	String title = NbBundle.getBundle(MakefileWizard.class).
-		    getString ("LBL_MakefileWizardTitle");	//NOI18N
+		    getString ("LBL_MakefileWizardTitle");	// NOI18N
 	setTitle(title);
 	makefileData = new MakefileData();
     }
@@ -283,7 +283,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	};
 	MessageFormat mf = new MessageFormat 
 		(NbBundle.getBundle(WizardDescriptor.class).getString
-		 ("CTL_ArrayIteratorName"));				//NOI18N
+		 ("CTL_ArrayIteratorName"));				// NOI18N
 	
 	return mf.format(args);
     }
@@ -294,7 +294,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	// FIXUP: HACK - updateState is now protected in WizardDescriptor. Calling 
 	// FIXUP: setTitleFormat() has the sideeffect of calling updateState, so this works for now....
 	if (wd != null)
-	    wd.setTitleFormat(new MessageFormat("{0}")); //NOI18N
+	    wd.setTitleFormat(new MessageFormat("{0}")); // NOI18N
     }
 
     /** Updates button state */
@@ -336,7 +336,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 			virtIndex++;
 		    }
 		    steps[j++] = NbBundle.getMessage(getClass(),
-			    "FMT_TARGET_PANEL", "    ",		//NOI18N
+			    "FMT_TARGET_PANEL", "    ",		// NOI18N
 			    ((WizardDescriptor.Panel)panels[i]).getComponent().getName());
 		}
 	    } else {
@@ -405,7 +405,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	updatePanels(makefileData.getMakefileType());
 
 	((JPanel)currentPanel.getComponent()).putClientProperty(
-			"WizardPanel_contentSelectedIndex",		//NOI18N
+			"WizardPanel_contentSelectedIndex",		// NOI18N
 			new Integer(virtIndex));
     }
     
@@ -427,7 +427,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	updatePanels(makefileData.getMakefileType());
 
 	((JPanel)currentPanel.getComponent()).putClientProperty(
-			"WizardPanel_contentSelectedIndex",		//NOI18N
+			"WizardPanel_contentSelectedIndex",		// NOI18N
 			new Integer(virtIndex));
     }
 
@@ -514,7 +514,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	if (needCompilerFlags && !haveCompilerFlags) {
 	    complexPanels.add(addIdx,
 		    new StepHeader(NbBundle.getBundle(getClass()).
-		    getString("FMT_COMP_PREFS"), 3, -1));		//NOI18N
+		    getString("FMT_COMP_PREFS"), 3, -1));		// NOI18N
 	    complexPanels.add(addIdx + 1, basicFlagsDescriptorPanel);
 	    complexPanels.add(addIdx + 2, compilerOptionsDescriptorPanel);
 	    complexPanels.add(addIdx + 3, compilerPathDescriptorPanel);
@@ -577,7 +577,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 			// Just change the name of the target
 			hdr.setName(name);
 			hdr.setTitle(NbBundle.getMessage(getClass(),
-				    "FMT_TARGET_CREATE", name));	//NOI18N
+				    "FMT_TARGET_CREATE", name));	// NOI18N
 		    }
 		    changed = true;
 		    break;
@@ -695,18 +695,18 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	currentPanel = (WizardDescriptor.Panel) panels[index];
 	//wd = new MakefileWizardDescriptor(this);
 	/*
-	wd.putProperty("WizardPanel_autoWizardStyle",			//NOI18N
+	wd.putProperty("WizardPanel_autoWizardStyle",			// NOI18N
 				new Boolean(true));
-	wd.putProperty("WizardPanel_contentDisplayed",			//NOI18N
+	wd.putProperty("WizardPanel_contentDisplayed",			// NOI18N
 				new Boolean(true));
-	wd.setTitleFormat(new MessageFormat("{0}"));			//NOI18N
+	wd.setTitleFormat(new MessageFormat("{0}"));			// NOI18N
 	wd.setTitle(title);
 	*/
 	setupWizardButtons(wd);
 	
 	updatePanels(getMakefileData().getMakefileType()); //FIXUP
 	((JPanel)(currentPanel.getComponent())).
-			putClientProperty("WizardPanel_contentSelectedIndex",		//NOI18N
+			putClientProperty("WizardPanel_contentSelectedIndex",		// NOI18N
 			new Integer(0));
 	wd.addPropertyChangeListener(listener);
 	/*
@@ -746,9 +746,9 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	    finishLabel = finishButton.getText();
 	    finishMnemonic = finishButton.getMnemonic();
 	    finishButton.setText(NbBundle.getBundle(MakefileWizard.class).
-			    getString("BTN_Last"));			//NOI18N
+			    getString("BTN_Last"));			// NOI18N
 	    finishButton.setMnemonic(NbBundle.getBundle(MakefileWizard.class).
-			    getString("MNEM_Last").charAt(0));		//NOI18N
+			    getString("MNEM_Last").charAt(0));		// NOI18N
 
 	    cancelButton = (JButton)objs[2];
 	}
@@ -875,7 +875,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	    this.name = name;
 	    this.type = type;
 	    this.setTitle(NbBundle.getMessage(getClass(),
-			"FMT_TARGET_CREATE", name));			//NOI18N
+			"FMT_TARGET_CREATE", name));			// NOI18N
 	}
     
 	public String getName() {
@@ -1023,7 +1023,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	    }
 	}
 	else
-	    System.err.println("errors generating makefile..."); // FIXUP //NOI18N
+	    System.err.println("errors generating makefile..."); // FIXUP // NOI18N
         return Collections.singleton (result);
     }
 
@@ -1079,7 +1079,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	String fullMakefileName = dir + File.separator + makefileName;
 
 	String useMakefileName = null;
-	if (dir.equals(md.getBaseDirectory()) || ".".equals(dir) || dir.length() == 0) //NOI18N
+	if (dir.equals(md.getBaseDirectory()) || ".".equals(dir) || dir.length() == 0) // NOI18N
 	    useMakefileName = makefileName;
 	else
 	    useMakefileName = fullMakefileName;

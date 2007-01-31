@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
  *
@@ -35,19 +36,20 @@ public class FileInfo {
     private String workdir = null;
     private ArrayList<String> includes = null;
     private ArrayList<String> defines = null;
+    private CsmFile csmFile = null;
     
     /** Creates a new instance of CompileInfo */
     public FileInfo(String compileStr) throws IllegalArgumentException {
         
         // Check if it is a compilation string ...
-        if (compileStr.indexOf(" -c ") == -1) {
-            throw new IllegalArgumentException("This is not a compilation string.");
+        if (compileStr.indexOf(" -c ") == -1) { // NOI18N
+            throw new IllegalArgumentException("This is not a compilation string."); // NOI18N
         }
         
         includes = new ArrayList<String>();
         defines = new ArrayList<String>();
         
-        StringTokenizer st = new StringTokenizer(compileStr, " ");
+        StringTokenizer st = new StringTokenizer(compileStr, " "); // NOI18N
         
         int total_count = st.countTokens();
         
@@ -56,12 +58,12 @@ public class FileInfo {
         
         int token_count = 2;
         
-        if (workdir.startsWith("\"")) {
+        if (workdir.startsWith("\"")) { // NOI18N
             String tok = st.nextToken();
             do {
-                workdir += " " + tok;
+                workdir += " " + tok; // NOI18N
                 token_count++;
-            } while (!tok.endsWith("\""));
+            } while (!tok.endsWith("\"")); // NOI18N
             
             workdir = workdir.substring(1, workdir.length() - 1);
         }
@@ -70,17 +72,17 @@ public class FileInfo {
             String token = st.nextToken();
             token_count++;
             
-            if (token.equals("-o")) {
+            if (token.equals("-o")) { // NOI18N
                 objFileName = calculatePath(st.nextToken());
                 token_count++;
-            } else if (token.startsWith("-I")) {
+            } else if (token.startsWith("-I")) { // NOI18N
                 if (token.length() == 2) {
                     includes.add(calculatePath(st.nextToken()));
                     token_count++;
                 } else {
                     includes.add(calculatePath(token.substring(2)));
                 }
-            } else if (token.startsWith("-D")) {
+            } else if (token.startsWith("-D")) { // NOI18N
                 if (token.length() == 2) {
                     defines.add(st.nextToken());
                     token_count++;
@@ -89,14 +91,14 @@ public class FileInfo {
                 }
             } else {
                 // TODO: Change algorythm!
-                if (!token.startsWith("-")) {
+                if (!token.startsWith("-")) { // NOI18N
                     srcFileName = calculatePath(token);
                 }
             }
         }
         
-        if (objFileName == null) {
-            objFileName = srcFileName.substring(0, srcFileName.lastIndexOf('.')) + ".o";
+        if (objFileName == null && srcFileName != null ) {
+            objFileName = srcFileName.substring(0, srcFileName.lastIndexOf('.')) + ".o"; // NOI18N
         }
     }
     
@@ -125,13 +127,13 @@ public class FileInfo {
         String path = "";
         
         try {
-            if (file.startsWith("/") || file.startsWith("\\")) {
+            if (file.startsWith("/") || file.startsWith("\\")) { // NOI18N
                 path = new File(file).getCanonicalPath();
             } else {
                 path = new File(workdir + File.separator + file).getCanonicalPath();
             }
         } catch (IOException ex) {
-            throw new IllegalArgumentException("Cannot convert " + file + " to canonical path");
+            throw new IllegalArgumentException("Cannot convert " + file + " to canonical path"); // NOI18N
         }
         
         return path;
@@ -146,4 +148,12 @@ public class FileInfo {
         
         return result;
     }
+
+    public CsmFile getCsmFile() {
+	return csmFile;
+    }
+
+    public void setCsmFile(CsmFile csmFile) {
+	this.csmFile = csmFile;
+    }    
 }

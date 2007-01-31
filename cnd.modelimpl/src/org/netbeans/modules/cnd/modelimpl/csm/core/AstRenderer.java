@@ -98,6 +98,9 @@ public class AstRenderer {
                         FunctionDDImpl fddi = new FunctionDDImpl(token, file, currentNamespace);
 			//fddi.setScope(currentNamespace);
                         container.addDeclaration(fddi);
+                        if (currentNamespace == null) {
+                            currentNamespace = null;
+                        }
                         currentNamespace.addDeclaration(fddi);
                     }
                     break;
@@ -524,8 +527,8 @@ public class AstRenderer {
                             StringBuffer tokenText = new StringBuffer();
                             tokenText.append('[').append(namePart.getText());
                             if (namePart.getNumberOfChildren() == 0) {
-                                tokenText.append(", line=").append(namePart.getLine());
-                                tokenText.append(", column=").append(namePart.getColumn());
+                                tokenText.append(", line=").append(namePart.getLine()); // NOI18N
+                                tokenText.append(", column=").append(namePart.getColumn()); // NOI18N
                             }
                             tokenText.append(']');
                             System.err.println("Incorect token: expected '::', found " + tokenText.toString());
@@ -840,7 +843,7 @@ public class AstRenderer {
     public static ParameterImpl renderParameter(AST ast, final CsmFile file) {
         AST firstChild = ast.getFirstChild();
         if( firstChild != null && firstChild.getType() == CPPTokenTypes.ELLIPSIS ) {
-            return new ParameterImpl(ast.getFirstChild(), file, null, "...");
+            return new ParameterImpl(ast.getFirstChild(), file, null, "..."); // NOI18N
         }
         else {
             class AstRendererEx extends AstRenderer {

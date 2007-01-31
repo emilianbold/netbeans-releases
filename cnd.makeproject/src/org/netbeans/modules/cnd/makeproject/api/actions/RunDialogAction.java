@@ -45,6 +45,7 @@ public class RunDialogAction extends NodeAction {
     public RunDialogAction() {
 	super();
 	runButton = new JButton(getString("RunButtonText")); // NOI18N
+        runButton.getAccessibleContext().setAccessibleDescription(getString("RunButtonAD"));
 	options = new Object[] {
 	    runButton,
 	    DialogDescriptor.CANCEL_OPTION,
@@ -83,7 +84,7 @@ public class RunDialogAction extends NodeAction {
     protected void perform(RunDialogPanel runDialogPanel) {
 	DialogDescriptor dialogDescriptor = new DialogDescriptor(
 	    runDialogPanel,
-	    "Run", // NOI18N
+	    getString("RunDialogTitle"),
 	    true,
 	    options,
 	    runButton,

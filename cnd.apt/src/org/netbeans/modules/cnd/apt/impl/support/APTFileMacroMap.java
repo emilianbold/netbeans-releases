@@ -107,6 +107,17 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             super(snap);
             this.sysMacroMap = sysMacroMap;
         }
+
+        public String toString() {
+            StringBuffer retValue = new StringBuffer();
+            retValue.append("FileState\n"); // NOI18N
+            retValue.append("Snapshot\n"); // NOI18N
+            retValue.append(super.toString());
+            retValue.append("\nSystem MacroMap\n"); // NOI18N
+            retValue.append(sysMacroMap);
+            return retValue.toString();
+        }
+        
         
     }
     ////////////////////////////////////////////////////////////////////////////
@@ -128,7 +139,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         try {
             curMacro = expandingMacros.pop();
         } catch (ArrayIndexOutOfBoundsException ex) {
-            assert (false) : "why pop from empty stack?";
+            assert (false) : "why pop from empty stack?"; // NOI18N
         }
 //        return curMacro;
     }
@@ -137,7 +148,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         try {
             return expandingMacros.contains(APTUtils.getTokenTextKey(token));
         } catch (ArrayIndexOutOfBoundsException ex) {
-            assert (false) : "why ask empty stack?";
+            assert (false) : "why ask empty stack?"; // NOI18N
         }
         return false;
     }
@@ -161,9 +172,9 @@ public class APTFileMacroMap extends APTBaseMacroMap {
 
     public String toString() {
         StringBuffer retValue = new StringBuffer();
-        retValue.append("Own Map:\n");
+        retValue.append("Own Map:\n"); // NOI18N
         retValue.append(super.toString());
-        retValue.append("System Map:\n");
+        retValue.append("System Map:\n"); // NOI18N
         retValue.append(sysMacroMap);
         return retValue.toString();
     }

@@ -22,8 +22,9 @@ package org.netbeans.modules.cnd.modelimpl;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.utils.APTStringManager;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
+import org.netbeans.modules.cnd.apt.utils.FilePathCache;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.openide.modules.ModuleInstall;
@@ -57,7 +58,8 @@ public class Installer extends ModuleInstall {
             CacheManager.getInstance().close();
         }
         if (APTTraceFlags.APT_SHARE_TEXT) {
-            APTStringManager.instance().dispose();
+            TextCache.dispose();
+            FilePathCache.dispose();
         }
     }
 

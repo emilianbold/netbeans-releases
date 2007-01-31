@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.makeproject.api.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
@@ -27,8 +26,8 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
 import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
-import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
 
 public class FortranCompilerConfiguration extends BasicCompilerConfiguration implements AllOptionsProvider {
     // Constructors
@@ -57,44 +56,44 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
 
     // Interface OptionsProvider
     public String getOptions(BasicCompiler compiler) {
-	String options = "$(COMPILE.f) ";
-	options += getAllOptions2(compiler) + " ";
-	options += getCommandLineConfiguration().getValue() + " ";
+	String options = "$(COMPILE.f) "; // NOI18N
+	options += getAllOptions2(compiler) + " "; // NOI18N
+	options += getCommandLineConfiguration().getValue() + " "; // NOI18N
 	return CppUtils.reformatWhitespaces(options);
     }
 
     public String getFFlagsBasic(BasicCompiler compiler) {
-	String options = "";
-	options += compiler.getStripOption(getStrip().getValue()) + " ";
-	options += compiler.getSixtyfourBitsOption(getSixtyfourBits().getValue()) + " ";
+	String options = ""; // NOI18N
+	options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
+	options += compiler.getSixtyfourBitsOption(getSixtyfourBits().getValue()) + " "; // NOI18N
 	if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST)
 	    options += compiler.getDevelopmentModeOptions(DEVELOPMENT_MODE_TEST);
 	return CppUtils.reformatWhitespaces(options);
     }
 
     public String getFFlags(BasicCompiler compiler) {
-	String options = getFFlagsBasic(compiler) + " ";
-	options += getCommandLineConfiguration().getValue() + " ";
+	String options = getFFlagsBasic(compiler) + " "; // NOI18N
+	options += getCommandLineConfiguration().getValue() + " "; // NOI18N
 	return CppUtils.reformatWhitespaces(options);
     }
 
     public String getAllOptions(BasicCompiler compiler) {
 	CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
 
-	String options = "";
-	options += getFFlagsBasic(compiler) + " ";
+	String options = ""; // NOI18N
+	options += getFFlagsBasic(compiler) + " "; // NOI18N
 	if (master != null)
-	    options += master.getCommandLineConfiguration().getValue() + " ";
-	options += getAllOptions2(compiler) + " ";
+	    options += master.getCommandLineConfiguration().getValue() + " "; // NOI18N
+	options += getAllOptions2(compiler) + " "; // NOI18N
 	return CppUtils.reformatWhitespaces(options);
     }
 
     public String getAllOptions2(BasicCompiler compiler) {
 	FortranCompilerConfiguration master = (FortranCompilerConfiguration)getMaster();
 
-	String options = "";
-        options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " ";
-	options += compiler.getWarningLevelOptions(getWarningLevel().getValue()) + " ";
+	String options = ""; // NOI18N
+        options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
+	options += compiler.getWarningLevelOptions(getWarningLevel().getValue()) + " "; // NOI18N
 	return CppUtils.reformatWhitespaces(options);
     }
 
@@ -108,10 +107,10 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
 	if (getMaster() != null)
 	    sheet.put(getInputSet());
 	Sheet.Set set4 = new Sheet.Set();
-	set4.setName("Tool");
-	set4.setDisplayName("Tool");
-	set4.setShortDescription("Tool...");
-	set4.put(new StringNodeProp(getTool(), fortranCompiler.getName(), "Tool", "Tool", "Tool..."));
+        set4.setName("Tool"); // NOI18N
+        set4.setDisplayName(getString("ToolTxt1"));
+        set4.setShortDescription(getString("ToolHint1"));
+        set4.put(new StringNodeProp(getTool(), fortranCompiler.getName(), "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
 	sheet.put(set4);
 
 	return sheet;
@@ -119,17 +118,22 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
 
     public Sheet getCommandLineSheet(Configuration conf) {
 	Sheet sheet = new Sheet();
-	String[] texts = new String[] {"Additional Options", "Additional Options", "Additional Options:", "All Options:"};
+	String[] texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
         CompilerSet compilerSet = CompilerSets.getCompilerSet(((MakeConfiguration)conf).getCompilerSet().getValue());
         BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
 
 	Sheet.Set set2 = new Sheet.Set();
-	set2.setName("Command Line");
-	set2.setDisplayName("Command Line");
-	set2.setShortDescription("Command Line");
+        set2.setName("CommandLine"); // NOI18N
+        set2.setDisplayName(getString("CommandLineTxt"));
+        set2.setShortDescription(getString("CommandLineHint"));
 	set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, cCompiler, null, texts));
 	sheet.put(set2);
 
 	return sheet;
+    }
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(FortranCompilerConfiguration.class, s);
     }
 }

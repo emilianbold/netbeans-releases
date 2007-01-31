@@ -23,19 +23,19 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
 public class PlatformLinux extends Platform {
-    public static final String NAME = "Linux-x86";
+    public static final String NAME = "Linux-x86"; // NOI18N
 
     public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
-        new LibraryItem.StdLibItem("Motif", "Motif", new String[] {"Xm", "Xt", "Xext", "X11"}),
-        new LibraryItem.StdLibItem("Mathematics", "Mathematics", new String[] {"m"}),
-        new LibraryItem.StdLibItem("DataCompression", "Data Compression", new String[] {"z"}),
-        new LibraryItem.StdLibItem("PosixThreads", "Posix Threads", new String[] {"pthread"}),
-        new LibraryItem.StdLibItem("Curses", "Curses: CRT Screen Handling", new String[] {"curses"}),
-        new LibraryItem.StdLibItem("Dynamic Linking", "Dynamic Linking", new String[] {"dl"}),
+        new LibraryItem.StdLibItem("Motif", "Motif", new String[] {"Xm", "Xt", "Xext", "X11"}), // NOI18N
+        new LibraryItem.StdLibItem("Mathematics", "Mathematics", new String[] {"m"}), // NOI18N
+        new LibraryItem.StdLibItem("DataCompression", "Data Compression", new String[] {"z"}), // NOI18N
+        new LibraryItem.StdLibItem("PosixThreads", "Posix Threads", new String[] {"pthread"}), // NOI18N
+        new LibraryItem.StdLibItem("Curses", "Curses: CRT Screen Handling", new String[] {"curses"}), // NOI18N
+        new LibraryItem.StdLibItem("Dynamic Linking", "Dynamic Linking", new String[] {"dl"}), // NOI18N
     };
     
     public PlatformLinux() {
-        super(NAME, "Linux x86", Platform.PLATFORM_LINUX);
+        super(NAME, "Linux x86", Platform.PLATFORM_LINUX); // NOI18N
     }
     
     public LibraryItem.StdLibItem[] getStandardLibraries() {
@@ -43,17 +43,17 @@ public class PlatformLinux extends Platform {
     }
     
     public String getLibraryName(String baseName) {
-        return "lib" + baseName + ".so"; // NOI18N
+        return "lib" + baseName + ".so"; // NOI18N // NOI18N
     }
     
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
-        if (libName.endsWith(".so")) {
-            int i = libName.indexOf(".so");
+        if (libName.endsWith(".so")) { // NOI18N
+            int i = libName.indexOf(".so"); // NOI18N
             if (i > 0)
                 libName = libName.substring(0, i);
-            if (libName.startsWith("lib"))
+            if (libName.startsWith("lib")) // NOI18N
                 libName = libName.substring(3);
-            return compilerSet.getDynamicLibrarySearchOption() + libDir + " " + compilerSet.getLibrarySearchOption() + libDir + " " + compilerSet.getLibraryOption() + libName;
+            return compilerSet.getDynamicLibrarySearchOption() + libDir + " " + compilerSet.getLibrarySearchOption() + libDir + " " + compilerSet.getLibraryOption() + libName; // NOI18N
         } else {
             return libPath;
         }

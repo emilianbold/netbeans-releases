@@ -24,6 +24,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
@@ -42,7 +45,7 @@ import org.netbeans.modules.cnd.classview.resources.I18n;
  * View as such
  * @author Vladimir Kvasihn
  */
-public class ClassView extends JComponent implements ExplorerManager.Provider, CsmModelListener, CsmModelStateListener {
+public class ClassView extends JComponent implements ExplorerManager.Provider, CsmModelListener, CsmModelStateListener, Accessible {
     
     /** composited view */
     protected BeanTreeView view;
@@ -55,7 +58,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     
     private boolean listening = false;
     
-    private static final boolean TRACE_MODEL_CHANGE_EVENTS = Boolean.getBoolean("cnd.classview.trace.events");
+    private static final boolean TRACE_MODEL_CHANGE_EVENTS = Boolean.getBoolean("cnd.classview.trace.events"); // NOI18N
     
     public ClassView() {
         
@@ -80,6 +83,48 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         addViewListeners();
     }
 
+    /* Read accessible context
+     * @return - accessible context
+     */
+    public AccessibleContext getAccessibleContext() {
+	if (accessibleContext == null) {
+	    accessibleContext = new AccessibleJComponent() {
+		public AccessibleRole getAccessibleRole() {
+		    return AccessibleRole.PANEL;
+		}
+		
+		public String getAccessibleName() {
+		    if (accessibleName != null) {
+			return accessibleName;
+		    }
+		    
+		    return getName();
+		}
+		
+		/* Fix for 19344: Null accessible decription of all TopComponents on JDK1.4 */
+		public String getToolTipText() {
+		    return ClassView.this.getToolTipText();
+		}
+	    };
+	}
+
+        return accessibleContext;
+    }
+    
+    public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
+        return view.requestFocusInWindow();
+    }
+
+    // In the SDI, requestFocus is called rather than requestFocusInWindow:
+    public void requestFocus() {
+        super.requestFocus();
+        view.requestFocus();
+    }
+    
+    
+    
+    
     private void addViewListeners(Component comp){
         comp.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
@@ -155,7 +200,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     }
     
     public void startup() {
-        if( Diagnostic.DEBUG ) Diagnostic.trace(">>> ClassView is starting up");
+        if( Diagnostic.DEBUG ) Diagnostic.trace(">>> ClassView is starting up"); // NOI18N
         if( model != null ) {
             model.dispose();
         }
@@ -165,7 +210,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     }
     
     public void shutdown() {
-        if( Diagnostic.DEBUG ) Diagnostic.trace(">>> ClassView is shutting down");
+        if( Diagnostic.DEBUG ) Diagnostic.trace(">>> ClassView is shutting down"); // NOI18N
         addRemoveListeners(false);
         if( model != null ) {
             model.dispose();
@@ -175,10 +220,10 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     
     private void addRemoveListeners(boolean add) {
         if( add ) {
-            if( Diagnostic.DEBUG ) Diagnostic.trace(">>> adding model listeners");
+            if( Diagnostic.DEBUG ) Diagnostic.trace(">>> adding model listeners"); // NOI18N
             CsmModelAccessor.getModel().addModelListener(this);
         } else {
-            if( Diagnostic.DEBUG ) Diagnostic.trace(">>> removing model listeners");
+            if( Diagnostic.DEBUG ) Diagnostic.trace(">>> removing model listeners"); // NOI18N
             CsmModelAccessor.getModel().removeModelListener(this);
         }
     }
@@ -188,13 +233,13 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     }
     
     public void projectOpened(CsmProject project) {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("\n@@@ PROJECT OPENED " + project);
+        if( Diagnostic.DEBUG ) Diagnostic.trace("\n@@@ PROJECT OPENED " + project); // NOI18N
         model.updateProjects();
         setupRootContext(model.getRoot());
     }
     
     public void projectClosed(CsmProject project) {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("\n@@@ PROJECT CLOSEED " + project);
+        if( Diagnostic.DEBUG ) Diagnostic.trace("\n@@@ PROJECT CLOSEED " + project); // NOI18N
         model.updateProjects();
         setupRootContext(model.getRoot());
         // release Class View project nodes when projects are closed
@@ -228,13 +273,13 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         }
         
         synchronized(this) {
-            if( Diagnostic.DEBUG ) Diagnostic.trace("startFillingModel; fillingModel=" + fillingModel + " this.hash=" + this.hashCode());
+            if( Diagnostic.DEBUG ) Diagnostic.trace("startFillingModel; fillingModel=" + fillingModel + " this.hash=" + this.hashCode()); // NOI18N
             if( fillingModel ) {
-                if( Diagnostic.DEBUG ) Diagnostic.trace("  already running");
+                if( Diagnostic.DEBUG ) Diagnostic.trace("  already running"); // NOI18N
                 return;
             }
             fillingModel = true;
-            if( Diagnostic.DEBUG ) Diagnostic.trace("  fillingModel set to true");
+            if( Diagnostic.DEBUG ) Diagnostic.trace("  fillingModel set to true"); // NOI18N
         }
         
         setupRootContext(CVUtil.createLoadingRoot());
@@ -243,7 +288,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         // we better launch it in a thread!
         ModelFiller filler = new ModelFiller();
         //filler.run();
-        CsmModelAccessor.getModel().enqueue(filler, "Class View initial filler");
+        CsmModelAccessor.getModel().enqueue(filler, "Class View initial filler"); // NOI18N
         
 //        SwingUtilities.invokeLater(new Runnable() {
 //            public void run() {
@@ -279,9 +324,9 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         
         public void run() {
             
-            if( Diagnostic.DEBUG ) Diagnostic.trace("ModelFiller started");
+            if( Diagnostic.DEBUG ) Diagnostic.trace("ModelFiller started"); // NOI18N
             if( model != null ) {
-                if( Diagnostic.DEBUG ) Diagnostic.trace("Dispose old model");
+                if( Diagnostic.DEBUG ) Diagnostic.trace("Dispose old model"); // NOI18N
                 //model.dispose();
             }
             if (model == null) {
@@ -292,16 +337,16 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
             final Node root = model.getRoot();
             
             t = System.currentTimeMillis() - t;
-            if( Diagnostic.DEBUG ) Diagnostic.trace("#### Model filling took " + t + " ms");
+            if( Diagnostic.DEBUG ) Diagnostic.trace("#### Model filling took " + t + " ms"); // NOI18N
             
             synchronized(ClassView.this) {
                 fillingModel = false;
-                if( Diagnostic.DEBUG ) Diagnostic.trace("fillingModel set to false");
+                if( Diagnostic.DEBUG ) Diagnostic.trace("fillingModel set to false"); // NOI18N
             }
             
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    if( Diagnostic.DEBUG ) Diagnostic.trace("setting root context");
+                    if( Diagnostic.DEBUG ) Diagnostic.trace("setting root context"); // NOI18N
                     setupRootContext(root);
                 }
             });

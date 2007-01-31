@@ -45,23 +45,23 @@ public interface CsmExpression extends CsmOffsetable, CsmObject {
         //
         
         // TODO: perhaps it isn't worth making separate kinds for different literals
-        public static final Kind INTEGER_LITERAL                = new Kind( "INTEGER_LITERAL" );
-        public static final Kind CHAR_LITERAL                   = new Kind( "CHAR_LITERAL" );
-        public static final Kind FLOAT_LITERAL                  = new Kind( "FLOAT_LITERAL" );
-        public static final Kind STRING_LITERAL                 = new Kind( "STRING_LITERAL" );
-        public static final Kind BOOLEAN_LITERAL                = new Kind( "BOOLEAN_LITERAL" );
+        public static final Kind INTEGER_LITERAL                = new Kind( "INTEGER_LITERAL" ); // NOI18N
+        public static final Kind CHAR_LITERAL                   = new Kind( "CHAR_LITERAL" ); // NOI18N
+        public static final Kind FLOAT_LITERAL                  = new Kind( "FLOAT_LITERAL" ); // NOI18N
+        public static final Kind STRING_LITERAL                 = new Kind( "STRING_LITERAL" ); // NOI18N
+        public static final Kind BOOLEAN_LITERAL                = new Kind( "BOOLEAN_LITERAL" ); // NOI18N
         
-        public static final Kind THIS                           = new Kind( "THIS" );
-        public static final Kind PRIMARY_BRACKETED              = new Kind( "PRIMARY_BRACKETED" );
+        public static final Kind THIS                           = new Kind( "THIS" ); // NOI18N
+        public static final Kind PRIMARY_BRACKETED              = new Kind( "PRIMARY_BRACKETED" ); // NOI18N
         
-        public static final Kind REFERENCE                      = new Kind( "REFERENCE" ); // AKA id-expression
+        public static final Kind REFERENCE                      = new Kind( "REFERENCE" ); // AKA id-expression // NOI18N
         
         
         //
         // Postfix expressions
         //
-        public static final Kind SUBSCRIPT              = new Kind( "SUBSCRIPT" ); // a[]
-        public static final Kind FUNCTIONCALL           = new Kind( "FUNCTIONCALL" );
+        public static final Kind SUBSCRIPT              = new Kind( "SUBSCRIPT" ); // a[] // NOI18N
+        public static final Kind FUNCTIONCALL           = new Kind( "FUNCTIONCALL" ); // NOI18N
         // TODO: what is " postfix-expression ( expression-list ) " ?
         // TODO: add 
         public static final Kind SIMPLETYPE_INT		= new Kind( "" );
@@ -158,7 +158,7 @@ public interface CsmExpression extends CsmOffsetable, CsmObject {
         public static final Kind ASSIGNMENT_AND       = new Kind( "" );
         public static final Kind ASSIGNMENT_OR        = new Kind( "" );
         public static final Kind ASSIGNMENT_XOR       = new Kind( "" );
-        public static final Kind LIST                 = new Kind( "List" );
+        public static final Kind LIST                 = new Kind( "List" ); // NOI18N
         
     }
     

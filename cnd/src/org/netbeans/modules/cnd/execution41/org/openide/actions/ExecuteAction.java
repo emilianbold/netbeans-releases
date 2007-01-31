@@ -92,7 +92,7 @@ public class ExecuteAction extends CookieAction {
     }
 
     public String getName() {
-        return NbBundle.getMessage(ExecuteAction.class, "Execute");
+        return NbBundle.getMessage(ExecuteAction.class, "Execute"); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {

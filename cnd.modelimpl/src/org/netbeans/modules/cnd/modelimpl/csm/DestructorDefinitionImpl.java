@@ -45,10 +45,10 @@ public class DestructorDefinitionImpl extends FunctionDefinitionImpl {
             if( token != null && token.getType() == CPPTokenTypes.TILDE ) {
                 token = token.getNextSibling();
                 if( token != null && token.getType() == CPPTokenTypes.ID ) {
-                    return "~" + token.getText();
+                    return "~" + token.getText(); // NOI18N
                 }
             }
         }
-        return "~";
+        return "~"; // NOI18N
     }
 }

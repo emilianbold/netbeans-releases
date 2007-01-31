@@ -19,31 +19,41 @@
 
 package org.netbeans.modules.cnd.dwarfdump.elf;
 
+import java.io.PrintStream;
+
 /**
  *
  * @author ak119685
  */
 public class SectionHeader {
-    public int sh_name = 0;        /* section name */
-    public int sh_type = 0;        /* SHT_... */
-    public int sh_flags = 0;       /* SHF_... */
+    public long sh_name = 0;       /* section name */
+    public long sh_type = 0;       /* SHT_... */
+    public long sh_flags = 0;      /* SHF_... */
     public long sh_addr = 0;       /* x virtual address */
     public long sh_offset = 0;     /* x file offset */
     public long sh_size = 0;       /* x section size */
-    public int sh_link = 0;        /* misc info */
-    public int sh_info = 0;        /* misc info */
+    public long sh_link = 0;       /* misc info */
+    public long sh_info = 0;       /* misc info */
     public long sh_addralign = 0;  /* x memory alignment */
     public long sh_entsize = 0;    /* x entry size if table */
 
-    public int getSectionSize() {
-        return (int)sh_size;
+    public long getSectionSize() {
+        return sh_size;
     }
     
     public long getSectionOffset() {
         return sh_offset;
     }
     
-    public int getSectionEntrySize() {
-        return (int)sh_entsize;
+    public long getSectionEntrySize() {
+        return sh_entsize;
+    }
+
+    public void dump(PrintStream out) {
+        out.println("Elf section header:"); // NOI18N
+        out.printf("  %-20s %s\n", "Offset:", sh_offset); // NOI18N
+        out.printf("  %-20s %s\n", "Length:", sh_size); // NOI18N
+        out.printf("  %-20s %s\n", "Memory alignment:", sh_addralign); // NOI18N
+        out.println();
     }
 }

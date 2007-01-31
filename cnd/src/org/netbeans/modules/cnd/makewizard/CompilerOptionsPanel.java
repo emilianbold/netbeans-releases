@@ -67,7 +67,7 @@ public final class CompilerOptionsPanel extends MakefileWizardPanel
     /** Constructor for the compiler options panel */
     public CompilerOptionsPanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = getString("LBL_CompilerOptionsPanel"); //NOI18N
+	String subtitle = getString("LBL_CompilerOptionsPanel"); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 	initialized = false;
@@ -237,7 +237,7 @@ public final class CompilerOptionsPanel extends MakefileWizardPanel
 	// Fill in extra space below the last visible widget
 	grid.gridy = gridy++;
 	grid.gridheight = GridBagConstraints.REMAINDER;
-	add(new JLabel(""), grid);
+	add(new JLabel(""), grid); // NOI18N
 
 	topLabel.setBackground(cLabel.getBackground());
 
@@ -519,7 +519,7 @@ public final class CompilerOptionsPanel extends MakefileWizardPanel
      */
     private String addOption(String txt, String option) {
         int i;
-	String white = "";
+	String white = ""; // NOI18N
         String newTxt;
         
         i = containsOption(txt, option);

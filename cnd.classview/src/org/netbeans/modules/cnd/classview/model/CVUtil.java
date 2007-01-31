@@ -37,7 +37,7 @@ public class CVUtil {
         for( Iterator iter = fun.getParameters().iterator(); iter.hasNext(); ) {
             CsmParameter par = (CsmParameter) iter.next();
             if( addComma ) {
-                sb.append(", ");
+                sb.append(", "); // NOI18N
             } else {
                 addComma = true;
             }

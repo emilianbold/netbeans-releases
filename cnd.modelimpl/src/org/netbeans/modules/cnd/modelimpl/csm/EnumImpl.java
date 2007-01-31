@@ -38,7 +38,7 @@ public class EnumImpl extends ClassEnumBase  implements CsmEnum, CsmMember {
     }
     
     public EnumImpl(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
-        super(CsmDeclaration.Kind.ENUM, AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file, containingClass, ast);
+        super(AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file, containingClass, ast);
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             if( token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
                 for( AST t = token.getFirstChild(); t != null; t = t.getNextSibling() ) {
@@ -64,5 +64,9 @@ public class EnumImpl extends ClassEnumBase  implements CsmEnum, CsmMember {
 
     public List getScopeElements() {
         return getEnumerators();
+    }
+    
+    public CsmDeclaration.Kind getKind() {
+        return CsmDeclaration.Kind.ENUM;
     }
 }

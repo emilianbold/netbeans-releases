@@ -109,7 +109,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             return false;
         }
         context  = CsmOffsetResolver.findContext(file, offset);
-        if (DEBUG) System.out.println("context for offset " + offset + " :\n" + context);
+        if (DEBUG) System.out.println("context for offset " + offset + " :\n" + context); //NOI18N
         resolveContext(context, offset, strPrefix, match);
         return file != null;
     }
@@ -225,8 +225,8 @@ public class CompletionResolverImpl implements CompletionResolver {
                 globVars, globEnmtrs, globFuns,
                 libClasses, libVars, libEnmtrs, libFuns);
         //long timeEnd = System.nanoTime();
-        //System.out.println("get gesolve list time "+(timeEnd -timeStart)+" objects "+result.size());
-        //System.out.println("get global macro time "+(timeGlobMacroEnd -timeGlobMacroStart)+" objects "+
+        //System.out.println("get gesolve list time "+(timeEnd -timeStart)+" objects "+result.size()); //NOI18N
+        //System.out.println("get global macro time "+(timeGlobMacroEnd -timeGlobMacroStart)+" objects "+ //NOI18N
         //        (globProjectMacros.size()+globLibMacros.size()));
     }
     
@@ -238,54 +238,54 @@ public class CompletionResolverImpl implements CompletionResolver {
             List libClasses, List libVars, List libEnmtrs, List libFuns) {
         List result = new ArrayList();
         // add local vars
-        if (DEBUG) { trace(localVars, "Local variables");}
+        if (DEBUG) { trace(localVars, "Local variables");} //NOI18N
         result = merge(result, localVars);
         // add class fields
-        if (DEBUG) { trace(classFields, "Class fields");}
+        if (DEBUG) { trace(classFields, "Class fields");} //NOI18N
         result = merge(result, classFields);
         // add class methods
-        if (DEBUG) { trace(classMethods, "Class methods");}
+        if (DEBUG) { trace(classMethods, "Class methods");} //NOI18N
         result = merge(result, classMethods);
         // add classes
-        if (DEBUG) { trace(classes, "Classes");}
+        if (DEBUG) { trace(classes, "Classes");} //NOI18N
         result = merge(result, classes);
         // add file local variables
-        if (DEBUG) { trace(fileLocalVars, "File Local Variables");}
+        if (DEBUG) { trace(fileLocalVars, "File Local Variables");} //NOI18N
         result = merge(result, fileLocalVars);
-        if (DEBUG) { trace(fileLocalEnumerators, "File Local Enumerators");}
+        if (DEBUG) { trace(fileLocalEnumerators, "File Local Enumerators");} //NOI18N
         result = merge(result, fileLocalEnumerators);
-        if (DEBUG) { trace(fileLocalEnumerators, "File Local Macros");}
+        if (DEBUG) { trace(fileLocalEnumerators, "File Local Macros");} //NOI18N
         result = merge(result, fileLocalMacros);
         // add global variables
-        if (DEBUG) { trace(globVars, "Global variables");}
+        if (DEBUG) { trace(globVars, "Global variables");} //NOI18N
         result = merge(result, globVars);
         // add global enumerators
-        if (DEBUG) { trace(globEnmtrs, "Global enumerators");}
+        if (DEBUG) { trace(globEnmtrs, "Global enumerators");} //NOI18N
         result = merge(result, globEnmtrs);
         // add global functions
-        if (DEBUG) { trace(globFuns, "Global functions");}
+        if (DEBUG) { trace(globFuns, "Global functions");} //NOI18N
         result = merge(result, globFuns);
-        if (DEBUG) { trace(fileProjectMacros, "File Project Macros");}
+        if (DEBUG) { trace(fileProjectMacros, "File Project Macros");} //NOI18N
         result = merge(result, fileProjectMacros);
         // add libraries classes
-        if (DEBUG) { trace(libClasses, "Library classes");}
+        if (DEBUG) { trace(libClasses, "Library classes");} //NOI18N
         result = merge(result, libClasses);
         // add libraries variables
-        if (DEBUG) { trace(libVars, "Library variables");}
+        if (DEBUG) { trace(libVars, "Library variables");} //NOI18N
         result = merge(result, libVars);
         // add libraries enumerators
-        if (DEBUG) { trace(libEnmtrs, "Library enumerators");}
+        if (DEBUG) { trace(libEnmtrs, "Library enumerators");} //NOI18N
         result = merge(result, libEnmtrs);
         // add libraries functions
-        if (DEBUG) { trace(libFuns, "Library functions");}
+        if (DEBUG) { trace(libFuns, "Library functions");} //NOI18N
         result = merge(result, libFuns);
-        if (DEBUG) { trace(fileLibMacros, "File Library Macros");}
+        if (DEBUG) { trace(fileLibMacros, "File Library Macros");} //NOI18N
         result = merge(result, fileLibMacros);
-        if (DEBUG) { trace(globProjectMacros, "Project Macros");}
+        if (DEBUG) { trace(globProjectMacros, "Project Macros");} //NOI18N
         result = merge(result, globProjectMacros);
-        if (DEBUG) { trace(globLibMacros, "Library Macros");}
+        if (DEBUG) { trace(globLibMacros, "Library Macros");} //NOI18N
         result = merge(result, globLibMacros);
-        if (DEBUG) { trace(result, "Final result");}
+        if (DEBUG) { trace(result, "Final result");} //NOI18N
         return result;
     }
     
@@ -529,11 +529,11 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (list == null) {
             return;
         }
-        System.out.println(msg + " [size - " + list.size() +"]:");
+        System.out.println(msg + " [size - " + list.size() +"]:"); //NOI18N
         if (TRACE) {
             for (int i = 0; i < list.size(); i++) {
                 CsmObject elem = (CsmObject) list.get(i);
-                System.out.println("["+i+"]"+CsmUtilities.getCsmName(elem));
+                System.out.println("["+i+"]"+CsmUtilities.getCsmName(elem)); //NOI18N
             }
         }
     }

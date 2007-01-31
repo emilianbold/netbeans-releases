@@ -47,7 +47,7 @@ final class ProjectCache {
             FileCacheSyncBridge cache = (FileCacheSyncBridge) cachedFiles.get(absPath);
             if (cache == null) {
                 if (TraceFlags.TRACE_CACHE) {
-                    System.out.println("CACHE: creating FileCacheSyncBridge cache for " + absPath);
+                    System.out.println("CACHE: creating FileCacheSyncBridge cache for " + absPath); // NOI18N
                 }                 
                 cache = new FileCacheSyncBridge(file);
                 cachedFiles.put(absPath, cache);
@@ -59,7 +59,7 @@ final class ProjectCache {
     public void invalidateFile(String absPath) {
         synchronized (cachedFiles) {
             if (TraceFlags.TRACE_CACHE) {
-                System.out.println("CACHE: remove FileCacheSyncBridge cache for " + absPath);
+                System.out.println("CACHE: remove FileCacheSyncBridge cache for " + absPath); // NOI18N
             }            
             // remove cache of invalid file
             FileCacheSyncBridge cache = (FileCacheSyncBridge) cachedFiles.remove(absPath);
@@ -67,7 +67,7 @@ final class ProjectCache {
                 cache.invalidate();
             } else {
                 if (TraceFlags.TRACE_CACHE) {
-                    System.out.println("CACHE: (invalidateFile) not exists FileCacheSyncBridge cache for " + absPath);
+                    System.out.println("CACHE: (invalidateFile) not exists FileCacheSyncBridge cache for " + absPath); // NOI18N
                 }                    
             }
         }
@@ -93,7 +93,7 @@ final class ProjectCache {
     
     public void store(String baseDir) {
         if (TraceFlags.TRACE_CACHE) {
-            System.out.println("CACHE: saving project cache data in " + baseDir);
+            System.out.println("CACHE: saving project cache data in " + baseDir); // NOI18N
         }
         synchronized (loadLock) {
             storeIndex(baseDir);
@@ -110,7 +110,7 @@ final class ProjectCache {
     private boolean loaded = false;
     
     // we need exclusive copy of string => use "new String(String)" constructor
-    private final String loadLock = new String("ProjectCache load lock");  
+    private final String loadLock = new String("ProjectCache load lock"); // NOI18N
     
     private void load(String baseDir) {
         if (!loaded) {
@@ -139,12 +139,12 @@ final class ProjectCache {
         }
         if (TraceFlags.TRACE_CACHE) {
             if (loaded) {
-                System.out.println("CACHE: loaded project index:" + file.getAbsolutePath());
+                System.out.println("CACHE: loaded project index:" + file.getAbsolutePath()); // NOI18N
                 synchronized (index) {
-                    System.out.println("CACHE: " + index);
+                    System.out.println("CACHE: " + index); // NOI18N
                 }
             } else {
-                System.out.println("CACHE: project index not found:" + file.getAbsolutePath());
+                System.out.println("CACHE: project index not found:" + file.getAbsolutePath()); // NOI18N
             }
         }
     }
@@ -158,18 +158,18 @@ final class ProjectCache {
         }
         if (TraceFlags.TRACE_CACHE) {
             if (saved) {
-                System.out.println("CACHE: saved project index:" + file.getAbsolutePath());
+                System.out.println("CACHE: saved project index:" + file.getAbsolutePath()); // NOI18N
                 synchronized (index) {
-                    System.out.println("project index:" + index.toString());
+                    System.out.println("project index:" + index.toString()); // NOI18N
                 }
             } else {
-                System.out.println("CACHE: errors on saving project index:" + file.getAbsolutePath());
+                System.out.println("CACHE: errors on saving project index:" + file.getAbsolutePath()); // NOI18N
             }
         }
     }
     
     private File getProjectIndexFile(String baseDir) {
-        String cache = baseDir + File.separatorChar + "project.dat";
+        String cache = baseDir + File.separatorChar + "project.dat"; // NOI18N
         File file = new File(cache);
         return file;        
     }
@@ -202,7 +202,7 @@ final class ProjectCache {
                     out = entry.getCacheFileName();
                 } else {
                     if (TraceFlags.TRACE_CACHE) {
-                        System.out.println("CACHE: file " + file.getAbsolutePath() + " was modified " + lastModified + " vs. entry=" + entry.getLastModified());
+                        System.out.println("CACHE: file " + file.getAbsolutePath() + " was modified " + lastModified + " vs. entry=" + entry.getLastModified()); // NOI18N
                     }
                 }
             }

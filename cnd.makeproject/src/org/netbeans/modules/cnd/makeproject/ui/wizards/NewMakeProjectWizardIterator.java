@@ -162,7 +162,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             // Macros
             String macros = (String)wiz.getProperty("macroTextField"); // NOI18N
             if (macros != null && macros.length() > 0) {
-                StringTokenizer tokenizer = new StringTokenizer(macros, "; ");
+                StringTokenizer tokenizer = new StringTokenizer(macros, "; "); // NOI18N
                 String macrosString = ""; // NOI18N
                 while (tokenizer.hasMoreTokens()) {
                     macrosString += (String)tokenizer.nextToken();

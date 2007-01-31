@@ -443,7 +443,7 @@ public class CsmIncludeProcessor implements TokenProcessor {
                         break;
 
                     case INSIDE_MIXED_EXP:
-                        exp.append('.');
+                        exp.append('.'); //NOI18N
                         // let it flow to INSIDE_EXP
                     case INSIDE_EXP:
                         if (star) { // not allowed after star was found

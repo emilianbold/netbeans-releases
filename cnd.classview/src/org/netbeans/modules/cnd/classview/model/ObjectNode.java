@@ -44,7 +44,7 @@ public abstract class ObjectNode extends BaseNode {
         setObject(declaration);
         if( project.findDeclaration(uniqueName) == null ) {
             if( Diagnostic.DEBUG && declaration.getName().length() > 0 ) {
-                System.err.println(".ctor can't find object by unique name " + uniqueName);
+                System.err.println(".ctor can't find object by unique name " + uniqueName); // NOI18N
             }
         }
         String name = declaration.getName();
@@ -66,7 +66,7 @@ public abstract class ObjectNode extends BaseNode {
                 object = (CsmOffsetableDeclaration) prj.findDeclaration(uniqueName);
                 if( object == null ) {
                     if( Diagnostic.DEBUG) {
-                        System.err.println("Can't find object by unique name " + uniqueName);
+                        System.err.println("Can't find object by unique name " + uniqueName); // NOI18N
                     }
                     object =unnamedDeclaration;
                 }

@@ -124,7 +124,7 @@ public class ProjectNode extends NPNode {
                     System.gc();
                     long time = System.currentTimeMillis();
                     long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                    Diagnostic.trace("Creating a map.");
+                    Diagnostic.trace("Creating a map."); // NOI18N
                     traverse(new BaseNode.Callback() {
                         public void call(BaseNode node) {
                             map.put(node, node);
@@ -133,7 +133,7 @@ public class ProjectNode extends NPNode {
                     time = System.currentTimeMillis() - time;
                     System.gc();
                     mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() - mem;
-                    Diagnostic.trace("A map is created. Used time: " + time + " Used Memory: " + mem/1024 + " Kb");
+                    Diagnostic.trace("A map is created. Used time: " + time + " Used Memory: " + mem/1024 + " Kb"); // NOI18N
                     map = null;
                 }
             };

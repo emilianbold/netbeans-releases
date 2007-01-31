@@ -71,7 +71,7 @@ public final class APTFileNode extends APTContainerNode
     }              
 
     public String getText() {
-        return "FILE:{" + getPath() + "}";
+        return "FILE:{" + getPath() + "}"; // NOI18N
     }
 
     public String getPath() {
@@ -92,7 +92,7 @@ public final class APTFileNode extends APTContainerNode
     // implementation details
     
     public final void setNextSibling(APT next) {
-        assert(false):"Illegal to add siblings to file node";
+        assert(false):"Illegal to add siblings to file node"; // NOI18N
     }
     
     private static class CleanTokensWalker extends APTWalker {

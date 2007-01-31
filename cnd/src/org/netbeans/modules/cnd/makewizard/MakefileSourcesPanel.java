@@ -46,7 +46,7 @@ public class MakefileSourcesPanel extends EnterItemsPanel {
      */
     public MakefileSourcesPanel(MakefileWizard wd) {
 	super(wd);
-	String subtitle = new String(getString("LBL_MakefileSourcesPanel")); //NOI18N
+	String subtitle = new String(getString("LBL_MakefileSourcesPanel")); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 	initialized = false;
@@ -70,19 +70,19 @@ public class MakefileSourcesPanel extends EnterItemsPanel {
 
     /** Set the label for the Source List */
     protected String getListLabel() {
-	return getString("LBL_SourceList");				//NOI18N
+	return getString("LBL_SourceList");				// NOI18N
     }
 
     /** Set the mnemonic for the Source List */
     protected char getListMnemonic() {
-	return getString("MNEM_SourceList").charAt(0);			//NOI18N
+	return getString("MNEM_SourceList").charAt(0);			// NOI18N
     }
 
 
     /** Get the title and message for the error dialog */
     protected ErrorInfo getErrorInfo() {
-	return new ErrorInfo(getString("DLG_NoFilesError"),		//NOI18N
-			getString("MSG_NoFilesMatched"));		//NOI18N
+	return new ErrorInfo(getString("DLG_NoFilesError"),		// NOI18N
+			getString("MSG_NoFilesMatched"));		// NOI18N
     }
 
 
@@ -103,11 +103,11 @@ public class MakefileSourcesPanel extends EnterItemsPanel {
 	    for (i = 0; i < slist.length; i++) {
 		String srcFile = slist[i].toString();
 
-		if (srcFile.startsWith("/")) {				//NOI18N
+		if (srcFile.startsWith("/")) {				// NOI18N
 		    absCount++;
 		}
 
-		if (srcFile.endsWith(".h")) {				//NOI18N
+		if (srcFile.endsWith(".h")) {				// NOI18N
 		    hdrCount++;
 		}
 
@@ -118,8 +118,8 @@ public class MakefileSourcesPanel extends EnterItemsPanel {
 		    file = new File(cwd, srcFile);
 		}
 		if (!file.exists()) {
-		    dne.add(new StringBuffer("\t").    			//NOI18N
-				append(file.getPath()).append("\n"));	//NOI18N
+		    dne.add(new StringBuffer("\t").    			// NOI18N
+				append(file.getPath()).append("\n"));	// NOI18N
 		}
 	    }
 
@@ -139,7 +139,7 @@ public class MakefileSourcesPanel extends EnterItemsPanel {
 		    for (i = 0; i < dne.size(); i++) {
 			msgs.add(dne.get(i));
 		    }
-		    msgs.add(new String("\n"));				//NOI18N
+		    msgs.add(new String("\n"));				// NOI18N
 		} else {
 		    warn(msgs, WARN_DNE_COUNT, target.getName(),
 					new Integer(dne.size()).toString());
@@ -156,7 +156,7 @@ public class MakefileSourcesPanel extends EnterItemsPanel {
 
 	if (!initialized) {
 	    create();
-	    srcFilter = getString("DFLT_SourceFilter");			//NOI18N
+	    srcFilter = getString("DFLT_SourceFilter");			// NOI18N
 	    initialized = true;
 	}
 

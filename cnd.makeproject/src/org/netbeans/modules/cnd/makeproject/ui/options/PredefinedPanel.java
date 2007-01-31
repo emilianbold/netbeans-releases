@@ -45,6 +45,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
         this.compiler = compiler;
         platform = Platforms.getPlatform(MakeOptions.getInstance().getPlatform());
         updatePanels(platform);
+        
+        resetButton.getAccessibleContext().setAccessibleDescription(getString("RESET_BUTTON_AD"));
     }
     
     private void updatePanels(Platform platform) {
@@ -99,8 +101,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        resetButton.setMnemonic('R');
-        resetButton.setText("Reset Settings");
+        resetButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("RESET_BUTTON_MN").charAt(0));
+        resetButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("RESET_BUTTON_TXT"));
         resetButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resetButtonActionPerformed(evt);
@@ -117,8 +119,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
-        String txt = NbBundle.getMessage(getClass(), "RESET_QUESTION"); // NOI18N
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, NbBundle.getMessage(getClass(), "RESET_DIALOG_TITLE"), NotifyDescriptor.YES_NO_CANCEL_OPTION); // NOI18N
+        String txt = getString("RESET_QUESTION"); // NOI18N
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("RESET_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
             compiler.resetSystemIncludesAndDefines(platform);
             updatePanels(platform);
@@ -143,8 +145,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
 	    if (FileChooser.getCurrectChooserFile() != null)
 		seed = FileChooser.getCurrectChooserFile().getPath();
             if (seed == null)
-                seed = System.getProperty("user.home");
-	    FileChooser fileChooser = new FileChooser("Select Directory", "Select", JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+                seed = System.getProperty("user.home"); // NOI18N
+	    FileChooser fileChooser = new FileChooser(getString("SelectDirectoryTxt"), getString("SelectTxt"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
 	    int ret = fileChooser.showOpenDialog(this);
 	    if (ret == JFileChooser.CANCEL_OPTION)
 		return null;
@@ -153,34 +155,36 @@ public class PredefinedPanel extends javax.swing.JPanel {
 	}
 
 	public String getListLabelText() {
-	    return "Include Directories:";
+	    return getString("IncludeDirectoriesTxt");
 	}
 	public char getListLabelMnemonic() {
-	    return 'I';
+	    return getString("IncludeDirectoriesMn").charAt(0);
 	}
     
 	public String getAddButtonText() {
-	    return "Add";
+	    return getString("AddButtonTxt");
 	}
 	public char getAddButtonMnemonics() {
-	    return 'A';
+	    return getString("IAddButtonMn").charAt(0);
 	}
     
-	public String getRenameButtonText() {
-	    return "Edit";
-	}
-	public char getRenameButtonMnemonics() {
-	    return 'E';
-	}
-
+        public char getCopyButtonMnemonics() {
+            return getString("ICopyButtonMn").charAt(0);
+        }
 	public Object copyAction(Object o) {
 	    return new String((String)o);
 	}
-
+        
+	public String getRenameButtonText() {
+	    return getString("EditButtonTxt");
+	}
+	public char getRenameButtonMnemonics() {
+	    return getString("EditButtonMn").charAt(0);
+	}
 	public void editAction(Object o) {
 	    String s = (String)o;
 
-	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine("", "Edit");
+	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDir"), getString("EditDialogTitle")); // NOI18N
 	    notifyDescriptor.setInputText(s);
 	    DialogDisplayer.getDefault().notify(notifyDescriptor);
 	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
@@ -196,6 +200,18 @@ public class PredefinedPanel extends javax.swing.JPanel {
 		}
 	    }
 	}
+        
+        public char getRemoveButtonMnemonics() {
+            return getString("IRemoveButtonMn").charAt(0);
+        }
+        
+        public char getUpButtonMnemonics() {
+            return getString("IUpButtonMn").charAt(0);
+        }
+
+        public char getDownButtonMnemonics() {
+            return getString("IDownButtonMn").charAt(0);
+        }
     }
     private class DefinitionsPanel extends ListEditorPanel {
 	public DefinitionsPanel(Object[] objects) {
@@ -204,7 +220,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
 	}
 
 	public Object addAction() {
-	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine("", "Add");
+	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDef"), getString("AddDialogTitle"));
 	    DialogDisplayer.getDefault().notify(notifyDescriptor);
 	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
 		return null;
@@ -216,34 +232,36 @@ public class PredefinedPanel extends javax.swing.JPanel {
 	}
 
 	public String getListLabelText() {
-	    return "Macro Definitions:";
+	    return getString("MacroDefinitionsTxt");
 	}
 	public char getListLabelMnemonic() {
-	    return 'I';
+	    return getString("MacroDefinitionsMn").charAt(0);
 	}
     
 	public String getAddButtonText() {
-	    return "Add";
+	    return getString("AddButtonTxt");
 	}
 	public char getAddButtonMnemonics() {
-	    return 'A';
+	    return getString("MAddButtonMn").charAt(0);
 	}
     
-	public String getRenameButtonText() {
-	    return "Edit";
-	}
-	public char getRenameButtonMnemonics() {
-	    return 'E';
-	}
-
+        public char getCopyButtonMnemonics() {
+            return getString("MCopyButtonMn").charAt(0);
+        }
 	public Object copyAction(Object o) {
 	    return new String((String)o);
 	}
-
+        
+	public char getRenameButtonMnemonics() {
+	    return getString("MditButtonMn").charAt(0);
+	}
+	public String getRenameButtonText() {
+	    return getString("EditButtonTxt");
+	}
 	public void editAction(Object o) {
 	    String s = (String)o;
 
-	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine("", "Edit");
+	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDef"), getString("EditDialogTitle")); // NOI18N
 	    notifyDescriptor.setInputText(s);
 	    DialogDisplayer.getDefault().notify(notifyDescriptor);
 	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
@@ -259,5 +277,21 @@ public class PredefinedPanel extends javax.swing.JPanel {
 		}
 	    }
 	}
+
+        public char getRemoveButtonMnemonics() {
+            return getString("MRemoveButtonMn").charAt(0);
+        }
+        
+        public char getUpButtonMnemonics() {
+            return getString("MUpButtonMn").charAt(0);
+        }
+
+        public char getDownButtonMnemonics() {
+            return getString("MDownButtonMn").charAt(0);
+        }
+    }
+    
+    private static String getString(String s) {
+        return NbBundle.getMessage(PredefinedPanel.class, s);
     }
 }

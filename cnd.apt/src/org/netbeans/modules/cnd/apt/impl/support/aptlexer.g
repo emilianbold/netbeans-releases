@@ -28,7 +28,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 }
 
 options {
-	language = "Java";
+	language = "Java"; // NOI18N
 } 
 
 class APTLexer extends Lexer;
@@ -37,7 +37,7 @@ options {
     k = 2;
     exportVocab = APTGenerated;
     testLiterals = false;
-    charVocabulary = '\u0003'..'\u1fff'; 
+    charVocabulary = '\u0003'..'\u1fff';  // NOI18N
 }
 
 // DW 4/11/02 put in to support manual hoisting
@@ -65,107 +65,107 @@ tokens {
     ERROR;
     PREPROC_DIRECTIVE; // unrecongnized #-directive
 
-    LITERAL_OPERATOR = "operator";
-    LITERAL_alignof="alignof";
-    LITERAL___alignof__="__alignof__";
-    LITERAL_typeof="typeof";
-    LITERAL___typeof="__typeof";
-    LITERAL___typeof__="__typeof__";
-    LITERAL_template="template";
-    LITERAL_typedef="typedef";
-    LITERAL_enum="enum";
-    LITERAL_namespace="namespace";
-    LITERAL_extern="extern";
-    LITERAL_inline="inline";
-    LITERAL__inline="_inline";
-    LITERAL___inline="__inline";
-    LITERAL___inline__="__inline__";
-    LITERAL_virtual="virtual";
-    LITERAL_explicit="explicit";
-    LITERAL_friend="friend";
-    LITERAL__stdcall="_stdcall";
-    LITERAL___stdcall="__stdcall";
-    LITERAL_typename="typename";
-    LITERAL_auto="auto";
-    LITERAL_register="register";
-    LITERAL_static="static";
-    LITERAL_mutable="mutable";
-    LITERAL_const="const";
-    LITERAL___const="__const";
-    LITERAL_const_cast="const_cast";
-    LITERAL_volatile="volatile";
-    LITERAL___volatile__="__volatile__";
-    LITERAL_char="char";
-    LITERAL_wchar_t="wchar_t";
-    LITERAL_bool="bool";
-    LITERAL_short="short";
-    LITERAL_int="int";
-    LITERAL_long="long";
-    LITERAL_signed="signed";
-    LITERAL___signed__="__signed__";
-    LITERAL_unsigned="unsigned";
-    LITERAL___unsigned__="__unsigned__";
-    LITERAL_float="float";
-    LITERAL_double="double";
-    LITERAL_void="void";
-    LITERAL__declspec="_declspec";
-    LITERAL___declspec="__declspec";
-    LITERAL_class="class";
-    LITERAL_struct="struct";
-    LITERAL_union="union";    
-    LITERAL_this="this";
-    LITERAL_true="true";
-    LITERAL_false="false";
-    LITERAL_public="public";
-    LITERAL_protected="protected";
-    LITERAL_private="private";
-    LITERAL_throw="throw";
-    LITERAL_case="case";
-    LITERAL_default="default";
-    LITERAL_if="if";
-    LITERAL_else="else";
-    LITERAL_switch="switch";
-    LITERAL_while="while";
-    LITERAL_do="do";
-    LITERAL_for="for";
-    LITERAL_goto="goto";
-    LITERAL_continue="continue";
-    LITERAL_break="break";
-    LITERAL_return="return";
-    LITERAL_try="try";
-    LITERAL_catch="catch";
-    LITERAL_using="using";
-    LITERAL_export="export";
-    LITERAL_asm="asm";
-    LITERAL__asm="_asm";
-    LITERAL___asm="__asm";
-    LITERAL___asm__="__asm__";
-    LITERAL_sizeof="sizeof";
-    LITERAL_dynamic_cast="dynamic_cast";
-    LITERAL_static_cast="static_cast";
-    LITERAL_reinterpret_cast="reinterpret_cast";
-    LITERAL_new="new";
-    LITERAL__cdecl="_cdecl";
-    LITERAL___cdecl="__cdecl";
-    LITERAL__near="_near";
-    LITERAL___near="__near";
-    LITERAL__far="_far";
-    LITERAL___far="__far";
-    LITERAL___interrupt="__interrupt";
-    LITERAL_pascal="pascal";
-    LITERAL__pascal="_pascal";
-    LITERAL___pascal="__pascal";
-    LITERAL_delete="delete";
-    LITERAL__int64="_int64";
-    LITERAL___int64="__int64";
-    LITERAL___w64="__w64";
-    LITERAL___extension__="__extension__";
-    LITERAL___attribute__="__attribute__";
-    LITERAL___restrict="__restrict";
-    LITERAL___complex="__complex__";
-    LITERAL___imag="__imag__";
-    LITERAL___real="__real__";          
-    LITERAL___global="__global";   
+    LITERAL_OPERATOR = "operator"; // NOI18N
+    LITERAL_alignof="alignof"; // NOI18N
+    LITERAL___alignof__="__alignof__"; // NOI18N
+    LITERAL_typeof="typeof"; // NOI18N
+    LITERAL___typeof="__typeof"; // NOI18N
+    LITERAL___typeof__="__typeof__"; // NOI18N
+    LITERAL_template="template"; // NOI18N
+    LITERAL_typedef="typedef"; // NOI18N
+    LITERAL_enum="enum"; // NOI18N
+    LITERAL_namespace="namespace"; // NOI18N
+    LITERAL_extern="extern"; // NOI18N
+    LITERAL_inline="inline"; // NOI18N
+    LITERAL__inline="_inline"; // NOI18N
+    LITERAL___inline="__inline"; // NOI18N
+    LITERAL___inline__="__inline__"; // NOI18N
+    LITERAL_virtual="virtual"; // NOI18N
+    LITERAL_explicit="explicit"; // NOI18N
+    LITERAL_friend="friend"; // NOI18N
+    LITERAL__stdcall="_stdcall"; // NOI18N
+    LITERAL___stdcall="__stdcall"; // NOI18N
+    LITERAL_typename="typename"; // NOI18N
+    LITERAL_auto="auto"; // NOI18N
+    LITERAL_register="register"; // NOI18N
+    LITERAL_static="static"; // NOI18N
+    LITERAL_mutable="mutable"; // NOI18N
+    LITERAL_const="const"; // NOI18N
+    LITERAL___const="__const"; // NOI18N
+    LITERAL_const_cast="const_cast"; // NOI18N
+    LITERAL_volatile="volatile"; // NOI18N
+    LITERAL___volatile__="__volatile__"; // NOI18N
+    LITERAL_char="char"; // NOI18N
+    LITERAL_wchar_t="wchar_t"; // NOI18N
+    LITERAL_bool="bool"; // NOI18N
+    LITERAL_short="short"; // NOI18N
+    LITERAL_int="int"; // NOI18N
+    LITERAL_long="long"; // NOI18N
+    LITERAL_signed="signed"; // NOI18N
+    LITERAL___signed__="__signed__"; // NOI18N
+    LITERAL_unsigned="unsigned"; // NOI18N
+    LITERAL___unsigned__="__unsigned__"; // NOI18N
+    LITERAL_float="float"; // NOI18N
+    LITERAL_double="double"; // NOI18N
+    LITERAL_void="void"; // NOI18N
+    LITERAL__declspec="_declspec"; // NOI18N
+    LITERAL___declspec="__declspec"; // NOI18N
+    LITERAL_class="class"; // NOI18N
+    LITERAL_struct="struct"; // NOI18N
+    LITERAL_union="union"; // NOI18N    
+    LITERAL_this="this"; // NOI18N
+    LITERAL_true="true"; // NOI18N
+    LITERAL_false="false"; // NOI18N
+    LITERAL_public="public"; // NOI18N
+    LITERAL_protected="protected"; // NOI18N
+    LITERAL_private="private"; // NOI18N
+    LITERAL_throw="throw"; // NOI18N
+    LITERAL_case="case"; // NOI18N
+    LITERAL_default="default"; // NOI18N
+    LITERAL_if="if"; // NOI18N
+    LITERAL_else="else"; // NOI18N
+    LITERAL_switch="switch"; // NOI18N
+    LITERAL_while="while"; // NOI18N
+    LITERAL_do="do"; // NOI18N
+    LITERAL_for="for"; // NOI18N
+    LITERAL_goto="goto"; // NOI18N
+    LITERAL_continue="continue"; // NOI18N
+    LITERAL_break="break"; // NOI18N
+    LITERAL_return="return"; // NOI18N
+    LITERAL_try="try"; // NOI18N
+    LITERAL_catch="catch"; // NOI18N
+    LITERAL_using="using"; // NOI18N
+    LITERAL_export="export"; // NOI18N
+    LITERAL_asm="asm"; // NOI18N
+    LITERAL__asm="_asm"; // NOI18N
+    LITERAL___asm="__asm"; // NOI18N
+    LITERAL___asm__="__asm__"; // NOI18N
+    LITERAL_sizeof="sizeof"; // NOI18N
+    LITERAL_dynamic_cast="dynamic_cast"; // NOI18N
+    LITERAL_static_cast="static_cast"; // NOI18N
+    LITERAL_reinterpret_cast="reinterpret_cast"; // NOI18N
+    LITERAL_new="new"; // NOI18N
+    LITERAL__cdecl="_cdecl"; // NOI18N
+    LITERAL___cdecl="__cdecl"; // NOI18N
+    LITERAL__near="_near"; // NOI18N
+    LITERAL___near="__near"; // NOI18N
+    LITERAL__far="_far"; // NOI18N
+    LITERAL___far="__far"; // NOI18N
+    LITERAL___interrupt="__interrupt"; // NOI18N
+    LITERAL_pascal="pascal"; // NOI18N
+    LITERAL__pascal="_pascal"; // NOI18N
+    LITERAL___pascal="__pascal"; // NOI18N
+    LITERAL_delete="delete"; // NOI18N
+    LITERAL__int64="_int64"; // NOI18N
+    LITERAL___int64="__int64"; // NOI18N
+    LITERAL___w64="__w64"; // NOI18N
+    LITERAL___extension__="__extension__"; // NOI18N
+    LITERAL___attribute__="__attribute__"; // NOI18N
+    LITERAL___restrict="__restrict"; // NOI18N
+    LITERAL___complex="__complex__"; // NOI18N
+    LITERAL___imag="__imag__"; // NOI18N
+    LITERAL___real="__real__"; // NOI18N          
+    LITERAL___global="__global"; // NOI18N   
 
 	ASSIGNEQUAL;
 	COLON;
@@ -278,15 +278,15 @@ tokens {
         traceDepth ++;
         traceIndent();
         char c = LA(1);
-        Object ch = (c == '\n') ? "\\n" : c == '\t' ? "\\t" : ("" + c);
-        System.out.println("> lexer " + rname + "; c==" + ch);
+        Object ch = (c == '\n') ? "\\n" : c == '\t' ? "\\t" : ("" + c); // NOI18N
+        System.out.println("> lexer " + rname + "; c==" + ch); // NOI18N
     }
 
     public void traceOut(String rname) throws CharStreamException {
         traceIndent();
         char c = LA(1);
-        Object ch = c == '\n' ? "\\n" : c == '\t' ? "\\t" : ("" + c);
-        System.out.println("< lexer " + rname + "; c==" + ch);
+        Object ch = c == '\n' ? "\\n" : c == '\t' ? "\\t" : ("" + c); // NOI18N
+        System.out.println("< lexer " + rname + "; c==" + ch); // NOI18N
         traceDepth--;
     }
 

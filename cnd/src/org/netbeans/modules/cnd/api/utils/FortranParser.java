@@ -85,7 +85,7 @@ public class FortranParser {
 	    }
 	} catch (UnexpectedEOFException ex) {
 	    if (verbose) {
-		System.err.println("Error: Unexpected EOF");
+		System.err.println("Error: Unexpected EOF"); // NOI18N
 		ex.printStackTrace();
 	    }
 	    return null;

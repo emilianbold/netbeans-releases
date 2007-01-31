@@ -27,7 +27,7 @@ public class StringTableSection extends ElfSection {
         try {
             long filePos = reader.getFilePointer();
             reader.seek(header.getSectionOffset());
-            stringtable = new byte[header.getSectionSize()];
+            stringtable = new byte[(int)header.getSectionSize()];
             reader.read(stringtable);
             reader.seek(filePos);
         } catch (IOException ex) {
@@ -41,10 +41,10 @@ public class StringTableSection extends ElfSection {
         return stringtable;
     }
     
-    public String getString(int offset) {
+    public String getString(long offset) {
         StringBuffer str = new StringBuffer();
         
-        for (int i = offset; i < stringtable.length; i++) {
+        for (int i = (int)offset; i < stringtable.length; i++) {
             if (stringtable[i] == 0) {
                 break;
             }
@@ -58,18 +58,18 @@ public class StringTableSection extends ElfSection {
         super.dump(out);
         
         if (stringtable == null) {
-            out.println("<Empty table>");
+            out.println("<Empty table>"); // NOI18N
             return;
         }
         
         int offset = 1;
         int idx = 0;
 
-        out.printf("No.\tOffset\tString\n");
+        out.printf("No.\tOffset\tString\n"); // NOI18N
         
         while (offset < stringtable.length) {
             String string = getString(offset);
-            out.printf("%d.\t%d\t%s\n", ++idx, offset, string);
+            out.printf("%d.\t%d\t%s\n", ++idx, offset, string); // NOI18N
             offset += string.length() + 1;
         }
     }

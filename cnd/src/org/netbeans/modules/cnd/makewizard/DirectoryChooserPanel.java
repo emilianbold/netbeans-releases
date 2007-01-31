@@ -37,11 +37,11 @@ public abstract class DirectoryChooserPanel extends FileChooserPanel {
 	super(wd);
 	init();
 	fc = new JFileChooser();
-	fc.setApproveButtonText(getString("BTN_Approve"));		//NOI18N
-	fc.setDialogTitle(getString("TITLE_DirChooser"));		//NOI18N
+	fc.setApproveButtonText(getString("BTN_Approve"));		// NOI18N
+	fc.setDialogTitle(getString("TITLE_DirChooser"));		// NOI18N
 	fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 	fc.setFileSystemView(new IpeFileSystemView(fc.getFileSystemView()));
 	fc.setCurrentDirectory(
-			new File(System.getProperty("user.dir")));	//NOI18N
+			new File(System.getProperty("user.dir")));	// NOI18N
     }
 }

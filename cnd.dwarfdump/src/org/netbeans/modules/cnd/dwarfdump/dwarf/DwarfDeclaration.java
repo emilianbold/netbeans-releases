@@ -35,6 +35,6 @@ public class DwarfDeclaration {
     }
 
     public String toString() {
-        return kind + " " + declarationString + " " + declarationPosition;
+        return kind + " " + declarationString + " " + declarationPosition; // NOI18N
     }
 }

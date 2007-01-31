@@ -19,391 +19,720 @@
 
 package dwarfvsmodel;
 
+import java.io.*;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
-import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfDeclaration;
 import java.util.List;
-import modeldump.FileCodeModelReader;
-import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import modeldump.ModelDump;
-import modelutils.Config;
 import java.io.PrintStream;
-import java.util.Collection;
 import modelutils.FileCodeModelDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.ConstructorDefinitionImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.ConstructorImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.DestructorDefinitionImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.TypedefImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+
+import org.netbeans.modules.cnd.api.model.*;
 
 /**
+ * Compares declarations from model (CsmFile) and dwarf (CompilationUnit)
  *
- * @author ak119685
+ * <pre>
+ *
+ * NB: Naming conventions.
+ *
+ * areXxxxEqual methods -	return boolean (true if equal otherwise false)
+ *				does NOT affect counters
+ *				does NOT report anything
+ *				basically is atomic (don't go deep inside)
+ *
+ * compareXxxx methods -	have void return type,
+ *				affects counters,
+ *				report differences
+ *				print trace information
+ *				go recursively through objects
+ * </pre>
+ *
+ * @author ak119685, vkvashin
  */
 public class ModelComparator {
-    PrintStream log = null;
     
-    public ModelComparator(PrintStream log) {
-        this.log = log;
+
+    private CsmFile csmFile;
+    private CompilationUnit dwarfData;
+    
+    private boolean bidirectional = false;
+    
+    private int numMatched = 0;
+    private int numTotal = 0;
+
+    private Tracer tracer;
+    
+    private File tempDir;
+    private boolean printToScreen = false;
+    private boolean compareBodies = true;
+    
+    private PrintStream modelStream = System.out;	//  for dumping model
+    private PrintStream dwarfStream = System.out;	//  for dumping dwarf
+    //private PrintStream optionsStream = System.out;	//  for logging options
+    private PrintStream traceStream = System.out;	//  for trace
+    private PrintStream diffStream = System.out;	//  for printing information concerning differencies in model
+    private PrintStream resultStream = System.out;	//  for results
+    
+    private PrintStream modelListStream  = System.out;	//  for dumping model list for compar
+    private PrintStream dwarfListStream  = System.out;	//  for dumping dwarf list for compar
+    
+//    public static final int VERBOSITY_LOW = 0;
+//    public static final int VERBOSITY_MEDIUM = 1;
+//    public static final int VERBOSITY_HIGH = 2;
+//    
+//    private int verbosity = VERBOSITY_HIGH;
+    
+    public ModelComparator(CsmFile codeModel, CompilationUnit dwarfData, PrintStream resultLog, PrintStream traceLog) {
+	this.csmFile = codeModel;
+	this.dwarfData = dwarfData;
+	this.resultStream = resultLog;
+	this.traceStream = traceLog;
+	this.tracer = new Tracer(traceLog);
     }
     
-    public ComparationResult compare(CsmFile codeModel, CompilationUnit dwarfData) {
-        List<CsmDeclaration> modelDeclarations = new ArrayList<CsmDeclaration>();
-        ArrayList<String> excludedDeclarations = new ArrayList<String>();
-        
-        // TODO: Ask why we have both 'state_to_color' in model? Is it correct?
-        // Refer to traffic.h
-        // I've decided to remove FunctionImpl from comparation.
-        
-        for (CsmDeclaration modelDeclaration : (List<CsmDeclaration>)codeModel.getDeclarations()) {
-            if (!(modelDeclaration.getClass().equals(FunctionImpl.class))) {
-                modelDeclarations.add(modelDeclaration);
-            } else {
-                excludedDeclarations.add(toString(modelDeclaration));
-            }
-        }
-
-        if (excludedDeclarations.size() > 0) {
-            System.out.println("Excluding following FunctionImpl declarations from Model");
-            for (String decl : excludedDeclarations) {
-                System.out.println("   " + decl);
-            }
-        }
-        
-        List<DwarfEntry> dwarfDeclarations = dwarfData.getDeclarations();
-        
-        log.println("\nComparing DWARF (" + dwarfDeclarations.size() + " items) with Model (" + modelDeclarations.size() + " items) data ... \n");
-        
-        boolean compared;
-        int numMatched = 0;
-        int modelDeclarationsNum = modelDeclarations.size();
-        int numTotal = modelDeclarationsNum;
-        
-        ArrayList<DwarfEntry> comparedDwarfDeclarations = new ArrayList<DwarfEntry>();
-        DwarfEntry dwarfDeclarationToCompareWith;
-        int modelDeclarationLine;
-        int dwarfDeclarationLine;
-        int declLineDelta;
-        int tmpDeclLineDelta;
-        
-        for (CsmDeclaration modelDeclaration : modelDeclarations) {
-            
-            dwarfDeclarationToCompareWith = null;
-            declLineDelta = Integer.MAX_VALUE;
-            
-            for (DwarfEntry dwarfDeclaration : dwarfDeclarations) {
-                if (isDeclarationNamesEqual(modelDeclaration, dwarfDeclaration)) {
-                    modelDeclarationLine = ((OffsetableDeclarationBase)modelDeclaration).getStartPosition().getLine();
-                    dwarfDeclarationLine = dwarfDeclaration.getUintAttributeValue(ATTR.DW_AT_decl_line);
-                    tmpDeclLineDelta = dwarfDeclarationLine - modelDeclarationLine;
-                    
-                    if (tmpDeclLineDelta >= 0 && tmpDeclLineDelta < declLineDelta) {
-                        dwarfDeclarationToCompareWith = dwarfDeclaration;
-                        declLineDelta = tmpDeclLineDelta;
-                    }
-                    
-                    if (declLineDelta == 0) {
-                        break;
-                    }
-                }
-            }
-            
-            if (dwarfDeclarationToCompareWith != null) {
-                // we have found a candidate for comparation
-                dwarfDeclarations.remove(dwarfDeclarationToCompareWith);
-                comparedDwarfDeclarations.add(dwarfDeclarationToCompareWith);
-                
-                log.println("/- Model: " + toString(modelDeclaration));
-                log.println("+- Dwarf: " + dwarfDeclarationToCompareWith.toString());
-                
-                if (isDeclarationsEqual(modelDeclaration, dwarfDeclarationToCompareWith)) {
-                    numMatched++;
-                    log.println("\\- OK\n");
-                } else {
-                    // TODO: output source string(s) with this entry.
-                    //outFileContent(dwarfDeclarationToCompareWith.getFile(), modelDeclarationLine, dwarfDeclarationLine, 2);
-                    log.println("\\- FAIL - differences in declarations.\n");
-                }
-            } else {
-                log.println("/- Model: " + toString(modelDeclaration));
-                log.println("\\- FAIL - In model only!");
-            }
-            log.println("");
-            
-        }
-        
-        for (DwarfEntry dwarfEntry : dwarfDeclarations) {
-            if (!comparedDwarfDeclarations.contains(dwarfEntry)) {
-                numTotal++;
-                log.println("/- Dwarf: " + dwarfEntry.toString());
-                log.println("\\- FAIL - In DWARF only!\n");
-            }
-        }
-        
-        ComparationResult result = new ComparationResult(1, numTotal, numMatched);
-        result.dump(log);
-        log.println("\t... done.\n");
-        
+    public void setBidirectional(boolean bidirectional) {
+	this.bidirectional = bidirectional;
+    }
+    
+    public void setTemp(File tempDir) {
+	this.tempDir = tempDir;
+    }
+    
+    public void setPrintToScreen(boolean printToScreen) {
+	this.printToScreen = printToScreen;
+    }
+    
+    public void setCompareBodies(boolean compareBodies) {
+	this.compareBodies = compareBodies;
+    }
+    
+    private void setupStreams() throws IOException {
+	modelStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName(), "model"); // NOI18N
+	dwarfStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName(), "dwarf"); // NOI18N
+	diffStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName(), "diff"); // NOI18N
+	//traceStream and resultStream are passed directly to the constructor 
+	modelListStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName(), "model-list"); // NOI18N
+	dwarfListStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName(), "dwarf-list"); // NOI18N
+    }
+    
+    public ComparationResult compare() throws IOException {
+	
+	setupStreams();
+	diffStream.println("Differences for " + csmFile.getAbsolutePath()); //NOI18N
+	
+	dwarfData.dump(dwarfStream);
+	(new CsmTracer(modelStream)).dumpModel(csmFile);
+	modelStream.println();
+	
+	clearTotal();
+        tracer.println("\n======== Processing " + csmFile.getAbsolutePath() + "\n"); // NOI18N
+	
+	//compare(csmFile.getDeclarations(), dwarfData.getDeclarations());
+	DwarfList dwarfList = new DwarfList(dwarfData);
+	ModelList modelList = new ModelList(csmFile);
+	dwarfList.dump(dwarfListStream, compareBodies);
+	modelList.dump(modelListStream, compareBodies);
+	compare(modelList, dwarfList);
+	
+        ComparationResult result = new ComparationResult(csmFile, getTotal(), getMatched()); // NOI18N
+        result.dump(resultStream);
+	if( diffStream != resultStream ) {
+	    result.dump(diffStream);
+	}
+        tracer.println("\t... done.\n"); // NOI18N
         return result;
     }
     
-    public String toString(CsmDeclaration declaration) {
-        String classname = declaration.getClass().toString();
-        classname = classname.substring(classname.lastIndexOf('.') + 1);
-        return FileCodeModelReader.getFileCodeModelDeclaration(declaration).toString() + " <" + classname + ">";
+    private void compare(ModelList modelList, DwarfList dwarfList) {
+
+	for( DwarfEntry entry : dwarfList.getDeclarations() ) {
+	    if( DMFlags.TRACE_COMPARISON ) tracer.println("Searching for " + dwarfList.getQualifiedName(entry) + ' ' + entry); // NOI18N
+	    if( DMFlags.TRACE_ENTRIES ) tracer.traceRecursive(entry);
+	    tracer.indent();
+	    CsmDeclaration decl = find(entry, dwarfList, modelList);
+	    if( DMFlags.TRACE_COMPARISON ) tracer.printf("Found %s \n", toString(decl)); // NOI18N
+	    if( decl != null ) {
+		incBoth();
+		compareDeclarations(decl, entry);
+	    }
+	    else {
+		reportMoreInDwarf(entry, dwarfList.getQualifiedName(entry));
+	    }
+	    if( DMFlags.TRACE_COMPARISON ) tracer.printf("\t\t%d  of  %d\n\n", getMatched(), getTotal()); // NOI18N
+	    tracer.unindent();
+	}
+    }
+	
+    /**
+     * Finds a declaration in modelList that corresponds to the given dwarf entry (from dwarfList)
+     * @param entry dwarf entry to search corresopondent CsmDeclaration in modelList
+     * @param dwarfList list this entry is taken from (to determine are there any overloads) 
+     * @param modelList list in which to search for model declaration
+     **/
+    private CsmDeclaration find(DwarfEntry entry, DwarfList dwarfList, ModelList modelList) {
+
+	String qualifiedName = dwarfList.getQualifiedName(entry);
+	Iterable<CsmDeclaration> declarations = modelList.getDeclarations(qualifiedName);
+
+	if( ComparisonUtils.isFunction(entry) ) {
+	    // Gather information from dwarf site
+	    int paramCount = entry.getParameters().size();
+	    int dwarfOverloadsCount = 0;
+	    boolean noOtherOverloadWithThisParamCount = true;
+	    for( DwarfEntry e : dwarfList.getDeclarations(qualifiedName) ) {
+		if( ComparisonUtils.isFunction(e) ) {
+		    dwarfOverloadsCount++;
+		    int cnt = e.getParameters().size();
+		    if( cnt != paramCount ) {
+			noOtherOverloadWithThisParamCount = false;
+		    }
+		}
+	    }
+	    
+	    // Well, let's then gather model data
+	    List<CsmFunction> modelOverloads = new ArrayList<CsmFunction>();
+	    for( CsmDeclaration decl : declarations ) {
+		if( CsmKindUtilities.isFunction(decl) ) {
+		    CsmFunction func = (CsmFunction) decl;
+		    if( func.getParameters().size() == paramCount ) {
+			modelOverloads.add(func);
+		    }
+		}
+	    }
+
+	    if( DMFlags.TRACE_COMPARISON ) {
+		tracer.printf("function; paramCount=%d dwarfOverloads=%d modelOverloads=%d noOtherOverloadWithThisParamCount=%b\n", // NOI18N
+			paramCount, dwarfOverloadsCount, modelOverloads.size(), noOtherOverloadWithThisParamCount);
+	    }
+	    
+	    // Ok, let's look what we've got
+	    if( modelOverloads.isEmpty() ) {
+		return null;
+	    }
+	    if( noOtherOverloadWithThisParamCount && modelOverloads.size() == 1 ) {
+		return modelOverloads.get(0);
+	    }
+	    // we have several overloads with same parameters either in model or in dwarf - 
+	    // in any case we should compare lists in detailed manner
+	    for( CsmFunction funct : modelOverloads ) {
+		if( areFunctionSignaturesEqual(funct, entry) ) {
+		    return funct;
+		}
+	    }
+	    if( DMFlags.TRACE_COMPARISON ) tracer.println("Exact match not found; searching by position"); // NOI18N
+	    // well, let's at last try to find just by position
+	    for( CsmFunction funct : modelOverloads ) {
+		if( entry.getLine() == funct.getStartPosition().getLine() ) {
+		    return funct;
+		}
+	    }
+	}
+	else {
+	    for( CsmDeclaration decl : declarations ) {
+		if( ComparisonUtils.isClass(entry)  ) {
+		    if( CsmKindUtilities.isClass(decl) ) {
+			return decl;
+		    }
+		}
+		else if( ComparisonUtils.isEnum(entry) ) {
+		    if( CsmKindUtilities.isEnum(decl) ) {
+			return decl;
+		    }
+		}
+		else if( ComparisonUtils.isVariable(entry) ) {
+		    if( CsmKindUtilities.isVariable(decl) ) {
+			return decl;
+		    }
+		}
+		else if( ComparisonUtils.isTypedef(entry) ) {
+		    if( CsmKindUtilities.isTypedef(decl) ) {
+			return decl;
+		    }
+		}
+		else {
+		    tracer.println("High-level entry is neither class, nor enum, variable or function: " + entry); // NOI18N
+		    return null;
+		}
+	    }
+	}
+	return null;
     }
     
-    // Returns true if name matches.
-    public boolean isDeclarationNamesEqual(CsmDeclaration modelDeclaration, DwarfEntry dwarfDeclaration) {
+    private String toString(CsmDeclaration decl) {
+	if( decl == null ) {
+	    return "null"; // NOI18N
+	}
+	String name = CsmKindUtilities.isFunction(decl) ? ComparisonUtils.getSignature((CsmFunction) decl) :  decl.getName();
+	StringBuilder sb = new StringBuilder(name);
+	sb.append(' ');
+	sb.append(decl.getKind().toString());
+	sb.append(' ');
+	sb.append(CsmTracer.getOffsetString((CsmOffsetable) decl));
+	return sb.toString();
+    }
+    
+//    public String toString(CsmDeclaration declaration) {
+//        String classname = declaration.getClass().toString();
+//        classname = classname.substring(classname.lastIndexOf('.') + 1);
+//        return FileCodeModelReader.getFileCodeModelDeclaration(declaration).toString() + " <" + classname + ">"; // NOI18N
+//    }
+    
+    /** Returns true if name matches. */
+    public boolean areDeclarationNamesEqual(CsmDeclaration modelDeclaration, DwarfEntry dwarfDeclaration) {
+	if( dwarfDeclaration == null ) {
+	    reportError("DwarfEntry for parameter is null " + dwarfDeclaration); // NOI18N
+	    return false;
+	}
+	else if( dwarfDeclaration.getName() == null ) {
+	    reportError("DwarfEntry name is null " + dwarfDeclaration); // NOI18N
+	    return false;
+	}
         // Remove spaces from modelName (ex. "operator <<" => "operator<<")
-        String modelName = modelDeclaration.getQualifiedName().replaceAll(" ", "");
-        String dwarfName = dwarfDeclaration.getQualifiedName().replaceAll(" ", "");
-        
+        String modelName = modelDeclaration.getName().replaceAll(" ", ""); // NOI18N
+        String dwarfName = dwarfDeclaration.getName().replaceAll(" ", ""); // NOI18N
+	if( "...".equals(modelName) ) { // NOI18N
+	    modelName = "";
+	}
         //TODO: Global scope?
-        if (!(modelName.equals(dwarfName) || modelName.equals("::" + dwarfName))) {
+        if (!(modelName.equals(dwarfName) || modelName.equals("::" + dwarfName))) { // NOI18N
             return false;
         }
-        
         return true;
     }
     
-    public boolean isDeclarationsEqual(CsmDeclaration modelDeclaration, DwarfEntry dwarfDeclaration) {
-        if (FunctionDDImpl.class.equals(modelDeclaration.getClass()) ||
-                FunctionDefinitionImpl.class.equals(modelDeclaration.getClass()) ||
-                MethodImpl.class.equals(modelDeclaration.getClass())) {
-            return isFunctionsEqual((CsmFunction)modelDeclaration, dwarfDeclaration);
+    /**
+     * Compares dwarf and model declarations that are supposed to be the same.
+     * Increments numTotal and numMatch as appropriate.
+     */
+    private void compareDeclarations(CsmDeclaration decl, DwarfEntry entry) {
+	
+	if( DMFlags.TRACE_COMPARISON ) tracer.printf("Comparing %s and %s\n", toString(decl), entry); // NOI18N
+	tracer.indent();
+	
+	if( ! areDeclarationNamesEqual(decl, entry) ) {
+	    reportDifferent(decl, entry, "Names differ: ", decl.getName(), entry.getName());	//NOI18N
+	}
+	if(CsmKindUtilities.isFunction(decl)) {
+            compareFunctions((CsmFunction)decl, entry);
         }
-        
-        if (VariableImpl.class.equals(modelDeclaration.getClass())) {
-            return isVariableDeclarationsEqual((VariableImpl)modelDeclaration, dwarfDeclaration);
+	else if(CsmKindUtilities.isVariable(decl)) {
+            compareVariables((CsmVariable)decl, entry);
         }
-        
-        if (ParameterImpl.class.equals(modelDeclaration.getClass())) {
-            return isParameterDeclarationsEqual((ParameterImpl)modelDeclaration, dwarfDeclaration);
-        }
-        
-        if (UsingDirectiveImpl.class.equals(modelDeclaration.getClass())) {
+	else if (decl.getKind() == CsmDeclaration.Kind.USING_DIRECTIVE) {
             //TODO: add code
-            return false;
         }
-        
-        if (TypedefImpl.class.equals(modelDeclaration.getClass())) {
-            return isTypedefsEqual((TypedefImpl)modelDeclaration, dwarfDeclaration);
+	else if(CsmKindUtilities.isTypedef(decl)) {
+            compareTypedefs((CsmTypedef)decl, entry);
         }
-        
-        if (ClassImpl.class.equals(modelDeclaration.getClass())) {
-            return isClassesEqual((ClassImpl)modelDeclaration, dwarfDeclaration);
+	else if(CsmKindUtilities.isClass(decl)) {
+            compareClasses((CsmClass)decl, entry);
         }
-        
-        if (FieldImpl.class.equals(modelDeclaration.getClass())) {
-            return isFieldsEqual((FieldImpl)modelDeclaration, dwarfDeclaration);
-        }
-        
-        if (ConstructorDefinitionImpl.class.equals(modelDeclaration.getClass()) ||
-                ConstructorImpl.class.equals(modelDeclaration.getClass()) ||
-                DestructorDefinitionImpl.class.equals(modelDeclaration.getClass())) {
-            return (isFunctionParametersEqual((CsmFunction)modelDeclaration, dwarfDeclaration));
-//            return (dwarfDeclaration.getType().equals("void") &&
-//                    isFunctionParametersEqual((CsmFunction)modelDeclaration, dwarfDeclaration));
-        }
-        
-        throw new RuntimeException("Don't know how to compare " + modelDeclaration.getKind() + " (" + modelDeclaration.getClass() + ")");
+// namespaces are nvere added to this list; just their elements are added
+//	else if(CsmKindUtilities.isNamespaceDefinition(decl)) {
+//	    compareNamespaces((CsmNamespaceDefinition) decl, entry);
+//	}
+	else {
+	    StringBuilder sb = new StringBuilder("Don't know how to compare "); //NOI18N
+	    sb.append(decl.getKind());
+	    sb.append(" (" + decl.getClass() + ") ");	//NOI18N
+	    sb.append(((CsmOffsetable) decl).getContainingFile().getAbsolutePath());
+	    sb.append(CsmTracer.getOffsetString((CsmOffsetable) decl));
+	    reportError(sb.toString());
+	}
+	
+	tracer.unindent();
     }
     
-    boolean isFunctionParametersEqual(CsmFunction modelFunction, DwarfEntry dwarfFunction) {
-        List<ParameterImpl> modelFunctionParams = modelFunction.getParameters();
+    /** 
+     * Compares functions.
+     * Affects counters (for what is inside, not for functions themselves).
+     * Reports differencies
+     */
+    private void compareFunctions(CsmFunction funct, DwarfEntry entry) {
+	// Compare return types
+	compareReturnTypes(funct, entry);
+	// compare parameters
+	compareFunctionParameters(funct, entry);
+	// Compare bodies
+	CsmFunctionDefinition definition = funct.getDefinition();
+	//if (funct == definition) {
+	if( definition != null ) {
+	    compareBodies(definition, entry);
+	}
+    }
+    
+    /** 
+     * Compares return types 
+     * Affects counters (for what is inside, not for functions themselves).
+     * Reports differencies
+     */
+    private void compareReturnTypes(CsmFunction funct, DwarfEntry entry) {
+        CsmType csmRetType = funct.getReturnType();
+	if( DMFlags.TRACE_COMPARISON ) tracer.printf("Comparing return types %s and %s\n", ComparisonUtils.getText(csmRetType), entry); // NOI18N
+	if( areTypesEqual(csmRetType, entry) ) {
+	    incBoth();
+	}
+	else {
+	    reportDifferentType(funct, entry, "Return types differ:", csmRetType); //NOI18N
+	}
+    }
+    
+    /** 
+     * Compares functions signature. 
+     * Prints to diff, affects counters
+     */ 
+    boolean compareFunctionParameters(CsmFunction modelFunction, DwarfEntry dwarfFunction) {
+	
+	Iterator<CsmParameter> modelParameters = modelFunction.getParameters().iterator();
+	
+	for( DwarfEntry dwarfParam : dwarfFunction.getParameters() ) {
+	    if( modelParameters.hasNext() ) {
+		compareVariables(modelParameters.next(), dwarfParam);
+	    }
+	    else {
+		reportMoreInDwarf(dwarfParam, dwarfParam.getName());
+	    }
+	}
+        return true;
+    }    
+    
+    /** 
+     * Compares variables (and parameters as well). 
+     * Prints to diff, affects counters
+     */ 
+    private void compareVariables(CsmVariable var, DwarfEntry entry) {
+	if( ! ComparisonUtils.isVariable(entry) ) {
+	    reportError("Error: an entry supposed to be variable, but it is not: " + entry); // NOI18N
+	    return;
+	}
+	if( ! areDeclarationNamesEqual(var, entry) ) {
+	    reportDifferent(var, entry, (CsmKindUtilities.isParamVariable(var) ? "Parameter" : "Variable") + " names differ", //NOI18N
+		    var.getName(), entry.getName());
+	    return;
+	}
+	CsmType type = var.getType();
+	if( ! areTypesEqual(type, entry) ) {
+	    reportDifferentType(var, entry, (CsmKindUtilities.isParamVariable(var) ? "Parameter" : "Variable") + " types differ", type); //NOI18N
+	    return;
+	}
+	incBoth();
+    }
+    
+    private void compareTypedefs(CsmTypedef typedef, DwarfEntry entry) {
+	
+        if( entry.getKind() != TAG.DW_TAG_typedef ) {
+            reportError("Error: an entry supposed to be variable, but it is not: " + entry); // NOI18N
+	    return;
+        }
+	if( ! areDeclarationNamesEqual(typedef, entry) ) {
+	    reportDifferent(typedef, entry, "Typedef names differ", typedef.getName(), entry.getName()); // NOI18N
+	    return;
+	}
+        
+        //if (!dwarfDeclaration.getType().equals(modelDeclaration.getType().getText())) {
+	CsmType type = typedef.getType();
+	if( ! areTypesEqual(typedef.getType(), entry/*.getType()*/)) {
+	    reportDifferentType(typedef, entry, "Typedef types differ", type);	//NOI18N
+	    return;
+        }
+	incBoth();
+    }
+    
+
+    /** Compares functions signature. Does NOT print to diff, does NOT affect counters  */ 
+    boolean areFunctionSignaturesEqual(CsmFunction modelFunction, DwarfEntry dwarfFunction) {
+	
+        List<CsmParameter> modelFunctionParams = modelFunction.getParameters();
         List<DwarfEntry> dwarfFunctionParams = dwarfFunction.getParameters();
         
-        int modelParamsCount = modelFunctionParams.size();
-        int dwarfParamsCount = dwarfFunctionParams.size();
-        
-        if (modelParamsCount != dwarfParamsCount) {
+        if (modelFunctionParams.size() != dwarfFunctionParams.size()) {
             return false;
         }
         
-        boolean result = true;
-        
-        for (int i = 0; i < modelParamsCount; i++) {
-            result &= isDeclarationsEqual(modelFunctionParams.get(i), dwarfFunctionParams.get(i));
-        }
-        
-        return result;
-    }
-    
-    public boolean isFunctionsEqual(CsmFunction modelDefinition, DwarfEntry dwarfDefinition) {
-        if (!(dwarfDefinition.getKind().equals(TAG.DW_TAG_subprogram))) {
-            return false;
-        }
-        
-        return isReturnTypesEqual(modelDefinition, dwarfDefinition) && isFunctionParametersEqual(modelDefinition, dwarfDefinition);
-    }
-    
-    public boolean isVariableDeclarationsEqual(VariableImpl modelDeclaration, DwarfEntry dwarfDeclaration) {
-        TAG dwarfDeclarationKind = dwarfDeclaration.getKind();
-        if (!dwarfDeclarationKind.equals(TAG.DW_TAG_variable) &&
-                !dwarfDeclarationKind.equals(TAG.DW_TAG_formal_parameter) &&
-                !dwarfDeclarationKind.equals(TAG.DW_TAG_member)) {
-            return false;
-        }
-        
-        if (!dwarfDeclaration.getType().equals(modelDeclaration.getType().getText())) {
-            log.println(dwarfDeclaration.toString());
-            log.println(toString(modelDeclaration));
-            return false;
+        for (int i = 0; i < modelFunctionParams.size(); i++) {
+	    DwarfEntry entry = dwarfFunctionParams.get(i);
+	    if( ! ComparisonUtils.isParameter(entry) ) {
+		return false;
+	    }
+	    if( ! areTypesEqual(modelFunctionParams.get(i).getType(), entry/*.getType()*/) ) {
+		return false;
+	    }
         }
         
         return true;
     }
-    
-    private boolean isTypedefsEqual(TypedefImpl modelDeclaration, DwarfEntry dwarfDeclaration) {
-        if (!(dwarfDeclaration.getKind().equals(TAG.DW_TAG_typedef))) {
-            return false;
-        }
-        
-        if (!dwarfDeclaration.getType().equals(modelDeclaration.getType().getText())) {
-            return false;
-        }
-        
-        return true;
+
+    /** 
+     * Compares two types. 
+     * Does NOT print to diff, does NOT affect counters  
+     */ 
+    private boolean areTypesEqual(CsmType csmType, DwarfEntry entry) {
+	String dwarfType = entry.getType();
+//        String typedef = entry.getTypeDef();
+//        if( typedef != null ) {
+//	    tracer.println("TYPE: " + dwarfType + " TYPEDEF: " + typedef);
+//	}
+	return areTypesEqual(csmType, dwarfType);
     }
     
-    private boolean isFieldsEqual(FieldImpl modelDeclaration, DwarfEntry dwarfDeclaration) {
-        return isVariableDeclarationsEqual((VariableImpl)modelDeclaration, dwarfDeclaration);
+    /** Compares two types. Does NOT print to diff, does NOT affect counters  */ 
+    private boolean areTypesEqual(CsmType csmType, String dwarfType) {
+	if( "void".equals(dwarfType) ) { // NOI18N
+	    return csmType == null || ComparisonUtils.isEmpty(csmType.getText()) || "void".equals(csmType.getText()); // NOI18N
+	}
+	dwarfType = dwarfType.replaceAll(" ", ""); // NOI18N
+	if( csmType == null && "null".equals(dwarfType) ) { // NOI18N
+	    return true;
+	}
+	if( csmType != null ) {
+	    String modelText = ComparisonUtils.getText(csmType);
+	    modelText = modelText.replaceAll(" ", ""); // NOI18N
+	    return dwarfType.equals(modelText);
+	    
+	    
+	}
+	return false;
+    }    
+    
+    
+    public void compareBodies(CsmFunctionDefinition modelDefinition, DwarfEntry dwarfDefinition) {
+	if( compareBodies ) {
+	    tracer.indent();
+	    compareDeclarationTrees(
+		    ModelTree.createModelNode(modelDefinition), 
+		    DwarfTree.createDwarfNode(dwarfDefinition));
+	    tracer.unindent();
+	}
     }
     
-    
-    private boolean isClassesEqual(ClassImpl modelDeclaration, DwarfEntry dwarfDeclaration) {
-        List<CsmDeclaration> modelMembers = modelDeclaration.getMembers();
-        List<DwarfEntry> dwarfMembers = dwarfDeclaration.getMembers();
-        
-        int modelMembersCount = modelMembers.size();
-        int dwarfMembersCount = dwarfMembers.size();
-        
-        if (modelMembersCount != dwarfMembersCount) {
-            return false;
-        }
-        
-        boolean overallResult = true;
-        
-        // In classes the order of members is not defined...
-        // So use more complex comparision
-        
-        for (Iterator<CsmDeclaration> i = modelMembers.iterator(); overallResult && i.hasNext();) {
-            CsmDeclaration modelEntry = i.next();
-            boolean result = false;
-            DwarfEntry dwarfEntry = null;
-            
-            for (Iterator<DwarfEntry> j = dwarfMembers.iterator(); !result && j.hasNext();) {
-                dwarfEntry = j.next();
-                result |= isDeclarationsEqual(modelEntry, dwarfEntry);
-            }
-            
-            if (result) {
-                dwarfMembers.remove(dwarfEntry);
-            }
-            
-            overallResult &= result;
-        }
-        
-        return overallResult;
+    public int getWeight(DwarfEntry entry) {
+	if( ComparisonUtils.isFunction(entry) ) {
+	     Node<DwarfEntry> node = DwarfTree.createDwarfNode(entry);
+	     if( node != null ) {
+		 int sum = 1; // for return type
+		 for( DwarfEntry p : entry.getParameters() ) {
+		     sum++; // for each parameter
+		 }
+		 sum += node.getDeclarationsCount();
+		 return sum;
+	     }
+	}
+	return 0;
     }
     
-    public boolean isParameterDeclarationsEqual(ParameterImpl modelDeclaration, DwarfEntry dwarfDeclaration) {
-        TAG dwarfDeclarationKind = dwarfDeclaration.getKind();
-        
-        if (!(dwarfDeclarationKind.equals(TAG.DW_TAG_formal_parameter) ||
-                dwarfDeclarationKind.equals(TAG.DW_TAG_unspecified_parameters))) {
-            return false;
-        }
-        
-        String dwarfType = dwarfDeclaration.getType().replaceAll(" ", "");
-        CsmType modelCsmType = modelDeclaration.getType();
-        String modelType = (modelCsmType == null) ? "null" : modelCsmType.getText().replaceAll(" ", "");
-        
-        return dwarfType.equals(modelType);
+    public void compareDeclarationTrees(Node<CsmDeclaration> modelNode, Node<DwarfEntry> dwarfNode) {
+//	if( DMFlags.TRACE_TREES ) {
+//	    tracer.indent();
+//	    tracer.trace(modelNode, "Model Node =========="); // NOI18N
+//	    tracer.trace(dwarfNode, "Dwarf Node =========="); // NOI18N
+//	    tracer.unindent();
+//    	}
+	compareDeclarationLists(modelNode.getDeclarations(), dwarfNode.getDeclarations());
+	compareNodeLists(modelNode.getSubnodes(), dwarfNode.getSubnodes());
     }
     
-    
-    private boolean isReturnTypesEqual(CsmFunction modelDefinition, DwarfEntry dwarfDefinition) {
-        String dwarfReturnType = dwarfDefinition.getType();
-        CsmType modelReturnCsmType = modelDefinition.getReturnType();
-        String modelReturnType = (modelReturnCsmType == null) ? "null" : modelReturnCsmType.getText();
-        
-        boolean result = modelReturnType.equals(dwarfReturnType);
-        
-        if (!result) {
-            dwarfReturnType = dwarfDefinition.getTypeDef();
-            result = modelReturnType.equals(dwarfReturnType);
-        }
-        
-        return result;
+    private void compareDeclarationLists(Iterable<CsmDeclaration> modelDeclarations, Iterable<DwarfEntry> dwarfEntries) {
+	
+	tracer.indent();
+	
+	//if( DMFlags.TRACE_COMPARISON ) tracer.print("DLC: dwarf --> model"); // NOI18N
+	for( DwarfEntry dwarfEntry : dwarfEntries ) {
+	    boolean found = false;
+	    for( CsmDeclaration modelDecl : modelDeclarations ) {
+		if( areDeclarationNamesEqual(modelDecl, dwarfEntry) ) {
+		    found = true;
+		    compareDeclarations(modelDecl, dwarfEntry);
+		    break;
+		}
+	    }
+	    if( ! found ) {
+		reportMoreInDwarf(dwarfEntry, null);
+	    }
+	}
+	
+	if( bidirectional ) {
+	    //if( DMFlags.TRACE_COMPARISON ) tracer.print("DLC: model --> dwarf"); // NOI18N
+	    for( CsmDeclaration modelDecl : modelDeclarations ) {
+		boolean found = false;
+		for( DwarfEntry dwarfEntry : dwarfEntries ) {
+		    if( areDeclarationNamesEqual(modelDecl, dwarfEntry) ) {
+			found = true;
+			break;
+		    }
+		}
+		if( ! found ) {
+		    reportMoreInModel(modelDecl);
+		}
+	    }
+	}
+	
+	tracer.unindent();
+    }
+
+    public void compareNodeLists(Iterable<Node<CsmDeclaration>> modelNodes, Iterable<Node<DwarfEntry>> dwarfNodes) {
+	tracer.indent();
+	Iterator<Node<CsmDeclaration>> modelIter = modelNodes.iterator();
+	Iterator<Node<DwarfEntry>> dwarfIter = dwarfNodes.iterator();
+	while( modelIter.hasNext() && dwarfIter.hasNext() ) {
+	    compareDeclarationTrees(modelIter.next(), dwarfIter.next());
+	}
+	if( bidirectional ) {
+	    while( modelIter.hasNext() ) {
+		reportMoreInModel(modelIter);
+	    }
+	}
+	while( dwarfIter.hasNext() ) {
+	    reportMoreInDwarf(dwarfIter);
+	}
+	tracer.unindent();
     }
     
-    
-    public boolean isFunctionDeclarationsEqual(FunctionDDImpl modelDeclaration, DwarfEntry dwarfDeclaration) {
-        if (!dwarfDeclaration.getKind().equals(TAG.DW_TAG_subprogram)) {
-            return false;
-        }
+    private void reportMoreInModel(Iterator<Node<CsmDeclaration>> nodes) {
+	while( nodes.hasNext() ) {
+	    Node<CsmDeclaration> node = nodes.next();
+	    for( CsmDeclaration decl : node.getDeclarations() ) {
+		reportMoreInModel(decl);
+	    }
+	    reportMoreInModel(node.getSubnodes().iterator());
+	}
+    }
         
-        return isReturnTypesEqual((CsmFunction)modelDeclaration, dwarfDeclaration) && isFunctionParametersEqual((CsmFunction)modelDeclaration, dwarfDeclaration);
+    private void reportMoreInDwarf(Iterator<Node<DwarfEntry>> nodes) {	
+	while( nodes.hasNext() ) {
+	    Node<DwarfEntry> node = nodes.next();
+	    for( DwarfEntry entry : node.getDeclarations() ) {
+		reportMoreInDwarf(entry, null);
+	    }
+	    reportMoreInDwarf(node.getSubnodes().iterator());
+	}    
+    }
+
+    private void reportMoreInDwarf(DwarfEntry entry, String fqn) {
+	int weight = 1 + getWeight(entry);
+	addTotal(weight);
+	diffPrint("In DWARF only: " + (fqn == null ? entry.getName() : fqn) + ' ' + entry.toString() + " +" + weight); // NOI18N
     }
     
-    public boolean isFunctionImplementationsEqual(FunctionImpl modelDeclaration, DwarfEntry dwarfDeclaration) {
-        if (!dwarfDeclaration.getKind().equals(TAG.DW_TAG_subprogram)) {
-            return false;
-        }
-        
-        if (modelDeclaration.getReturnType().getClassifier() == null) {
-            if (!dwarfDeclaration.getType().equals("null")) {
-                return false;
-            }
-        } else {
-            if (!dwarfDeclaration.getType().equals(modelDeclaration.getReturnType().getText())) {
-                return false;
-            }
-        }
-        
-        return isFunctionParametersEqual((CsmFunction)modelDeclaration, dwarfDeclaration);
+    private void reportMoreInModel(CsmDeclaration decl) {
+	incTotal();
+	diffPrint("In model only: " + toString(decl)); // NOI18N
+    }
+
+    private void reportDifferentType(CsmDeclaration modelDecl, DwarfEntry entry, String message, CsmType type) {
+	String modelTypeText = (type == null) ? "null" : ComparisonUtils.getText(type); // NOI18N
+	reportDifferent(modelDecl, entry, message, modelTypeText, entry.getType());
     }
     
-    private boolean isMethodsEqual(MethodImpl modelDeclaration, DwarfEntry dwarfDeclaration) {
-        if (!dwarfDeclaration.getKind().equals(TAG.DW_TAG_subprogram)) {
-            return false;
-        }
-        
-        if (modelDeclaration.getReturnType().getClassifier() == null) {
-            if (!dwarfDeclaration.getType().equals("null")) {
-                return false;
-            }
-        } else {
-            if (!dwarfDeclaration.getType().equals(modelDeclaration.getReturnType().getText())) {
-                return false;
-            }
-        }
-        
-        return isFunctionParametersEqual((CsmFunction)modelDeclaration, dwarfDeclaration);
+    private void reportDifferent(CsmDeclaration modelDecl, DwarfEntry entry, String message, String model, String dwarf) {
+	incTotal();
+	DwarfDeclaration dwarfDecl = entry.getDeclaration();
+//	diffPrint("Declarations differ:"); // NOI18N
+//	tracer.indent();
+//	if( message != null ) {
+//	    diffPrint("    " + message);
+//	}
+//	diffPrint("    Model: " + toString(modelDecl)); // NOI18N
+//	diffPrint("    Dwarf: " + dwarfDecl.toString()); // NOI18N
+//	tracer.unindent();
+//	diffPrintF("DIFFER| %s | \"%s\" |VS| \"%s\" | MODEL | %s | DWARF | %s\n", message, model, dwarf, toString(modelDecl), dwarfDecl);
+	diffPrintF("DIFFER| %s | %s |VS| %s | MODEL | %s | DWARF | %s\n", message, model, dwarf, toString(modelDecl), dwarfDecl); // NOI18N
     }
     
+    private void diffPrint(String message) {
+	diffStream.println(message);
+	if( ! printToScreen ) {
+	    tracer.println(message);
+	}
+    }
     
+    private void diffPrintF(String format, Object... args) {
+	diffStream.printf(format, args);
+	if( ! printToScreen ) {
+	    tracer.printf(format, args);
+	}
+    }
+    
+    /**
+     * Reports error (not a difference, but rather program or data logic error)
+     * Does NOT affect counters 
+     */
+    private void reportError(String message) {
+	Exception e = new Exception(message);
+	e.printStackTrace(System.err);
+	e.printStackTrace(traceStream);
+    }
+    
+    private void clearTotal() {
+	numTotal = 0;
+    }
+    
+    private void clearMatched() {
+	numMatched = 0;
+    }
+    
+    private void incTotal() {
+	numTotal++;
+	if( DMFlags.TRACE_COUNTER ) {
+	    tracer.println("incTotal() " + numTotal); // NOI18N
+	    printStackTrace(3);
+	}
+    }
+    
+    private void addTotal(int addition) {
+	numTotal += addition;
+	if( DMFlags.TRACE_COUNTER ) {
+	    tracer.println("addTotal() " + numTotal); // NOI18N
+	    printStackTrace(3);
+	}
+    }
+    
+    private void incMatched() {
+	numMatched++;
+	if( DMFlags.TRACE_COUNTER ) {
+	    tracer.println("incMatched() " + numMatched); // NOI18N
+	    printStackTrace(3);
+	}
+    }
+    
+    private void incBoth() {
+	numTotal++;
+	numMatched++;
+	if( DMFlags.TRACE_COUNTER ) {
+	    tracer.println("incBoth() " + numMatched + " / " + numTotal); // NOI18N
+	    printStackTrace(3);
+	}
+    }
+
+    private void printStackTrace(int deep) {
+	StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+	tracer.indent();
+	for( int i = 2; i < Math.min(stack.length, deep+2); i++ ) {
+	    tracer.println(stack[i].toString());
+	}
+	tracer.unindent();
+    }
+    
+    private int getTotal() {
+	return numTotal;
+    }
+    
+    private int getMatched() {
+	return numMatched;
+    }
+    
+    private void compareClasses(CsmClass modelDeclaration, DwarfEntry dwarfDeclaration) {
+	//compare(modelDeclaration.getMembers(), dwarfDeclaration.getMembers());
+	ModelList modelList = new ModelList(modelDeclaration);
+	DwarfList dwarfList = new DwarfList(dwarfData, dwarfDeclaration);
+	compare(modelList, dwarfList);
+    }
     
     private static FileCodeModelDeclaration getCodeModelDeclaration(DwarfEntry entry) {
         DwarfDeclaration decl = entry.getDeclaration();
@@ -418,93 +747,4 @@ public class ModelComparator {
         
         return result;
     }
-    
-    public static void main(String[] args) {
-        ModelDump modelDump = null;
-        
-        try {
-            Config config = new Config("l:c:i:d:", args);
-            
-            String logFile = config.getParameterFor("-l");
-            PrintStream log = (logFile == null) ? System.out : new PrintStream(logFile);
-            
-            String configFileName = config.getParameterFor("-c");
-            
-            if (configFileName == null) {
-                return;
-            }
-            
-            ModelComparator comparator = new ModelComparator(log);
-            
-            ConfigFile configFile = new ConfigFile(configFileName, log);
-            
-            modelDump = new ModelDump(log);
-            
-            List<String> cl_includes = config.getParametersFor("-i");
-            List<String> cl_defines = config.getParametersFor("-d");
-            
-            Collection <FileInfo> filesToProcess = configFile.getFilesToProcess();
-            ComparationResult result = new ComparationResult();
-            
-            for (Iterator<FileInfo> i = filesToProcess.iterator(); i.hasNext(); ) {
-                try {
-                    FileInfo file = i.next();
-
-                    System.out.println("Process file: " + file.getSrcFileName());
-                    
-                    Dwarf dwarfDump = new Dwarf(file.getObjFileName());
-                    CompilationUnit dwarfData = dwarfDump.getCompilationUnit(file.getSrcFileName());
-                    
-                    if (dwarfData == null) {
-                        log.println("Cannot get DWARF data from " + file.getObjFileName() + " for " + file.getSrcFileName());
-                        break;
-                    }
-                    
-                    
-                    // Setup includes ...
-                    
-                    ArrayList<String> includes = file.getQuoteIncludes();
-                    if (cl_includes != null) {
-                        includes.addAll(cl_includes);
-                    }
-                    
-                    ArrayList<String> dwarfIncludes = file.convertPaths(dwarfData.getStatementList().getIncludeDirectories());
-                    includes.addAll(dwarfIncludes);
-                    
-                    // Setup defines ...
-                    
-                    ArrayList<String> defines = file.getDefines();
-                    if (cl_defines != null) {
-                        defines.addAll(cl_defines);
-                    }
-                    
-                    DwarfMacinfoTable dwarfMacrosTable = dwarfData.getMacrosTable();
-                    
-                    if (dwarfMacrosTable != null) {
-                        ArrayList<String> dwarfDefines = dwarfMacrosTable.getCommandLineDefines();
-                        defines.addAll(dwarfDefines);
-                    }
-                    
-                    // Get Model to compare ...
-                    CsmFile codeModel = modelDump.process(file.getSrcFileName(), includes, defines);
-                    
-                    result.add(comparator.compare(codeModel, dwarfData));
-                } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
-                }
-            }
-            
-            log.println("Final statistics:");
-            result.dump(log);
-            
-        } catch (Exception ex) {
-            System.err.println("Fatal error: " + ex.getMessage());
-            ex.printStackTrace(System.err);
-        } finally {
-            if (modelDump != null) {
-                modelDump.stopModel();
-            }
-        }
-    }
-    
 }

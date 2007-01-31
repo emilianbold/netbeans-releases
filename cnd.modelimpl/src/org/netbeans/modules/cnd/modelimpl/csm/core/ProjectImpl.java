@@ -67,7 +67,8 @@ public class ProjectImpl extends ProjectBase {
                     putFile(file, impl);
                     // NB: parse only after putting into a map
                     if( scheduleParseIfNeed ) {
-                        ParserQueue.instance().addLast(impl);
+                        APTPreprocState.State ppState = preprocState == null ? null : preprocState.getState();
+                        ParserQueue.instance().addLast(impl, ppState);
                     }
                 }
             }
@@ -75,7 +76,7 @@ public class ProjectImpl extends ProjectBase {
             if (fileType == FileImpl.SOURCE_FILE && !impl.isSourceFile()){
                 impl.setSourceFile();
             } else if (fileType == FileImpl.HEADER_FILE && !impl.isHeaderFile()){
-                impl.setSourceFile();
+                impl.setHeaderFile();
             }
         }
         return impl;
@@ -87,7 +88,7 @@ public class ProjectImpl extends ProjectBase {
     }
     
     public void onFileEditStart(FileBuffer buf) {
-        if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName());
+        if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName()); // NOI18N
         FileImpl file = (FileImpl) getFile(buf.getFile());
         if( file == null ) {
             file = new FileImpl(buf, this); // don't enqueue here!
@@ -106,7 +107,7 @@ public class ProjectImpl extends ProjectBase {
     }
     
     public void onFileEditEnd(FileBuffer buf) {
-        if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName());
+        if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName()); // NOI18N
         FileImpl file = (FileImpl) getFile(buf.getFile());
         if( file != null ) {
             synchronized( editedFiles ) {
@@ -186,7 +187,7 @@ public class ProjectImpl extends ProjectBase {
         ProjectBase retValue = super.resolveFileProject(absPath);
         // trick for tracemodel. We should accept all not registered files as well, till it is not system one.
         if (ParserThreadManager.instance().isStandalone()) {
-            retValue = absPath.startsWith("/usr") ? retValue : this;
+            retValue = absPath.startsWith("/usr") ? retValue : this; // NOI18N
         }
         return retValue;
     }

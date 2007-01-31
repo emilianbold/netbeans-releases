@@ -36,7 +36,7 @@ public final class APTUnknownNode extends APTStreamBaseNode
     /** Copy constructor */
     /**package*/ APTUnknownNode(APTUnknownNode orig) {
         super(orig);
-        assert (false) : "are you sure it's correct to make copy of unknown node?";
+        assert (false) : "are you sure it's correct to make copy of unknown node?"; // NOI18N
     }
     
     /** constructor for serialization **/
@@ -57,7 +57,7 @@ public final class APTUnknownNode extends APTStreamBaseNode
     protected boolean validToken(Token t) {
         assert (t != null);
         int ttype = t.getType();
-        assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers";
+        assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers"; // NOI18N
         // eat all till END_PREPROC_DIRECTIVE
         return !APTUtils.isEndDirectiveToken(ttype);
     }    

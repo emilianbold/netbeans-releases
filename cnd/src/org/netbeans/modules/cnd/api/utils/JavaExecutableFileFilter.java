@@ -46,7 +46,7 @@ public class JavaExecutableFileFilter extends javax.swing.filechooser.FileFilter
 	    if (f.isDirectory()) {
 		return true;
 	    }
-	    return f.getName().endsWith(".java"); //NOI18N
+	    return f.getName().endsWith(".java"); // NOI18N
 	}
 	return false;
     }

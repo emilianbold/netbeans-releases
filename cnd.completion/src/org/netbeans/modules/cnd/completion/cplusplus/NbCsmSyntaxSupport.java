@@ -621,7 +621,7 @@ public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
             if (url != null) {
                     StringBuffer sb = new StringBuffer("#"); // NOI18N
                     sb.append((obj instanceof CsmMethod) ? ((CsmMethod)ctr).getName() : cls.getName());
-                    sb.append('(');
+                    sb.append('('); //NOI18N
                     CsmParameter[] parms = (CsmParameter[]) ctr.getParameters().toArray(new CsmParameter[0]);
                     int cntM1 = parms.length - 1;
                     for (int j = 0; j <= cntM1; j++) {
@@ -632,7 +632,7 @@ public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
                             sb.append(", "); // NOI18N
                         }
                     }
-                    sb.append(')');
+                    sb.append(')'); //NOI18N
                     try {
                         urlList.add(new URL(url.toExternalForm() + sb));
                     } catch (MalformedURLException e) {

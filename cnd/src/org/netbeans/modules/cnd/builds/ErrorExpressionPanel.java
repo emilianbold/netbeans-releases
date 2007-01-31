@@ -125,7 +125,7 @@ public final class ErrorExpressionPanel extends javax.swing.JPanel
         String[] strings = new String [exprs.length];
         int selIndex = -1;
         for (int i = 0; i < exprs.length; i++) {
-            strings[i] = "";//exprs[i].getName(); // FIXUP - TRUNK - THP
+            strings[i] = "";//exprs[i].getName(); // FIXUP - TRUNK - THP // NOI18N
             //if (exprs[i].getName().equals(sel.getName())) selIndex = i; // FIXUP - TRUNK - THP
         }
 

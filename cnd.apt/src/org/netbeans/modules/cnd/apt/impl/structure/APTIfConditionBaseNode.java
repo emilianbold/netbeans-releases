@@ -61,10 +61,10 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
         if (condition != null) {
             condStr = APTUtils.toString(getCondition());
         } else {
-            assert(false):"is it ok to have #if/#elif without condition?";
-            condStr = "<no condition>";
+            assert(false):"is it ok to have #if/#elif without condition?"; // NOI18N
+            condStr = "<no condition>"; // NOI18N
         }
-        return text + " CONDITION{" + condStr + "}";
+        return text + " CONDITION{" + condStr + "}"; // NOI18N
     }
     
     /** provides APTIf and APTElif interfaces support */
@@ -75,7 +75,7 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
     public boolean accept(Token token) {
         assert (token != null);
         int ttype = token.getType();
-        assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers";
+        assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers"; // NOI18N
         // eat all till END_PREPROC_DIRECTIVE
         if (APTUtils.isEndDirectiveToken(ttype)) {
             endOffset = ((APTToken)token).getOffset();

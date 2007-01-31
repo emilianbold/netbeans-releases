@@ -30,6 +30,7 @@ import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.openide.util.NbBundle;
 
 public class ListEditorPanel extends javax.swing.JPanel {
     private JList targetList = null;
@@ -49,21 +50,25 @@ public class ListEditorPanel extends javax.swing.JPanel {
 	listLabel.setDisplayedMnemonic(getListLabelMnemonic());
 	addButton.setText(getAddButtonText());
 	addButton.setMnemonic(getAddButtonMnemonics());
+        addButton.getAccessibleContext().setAccessibleDescription(getAddButtonAD());
 	copyButton.setText(getCopyButtonText());
 	copyButton.setMnemonic(getCopyButtonMnemonics());
+        copyButton.getAccessibleContext().setAccessibleDescription(getCopyButtonAD());
 	renameButton.setText(getRenameButtonText());
 	renameButton.setMnemonic(getRenameButtonMnemonics());
+        renameButton.getAccessibleContext().setAccessibleDescription(getRenameButtonAD());
 	removeButton.setText(getRemoveButtonText());
 	removeButton.setMnemonic(getRemoveButtonMnemonics());
+        removeButton.getAccessibleContext().setAccessibleDescription(getRemoveButtonAD());
 	upButton.setText(getUpButtonText());
 	upButton.setMnemonic(getUpButtonMnemonics());
+        upButton.getAccessibleContext().setAccessibleDescription(getUpButtonAD());
 	downButton.setText(getDownButtonText());
 	downButton.setMnemonic(getDownButtonMnemonics());
+        downButton.getAccessibleContext().setAccessibleDescription(getDownButtonAD());
 	defaultButton.setText(getDefaultButtonText());
 	defaultButton.setMnemonic(getDefaultButtonMnemonics());
-
-        ResourceBundle bundle = ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/customizer/Bundle");
-
+        defaultButton.getAccessibleContext().setAccessibleDescription(getDefaultButtonAD());
  
 	if (objects != null) {
 	    for (int i = 0; i < objects.length; i++)
@@ -145,12 +150,18 @@ public class ListEditorPanel extends javax.swing.JPanel {
     public char getAddButtonMnemonics() {
         return getString("TARGET_EDITOR_ADD_BUTTON_MNEMONIC").toCharArray()[0];
     }
+    public String getAddButtonAD() {
+        return getString("TARGET_EDITOR_ADD_BUTTON_AD");
+    }
 
     public String getCopyButtonText() {
         return getString("TARGET_EDITOR_COPY_BUTTON_LBL");
     }
     public char getCopyButtonMnemonics() {
         return getString("TARGET_EDITOR_COPY_BUTTON_MNEMONIC").toCharArray()[0];
+    }
+    public String getCopyButtonAD() {
+        return getString("TARGET_EDITOR_COPY_BUTTON_AD");
     }
 
     public String getRenameButtonText() {
@@ -159,12 +170,18 @@ public class ListEditorPanel extends javax.swing.JPanel {
     public char getRenameButtonMnemonics() {
         return getString("TARGET_EDITOR_RENAME_BUTTON_MNEMONIC").toCharArray()[0];
     }
+    public String getRenameButtonAD() {
+        return getString("TARGET_EDITOR_RENAME_BUTTON_AD");
+    }
 
     public String getRemoveButtonText() {
         return getString("TARGET_EDITOR_REMOVE_BUTTON_LBL");
     }
     public char getRemoveButtonMnemonics() {
         return getString("TARGET_EDITOR_REMOVE_BUTTON_MNEMONIC").toCharArray()[0];
+    }
+    public String getRemoveButtonAD() {
+        return getString("TARGET_EDITOR_REMOVE_BUTTON_AD");
     }
 
     public String getUpButtonText() {
@@ -173,6 +190,9 @@ public class ListEditorPanel extends javax.swing.JPanel {
     public char getUpButtonMnemonics() {
         return getString("TARGET_EDITOR_UP_BUTTON_MNEMONIC").toCharArray()[0];
     }
+    public String getUpButtonAD() {
+        return getString("TARGET_EDITOR_UP_BUTTON_AD");
+    }
 
     public String getDownButtonText() {
         return getString("TARGET_EDITOR_DOWN_BUTTON_LBL");
@@ -180,12 +200,18 @@ public class ListEditorPanel extends javax.swing.JPanel {
     public char getDownButtonMnemonics() {
         return getString("TARGET_EDITOR_DOWN_BUTTON_MNEMONIC").toCharArray()[0];
     }
+    public String getDownButtonAD() {
+        return getString("TARGET_EDITOR_DOWN_BUTTON_AD");
+    }
 
     public String getDefaultButtonText() {
         return getString("TARGET_EDITOR_DEFAULT_BUTTON_LBL");
     }
     public char getDefaultButtonMnemonics() {
         return getString("TARGET_EDITOR_DEFAULT_BUTTON_MNEMONIC").toCharArray()[0];
+    }
+    public String getDefaultButtonAD() {
+        return getString("TARGET_EDITOR_DEFAULT_BUTTON_AD");
     }
 
     public JButton getAddButton() {
@@ -233,28 +259,23 @@ public class ListEditorPanel extends javax.swing.JPanel {
 
 	context = getAccessibleContext();
 	context.setAccessibleName(getString("ACSN_TARGET_EDITOR"));
-	context.setAccessibleDescription(bundle.getString("ACSD_TARGET_EDITOR"));
+	context.setAccessibleDescription(getString("ACSD_TARGET_EDITOR"));
 
 	context = targetList.getAccessibleContext();
 	context.setAccessibleName(getString("ACSN_TARGET_LIST"));
-	context.setAccessibleDescription(bundle.getString("ACSD_TARGET_LIST"));
+	context.setAccessibleDescription(getString("ACSD_TARGET_LIST"));
 
 	context = scrollPane.getAccessibleContext();
 	context.setAccessibleName(getString("ACSN_TARGET_LIST"));
-	context.setAccessibleDescription(bundle.getString("ACSD_TARGET_LIST"));
+	context.setAccessibleDescription(getString("ACSD_TARGET_LIST"));
 
 	context = scrollPane.getHorizontalScrollBar().getAccessibleContext();
 	context.setAccessibleName(getString("ACSN_TARGET_LIST"));
-	context.setAccessibleDescription(bundle.getString("ACSD_TARGET_LIST"));
+	context.setAccessibleDescription(getString("ACSD_TARGET_LIST"));
 
 	context = scrollPane.getVerticalScrollBar().getAccessibleContext();
 	context.setAccessibleName(getString("ACSN_TARGET_LIST"));
-	context.setAccessibleDescription(bundle.getString("ACSD_TARGET_LIST"));
-
-	addButton.getAccessibleContext().setAccessibleDescription(addButton.getText());
-	removeButton.getAccessibleContext().setAccessibleDescription(removeButton.getText());
-	upButton.getAccessibleContext().setAccessibleDescription(upButton.getText());
-	downButton.getAccessibleContext().setAccessibleDescription(downButton.getText());
+	context.setAccessibleDescription(getString("ACSD_TARGET_LIST")); 
     }
 
     
@@ -580,7 +601,7 @@ public class ListEditorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_removeButtonActionPerformed
 
     public Object addAction() {
-	return "shouldbeoverridden";
+	return "shouldbeoverridden"; // NOI18N
     }
     private void addObjectAction() {
 	addObjectAction(addAction());
@@ -669,14 +690,6 @@ public class ListEditorPanel extends javax.swing.JPanel {
 	addButton.requestFocus();
     }
 
-    private ResourceBundle bundle = null;
-    private String getString(String s) {
-	if (bundle == null) {
-	    bundle = ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle");
-	}
-	return bundle.getString(s);
-    }
-
     // --- to be overridden
 
     public int getSelectedIndex() {
@@ -701,5 +714,9 @@ public class ListEditorPanel extends javax.swing.JPanel {
 
     protected Component getViewComponent() {
 	return targetList;
+    }
+    
+    private static String getString(String key) {
+        return NbBundle.getMessage(ListEditorPanel.class, key);
     }
 }

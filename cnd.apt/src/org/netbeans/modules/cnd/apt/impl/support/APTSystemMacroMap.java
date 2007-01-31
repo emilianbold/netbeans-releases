@@ -48,17 +48,17 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
     }
     
     public boolean pushExpanding(Token token) {
-        APTUtils.LOG.log(Level.SEVERE, "pushExpanding is not supported", new IllegalAccessException());
+        APTUtils.LOG.log(Level.SEVERE, "pushExpanding is not supported", new IllegalAccessException());// NOI18N
         return false;
     }
 
     public void popExpanding() {
-        APTUtils.LOG.log(Level.SEVERE, "popExpanding is not supported", new IllegalAccessException());
+        APTUtils.LOG.log(Level.SEVERE, "popExpanding is not supported", new IllegalAccessException());// NOI18N
 //        return null;
     }
 
     public boolean isExpanding(Token token) {
-        APTUtils.LOG.log(Level.SEVERE, "isExpanding is not supported", new IllegalAccessException());
+        APTUtils.LOG.log(Level.SEVERE, "isExpanding is not supported", new IllegalAccessException());// NOI18N
         return false;
     }  
     

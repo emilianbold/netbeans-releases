@@ -90,7 +90,7 @@ public class APTTestToken extends TokenImpl implements APTToken {
     }    
      
     public String toString() {
-        return "[\"" + getText() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]"+",offset="+getOffset();//+",file="+getFilename();
+        return "[\"" + getText() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]"+",offset="+getOffset();//+",file="+getFilename(); // NOI18N
     }
 
     public int getEndColumn() {

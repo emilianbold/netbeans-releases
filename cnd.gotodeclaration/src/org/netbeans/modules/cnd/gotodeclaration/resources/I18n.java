@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.gotodeclaration.resources;
 
 import java.util.MissingResourceException;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -28,9 +29,7 @@ import java.util.MissingResourceException;
 public class I18n {
     
     public static String getMessage(String key) {
-	return java.util.ResourceBundle.
-                    getBundle("org/netbeans/modules/cnd/gotodeclaration/resources/Bundle").
-                        getString(key);
+	return NbBundle.getMessage(I18n.class, key);
     }
     
     public static String getMessage(String key, String def) {

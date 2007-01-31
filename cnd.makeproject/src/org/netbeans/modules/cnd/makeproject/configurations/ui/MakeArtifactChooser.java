@@ -40,6 +40,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 public class MakeArtifactChooser extends JPanel implements PropertyChangeListener {
     
@@ -56,6 +57,10 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
 
 	PathPanel pathPanel = new PathPanel();
 	leftPanel.add(pathPanel);
+        
+        // Accessibility
+        listArtifacts.getAccessibleContext().setAccessibleDescription(getString("PROJECT_LIBRARY_FILES_AD"));
+        libFilesLabel.setDisplayedMnemonic(getString("PROJECT_LIBRARY_FILES_MN").charAt(0));
     }
     
     /** This method is called from within the constructor to
@@ -76,7 +81,6 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
 
         setLayout(new java.awt.GridBagLayout());
 
-        projectLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("PROJECT_NAME_MN").charAt(0));
         projectLabel.setLabelFor(projectTextField);
         org.openide.awt.Mnemonics.setLocalizedText(projectLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("PROJECT_NAME_TXT"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -179,7 +183,7 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
 		if (artifacts[i].getConfigurationType() == MakeArtifact.TYPE_APPLICATION)
 		    continue;
 		if (artifacts[i].getConfigurationType() == MakeArtifact.TYPE_UNKNOWN &&
-		    (artifacts[i].getOutput().endsWith(".a") || artifacts[i].getOutput().endsWith(".so")) ||
+		    (artifacts[i].getOutput().endsWith(".a") || artifacts[i].getOutput().endsWith(".so") || artifacts[i].getOutput().endsWith(".dll")) || // NOI18N
 		    artifacts[i].getConfigurationType() == MakeArtifact.TYPE_DYNAMIC_LIB ||
 		    artifacts[i].getConfigurationType() == MakeArtifact.TYPE_STATIC_LIB)
                     model.addElement(artifacts[i]);
@@ -207,8 +211,9 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
     public static MakeArtifact[] showDialog( String artifactType, Project master, Component parent ) {
         
         JFileChooser chooser = ProjectChooser.projectChooser();
-        chooser.setDialogTitle("Add Project");
-        chooser.setApproveButtonText("Add Project Library"); // NOI18N
+        chooser.getAccessibleContext().setAccessibleDescription(getString("ADD_PROJECT_DIALOG_AD"));
+        chooser.setDialogTitle(getString("ADD_PROJECT_DIALOG_TITLE"));
+        chooser.setApproveButtonText(getString("ADD_BUTTON_TXT"));
         //chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (MakeArtifactChooser.class,"AD_AACH_SelectProject"));
         MakeArtifactChooser accessory = new MakeArtifactChooser( artifactType, chooser );
         chooser.setAccessory( accessory );
@@ -229,7 +234,7 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
             
             if ( selectedProject.getProjectDirectory().equals( master.getProjectDirectory() ) ) {
                 DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
-                    "Cannot add reference to itself.",
+                    getString("ADD_ITSELF_ERROR"),
                     NotifyDescriptor.INFORMATION_MESSAGE ) );
                 return null;
             }
@@ -237,7 +242,7 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
 	    // FIXUP: need to check for this
             if ( ProjectUtils.hasSubprojectCycles( master, selectedProject ) ) {
                 DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
-                    "Cannot add cyclic references.", 
+                    getString("ADD_CYCLIC_ERROR"), 
                     NotifyDescriptor.INFORMATION_MESSAGE ) );
                 return null;
             }
@@ -287,5 +292,9 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
             return artifactURI.toString();
         }
         
+    }
+    
+    private static String getString(String s) {
+        return NbBundle.getBundle(MakeArtifactChooser.class).getString(s);
     }
 }

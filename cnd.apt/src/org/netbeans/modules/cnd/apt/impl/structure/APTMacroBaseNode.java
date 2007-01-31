@@ -56,12 +56,12 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
 
     public void setFirstChild(APT child) {
         // do nothing
-        assert (false) : "define/undef doesn't support children";        
+        assert (false) : "define/undef doesn't support children"; // NOI18N        
     }
 
     public boolean accept(Token token) {
         if (APTUtils.isID(token)) {
-            assert (macroName == EMPTY_NAME) : "init macro name only once";
+            assert (macroName == EMPTY_NAME) : "init macro name only once"; // NOI18N
             this.macroName = token;
         }
         // eat all till END_PREPROC_DIRECTIVE
@@ -69,11 +69,11 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
     }
 
     public String getText() {
-        assert (getToken() != null) : "must have valid preproc directive";
-        assert (getName() != null) : "must have valid macro";
+        assert (getToken() != null) : "must have valid preproc directive"; // NOI18N
+        assert (getName() != null) : "must have valid macro"; // NOI18N
         String retValue = super.getText();
         if (getName() != null) {
-            retValue += " MACRO{" + getName() + "}";
+            retValue += " MACRO{" + getName() + "}"; // NOI18N
         }
         return retValue;
     }
@@ -90,7 +90,7 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
         }
         
         public String getText() {
-            return "<<DUMMY>>";
+            return "<<DUMMY>>"; // NOI18N
         }        
     };    
 }

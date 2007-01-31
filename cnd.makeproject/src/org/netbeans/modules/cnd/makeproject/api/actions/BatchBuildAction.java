@@ -33,7 +33,7 @@ public class BatchBuildAction extends CallableSystemAction {
     public String getName() {
 	return getString("BatchBuildActionName"); // NOI18N
     }
-
+    
     public void actionPerformed(ActionEvent ev) {
 	performAction();
     }

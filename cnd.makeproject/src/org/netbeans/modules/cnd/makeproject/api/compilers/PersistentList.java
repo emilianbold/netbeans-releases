@@ -53,7 +53,7 @@ public class PersistentList extends Vector implements Serializable{
 	    out.writeObject(this);
 	}
 	catch (IOException ioe) {
-	    System.out.println("PersistentList - saveList - ioe " + ioe);
+	    System.out.println("PersistentList - saveList - ioe " + ioe); // NOI18N
 	}
     }
 
@@ -70,7 +70,7 @@ public class PersistentList extends Vector implements Serializable{
 	    oos.close();
 	}
 	catch (Exception e) {
-	    System.out.println("e " + e);
+	    System.out.println("e " + e); // NOI18N
 	}
     }
 

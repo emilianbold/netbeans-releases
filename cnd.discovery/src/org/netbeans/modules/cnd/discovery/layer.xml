@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+
+    <folder name="Actions">
+        <folder name="View">
+	    <file name="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.instance">
+		<attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction"/>
+	    </file>
+	</folder>
+    </folder>
+    
+    <folder name="NativeProjects">
+        <folder name="Actions">
+            <file name="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.instance"/>
+            </file>
+            <attr name="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.shadow/org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.shadow" boolvalue="true" />
+            <attr name="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.shadow/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
+       </folder>
+   </folder>     
+
+</filesystem>

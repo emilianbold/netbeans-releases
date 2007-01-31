@@ -91,25 +91,25 @@ public class APTMacroImpl implements APTMacro {
 
     public String toString() {
         StringBuffer retValue = new StringBuffer();
-        retValue.append(isSystem() ? "<S>":"<U>");
-        retValue.append("#define '");
+        retValue.append(isSystem() ? "<S>":"<U>"); // NOI18N
+        retValue.append("#define '"); // NOI18N
         retValue.append(getName());
         if (params != null) {
-            retValue.append("[");
+            retValue.append("["); // NOI18N
             for (Iterator it = params.iterator();it.hasNext();) {
                 Token elem = (Token) it.next();
                 retValue.append(elem);
                 if (it.hasNext()) {
-                    retValue.append(", ");
+                    retValue.append(", "); // NOI18N
                 } else {
                     break;
                 } 
             }
-            retValue.append("]");
+            retValue.append("]"); // NOI18N
         }
         TokenStream body = getBody();
         if (body != null) {
-            retValue.append("'='");
+            retValue.append("'='"); // NOI18N
             retValue.append(APTUtils.toString(body));
         }
         return retValue.toString();

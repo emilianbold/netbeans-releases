@@ -48,7 +48,8 @@ public class ExceptionHandlerImpl extends CompoundStatementImpl implements CsmEx
     }
     
     public boolean isCatchAll() {
-        return parameter == null;
+	CsmParameter parameter = getParameter();
+        return parameter == null || parameter.isVarArgs();
     }
     
     public CsmParameter getParameter() {

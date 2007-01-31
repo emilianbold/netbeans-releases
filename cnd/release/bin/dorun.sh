@@ -38,6 +38,11 @@ esac
 "$pgm" "$@"
 rc=$?
 
+if [ -n "$NBCND_RC" ]
+then
+    echo $rc > "$NBCND_RC"
+fi
+
 $ECHO -n "$prompt"
 read a
 exit $rc

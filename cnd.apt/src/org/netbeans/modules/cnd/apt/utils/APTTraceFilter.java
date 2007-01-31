@@ -33,7 +33,7 @@ public class APTTraceFilter implements TokenStream {
     private final String name;
     
     public APTTraceFilter(TokenStream orig) {
-        this("<unnamed filter", orig);
+        this("<unnamed filter", orig); // NOI18N
     }
     
     public APTTraceFilter(String name, TokenStream orig) {
@@ -43,7 +43,7 @@ public class APTTraceFilter implements TokenStream {
     
     public Token nextToken() throws TokenStreamException {
         Token token = orig.nextToken();
-        APTUtils.LOG.log(Level.INFO, "{0} : {1}\n", new Object[] { name, token});
+        APTUtils.LOG.log(Level.INFO, "{0} : {1}\n", new Object[] { name, token}); // NOI18N
         return token;
     }
     

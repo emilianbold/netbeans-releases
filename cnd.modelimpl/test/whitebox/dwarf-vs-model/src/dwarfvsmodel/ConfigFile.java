@@ -51,24 +51,29 @@ public class ConfigFile {
     private HashMap<String, FileInfo> parse() throws IOException {
         String line;
         filesMap = new HashMap<String, FileInfo>();
-        
+        int lineNo = 0;
         while ((line = file.readLine()) != null) {
-            
-            if (log != null) {
-                log.println("Examing line " + line);
-            }
-            
+            lineNo++;
+//            if (log != null) {
+//                log.println("Examing line " + line); // NOI18N
+//            }
+	    line = line.trim();
+	    if( line.length() == 0 || line.charAt(0) == '#' ) {
+		continue;
+	    }
             try {
                 FileInfo info = new FileInfo(line);
                 String srcFile = info.getSrcFileName();
-                
-                if (filesMap.put(srcFile, info) != null && log != null) {
-                    log.println("File " + srcFile + " has been compiled more than once. Disregarding previous entries!");
+                if( srcFile == null ) {
+                    log.println("Error in line " + lineNo + ": can not determine source file"); // NOI18N
+                }
+                else if (filesMap.put(srcFile, info) != null && log != null) {
+                    log.println("File " + srcFile + " has been compiled more than once. Disregarding previous entries!"); // NOI18N
                 }
                 
             } catch (IllegalArgumentException e) { 
                 if (log != null) {
-                    log.println("Cannot parse following line: " + line);
+                    log.println("Cannot parse following line: " + line); // NOI18N
                     log.println(e.getMessage());
                 }
             }

@@ -147,7 +147,7 @@ public final class APTDefineNode extends APTMacroBaseNode
                     break;
                 }
                 default:
-                    assert(false) : "unexpected state";
+                    assert(false) : "unexpected state"; // NOI18N
             }
             return true;
         }
@@ -155,15 +155,15 @@ public final class APTDefineNode extends APTMacroBaseNode
     
     public String getText() {
         String ret = super.getText();
-        String paramStr = "";
+        String paramStr = ""; // NOI18N
         if (params != null) {
-            paramStr = "PARAMS{" + APTUtils.toString(new ListBasedTokenStream(this.params)) + "}";
+            paramStr = "PARAMS{" + APTUtils.toString(new ListBasedTokenStream(this.params)) + "}"; // NOI18N
         }
         String bodyStr;
         if (bodyTokens != null) {
-            bodyStr = "BODY{" + APTUtils.toString(new ListBasedTokenStream(getBody())) + "}";
+            bodyStr = "BODY{" + APTUtils.toString(new ListBasedTokenStream(getBody())) + "}"; // NOI18N
         } else {
-            bodyStr = "{NO BODY}";
+            bodyStr = "{NO BODY}"; // NOI18N
         }
         return ret + paramStr + bodyStr;
     }

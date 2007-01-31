@@ -44,9 +44,9 @@ public interface CsmCondition extends CsmOffsetable, CsmObject {
                 super(id);
             }
             
-            public static final Kind EXPRESSION = new Kind("Expression");
+            public static final Kind EXPRESSION = new Kind("Expression"); // NOI18N
             
-            public static final Kind DECLARATION = new Kind("Declaration");
+            public static final Kind DECLARATION = new Kind("Declaration"); // NOI18N
         }
         
         Kind getKind();

@@ -63,15 +63,15 @@ public final class APTConditionsBlockNode extends APTContainerNode
     }
 
     public String getText() {
-        return "preprocessor condition branches container";
+        return "preprocessor condition branches container"; // NOI18N
     }
     
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
 
     public final void setNextSibling(APT next) {
-        assert (next != null) : "null sibling, what for?";
-        assert (this.next == null) : "why do you change immutable APT?";
+        assert (next != null) : "null sibling, what for?"; // NOI18N
+        assert (this.next == null) : "why do you change immutable APT?"; // NOI18N
         this.next = next;
     }
 }

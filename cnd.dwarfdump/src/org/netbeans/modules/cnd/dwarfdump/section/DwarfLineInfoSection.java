@@ -11,6 +11,7 @@ package org.netbeans.modules.cnd.dwarfdump.section;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.HashMap;
 
 /**
@@ -82,6 +83,12 @@ public class DwarfLineInfoSection extends ElfSection {
         return stmt_list;
         
     }
-    
-    
+
+    public void dump(PrintStream out) {
+        super.dump(out);
+        for (DwarfStatementList statementList : statementLists.values()) {
+            statementList.dump(out);
+        }
+    }    
 }
+

@@ -24,9 +24,6 @@ import java.io.InputStream;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 
 public class CCCCompiler extends BasicCompiler {
-    // Switch to true to use compiler generated includes and defines
-    public static final boolean parseCompilerOutput = true; //Boolean.getBoolean("cnd.parse.compiler.output"); // NOI18N
-    
     public CCCCompiler(int kind, String name, String displayName) {
         super(kind, name, displayName);
     }

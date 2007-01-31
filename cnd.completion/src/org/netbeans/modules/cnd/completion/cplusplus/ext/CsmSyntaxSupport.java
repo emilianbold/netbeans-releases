@@ -631,7 +631,7 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
                 CsmClass outerCls = sup.getClass(decVarNameOffset);
                 if (outerCls != null){
                     String outerClassName = outerCls.getQualifiedName();
-                    CsmClassifier innerClassifier = sup.getFinder().getExactClassifier(outerClassName+"::"+decType); //NOI18N
+                    CsmClassifier innerClassifier = sup.getFinder().getExactClassifier(outerClassName+CsmCompletion.SCOPE+decType);
                     innerClass = CsmKindUtilities.isClass(innerClassifier) ? (CsmClass)innerClassifier : null;
                     if (innerClass != null){
 //                        varMap.put(decVarName, JavaCompletion.getType(innerClass, decArrayDepth));

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
-import antlr.Token;
 import antlr.TokenStreamException;
 import java.io.File;
 import java.io.IOException;
@@ -62,12 +61,14 @@ public class APTWalkerTest extends APTWalker {
         if (inclHandler != null) {
             long time = System.currentTimeMillis();
             APTIncludeResolver resolver = inclHandler.getResolver(path);
-            String path = resolver.resolveInclude((APTInclude)apt);
+            String path = resolver.resolveInclude((APTInclude)apt, getMacroMap());
             resolvingTime += System.currentTimeMillis() - time;
             if (path == null) {
-                APTUtils.LOG.log(Level.WARNING, "failed resolving path from {0} for {1}", new Object[] {});
+                APTUtils.LOG.log(Level.WARNING, 
+                        "failed resolving path from {0} for {1}", // NOI18N
+                        new Object[] {});
             }
-            include(path);
+            include(path, apt.getToken().getLine());
         }
     }
 
@@ -75,12 +76,14 @@ public class APTWalkerTest extends APTWalker {
         if (inclHandler != null) {
             long time = System.currentTimeMillis();
             APTIncludeResolver resolver = inclHandler.getResolver(path);           
-            String path = resolver.resolveIncludeNext((APTIncludeNext)apt);
+            String path = resolver.resolveIncludeNext((APTIncludeNext)apt, getMacroMap());
             resolvingTime += System.currentTimeMillis() - time;
             if (path == null) {
-                APTUtils.LOG.log(Level.WARNING, "failed resolving path from {0} for {1}", new Object[] {});
+                APTUtils.LOG.log(Level.WARNING, 
+                        "failed resolving path from {0} for {1}", // NOI18N
+                        new Object[] {});
             }
-            include(path);
+            include(path, apt.getToken().getLine());
         }
     }
 
@@ -125,18 +128,18 @@ public class APTWalkerTest extends APTWalker {
     // implementation details
     
     private boolean eval(APT apt) {
-        APTUtils.LOG.log(Level.ALL, "eval condition for " + apt);
+        APTUtils.LOG.log(Level.ALL, "eval condition for " + apt);// NOI18N
         boolean res = false;
         try {
             res = APTConditionResolver.evaluate(apt, getMacroMap());
         } catch (TokenStreamException ex) {
-            APTUtils.LOG.log(Level.SEVERE, "error on evaluating condition node " + apt, ex);
+            APTUtils.LOG.log(Level.SEVERE, "error on evaluating condition node " + apt, ex);// NOI18N
         }
         return res;
     }
 
-    private void include(String path) {
-        if (path != null && inclHandler.pushInclude(path)) {
+    private void include(String path, int directiveLine) {
+        if (path != null && inclHandler.pushInclude(path, directiveLine)) {
             APTFile apt;
             boolean res = false;
             try {
@@ -146,7 +149,7 @@ public class APTWalkerTest extends APTWalker {
                 resolvingTime += walker.resolvingTime;
                 res = true;               
             } catch (IOException ex) {
-                APTUtils.LOG.log(Level.SEVERE, "error on include " + path, ex);
+                APTUtils.LOG.log(Level.SEVERE, "error on include " + path, ex);// NOI18N
             } finally {
                 inclHandler.popInclude(); 
             }

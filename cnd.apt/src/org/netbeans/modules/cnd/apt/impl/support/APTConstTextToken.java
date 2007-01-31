@@ -42,84 +42,84 @@ public class APTConstTextToken extends APTTokenAbstact implements APTTokenTypes 
     
     static {
         //setup const text values
-        constText[EOF]                  ="";
+        constText[EOF]                  =""; // NOI18N
         
         // 1 symbol:
-        constText[FUN_LIKE_MACRO_LPAREN]="(";
-        constText[ASSIGNEQUAL]          ="=";
-        constText[DIVIDE]               ="/";
-        constText[STAR]                 ="*";
-        constText[MOD]                  ="%";
-        constText[NOT]                  ="!";
-        constText[AMPERSAND]            ="&";
-        constText[BITWISEOR]            ="|";
-        constText[BITWISEXOR]           ="^";
-        constText[COLON]                =":";
-        constText[LESSTHAN]             ="<";
-        constText[GREATERTHAN]          =">";
-        constText[MINUS]                ="-";
-        constText[PLUS]                 ="+";
-        constText[SHARP]                ="#";
-        constText[SEMICOLON]            =";";
-        constText[RPAREN]               =")";
-        constText[DOLLAR]               ="$";
-        constText[RCURLY]               ="}";
-        constText[AT]                   ="@";
-        constText[LPAREN]               ="(";
-        constText[QUESTIONMARK]         ="?";
-        constText[LCURLY]               ="{";
-        constText[COMMA]                =",";
-        constText[LSQUARE]              ="[";
-        constText[RSQUARE]              ="]";
-        constText[TILDE]                ="~";
-        constText[DOT]                  =".";
-        constText[BACK_SLASH]           ="\\";
+        constText[FUN_LIKE_MACRO_LPAREN]="("; // NOI18N
+        constText[ASSIGNEQUAL]          ="="; // NOI18N
+        constText[DIVIDE]               ="/"; // NOI18N
+        constText[STAR]                 ="*"; // NOI18N
+        constText[MOD]                  ="%"; // NOI18N
+        constText[NOT]                  ="!"; // NOI18N
+        constText[AMPERSAND]            ="&"; // NOI18N
+        constText[BITWISEOR]            ="|"; // NOI18N
+        constText[BITWISEXOR]           ="^"; // NOI18N
+        constText[COLON]                =":"; // NOI18N
+        constText[LESSTHAN]             ="<"; // NOI18N
+        constText[GREATERTHAN]          =">"; // NOI18N
+        constText[MINUS]                ="-"; // NOI18N
+        constText[PLUS]                 ="+"; // NOI18N
+        constText[SHARP]                ="#"; // NOI18N
+        constText[SEMICOLON]            =";"; // NOI18N
+        constText[RPAREN]               =")"; // NOI18N
+        constText[DOLLAR]               ="$"; // NOI18N
+        constText[RCURLY]               ="}"; // NOI18N
+        constText[AT]                   ="@"; // NOI18N
+        constText[LPAREN]               ="("; // NOI18N
+        constText[QUESTIONMARK]         ="?"; // NOI18N
+        constText[LCURLY]               ="{"; // NOI18N
+        constText[COMMA]                =","; // NOI18N
+        constText[LSQUARE]              ="["; // NOI18N
+        constText[RSQUARE]              ="]"; // NOI18N
+        constText[TILDE]                ="~"; // NOI18N
+        constText[DOT]                  ="."; // NOI18N
+        constText[BACK_SLASH]           ="\\"; // NOI18N
 
         // 2 symbol:
-        constText[BITWISEANDEQUAL]      ="&=";
-        constText[AND]                  ="&&";
-        constText[NOTEQUAL]             ="!=";
-        constText[MODEQUAL]             ="%=";        
-        constText[TIMESEQUAL]           ="*=";
-        constText[DIVIDEEQUAL]          ="/=";
-        constText[EQUAL]                ="==";
-        constText[BITWISEOREQUAL]       ="|=";
-        constText[OR]                   ="||";
-        constText[BITWISEXOREQUAL]      ="^=";
-        constText[SCOPE]                ="::";
-        constText[LESSTHANOREQUALTO]    ="<=";
-        constText[SHIFTLEFT]            ="<<";
-        constText[GREATERTHANOREQUALTO] =">=";
-        constText[SHIFTRIGHT]           =">>";
-        constText[MINUSEQUAL]           ="-=";
-        constText[MINUSMINUS]           ="--";
-        constText[POINTERTO]            ="->";
-        constText[PLUSEQUAL]            ="+=";
-        constText[PLUSPLUS]             ="++";
-        constText[DBL_SHARP]            ="##";
-        constText[DOTMBR]               =".*";
+        constText[BITWISEANDEQUAL]      ="&="; // NOI18N
+        constText[AND]                  ="&&"; // NOI18N
+        constText[NOTEQUAL]             ="!="; // NOI18N
+        constText[MODEQUAL]             ="%="; // NOI18N        
+        constText[TIMESEQUAL]           ="*="; // NOI18N
+        constText[DIVIDEEQUAL]          ="/="; // NOI18N
+        constText[EQUAL]                ="=="; // NOI18N
+        constText[BITWISEOREQUAL]       ="|="; // NOI18N
+        constText[OR]                   ="||"; // NOI18N
+        constText[BITWISEXOREQUAL]      ="^="; // NOI18N
+        constText[SCOPE]                ="::"; // NOI18N
+        constText[LESSTHANOREQUALTO]    ="<="; // NOI18N
+        constText[SHIFTLEFT]            ="<<"; // NOI18N
+        constText[GREATERTHANOREQUALTO] =">="; // NOI18N
+        constText[SHIFTRIGHT]           =">>"; // NOI18N
+        constText[MINUSEQUAL]           ="-="; // NOI18N
+        constText[MINUSMINUS]           ="--"; // NOI18N
+        constText[POINTERTO]            ="->"; // NOI18N
+        constText[PLUSEQUAL]            ="+="; // NOI18N
+        constText[PLUSPLUS]             ="++"; // NOI18N
+        constText[DBL_SHARP]            ="##"; // NOI18N
+        constText[DOTMBR]               =".*"; // NOI18N
 
         // 3 symbol:
-        constText[SHIFTLEFTEQUAL]       ="<<=";
-        constText[SHIFTRIGHTEQUAL]      =">>=";
-        constText[POINTERTOMBR]         ="->*";
-        constText[ELLIPSIS]             ="...";
+        constText[SHIFTLEFTEQUAL]       ="<<="; // NOI18N
+        constText[SHIFTRIGHTEQUAL]      =">>="; // NOI18N
+        constText[POINTERTOMBR]         ="->*"; // NOI18N
+        constText[ELLIPSIS]             ="..."; // NOI18N
         
         // more
-        constText[DEFINED]              ="defined";
+        constText[DEFINED]              ="defined"; // NOI18N
     }
     
     public String getText() {
-        //assert(constText[getType()] != null) : "Not initialized ConstText for type " + getType();
+        //assert(constText[getType()] != null) : "Not initialized ConstText for type " + getType(); // NOI18N
         return constText[getType()];
     }
     
     public void setText(String t) {
-        //assert(true) : "setText should not be called for ConstText token";
+        //assert(true) : "setText should not be called for ConstText token"; // NOI18N
         /*String existingText = getText();
         if (existingText != null) {
             /*if (!existingText.equals(t)) {
-                System.out.println(getType() + ", Old=" + existingText + ", New=" + t);
+                System.out.println(getType() + ", Old=" + existingText + ", New=" + t); // NOI18N
             }*/
             //assert(existingText.equals(t));
         /*} else {

@@ -85,17 +85,17 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     
     public static void main(String[] args) {
         try {
-            String fileName = "/export/home/jec/projects/antlr/test/freeway/maniac.cc";
+            String fileName = "/export/home/jec/projects/antlr/test/freeway/maniac.cc";  // NOI18N
             TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(fileName, new BufferedInputStream(new FileInputStream(fileName), APTTraceFlags.BUF_SIZE));
             APTFoldingParser parser = getParser(fileName, lexer);
             parser.translation_unit();
             
             CommonAST t = (CommonAST)parser.getAST();
-            ASTFrame frame = new ASTFrame("AST JTree Example", t);
+            ASTFrame frame = new ASTFrame("AST JTree Example", t);  // NOI18N
             frame.setVisible(true);
 
         } catch(Exception e) {
-            System.err.println("exception: "+e);
+            System.err.println("exception: "+e);  // NOI18N
             e.printStackTrace();
         }
     }
@@ -103,7 +103,8 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     private static APTFoldingParser getParser(String name, TokenStream lexer) {
         APTFile apt = APTBuilder.buildAPT(name, lexer);
         APTFoldingWalker walker = new APTFoldingWalker(apt);
-        String filterName = name.endsWith(".c") ? APTLanguageSupport.GNU_C : APTLanguageSupport.GNU_CPP;
+        // TODO: may be use simplified filter for everything?
+        String filterName = APTLanguageSupport.GNU_CPP;
         APTLanguageFilter filter = APTLanguageSupport.getInstance().getFilter(filterName);
         TokenStream ts = walker.getFilteredTokenStream(filter);
         APTFoldingParser parser = new APTFoldingParser(ts, walker);
@@ -121,14 +122,14 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
  
         } catch(Exception e) {
             if (reportErrors) {
-                System.err.println("exception: "+e);
+                System.err.println("exception: "+e); // NOI18N
                 e.printStackTrace();
             }
         }
         return folds;
         
     }
-    private final static boolean reportErrors = Boolean.getBoolean("folding.parser.report.errors");
+    private final static boolean reportErrors = Boolean.getBoolean("folding.parser.report.errors"); // NOI18N
     public void reportError(RecognitionException e) {
         if (reportErrors) {
             super.reportError(e);
@@ -181,30 +182,30 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         }
         if (level != 0 || LA1 == EOF) {
             matchError = true;
-            matchException=new RecognitionException("unbalanced bracket " + getBracketName(startType));
+            matchException=new RecognitionException("unbalanced bracket " + getBracketName(startType)); // NOI18N
         }
     }
     
     private String getBracketName(int kind) {
-        String out = "";
+        String out = ""; // NOI18N
         switch (kind) {
             case LPAREN:
-                out = "LPAREN";
+                out = "LPAREN"; // NOI18N
                 break;
             case RPAREN:
-                out = "RPAREN";
+                out = "RPAREN"; // NOI18N
                 break;
             case LCURLY:
-                out = "LCURLY";
+                out = "LCURLY"; // NOI18N
                 break;
             case RCURLY:
-                out = "RCURLY";
+                out = "RCURLY"; // NOI18N
                 break;
             case LESSTHAN:
-                out = "LESSTHAN";
+                out = "LESSTHAN"; // NOI18N
                 break;
             case GREATERTHAN:
-                out = "GREATERTHAN";
+                out = "GREATERTHAN"; // NOI18N
                 break;
         }
         return out;
@@ -286,7 +287,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                         } 
                         break; // break LA1 switch                        
                     }
-                    // allow to fall in "default"
+                    // nobreak
                 default:
                     if ((LA1 >= FIRST_TOKEN && LA1 <= LAST_TOKEN)) {
                         declaration();
@@ -345,7 +346,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                             if (LA(1)==RCURLY) {
 //                                if (endCurlyLevel != this.curCurlyLevel - 1) {
 //                                    matchError = true;
-//                                    matchException=new RecognitionException("unbalanced LCURLY " + begin);
+//                                    matchException=new RecognitionException("unbalanced LCURLY " + begin); // NOI18N
 //                                }
                                 break ext_decl_loop;
                             }
@@ -366,7 +367,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 //                        } else if (curCurlyLevel < 0) {
 //                            curCurlyLevel = 0;
 //                            matchError = true;
-//                            matchException=new RecognitionException("unbalanced RCURLY " + end);   
+//                            matchException=new RecognitionException("unbalanced RCURLY " + end);   // NOI18N 
 //                            break main_loop;
                         }
                         // create folder

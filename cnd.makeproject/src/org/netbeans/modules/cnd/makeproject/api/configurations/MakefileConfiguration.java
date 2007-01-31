@@ -71,7 +71,7 @@ public class MakefileConfiguration {
     // Working Dir
     public String getBuildCommandWorkingDirValue() {
         if (buildCommandWorkingDir.getValue().length() == 0)
-            return "."; //
+            return "."; // NOI18N
         else
             return buildCommandWorkingDir.getValue();
     }
@@ -116,7 +116,7 @@ public class MakefileConfiguration {
 	if (getBuildCommandWorkingDirValue().length() > 0 && IpeUtils.isPathAbsolute(getBuildCommandWorkingDirValue())) 
 	    return getBuildCommandWorkingDirValue();
 	else
-	    return getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDirValue();
+	    return getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
     }
 
     public boolean canClean() {
@@ -125,11 +125,11 @@ public class MakefileConfiguration {
 
     public String getAbsOutput() {
         if (getOutput().getValue().length() == 0)
-            return "";
+            return ""; // NOI18N
         else if (getOutput().getValue().length() > 0 && IpeUtils.isPathAbsolute(getOutput().getValue()))
 	    return getOutput().getValue();
 	else
-	    return getMakeConfiguration().getBaseDir() + "/"  + getOutput().getValue();
+	    return getMakeConfiguration().getBaseDir() + "/"  + getOutput().getValue(); // NOI18N
     }
 
     // Clone and assign
@@ -155,9 +155,9 @@ public class MakefileConfiguration {
 	Sheet sheet = new Sheet();
 
 	Sheet.Set set = new Sheet.Set();
-	set.setName("Makefile");
-	set.setDisplayName("Makefile");
-	set.setShortDescription("MakefileDefaults");
+	set.setName("Makefile"); // NOI18N
+	set.setDisplayName(getString("MakefileTxt"));
+	set.setShortDescription(getString("MakefileHint"));
 	set.put(new DirStringNodeProp(getBuildCommandWorkingDir(), "WorkingDirectory", getString("WorkingDirectory_LBL"), getString("WorkingDirectory_TT"))); // NOI18N
 	set.put(new StringNodeProp(getBuildCommand(), "BuildCommandLine", getString("BuildCommandLine_LBL"), getString("BuildCommandLine_TT"))); // NOI18N
 	set.put(new StringNodeProp(getCleanCommand(),  "CleanCommandLine", getString("CleanCommandLine_LBL"), getString("CleanCommandLine_TT"))); // NOI18N
@@ -310,8 +310,8 @@ public class MakefileConfiguration {
         
         public ElfPanel(String seed, PropertyEditorSupport editor, PropertyEnv propenv) {
             super(
-		java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("Elf_File"),
-		java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("SelectLabel"),
+		"", // NOI18N
+		"", // NOI18N
 		FileChooser.FILES_ONLY,
 		new FileFilter[] {ElfExecutableFileFilter.getInstance(), ElfStaticLibraryFileFilter.getInstance(), ElfDynamicLibraryFileFilter.getInstance()},
 		seed,

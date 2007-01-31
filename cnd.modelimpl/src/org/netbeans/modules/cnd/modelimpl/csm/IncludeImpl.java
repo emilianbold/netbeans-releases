@@ -70,11 +70,11 @@ public class IncludeImpl extends LineColOffsetableBase implements CsmInclude {
         char end = isSystem() ? '>' : '"';
         String error = "";
         if (getContainingFile() == null) {
-            error = "<NO CONTAINER INFO> ";
+            error = "<NO CONTAINER INFO> "; // NOI18N
         }
         return error + beg + getIncludeName() + end + 
-                (getIncludeFile() == null ? " <FAILED inclusion>" : "") +
-                " [" + getStartPosition() + "-" + getEndPosition() + "]";        
+                (getIncludeFile() == null ? " <FAILED inclusion>" : "") + // NOI18N
+                " [" + getStartPosition() + "-" + getEndPosition() + "]"; // NOI18N
     }
 
     public boolean equals(Object obj) {

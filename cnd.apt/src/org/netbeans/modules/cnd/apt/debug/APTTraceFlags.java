@@ -25,21 +25,23 @@ package org.netbeans.modules.cnd.apt.debug;
  */
 public interface APTTraceFlags {
 
-    public static final boolean APT_SHARE_TEXT = DebugUtils.getBoolean("apt.share.text", true);
-    public static final boolean APT_NON_RECURSE_VISIT = DebugUtils.getBoolean("apt.nonrecurse.visit", false);
+    public static final boolean APT_SHARE_TEXT = DebugUtils.getBoolean("apt.share.text", true); // NOI18N
+    public static final boolean APT_NON_RECURSE_VISIT = DebugUtils.getBoolean("apt.nonrecurse.visit", false); // NOI18N
 
-    public static final int     BUF_SIZE = 8192*Integer.getInteger("cnd.file.buffer", 1).intValue();
+    public static final int     BUF_SIZE = 8192*Integer.getInteger("cnd.file.buffer", 1).intValue(); // NOI18N
     
-    public static final boolean OPTIMIZE_INCLUDE_SEARCH = DebugUtils.getBoolean("cnd.optimize.include.search", true);
+    public static final boolean OPTIMIZE_INCLUDE_SEARCH = DebugUtils.getBoolean("cnd.optimize.include.search", true); // NOI18N
 
-    public static final boolean TRACE_APT = Boolean.getBoolean("cnd.apt.trace");
-    public static final boolean TRACE_APT_LEXER = Boolean.getBoolean("cnd.aptlexer.trace");
+    public static final boolean TRACE_APT = Boolean.getBoolean("cnd.apt.trace"); // NOI18N
+    public static final boolean TRACE_APT_LEXER = Boolean.getBoolean("cnd.aptlexer.trace"); // NOI18N
 
-    public static final boolean USE_APT_TEST_TOKEN = Boolean.getBoolean("cnd.apt.apttoken");
+    public static final boolean USE_APT_TEST_TOKEN = Boolean.getBoolean("cnd.apt.apttoken"); // NOI18N
 
-    public static final boolean TEST_APT_SERIALIZATION = DebugUtils.getBoolean("cnd.cache.apt", false);
+    public static final boolean TEST_APT_SERIALIZATION = DebugUtils.getBoolean("cnd.cache.apt", false); // NOI18N
 
-    public static final boolean REPORT_INCLUDE_FAILURES = Boolean.getBoolean("parser.report.include.failures");
-    public static final boolean APT_DISPOSE_TOKENS = DebugUtils.getBoolean("apt.dispose.tokens", false);
+    public static final boolean APT_DISPOSE_TOKENS = DebugUtils.getBoolean("apt.dispose.tokens", false); // NOI18N
     
+    public static final boolean APT_USE_SOFT_REFERENCE = DebugUtils.getBoolean("apt.soft.reference", true); // NOI18N
+    
+    public static final boolean APT_ABSOLUTE_INCLUDES = DebugUtils.getBoolean("apt.absolute.include", false); // NOI18N
 }

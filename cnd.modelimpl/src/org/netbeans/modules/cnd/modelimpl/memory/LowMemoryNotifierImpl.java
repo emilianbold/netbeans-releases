@@ -68,14 +68,14 @@ class LowMemoryNotifierImpl extends LowMemoryNotifier implements NotificationLis
     }
     
     public void removeListener(LowMemoryListener listener) {
-	logger.info("LowMemoryNotifierImpl.removeListener " + listener);
+	logger.info("LowMemoryNotifierImpl.removeListener " + listener); // NOI18N
         synchronized( listeners ) {
             listeners.remove(listener);
         }
     }
     
     public void setThresholdPercentage(double percentage) {
-	logger.info("LowMemoryNotifierImpl.setThresholdPercentage " + percentage);
+	logger.info("LowMemoryNotifierImpl.setThresholdPercentage " + percentage); // NOI18N
         assert(0 < percentage && percentage < 1.0);
         long maxMemory = pool.getUsage().getMax();
         long threshold = (long) (maxMemory * percentage);
@@ -93,11 +93,11 @@ class LowMemoryNotifierImpl extends LowMemoryNotifier implements NotificationLis
      * should not use or modify the object.
      */
     public void handleNotification(Notification notification, Object hb) {
-	logger.info("LowMemoryNotifierImpl.handleNotification " + notification);
+	logger.info("LowMemoryNotifierImpl.handleNotification " + notification); // NOI18N
         if (MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED.equals(notification.getType())) {
             long maxMemory = pool.getUsage().getMax();
             long usedMemory = pool.getUsage().getUsed();
-	    logger.info("LowMemoryNotifierImpl.handleNotification " + maxMemory + '/' + usedMemory);
+	    logger.info("LowMemoryNotifierImpl.handleNotification " + maxMemory + '/' + usedMemory); // NOI18N
             fireMemoryLow(maxMemory, usedMemory);
         }
     }

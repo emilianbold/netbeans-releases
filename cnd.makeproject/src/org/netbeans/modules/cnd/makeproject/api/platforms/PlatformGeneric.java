@@ -19,18 +19,20 @@
 
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
+import org.netbeans.modules.cnd.makeproject.api.actions.BatchBuildAction;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.openide.util.NbBundle;
 
 public class PlatformGeneric extends Platform {
-    public static final String NAME = "Generic";
+    public static final String NAME = "Generic"; // NOI18N
 
     public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
         // empty
     };
 
     public PlatformGeneric() {
-        super(NAME, "Generic", Platform.PLATFORM_GENERIC);
+        super(NAME, NbBundle.getBundle(PlatformGeneric.class).getString("GenericName"), Platform.PLATFORM_GENERIC);
     }
 
     public LibraryItem.StdLibItem[] getStandardLibraries() {
@@ -43,13 +45,13 @@ public class PlatformGeneric extends Platform {
     }
     
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
-        if (libName.endsWith(".so")) {
-            int i = libName.indexOf(".so");
+        if (libName.endsWith(".so")) { // NOI18N
+            int i = libName.indexOf(".so"); // NOI18N
             if (i > 0)
                 libName = libName.substring(0, i);
-            if (libName.startsWith("lib"))
+            if (libName.startsWith("lib")) // NOI18N
                 libName = libName.substring(3);
-            return compilerSet.getLibrarySearchOption() + libDir + " " + compilerSet.getLibraryOption() + libName;
+            return compilerSet.getLibrarySearchOption() + libDir + " " + compilerSet.getLibraryOption() + libName; // NOI18N
         } else {
             return libPath;
         }

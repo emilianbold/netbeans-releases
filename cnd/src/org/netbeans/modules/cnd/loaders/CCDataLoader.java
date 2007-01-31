@@ -38,10 +38,10 @@ public class CCDataLoader extends CCFSrcLoader {
 
     /** The suffix list for C++ primary files */
     private static final String[] cppExtensions =
-				{ "cc", "cpp", "c++", "cxx", "C", "mm" };	//NOI18N
+				{ "cc", "cpp", "c++", "cxx", "C", "mm" };	// NOI18N
 
     protected CCDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.CCSrcObject");         //NOI18N
+	super("org.netbeans.modules.cnd.loaders.CCSrcObject");         // NOI18N
 	instance = this;
         createExtentions(cppExtensions);
     }

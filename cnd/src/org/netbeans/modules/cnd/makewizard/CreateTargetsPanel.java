@@ -94,7 +94,7 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
     CreateTargetsPanel(MakefileWizard wiz) {
 	super(wiz);
 	this.wiz = wiz;
-	String subtitle = getString("LBL_CreateTargetsPanel"); //NOI18N
+	String subtitle = getString("LBL_CreateTargetsPanel"); // NOI18N
 	setSubTitle(subtitle);
 	this.getAccessibleContext().setAccessibleDescription(subtitle);
 
@@ -116,9 +116,9 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
 	nextButton = MakefileWizard.getMakefileWizard().getNextButton();
 
 	// Create the components.
-        nameLabel = new JLabel(getString("LBL_TargetName"));		//NOI18N
+        nameLabel = new JLabel(getString("LBL_TargetName"));		// NOI18N
 	nameLabel.setDisplayedMnemonic(
-			getString("MNEM_TargetName").charAt(0));	//NOI18N
+			getString("MNEM_TargetName").charAt(0));	// NOI18N
 	add(nameLabel, grid);
 
         nameText = new JTextField();
@@ -131,8 +131,8 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
 	add(nameText, grid);
 	nameLabel.setLabelFor(nameText);
 	
-        nameChooser = new JButton(getString("BTN_Chooser"));		//NOI18N
-	nameChooser.setMnemonic(getString("MNEM_Chooser").charAt(0));	//NOI18N
+        nameChooser = new JButton(getString("BTN_Chooser"));		// NOI18N
+	nameChooser.setMnemonic(getString("MNEM_Chooser").charAt(0));	// NOI18N
 	grid.gridx = 2;
 	grid.weightx = 0.0;
 	grid.fill = GridBagConstraints.NONE;
@@ -144,29 +144,29 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
 	grid.gridx = 0;
 	grid.gridwidth = GridBagConstraints.REMAINDER;
 	grid.insets = new Insets(12, 0, 0, 0);
-	executable = new JRadioButton(getString("RB_Executable"));	//NOI18N
+	executable = new JRadioButton(getString("RB_Executable"));	// NOI18N
 	executable.setSelected(true);
-	executable.setMnemonic(getString("MNEM_Executable").charAt(0));	//NOI18N
+	executable.setMnemonic(getString("MNEM_Executable").charAt(0));	// NOI18N
 	add(executable, grid);
 
 	grid.insets = defaultInsets;
-	archive = new JRadioButton(getString("RB_StaticLibrary"));	//NOI18N
-	archive.setMnemonic(getString("MNEM_StaticLibrary").charAt(0));	//NOI18N
+	archive = new JRadioButton(getString("RB_StaticLibrary"));	// NOI18N
+	archive.setMnemonic(getString("MNEM_StaticLibrary").charAt(0));	// NOI18N
 	add(archive, grid);
 
-	sharedLib = new JRadioButton(getString("RB_SharedLibrary"));	//NOI18N
+	sharedLib = new JRadioButton(getString("RB_SharedLibrary"));	// NOI18N
 	sharedLib.setMnemonic(
-			getString("MNEM_SharedLibrary").charAt(0));	//NOI18N
+			getString("MNEM_SharedLibrary").charAt(0));	// NOI18N
 	add(sharedLib, grid);
 
-	recursiveMake = new JRadioButton(getString("RB_RecursiveMake"));//NOI18N
+	recursiveMake = new JRadioButton(getString("RB_RecursiveMake"));// NOI18N
 	recursiveMake.setMnemonic(
-			getString("MNEM_RecursiveMake").charAt(0));	//NOI18N
+			getString("MNEM_RecursiveMake").charAt(0));	// NOI18N
 	add(recursiveMake, grid);
 
-	customTarget = new JRadioButton(getString("RB_CustomTarget"));	//NOI18N
+	customTarget = new JRadioButton(getString("RB_CustomTarget"));	// NOI18N
 	customTarget.setMnemonic(
-			getString("MNEM_CustomTarget").charAt(0));	//NOI18N
+			getString("MNEM_CustomTarget").charAt(0));	// NOI18N
 	add(customTarget, grid);
 
 	typeBG = new ButtonGroup();
@@ -180,9 +180,9 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
 	grid.insets = new Insets(5, 0, 0, 0);
 	add(bpanel, grid);
 
-	listLabel = new JLabel(getString("LBL_List"));			//NOI18N
+	listLabel = new JLabel(getString("LBL_List"));			// NOI18N
 	listLabel.setDisplayedMnemonic(
-			    getString("MNEM_List").charAt(0));		//NOI18N
+			    getString("MNEM_List").charAt(0));		// NOI18N
 	grid.insets = new Insets(11, 0, 0, 0);
 	add(listLabel, grid);
 
@@ -200,22 +200,22 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
 
 	// a11y
 	list.getAccessibleContext().setAccessibleDescription(
-		getString("ACSD_List")					//NOI18N
+		getString("ACSD_List")					// NOI18N
 	);
 	nameText.getAccessibleContext().setAccessibleDescription(
-		getString("ACSD_TargetNameTF")				//NOI18N
+		getString("ACSD_TargetNameTF")				// NOI18N
 	);
 	addBtn.getAccessibleContext().setAccessibleDescription(
-		getString("ACSD_CreateTargetsPanelAddBtn")		//NOI18N
+		getString("ACSD_CreateTargetsPanelAddBtn")		// NOI18N
 	);
 	removeBtn.getAccessibleContext().setAccessibleDescription(
-		getString("ACSD_CreateTargetsPanelRemoveBtn")		//NOI18N
+		getString("ACSD_CreateTargetsPanelRemoveBtn")		// NOI18N
 	);
 	changeBtn.getAccessibleContext().setAccessibleDescription(
-		getString("ACSD_CreateTargetsPanelChangeBtn")		//NOI18N
+		getString("ACSD_CreateTargetsPanelChangeBtn")		// NOI18N
 	);
 	nameChooser.getAccessibleContext().setAccessibleDescription(
-		getString("ACSD_CreateTargetsPanelBrowseBtn")		//NOI18N
+		getString("ACSD_CreateTargetsPanelBrowseBtn")		// NOI18N
 	);
     }
 
@@ -223,18 +223,18 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
 	JPanel bpanel = new JPanel();
         bpanel.setLayout(new GridLayout(1, 3, 6, 0));
 
-	addBtn = new JButton(getString("BTN_Add"));			//NOI18N
-	addBtn.setMnemonic(getString("MNEM_Add").charAt(0));		//NOI18N
+	addBtn = new JButton(getString("BTN_Add"));			// NOI18N
+	addBtn.setMnemonic(getString("MNEM_Add").charAt(0));		// NOI18N
 	addBtn.setEnabled(false);
 	bpanel.add(addBtn);
 
-	removeBtn = new JButton(getString("BTN_Remove"));		//NOI18N
-	removeBtn.setMnemonic(getString("MNEM_Remove").charAt(0));	//NOI18N
+	removeBtn = new JButton(getString("BTN_Remove"));		// NOI18N
+	removeBtn.setMnemonic(getString("MNEM_Remove").charAt(0));	// NOI18N
 	removeBtn.setEnabled(false);
 	bpanel.add(removeBtn);
 
-	changeBtn = new JButton(getString("BTN_Change"));		//NOI18N
-	changeBtn.setMnemonic(getString("MNEM_Change").charAt(0));	//NOI18N
+	changeBtn = new JButton(getString("BTN_Change"));		// NOI18N
+	changeBtn.setMnemonic(getString("MNEM_Change").charAt(0));	// NOI18N
 	changeBtn.setEnabled(false);
 	bpanel.add(changeBtn);
 
@@ -252,9 +252,9 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
 	    
 		if (fc == null) {
 		    fc = new JFileChooser();
-		    fc.setApproveButtonText(getString("BTN_Approve"));	//NOI18N
+		    fc.setApproveButtonText(getString("BTN_Approve"));	// NOI18N
 		    fc.setDialogTitle(
-				getString("DLG_FILE_CHOOSER_TITLE"));	//NOI18N
+				getString("DLG_FILE_CHOOSER_TITLE"));	// NOI18N
 		}
 
 		// See if the user has already typed a directory. If so use it.
@@ -365,19 +365,19 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
 	    String tstring;
 
 	    if (type == TargetData.COMPLEX_EXECUTABLE) {
-		tstring = new String("COMPLEX_EXECUTABLE");		//NOI18N
+		tstring = new String("COMPLEX_EXECUTABLE");		// NOI18N
 	    } else if (type == TargetData.COMPLEX_ARCHIVE) {
-		tstring = new String("COMPLEX_ARCHIVE");		//NOI18N
+		tstring = new String("COMPLEX_ARCHIVE");		// NOI18N
 	    } else if (type == TargetData.COMPLEX_SHAREDLIB) {
-		tstring = new String("COMPLEX_SHAREDLIB");		//NOI18N
+		tstring = new String("COMPLEX_SHAREDLIB");		// NOI18N
 	    } else if (type == TargetData.COMPLEX_MAKE_TARGET) {
-		tstring = new String("COMPLEX_MAKE_TARGET");		//NOI18N
+		tstring = new String("COMPLEX_MAKE_TARGET");		// NOI18N
 	    } else if (type == TargetData.COMPLEX_CUSTOM_TARGET) {
-		tstring = new String("COMPLEX_CUSTOM_TARGET");		//NOI18N
+		tstring = new String("COMPLEX_CUSTOM_TARGET");		// NOI18N
 	    } else {
-		tstring = new String("<Unknown>");			//NOI18N
+		tstring = new String("<Unknown>");			// NOI18N
 	    }
-	    UsageTracking.sendAction("Create Target: Type " +		//NOI18N
+	    UsageTracking.sendAction("Create Target: Type " +		// NOI18N
 			    tstring, null);
 	}
 	*/
@@ -400,7 +400,7 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
 
 	/*
 	if (UsageTracking.enabled) {
-	    UsageTracking.sendAction("Remove Target", null);		//NOI18N
+	    UsageTracking.sendAction("Remove Target", null);		// NOI18N
 	}
 	*/
     }
@@ -429,7 +429,7 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
 
 	/*
 	if (UsageTracking.enabled) {
-	    UsageTracking.sendAction("Change Target", null);		//NOI18N
+	    UsageTracking.sendAction("Change Target", null);		// NOI18N
 	}
 	*/
     }

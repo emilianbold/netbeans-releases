@@ -34,6 +34,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  */
 public class ClassImpl extends ClassEnumBase implements CsmClass, CsmMember {
 
+    private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
     private List/*<CsmMember>*/ members = new ArrayList/*<CsmMember>*/();
     private List/*<CsmInheritance>*/ inheritances = new ArrayList/*<CsmInheritance>*/();
     private boolean template;
@@ -156,43 +157,42 @@ public class ClassImpl extends ClassEnumBase implements CsmClass, CsmMember {
         }
 
         protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
-            return new MemberTypedef(ast, type, name);
+            return new MemberTypedef(ast, type, name, curentVisibility);
         }
-        
-        private class MemberTypedef extends TypedefImpl implements CsmMember {
-
-            CsmVisibility visibility;
-
-            public MemberTypedef(AST ast, CsmType type, String name) {
-                super(ast, ClassImpl.this.getContainingFile(), ClassImpl.this, type, name);
-                visibility = curentVisibility;
-            }
-
-            public boolean isStatic() {
-                return false;
-            }
-
-            public CsmVisibility getVisibility() {
-                return visibility;
-            }
-
-            public CsmClass getContainingClass() {
-                return ClassImpl.this;
-            }
-            public CsmScope getScope() {
-                return ClassImpl.this;
-            }
-
-        }
-        
     }
+    
+    private class MemberTypedef extends TypedefImpl implements CsmMember {
+
+        CsmVisibility visibility;
+
+        public MemberTypedef(AST ast, CsmType type, String name, CsmVisibility curentVisibility) {
+            super(ast, ClassImpl.this.getContainingFile(), ClassImpl.this, type, name);
+            visibility = curentVisibility;
+        }
+
+        public boolean isStatic() {
+            return false;
+        }
+
+        public CsmVisibility getVisibility() {
+            return visibility;
+        }
+
+        public CsmClass getContainingClass() {
+            return ClassImpl.this;
+        }
+        public CsmScope getScope() {
+            return ClassImpl.this;
+        }
+
+    }    
 
     public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file) {
         this(kind, name, namespace, file, null);
     }
     
     public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
-        super(kind, name, namespace, file, containingClass, null);
+        super(name, namespace, file, containingClass, null);
         leftBracketPos = 0;
         register();
     }
@@ -202,10 +202,18 @@ public class ClassImpl extends ClassEnumBase implements CsmClass, CsmMember {
     }
     
     public ClassImpl(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
-        super(CsmDeclaration.Kind.CLASS, AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file, containingClass, ast);
+        super(AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file, containingClass, ast);
         leftBracketPos = initLeftBracketPos(ast);
         new ClassAstRenderer().render(ast);
         register();
+    }
+    
+    private void setKind(CsmDeclaration.Kind kind) {
+        this.kind = kind;
+    }
+
+    public CsmDeclaration.Kind getKind() {
+        return this.kind;
     }
     
     public List/*<CsmMember>*/ getMembers() {
