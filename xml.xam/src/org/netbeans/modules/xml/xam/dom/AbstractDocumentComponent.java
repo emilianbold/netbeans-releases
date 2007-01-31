@@ -805,20 +805,40 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         return ret;
     }
     
+    /**
+     * Returns value of all text nodes from the child element with given QName.
+     * This method is use to implement mapping of "property" as component attribute.
+     * @param qname QName of the child element to get text from.
+     */
     protected String getChildElementText(QName qname) {
         Element ret = getChildElement(qname);
         return ret == null ? null : getText(ret);
     }
     
+    /**
+     * Set the value of the text node from the child element with given QName.
+     * This method is use to implement mapping of "property" as component attribute.
+     * @param propertyName property change event name
+     * @param text the string to set value of the child element text node.
+     * @param qname QName of the child element to get text from.
+     */
     protected void setChildElementText(String propertyName, String text, QName qname) {
         verifyWrite();
         Element childElement = getChildElement(qname);
         String oldVal = childElement == null ? null : getText(childElement);
-        if (childElement == null) {
-            childElement = getModel().getDocument().createElementNS(qname.getNamespaceURI(), qname.getLocalPart());
-            getModel().getAccess().appendChild(getPeer(), childElement, this);
+        
+        if (text == null) {
+            if (childElement == null) return;
+            removeChild(childElement);
+            if (oldVal == null) return;
+        } else {
+            if (text.equals(oldVal)) return;
+            if (childElement == null) {
+                childElement = getModel().getDocument().createElementNS(qname.getNamespaceURI(), qname.getLocalPart());
+                getModel().getAccess().appendChild(getPeer(), childElement, this);
+            }
+            getModel().getAccess().setText(childElement, text, this);
         }
-        getModel().getAccess().setText(childElement, text, this);
         firePropertyChange(propertyName, oldVal, text);
         fireValueChanged();
     }
