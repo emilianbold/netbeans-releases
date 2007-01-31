@@ -147,6 +147,11 @@ public final class MethodModel {
             return name;
         }
         
+        /**
+         * Flag specifying if variable is final or not.
+         * 
+         * @return true if variable is final, false otherwise
+         */
         public boolean getFinalModifier() {
             return finalModifier;
         }
