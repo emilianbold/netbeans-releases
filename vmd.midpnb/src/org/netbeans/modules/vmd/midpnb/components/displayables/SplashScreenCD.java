@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.midpnb.components.displayables;
 
 import java.util.Arrays;
 import java.util.List;
+
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
@@ -29,12 +30,20 @@ import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.api.model.Versionable;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
+import org.netbeans.modules.vmd.api.properties.common.TextFieldBC;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
+import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.netbeans.modules.vmd.midp.propertyeditors.eventhandler.PropertyEditorEventHandler;
 
 /**
  *
@@ -47,18 +56,16 @@ public class SplashScreenCD extends ComponentDescriptor {
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/splash_screen16.png"; // NOI18N
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/splash_screen64.png"; // NOI18N
 
-    private String PROP_TIMEOUT = "Timeout"; //NOI18N
-    private String PROP_ALLOW_TIMEOUT_INTERRUPT = "allowTimeoutInterrupt"; //NOI18N
-    private String PROP_DISSMISS_ACTION = "dissmissAction"; //NOI18N
-    private String PROP_IMAGE = "image"; //NOI18N
-    private String PROP_TEXT = "text"; //NOI18N
-
+    private static final String PROP_TIMEOUT = "timeout"; //NOI18N
+    private static final String PROP_ALLOW_TIMEOUT_INTERRUPT = "allowTimeoutInterrupt"; //NOI18N
+    private static final String PROP_DISSMISS_ACTION = "dissmissAction"; //NOI18N
+  
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
 
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(CanvasCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(AbstractScreenCD.TYPEID, TYPEID, true, true);
     }
 
     public VersionDescriptor getVersionDescriptor() {
@@ -69,15 +76,21 @@ public class SplashScreenCD extends ComponentDescriptor {
         return Arrays.asList(
             new PropertyDescriptor(PROP_TIMEOUT, MidpTypes.TYPEID_INT, PropertyValue.createNull(), false, true, MidpVersionable.MIDP),
             new PropertyDescriptor(PROP_ALLOW_TIMEOUT_INTERRUPT, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(Boolean.TRUE), false, false, Versionable.FOREVER),
-            new PropertyDescriptor(PROP_DISSMISS_ACTION, EventSourceCD.TYPEID, PropertyValue.createNull(), false, false, Versionable.FOREVER),
-            new PropertyDescriptor(PROP_IMAGE, ImageCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP),
-            new PropertyDescriptor(PROP_TEXT, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP)
-
+            new PropertyDescriptor(PROP_DISSMISS_ACTION, EventSourceCD.TYPEID, PropertyValue.createNull(), false, false, Versionable.FOREVER)
         );
+    }
+    
+    private static DefaultPropertiesPresenter createPropertiesPresenter () {
+       return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
+               .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+                   .addProperty("Timeout", Integer.class, PROP_TIMEOUT)
+                   .addProperty("Allow Timeout Interrupt", Boolean.class, PROP_ALLOW_TIMEOUT_INTERRUPT)
+                   .addProperty("Dissmiss Action", PropertyEditorEventHandler.createInstance(), PROP_ALLOW_TIMEOUT_INTERRUPT);    
     }
     
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
+            createPropertiesPresenter()
         );
     }
 
