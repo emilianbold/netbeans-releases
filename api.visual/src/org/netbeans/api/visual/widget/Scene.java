@@ -72,7 +72,7 @@ public class Scene extends Widget {
     private Rectangle maximumBounds = new Rectangle (Integer.MIN_VALUE / 2, Integer.MIN_VALUE / 2, Integer.MAX_VALUE, Integer.MAX_VALUE);
 
 
-    private final ArrayList<SceneListener> sceneListeners = new ArrayList<SceneListener> ();
+    private final ArrayList<SceneListener> sceneListeners = new ArrayList<SceneListener> (); // TODO - use CopyOnWriteArrayList
 
     private EventProcessingType keyEventProcessingType = EventProcessingType.ALL_WIDGETS;
 

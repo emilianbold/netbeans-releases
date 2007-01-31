@@ -40,6 +40,7 @@ public class ComponentWidget extends Widget {
 
     private Component component;
     private boolean componentAdded;
+    private boolean widgetAdded;
     private double zoomFactor = Double.MIN_VALUE;
     private ComponentSceneListener validateListener;
     private ComponentComponentListener componentListener;
@@ -59,10 +60,18 @@ public class ComponentWidget extends Widget {
     }
 
     /**
+     * Returns a AWT/Swing component.
+     * @return the AWT/Swing component
+     */
+    public final Component getComponent () {
+        return component;
+    }
+
+    /**
      * Returns whether the component should be visible.
      * @return true if the component is visible
      */
-    public boolean isComponentVisible () {
+    public final boolean isComponentVisible () {
         return componentVisible;
     }
 
@@ -70,7 +79,7 @@ public class ComponentWidget extends Widget {
      * Sets whether the component should be visible.
      * @param componentVisible if true, then the component is visible
      */
-    public void setComponentVisible (boolean componentVisible) {
+    public final void setComponentVisible (boolean componentVisible) {
         if (this.componentVisible == componentVisible)
             return;
         this.componentVisible = componentVisible;
@@ -78,35 +87,27 @@ public class ComponentWidget extends Widget {
         revalidate ();
     }
 
-    /**
-     * Attaches the scene listener for automatic recalculation. The attaching is done automatically for the first time.
-     * You have to call the attach method when you are reusing the component widget after calling the detach method.
-     */
-    public final void attach () {
+    protected final void notifyAdded () {
+        widgetAdded = true;
+        attach ();
+    }
+
+    protected final void notifyRemoved () {
+        widgetAdded = false;
+    }
+
+    private void attach () {
         if (validateListener != null)
             return;
         validateListener = new ComponentSceneListener ();
         getScene ().addSceneListener (validateListener);
     }
 
-    /**
-     * Detaches the scene listener for automatic recalculation. The detaching is required for preventing memory leaks
-     * after the component widget is remove from the scene. When you want to reuse the widget again, you have call
-     * the attach method.
-     */
-    public final void detach () {
+    private void detach () {
         if (validateListener == null)
             return;
         getScene ().removeSceneListener (validateListener);
         validateListener = null;
-    }
-
-    /**
-     * Returns a AWT/Swing component.
-     * @return the AWT/Swing component
-     */
-    public final Component getComponent () {
-        return component;
     }
 
     /**
@@ -119,17 +120,6 @@ public class ComponentWidget extends Widget {
         preferredSize.width = (int) Math.floor (preferredSize.width / zoomFactor);
         preferredSize.height = (int) Math.floor (preferredSize.height / zoomFactor);
         return new Rectangle (preferredSize);
-    }
-
-    private boolean isWidgetInScene () {
-        Scene scene = getScene ();
-        Widget widget = this;
-        while (widget != null) {
-            if (widget == scene)
-                return true;
-            widget = widget.getParentWidget ();
-        }
-        return false;
     }
 
     private void addComponent () {
@@ -157,7 +147,7 @@ public class ComponentWidget extends Widget {
     /**
      * Paints the component widget.
      */
-    protected void paintWidget () {
+    protected final void paintWidget () {
         if (getScene ().isPaintEverything ()  ||  ! componentVisible) {
             Graphics2D graphics = getGraphics ();
             Rectangle bounds = getClientArea ();
@@ -176,15 +166,19 @@ public class ComponentWidget extends Widget {
         }
 
         public void sceneValidating () {
-            if (getScene ().getZoomFactor () - zoomFactor != 0.0)
+            double newZoomFactor = getScene ().getZoomFactor ();
+            if (Math.abs (newZoomFactor - zoomFactor) != 0.0) {
                 revalidate ();
+                zoomFactor = newZoomFactor;
+            }
         }
 
         public void sceneValidated () {
-            if (isWidgetInScene ()  &&  componentVisible)
+            if (widgetAdded  &&  componentVisible)
                 addComponent ();
             else {
                 removeComponent ();
+                detach ();
             }
         }
     }
