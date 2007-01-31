@@ -19,14 +19,20 @@
 
 package org.netbeans.editor.ext.html.parser;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenHierarchyEvent;
+import org.netbeans.api.lexer.TokenHierarchyEventType;
+import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.openide.util.RequestProcessor;
 
 /**
  * Simple HTML syntax parser.
@@ -35,20 +41,134 @@ import org.netbeans.editor.BaseDocument;
  */
 public final class SyntaxParser {
     
-    private Document doc;
-    private TokenHierarchy hi;
+    private static final int PARSER_DELAY = 1000; //1 second
     
-    private SyntaxParser(Document doc) {
-        this.doc = doc;
-        this.hi = TokenHierarchy.get(doc);
-    }
+    private final Document doc;
+    private final TokenHierarchy hi;
+    private final RequestProcessor.Task parserTask;
+    private final ArrayList<SyntaxParserListener> listeners = new ArrayList<SyntaxParserListener>();
+    private final Object parsingState = new Object();
     
+    private final TokenHierarchyListener tokenHierarchyListener = new TokenHierarchyListener() {
+        public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
+            if(evt.type() == TokenHierarchyEventType.MODIFICATION) {
+                synchronized (parsingState) {
+                    restartParser();
+                }
+            }
+        }
+    };
+    
+    private ArrayList<SyntaxElement> parsedElements;
+    
+    private boolean isParsing = false;
+    private boolean isScheduled = false;
+    
+    /** Returns an instance of SyntaxParser for given document.
+     *  The client is supposed to add a SyntaxParserListener to the obtained instance
+     *  to get notification whenever the document changes and is reparsed.
+     */
     public static synchronized SyntaxParser get(Document doc) {
         SyntaxParser parser = (SyntaxParser)doc.getProperty(SyntaxParser.class);
         if(parser == null) {
             parser = new SyntaxParser(doc);
+            doc.putProperty(SyntaxParser.class, parser);
         }
         return parser;
+    }
+    
+    private SyntaxParser(Document doc) {
+        this.doc = doc;
+        this.hi = TokenHierarchy.get(doc);
+        
+        parserTask = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                parse();
+            }
+        });
+        
+        //add itself as token hierarchy listener
+        hi.addTokenHierarchyListener(tokenHierarchyListener);
+        
+        parsedElements = null; //null states the data are not available yet
+    }
+    
+    //---------------------------- public methods -------------------------------
+    
+    /** Adds a new SyntaxParserListener and starts parsing if fresh data not available, otherwise synchronously
+     * notifies the added SyntaxParserListener that parsed data are available.*/
+    public void addSyntaxParserListener(SyntaxParserListener spl) {
+        listeners.add(spl);
+        
+        synchronized (parsingState) {
+            if(isParsing || isScheduled) return ; //we are either parsing or waiting for parser to start - will parse and fire event then
+            
+            if(parsedElements == null) {
+                //we need to run the parser
+                restartParser();
+            } else {
+                //data actual no need to reparse - just synchronously return parsed data
+                spl.parsingFinished(createParseResult());
+            }
+        }
+    }
+    
+    /** Removes the SyntaxParserListener from the listeners list.*/
+    public void removeSyntaxParserListener(SyntaxParserListener spl) {
+        listeners.remove(spl);
+    }
+    
+    //---------------------------- private methods -------------------------------
+    
+    private void restartParser() {
+        if(!parserTask.isFinished()) {
+            parserTask.cancel();
+        }
+        parserTask.schedule(PARSER_DELAY);
+        isScheduled = true;
+    }
+    
+    private void parse() {
+        synchronized (parsingState) {
+            isParsing = true;
+            isScheduled = false;
+        }
+        
+        reallyParse();
+        
+        synchronized (parsingState) {
+            isParsing = false;
+        }
+        
+        notifyParsingFinished();
+    }
+    
+    private void reallyParse() {
+        parsedElements = new ArrayList<SyntaxElement>();
+        try {
+            SyntaxElement sel = getElementChain(0);
+            while (sel != null) {
+                parsedElements.add(sel);
+                sel = sel.getNext();
+            }
+            
+        }catch(BadLocationException ble) {
+            ble.printStackTrace();;
+        }
+    }
+    
+    private void notifyParsingFinished() {
+        if(!parsedElements.isEmpty()) {
+            List<SyntaxElement> results = createParseResult();
+            for(SyntaxParserListener spl : listeners) {
+                spl.parsingFinished(results);
+            }
+        }
+    }
+    
+    private List<SyntaxElement> createParseResult() {
+        //return Collections.
+        return Collections.unmodifiableList(parsedElements);
     }
     
     Document getDocument() {
@@ -401,4 +521,5 @@ public final class SyntaxParser {
         }
         return ts;
     }
+    
 }

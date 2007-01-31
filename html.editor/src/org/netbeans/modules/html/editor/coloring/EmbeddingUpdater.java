@@ -20,91 +20,51 @@
 
 package org.netbeans.modules.html.editor.coloring;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenHierarchyEvent;
-import org.netbeans.api.lexer.TokenHierarchyEventType;
-import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.openide.ErrorManager;
-import org.openide.util.Mutex;
-import org.openide.util.RequestProcessor;
+import org.netbeans.editor.ext.html.parser.SyntaxParserListener;
 
 /**
+ * Listens on HTML parser changes and updates embedding of nested languages accordingly.
  *
- * @author marek
+ * @author Marek.Fukala@Sun.com
  */
-public class EmbeddingUpdater implements TokenHierarchyListener {
+public class EmbeddingUpdater implements SyntaxParserListener {
     
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
     
     private static final String HTML_SCRIPT_TAG_NAME = "script"; //NOI18N
-        
-    private static final int PARSER_DELAY = 1000; //1 second
     
     private static final Logger LOGGER = Logger.getLogger(EmbeddingUpdater.class.getName());
     
-    private Document doc;
-    private RequestProcessor.Task parserTask;
-    
+    private final Document doc;
+
     private int scriptStart;
     
-    /** Creates a new instance of LanguagesColoringUpdater */
     public EmbeddingUpdater(Document doc) {
         this.doc = doc;
-        parserTask = RequestProcessor.getDefault().create(new Runnable() {
-            public void run() {
-                parse();
-            }
-        });
     }
     
-    public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
-        if(evt.type() == TokenHierarchyEventType.MODIFICATION) {
-            restartParser();
-        }
-        
-    }
-    
-    private void restartParser() {
-        //XXX what about cancelling already running task?
-        parserTask.schedule(PARSER_DELAY);
-    }
-    
-    private void parse() {
+    public void parsingFinished(List<SyntaxElement> elements) {
         scriptStart = -1;
-        SyntaxParser sup = SyntaxParser.get(doc);
-        try {
-            SyntaxElement sel = sup.getElementChain(0);
-            while(sel != null) {
-                if(sel.getType() == SyntaxElement.TYPE_TAG) {
-                    startTag((SyntaxElement.Tag)sel);
-                } else if(sel.getType() == SyntaxElement.TYPE_ENDTAG) {
-                    endTag((SyntaxElement.Named)sel);
-                }
-                
-                SyntaxElement prev = sel;
-                sel = sel.getNext();
-                if(sel != null && prev.getElementOffset() >= sel.getElementOffset()) {
-                    break; //check for infinite loop :-(
-                }
+        for(SyntaxElement sel : elements) {
+            if(sel.getType() == SyntaxElement.TYPE_TAG) {
+                startTag((SyntaxElement.Tag)sel);
+            } else if(sel.getType() == SyntaxElement.TYPE_ENDTAG) {
+                endTag((SyntaxElement.Named)sel);
             }
-        }catch(BadLocationException ble) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ble);
         }
     }
-    
-    
     
     private void startTag(SyntaxElement.Named sel) {
         if(HTML_SCRIPT_TAG_NAME.equals(sel.getName())) {
@@ -121,42 +81,41 @@ public class EmbeddingUpdater implements TokenHierarchyListener {
     }
     
     private void createJavaScriptEmbedding(final int startOffset, final int endOffset) {
-//        Mutex.EVENT.postReadRequest(new Runnable() {
-//            public void run() {
-                ((BaseDocument)doc).readLock();
-                try {
-                    TokenHierarchy th = TokenHierarchy.get(doc);
-                    TokenSequence ts = tokenSequence(th, scriptStart);
-                    
-                    int diff = ts.move(startOffset);
-                    if(diff == Integer.MAX_VALUE) return; //no token found
-                    
-                    Language lang = Language.find(JAVASCRIPT_MIMETYPE);
-                    if(lang == null) {
-                        LOGGER.log(Level.WARNING, "No " + JAVASCRIPT_MIMETYPE + " language found!");
-                        return ; //no javascript language found
-                    }
-                    
-                    do {
-                        Token item = ts.token();
-                        if(ts.createEmbedding(lang, 0, 0)) {
-//                            System.out.println("created javascript embedding for token [" + item.text().toString() + "; type = " + item.id().name() + "]");
-                        }
-                        
-//                        System.out.println("embedding of the script content token:");
-//                        TokenSequence ts2 = ts.embedded();
-//                        if(ts2 != null) {
-//                            System.out.println(ts2.toString().substring(1));
-//                        } else {
-//                            System.out.println("NO embedding in script content token");
-//                        }
-                        
-                    } while(ts.moveNext() && ts.offset() <= endOffset);
-                }finally {
-                    ((BaseDocument)doc).readUnlock();
+        ((BaseDocument)doc).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(doc);
+            TokenSequence ts = tokenSequence(th, scriptStart);
+            
+            int diff = ts.move(startOffset);
+            if(diff == Integer.MAX_VALUE) return; //no token found
+            
+            ts.moveNext();
+            Language lang = Language.find(JAVASCRIPT_MIMETYPE);
+            if(lang == null) {
+                LOGGER.log(Level.WARNING, "No " + JAVASCRIPT_MIMETYPE + " language found!");
+                return ; //no javascript language found
+            }
+            
+            do {
+                Token item = ts.token();
+                if(!ts.createEmbedding(lang, 0, 0)) {
+                    LOGGER.log(Level.WARNING, "Cannot create embedding for " + JAVASCRIPT_MIMETYPE + ".");
+                } else {
+                    LOGGER.log(Level.INFO, "Embedding for " + JAVASCRIPT_MIMETYPE + " created [" + startOffset + " - "  + endOffset + "].");
                 }
-//            }
-//        });
+                
+                //                        System.out.println("embedding of the script content token:");
+                //                        TokenSequence ts2 = ts.embedded();
+                //                        if(ts2 != null) {
+                //                            System.out.println(ts2.toString().substring(1));
+                //                        } else {
+                //                            System.out.println("NO embedding in script content token");
+                //                        }
+                
+            } while(ts.moveNext() && ts.offset() <= endOffset);
+        }finally {
+            ((BaseDocument)doc).readUnlock();
+        }
     }
     
     private static TokenSequence tokenSequence(TokenHierarchy hi, int offset) {
@@ -168,10 +127,13 @@ public class EmbeddingUpdater implements TokenHierarchyListener {
             if(diff == Integer.MAX_VALUE) {
                 return null; //no token found
             } else {
+                ts.moveNext();
                 ts = ts.embedded(HTMLTokenId.language());
             }
         }
         return ts;
     }
+    
+    
     
 }

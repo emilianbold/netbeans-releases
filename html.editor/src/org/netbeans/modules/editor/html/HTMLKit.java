@@ -55,6 +55,7 @@ import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
+import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorKit.GenerateFoldPopupAction;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
@@ -111,11 +112,8 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             return ;
         }
         
-        //listen on the token hierarchy changes and run recoloring parser when necessary
-        EmbeddingUpdater lcu = new EmbeddingUpdater(doc);
-        doc.putProperty(EmbeddingUpdater.class, lcu);
-        hi.addTokenHierarchyListener(lcu);
-        
+        //listen on the HTML parser and recolor after changes
+        SyntaxParser.get(doc).addSyntaxParserListener(new EmbeddingUpdater(doc));
     }
     
     /** Create new instance of syntax coloring scanner

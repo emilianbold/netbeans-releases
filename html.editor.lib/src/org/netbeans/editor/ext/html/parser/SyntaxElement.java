@@ -25,6 +25,7 @@ import org.netbeans.editor.ext.html.*;
 import java.util.*;
 import javax.swing.text.*;
 import org.netbeans.editor.ext.*;
+import org.openide.ErrorManager;
 
 /**This class is used during the analysis of the HTML code.
  *
@@ -33,10 +34,11 @@ import org.netbeans.editor.ext.*;
  * care of dynamically extending it when needed.
  *
  * @author  Petr Nejedly
+ * @author  Marek.Fukala@Sun.com
  * @version 1.0
  */
 public class SyntaxElement {
-
+    
     public static final int TYPE_COMMENT = 0;
     public static final int TYPE_DECLARATION = 1;
     public static final int TYPE_ERROR = 2;
@@ -44,30 +46,30 @@ public class SyntaxElement {
     public static final int TYPE_TAG = 4;
     public static final int TYPE_ENDTAG = 5;
     public static final int TYPE_SCRIPT = 6;
-      
-    public static final String[] TYPE_NAMES = 
+    
+    public static final String[] TYPE_NAMES =
             new String[]{"comment","declaration","error","text","tag","endtag","script"};
     
-    private SyntaxParser parser;
     private SyntaxElement previous;
     private SyntaxElement next;
-
+    private SyntaxParser parser;
+    
     int offset;
     int length;
     int type;
-
+    
     /** Creates new SyntaxElement */
     public SyntaxElement( SyntaxParser parser, int from, int to, int type ) {
-        this.parser = parser;
         this.offset = from;
         this.length = to-from;
         this.type = type;
+        this.parser = parser;
     }
-
+    
     public int getElementOffset() {
         return offset;
     }
-
+    
     public int getElementLength() {
         return length;
     }
@@ -79,13 +81,13 @@ public class SyntaxElement {
     
     public String getText() {
         try {
-            return parser.getDocument().getText( offset, length );
-        } catch( BadLocationException exc ) {
-            // this could happen only when in inconsistent state
-           throw new ConcurrentModificationException( "SyntaxElement in inconsistent state" ); // NOI18N
+            return parser.getDocument().getText(getElementOffset(), getElementLength());
+        }catch(BadLocationException ble) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ble);
         }
+        return null;
     }
-
+    
     public SyntaxElement getPrevious() throws BadLocationException {
         if( previous == null ) {
             previous = parser.getPreviousElement( offset );
@@ -102,6 +104,7 @@ public class SyntaxElement {
         return next;
     }
 
+    
     public String toString() {
         String textContent = getType() == TYPE_TEXT ? getText() : "";
         return "Element(" +TYPE_NAMES[type]+")[" + offset + "," + (offset+length-1) + "] \"" + textContent + ""; // NOI18N
@@ -132,9 +135,9 @@ public class SyntaxElement {
          *  null otherwise.
          */
         public Declaration( SyntaxParser parser, int from, int to,
-                    String doctypeRootElement,
-                    String doctypePI, String doctypeFile
-        ) {
+                String doctypeRootElement,
+                String doctypePI, String doctypeFile
+                ) {
             super( parser, from, to, TYPE_DECLARATION );
             root = doctypeRootElement;
             publicID = doctypePI;
@@ -148,7 +151,7 @@ public class SyntaxElement {
         public String getRootElement() {
             return root;
         }
-
+        
         /**
          * @return a public identifier of the PUBLIC DOCTYPE declaration
          * or null for SYSTEM DOCTYPE and broken or other declaration.
@@ -167,15 +170,15 @@ public class SyntaxElement {
         }
         
     }
-
+    
     public static class Named extends SyntaxElement {
         String name;
-
+        
         public Named( SyntaxParser parser, int from, int to, int type, String name ) {
             super( parser, from, to, type );
             this.name = name;
         }
-
+        
         public String getName() {
             return name;
         }
@@ -183,8 +186,8 @@ public class SyntaxElement {
             return super.toString() + " - \"" + name + '"'; // NOI18N
         }
     }
-
-
+    
+    
     public static class Tag extends org.netbeans.editor.ext.html.parser.SyntaxElement.Named {
         Collection attribs;
         private boolean empty = false;
@@ -198,7 +201,7 @@ public class SyntaxElement {
             this.attribs = attribs;
             this.empty = isEmpty;
         }
-
+        
         public boolean isEmpty() {
             return empty;
         }
@@ -206,21 +209,21 @@ public class SyntaxElement {
         public Collection getAttributes() {
             return attribs;
         }
-
+        
         public String toString() {
             StringBuffer ret = new StringBuffer( super.toString() );
             ret.append( " - {" );   // NOI18N
-
+            
             for( Iterator i = attribs.iterator(); i.hasNext(); ) {
                 ret.append( i.next() );
                 ret.append( ", "  );    // NOI18N
             }
-
+            
             ret.append( "}" );      //NOI18N
             if(isEmpty()) ret.append(" (EMPTY TAG)");
             
             return ret.toString();
         }
     }
-
+    
 }
