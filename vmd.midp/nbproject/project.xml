@@ -270,12 +270,13 @@
                 <package>org.netbeans.modules.vmd.midp.flow</package>
                 <package>org.netbeans.modules.vmd.midp.general</package>
                 <package>org.netbeans.modules.vmd.midp.inspector.controllers</package>
-                <package>org.netbeans.modules.vmd.midp.inspector.descriptors</package>
                 <package>org.netbeans.modules.vmd.midp.palette</package>
                 <package>org.netbeans.modules.vmd.midp.producers</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors</package>
+                <package>org.netbeans.modules.vmd.midp.propertyeditors.eventhandler</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.imagechooser</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.timezone</package>
+                <package>org.netbeans.modules.vmd.midp.propertyeditors.usercode</package>
             </public-packages>
         </data>
     </configuration>
