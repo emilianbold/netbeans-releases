@@ -430,6 +430,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.j2ee.persistence.spi.datasource</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.provider</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.server</package>
+                <package>org.netbeans.modules.j2ee.persistence.spi.moduleinfo</package>
                 <package>org.netbeans.modules.j2ee.persistence.ui</package>
                 <package>org.netbeans.modules.j2ee.persistence.unit</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard</package>

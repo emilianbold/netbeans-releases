@@ -45,10 +45,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
+import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.wizard.entity.WrapperPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel;
@@ -307,68 +308,54 @@ public class Util {
     }
     
     public static boolean isSupportedJavaEEVersion(Project project) {
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        String moduleVersion = j2eeModuleProvider != null ? j2eeModuleProvider.getJ2eeModule().getModuleVersion() : null;
-        if (moduleVersion == null) {
-            return false; //Java SE
-        }
-        Object moduleType = j2eeModuleProvider != null ? j2eeModuleProvider.getJ2eeModule().getModuleType() : null;
-        if (moduleType == null) {
+        JPAModuleInfo moduleInfo = project.getLookup().lookup(JPAModuleInfo.class);
+        if (moduleInfo == null){
             return false;
         }
-        // TODO: some J2EE version comparator would be nice
-        if ((moduleType.equals(J2eeModule.EJB) && moduleVersion.equals("3.0")) || // NOI18N
-                (moduleType.equals(J2eeModule.WAR) && moduleVersion.equals("2.5"))) { // NOI18N
+        if (JPAModuleInfo.ModuleType.EJB == moduleInfo.getType()
+                && "3.0".equals(moduleInfo.getVersion())){
+            return true;
+        }
+        if (JPAModuleInfo.ModuleType.WEB == moduleInfo.getType()
+                && "2.5".equals(moduleInfo.getVersion())){
             return true;
         }
         return false;
     }
     
     public static boolean isEjbModule(Project project) {
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        Object moduleType = j2eeModuleProvider != null ? j2eeModuleProvider.getJ2eeModule().getModuleType() : null;
-        if (moduleType == null) {
+        JPAModuleInfo moduleInfo = project.getLookup().lookup(JPAModuleInfo.class);
+        if (moduleInfo == null){
             return false;
         }
-        if (moduleType.equals(J2eeModule.EJB)) {
-            return true;
-        }
-        return false;
+        return JPAModuleInfo.ModuleType.EJB == moduleInfo.getType();
     }
     
+    
     public static boolean isEjb21Module(Project project) {
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        String moduleVersion = (j2eeModuleProvider != null ? j2eeModuleProvider.getJ2eeModule().getModuleVersion() : null);
-        if (moduleVersion == null) {
-            return false; //Java SE
+        JPAModuleInfo moduleInfo = project.getLookup().lookup(JPAModuleInfo.class);
+        if (moduleInfo == null){
+            return false;
         }
         
-        if (isEjbModule(project) && moduleVersion.equals("2.1")) { // NOI18N
-            return true;
-        }
-        
-        return false;
+        return JPAModuleInfo.ModuleType.EJB == moduleInfo.getType()
+                && "2.1".equals(moduleInfo.getVersion());
     }
     
     /**
      * @return true if given this data object's project's enviroment is Java SE, false otherwise.
      */
     public static boolean isJavaSE(Project project){
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        String moduleVersion = j2eeModuleProvider != null ? j2eeModuleProvider.getJ2eeModule().getModuleVersion() : null;
-        if (moduleVersion == null) {
-            return true; //Java SE
-        }
-        return false;
+        return project.getLookup().lookup(JPAModuleInfo.class) == null;
     }
     
     /**
-     * Builds a persistence unit using wizard. Does not save the created persistence unit 
-     * nor create the persistence.xml file if it  does not exist. 
-     * @param project the current project 
+     * Builds a persistence unit using wizard. Does not save the created persistence unit
+     * nor create the persistence.xml file if it  does not exist.
+     * @param project the current project
      * @param preselectedDB the name of the database connection that should be preselected in the wizard.
      * @tableGeneration the table generation strategy that should be preselected in the wizard.
-     * @return the created PersistenceUnit or null if nothing was created, for example 
+     * @return the created PersistenceUnit or null if nothing was created, for example
      * if wizard was cancelled.
      */
     public static PersistenceUnit buildPersistenceUnitUsingWizard(Project project,
@@ -444,6 +431,34 @@ public class Util {
         }
         return null;
         
+    }
+    
+    /**
+     * Creates a persistence unit using the PU wizard and adds the created 
+     * persistence unit to the given project's <code>PUDataObject</code> and saves it.
+     * 
+     * @param project the project to which the created persistence unit is to be created.
+     * @param preselectedDB the name of the db connection that should be preselected, or null if none needs
+     * to be preselected.
+     * @param tableGeneration the table generation strategy for the persistence unit.
+     * 
+     * @return true if the creation of the persistence unit was successful, false otherwise.
+     * 
+     * @throws InvalidPersistenceXmlException if the persistence.xml file in the given 
+     * project is not valid. 
+     * 
+     */ 
+    public static boolean createPersistenceUnitUsingWizard(Project project,
+            String preselectedDB, TableGeneration tableGeneration) throws InvalidPersistenceXmlException {
+        
+        PersistenceUnit punit = buildPersistenceUnitUsingWizard(project, preselectedDB, tableGeneration);
+        if (punit == null){
+            return false;
+        }
+        PUDataObject pud = ProviderUtil.getPUDataObject(project);
+        pud.addPersistenceUnit(punit);
+        pud.save();
+        return true;
     }
     
     public static void addLibraryToProject(Project project, Library library) {
