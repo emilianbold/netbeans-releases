@@ -29,6 +29,7 @@ import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
@@ -183,6 +184,29 @@ public class MethodModelSupportTest extends NbTestCase {
                 assertEquals(0, methodTree.getThrows().size());
                 List<? extends StatementTree> statements = methodTree.getBody().getStatements();
                 assertEquals(1, statements.size());
+            }
+        });
+    }
+    
+    public void testCreateVariable() throws Exception {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "  private String name;" +
+                "  private final String address;" +
+                "}");
+        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
+                List<VariableElement> fields = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
+                MethodModel.Variable nonFinalVariable = MethodModelSupport.createVariable(controller, fields.get(0));
+                assertEquals("java.lang.String", nonFinalVariable.getType());
+                assertEquals("name", nonFinalVariable.getName());
+                assertFalse(nonFinalVariable.getFinalModifier());
+                MethodModel.Variable finalVariable = MethodModelSupport.createVariable(controller, fields.get(1));
+                assertEquals("java.lang.String", finalVariable.getType());
+                assertEquals("address", finalVariable.getName());
+                assertTrue(finalVariable.getFinalModifier());
             }
         });
     }

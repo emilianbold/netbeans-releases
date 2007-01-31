@@ -81,14 +81,17 @@ public final class MethodModel {
         
         private final String type;
         private final String name;
+        private final boolean finalModifier;
         
-        private Variable(String type, String name) {
+        private Variable(String type, String name, boolean finalModifier) {
             this.type = type;
             this.name = name;
+            this.finalModifier = finalModifier;
         }
-        
+
         /**
-         * Creates new instance of model of class variable or method parameter
+         * Creates new instance of a model of class variable or method parameter
+         * without final modifier. Same as calling {@link #create(String, String, boolean)}
          * 
          * @param type name of type as written in source code
          * for non-primitive types fully-qualfied name must be used,
@@ -102,7 +105,26 @@ public final class MethodModel {
         public static Variable create(String type, String name) {
             Parameters.notWhitespace("type", type);
             Parameters.javaIdentifier("name", name);
-            return new MethodModel.Variable(type, name);
+            return new MethodModel.Variable(type, name, false);
+        }
+        
+        /**
+         * Creates new instance of a model of class variable or method parameter
+         * 
+         * @param type name of type as written in source code
+         * for non-primitive types fully-qualfied name must be used,
+         * must contain at least one non-whitespace character
+         * @param name name of the paramter or variable, must be valid Java identifier
+         * @param finalModifier specifies if variable is final (if it has final modifier)
+         * @throws NullPointerException if any of the parameters is <code>null</code>.
+         * @throws IllegalArgumentException if the paramter type does not contain at least one non-whitespace character
+         * or the parameter name is not a valid Java identifier
+         * @return immutable model of variable or method parameter
+         */
+        public static Variable create(String type, String name, boolean finalModifier) {
+            Parameters.notWhitespace("type", type);
+            Parameters.javaIdentifier("name", name);
+            return new MethodModel.Variable(type, name, finalModifier);
         }
         
         // <editor-fold defaultstate="collapsed" desc="Variable's getters">
@@ -123,6 +145,10 @@ public final class MethodModel {
          */
         public String getName() {
             return name;
+        }
+        
+        public boolean getFinalModifier() {
+            return finalModifier;
         }
         
     // </editor-fold>

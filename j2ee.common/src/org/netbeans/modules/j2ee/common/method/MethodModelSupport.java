@@ -98,7 +98,8 @@ public final class MethodModelSupport {
         Parameters.notNull("variableElement", variableElement); //NOI18N
         return MethodModel.Variable.create(
                 getTypeName(controller, variableElement.asType()),
-                variableElement.getSimpleName().toString()
+                variableElement.getSimpleName().toString(),
+                variableElement.getModifiers().contains(Modifier.FINAL)
                 );
     }
     
