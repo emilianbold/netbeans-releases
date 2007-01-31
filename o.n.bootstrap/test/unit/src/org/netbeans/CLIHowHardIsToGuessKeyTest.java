@@ -97,7 +97,7 @@ public class CLIHowHardIsToGuessKeyTest extends NbTestCase {
         
         File lock = new File(getWorkDir(), "lock");
         assertTrue("Lock is created", lock.canRead());
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 50; i++) {
             if (lock.length() >= 14) {
                 break;
             }
