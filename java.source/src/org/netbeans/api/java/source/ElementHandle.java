@@ -286,7 +286,7 @@ public final class ElementHandle<T extends Element> {
                 signatures = ClassFileUtil.createFieldDescriptor((VariableElement)element);
                 break;
             default:
-                throw new IllegalArgumentException ();
+                throw new IllegalArgumentException(kind.toString());
         }
         return new ElementHandle<T> (kind, signatures);
     }
