@@ -239,7 +239,7 @@ public class VirtualFormsHelper {
             nameList.add(((Form.VirtualFormDescriptor)vformsList.get(i)).getName());
         }
         
-        String name = java.util.ResourceBundle.getBundle("com/sun/rave/web/ui/dt/component/vforms/Bundle").getString("newVirtualForm"); // NOI18N
+        String name = java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/vforms/Bundle").getString("newVirtualForm"); // NOI18N
         
         for (int i = 1; i < 999; i++) {
             if (!nameList.contains(name + i)) {

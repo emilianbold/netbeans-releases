@@ -26,11 +26,11 @@ import com.sun.rave.designtime.impl.BasicDisplayAction;
 public class EditVirtualFormsCustomizerAction extends BasicDisplayAction {
     protected DesignBean[] beans;
     public EditVirtualFormsCustomizerAction(DesignBean bean) {
-        super(java.util.ResourceBundle.getBundle("com/sun/rave/web/ui/dt/component/vforms/Bundle").getString("editVfAction"));    //NOI18N
+        super(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/vforms/Bundle").getString("editVfAction"));    //NOI18N
         this.beans = new DesignBean[] { bean };
     }
     public EditVirtualFormsCustomizerAction(DesignBean[] beans) {
-        super(java.util.ResourceBundle.getBundle("com/sun/rave/web/ui/dt/component/vforms/Bundle").getString("editVfAction"));    //NOI18N
+        super(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/vforms/Bundle").getString("editVfAction"));    //NOI18N
         this.beans = beans;
     }
     public Result invoke() {

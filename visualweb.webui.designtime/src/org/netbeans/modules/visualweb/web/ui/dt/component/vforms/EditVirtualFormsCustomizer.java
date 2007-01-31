@@ -26,7 +26,7 @@ import com.sun.rave.designtime.impl.BasicCustomizer2;
 public class EditVirtualFormsCustomizer extends BasicCustomizer2 {
 
     public EditVirtualFormsCustomizer(DesignBean[] beans) {
-        super(EditVirtualFormsCustomizerPanel.class, java.util.ResourceBundle.getBundle("com/sun/rave/web/ui/dt/component/vforms/Bundle").getString("editVfHeader")); //NOI18N
+        super(EditVirtualFormsCustomizerPanel.class, java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/vforms/Bundle").getString("editVfHeader")); //NOI18N
         this.beans = beans;
         this.designBean = beans != null && beans.length > 0 ? beans[0] : null;
         setHelpKey("projrave_ui_elements_dialogs_config_virtual_forms_db"); //NOI18N

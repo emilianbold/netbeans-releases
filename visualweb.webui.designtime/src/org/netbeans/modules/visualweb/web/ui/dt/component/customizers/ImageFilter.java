@@ -50,7 +50,7 @@ public class ImageFilter extends FileFilter {
     //The description of this filter
     public String getDescription() {
         //"All Image Files (.gif, .jpg, .png, .jpe, .jpeg)";
-        return java.util.ResourceBundle.getBundle("com/sun/rave/web/ui/dt/component/customizers/Bundle-DT").getString("imageFilterLabel"); // NOI18N
+        return java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/customizers/Bundle-DT").getString("imageFilterLabel"); // NOI18N
 
     }
 }

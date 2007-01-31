@@ -26,7 +26,7 @@ import com.sun.rave.designtime.impl.BasicDisplayAction;
 public class VirtualFormsCustomizerAction extends BasicDisplayAction {
     protected DesignBean formBean;
     public VirtualFormsCustomizerAction(DesignBean formBean) {
-        super(java.util.ResourceBundle.getBundle("com/sun/rave/web/ui/dt/component/vforms/Bundle").getString("vfAction"));  //NOI18N
+        super(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/vforms/Bundle").getString("vfAction"));  //NOI18N
         this.formBean = formBean;
     }
     public Result invoke() {

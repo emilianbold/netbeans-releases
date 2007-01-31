@@ -40,7 +40,7 @@ import javax.faces.context.ResponseWriter;
 public class AnchorDesignTimeRenderer extends AbstractDesignTimeRenderer {
 
     static final String ANCHOR_ICON =
-            "/com/sun/rave/web/ui/dt/component/Anchor_C16.png"; //NOI18N
+            "/org/netbeans/modules/visualweb/web/ui/dt/component/Anchor_C16.png"; //NOI18N
 
     boolean isTextDefaulted;
 

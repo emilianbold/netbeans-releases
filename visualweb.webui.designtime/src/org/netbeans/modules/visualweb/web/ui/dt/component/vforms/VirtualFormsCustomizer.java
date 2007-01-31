@@ -26,7 +26,7 @@ import com.sun.rave.designtime.impl.BasicCustomizer2;
 public class VirtualFormsCustomizer extends BasicCustomizer2 {
 
     public VirtualFormsCustomizer() {
-        super(VirtualFormsCustomizerPanel.class, java.util.ResourceBundle.getBundle("com/sun/rave/web/ui/dt/component/vforms/Bundle").getString("vfHeader"));   //NOI18N
+        super(VirtualFormsCustomizerPanel.class, java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/vforms/Bundle").getString("vfHeader"));   //NOI18N
         setHelpKey("projrave_ui_elements_dialogs_virtual_forms_db"); //NOI18N
     }
 
