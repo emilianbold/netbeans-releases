@@ -90,6 +90,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             return false; //no token found
         }
         
+        tokenSequence.moveNext();
         Token token = tokenSequence.token();
         TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
         
@@ -100,6 +101,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             if (wm != null){
                 JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
                 elTokenSequence.move(offset);
+                elTokenSequence.moveNext();
                 
                 if (elTokenSequence.token().id() == ELTokenId.DOT){
                     return false;
@@ -151,6 +153,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
         if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
             return null; //no token found
         }
+        tokenSequence.moveNext();
         Token token = tokenSequence.token();
         
         // is it a bean in EL ?
@@ -162,6 +165,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             if (wm != null){
                 JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
                 elTokenSequence.move(offset);
+                elTokenSequence.moveNext();
                 int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
                 
                 int res = exp.parse(elEnd);
@@ -199,6 +203,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
         if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
             return; //no token found
         }
+        tokenSequence.moveNext();
         Token token = tokenSequence.token();
         
         // is it a bean in EL
@@ -209,6 +214,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             if (wm != null){
                 JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
                 elTokenSequence.move(offset);
+                elTokenSequence.moveNext();
                 int res = exp.parse(elTokenSequence.offset() + elTokenSequence.token().length());
                 if (res == JSFELExpression.EL_START ){
                     (new OpenConfigFile(wm, elTokenSequence.token().text().toString())).run();
