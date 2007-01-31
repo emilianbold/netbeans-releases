@@ -2,6 +2,6 @@
 
 <palette_item version="1.0">
   <component classname="com.sun.webui.jsf.faces.ValueBindingSortCriteria" type="visual" />
-  <description localizing-bundle="com.sun.rave.webui.jsf.designtime.resources.Bundle"
+  <description localizing-bundle="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"
                display-name-key="NAME_com-sun-webui-jsf-faces-ValueBindingSortCriteria" />
 </palette_item>
