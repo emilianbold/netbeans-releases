@@ -19,10 +19,14 @@
 
 package org.netbeans.modules.languages;
 
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.SToken;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
+import org.netbeans.modules.languages.Language.Identifier;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.parser.*;
 
@@ -70,6 +74,7 @@ public class Language {
     private LLSyntaxAnalyser    analyser = null;
     private Map                 analyserRules = new HashMap ();
     private List                analyserRules2;
+    private List                importedLangauges = new ArrayList ();
 
     
     /** Creates a new instance of Language */
@@ -109,6 +114,10 @@ public class Language {
             analyser = LLSyntaxAnalyser.create (this);
             return analyser;
         }
+    }
+    
+    public List getImportedLanguages () {
+        return importedLangauges;
     }
     
     public Object getProperty (
@@ -235,6 +244,36 @@ public class Language {
     ) throws ParseException {
         String mimeType = (String) ((Evaluator) properties.get ("mimeType")).evaluate ();
         Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
+        if (properties.containsKey ("token")) {
+            String token = (String) ((Evaluator) properties.get ("token")).evaluate ();
+            addFeature (
+                Language.IMPORT, 
+                Language.createIdentifier (token), 
+                properties
+            );
+            importedLangauges.add (l);
+            return;
+        }
+        if (properties.containsKey ("start")) {
+            System.out.println("start " + properties.get ("start"));
+            System.out.println("end " + properties.get ("start"));
+            addToken (
+                null,
+                mimeType,
+                name,
+                null,
+                null,
+                null
+            );
+            addFeature (
+                Language.IMPORT, 
+                createIdentifier (name), 
+                properties
+            );
+            addSkipTokenType (name);
+            importedLangauges.add (l);
+            return;
+        }
         Evaluator stateEvaluator = (Evaluator) properties.get ("state");
         String state = stateEvaluator == null ? null : (String) stateEvaluator.evaluate ();
         
@@ -385,6 +424,10 @@ public class Language {
         return value;
     }
     
+    public Map getFeature (String featureName) {
+        return (Map) features.get (featureName);
+    }
+    
     public Object getFeature (String featureName, SToken token) {
         Map m = (Map) features.get (featureName);
         if (m == null) return null;
@@ -451,6 +494,96 @@ public class Language {
             LLSyntaxAnalyser.Rule r = (LLSyntaxAnalyser.Rule) it.next ();
             System.out.println("  " + r);
         }
+    }
+    
+    
+    // colors ..................................................................
+    
+    private static Map getDefaultColors () {
+        Collection defaults = EditorSettings.getDefault ().
+            getDefaultFontColorDefaults ("NetBeans");
+        Map defaultsMap = new HashMap ();
+        Iterator it = defaults.iterator (); // check if IDE Defaults module is installed
+        while (it.hasNext ()) {
+            AttributeSet as = (AttributeSet) it.next ();
+            defaultsMap.put (
+                as.getAttribute (StyleConstants.NameAttribute),
+                as
+            );
+        }
+        return defaultsMap;
+    }
+    
+    private Map getCurrentColors () {
+        // current colors
+        FontColorSettingsFactory fcsf = EditorSettings.getDefault ().
+            getFontColorSettings (new String[] {getMimeType ()});
+        Collection colors = fcsf.getAllFontColors ("NetBeans");
+        Map colorsMap = new HashMap ();
+        Iterator it = colors.iterator ();
+        while (it.hasNext ()) {
+            AttributeSet as = (AttributeSet) it.next ();
+            colorsMap.put (
+                as.getAttribute (StyleConstants.NameAttribute),
+                as
+            );
+        }
+        return colorsMap;
+    }
+    
+    public Map getColorMap () {
+        Map defaultsMap = getDefaultColors ();
+        Map colorsMap = getCurrentColors ();
+        Iterator it = getTokens ().iterator ();
+        while (it.hasNext ()) {
+            TokenType token = (TokenType) it.next ();
+            SimpleAttributeSet as = (SimpleAttributeSet) getFeature 
+                (Language.COLOR, token.getMimeType (), token.getType ());
+            addColor (token.getType (), as, colorsMap, defaultsMap);
+        }
+        Map m = getFeature (Language.COLOR);
+        if (m == null)
+            return Collections.EMPTY_MAP;
+        it = m.keySet ().iterator ();
+        while (it.hasNext ()) {
+            String mt = (String) it.next ();
+            Map mm = (Map) m.get (mt);
+            Iterator it2 = mm.keySet ().iterator ();
+            while (it2.hasNext ()) {
+                String type = (String) it2.next ();
+                if (colorsMap.containsKey (type))
+                    continue;
+                SimpleAttributeSet as = (SimpleAttributeSet) mm.get (type);
+                addColor (type, as, colorsMap, defaultsMap);
+            }
+        }
+        addColor ("error", null, colorsMap, defaultsMap);
+        return colorsMap;
+    }
+    
+    private void addColor (
+        String tokenType, 
+        SimpleAttributeSet sas,
+        Map colorsMap, 
+        Map defaultsMap
+    ) {
+        if (sas == null)
+            sas = new SimpleAttributeSet ();
+        else
+            sas = new SimpleAttributeSet (sas);
+        String colorName = (String) sas.getAttribute (StyleConstants.NameAttribute);
+        if (colorName == null)
+            colorName = tokenType;
+        sas.addAttribute (StyleConstants.NameAttribute, colorName);
+        sas.addAttribute (EditorStyleConstants.DisplayName, colorName);
+        if (!sas.isDefined (EditorStyleConstants.Default)) {
+            String def = colorName;
+            int i = def.lastIndexOf ('_');
+            if (i > 0) def = def.substring (i + 1);
+            if (defaultsMap.containsKey (def))
+                sas.addAttribute (EditorStyleConstants.Default, def);
+        }
+        colorsMap.put (colorName, sas);
     }
     
     

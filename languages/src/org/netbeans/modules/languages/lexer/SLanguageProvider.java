@@ -19,14 +19,19 @@
 
 package org.netbeans.modules.languages.lexer;
 
+import java.util.Map;
 import org.netbeans.api.languages.LanguagesManager;
+import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.languages.Evaluator;
+import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageProvider;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -45,7 +50,40 @@ public class SLanguageProvider extends LanguageProvider {
         return null;
     }
 
-    public LanguageEmbedding<? extends TokenId> findLanguageEmbedding (Token<? extends TokenId> token, LanguagePath tokenLanguage, InputAttributes inputAttributes) {
-        return null;
+    public LanguageEmbedding<? extends TokenId> findLanguageEmbedding (
+        Token token, 
+        LanguagePath tokenLanguage, 
+        InputAttributes inputAttributes
+    ) {
+        String mimeType = tokenLanguage.innerLanguage ().mimeType ();
+        if (!LanguagesManager.getDefault ().getSupportedMimeTypes ().contains (mimeType))
+            return null;
+        try {
+            org.netbeans.modules.languages.Language language = 
+                ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+                getLanguage (mimeType);
+            Map properties = (Map) language.getFeature (
+                org.netbeans.modules.languages.Language.IMPORT, 
+                mimeType, 
+                token.id ().name ()
+            );
+            if (properties == null)
+                return null;
+            String innerMT = (String) ((Evaluator) properties.get ("mimeType")).evaluate ();
+            Language l = Language.find (innerMT);
+            int startSkipLength = 0, endSkipLength = 0;
+            if (properties.containsKey ("startSkipLength")) {
+                String s = (String) ((Evaluator) properties.get ("startSkipLength")).evaluate ();
+                startSkipLength = Integer.parseInt (s);
+            }
+            if (properties.containsKey ("endSkipLength")) {
+                String s = (String) ((Evaluator) properties.get ("endSkipLength")).evaluate ();
+                endSkipLength = Integer.parseInt (s);
+            }
+            return LanguageEmbedding.create (l, startSkipLength, endSkipLength);
+        } catch (ParseException ex) {
+            ErrorManager.getDefault ().notify (ex);
+            return null;
+        }
     }
 }

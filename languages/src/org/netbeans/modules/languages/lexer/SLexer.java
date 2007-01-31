@@ -19,18 +19,23 @@
 
 package org.netbeans.modules.languages.lexer;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-
 import org.netbeans.api.languages.CharInput;
+import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.SToken;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.languages.SToken;
+import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.TokenFactory;
 import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.parser.Parser;
+import org.openide.ErrorManager;
 
 
 /**
@@ -44,6 +49,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     private TokenFactory    tokenFactory;
     private Map             tokensMap;
     private Parser          parser;
+    private Object          state;
     
     
     SLexer (
@@ -54,21 +60,22 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         Object          state
     ) {
         this.language = language;
-        this.input = new InputBridge (input);
+        this.input = createInputBridge (input, language);
         this.tokenFactory = tokenFactory;
         this.tokensMap = tokensMap;
+        this.state = state;
         parser = language.getParser ();
-        if (state != null)
-            this.state = (Integer) state;
     }
     
     public Token<STokenId> nextToken () {
+        if (state instanceof LinkedList) {
+            return createToken ((LinkedList) state);
+        }
         if (input.eof ()) return null;
         int index = input.getIndex ();
         SToken token = null;
         Evaluator.Method evaluator = null;
         token = parser.read (this, input);
-        String stateName = parser.getState (state); // [PENDING] improve performance of parser.getState()
         if (language != null && properties != null) {
             evaluator = (Evaluator.Method) properties.get ("call");
         }
@@ -76,7 +83,8 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             input.setIndex (index);
             Object[] r = (Object[]) evaluator.evaluate (new Object[] {input, language.getMimeType ()});
             token = (SToken) r [0];
-            setState (((Integer) r [1]).intValue ());
+            if (r [1] != null)
+                setState (((Integer) r [1]).intValue ());
         }
         
         if (token == null) {
@@ -86,8 +94,9 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
                 else
                 if (input.getIndex () == index)
                     input.read ();
-                return tokenFactory.createToken ((STokenId) tokensMap.get ("error"));
+                return createToken ("error");
             } catch (AssertionError ex) {
+                ErrorManager.getDefault ().notify (ex);
                 System.out.println(input.getIndex ());
             }
         }
@@ -95,7 +104,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             System.out.println("SLexer:unknown token: " + token.getType ());
             return null;
         }
-        return tokenFactory.createToken ((STokenId) tokensMap.get (token.getType ()));
+        return createToken (token.getType ());
     }
 
     public Object state () {
@@ -108,11 +117,11 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     
     // Cookie implementation ...................................................
     
-    private Integer     state = Integer.valueOf (-1);
     private Map         properties;
     
     public int getState () {
-        return state.intValue ();
+        if (state == null) return -1;
+        return ((Integer) state).intValue ();
     }
 
     public void setState (int state) {
@@ -124,49 +133,93 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     }
     
     
+    // other methods ...........................................................
+    
+    private static CharInput createInputBridge (
+        LexerInput input, 
+        Language language
+    ) {
+        Pattern start = null, end = null;
+        String tokenType = null;
+        Map m = language.getFeature (Language.IMPORT);
+        if (m != null)
+            m = (Map) m.get (language.getMimeType ());
+        if (m != null) {
+            Iterator it = m.keySet ().iterator ();
+            while (it.hasNext ()) {
+                String name = (String) it.next ();
+                Map properties = (Map) m.get (name);
+                if (!properties.containsKey ("start"))
+                    continue;
+                System.out.println("import " + name + ":" + properties.get ("start"));
+                start = (Pattern) properties.get ("start");
+                end = (Pattern) properties.get ("end");
+                tokenType = name;
+            }
+        }
+        if (start == null) 
+            return new InputBridge (input);
+        return new DelegatingInputBridge (
+            new InputBridge (input),
+            start,
+            end,
+            tokenType
+        );
+    }
+    
+    private Token createToken (String type) {
+        if (!(input instanceof DelegatingInputBridge))
+            return tokenFactory.createToken ((STokenId) tokensMap.get (type));
+        List embeddings = ((DelegatingInputBridge) input).getEmbeddings ();
+        if (embeddings.isEmpty ())
+            return tokenFactory.createToken ((STokenId) tokensMap.get (type));
+        int start = 0;
+        LinkedList state = new LinkedList ();
+        Iterator it = embeddings.iterator ();
+        while(it.hasNext ()) {
+            Vojta v = (Vojta) it.next ();
+            if (start < v.startOffset) {
+                state.add (new Vojta (type, start, v.startOffset));
+            }
+            state.add (v);
+            start = v.endOffset;
+        }
+        if (start < input.getIndex ())
+            state.add (new Vojta (type, start, input.getIndex ()));
+        return createToken (state);
+    }
+    
+    private Token createToken (LinkedList state) {
+        Vojta v = (Vojta) state.removeFirst ();
+        input.setIndex (v.endOffset);
+        if (state.isEmpty ())
+            this.state = null;
+        else
+            this.state = state;
+        return tokenFactory.createToken ((STokenId) tokensMap.get (v.type));
+    }
+    
+    
     // innerclasses ............................................................
     
-    private static class InputBridge extends CharInput {
+    static class Vojta {
         
-        private LexerInput input;
-        private int index = 0;
+        String      type;
+        int         startOffset;
+        int         endOffset;
         
-        InputBridge (LexerInput input) {
-            this.input = input;
+        Vojta (
+            String  type, 
+            int     startOffset, 
+            int     endOffset
+        ) {
+            this.type =         type;
+            this.startOffset =  startOffset;
+            this.endOffset =    endOffset;
         }
         
-        public char read () {
-            index++;
-            return (char) input.read ();
-        }
-
-        public void setIndex (int index) {
-            input.backup (this.index - index);
-            this.index = index;
-        }
-
-        public int getIndex () {
-            return index;
-        }
-
-        public char next () {
-            char ch = (char) input.read ();
-            input.backup (1);
-            return ch;
-        }
-
-        public boolean eof () {
-            return next () == (char) input.EOF;
-        }
-
-        public String getString (int from, int to) {
-            return input.readText ().toString ();
-        }
-
-        public String toString () {
-            return input.readText ().toString ();
+        int size () {
+            return endOffset - startOffset;
         }
     }
 }
-
-

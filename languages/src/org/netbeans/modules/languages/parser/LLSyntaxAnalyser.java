@@ -108,7 +108,7 @@ public class LLSyntaxAnalyser {
             List initialWhitespaces = readWhitespaces (node, input, mimeType, embeded, skipErrors);
             //S ystem.out.println(input.getIndex () + ":" + input.next (1));
             if ((!input.eof ()) &&
-                input.next (1).getMimeType () != mimeType
+                !input.next (1).getMimeType ().equals (mimeType)
             ) {
                 if (node != null) 
                     return root.createASTNode ();

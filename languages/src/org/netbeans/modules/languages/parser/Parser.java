@@ -151,6 +151,7 @@ public class Parser {
     }
     
     private void add (TokenType tt) {
+        if (tt.getPattern () == null) return;
         String startState = tt.getStartState ();
         if (startState == null) startState = DEFAULT_STATE;
         String endState = tt.getStartState ();
