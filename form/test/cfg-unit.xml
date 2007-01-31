@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="Projects API">
 
-    <testbag testattribs="stable" executor="unit-executor" name="Form Layout Support">
+    <testbag testattribs="layout" executor="unit-executor" name="Form Layout Support">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/modules/form/layoutdesign/*Test.class"/>
