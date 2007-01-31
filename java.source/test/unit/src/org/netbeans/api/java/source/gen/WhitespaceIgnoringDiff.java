@@ -67,8 +67,8 @@ public class WhitespaceIgnoringDiff implements Diff {
 //                return true;
 //            }
             
-            firstTS.moveIndex(0);
-            secondTS.moveIndex(0);
+            firstTS.moveNext();
+            secondTS.moveNext();
             
             boolean firstHasNext = true;
             boolean secondHasNext = true;
