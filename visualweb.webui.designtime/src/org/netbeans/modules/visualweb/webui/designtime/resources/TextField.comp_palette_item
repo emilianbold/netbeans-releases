@@ -5,8 +5,8 @@
   <icon16 urlvalue="nbres:/org/netbeans/modules/visualweb/web/ui/dt/component/TextField_C16.png" />
   <icon32 urlvalue="nbres:/org/netbeans/modules/visualweb/web/ui/dt/component/TextField_C32.png" />
   <description localizing-bundle="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"
-               display-name-key="NAME_org-netbeans-modules-visualweb-web-ui-component-TextField"
-               tooltip-key="HINT_org-netbeans-modules-visualweb-web-ui-component-TextField" 
+               display-name-key="NAME_vweb-ui-component-TextField"
+               tooltip-key="HINT_vweb-ui-component-TextField" 
                help-key="projrave_ui_elements_palette_bh_text_field" />
 </palette_item>
 
