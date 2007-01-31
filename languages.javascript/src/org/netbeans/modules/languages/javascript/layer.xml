@@ -75,6 +75,9 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="icon" stringvalue="org/netbeans/modules/languages/javascript/JavaScript.png"/>
                 </file>
             </folder>
+            <folder name="x-string">
+                <file name="language.nbs" url="String.nbs"/>
+            </folder>
         </folder>
     </folder>
 </filesystem>
