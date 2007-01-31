@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -358,6 +358,17 @@ Controller, ActionListener {
             }
         });
         //System.out.println("Before return from ConnectPanel.ok()");
+        return true;
+    }
+    
+    /**
+     * Return <code>true</code> whether value of this customizer 
+     * is valid (and OK button can be enabled).
+     *
+     * @return <code>true</code> whether value of this customizer 
+     * is valid
+     */
+    public boolean isValid () {
         return true;
     }
     

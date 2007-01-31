@@ -69,7 +69,11 @@ public final class ConnectAction extends AbstractAction {
     }
     
     public void actionPerformed (ActionEvent evt) {
-        final ConnectorPanel cp = new ConnectorPanel ();
+        bOk = new JButton (NbBundle.getMessage (ConnectAction.class, "CTL_Ok")); // NOI18N
+        bCancel = new JButton (NbBundle.getMessage (ConnectAction.class, "CTL_Cancel")); // NOI18N
+        bOk.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ConnectAction.class, "ACSD_CTL_Ok")); // NOI18N
+        bCancel.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ConnectAction.class, "ACSD_CTL_Cancel")); // NOI18N
+        ConnectorPanel cp = new ConnectorPanel ();
         DialogDescriptor descr = new DialogDescriptor (
             cp,
             NbBundle.getMessage (ConnectAction.class, "CTL_Connect_to_running_process"),
@@ -77,11 +81,8 @@ public final class ConnectAction extends AbstractAction {
             new ConnectListener (cp)
         );
         descr.setOptions (new JButton[] {
-            bOk = new JButton (NbBundle.getMessage (ConnectAction.class, "CTL_Ok")), // NOI18N
-            bCancel = new JButton (NbBundle.getMessage (ConnectAction.class, "CTL_Cancel")) // NOI18N
+            bOk, bCancel
         });
-        bOk.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ConnectAction.class, "ACSD_CTL_Ok")); // NOI18N
-        bCancel.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ConnectAction.class, "ACSD_CTL_Cancel")); // NOI18N
         descr.setClosingOptions (new Object [0]);
         dialog = DialogDisplayer.getDefault ().createDialog (descr);
         dialog.setVisible(true);
@@ -96,6 +97,8 @@ public final class ConnectAction extends AbstractAction {
         
         ConnectListener (ConnectorPanel connectorPanel) {
             this.connectorPanel = connectorPanel;
+            startListening();
+            setValid();
             connectorPanel.addPropertyChangeListener(this);
         }
         
