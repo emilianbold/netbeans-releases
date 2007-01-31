@@ -31,6 +31,7 @@ import org.netbeans.spi.navigator.NavigatorLookupHint;
 /**
  * @author Karol Harezlak
  */
+
 public class InspectorLookupFactory implements DataEditorViewLookupFactory {
     
     public Collection<?> getLookupObjects(DataObjectContext context, String viewID, DataEditorView.Kind viewKind) {

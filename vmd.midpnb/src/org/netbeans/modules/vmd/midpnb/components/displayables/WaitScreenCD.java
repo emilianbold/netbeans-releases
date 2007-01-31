@@ -78,7 +78,6 @@ public final class WaitScreenCD extends ComponentDescriptor {
     }
     
      private static DefaultPropertiesPresenter createPropertiesPresenter() {
-         System.out.println(Bundle.getMessage("LBL_CANCELLABLETASK_NONE"));
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES) 
                    .addProperty("Task", PropertyEditorResourcesComboBox.creater(SimpleCancellableTaskCD.TYPEID, NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK)
