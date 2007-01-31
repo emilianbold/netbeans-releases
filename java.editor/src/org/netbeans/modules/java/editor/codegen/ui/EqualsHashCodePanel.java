@@ -16,59 +16,62 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.java.editor.codegen.ui;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.util.TreePath;
-import java.awt.BorderLayout;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.List;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.ElementFilter;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.java.editor.codegen.EqualsHashCodeData;
-import org.netbeans.modules.java.editor.codegen.GenerateData;
-import org.netbeans.modules.java.editor.codegen.ui.GenerateCodePanel.JPanelWithExplorerManager;
-import org.openide.ErrorManager;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerManager.Provider;
-import org.openide.explorer.view.BeanTreeView;
-import org.openide.nodes.Node;
+import javax.lang.model.element.Element;
+import javax.swing.JPanel;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.java.editor.codegen.EqualsHashCodeGenerator;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Lahoda
+ * @author  Dusan Balek
  */
-public class EqualsHashCodePanel extends javax.swing.JPanel implements PropertyChangeListener, GeneratePanel {
-    
-    private JavaSource js;
-    private CompilationInfo info;
-    private TreePath pathToTree;
-    private ClassTree clazzTree;
-    private TypeElement clazz;
-    
-    /** Creates new form EqualsHashCodePanel */
-    public EqualsHashCodePanel() {
-        initComponents();
+public class EqualsHashCodePanel extends JPanel {
 
-        BeanTreeView equalsView = new BeanTreeView();
+    private ElementSelectorPanel equalsSelector;
+    private ElementSelectorPanel hashCodeSelector;
+
+    /** Creates new form EqualsHashCodePanel */
+    public EqualsHashCodePanel(ElementNode.Description description) {
+        initComponents();
+        equalsSelector = new ElementSelectorPanel(description);
+        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
+        add(equalsSelector, gridBagConstraints);
         
-        equalsView.setRootVisible(false);
-        equalsPanel.add(equalsView, BorderLayout.CENTER);
+        hashCodeSelector = new ElementSelectorPanel(description);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        add(hashCodeSelector, gridBagConstraints);
         
-        BeanTreeView hashCodeView = new BeanTreeView();
-        
-        hashCodeView.setRootVisible(false);
-        hashCodePanel.add(hashCodeView, BorderLayout.CENTER);
-        
+        equalsLabel.setText(NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_equals_select")); //NOI18N
+        equalsLabel.setLabelFor(equalsSelector);
+        hashCodeLabel.setText(NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_hashcode_select")); //NOI18N
+        hashCodeLabel.setLabelFor(hashCodeSelector);
     }
     
+    
+    public Iterable<ElementHandle<? extends Element>> getEqualsVariables() {
+        return ((ElementSelectorPanel)equalsSelector).getSelectedElements();
+    }
+
+    public Iterable<ElementHandle<? extends Element>> getHashCodeVariables() {
+        return ((ElementSelectorPanel)hashCodeSelector).getSelectedElements();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -78,120 +81,34 @@ public class EqualsHashCodePanel extends javax.swing.JPanel implements PropertyC
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        equalsPanel = new JPanelWithExplorerManager();
-        hashCodePanel = new JPanelWithExplorerManager();
+        equalsLabel = new javax.swing.JLabel();
+        hashCodeLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        equalsPanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
+        add(equalsLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
-        add(equalsPanel, gridBagConstraints);
-
-        hashCodePanel.setLayout(new java.awt.BorderLayout());
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        add(hashCodePanel, gridBagConstraints);
-
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 6, 12);
+        add(hashCodeLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-    public void initialize(JavaSource js, CompilationInfo info, TreePath pathToTree, ClassTree clazzTree, TypeElement clazz) {
-        this.js = js;
-        this.info = info;
-        this.pathToTree = pathToTree;
-        this.clazzTree = clazzTree;
-        this.clazz = clazz;
-        
-        ExplorerManager equalsManager = ((Provider) equalsPanel).getExplorerManager();
-        ExplorerManager hashCodeManager = ((Provider) hashCodePanel).getExplorerManager();
-        
-        equalsManager.addPropertyChangeListener(this);
-        
-        List<VariableElement> variables = new ArrayList<VariableElement>();
-        
-        for (VariableElement v : ElementFilter.fieldsIn(clazz.getEnclosedElements())) {
-            if (!v.getModifiers().contains(Modifier.STATIC)) {
-                variables.add(v);
-            }
-        }
-        
-        equalsManager.setRootContext(new ClassWithEnclosedNode(clazz, variables));
-        hashCodeManager.setRootContext(new ClassWithEnclosedNode(clazz, variables));
-    }
-
-    public GenerateData getData() {
-        ExplorerManager equalsManager = ((Provider) equalsPanel).getExplorerManager();
-        ExplorerManager hashCodeManager = ((Provider) hashCodePanel).getExplorerManager();
-        
-        List<VariableElement> equals  = new ArrayList<VariableElement>();
-        
-        for (Node n : equalsManager.getSelectedNodes()) {
-            VariableElement ve = n.getLookup().lookup(VariableElement.class);
-            
-            if (ve != null) {
-                equals.add(ve);
-            }
-        }
-        
-        List<VariableElement> hashCode = new ArrayList<VariableElement>();
-        
-        for (Node n : hashCodeManager.getSelectedNodes()) {
-            VariableElement ve = n.getLookup().lookup(VariableElement.class);
-            
-            if (ve != null) {
-                hashCode.add(ve);
-            }
-        }
-        
-        return new EqualsHashCodeData(js, equals, hashCode, pathToTree, clazzTree);
-    }
-
-    private boolean wasHashCodeChanged;
-    private boolean automaticHashCodeUpdate;
     
-    public void propertyChange(PropertyChangeEvent evt) {
-        ExplorerManager equalsManager = ((Provider) equalsPanel).getExplorerManager();
-        ExplorerManager hashCodeManager = ((Provider) hashCodePanel).getExplorerManager();
-        
-        if (evt.getSource() == equalsManager && !wasHashCodeChanged) {
-            automaticHashCodeUpdate = true;
-            
-            List<Node> toSelect = new ArrayList();
-            
-            for (Node n : equalsManager.getSelectedNodes()) {
-                VariableElement v = n.getLookup().lookup(VariableElement.class);
-                
-                for (Node hashNode : hashCodeManager.getRootContext().getChildren().getNodes(true)) {
-                    if (v == hashNode.getLookup().lookup(VariableElement.class)) {
-                        toSelect.add(hashNode);
-                    }
-                }
-            }
-            
-            try {
-                hashCodeManager.setSelectedNodes(toSelect.toArray(new Node[0]));
-            } catch (PropertyVetoException e) {
-                ErrorManager.getDefault().notify(e);
-            }
-            
-            automaticHashCodeUpdate = false;
-        }
-        
-        if (evt.getSource() == hashCodeManager && !automaticHashCodeUpdate)
-            wasHashCodeChanged = true;
-    }
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    public javax.swing.JPanel equalsPanel;
-    public javax.swing.JPanel hashCodePanel;
+    private javax.swing.JLabel equalsLabel;
+    private javax.swing.JLabel hashCodeLabel;
     // End of variables declaration//GEN-END:variables
     
 }

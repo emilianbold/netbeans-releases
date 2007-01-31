@@ -18,113 +18,66 @@
  */
 package org.netbeans.modules.java.editor.codegen.ui;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.util.TreePath;
-import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.java.editor.codegen.DelegateData;
-import org.netbeans.modules.java.editor.codegen.GenerateData;
-import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
-import org.netbeans.modules.java.editor.codegen.TypedExecutableElementWrapper;
-import org.netbeans.modules.java.editor.codegen.ui.GenerateCodePanel.JPanelWithExplorerManager;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerManager.Provider;
-import org.openide.explorer.view.BeanTreeView;
-import org.openide.nodes.Node;
+import java.util.Iterator;
+import javax.lang.model.element.Element;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.java.editor.codegen.DelegateMethodGenerator;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Jan Lahoda, Dusan Balek
  */
-public class DelegatePanel extends javax.swing.JPanel implements GeneratePanel, PropertyChangeListener {
-    
-    private JavaSource js;
-    private CompilationInfo info;
-    private TreePath pathToTree;
-    private ClassTree clazzTree;
-    private TypeElement clazz;
+public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeListener {
 
-    private BeanTreeView fieldView;
+    private JTextComponent component;
+    private ElementSelectorPanel delegateSelector;
+    private ElementSelectorPanel methodSelector;
 
     /** Creates new form DelegatePanel */
-    public DelegatePanel() {
+    public DelegatePanel(JTextComponent component, ElementNode.Description description) {
+        this.component = component;
         initComponents();
-
-        fieldView = new BeanTreeView();
-
-        fieldView.setRootVisible(false);
-        fieldSelect.add(fieldView, BorderLayout.CENTER);
-
-        BeanTreeView methodView = new BeanTreeView();
-
-        methodView.setRootVisible(false);
-        methodsSelect.add(methodView, BorderLayout.CENTER);
+        delegateSelector = new ElementSelectorPanel(description);
+        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
+        add(delegateSelector, gridBagConstraints);
+        delegateSelector.getExplorerManager().addPropertyChangeListener(this);
+        
+        methodSelector = new ElementSelectorPanel(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        add(methodSelector, gridBagConstraints);
+        
+        delegateLabel.setText(NbBundle.getMessage(DelegateMethodGenerator.class, "LBL_delegate_field_select")); //NOI18N
+        delegateLabel.setLabelFor(delegateSelector);
+        methodLabel.setText(NbBundle.getMessage(DelegateMethodGenerator.class, "LBL_delegate_method_select")); //NOI18N
+        methodLabel.setLabelFor(methodSelector);
     }
 
-    public void initialize(JavaSource js, CompilationInfo info, TreePath pathToTree, ClassTree clazzTree, TypeElement clazz) {
-        this.js = js;
-        this.info = info;
-        this.pathToTree = pathToTree;
-        this.clazzTree = clazzTree;
-        this.clazz = clazz;
-
-        Map<? extends TypeElement, ? extends List<? extends VariableElement>> class2Variables = findUsableFields(info, clazz);
-
-        ExplorerManager manager = ((Provider) fieldSelect).getExplorerManager();
-
-        manager.setRootContext(new Class2EnclosedElementsNode(class2Variables));
-        manager.addPropertyChangeListener(this);
-
-        fieldView.expandAll();
+    public ElementHandle<? extends Element> getDelegateField() {
+        Iterator<ElementHandle<? extends Element>> it = delegateSelector.getSelectedElements().iterator();
+        ElementHandle<? extends Element> handle = it.hasNext() ? it.next() : null;
+        return handle == null || it.hasNext() ? null : handle;
     }
 
-    public GenerateData getData() {
-        ExplorerManager fieldManager = ((Provider) fieldSelect).getExplorerManager();
-        ExplorerManager methodsManager = ((Provider) methodsSelect).getExplorerManager();
-        
-        Node[] selectedNodes = fieldManager.getSelectedNodes();
-        
-        if (selectedNodes.length != 1) {
-            return null;
-        }
-        
-        VariableElement el = (VariableElement) selectedNodes[0].getLookup().lookup(VariableElement.class);
-        
-        if (el == null) {
-            return null;
-        }
-        
-        List<TypedExecutableElementWrapper> methods = new ArrayList<TypedExecutableElementWrapper>();
-        
-        for (Node n : methodsManager.getSelectedNodes()) {
-            TypedExecutableElementWrapper ee = (TypedExecutableElementWrapper) n.getLookup().lookup(TypedExecutableElementWrapper.class);
-            
-            if (ee != null) {
-                methods.add(ee);
-            }
-        }
-        
-        return new DelegateData(js, el, methods, pathToTree, clazzTree);
+    public Iterable<ElementHandle<? extends Element>> getDelegateMethods() {
+        return ((ElementSelectorPanel)methodSelector).getSelectedElements();
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -134,121 +87,34 @@ public class DelegatePanel extends javax.swing.JPanel implements GeneratePanel, 
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        fieldSelect = new JPanelWithExplorerManager();
-        methodsSelect = new JPanelWithExplorerManager();
+        delegateLabel = new javax.swing.JLabel();
+        methodLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
-
-        fieldSelect.setLayout(new java.awt.BorderLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
-        add(fieldSelect, gridBagConstraints);
-
-        methodsSelect.setLayout(new java.awt.BorderLayout());
-
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
+        add(delegateLabel, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        add(methodsSelect, gridBagConstraints);
-
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 6, 12);
+        add(methodLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     public void propertyChange(PropertyChangeEvent evt) {
-        ExplorerManager fieldManager = ((Provider) fieldSelect).getExplorerManager();
-        ExplorerManager methodsManager = ((Provider) methodsSelect).getExplorerManager();
-        
-        if (evt.getSource() == fieldManager) {
-            Node[] selectedNodes = fieldManager.getSelectedNodes();
-            
-            if (selectedNodes.length != 1) {
-                methodsManager.setRootContext(Node.EMPTY);
-                return ;
-            }
-            
-            VariableElement el = (VariableElement) selectedNodes[0].getLookup().lookup(VariableElement.class);
-            
-            if (el == null) {
-                methodsManager.setRootContext(Node.EMPTY);
-                return ;
-            }
-            
-            setFillOutsMethods(el);
-        }
-    }
-
-    static Map<? extends TypeElement, ? extends List<? extends VariableElement>> findUsableFields(CompilationInfo info, TypeElement clazz) {
-        Map<TypeElement, List<? extends VariableElement>> result = new HashMap/*<? extends TypeElement, ? extends List<? extends VariableElement>>*/();
-
-        for (Entry<? extends TypeElement, ? extends List<? extends VariableElement>> entry : GeneratorUtils.findAllAccessibleFields(info, clazz).entrySet()) {
-            TypeElement current = entry.getKey();
-            List<VariableElement> variables = new ArrayList();
-
-            for (VariableElement ve : entry.getValue()) {
-                if (!ve.asType().getKind().isPrimitive())
-                    variables.add(ve);
-            }
-
-            if (!variables.isEmpty())
-                result.put(current, variables);
-        }
-
-        return result;
-    }
-
-    static List<TypedExecutableElementWrapper> getMethodProposals(CompilationInfo info, TypeElement clazz, VariableElement el) {
-        Types types = info.getTypes();
-       
-        if (el.asType().getKind() != TypeKind.DECLARED)
-            return Collections.<TypedExecutableElementWrapper>emptyList();
-        
-        DeclaredType variableType = (DeclaredType) el.asType();
-        Map<ExecutableElement, TypeElement> proposed = new HashMap<ExecutableElement, TypeElement>();
-        List<TypeElement> variableClasses = new ArrayList<TypeElement>(GeneratorUtils.getAllParents((TypeElement) variableType.asElement()));
-        List<TypedExecutableElementWrapper> result = new ArrayList<TypedExecutableElementWrapper>();
-
-        TypeMirror tm = el.asType();
-        if (tm.getKind() == TypeKind.DECLARED)
-        variableClasses.add((TypeElement) ((DeclaredType)tm).asElement());
-
-        Collections.reverse(variableClasses);
-        
-        for (TypeElement te : variableClasses) {
-            if ("java.lang.Object".contentEquals(te.getQualifiedName()))
-                continue;
-            
-            for (ExecutableElement ee : ElementFilter.methodsIn(te.getEnclosedElements())) {
-                boolean alreadyContains = false;
-
-                for (ExecutableElement ee1 : proposed.keySet()) {
-                    if (alreadyContains = info.getElements().overrides(ee1, ee, proposed.get(ee1)))
-                        break;
-                }
-
-                if (!alreadyContains && GeneratorUtils.isAccessible(clazz, ee)) {
-                    proposed.put(ee, te);
-                    result.add(new TypedExecutableElementWrapper(ee, (ExecutableType) types.asMemberOf(variableType, ee)));
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private void setFillOutsMethods(VariableElement el) {
-        ExplorerManager methodsManager = ((Provider) methodsSelect).getExplorerManager();
-
-        methodsManager.setRootContext(new ClassWithEnclosedNode(null, getMethodProposals(info, clazz, el)));
+        ElementHandle<? extends Element> handle = getDelegateField();
+        methodSelector.setRootElement(handle == null ? null : DelegateMethodGenerator.getAvailableMethods(component, handle));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    public javax.swing.JPanel fieldSelect;
-    public javax.swing.JPanel methodsSelect;
+    public javax.swing.JLabel delegateLabel;
+    public javax.swing.JLabel methodLabel;
     // End of variables declaration//GEN-END:variables
-    
 }

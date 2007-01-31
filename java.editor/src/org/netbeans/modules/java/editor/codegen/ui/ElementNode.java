@@ -18,97 +18,275 @@
  */
 package org.netbeans.modules.java.editor.codegen.ui;
 
+
 import java.awt.Image;
-import java.io.CharConversionException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.swing.ImageIcon;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.UiUtils;
-import org.netbeans.modules.editor.java.Utilities;
-import org.openide.ErrorManager;
+import org.netbeans.modules.java.editor.codegen.ui.ElementNode.Description;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.lookup.Lookups;
-import org.openide.xml.XMLUtil;
+import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 
-/**
+/** Node representing an Element
  *
- * @author Jan Lahoda
+ * @author Petr Hrebejk, Jan Lahoda, Dusan Balek
  */
-class ElementNode extends AbstractNode {
-
-    private String htmlDisplayName;
-    private Element element;
-
-    public ElementNode(Element element) {
-        super(Children.LEAF, Lookups.singleton(element));
-
-        this.element = element;
-
-        htmlDisplayName = "";
-
-        switch (element.getKind()) {
-            case FIELD:
-            case LOCAL_VARIABLE:
-            case PARAMETER:
-                VariableElement variable = (VariableElement) element;
-
-                htmlDisplayName = getHtmlTypeName(variable.asType())  + " " + variable.getSimpleName();
-                break;
-            case METHOD:
-                ExecutableElement method = (ExecutableElement) element;
-                StringBuffer methodDisplayNameBuf = new StringBuffer();
-
-                methodDisplayNameBuf.append(getHtmlTypeName(method.getReturnType()));
-                methodDisplayNameBuf.append(' ');
-                methodDisplayNameBuf.append(method.getSimpleName());
-                methodDisplayNameBuf.append('(');
-
-                boolean addCommand = false;
-
-                for (VariableElement ve : method.getParameters()) {
-                    if (addCommand)
-                        methodDisplayNameBuf.append(", ");
-
-                    methodDisplayNameBuf.append(getHtmlTypeName(ve.asType()));
-                    methodDisplayNameBuf.append(' ');
-                    methodDisplayNameBuf.append(ve.getSimpleName());
-                    addCommand = true;
-                }
-
-                methodDisplayNameBuf.append(')');
-
-                htmlDisplayName = methodDisplayNameBuf.toString();
-                break;
-        }
+public class ElementNode extends AbstractNode {
+    
+    private Description description;
+           
+    /** Creates a new instance of TreeNode */
+    public ElementNode(Description description) {
+        super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs));
+        this.description = description;
+        setDisplayName(description.name); 
     }
-
-    private String getHtmlTypeName(TypeMirror t) {
-        try {
-            return XMLUtil.toElementContent(Utilities.getTypeName(t, false).toString());
-        } catch (CharConversionException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            return "";
-        }
-    }
-
+        
     @Override
     public Image getIcon(int type) {
-        //XXX: pretty ugly cast to ImageIcon:
-        return ((ImageIcon) UiUtils.getDeclarationIcon(element)).getImage();
+        if (description.elementHandle == null)
+            return super.getIcon(type);
+        return Utilities.icon2Image(UiUtils.getElementIcon(description.elementHandle.getKind(), description.modifiers));
     }
 
     @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
-
+                   
+    @Override
+    public java.lang.String getDisplayName() {
+        return description.name;
+    }
+            
     @Override
     public String getHtmlDisplayName() {
-        return htmlDisplayName;
+        return description.htmlHeader;
     }
+    
+    public ElementHandle getElementHandle() {
+        return description.elementHandle;
+    }
+    
+    private static final class ElementChilren extends Children.Keys<Description> {
+            
+        public ElementChilren(List<Description> descriptions) {
+            setKeys(descriptions);            
+        }
+        
+        protected Node[] createNodes(Description key) {
+            return new Node[] {new ElementNode(key)};
+        }
+    }
+                       
+    /** Stores all interesting data about given element.
+     */    
+    public static class Description {
+        
+        private String name;
+        private ElementHandle<? extends Element> elementHandle;
+        private Set<Modifier> modifiers;        
+        private List<Description> subs; 
+        private String htmlHeader;
+        
+        public static Description create(List<Description> subs) {
+            return new Description("<root>", null, null, subs, null); // NOI18N
+        }
+        
+        public static Description create(Element element, List<Description> subs) {
+            String htmlHeader = null;
+            switch (element.getKind()) {
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    htmlHeader = createHtmlHeader((TypeElement)element);
+                    break;
+                case ENUM_CONSTANT:
+                case FIELD:
+                    htmlHeader = createHtmlHeader((VariableElement)element);
+                    break;
+                case CONSTRUCTOR:
+                case METHOD:
+                    htmlHeader = createHtmlHeader((ExecutableElement)element);
+                    break;                    
+            }
+            return new Description(element.getSimpleName().toString(), ElementHandle.create(element), element.getModifiers(), subs, htmlHeader);
+        }
 
+        private Description(String name, ElementHandle<? extends Element> elementHandle,
+                Set<Modifier> modifiers, List<Description> subs, String htmlHeader) {
+            this.name = name;
+            this.elementHandle = elementHandle;
+            this.modifiers = modifiers;
+            this.subs = subs;
+            this.htmlHeader = htmlHeader;
+        }
 
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Description))
+                return false;
+            Description d = (Description)o;
+            if (!this.name.equals(d.name))
+                return false;
+            if (this.elementHandle != d.elementHandle) {
+                if (this.elementHandle == null || d.elementHandle == null)
+                    return false;
+                if (this.elementHandle.getKind() != d.elementHandle.getKind())
+                    return false;
+                if (!this.elementHandle.signatureEquals(d.elementHandle))
+                    return false;
+            }
+            return true;
+        }
+        
+        public int hashCode() {
+            int hash = 7;
+            hash = 29 * hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 29 * hash + (this.elementHandle != null ? this.elementHandle.getKind().hashCode() : 0);
+            return hash;
+        }
+        
+        private static String createHtmlHeader(ExecutableElement e) {
+            StringBuilder sb = new StringBuilder();
+            if (e.getKind() == ElementKind.CONSTRUCTOR) {
+                sb.append(e.getEnclosingElement().getSimpleName());
+            } else {
+                sb.append(e.getSimpleName());
+            }
+            sb.append("("); // NOI18N
+            for(Iterator<? extends VariableElement> it = e.getParameters().iterator(); it.hasNext(); ) {
+                VariableElement param = it.next();
+                sb.append(print(param.asType()));
+                sb.append(" "); // NOI18N
+                sb.append(param.getSimpleName());
+                if (it.hasNext()) {
+                    sb.append(", "); // NOI18N
+                }
+            }
+            sb.append(")"); // NOI18N
+            if ( e.getKind() != ElementKind.CONSTRUCTOR ) {
+                TypeMirror rt = e.getReturnType();
+                if ( rt.getKind() != TypeKind.VOID ) {
+                    sb.append(" : "); // NOI18N
+                    sb.append(print(e.getReturnType()));
+                }
+            }
+            return sb.toString();
+        }
+        
+        private static String createHtmlHeader(VariableElement e) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(e.getSimpleName());
+            if ( e.getKind() != ElementKind.ENUM_CONSTANT ) {
+                sb.append( " : " ); // NOI18N
+                sb.append(print(e.asType()));
+            }
+            return sb.toString();
+        }
+        
+        private static String createHtmlHeader(TypeElement e) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(e.getSimpleName());
+            List<? extends TypeParameterElement> typeParams = e.getTypeParameters();
+            if (typeParams != null && !typeParams.isEmpty()) {
+                sb.append("&lt;"); // NOI18N
+                for(Iterator<? extends TypeParameterElement> it = typeParams.iterator(); it.hasNext();) {
+                    TypeParameterElement tp = it.next();
+                    sb.append(tp.getSimpleName());
+                    try {
+                        List<? extends TypeMirror> bounds = tp.getBounds();
+                        if (!bounds.isEmpty()) {
+                            sb.append(printBounds(bounds));
+                        }
+                    }
+                    catch (NullPointerException npe) {
+                    }                    
+                    if (it.hasNext()) {
+                        sb.append(", "); // NOI18N
+                    }
+                }
+                sb.append("&gt;"); // NOI18N
+            }
+            return sb.toString();
+        }
+        
+        private static String printBounds(List<? extends TypeMirror> bounds) {
+            if (bounds.size() == 1 && "java.lang.Object".equals(bounds.get(0).toString())) // NOI18N
+                return "";
+            StringBuilder sb = new StringBuilder();
+            sb.append(" extends "); // NOI18N
+            for (Iterator<? extends TypeMirror> it = bounds.iterator(); it.hasNext();) {
+                TypeMirror bound = it.next();
+                sb.append(print(bound));
+                if (it.hasNext()) {
+                    sb.append(" & "); // NOI18N
+                }
+            }
+            return sb.toString();
+        }
+        
+        private static String print( TypeMirror tm ) {
+            StringBuilder sb;
+            switch (tm.getKind()) {
+                case DECLARED:
+                    DeclaredType dt = (DeclaredType)tm;
+                    sb = new StringBuilder(dt.asElement().getSimpleName().toString());
+                    List<? extends TypeMirror> typeArgs = dt.getTypeArguments();
+                    if (!typeArgs.isEmpty()) {
+                        sb.append("&lt;"); // NOI18N
+                        for (Iterator<? extends TypeMirror> it = typeArgs.iterator(); it.hasNext();) {
+                            TypeMirror ta = it.next();
+                            sb.append(print(ta));
+                            if (it.hasNext()) {
+                                sb.append(", "); // NOI18N
+                            }
+                        }
+                        sb.append("&gt;"); // NOI18N
+                    }                    
+                    return sb.toString();
+                case TYPEVAR:
+                    TypeVariable tv = (TypeVariable)tm;
+                    sb = new StringBuilder(tv.asElement().getSimpleName().toString());
+                    return sb.toString();
+                case ARRAY:
+                    ArrayType at = (ArrayType)tm;
+                    sb = new StringBuilder(print(at.getComponentType()));
+                    sb.append("[]"); // NOI18N
+                    return sb.toString();
+                case WILDCARD:
+                    WildcardType wt = (WildcardType)tm;
+                    sb = new StringBuilder("?"); // NOI18N
+                    if (wt.getExtendsBound() != null) {
+                        sb.append(" extends "); // NOI18N
+                        sb.append(print(wt.getExtendsBound()));
+                    }
+                    if (wt.getSuperBound() != null) {
+                        sb.append(" super "); // NOI18N
+                        sb.append(print(wt.getSuperBound()));
+                    }
+                    return sb.toString();
+                default:
+                    return tm.toString();
+            }
+        }
+    }
 }

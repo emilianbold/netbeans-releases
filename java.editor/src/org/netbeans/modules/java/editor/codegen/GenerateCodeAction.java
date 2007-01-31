@@ -18,72 +18,86 @@
  */
 package org.netbeans.modules.java.editor.codegen;
 
-import java.awt.Dialog;
+import com.sun.source.util.TreePath;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.SwingUtilities;
-import javax.swing.text.Document;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.java.editor.codegen.ui.GenerateCodePanel;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
+import org.netbeans.modules.java.editor.overridden.PopupUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Dusan Balek, Jan Lahoda
  */
 public class GenerateCodeAction extends BaseAction {
 
-    public static final String generateCode = "generate-code";
+    public static final String generateCode = "generate-code"; //NOI18N
+    
+    private CodeGenerator[] generators = new CodeGenerator[] {
+        new ConstructorGenerator(),
+        new GetterSetterGenerator(GeneratorUtils.GETTERS_ONLY),
+        new GetterSetterGenerator(GeneratorUtils.SETTERS_ONLY),
+        new GetterSetterGenerator(),
+        new EqualsHashCodeGenerator(),
+        new DelegateMethodGenerator(),
+        new OverrideMethodGenerator()
+    };
 
     public GenerateCodeAction(){
         super(generateCode);
-        putValue(ExtKit.TRIMMED_TEXT, NbBundle.getBundle(GenerateCodeAction.class).getString("generate-code-trimmed")); // NOI18N
-        putValue(SHORT_DESCRIPTION, NbBundle.getBundle(GenerateCodeAction.class).getString("desc-generate-code")); // NOI18N
-        putValue(POPUP_MENU_TEXT, NbBundle.getBundle(GenerateCodeAction.class).getString("popup-generate-code")); // NOI18N
+        putValue(ExtKit.TRIMMED_TEXT, NbBundle.getBundle(GenerateCodeAction.class).getString("generate-code-trimmed")); //NOI18N
+        putValue(SHORT_DESCRIPTION, NbBundle.getBundle(GenerateCodeAction.class).getString("desc-generate-code")); //NOI18N
+        putValue(POPUP_MENU_TEXT, NbBundle.getBundle(GenerateCodeAction.class).getString("popup-generate-code")); //NOI18N
     }
     
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {
         try {
-            DataObject od = (DataObject) target.getDocument().getProperty(Document.StreamDescriptionProperty);
-            FileObject file = od.getPrimaryFile();
-            final JavaSource js = JavaSource.forFileObject(file);
-            
-            final GenerateCodePanel panel = new GenerateCodePanel();
-            
-            DialogDescriptor dd = new DialogDescriptor(panel, "Generate Code");
-            
-            Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    try {
-                        panel.intialize(js, target.getCaretPosition());
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
+            JavaSource js = JavaSource.forDocument(target.getDocument());
+            if (js != null) {
+                final int caretOffset = target.getCaretPosition();
+                final ArrayList<CodeGenerator> gens = new ArrayList<CodeGenerator>();
+                js.runUserActionTask(new CancellableTask<CompilationController>() {
+                    public void cancel() {
                     }
-                }
-            });
-
-            d.setVisible(true);
-
-            if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-                GenerateData data = panel.getData();
-
-                if (data != null) {
-                    data.generate();
+                    public void run(CompilationController controller) throws Exception {
+                        controller.toPhase(JavaSource.Phase.PARSED);
+                        TreePath path = controller.getTreeUtilities().pathFor(caretOffset);
+                        for (CodeGenerator gen : getCodeGenerators()) {
+                            if (gen.accept(path))
+                                gens.add(gen);
+                        }
+                    }
+                }, true);
+                if (gens.size() > 0) {
+                    Rectangle carretRectangle = target.modelToView(target.getCaretPosition());
+                    Point where = new Point( carretRectangle.x, carretRectangle.y + carretRectangle.height );
+                    SwingUtilities.convertPointToScreen( where, target);
+                    GenerateCodePanel panel = new GenerateCodePanel(target, gens);
+                    PopupUtil.showPopup(panel, null, where.x, where.y, true, carretRectangle.height);
+                } else {
+                    target.getToolkit().beep();
                 }
             }
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
         }
     }
-
+    
+    private CodeGenerator[] getCodeGenerators() {
+        return generators;
+    }    
 }

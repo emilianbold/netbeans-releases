@@ -71,6 +71,8 @@ import org.openide.filesystems.FileObject;
 public class GeneratorUtils {
     
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(GeneratorUtils.class.getName());
+    public static final int GETTERS_ONLY = 1;
+    public static final int SETTERS_ONLY = 2;
     
     private GeneratorUtils() {
     }
@@ -139,7 +141,7 @@ public class GeneratorUtils {
             TreeMaker make = wc.getTreeMaker();
             ClassTree nue = (ClassTree)path.getLeaf();
             for(ExecutableElement element : findUndefs(wc, te, te))
-                nue = make.addClassMember(nue, createMethod(wc, element, (DeclaredType)te.asType()));
+                nue = make.addClassMember(nue, createMethodImplementation(wc, element, (DeclaredType)te.asType()));
             wc.rewrite(path.getLeaf(), nue);
         }
     }
@@ -148,8 +150,20 @@ public class GeneratorUtils {
         assert path.getLeaf().getKind() == Tree.Kind.CLASS;
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
-            ClassTree decl = wc.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), index, createMethod(wc, element, (DeclaredType)te.asType()));
+            ClassTree decl = wc.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), index, createMethodImplementation(wc, element, (DeclaredType)te.asType()));
             wc.rewrite(path.getLeaf(), decl);
+        }
+    }
+    
+    public static void generateMethodOverrides(WorkingCopy wc, TreePath path, List<? extends ExecutableElement> elements, int index) {
+        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        TypeElement te = (TypeElement)wc.getTrees().getElement(path);
+        if (te != null) {
+            TreeMaker make = wc.getTreeMaker();
+            ClassTree nue = (ClassTree)path.getLeaf();
+            for(ExecutableElement element : elements)
+                nue = make.addClassMember(nue, createMethodImplementation(wc, element, (DeclaredType)te.asType()));
+            wc.rewrite(path.getLeaf(), nue);
         }
     }
     
@@ -157,15 +171,15 @@ public class GeneratorUtils {
         assert path.getLeaf().getKind() == Tree.Kind.CLASS;
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
-            ClassTree decl = wc.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), index, createMethod(wc, element, (DeclaredType)te.asType()));
+            ClassTree decl = wc.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), index, createMethodImplementation(wc, element, (DeclaredType)te.asType()));
             wc.rewrite(path.getLeaf(), decl);
         }
     }
 
     public static void generateConstructor(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, int index) {
         TreeMaker make = wc.getTreeMaker();
-        List<VariableTree> arguments = new ArrayList();
-        List<StatementTree> statements = new ArrayList();
+        List<VariableTree> arguments = new ArrayList<VariableTree>();
+        List<StatementTree> statements = new ArrayList<StatementTree>();
         ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
         for (VariableElement ve : initFields) {
             arguments.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(ve.asType()), null));
@@ -176,7 +190,23 @@ public class GeneratorUtils {
         wc.rewrite(path.getLeaf(), decl);
     }
     
-    private static MethodTree createMethod(WorkingCopy wc, ExecutableElement element, DeclaredType type) {
+    public static void generateGettersAndSetters(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> fields, int type, int index) {
+        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        TypeElement te = (TypeElement)wc.getTrees().getElement(path);
+        if (te != null) {
+            TreeMaker make = wc.getTreeMaker();
+            ClassTree nue = (ClassTree)path.getLeaf();
+            for(VariableElement element : fields) {
+                if (type != SETTERS_ONLY)
+                    nue = make.addClassMember(nue, createGetterMethod(wc, element, (DeclaredType)te.asType()));
+                if (type != GETTERS_ONLY)
+                    nue = make.addClassMember(nue, createSetterMethod(wc, element, (DeclaredType)te.asType()));
+            }
+            wc.rewrite(path.getLeaf(), nue);
+        }
+    }
+    
+    private static MethodTree createMethodImplementation(WorkingCopy wc, ExecutableElement element, DeclaredType type) {
         TreeMaker make = wc.getTreeMaker();
         Set<Modifier> mods = element.getModifiers();
         Set<Modifier> flags = mods.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(mods);
@@ -245,6 +275,29 @@ public class GeneratorUtils {
         }
 
         return make.Method(make.Modifiers(flags, annotations), element.getSimpleName(), returnType, typeParams, params, throwsList, body, null);
+    }
+    
+    private static MethodTree createGetterMethod(WorkingCopy wc, VariableElement element, DeclaredType type) {
+        TreeMaker make = wc.getTreeMaker();
+        Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);
+        CharSequence name = element.getSimpleName();
+        assert name.length() > 0;
+        StringBuilder sb = new StringBuilder();
+        sb.append(element.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get").append(Character.toUpperCase(name.charAt(0))).append(name.subSequence(1, name.length())); //NOI18N
+        BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(element.getSimpleName()))), false);
+        return make.Method(make.Modifiers(mods), sb, make.Type(element.asType()), Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
+    }
+    
+    private static MethodTree createSetterMethod(WorkingCopy wc, VariableElement element, DeclaredType type) {
+        TreeMaker make = wc.getTreeMaker();
+        Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);
+        CharSequence name = element.getSimpleName();
+        assert name.length() > 0;
+        StringBuilder sb = new StringBuilder();
+        sb.append("set").append(Character.toUpperCase(name.charAt(0))).append(name.subSequence(1, name.length())); //NOI18N
+        List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), element.getSimpleName(), make.Type(element.asType()), null));
+        BlockTree body = make.Block(Collections.singletonList(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), element.getSimpleName()), make.Identifier(element.getSimpleName())))), false); //NOI18N
+        return make.Method(make.Modifiers(mods), sb, make.Type(wc.getTypes().getNoType(TypeKind.VOID)), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null);
     }
     
     private static List<? extends ExecutableElement> findUndefs(CompilationInfo info, TypeElement impl, TypeElement element) {

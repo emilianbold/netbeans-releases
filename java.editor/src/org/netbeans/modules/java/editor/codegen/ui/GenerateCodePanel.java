@@ -16,100 +16,44 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.java.editor.codegen.ui;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.TreeScanner;
+import java.awt.Color;
 import java.awt.Component;
-import java.io.IOException;
-import javax.lang.model.element.TypeElement;
-import javax.swing.JPanel;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.modules.java.editor.codegen.GenerateData;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerManager.Provider;
+import java.awt.event.KeyEvent;
+import java.util.List;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.KeyStroke;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.java.editor.codegen.CodeGenerator;
+import org.netbeans.modules.java.editor.overridden.PopupUtil;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Dusan Balek, Jan Lahoda
  */
 public class GenerateCodePanel extends javax.swing.JPanel {
 
-    private GeneratePanelFactory[] panels = new GeneratePanelFactory[] {
-        new DelegatePanelFactory(),
-        new EqualsHashCodePanelFactory(),
-    };
-
-    /* Creates new form GenerateCodePanel */
-    public GenerateCodePanel() throws IOException {
+    private JTextComponent component;
+    
+    /** Creates new form GenerateCodePanel */
+    public GenerateCodePanel(JTextComponent component, List<? extends CodeGenerator> generators) {
+        this.component = component;
         initComponents();
+        setFocusable(false);
+        setNextFocusableComponent(jList1);
+        setBackground(jList1.getBackground());
+        jScrollPane1.setBackground(jList1.getBackground());
+        jList1.setModel(createModel(generators));
+        jList1.setSelectedIndex(0);
+        jList1.setVisibleRowCount(generators.size() > 8 ? 8 : generators.size());
+        jList1.setCellRenderer(new Renderer(jList1));
+        jList1.grabFocus();
     }
-
-    public void intialize(final JavaSource js, final int offset) throws IOException {
-        //XXX: the elements are used outside the runUserActionTask - better solution is pending:
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
-            
-            public void run(CompilationController info) throws Exception {
-                if (info.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
-                    return;
-                
-                
-                TreePath clazzTree = info.getTreeUtilities().pathFor(offset);
-                while(clazzTree != null) {
-                    if(clazzTree.getLeaf().getKind() == Kind.CLASS)
-                        break;
-                    clazzTree = clazzTree.getParentPath();
-                }
-                
-                if (clazzTree == null)
-                    return;
-                
-                TypeElement clazz = (TypeElement) info.getTrees().getElement(clazzTree);
-                
-                if (clazz == null)
-                    return;
-                
-                for (GeneratePanelFactory factory : panels) {
-                    JPanel p = factory.create();
-                    
-                    mainPane.addTab(factory.getDisplayName(), p);
-                    
-                    if (p instanceof GeneratePanel) {
-                        ((GeneratePanel) p).initialize(js, info, clazzTree, (ClassTree)clazzTree.getLeaf(), clazz);
-                    }
-                }
-            }
-        }, true);
-    }
-
-    private static class FindTopMostClass extends TreeScanner<Void, Boolean> {
-
-        private ClassTree clazz;
-
-        public Void visitClass(ClassTree node, Boolean p) {
-            clazz = node;
-            return null;
-        }
-
-    }
-
-    public GenerateData getData() {
-        Component panel = mainPane.getSelectedComponent();
-
-        if (panel instanceof GeneratePanel) {
-            return ((GeneratePanel) panel).getData();
-        }
-
-        return null;
-    }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -117,38 +61,100 @@ public class GenerateCodePanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        mainPane = new javax.swing.JTabbedPane();
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(mainPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(mainPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList();
+        jLabel1 = new javax.swing.JLabel();
+
+        setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(64, 64, 64)));
+        setLayout(new java.awt.BorderLayout());
+
+        jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 4, 4, 4));
+
+        jList1.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                listKeyReleased(evt);
+            }
+        });
+        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                listMouseReleased(evt);
+            }
+        });
+        jScrollPane1.setViewportView(jList1);
+
+        add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(CodeGenerator.class, "LBL_generate_code")); // NOI18N
+        jLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        jLabel1.setOpaque(true);
+        add(jLabel1, java.awt.BorderLayout.PAGE_START);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void listMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listMouseReleased
+        invokeSelected();
+    }//GEN-LAST:event_listMouseReleased
+
+    private void listKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_listKeyReleased
+        KeyStroke ks = KeyStroke.getKeyStrokeForEvent(evt);
+        if (ks.getKeyCode() == KeyEvent.VK_ENTER || ks.getKeyCode() == KeyEvent.VK_SPACE)
+            invokeSelected();
+    }//GEN-LAST:event_listKeyReleased
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    public javax.swing.JTabbedPane mainPane;
+    public javax.swing.JLabel jLabel1;
+    public javax.swing.JList jList1;
+    public javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
     
-    public static class JPanelWithExplorerManager extends JPanel implements Provider {
-
-        private ExplorerManager manager = new ExplorerManager();
-
-        public ExplorerManager getExplorerManager() {
-            return manager;
+    private DefaultListModel createModel(List<? extends CodeGenerator> generators) {
+        DefaultListModel model = new DefaultListModel();
+        for (CodeGenerator generator : generators)
+            model.addElement(generator);
+        return model;
+    }
+    
+    private void invokeSelected() {
+        PopupUtil.hidePopup();
+        Object value = jList1.getSelectedValue();
+        if (value instanceof CodeGenerator)
+            ((CodeGenerator)value).invoke(component);
+    }
+            
+    private static class Renderer extends DefaultListCellRenderer {
+        
+        private static int DARKER_COLOR_COMPONENT = 5;
+        
+        private Color fgColor;
+        private Color bgColor;
+        private Color bgColorDarker;
+        private Color bgSelectionColor;
+        private Color fgSelectionColor;
+        
+        public Renderer(JList list) {
+            setFont(list.getFont());
+            fgColor = list.getForeground();
+            bgColor = list.getBackground();
+            bgColorDarker = new Color(Math.abs(bgColor.getRed() - DARKER_COLOR_COMPONENT),
+                    Math.abs(bgColor.getGreen() - DARKER_COLOR_COMPONENT),
+                    Math.abs(bgColor.getBlue() - DARKER_COLOR_COMPONENT));
+            bgSelectionColor = list.getSelectionBackground();
+            fgSelectionColor = list.getSelectionForeground();
         }
         
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index,
+                boolean isSelected, boolean hasFocus) {
+            if (isSelected) {
+                setForeground(fgSelectionColor);
+                setBackground(bgSelectionColor);
+            } else {
+                setForeground(fgColor);
+                setBackground(index % 2 == 0 ? bgColor : bgColorDarker);
+            }            
+            setText(value instanceof CodeGenerator ? ((CodeGenerator)value).getDisplayName() : value.toString());
+            return this;
+        }        
     }
-
 }
