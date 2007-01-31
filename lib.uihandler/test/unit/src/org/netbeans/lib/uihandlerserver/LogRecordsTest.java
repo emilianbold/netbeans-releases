@@ -17,6 +17,7 @@
 
 package org.netbeans.lib.uihandlerserver;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -65,6 +66,54 @@ public class LogRecordsTest extends NbTestCase {
     protected void tearDown() throws Exception {
     }
 
+    public void testParamsGetCleared() throws Exception {
+        String r = 
+            "<record>" +
+            "<date>2006-11-17T10:16:14</date>" +
+            "<millis>1163729774285</millis>" +
+            "<sequence>20</sequence>" +
+            "<level>INFO</level>" +
+            "<thread>12</thread>" +
+            "<message>MSG</message>" +
+            "<key>MSG</key>" +
+            "<catalog>a.bundle.somewhere</catalog>" +
+            "<param>1</param>" +
+            "</record>" +
+            
+            "<record>" +
+            "<date>2006-11-17T10:16:14</date>" +
+            "<millis>1163729774285</millis>" +
+            "<sequence>20</sequence>" +
+            "<level>INFO</level>" +
+            "<thread>12</thread>" +
+            "<message>MSG</message>" +
+            "<key>MSG</key>" +
+            "<catalog>a.bundle.somewhere</catalog>" +
+            "<param>2</param>" +
+            "</record>";
+        
+        class H extends Handler {
+            int cnt;
+            
+            public void publish(LogRecord arg0) {
+                cnt++;
+                    assertNotNull("We have params " + cnt, arg0.getParameters());
+                assertEquals("One argument for " + cnt + "th record", 1, arg0.getParameters().length);
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+        }
+        H h = new H();
+        
+        LogRecords.scan(new ByteArrayInputStream(r.getBytes()), h);
+
+        assertEquals("Two records", 2, h.cnt);
+    }
+    
     public void testWriteAndRead() throws Exception {
         doWriteAndReadTest(System.currentTimeMillis());
     }
@@ -364,7 +413,7 @@ public class LogRecordsTest extends NbTestCase {
         
         assertEquals("The same amount of records", cnt, h.cnt);
     }
-
+    
     private void doWriteAndReadTest(long seed) throws Exception {
         Logger.getAnonymousLogger().info("seed is: " + seed);
         

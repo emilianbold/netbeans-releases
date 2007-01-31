@@ -453,6 +453,7 @@ public final class LogRecords {
                 callback.publish(r);
 
                 currentEx = null;
+                params = null;
                 values.clear();
             }
             
