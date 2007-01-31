@@ -139,7 +139,7 @@ public class StoreEntryNode extends AbstractNode implements Comparable {
             List<StoreEntry> newEntries = new ArrayList<StoreEntry>(entries.size());
             for(StoreEntry se : entries) {
                 LocalHistory.getInstance().getLocalHistoryStore().setLabel(se.getFile(), se.getTimestamp(), value);    
-                newEntries.add(new StoreEntry(se.getFile(), se.getStoreFile(), se.getTimestamp(), value));
+                newEntries.add(StoreEntry.createStoreEntry(se.getFile(), se.getStoreFile(), se.getTimestamp(), value));
             }            
             entries = newEntries;
         }        

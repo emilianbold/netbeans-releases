@@ -28,6 +28,7 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -38,6 +39,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;  
@@ -98,7 +100,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                         return providers.iterator();
                     }
                 }, 
-                20, -1);                                  
+                20, -1);        // XXX why -1, isn't in such a case a weakhashmap enough?                          
     }    
 
     public synchronized void fileCreate(File file, long ts) {
@@ -163,7 +165,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     private void fileDeleteImpl(File file, String from, String to, long ts) throws IOException {        
-        StoreDataFile data = readStoreData(file);         
+        StoreDataFile data = readStoreData(file, true);         
+        // XXX what if already deleted?
         
         if(data == null) {                        
             if(Diagnostics.ON) {                
@@ -209,12 +212,17 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }    
 
     private long lastModified(File file) {   
-        StoreDataFile data = readStoreData(file); 
-        return data != null ? data.getLastModified() : -1;
+        StoreDataFile data = readStoreData(file, true); 
+        return data != null && data.getStatus() != DELETED ? data.getLastModified() : -1;
     }    
     
-    public synchronized StoreEntry[] getFiles(File file) {
-        if(file.isFile()) {
+    public synchronized StoreEntry[] getStoreEntries(File file) {
+        // XXX file.isFile() won't work for deleted files
+        return getStoreEntriesImpl(file, file.isFile());
+    }
+    
+    private StoreEntry[] getStoreEntriesImpl(File file, boolean isFile) {
+        if(isFile) {
             File storeFolder = getStoreFolder(file);
             File[] storeFiles = storeFolder.listFiles(fileEntriesFilter);
             if(storeFiles != null) {
@@ -224,7 +232,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                     for (int i = 0; i < storeFiles.length; i++) {
                         long ts = Long.parseLong(storeFiles[i].getName());
                         String label = labels.get(ts);
-                        ret.add(new StoreEntry(file, storeFiles[i], ts, label));                
+                        ret.add(StoreEntry.createStoreEntry(file, storeFiles[i], ts, label));                
                     }
                     return ret.toArray(new StoreEntry[storeFiles.length]);
                 }
@@ -236,19 +244,240 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             return emptyStoreEntryArray;            
         }        
     }
-    
-    public synchronized StoreEntry getFile(File file, long ts) {
-        StoreEntry[] entries = getFiles(file);
-        StoreEntry entry = null;
-        for(StoreEntry se : entries) {
-            if(entry == null) {
-                entry = se;
-            } else {
-                if(se.getTimestamp() <= ts && se.getTimestamp() > entry.getTimestamp()) {
-                    entry = se;
-                }
-            }
+
+    public StoreEntry[] getFolderState(File root, File[] files, long ts) {
+
+        // check if the root wasn't deleted to that time        
+        File parentFile = root.getParentFile();
+        if(parentFile != null) {
+            List<HistoryEntry> parentHistory = readHistory(parentFile);                
+            if(wasDeleted(root, parentHistory, ts)) {                                    
+                return emptyStoreEntryArray;
+            }        
         }
+        
+        List<HistoryEntry> history = readHistory(root);                
+        
+//        // files for which we will return a StoreEntry representing its state
+//        Set<File> existingFiles = new HashSet<File>();
+//        // files for which we will return a StoreEntry indicating that it was deleteded in the given time
+//        List<File> deletedFiles = new ArrayList<File>();                
+//        // files for which were added after the given time
+//        Set<File> latelyAddedFiles = new HashSet<File>(); 
+        
+        // StoreEntries we will return
+        List<StoreEntry> ret = new ArrayList<StoreEntry>();                        
+        
+        Map<File, HistoryEntry> beforeRevert = new HashMap<File, HistoryEntry>();
+        Map<File, HistoryEntry> afterRevert = new HashMap<File, HistoryEntry>();
+        
+        for(HistoryEntry he : history) {
+            File file = new File(he.getTo());
+            if(he.getTimestamp() < ts) {
+                // this is the LAST thing which happened 
+                // to a file before the given time
+                beforeRevert.put(file, he);                                    
+            } else {
+                // this is the FIRST thing which happened 
+                // to a file before the given time
+                if(!afterRevert.containsKey(file)) {
+                    afterRevert.put(file, he);                                                       
+                }                
+            }            
+        }  
+
+        for(File file : files) {
+            HistoryEntry before = beforeRevert.get(file);            
+            HistoryEntry after = afterRevert.get(file);            
+            
+            // lets see what remains when we are throught all existing files
+            beforeRevert.remove(file);
+            afterRevert.remove(file);
+            
+            if(before != null && before.getStatus() == DELETED) {
+                // the file was deleted to the given time -> delete it!
+                ret.add(StoreEntry.createDeletedStoreEntry(file, ts)); 
+                continue;
+            }
+            
+            StoreDataFile data = readStoreData(file, true);
+            if(data == null) {
+                // XXX ???
+                continue;
+            }            
+            if(data.isFile()) {
+                StoreEntry se = getStoreEntry(file, ts);    
+                if(se != null) {
+                    ret.add(se);
+                } else {
+                    if(after != null && after.getStatus() == TOUCHED) {                        
+                        ret.add(StoreEntry.createDeletedStoreEntry(file, ts));
+                    } else {
+                        // XXX is this possible?
+                    }
+                    // the file still exists and there is no entry -> uptodate? 
+                }                                                
+            } else {
+                if(after != null && after.getStatus() == TOUCHED) {                        
+                    ret.add(StoreEntry.createDeletedStoreEntry(file, ts));
+                } else {
+                    // XXX is this possible?
+                }                
+                // the folder still exists and it wasn't deleted, so do nothing                                                
+            }                                    
+        } 
+        
+        
+        for(Entry<File, HistoryEntry> entry : beforeRevert.entrySet()) {
+            
+            File file = entry.getKey();
+            
+            // lets see what remains
+            afterRevert.remove(file);
+            
+            // the file doesn't exist now, but
+            // there was something done to it before the given time
+            if(entry.getValue().getStatus() == DELETED) {
+                // this is exactly what we have - forget it!
+                continue;
+            }
+                        
+            StoreDataFile data = readStoreData(file, true);
+            if(data != null) {
+                if(data.isFile()) {
+                    StoreEntry se = getStoreEntry(file, ts);    
+                    if(se != null) {
+                        ret.add(se);
+                    } else {
+                        // XXX what now? this should be covered
+                    }                                                
+                } else {
+                    // it must have existed
+                    File storeFile = getStoreFolder(root); // XXX why returning the root
+                    StoreEntry folderEntry = StoreEntry.createStoreEntry(new File(data.getAbsolutePath()), storeFile, data.getLastModified(), "");
+                    ret.add(folderEntry);
+                }                            
+            } else {
+                // XXX how to cover this?
+            }            
+        }
+        
+        for(Entry<File, HistoryEntry> entry : afterRevert.entrySet()) {        
+            // XXX do we even need this            
+//            if(entry.getValue().getStatus() == TOUCHED) {                
+//                continue;
+//            }      
+        }
+        return ret.toArray(new StoreEntry[ret.size()]);
+        
+        
+//        // get rid of files which where deleted at the given time
+//        for(File file : files) {
+//            if(!wasDeleted(file, history, ts)) {
+//                existingFiles.add(file);
+//            } else {
+//                deletedFiles.add(file);
+//            }                                   
+//        }                        
+//
+//        // get the files which where deleted or added after the given time
+//        for(HistoryEntry he : history) {
+//            if(he.getTimestamp() >= ts) {
+//                File file = new File(he.getTo());
+//                if( he.getStatus() == DELETED && !existingFiles.contains(file) ) {
+//                    // file was deleted and is not in the list yet - (still deleted and not created again?)
+//                    existingFiles.add(file);
+//                } else if (he.getStatus() == TOUCHED /*&& !existingFiles.contains(file)*/) {
+//                    // file was created (changed?) and it's not between the existing files yet
+//                    latelyAddedFiles.add(file);                    
+//                }
+//            }                        
+//        }                        
+        
+//        // get the StoreEntries for each file 
+//        for(File file : existingFiles) {            
+//            StoreDataFile data = readStoreData(file, true);            
+//            if(data != null) {
+//                if(data.isFile()) {
+//                    StoreEntry se = getStoreEntryImpl(file, ts, data);
+//                    if(se != null) {
+//                        ret.add(se);
+//                    } else {
+//              
+//                        // XXX hm, was added later? set as to be deleted
+//                        if(latelyAddedFiles.contains(file)) {
+//                            deletedFiles.add(file);    
+//                        }         
+//                
+//                    }   
+//                } else {
+//                    // XXX hm, was added later? set as to be deleted
+//                    if(latelyAddedFiles.contains(file)) {
+//                        // was 
+//                        deletedFiles.add(file);    
+//                    } else {                          
+//                        // it's a folder and we know it existed -> should be returned
+//                        File storeFile = getStoreFolder(root); // XXX why returning the root
+//                        StoreEntry folderEntry = new StoreEntry(new File(data.getAbsolutePath()), storeFile, data.getLastModified(), "");
+//                        ret.add(folderEntry);
+//                    }
+//                }
+//            }
+//        }
+                      
+//        // add entries for files which were deleted
+//        for(File file : deletedFiles) {
+//            ret.add(new DeletedStoreEntry(file, ts));
+//        }
+        
+    }
+    
+    private boolean wasDeleted(File file, List<HistoryEntry> history , long ts) {        
+        String path = file.getAbsolutePath();        
+        boolean deleted = false;
+        
+        for(int i = 0; i < history.size(); i++) {
+            HistoryEntry he = history.get(i);
+            if(he.getTo().equals(path)) {
+                if(he.getStatus() == DELETED) {
+                    deleted = true;
+                } else {
+                    deleted = false;
+                }                                        
+            }
+            if(he.ts >= ts) {
+                break;
+            }
+        }        
+        return deleted;
+    }
+    
+    public synchronized StoreEntry getStoreEntry(File file, long ts) {
+        return getStoreEntryImpl(file, ts, readStoreData(file, true));
+    }
+
+    private StoreEntry getStoreEntryImpl(File file, long ts, StoreDataFile data) {
+        // XXX what if file deleted?
+        StoreEntry entry = null;     
+                
+        if(data == null) {
+            // not in storage?
+            return null;
+        }
+        if(data.isFile()) {
+            StoreEntry[] entries = getStoreEntriesImpl(file, data.isFile());                    
+            for(StoreEntry se : entries) {
+                if(se.getTimestamp() <= ts) {
+                    if( entry == null || se.getTimestamp() > entry.getTimestamp() ) {                        
+                        entry = se;                        
+                    }
+                }
+            } 
+        } else {
+            // XXX could be a folder
+            // XXX dont implement this for folders as long there is no need
+        }
+        
         return entry;
     }
     
@@ -258,26 +487,28 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             storeFile.delete();    
         }                
         // XXX delete from parent history    
-        fireChanged(file, null);        
+        fireChanged(file, null);
     }
 
-    public synchronized StoreEntry[] getDeletedFiles(File file) {
-        if(file.isFile()) {
+    public synchronized StoreEntry[] getDeletedFiles(File root) {
+        if(root.isFile()) {
             return null;
         }
         
         Map<String, StoreEntry> deleted = new HashMap<String, StoreEntry>();
-        List<HistoryEntry> entries = readHistory(file);
+        List<HistoryEntry> entries = readHistory(root);
+        
+        // XXX the history is sorted, so get only the topmost deleted entry, and you are done.
         for(HistoryEntry he : entries) {
             if(he.getStatus() == DELETED) {
                 String filePath = he.getTo();
                 if(!deleted.containsKey(filePath)) {
-                    StoreDataFile data = readStoreData(new File(he.getTo()));
+                    StoreDataFile data = readStoreData(new File(he.getTo()), true);
                     if(data != null && data.getStatus() == DELETED) {
                         File storeFile = data.isFile ? 
                                             getStoreFile(new File(data.getAbsolutePath()), Long.toString(data.getLastModified()), false) :
-                                            getStoreFolder(file);
-                        deleted.put(filePath, new StoreEntry(new File(data.getAbsolutePath()), storeFile, data.getLastModified(), ""));
+                                            getStoreFolder(root); // XXX why returning the root???
+                        deleted.put(filePath, StoreEntry.createStoreEntry(new File(data.getAbsolutePath()), storeFile, data.getLastModified(), ""));
                     }
                 }
             }            
@@ -395,6 +626,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         for(File topLevelFile : topLevelFiles) {                        
             File[] secondLevelFiles = topLevelFile.listFiles();
             if(secondLevelFiles == null || secondLevelFiles.length == 0) {
+                FileUtils.deleteRecursively(topLevelFile);
                 continue;
             }
             
@@ -442,8 +674,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             return cleanUpStoredFolder(folder, ttl, now);
         }
         
-        StoreDataFile data = StoreDataFile.read(dataFile); 
-        if(data == null) {
+        StoreDataFile data = readStoreData(dataFile, false); 
+        if(data.getAbsolutePath() == null) {
             // what's this?
             return true;
         }
@@ -461,7 +693,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             return true;
         }        
         if(dataFile.lastModified() < now - ttl) {
-            dataFile.delete();            
+            writeStoreData(dataFile, null, false);                
             return true;
         }
         
@@ -487,7 +719,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(!skipped) {
             // all entries are gone -> remove also the metadata             
             labelsFile.delete();            
-            writeStoreData(dataFile, null);                                  
+            writeStoreData(dataFile, null, false);                                  
         } else {
             if(labels.size() > 0) {
                 writeLabels(labelsFile, labels);
@@ -526,11 +758,13 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         File historyFile = new File(store, HISTORY_FILE);
 
         if(!historyFile.exists()) {
+            purgeDataFile(store);
             return true;
         }
         
         if(historyFile.lastModified() < now - ttl) {
             historyFile.delete();            
+            purgeDataFile(store);
             return true;
         }
 
@@ -544,8 +778,18 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
         if(newEntries.size() > 0) {
             writeHistory(historyFile, newEntries.toArray(new HistoryEntry[newEntries.size()]));                        
-        }
-        return newEntries.size() < 1;
+            return false;
+        } else {
+            purgeDataFile(store);  
+            return true;
+        }                        
+    }
+    
+    private void purgeDataFile(File store) {
+        File dataFile = new File(store, DATA_FILE);        
+        if(dataFile.exists()) {
+            writeStoreData(dataFile, null, false);                
+        }                
     }
     
     private void fireChanged(File oldValue, File newValue) {
@@ -558,7 +802,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }        
     
     private void touch(File file, StoreDataFile data) throws IOException {      
-        writeStoreData(file, data);
+        writeStoreData(file, data, true);
     }    
        
     private void initStorage() {
@@ -575,8 +819,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         int i = 0;
         while(storeFolder.exists()) {
             // check for collisions 
-            StoreDataFile data = readStoreData(storeFolder);
-            if(data == null || !data.getAbsolutePath().equals(filePath)) {
+            StoreDataFile data = readStoreData(new File(storeFolder, DATA_FILE), false);
+            if(data == null || data.getAbsolutePath().equals(filePath)) {
                 break;                
             }
             storeFolder = getStoreFolderName(filePath + "." + i++);
@@ -722,11 +966,17 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return emptyHistory;
     }   
          
-    private StoreDataFile readStoreData(File file) {
+    private StoreDataFile readStoreData(File file, boolean isOriginalFile) {
+        if(isOriginalFile) {
+            file = getDataFile(file);
+        }
         return (StoreDataFile) turbo.readEntry(file, DataFilesTurboProvider.ATTR_DATA_FILES);
     }
 
-    private void writeStoreData(File file, StoreDataFile data) {        
+    private void writeStoreData(File file, StoreDataFile data, boolean isOriginalFile) {        
+        if(isOriginalFile) {
+            file = getDataFile(file);
+        }        
         turbo.writeEntry(file, DataFilesTurboProvider.ATTR_DATA_FILES, data);        
     }  
     
@@ -909,7 +1159,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             assert key instanceof File;            
             assert name != null;
                                 
-            File storeFile = getDataFile((File) key);                                
+            File storeFile = (File) key;                                
             if(!storeFile.exists()) {
                 return null;
             }            
@@ -920,9 +1170,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             assert key instanceof File;
             assert value == null || value instanceof StoreDataFile;
             assert name != null;
-                    
-            File storeFile = getDataFile((File) key);
-                        
+            
+            File storeFile = (File) key;   
             if(value == null) {
                 if(storeFile.exists()) {
                     storeFile.delete();
@@ -937,7 +1186,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             StoreDataFile.write(storeFile, (StoreDataFile) value);
             return true;
         }                       
-    }   
+    }     
     
 }
     

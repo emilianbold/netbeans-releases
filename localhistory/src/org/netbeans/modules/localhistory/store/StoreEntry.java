@@ -37,8 +37,12 @@ import org.openide.filesystems.FileUtil;
 /**
  *
  * @author Tomas Stupka
+ * 
+ * // XXX override for folder and to be deleted 
+ * // XXX status or isDeleted
+ * 
  */
-public class StoreEntry {
+public abstract class StoreEntry {
             
     private final File file;
     private final File storeFile;
@@ -46,8 +50,20 @@ public class StoreEntry {
     private final String label;
     private final Date date;    
     private String mimeType = null;
+      
+    public static StoreEntry createStoreEntry(File file, File storeFile, long ts, String label) {
+        return new DefaultStoreEntry(file, storeFile, ts, label);
+    }
+
+    public static StoreEntry createDeletedStoreEntry(File file, long ts) {
+        return new DeletedStoreEntry(file, ts);
+    }
+
+    public static StoreEntry createFakeStoreEntry(File file, long ts) {
+        return new FakeStoreEntry(file, ts);
+    }
     
-    public StoreEntry(File file, File storeFile, long ts, String label) {
+    private StoreEntry(File file, File storeFile, long ts, String label) {
         this.file = file;
         this.storeFile = storeFile;
         this.ts = ts;
@@ -79,29 +95,6 @@ public class StoreEntry {
         return storeFile.isFile();
     }
         
-    // XXX compresion level etc.
-    public static OutputStream createStoreFileOutputSteam(File storeFile) throws FileNotFoundException, IOException {
-        ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(storeFile)));
-        ZipEntry entry = new ZipEntry(storeFile.getName());
-        zos.putNextEntry(entry);
-        return zos;
-    }
-    
-    public OutputStream getStoreFileOutputStream() throws FileNotFoundException, IOException {
-        return createStoreFileOutputSteam(storeFile);
-    }
-    
-    public InputStream getStoreFileInputStream() throws FileNotFoundException, IOException {
-        ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(storeFile)));
-        ZipEntry entry;
-        while ( (entry = zis.getNextEntry()) != null ) {
-            if( entry.getName().equals(storeFile.getName()) ) {
-                return zis;
-            }
-        }
-        throw new FileNotFoundException();        
-    }    
-    
     public String getMIMEType() {
         if(mimeType == null) {
             FileObject fo = FileUtil.toFileObject(getFile());
@@ -112,5 +105,74 @@ public class StoreEntry {
             }                
         }        
         return mimeType;
+    }    
+    
+    // XXX compresion level etc.
+    static OutputStream createStoreFileOutputSteam(File storeFile) throws FileNotFoundException, IOException {
+        ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(storeFile)));
+        ZipEntry entry = new ZipEntry(storeFile.getName());
+        zos.putNextEntry(entry);
+        return zos;
     }
+        
+    abstract OutputStream getStoreFileOutputStream() throws FileNotFoundException, IOException;
+    public abstract InputStream getStoreFileInputStream() throws FileNotFoundException, IOException;    
+    
+    private static class DefaultStoreEntry extends StoreEntry { 
+        
+        private DefaultStoreEntry(File file, File storeFile, long ts, String label) {
+            super(file, storeFile, ts, label);
+        }    
+        
+        OutputStream getStoreFileOutputStream() throws FileNotFoundException, IOException {
+            return createStoreFileOutputSteam(getStoreFile());
+        }
+
+        public InputStream getStoreFileInputStream() throws FileNotFoundException, IOException {
+            ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(getStoreFile())));
+            ZipEntry entry;
+            while ( (entry = zis.getNextEntry()) != null ) {
+                if( entry.getName().equals(getStoreFile().getName()) ) {
+                    return zis;
+                }
+            }
+            throw new FileNotFoundException();        
+        }                    
+    }
+    
+    private static class DeletedStoreEntry extends StoreEntry {  
+        public DeletedStoreEntry(File file, long ts) {
+            super(file, null, ts, "");
+        } 
+        
+        OutputStream getStoreFileOutputStream() throws FileNotFoundException, IOException {
+            throwNoStoreEntry();
+            return null;
+        }
+
+        public InputStream getStoreFileInputStream() throws FileNotFoundException, IOException {
+            throwNoStoreEntry();
+            return null;            
+        }            
+        
+        private void throwNoStoreEntry() throws FileNotFoundException {
+            throw new FileNotFoundException("There is no store entry for file " + getFile() + " and timestamp " + getTimestamp());
+        }
+        
+    }
+
+    private static class FakeStoreEntry extends StoreEntry {
+        
+        public FakeStoreEntry(File file, long ts) {
+            super(file, file, ts, "");
+        }  
+
+        OutputStream getStoreFileOutputStream() throws FileNotFoundException, IOException {
+            throw new FileNotFoundException("There is no OutputStream for this for file " + getFile());
+        }
+
+        public InputStream getStoreFileInputStream() throws FileNotFoundException, IOException {
+            return new FileInputStream(getFile());            
+        }            
+    }    
 }
