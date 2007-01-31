@@ -252,7 +252,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
         TokenSequence<? extends TokenId> embeddedSeq) 
     {
         embeddedSeq.moveEnd();
-        if (embeddedSeq.moveNext()) {
+        if (embeddedSeq.movePrevious()) {
             return (embeddingSeq.offset() + embeddingSeq.token().length()) - (embeddedSeq.offset() + embeddedSeq.token().length());
         } else {
             return -1;
