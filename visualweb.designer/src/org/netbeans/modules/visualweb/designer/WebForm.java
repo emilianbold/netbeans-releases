@@ -1955,6 +1955,10 @@ public class WebForm implements Designer {
     void paintVirtualForms(Graphics2D g, HtmlDomProvider.RenderContext renderContext) {
         htmlDomProvider.paintVirtualForms(g, renderContext);
     }
+
+    public boolean isFormComponent(Element componentRootElement) {
+        return htmlDomProvider.isFormComponent(componentRootElement);
+    }
     
     
     private static class HtmlDomProviderListener implements HtmlDomProvider.HtmlDomProviderListener {
@@ -2247,6 +2251,10 @@ public class WebForm implements Designer {
         }
 
         public boolean isEscapedDesignBean(DesignBean bean) {
+            return false;
+        }
+
+        public boolean isFacesComponent(Element componentRootElement) {
             return false;
         }
     } // End of DummyHtmlDomProviderService.

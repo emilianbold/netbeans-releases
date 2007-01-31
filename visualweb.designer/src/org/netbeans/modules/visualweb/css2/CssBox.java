@@ -1189,13 +1189,22 @@ public class CssBox {
     }
 
     protected void paintDebugPositioning(Graphics g) {
-        MarkupDesignBean bean = getMarkupDesignBeanForCssBox(this);
+//        MarkupDesignBean bean = getMarkupDesignBeanForCssBox(this);
+////        if ((bean == null) || !boxType.isPositioned() || (FacesSupport.getFacesBean(bean) == null) ||
+////                FacesSupport.isFormBean(webform, bean)) {
+//        if ((bean == null) || !boxType.isPositioned()
+////        || (Util.getFacesBean(bean) == null) || Util.isFormBean(webform.getModel(), bean)) {
+//        || !WebForm.getHtmlDomProviderService().isFacesBean(bean)
+//        || webform.isFormBean(bean)) {
+//            return;
+//        }
+        Element componentRootElement = getElementForComponentRootCssBox(this);
 //        if ((bean == null) || !boxType.isPositioned() || (FacesSupport.getFacesBean(bean) == null) ||
 //                FacesSupport.isFormBean(webform, bean)) {
-        if ((bean == null) || !boxType.isPositioned()
+        if ((componentRootElement == null) || !boxType.isPositioned()
 //        || (Util.getFacesBean(bean) == null) || Util.isFormBean(webform.getModel(), bean)) {
-        || !WebForm.getHtmlDomProviderService().isFacesBean(bean)
-        || webform.isFormBean(bean)) {
+        || !WebForm.getHtmlDomProviderService().isFacesComponent(componentRootElement)
+        || webform.isFormComponent(componentRootElement)) {
             return;
         }
 
