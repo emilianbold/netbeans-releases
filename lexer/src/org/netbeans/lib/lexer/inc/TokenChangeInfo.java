@@ -49,23 +49,11 @@ public final class TokenChangeInfo<T extends TokenId> {
     
     private RemovedTokenList<T> removedTokenList;
     
-    private List<AbstractToken<T>> addedTokens;
-
-    private LAState laState;
-
     private int addedTokenCount;
 
     private int index;
 
     private int offset;
-
-    private int removedTokensEndOffset;
-
-    private int addedTokensEndOffset;
-    
-    private int offsetGapIndex;
-
-    private TokenListChange<? extends TokenId> child;
 
 
     public TokenChangeInfo(TokenList<T> currentTokenList) {
