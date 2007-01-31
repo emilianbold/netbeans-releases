@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -34,42 +34,38 @@ import org.netbeans.modules.java.source.usages.ClassFileUtil;
 
 /**
  * Represents a handle for {@link Element} which can be kept and later resolved
- * by another javac. The Javac {@link Element}s are valid only in the single 
- * {@link javax.tools.CompilationTask} or single run of the
- * {@link org.netbeans.api.java.source.CancellableTask}. If the client needs to
- * keep a reference to the {@link Element} and use it in the other CancellableTask 
- * he has to serialize it into the {@link ElementHandle}.
- * <div class="nonnormative"> 
+ * by another javac. The javac {@link Element}s are valid only in a single
+ * {@link javax.tools.CompilationTask} or a single run of a
+ * {@link CancellableTask}. A client needing to
+ * keep a reference to an {@link Element} and use it in another {@link CancellableTask}
+ * must serialize it into an {@link ElementHandle}.
+ * Currently not all {@link Element}s can be serialized. See {@link #create} for details.
+ * <div class="nonnormative">
  * <p>
- ** Typical usage of ElementHandle is:
+ * Typical usage of {@link ElementHandle} is as follows:
  * </p>
  * <pre>
  * final ElementHandle[] elementHandle = new ElementHandle[1];
- * javaSource.runCompileControlTask(new CancellableTask<CompilationController>() {            
+ * javaSource.runUserActionTask(new CancellableTask&lt;CompilationController>() {
  *     public void run(CompilationController compilationController) {
- *         parameter.toPhase(Phase.RESOLVED);
- *         CompilationUnitTree cu = compilationController.getTree ();
- *         List<? extends Tree> types = getTypeDecls();
- *         Tree tree = getInterestingElementTree (types);
- *         Element element = compilationController.getElement (tree);
- *         elementHanlde[0] = ElementHandle.create (element);
+ *         compilationController.toPhase(Phase.RESOLVED);
+ *         CompilationUnitTree cu = compilationController.getTree();
+ *         List&lt;? extends Tree> types = getTypeDecls(cu);
+ *         Tree tree = getInterestingElementTree(types);
+ *         Element element = compilationController.getElement(tree);
+ *         elementHandle[0] = ElementHandle.create(element);
  *    }
- * },priority);
+ * }, true);
  *
- * otherJavaSource.runCompileControlTask(new CancellableTask<CompilationController>() {            
+ * otherJavaSource.runUserActionTask(new CancellableTask&lt;CompilationController>() {
  *     public void run(CompilationController compilationController) {
- *         parameter.toPhase(Phase.RESOLVED);
- *         Element element = elementHanlde[0].resolve (compilationController);
- *         ....
+ *         compilationController.toPhase(Phase.RESOLVED);
+ *         Element element = elementHandle[0].resolve(compilationController);
+ *         // ....
  *    }
- * },priority);
+ * }, true);
  * </pre>
  * </div>
- * Currently not all the {@link Element}s are supported by handle, the supported
- * elements are of {@link ElementKind}: {@link ElementKind#PACKAGE}, {@link ElementKind#CLASS},
- * {@link ElementKind#INTERFACE}, {@link ElementKind#ENUM}, {@link ElementKind#METHOD},
- * {@link ElementKind#CONSTRUCTOR}, {@link ElementKind#INSTANCE_INIT}, {@link ElementKind#STATIC_INIT},
- * {@link ElementKind#FIELD}, {@link ElementKind#ENUM_CONSTANT}
  * @author Tomas Zezula
  */
 public final class ElementHandle<T extends Element> {
@@ -247,15 +243,14 @@ public final class ElementHandle<T extends Element> {
     
     /**
      * Factory method for creating {@link ElementHandle}.
-     * @param element for which the {@link ElementHandle} should be created,
-     * not all {@link ElementKind}s are supported, supported {@link ElementKind}s
+     * @param element for which the {@link ElementHandle} should be created. Permitted
+     * {@link ElementKind}s
      * are: {@link ElementKind#PACKAGE}, {@link ElementKind#CLASS},
-     * {@link ElementKind#INTERFACE}, {@link ElementKind#ENUM}, {@link ElementKind#METHOD},
+     * {@link ElementKind#INTERFACE}, {@link ElementKind#ENUM}, {@link ElementKind#ANNOTATION_TYPE}, {@link ElementKind#METHOD},
      * {@link ElementKind#CONSTRUCTOR}, {@link ElementKind#INSTANCE_INIT}, {@link ElementKind#STATIC_INIT},
-     * {@link ElementKind#FIELD}, {@link ElementKind#ENUM_CONSTANT}
+     * {@link ElementKind#FIELD}, and {@link ElementKind#ENUM_CONSTANT}.
      * @return a new {@link ElementHandle}
-     * @throws {@link IllegalArgumentException} if the element is of not supported
-     * {@link ElementKind}.
+     * @throws IllegalArgumentException if the element is of an unsupported {@link ElementKind}
      */
     public static<T extends Element> ElementHandle<T> create (final T element) throws IllegalArgumentException {
         assert element != null;
