@@ -16,7 +16,7 @@
 --%>
 
 <%-- completion for HTML entities --%>
-<%--CC
+<%--
 &q|
 ...
 &quot;
