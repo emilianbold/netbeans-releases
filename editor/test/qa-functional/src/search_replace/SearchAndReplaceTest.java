@@ -505,7 +505,8 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             editor.setCaretPosition(1, 1);
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
             find.cboFindWhat().requestFocus(); // [temp] failing tests on SunOS & Linux
-            pasteViaStrokes(find, KeyEvent.VK_V, KeyEvent.CTRL_MASK, null);
+            pasteViaStrokes(find, KeyEvent.VK_V, KeyEvent.CTRL_MASK, getTextFieldResolver(find.cboFindWhat().getTextField(), "search"));
+            log("Searching for: "+find.cboFindWhat().getTextField().getText());
             find.find();
             find.close();
             checkSelection(txtOper, 8, 14, "Issue #52115 testing failed on CTRL+V!");
@@ -517,6 +518,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
             find.cboFindWhat().requestFocus(); // [temp] failing tests on SunOS & Linux
             pasteViaStrokes(find, KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK, getTextFieldResolver(find.cboFindWhat().getTextField(), "text"));            
+            log("Searching for: "+find.cboFindWhat().getTextField().getText());
             find.find();
             find.close();
             checkSelection(txtOper, 167, 171, "Issue #52115 testing failed on Shift+Insert!");

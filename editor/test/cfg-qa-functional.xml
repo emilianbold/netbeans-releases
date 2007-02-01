@@ -31,12 +31,11 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-            
+    
     <!-- Pre-commit validation -->
-    <testbag testattribs="commit,stable,all,validation" name="Pre-commit Validation">
+    <testbag testattribs="commit" name="Pre-commit Validation">
         <testset dir="qa-functional/src">
-            <patternset>               
-                <include name="general/EditorKitsRegistryTest.class"/>
+            <patternset>                               
                 <include name="keyboard_shortcuts/*Test.class"/>
                 <include name="general/*Test.class"/>
                 <include name="popup_menus/MainMenuTest.class"/>
@@ -48,9 +47,15 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- Stable -->
-    <testbag testattribs="stable,validation,all" name="Stable Tests">
-        <testset dir="qa-functional/src">
+    <testbag testattribs="stable,validation" name="Stable Tests">
+        <testset dir="qa-functional/src">            
             <patternset>
+                <include name="keyboard_shortcuts/*Test.class"/>
+                <include name="general/*Test.class"/>
+                <include name="popup_menus/MainMenuTest.class"/>
+                <include name="search_replace/SearchAndReplaceTestSuite.class"/>
+                <include name="org/netbeans/test/editor/formatting/*.class"/>            
+                <exclude name="org/netbeans/test/editor/formatting/BasicTest.class/testReformat2"/>            
                 <include name="org/netbeans/test/editor/suites/abbrevs/AbbreviationsAddRemovePerformer.class"/>                
             </patternset>
         </testset>
@@ -64,7 +69,19 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-        
+    
+    <!-- Other tests & misc. -->
+    <testbag testattribs="others,all" name="Others tests">
+        <testset dir="qa-functional/src">
+            <patternset>                               
+                <include name="keyboard_shortcuts/*Test.class"/>
+                <include name="general/*Test.class"/>
+                <include name="popup_menus/MainMenuTest.class"/>                            
+            </patternset>
+        </testset>
+    </testbag>
+    
+    
     <!-- Search and Replace -->
     <testbag testattribs="all,search_replace" name="Search and Replace">
         <testset dir="qa-functional/src">
@@ -145,7 +162,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-                
+    
     <!-- Key bindings tests  - should be fixed with BasicOptionsOperator, keybindings were removed from Advanced options -->    
     <testbag testattribs="keybindings" name="KeyBindings-Actions">
         <testset dir="qa-functional/src">
@@ -166,7 +183,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-            
+    
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <executor name="ide-nogui" antfile="build-qa-functional.xml" target="runidetest-nogui"/>
     
