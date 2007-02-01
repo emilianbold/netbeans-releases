@@ -130,8 +130,7 @@ public class JarWithModuleAttributes extends Jar {
                         edited = true;
                     } catch (NumberFormatException e) {
                         // OK, ignore it, not numeric.
-                        // XXX provide explanatory URLs for all these warnings...
-                        getProject().log(manifestFile + ": warning: use of spec.version.base with non-integer OpenIDE-Module-Implementation-Version", Project.MSG_WARN);
+                        getProject().log(manifestFile + ": warning: use of spec.version.base with non-integer OpenIDE-Module-Implementation-Version (see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency)", Project.MSG_WARN);
                     }
                 }
                 SortedMap<String,Integer> additions = new TreeMap<String, Integer>();
@@ -151,7 +150,7 @@ public class JarWithModuleAttributes extends Jar {
                                 additions.put(cnb, versionI);
                             } catch (NumberFormatException e) {
                                 // OK, ignore this one, not numeric.
-                                getProject().log("Warning: in " + ownCnb + ", use of spec.version.base with non-integer OpenIDE-Module-Implementation-Version from " + cnb, Project.MSG_WARN);
+                                getProject().log("Warning: in " + ownCnb + ", use of spec.version.base with non-integer OpenIDE-Module-Implementation-Version from " + cnb + " (see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency)", Project.MSG_WARN);
                             }
                         }
                     }
@@ -163,20 +162,20 @@ public class JarWithModuleAttributes extends Jar {
                     edited = true;
                 }
                 if (!edited) {
-                    getProject().log("Warning: in " + ownCnb + ", using spec.version.base for no reason; could just use OpenIDE-Module-Specification-Version statically in the manifest", Project.MSG_WARN);
+                    getProject().log("Warning: in " + ownCnb + ", using spec.version.base for no reason; could just use OpenIDE-Module-Specification-Version statically in the manifest (see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency)", Project.MSG_WARN);
                 }
                 if (staticManifest.getMainSection().getAttributeValue("OpenIDE-Module-Specification-Version") != null) {
-                    getProject().log("Warning: in " + ownCnb + ", attempting to use spec.version.base while some OpenIDE-Module-Specification-Version is statically defined in manifest.mf; this cannot work", Project.MSG_WARN);
+                    getProject().log("Warning: in " + ownCnb + ", attempting to use spec.version.base while some OpenIDE-Module-Specification-Version is statically defined in manifest.mf; this cannot work (see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency)", Project.MSG_WARN);
                 } else {
                     added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Specification-Version", specVersBase));
                 }
             } else if (moduleDeps != null && moduleDeps.indexOf('=') != -1) {
-                getProject().log("Warning: in " + ownCnb + ", not using spec.version.base, yet declaring implementation dependencies; may lead to problems with Auto Update", Project.MSG_WARN);
+                getProject().log("Warning: in " + ownCnb + ", not using spec.version.base, yet declaring implementation dependencies; may lead to problems with Auto Update (see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency)", Project.MSG_WARN);
             } else if (implVers != null) {
                 try {
                     new Integer(implVers);
                 } catch (NumberFormatException e) {
-                    getProject().log(manifestFile + ": warning: use of non-integer OpenIDE-Module-Implementation-Version may be problematic for clients trying to use spec.version.base", Project.MSG_WARN);
+                    getProject().log(manifestFile + ": warning: use of non-integer OpenIDE-Module-Implementation-Version may be problematic for clients trying to use spec.version.base (see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency)", Project.MSG_WARN);
                 }
             }
             // Now ask the regular <jar> task to add all this stuff to the regular manifest.mf.
