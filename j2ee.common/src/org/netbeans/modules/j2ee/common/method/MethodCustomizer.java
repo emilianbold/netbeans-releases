@@ -47,6 +47,13 @@ public final class MethodCustomizer {
         this.existingMethods = existingMethods;
     }
     
+    /**
+     * Opens modal window for method customization.
+     * 
+     * @return true if OK button on customizer was pressed and changes should be written to source files,
+     * false if Cancel button on customizer was pressed or if customizer was cancelled in any other way and
+     * nothing should be written to source files.
+     */
     public boolean customizeMethod() {
         NotifyDescriptor notifyDescriptor = new NotifyDescriptor(panel, title,
                 NotifyDescriptor.OK_CANCEL_OPTION,
@@ -58,7 +65,14 @@ public final class MethodCustomizer {
     }
     
     public MethodModel getMethodModel() {
-        return null;
+        return MethodModel.create(
+                panel.getMethodName(),
+                panel.getReturnType(),
+                panel.getMethodBody(),
+                panel.getParameters(),
+                panel.getExceptions(),
+                panel.getModifiers()
+                );
     }
     
     public boolean finderReturnIsSingle() {

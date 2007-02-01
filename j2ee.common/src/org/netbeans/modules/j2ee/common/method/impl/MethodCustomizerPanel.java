@@ -22,6 +22,10 @@ package org.netbeans.modules.j2ee.common.method.impl;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.Modifier;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -36,7 +40,9 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
     public static final String RETURN_TYPE = "returnType";
     public static final String INTERFACES = "interfaces";
     
+    // immutable method prototype
     private final MethodModel methodModel;
+    private final ParametersPanel parametersPanel;
     
     private MethodCustomizerPanel(
             MethodModel methodModel,
@@ -74,7 +80,9 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
             disableInterfaces();;
         }
         
-        paramsPanel.add(new ParametersPanel());
+        
+        parametersPanel = new ParametersPanel();
+        parametersContainerPanel.add(parametersPanel);
         
         // listeners
         nameTextField.getDocument().addDocumentListener(new SimpleListener(NAME));
@@ -112,7 +120,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         ejbqlTextArea = new javax.swing.JTextArea();
         parExcLabel = new javax.swing.JLabel();
         exceptionAndParameterPane = new javax.swing.JTabbedPane();
-        paramsPanel = new javax.swing.JPanel();
+        parametersContainerPanel = new javax.swing.JPanel();
         exceptionsPanel = new javax.swing.JPanel();
         errorTextField = new javax.swing.JTextField();
         returnTypeLabel = new javax.swing.JLabel();
@@ -142,8 +150,8 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(parExcLabel, org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.parExcLabel.text")); // NOI18N
 
-        paramsPanel.setLayout(new java.awt.BorderLayout());
-        exceptionAndParameterPane.addTab(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.paramsPanel.TabConstraints.tabTitle"), paramsPanel); // NOI18N
+        parametersContainerPanel.setLayout(new java.awt.BorderLayout());
+        exceptionAndParameterPane.addTab(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.parametersContainerPanel.TabConstraints.tabTitle"), parametersContainerPanel); // NOI18N
 
         org.jdesktop.layout.GroupLayout exceptionsPanelLayout = new org.jdesktop.layout.GroupLayout(exceptionsPanel);
         exceptionsPanel.setLayout(exceptionsPanelLayout);
@@ -318,7 +326,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton oneRadioButton;
     private javax.swing.JLabel parExcLabel;
     private javax.swing.JSeparator parExcSeparator;
-    private javax.swing.JPanel paramsPanel;
+    private javax.swing.JPanel parametersContainerPanel;
     private javax.swing.JCheckBox remoteCheckBox;
     private javax.swing.JLabel returnTypeLabel;
     private javax.swing.JTextField returnTypeTextField;
@@ -336,6 +344,24 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         return returnTypeTextField.getText().trim();
     }
 
+    public List<MethodModel.Variable> getParameters() {
+        return parametersPanel.getParameters();
+    }
+    
+    public List<String> getExceptions() {
+        return Collections.<String>emptyList();
+    }
+    
+    public Set<Modifier> getModifiers() {
+        // not changing?
+        return methodModel.getModifiers();
+    }
+    
+    public String getMethodBody() {
+        // not changing?
+        return methodModel.getBody();
+    }
+    
     public boolean hasLocal() {
         return localCheckBox.isEnabled() & localCheckBox.isSelected();
     }
