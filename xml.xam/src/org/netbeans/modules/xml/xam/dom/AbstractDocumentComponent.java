@@ -831,6 +831,12 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
             if (childElement == null) return;
             removeChild(childElement);
             if (oldVal == null) return;
+        } else if (text.length() == 0) {
+            if (childElement != null) {
+                removeChild(childElement);
+            }
+            childElement = getModel().getDocument().createElementNS(qname.getNamespaceURI(), qname.getLocalPart());
+            getModel().getAccess().appendChild(getPeer(), childElement, this);
         } else {
             if (text.equals(oldVal)) return;
             if (childElement == null) {
