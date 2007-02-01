@@ -63,6 +63,8 @@ Microsystems, Inc. All Rights Reserved.
             post-preverify:           called after preverification
             pre-jar:                  called before jar building
             post-jar:                 called after jar building
+            pre-build:                called before final distribution building
+            post-build:               called after final distribution building
             pre-clean:                called before cleaning build products
             post-clean:               called after cleaning build products
 
@@ -89,6 +91,7 @@ Microsystems, Inc. All Rights Reserved.
             jar:                      jar archive building
             run:                      execution
             debug:                    execution in debug mode
+            build:                    building of the final distribution
             javadoc:                  javadoc generation
 
             Example of overriding the target for project execution could look like

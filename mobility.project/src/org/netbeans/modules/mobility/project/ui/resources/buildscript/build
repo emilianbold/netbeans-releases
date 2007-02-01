@@ -1,0 +1,8 @@
+<xsl:comment>build</xsl:comment>    
+
+    <target name="pre-build"/>
+
+    <target name="post-build"/>
+
+    <target name="build" depends="__DEPENDS__,post-build" description="Builds final distribution of the application."/>
+

@@ -3,7 +3,7 @@
     <target name="add-configuration" unless="contains.manifest.configuration">
         <nb-output file="${{dist.dir}}/${{dist.jad}}" encoding="UTF-8" append="true">MicroEdition-Configuration: ${platform.configuration}
 </nb-output>
-        <nb-output file="${{manifest.file}}" encoding="UTF-8" append="true">MicroEdition-Configuration: ${platform.configuration}
+        <nb-output file="${{manifest.build.file}}" encoding="UTF-8" append="true">MicroEdition-Configuration: ${platform.configuration}
 </nb-output>
     </target>
 

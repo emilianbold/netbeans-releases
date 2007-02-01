@@ -1,4 +1,4 @@
 <xsl:comment>clean and build</xsl:comment>    
     
-    <target name="rebuild" depends="clean,jar" description="Rebuild the application."/>
+    <target name="rebuild" depends="clean,build" description="Rebuild the application."/>
 

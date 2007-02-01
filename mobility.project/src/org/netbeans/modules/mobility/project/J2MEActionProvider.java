@@ -106,7 +106,7 @@ public class J2MEActionProvider implements ActionProvider {
     
     public J2MEActionProvider(J2MEProject project, AntProjectHelper helper) {
         commands = new HashMap<String,String[]>();
-        commands.put(COMMAND_BUILD, new String[] {"jar"}); // NOI18N
+        commands.put(COMMAND_BUILD, new String[] {"build"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
         commands.put(COMMAND_REBUILD, new String[] {"rebuild"}); // NOI18N
         commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
@@ -120,7 +120,7 @@ public class J2MEActionProvider implements ActionProvider {
         commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug"}); // NOI18N
         commands.put(COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
         commands.put(COMMAND_DEPLOY, new String[] {"deploy"}); // NOI18N
-        commands.put(COMMAND_BUILD_ALL, new String[] {"jar-all"}); // NOI18N
+        commands.put(COMMAND_BUILD_ALL, new String[] {"build-all"}); // NOI18N
         commands.put(COMMAND_CLEAN_ALL, new String[] {"clean-all"}); // NOI18N
         commands.put(COMMAND_REBUILD_ALL, new String[] {"rebuild-all"}); // NOI18N
         commands.put(COMMAND_JAVADOC_ALL, new String[] {"javadoc-all"}); // NOI18N

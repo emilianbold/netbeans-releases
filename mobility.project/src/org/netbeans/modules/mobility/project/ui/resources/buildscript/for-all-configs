@@ -19,6 +19,11 @@
             <param name="target.to.call" value="jar"/>
         </antcall>
     </target>
+    <target name="build-all">
+        <antcall target="for-all-configs">
+            <param name="target.to.call" value="build"/>
+        </antcall>
+    </target>
     <target name="javadoc-all">
         <antcall target="for-all-configs">
             <param name="target.to.call" value="javadoc"/>

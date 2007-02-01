@@ -4,7 +4,7 @@
         <dirname file="${{dist.dir}}/${{dist.jar}}" property="dist.jar.dir"/>
         <mkdir dir="${{dist.jar.dir}}"/>
         <property name="manifest.build.file" location="${{manifest.file}}"/>
-        <jar compress="${{jar.compress}}" jarfile="${{dist.dir}}/${{dist.jar}}" manifest="${{manifest.file}}" manifestencoding="UTF-8">
+        <jar compress="${{jar.compress}}" jarfile="${{dist.dir}}/${{dist.jar}}" manifest="${{manifest.build.file}}" manifestencoding="UTF-8">
             <fileset dir="${{buildsystem.baton}}"/>
         </jar>
     </target>

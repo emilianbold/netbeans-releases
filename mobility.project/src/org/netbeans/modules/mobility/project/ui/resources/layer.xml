@@ -206,7 +206,13 @@ Microsystems, Inc. All Rights Reserved.
                     </folder>
                     <attr name="jar-subtargets/jar" boolvalue="true"/>
                     <file name="jar" url="buildscript/jar"/>
-                    <attr name="jar/pre-run" boolvalue="true"/>
+                    <attr name="jar/build-subtargets" boolvalue="true"/>
+                    <folder name="build-subtargets">
+                        <file name="pre-build"/>
+                    </folder>
+                    <attr name="build-subtargets/build" boolvalue="true"/>
+                    <file name="build" url="buildscript/build"/>
+                    <attr name="build/pre-run" boolvalue="true"/>
                     <file name="pre-run"/>
                     <attr name="pre-run/run-subtargets" boolvalue="true"/>
                     <folder name="run-subtargets">
