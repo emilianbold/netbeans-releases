@@ -19,18 +19,20 @@
 
 package org.netbeans.modules.web.core.syntax;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import java.net.URLClassLoader;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 public class JspUtils {
 
@@ -117,10 +119,15 @@ public class JspUtils {
     /** This method returns an image, which is displayed for the FileObject in the explorer.
      * @param doc This is the documet, in which the icon will be used (for exmaple for completion).
      * @param fo file object for which the icon is looking for
-     * @return an Image which is dislayed in the explorer for the file. 
+     * @return an Image which is dislayed in the explorer for the file.
      */
     public static java.awt.Image getIcon(Document doc, FileObject fo){
-        return JspContextInfo.getContextInfo (fo).getIcon (doc, fo);
+        try {
+            return DataObject.find(fo).getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
+        }catch(DataObjectNotFoundException e) {
+            Logger.getLogger(JspUtils.class.getName()).log(Level.INFO, "Cannot find icon for " + fo.getNameExt(), e);
+        }
+        return null;
     }
     
     /** Returns an absolute context URL (starting with '/') for a relative URL and base URL.
