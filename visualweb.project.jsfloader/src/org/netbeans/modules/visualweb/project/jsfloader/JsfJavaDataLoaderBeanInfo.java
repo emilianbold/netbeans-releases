@@ -28,9 +28,8 @@ import java.beans.SimpleBeanInfo;
 import java.awt.Image;
 
 import org.openide.ErrorManager;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Utilities;
-
-import org.netbeans.modules.java.JavaDataLoader;
 
 
 /**
@@ -42,7 +41,7 @@ public class JsfJavaDataLoaderBeanInfo extends SimpleBeanInfo {
 
     public BeanInfo[] getAdditionalBeanInfo() {
         try {
-            return new BeanInfo[] {Introspector.getBeanInfo(JavaDataLoader.class)};
+            return new BeanInfo[] {Introspector.getBeanInfo(MultiFileLoader.class)};
         } catch(IntrospectionException ie) {
             ErrorManager.getDefault().notify(ie);
             return null;

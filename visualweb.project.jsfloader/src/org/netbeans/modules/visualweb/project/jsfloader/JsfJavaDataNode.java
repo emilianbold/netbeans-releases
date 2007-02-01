@@ -21,7 +21,10 @@
 package org.netbeans.modules.visualweb.project.jsfloader;
 
 
-import org.netbeans.modules.java.JavaNode;
+import org.netbeans.api.java.loaders.JavaDataSupport;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
 /**
@@ -29,16 +32,20 @@ import org.openide.util.HelpCtx;
  *
  * @author  Peter Zavadsky
  */
-public class JsfJavaDataNode extends JavaNode {
+public class JsfJavaDataNode extends FilterNode {
 
     private static final String HELP_ID = "org.netbeans.modules.editor.java.JavaKit";
 
     /** Creates new JsfDataNode */
     public JsfJavaDataNode (JsfJavaDataObject jsfDataObject) {
-        super(jsfDataObject);
-        setIconBaseWithExtension("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJavaObject.png"); // NOI18N
+        this(JavaDataSupport.createJavaNode(jsfDataObject.getPrimaryFile()));
     }
 
+    private JsfJavaDataNode (Node javaNode) {
+        super(javaNode);
+        ((AbstractNode)javaNode).setIconBaseWithExtension("com/sun/rave/project/jsfloader/resources/jsfJavaObject.png"); // NOI18N
+    }
+    
     public HelpCtx getHelpCtx() {
         return new HelpCtx(HELP_ID);
     }

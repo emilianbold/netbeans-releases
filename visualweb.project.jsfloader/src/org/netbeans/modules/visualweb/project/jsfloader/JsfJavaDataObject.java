@@ -23,17 +23,16 @@ package org.netbeans.modules.visualweb.project.jsfloader;
 
 import java.io.IOException;
 
-import org.netbeans.modules.java.JavaDataObject;
-import org.netbeans.modules.java.JavaEditor;
-
 import org.openide.ErrorManager;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.CookieSet;
+import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
@@ -46,20 +45,13 @@ import org.netbeans.modules.visualweb.project.jsf.api.JsfDataObjectException;
  *
  * @author Peter Zavadsky
  */
-public class JsfJavaDataObject extends JavaDataObject implements JsfJavaDataObjectMarker {
+public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObjectMarker {
 
 
     static final long serialVersionUID =8354927561693097159L;
 
     public JsfJavaDataObject(FileObject pf, JsfJavaDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-        init();
-    }
-
-
-    private void init() {
-        CookieSet set = getCookieSet();
-        set.add(JsfJavaEditorSupport.class, this);
     }
 
     /** Gets the superclass cookie, without hacking save cookie. */
@@ -67,7 +59,10 @@ public class JsfJavaDataObject extends JavaDataObject implements JsfJavaDataObje
         return super.getCookie(clazz);
     }
 
+    private OpenEdit openEdit = null;
+    
     /** Overrides behaviour to provide compound save cookie. */
+    @Override
     public Node.Cookie getCookie(Class clazz) {
         if(clazz == SaveCookie.class){
             FileObject primaryJsfFileObject = Utils.findJspForJava(getPrimaryFile());
@@ -87,7 +82,15 @@ public class JsfJavaDataObject extends JavaDataObject implements JsfJavaDataObje
                     return new CompoundSaveCookie(javaSaveCookie, jspSaveCookie);
                 }
             }
-        }
+        }else if (OpenCookie.class.equals(clazz) || EditCookie.class.equals(clazz)) {
+            if (openEdit == null)
+                openEdit = new OpenEdit();
+
+            return openEdit;
+        }else if (clazz.isAssignableFrom(JsfJavaEditorSupport.class)) {
+            return getJsfJavaEditorSupport();
+         }
+
         return super.getCookie(clazz);
     }
 
@@ -104,20 +107,9 @@ public class JsfJavaDataObject extends JavaDataObject implements JsfJavaDataObje
         return new HelpCtx(JsfJavaDataLoader.class.getName () + ".Obj"); // NOI18N
     }
 
-    /** Creates new Cookie */
-    public Node.Cookie createCookie(Class klass) {
-        if(klass.isAssignableFrom(JsfJavaEditorSupport.class)) {
-            // XXX See above.
-            return getJavaEditor();
-        }
-
-        return super.createCookie(klass);
-    }
-
     private JsfJavaEditorSupport jsfJavaEditor;
 
-    // from JavaDataObject
-    protected JavaEditor createJavaEditor() {
+    protected JsfJavaEditorSupport getJsfJavaEditorSupport() {
         if(jsfJavaEditor == null) {
             jsfJavaEditor = new JsfJavaEditorSupport(this);
         }
@@ -131,7 +123,6 @@ public class JsfJavaDataObject extends JavaDataObject implements JsfJavaDataObje
     private void readObject(java.io.ObjectInputStream is)
     throws IOException, ClassNotFoundException {
         is.defaultReadObject();
-        init();
     }
 
 
@@ -213,9 +204,17 @@ public class JsfJavaDataObject extends JavaDataObject implements JsfJavaDataObje
         }
         getCookieSet().remove(save);
     }
+    
+    private class OpenEdit implements OpenCookie, EditCookie {
+        public void open() {
+            getJsfJavaEditorSupport().open();
+        }
+        public void edit() {
+            getJsfJavaEditorSupport().open();
+        }
+    }
+    
 // </rave>
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-   
 }
     

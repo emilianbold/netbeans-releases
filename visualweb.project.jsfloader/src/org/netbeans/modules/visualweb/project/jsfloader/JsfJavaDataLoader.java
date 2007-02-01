@@ -24,14 +24,13 @@ package org.netbeans.modules.visualweb.project.jsfloader;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
-
-import org.netbeans.modules.java.JavaDataLoader;
-
+import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.util.NbBundle;
 
 /**
@@ -42,11 +41,13 @@ import org.openide.util.NbBundle;
  *
  * @author  Peter Zavadsky
  */
-public class JsfJavaDataLoader extends JavaDataLoader {
+public class JsfJavaDataLoader extends MultiFileLoader {
 
 
     static final long serialVersionUID =-5809935261731217882L;
-
+    
+    public static final String JAVA_EXTENSION = "java"; // NOI18N
+    
     protected static Object dataObjectPool;
     protected static Method dataObjectPoolFindMethod;
 
@@ -95,7 +96,7 @@ public class JsfJavaDataLoader extends JavaDataLoader {
             return null;
         }
 
-        FileObject primaryFile = super.findPrimaryFile(fo);
+        FileObject primaryFile = findPrimaryJavaFile(fo);
         if (primaryFile == null) {
             return null;
         }
@@ -134,5 +135,22 @@ public class JsfJavaDataLoader extends JavaDataLoader {
         return new JsfJavaDataObject(primaryFile, this);
     }
     
+    @Override
+    protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
+        return JavaDataSupport.createJavaFileEntry(obj, primaryFile);        
+    }
+
+    @Override
+    protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj, FileObject secondaryFile) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private FileObject findPrimaryJavaFile(FileObject fo) {
+        if (fo.getExt().equals(JAVA_EXTENSION)) {
+            return fo;
+        }
+        return null;
+    }
+        
 }
 

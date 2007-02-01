@@ -27,16 +27,13 @@ import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.spi.designer.jsf.DesignerJsfServiceProvider;
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -44,20 +41,16 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
-import javax.swing.text.StyledDocument;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.PrintCookie;
 import org.openide.loaders.*;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -70,6 +63,7 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
+import org.openide.text.DataEditorSupport.Env;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.text.NbDocument;
@@ -96,18 +90,13 @@ import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 // </multiview>
 
-// java
-import org.netbeans.modules.java.JavaDataObject;
-import org.netbeans.modules.java.JavaEditor;
-
-
 /**
  * Editor support for JSF java data objects. The one which provides
  * JSF multiiew component.
  *
  * @author Peter Zavadsky
  */
-public final class JsfJavaEditorSupport extends JavaEditor {
+public final class JsfJavaEditorSupport extends DataEditorSupport implements EditorCookie.Observable, CloseCookie, PrintCookie {
 
 // <multiview>
     private static final String MV_ID_DESIGNER = "designer"; // NOI18N
@@ -129,7 +118,7 @@ public final class JsfJavaEditorSupport extends JavaEditor {
     
     /** Constructor. */
     JsfJavaEditorSupport(JsfJavaDataObject obj) {
-        super(obj);
+        super(obj, new Environment(obj)); 
     }
     
     
@@ -643,7 +632,7 @@ public final class JsfJavaEditorSupport extends JavaEditor {
         }
         
         public MultiViewElement createElement() {
-            JavaEditor javaEditor = (JavaEditor)jsfJavaDataObject.getCookie(JavaEditor.class);
+            DataEditorSupport javaEditor = (DataEditorSupport)jsfJavaDataObject.getCookie(DataEditorSupport.class);
             if(javaEditor != null) {
                 javaEditor.prepareDocument();
                 final MultiViewElement multiViewElement = new JavaEditorTopComponent(javaEditor);
@@ -689,7 +678,7 @@ public final class JsfJavaEditorSupport extends JavaEditor {
         
     }
     
-    private static class JavaEditorTopComponent extends JavaEditor.JavaEditorComponent
+    private static class JavaEditorTopComponent extends CloneableEditor
             implements MultiViewElement, CloneableEditorSupport.Pane {
         private static final long serialVersionUID =-3126744316624172415L;
         
@@ -1021,6 +1010,26 @@ public final class JsfJavaEditorSupport extends JavaEditor {
     }
 // </multiview>
     
-    
+    /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
+    private static class Environment extends DataEditorSupport.Env {
+        
+        private static final long serialVersionUID = 3035543168452715818L;
+        
+        /** Constructor. */
+        public Environment(JsfJavaDataObject obj) {
+            super(obj);
+        }
+        
+        
+        /** Implements abstract superclass method. */
+        protected FileObject getFile() {
+            return getDataObject().getPrimaryFile();
+        }
+        
+        /** Implements abstract superclass method.*/
+        protected FileLock takeLock() throws IOException {
+            return getFile().lock();
+        }
+    } // End of nested Environment class.
 }
 
