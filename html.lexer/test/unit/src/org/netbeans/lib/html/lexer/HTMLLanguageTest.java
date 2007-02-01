@@ -54,9 +54,9 @@ public class HTMLLanguageTest extends TestCase {
         // Check token categories
         Set testTids = language.tokenCategories();
         Collection tids = Arrays.asList(new String[] {
-            "html-text", "html-script", "html-ws", "html-error", "html-tag", "html-tag", "html-argument",
-            "html-operator", "html-value", "html-block-comment", "html-sgml-comment", "html-sgml-declaration", 
-            "html-character", "html-text", "html-tag", "html-tag"
+            "text", "script", "ws", "error", "tag", "tag", "argument",
+            "operator", "value", "block-comment", "sgml-comment", "sgml-declaration", 
+            "character", "text", "tag", "tag"
         });
         LexerTestUtilities.assertCollectionsEqual("Invalid token ids", tids, testTids);
                 
