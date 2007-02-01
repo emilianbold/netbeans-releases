@@ -47,7 +47,7 @@ import org.openide.util.NbBundle;
 
 public final class WaitScreenCD extends ComponentDescriptor {
     
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.midpnb.components.displayables.WaitScreen"); // NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.WaitScreen"); // NOI18N
     
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/wait_screen16.png"; // NOI18N
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/wait_screen64.png"; // NOI18N

@@ -22,21 +22,24 @@ package org.netbeans.modules.vmd.midpnb.components.resources;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
+import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractScreenCD;
 
 /**
  *
- * @author Anton Chechel
+ * @author Karol Harezlak
  */
 public class SimpleCancellableTaskCD extends ComponentDescriptor {
     
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTask"); // NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.util.SimpleCancellableTask"); // NOI18N
     
     
     public SimpleCancellableTaskCD() {
@@ -59,6 +62,10 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
         );
+    }
+    
+    public void postInitialize (DesignComponent component) {
+        MidpProjectSupport.addLibraryToProject(component.getDocument(), AbstractScreenCD.MIDP_NB_LIBRARY); 
     }
 
 }

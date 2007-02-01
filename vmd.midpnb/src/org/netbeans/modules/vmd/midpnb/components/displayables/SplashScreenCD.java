@@ -44,7 +44,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.eventhandler.PropertyEditor
  */
 public class SplashScreenCD extends ComponentDescriptor {
     
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.midpnb.components.displayables.SplashScreen"); // NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.SplashScreen"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/splash_screen16.png"; // NOI18N
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/splash_screen64.png"; // NOI18N
