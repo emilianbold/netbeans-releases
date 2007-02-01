@@ -28,64 +28,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- <property name="xtest.ide.create.project" value="true"/> -->
     <!-- Opens project at specified location -->
 <!--    <property name="xtest.ide.open.project" location="${xtest.data}/SampleProject"/>-->
-
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-
-    <!-- You can override default qa-functional-compiler if you need something special -->
-
-    <target name="qa-functional-compiler">
-        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
-            <classpath>
-                <path refid="jemmy.and.jelly.path"/>
-
-                <pathelement location="${editor/bookmarks.dir}/modules/org-netbeans-modules-editor-bookmarks.jar"/>
-                
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-util.jar"/>
-
-                <pathelement location="${openide.dir}/core/openide.jar"/>
-                <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
-
-                <pathelement location="${nb_all}/editor/build/test/qa-functional/classes"/>
-		<pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
-		<pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
-		<pathelement location="${projects/projectuiapi.dir}/modules/org-netbeans-modules-projectuiapi.jar"/>
-            </classpath>
-        </buildTests>
-    </target>
-         
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->
-    
-    <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
-         If you need to customize it, you can uncomment the following and override it.
-    -->
-    <target name="runidetest">        
-        <executeTests  pluginName="ide">
-            <classpath>
-                <path refid="jemmy.and.jelly.path"/>  
-
-                <pathelement location="${editor/bookmarks.dir}/modules/org-netbeans-modules-editor-bookmarks.jar"/>
-                
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-util.jar"/>
-
-                <pathelement location="${openide.dir}/core/openide.jar"/>
-                <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
-
-                <pathelement location="${nb_all}/editor/build/test/qa-functional/classes"/>
-		<pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
-		<pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
-		<pathelement location="${projects/projectuiapi.dir}/modules/org-netbeans-modules-projectuiapi.jar"/>
-            </classpath>
-        </executeTests>
-    </target>
+   
     
 </project>

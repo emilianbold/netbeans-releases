@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
    <testbag testattribs="validation" name="Bookmarks Validation">
          <testset dir="qa-functional/src">
              <patternset>
-               <include name="bookmarks/BookmarksTestSuite.class"/>
+               <include name="bookmarks/BookmarksPersistenceTest.class"/>
              </patternset>
          </testset>
      </testbag>
