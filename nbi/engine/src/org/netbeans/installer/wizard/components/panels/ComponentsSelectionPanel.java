@@ -25,19 +25,14 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JTree;
@@ -583,7 +578,6 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             panel.setBackground(selectionBackground);
             
             checkBox = new NbiCheckBox();
-            checkBox.setOpaque(false);
             checkBox.setFocusable(false);
             checkBox.addActionListener(new ActionListener() {
                 public void actionPerformed(final ActionEvent event) {
@@ -592,7 +586,6 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             });
             
             label = new NbiLabel();
-            label.setOpaque(false);
             label.setFocusable(false);
             label.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(final MouseEvent event) {
@@ -622,9 +615,6 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(0, 0, 0, 0),           // padding
                     0, 0));                           // padx, pady - ???);
-            
-            System.out.println(checkBox.getBorder());
-            System.out.println(checkBox.getWidth() + ", " + checkBox.getHeight());
         }
         
         public Component getTreeCellRendererComponent(
@@ -695,13 +685,13 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             fireEditingCanceled();
         }
         
-        public void addCellEditorListener(CellEditorListener listener) {
+        public void addCellEditorListener(final CellEditorListener listener) {
             synchronized (listeners) {
                 listeners.add(listener);
             }
         }
         
-        public void removeCellEditorListener(CellEditorListener listener) {
+        public void removeCellEditorListener(final CellEditorListener listener) {
             synchronized (listeners) {
                 listeners.remove(listener);
             }
