@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -243,7 +243,7 @@ public final class View implements LogicalViewProvider {
         }
         
         public Image getIcon(int type) {
-            return Utilities.loadImage("org/netbeans/modules/ant/freeform/resources/freeform-project.png", true); // NOI18N
+            return Utilities.icon2Image(ProjectUtils.getInformation(p).getIcon());
         }
         
         public Image getOpenedIcon(int type) {

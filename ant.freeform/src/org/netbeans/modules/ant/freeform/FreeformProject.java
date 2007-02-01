@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -162,7 +162,11 @@ public final class FreeformProject implements Project {
         }
         
         public Icon getIcon() {
-            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/ant/freeform/resources/freeform-project.png", true)); // NOI18N
+            if (usesAntScripting()) {
+                return new ImageIcon(Utilities.loadImage("org/netbeans/modules/ant/freeform/resources/freeform-project.png", true)); // NOI18N
+            } else {
+                return new ImageIcon(Utilities.loadImage("org/netbeans/modules/project/ui/resources/projectTab.gif", true)); // NOI18N
+            }
         }
         
         public Project getProject() {
@@ -260,4 +264,19 @@ public final class FreeformProject implements Project {
         
     }
     
+    /**
+     * Utility method to decide if the project actually uses Ant scripting.
+     * It does if at least one of these hold:
+     * <ol>
+     * <li>There is a <code>build.xml</code> at top level.
+     * <li>The property <code>ant.script</code> is defined.
+     * <li>There are any <code>&lt;action&gt;</code>s bound.
+     * </ol>
+     */
+    public boolean usesAntScripting() {
+        return getProjectDirectory().getFileObject("build.xml") != null || // NOI18N
+                evaluator().getProperty("ant.script") != null || // NOI18N
+                helper.getPrimaryConfigurationData(true).getElementsByTagName("action").getLength() > 0; // NOI18N
+    }
+
 }
