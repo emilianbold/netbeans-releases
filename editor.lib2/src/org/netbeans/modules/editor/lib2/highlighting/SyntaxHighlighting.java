@@ -58,6 +58,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.lib2.highlighting.SyntaxHighlighting"; //NOI18N
     
     private final HashMap<String, WeakHashMap<TokenId, AttributeSet>> attribsCache = new HashMap<String, WeakHashMap<TokenId, AttributeSet>>();
+    private final HashMap<String, FontColorSettings> fcsCache = new HashMap<String, FontColorSettings>();
     
     private final Document document;
     private final String mimeTypeForHack;
@@ -137,7 +138,8 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
 
                 if (sequences == null) {
                     // initialize
-                    TokenSequence<? extends TokenId> seq = scanner.tokenSequence().subSequence(startOffset, endOffset);
+                    TokenSequence<? extends TokenId> seq = scanner.tokenSequence();
+                    seq.move(startOffset);
                     sequences = new ArrayList<TokenSequence<? extends TokenId>>();
                     sequences.add(seq);
                     state = S_NORMAL;
@@ -326,8 +328,14 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         }
 
         private AttributeSet findTokenAttribs(TokenId tokenId, String mimePath, Language<? extends TokenId> innerLanguage) {
-            Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimePath));
-            FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
+            FontColorSettings fcs = fcsCache.get(mimePath);
+            
+            if (fcs == null) {
+                Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimePath));
+                fcs = lookup.lookup(FontColorSettings.class);
+                fcsCache.put(mimePath, fcs);
+            }
+            
             AttributeSet attribs = findFontAndColors(fcs, tokenId, innerLanguage);
             
             if (LOG.isLoggable(Level.FINE)) {
@@ -401,7 +409,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         private int moveTheSequence() {
             TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
             
-            if (seq.moveNext()) {
+            if (seq.moveNext() && seq.offset() < endOffset) {
                 return S_NORMAL;
             } else {
                 if (sequences.size() > 1) {
