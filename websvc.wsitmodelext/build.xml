@@ -12,5 +12,5 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="websvc/wsitmodelext">
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="nbproject/build-impl.xml"/>
 </project>
