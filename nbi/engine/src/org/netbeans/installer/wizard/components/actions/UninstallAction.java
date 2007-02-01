@@ -85,7 +85,7 @@ public class UninstallAction extends WizardAction {
                 // the components it depends on from our plans to uninstall
                 for(Product requirement : registry.getProducts()) {
                     if ((requirement.getStatus() == Status.TO_BE_UNINSTALLED) && 
-                            requirement.satisfiesRequirement(product)) {
+                            registry.satisfiesRequirement(requirement, product)) {
                         UninstallationException requirementError = new UninstallationException("Could not uninstall " + requirement.getDisplayName() + ", since the uninstallation of " + product.getDisplayName() + "failed", e);
                         
                         requirement.setStatus(Status.INSTALLED);

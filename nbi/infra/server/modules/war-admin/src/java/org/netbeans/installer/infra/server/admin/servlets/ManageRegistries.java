@@ -31,13 +31,11 @@ public class ManageRegistries extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html; charset=UTF-8");
         
-        PrintWriter out = response.getWriter();
+        final PrintWriter out = response.getWriter();
         
         try {
-            
-            List<String> registries = manager.getRegistries();
-            
-            String userAgent = request.getHeader("User-Agent");
+            final List<String> registries = manager.getRegistries();
+            final String userAgent = request.getHeader("User-Agent");
             
             Platform platform = SystemUtils.getCurrentPlatform();
             if (userAgent.contains("Windows")) {
@@ -61,7 +59,8 @@ public class ManageRegistries extends HttpServlet {
             
             if (request.getParameter("platform") != null) {
                 try {
-                    platform = StringUtils.parsePlatform(request.getParameter("platform"));
+                    platform = StringUtils.parsePlatform(
+                            request.getParameter("platform"));
                 } catch (ParseException e) {
                     e.printStackTrace(out);
                 }
@@ -84,6 +83,8 @@ public class ManageRegistries extends HttpServlet {
                 out.println("            Remove Registry |");
             }
             out.println("            <a href=\"javascript: update_engine();\">Update Engine</a>");
+            out.println("            <a href=\"javascript: delete_bundles();\">Delete Bundles</a>");
+            out.println("            <a href=\"javascript: generate_bundles();\">Generate Bundles</a>");
             out.println("        </div>");
             out.println("        ");
             if (registries.size() == 0) {

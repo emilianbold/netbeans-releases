@@ -106,6 +106,10 @@ public class RunCommand extends HttpServlet {
                 manager.removeGroup(registry, uid);
             }
             
+            if (command.equals("generate-bundles")) {
+                manager.generateBundles(new String[]{registry});
+            }
+            
             response.getWriter().write(
                     "The \"" + command + "\" command was successfully executed.");
             

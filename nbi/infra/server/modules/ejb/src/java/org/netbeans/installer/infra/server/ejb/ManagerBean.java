@@ -508,21 +508,21 @@ public class ManagerBean implements Manager {
     }
     
     // miscellanea //////////////////////////////////////////////////////////////////
-    public File getFile(String name, String file) throws ManagerException {
-        if (registries.get(name) == null) {
-            addRegistry(name);
+    public File getFile(String registry, String file) throws ManagerException {
+        if (registries.get(registry) == null) {
+            addRegistry(registry);
         }
         
-        final File registryDir = registries.get(name);
+        final File registryDir = registries.get(registry);
         
         return new File(registryDir, file);
     }
     
-    public RegistryNode getRoot(Platform platform, String... names) throws ManagerException {
-        if (names.length > 0) {
+    public RegistryNode getRoot(Platform platform, String... registryNames) throws ManagerException {
+        if (registryNames.length > 0) {
             List<File> files = new LinkedList<File>();
             
-            for (String name: names) {
+            for (String name: registryNames) {
                 if (registries.get(name) == null) {
                     addRegistry(name);
                 }
@@ -572,11 +572,10 @@ public class ManagerBean implements Manager {
     public File createBundle(Platform platform, String[] names, String[] components) throws ManagerException {
         bundlesLock.lock();
         try {
-            String key = "";
-            for (String component: components) {
-                key += component + ";";
-            }
-            key += platform.toString();
+            final String key =
+                    StringUtils.asString(names) +
+                    StringUtils.asString(components) +
+                    platform;
             
             if ((bundles.get(key) != null) && bundles.get(key).exists()) {
                 return bundles.get(key);
@@ -591,6 +590,7 @@ public class ManagerBean implements Manager {
                 File userDir = FileUtils.createTempFile(TEMP, false);
                 
                 File bundle = new File(BUNDLES,
+                        StringUtils.asString(names) + "/" +
                         "nbi_" +
                         StringUtils.asString(components, "_").replace(",", "_") +
                         "_" +
@@ -621,6 +621,8 @@ public class ManagerBean implements Manager {
                             Version.getVersion(parts[1])).setStatus(Status.INSTALLED);
                 }
                 registry.saveStateFile(statefile, new Progress());
+                
+                bundle.getParentFile().mkdirs();
                 
                 ExecutionResults results = SystemUtils.executeCommand(
                         JavaUtils.getExecutable(javaHome).getAbsolutePath(),
@@ -665,6 +667,75 @@ public class ManagerBean implements Manager {
             }
         } finally {
             bundlesLock.unlock();
+        }
+    }
+    
+    public void deleteBundles() throws ManagerException {
+        bundlesLock.lock();
+        try {
+            for (String key: bundles.keySet()) {
+                FileUtils.deleteFile(bundles.get(key));
+            }
+            
+            bundles.clear();
+        } catch (IOException e) {
+            throw new ManagerException("Cannot clear bundles", e);
+        } finally {
+            bundlesLock.unlock();
+        }
+    }
+    
+    public void generateBundles(String[] names) throws ManagerException {
+        try {
+            final List<File> files = new ArrayList<File>();
+            for (String name: names) {
+                if (registries.get(name) == null) {
+                    addRegistry(name);
+                }
+                
+                files.add(new File(registries.get(name), REGISTRY_XML));
+            }
+            
+            for (Platform platform: Platform.values()) {
+                final Registry registry = new Registry(platform, files);
+                final List<Product> products = registry.getProducts(platform);
+                
+                for (int i = 1; i <= products.size(); i++) {
+                    Product[] combination = new Product[i];
+                    
+                    iterate(platform, names, registry, combination, 0, products, 0);
+                }
+            }
+        } catch (InitializationException e) {
+            throw new ManagerException("Cannot generate bundles", e);
+        }
+    }
+    
+    private void iterate(Platform platform, String[] names, Registry registry, Product[] combination, int index, List<Product> products, int start) throws ManagerException {
+        for (int i = start; i < products.size(); i++) {
+            combination[index] = products.get(i);
+            
+            if (index == combination.length - 1) {
+                for (Product product: products) {
+                    product.setStatus(Status.NOT_INSTALLED);
+                }
+                for (Product product: combination) {
+                    product.setStatus(Status.TO_BE_INSTALLED);
+                }
+                
+                if (registry.getProductsToInstall().size() == combination.length) {
+                    String[] components = new String[combination.length];
+                    
+                    for (int j = 0; j < combination.length; j++) {
+                        components[j] = combination[j].getUid() + "," + 
+                                combination[j].getVersion().toString();
+                    }
+                    
+                    createBundle(platform, names, components);
+                }
+            } else {
+                iterate(platform, names, registry, combination, index + 1, products, i + 1);
+            }
         }
     }
     
@@ -723,20 +794,5 @@ public class ManagerBean implements Manager {
         }
         
         return directory;
-    }
-    
-    private void deleteBundles() throws ManagerException {
-        bundlesLock.lock();
-        try {
-            for (String key: bundles.keySet()) {
-                FileUtils.deleteFile(bundles.get(key));
-            }
-            
-            bundles.clear();
-        } catch (IOException e) {
-            throw new ManagerException("Cannot clear bundles", e);
-        } finally {
-            bundlesLock.unlock();
-        }
     }
 }

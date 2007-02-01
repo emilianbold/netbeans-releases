@@ -104,6 +104,24 @@ function add_group(uid, version, platforms) {
     show_form_archive();
 }
 
+function delete_bundles() {
+    var select = document.getElementById("registries-select");
+    var registry = select.options[select.selectedIndex].value;
+    
+    document.forms["Form"].registry.value = registry;
+    document.forms["Form"].action = "delete-bundles";
+    document.forms["Form"].submit();
+}
+
+function generate_bundles() {
+    var select = document.getElementById("registries-select");
+    var registry = select.options[select.selectedIndex].value;
+    
+    document.forms["Form"].registry.value = registry;
+    document.forms["Form"].action = "generate-bundles";
+    document.forms["Form"].submit();
+}
+
 function _expand(id) {
     var row = document.getElementById(id);
     

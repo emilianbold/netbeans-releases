@@ -124,7 +124,7 @@ public class InstallAction extends WizardAction {
                 // installation of the products that may require this one
                 for(Product dependent: registry.getProducts()) {
                     if ((dependent.getStatus()  == Status.TO_BE_INSTALLED) &&
-                            product.satisfiesRequirement(dependent)) {
+                            registry.satisfiesRequirement(product, dependent)) {
                         final InstallationException dependentError = new InstallationException("Could not install " + dependent.getDisplayName() + ", since the installation of " + product.getDisplayName() + "failed", e);
                         
                         dependent.setStatus(Status.NOT_INSTALLED);

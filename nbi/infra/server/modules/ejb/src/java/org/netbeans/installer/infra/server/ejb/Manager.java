@@ -16,7 +16,7 @@ import org.netbeans.installer.utils.helper.Platform;
 public interface Manager {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final File   ROOT            = new File("/export/nbi/data/milestone10");
+    public static final File   ROOT            = new File("D:/temp/nbi-server");
     public static final File   TEMP            = new File(ROOT, "temp");
     public static final File   REGISTRIES      = new File(ROOT, "registries");
     public static final File   UPLOADS         = new File(TEMP, "uploads");
@@ -62,4 +62,8 @@ public interface Manager {
     List<Product> getComponents(Platform platform, String... names) throws ManagerException;
     
     File createBundle(Platform platform, String[] names, String[] components) throws ManagerException;
+    
+    void deleteBundles() throws ManagerException;
+    
+    void generateBundles(String[] names) throws ManagerException;
 }

@@ -401,7 +401,7 @@ public class Registry {
             if (target != null) {
                 final List<Product> dependents = new ArrayList<Product>();
                 for (Product product: getProducts()) {
-                    if (target.satisfiesRequirement(product)) {
+                    if (satisfiesRequirement(target, product)) {
                         dependents.add(product);
                     }
                 }
@@ -925,7 +925,7 @@ public class Registry {
         for (Product product: getProducts()) {
             if ((product.getStatus() == Status.TO_BE_INSTALLED) &&
                     !currentList.contains(product) &&
-                    product.checkDependenciesForInstall()) {
+                    checkDependenciesForInstall(product)) {
                 boolean productIsGood = true;
                 
                 // all products satisfying the requirement and install-after
@@ -955,13 +955,13 @@ public class Registry {
         for (Product product: getProducts()) {
             if ((product.getStatus() == Status.TO_BE_UNINSTALLED) &&
                     !currentList.contains(product) &&
-                    product.checkDependenciesForUninstall()) {
+                    checkDependenciesForUninstall()) {
                 boolean productIsGood = true;
                 
                 for (Product dependent: getProducts()) {
                     if ((dependent.getStatus() != Status.NOT_INSTALLED) &&
                             !currentList.contains(dependent) &&
-                            product.satisfiesRequirement(dependent)) {
+                            satisfiesRequirement(product, dependent)) {
                         productIsGood = false;
                         break;
                     }
@@ -974,6 +974,75 @@ public class Registry {
             }
         }
         return null;
+    }
+    
+    // products /////////////////////////////////////////////////////////////////////
+    public boolean satisfiesRequirement(final Product candidate, final Product product) {
+        for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+            final List<Product> requirees = getProducts(requirement);
+            
+            for (Product requiree: requirees) {
+                if (candidate.equals(requiree) || 
+                        satisfiesRequirement(candidate, requiree)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    public boolean checkDependenciesForInstall(final Product product) {
+        for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+            final List<Product> requirees = getProducts(requirement);
+            boolean satisfied = false;
+            
+            for (Product requiree: requirees) {
+                if ((requiree.getStatus() == Status.INSTALLED) ||
+                        (requiree.getStatus() == Status.TO_BE_INSTALLED)) {
+                    satisfied = true;
+                    break;
+                }
+            }
+            
+            if (!satisfied) return false;
+        }
+        
+        for (Dependency conflict: product.getDependencies(DependencyType.CONFLICT)) {
+            final List<Product> conflictees = getProducts(conflict);
+            boolean satisfied = true;
+            
+            for (Product conflictee: conflictees) {
+                if ((conflictee.getStatus() == Status.INSTALLED) ||
+                        (conflictee.getStatus() == Status.TO_BE_INSTALLED)) {
+                    satisfied = false;
+                    break;
+                }
+            }
+            
+            if (!satisfied) return false;
+        }
+        
+        return true;
+    }
+    
+    public boolean checkDependenciesForUninstall() {
+        for (Product product: getProducts()) {
+            if ((product.getStatus() == Status.INSTALLED) ||
+                    (product.getStatus() == Status.TO_BE_INSTALLED)) {
+                for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+                    final List<Product> requirees = getProducts(requirement);
+                    
+                    for (Product requiree: requirees) {
+                        if (requiree.getStatus() == Status.INSTALLED) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return true;
     }
     
     // properties ///////////////////////////////////////////////////////////////////
