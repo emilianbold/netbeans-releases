@@ -103,6 +103,11 @@ public final class TokenHierarchyControl<I> {
      * that get changed.
      * <br/>
      * This method will drop all present tokens and let them to be lazily recreated.
+     * <br/>
+     * This method should only be invoked under modification lock over the mutable
+     * input source (e.g. a document's write-lock).
+     * Otherwise all the active token sequences would fail with 
+     * <code>ConcurrentModificationException</code>.
      */
     public void rebuild() {
         operation.rebuild();

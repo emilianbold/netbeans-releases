@@ -74,8 +74,6 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
      */
     private LexerInputOperation<T> lexerInputOperation;
     
-    private boolean inited;
-    
     private int rootModCount;
 
     private LAState laState;
@@ -90,10 +88,11 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         this.inputAttributes = LexerSpiPackageAccessor.get().inputAttributes(mutableTextInput);
         this.text = LexerSpiPackageAccessor.get().text(mutableTextInput);
         this.laState = LAState.empty();
+        initLexing();
     }
     
-    private void init() {
-        lexerInputOperation = new TextLexerInputOperation<T>(this, text);
+    private void initLexing() {
+        this.lexerInputOperation = new TextLexerInputOperation<T>(this, text);
     }
     
     public LanguagePath languagePath() {
@@ -101,10 +100,6 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     }
 
     public synchronized int tokenCount() {
-        if (!inited) {
-            init();
-            inited = true;
-        }
         if (lexerInputOperation != null) { // still lexing
             tokenOrEmbeddingContainerImpl(Integer.MAX_VALUE);
         }
@@ -124,6 +119,10 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     public int tokenOffset(int index) {
         return elementOffset(index);
     }
+    
+    public int existingTokensEndOffset() {
+        return elementOrEndOffset(tokenCountCurrent());
+    }
 
     /**
      * Get modification count for which this token list was last updated
@@ -142,10 +141,6 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     }
     
     private Object tokenOrEmbeddingContainerImpl(int index) {
-        if (!inited) {
-            init();
-            inited = true;
-        }
         while (lexerInputOperation != null && index >= size()) {
             Token token = lexerInputOperation.nextToken();
             if (token != null) { // lexer returned valid token
@@ -236,7 +231,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     }
 
     public boolean isFullyLexed() {
-        return inited && (lexerInputOperation == null);
+        return (lexerInputOperation == null);
     }
 
     public void replaceTokens(TokenHierarchyEventInfo eventInfo,
@@ -281,19 +276,25 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         }
     }
     
-    public void refreshLexerInputOperation() {
-        // Only called when !isFullyLexed() but "inited" might be false => must check "!= null"
+    private void releaseLexerInputOperation() {
         if (lexerInputOperation != null)
             lexerInputOperation.release();
+    }
+
+    public void refreshLexerInputOperation() {
+        releaseLexerInputOperation();
         int lastTokenIndex = tokenCountCurrent() - 1;
-        int endOffset = (lastTokenIndex >= 0)
-                ? tokenOffset(lastTokenIndex) + existingToken(lastTokenIndex).length()
-                : 0;
         lexerInputOperation = createLexerInputOperation(
                 lastTokenIndex + 1,
-                endOffset,
+                existingTokensEndOffset(),
                 (lastTokenIndex >= 0) ? state(lastTokenIndex) : null
         );
+    }
+    
+    public void restartLexing() {
+        // Called when tokens were fully removed and lexing should be restarted
+        releaseLexerInputOperation();
+        initLexing();
     }
     
     public boolean isContinuous() {

@@ -191,7 +191,38 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
     
     public void rebuild() {
-        // TODO implement
+        if (isSnapshot()) // Do nothing for snapshot
+            return;
+        if (active) {
+            IncTokenList<T> incTokenList = (IncTokenList<T>)tokenList;
+            incTokenList.incrementModCount();
+            TokenListChange<T> change = new TokenListChange<T>(incTokenList);
+            CharSequence text = LexerSpiPackageAccessor.get().text(mutableTextInput);
+            int endOffset = incTokenList.existingTokensEndOffset();
+            TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
+                this, TokenHierarchyEventType.REBUILD, 0, 0, text, 0);
+            change.setIndex(0);
+            change.setOffset(0);
+            change.setAddedEndOffset(0); // Tokens will be recreated lazily
+
+            incTokenList.replaceTokens(eventInfo, change, incTokenList.tokenCountCurrent());
+            incTokenList.restartLexing(); // Will relex tokens lazily
+            incTokenList.incrementModCount();
+            
+            synchronized (snapshotRefs) {
+                for (int i = snapshotRefs.size() - 1; i >= 0; i--) {
+                    TokenHierarchyOperation<I,T> op = snapshotRefs.get(i).get();
+                    if (op != null) {
+                        ((SnapshotTokenList<T>)op.tokenList()).update(eventInfo, change);
+                    }
+                }
+            }
+            eventInfo.setTokenChangeInfo(change.tokenChangeInfo());
+            eventInfo.setAffectedStartOffset(0);
+            eventInfo.setAffectedEndOffset(text.length());
+            fireTokenHierarchyChanged(
+                LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
+        } // not active - no changes fired
     }
     
     public void fireTokenHierarchyChanged(TokenHierarchyEvent evt) {
