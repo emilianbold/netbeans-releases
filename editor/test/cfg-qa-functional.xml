@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- Pre-commit validation -->
-    <testbag testattribs="commit" name="Pre-commit Validation">
+    <testbag testattribs="validation" name="Pre-commit Validation">
         <testset dir="qa-functional/src">
             <patternset>                               
                 <include name="keyboard_shortcuts/*Test.class"/>
@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- Stable -->
-    <testbag testattribs="stable,validation" name="Stable Tests">
+    <testbag testattribs="stable" name="Stable Tests">
         <testset dir="qa-functional/src">            
             <patternset>
                 <include name="keyboard_shortcuts/*Test.class"/>
