@@ -59,7 +59,9 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
     DefaultPropertiesDescriptor.PLATFORM_CONFIGURATION,
     DefaultPropertiesDescriptor.PLATFORM_PROFILE,
     DefaultPropertiesDescriptor.PLATFORM_APIS,
-    DefaultPropertiesDescriptor.PLATFORM_BOOTCLASSPATH};
+    DefaultPropertiesDescriptor.PLATFORM_BOOTCLASSPATH,
+    DefaultPropertiesDescriptor.JAVAC_SOURCE,
+    DefaultPropertiesDescriptor.JAVAC_TARGET};
     
     
     private static final Comparator<J2MEPlatform.J2MEProfile> OPTIONAL_API_COMPARATOR = new Comparator<J2MEPlatform.J2MEProfile>() {
@@ -219,6 +221,9 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         }
         initDevices((String)jComboBoxTarget.getSelectedItem(), false);
         enableLabels(!useDefault);
+        props.put(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.JAVAC_SOURCE, useDefault), "1.3"); //NOI18N
+        props.put(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.JAVAC_TARGET, useDefault), "1.3"); //NOI18N
+
     }
     
     private void enableLabels(final boolean enabled) {
