@@ -69,38 +69,38 @@ public abstract class CustomComponentProducer extends ComponentProducer {
         }
     }
     
-    public static final class SvgSplashScreen extends CustomComponentProducer {
-        public SvgSplashScreen() {
+    public static final class SVGSplashScreen extends CustomComponentProducer {
+        public SVGSplashScreen() {
             super(SplashScreenCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Splash Screen", "SVG Splash Screen", SVGSplashScreenCD.ICON_PATH, SVGSplashScreenCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
     
-    public static final class SvgWaitScreen extends CustomComponentProducer {
-        public SvgWaitScreen() {
+    public static final class SVGWaitScreen extends CustomComponentProducer {
+        public SVGWaitScreen() {
             super(SVGWaitScreenCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Wait Screen", "SVG Wait Screen", SVGWaitScreenCD.ICON_PATH, SVGWaitScreenCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
     
-    public static final class SvgAnimatorWrapper extends CustomComponentProducer {
-        public SvgAnimatorWrapper() {
+    public static final class SVGAnimatorWrapper extends CustomComponentProducer {
+        public SVGAnimatorWrapper() {
             super(SVGAnimatorWrapperCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Animator Wrapper", "SVG Animator Wrapper", SVGAnimatorWrapperCD.ICON_PATH, SVGAnimatorWrapperCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
     
-    public static final class SvgImage extends CustomComponentProducer {
-        public SvgImage() {
+    public static final class SVGImage extends CustomComponentProducer {
+        public SVGImage() {
             super(SVGImageCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Image", "SVG Image", ResourceCD.ICON_PATH, null)); // NOI18N
         }
     }
     
-    public static final class SvgMenu extends CustomComponentProducer {
-        public SvgMenu() {
+    public static final class SVGMenu extends CustomComponentProducer {
+        public SVGMenu() {
             super(SVGMenuCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Image", "SVG Image", SVGMenuCD.ICON_PATH, SVGMenuCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
     
-    public static final class SvgMenuItem extends CustomComponentProducer {
-        public SvgMenuItem() {
+    public static final class SVGMenuItem extends CustomComponentProducer {
+        public SVGMenuItem() {
             super(SVGMenuItemCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Image Item", "SVG Image Item", SVGMenuItemCD.ICON_PATH, null)); // NOI18N
         }
     }

@@ -25,12 +25,12 @@
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$WaitScreen.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SplashScreen.instance"/>
             
-            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SvgSplashScreen.instance"/>
-            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SvgWaitScreen.instance"/>
-            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SvgAnimatorWrapper.instance"/>
-            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SvgImage.instance"/>
-            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SvgMenu.instance"/>
-            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SvgMenuItem.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGSplashScreen.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGWaitScreen.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGAnimatorWrapper.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGImage.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGMenu.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGMenuItem.instance"/>
             
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$TableItem.instance"/>
             
