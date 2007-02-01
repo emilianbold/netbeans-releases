@@ -81,7 +81,6 @@ public class JaxWsClientCreator implements ClientCreator {
         final boolean isJsr109Supported = isJsr109Supported();
         final boolean isJsr109OldSupported = isJsr109OldSupported();
         final boolean isJWSDPSupported = isJWSDPSupported();
-        final boolean isWsitSupported = isWsitSupported();
         
         // Use Progress API to display generator messages.
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(JaxWsClientCreator.class, "MSG_WizCreateClient")); //NOI18N
@@ -92,7 +91,7 @@ public class JaxWsClientCreator implements ClientCreator {
 //                    String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
 //                    if (jaxVersion.equals(WizardProperties.JAX_WS)) {
                         handle.start();
-                        generate15Client((isJsr109Supported || isJWSDPSupported) || (isWsitSupported && Util.isJavaEE5orHigher(project)), handle);
+                        generate15Client((isJsr109Supported || isJWSDPSupported), handle);
 //                    } else {
 //                        handle.start(100);
 //                        generate14Client(handle);
@@ -262,14 +261,6 @@ public class JaxWsClientCreator implements ClientCreator {
         return false;
     }
     
-    private boolean isWsitSupported(){
-        J2eePlatform j2eePlatform = getJ2eePlatform();
-        if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT);
-        }
-        return false;
-    }
-
     private boolean isJsr109Supported(){
         J2eePlatform j2eePlatform = getJ2eePlatform();
         if(j2eePlatform != null){

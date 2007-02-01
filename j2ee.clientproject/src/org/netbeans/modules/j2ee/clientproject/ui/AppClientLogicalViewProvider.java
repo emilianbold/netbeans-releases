@@ -876,11 +876,10 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 java.util.Map properties = ((AppClientProject) project).getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
                 String serverInstance = (String)properties.get(AppClientProjectProperties.J2EE_SERVER_INSTANCE);
                 J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-                boolean wsitSupported = j2eePlatform != null && j2eePlatform.isToolSupported("wsit"); //NOI18N
                 
                 Car wm = Car.getCar(project.getProjectDirectory());
                 result = null;
-                if (wm!=null && ((J2eeModule.JAVA_EE_5.equals(wm.getJ2eePlatformVersion())) || (wsitSupported))) {
+                if (wm!=null && (J2eeModule.JAVA_EE_5.equals(wm.getJ2eePlatformVersion()))) {
                     JAXWSClientView view = JAXWSClientView.getJAXWSClientView();
                     result = view == null ? new Node[0] : new Node[] {view.createJAXWSClientView(project)};
                 } else {             

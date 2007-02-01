@@ -622,7 +622,6 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         boolean jsr109OldSupported = isJsr109OldSupported(project);
         boolean jsr109Supported = isJsr109Supported(project);
         boolean jwsdpSupported = isJwsdpSupported(project);
-        boolean wsitSupported = isWsitSupported(project);
         if (projectType > 0) {
             jLabelJaxVersion.setEnabled(false);
             jComboBoxJaxVersion.setEnabled(false);
@@ -630,7 +629,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
             else{
                 if((!jsr109OldSupported && !jsr109Supported)
-                || (!jsr109Supported && jsr109OldSupported && jwsdpSupported ) || wsitSupported){
+                || (!jsr109Supported && jsr109OldSupported && jwsdpSupported )){
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                 } else{
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
@@ -710,7 +709,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 //if platform is non-JSR109, select the JAXRPC static stub type
                 //and disable the combobox
                 if ((!jsr109OldSupported && !jsr109Supported)
-                || (!jsr109Supported && jsr109OldSupported && jwsdpSupported ) || wsitSupported) {
+                || (!jsr109Supported && jsr109OldSupported && jwsdpSupported)) {
                     selectedStub = getJAXRPCClientStub(clientStubs);
                     jCbxClientType.setEnabled(false);
                 }
@@ -1093,14 +1092,6 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         return false;
     }
     
-    private boolean isWsitSupported(Project project){
-        J2eePlatform j2eePlatform = getJ2eePlatform(project);
-        if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT);
-        }
-        return false;
-    }
-    
     /**
      * If the project the web service client is being created is not on a JSR 109 platform,
      * its Java source level must be at least 1.5
@@ -1110,9 +1101,8 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         boolean jsr109Supported = isJsr109Supported(project);
         boolean jsr109oldSupported = isJsr109OldSupported(project);
         boolean jwsdpSupported = isJwsdpSupported(project);
-        boolean wsitSupported = isWsitSupported(project);
         if (!jsr109Supported && !jsr109oldSupported ||
-                (!jsr109Supported && jsr109oldSupported && jwsdpSupported ) || wsitSupported) {
+                (!jsr109Supported && jsr109oldSupported && jwsdpSupported)) {
             if (Util.isSourceLevel14orLower(project)) {
                 wizardDescriptor.putProperty("WizardPanel_errorMessage",
                         NbBundle.getMessage(ClientInfo.class, "ERR_NeedProperSourceLevel")); // NOI18N

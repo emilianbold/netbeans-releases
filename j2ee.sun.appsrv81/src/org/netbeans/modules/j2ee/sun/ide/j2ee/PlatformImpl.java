@@ -80,7 +80,6 @@ public class PlatformImpl extends J2eePlatformImpl {
     private static final String JAXWSA_RI_JAR = "lib/jaxwsa-ri.jar"; //NOI18N
     
     // wsit jars
-    private static final String WEBSERVICES_JAR = "lib/webservices.jar"; //NOI18N
     private static final String WEBSERVICES_RT_JAR = "lib/webservices-rt.jar"; //NOI18N
     private static final String WEBSERVICES_TOOLS_JAR = "lib/webservices-tools.jar"; //NOI18N
     
@@ -230,7 +229,6 @@ public class PlatformImpl extends J2eePlatformImpl {
                 lib.setName(NbBundle.getMessage(PlatformImpl.class, "wsit")); // NOI18N
                 l.add(fileToUrl(new File(root, WEBSERVICES_TOOLS_JAR)));
                 l.add(fileToUrl(new File(root, WEBSERVICES_RT_JAR)));
-                l.add(fileToUrl(new File(root, WEBSERVICES_JAR)));
 
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, sources);
@@ -461,7 +459,6 @@ public class PlatformImpl extends J2eePlatformImpl {
                     return new File[] {
                         new File(root, WEBSERVICES_TOOLS_JAR),     // NOI18N
                         new File(root, WEBSERVICES_RT_JAR),           // NOI18N
-                        new File(root, WEBSERVICES_JAR),           // NOI18N
                         new File(root, TOOLS_JAR),      //NOI18N
                         new File(root, JSTL_JAR),       //NOI18N
                         new File(root, JAVA_EE_JAR),    //NOI18N

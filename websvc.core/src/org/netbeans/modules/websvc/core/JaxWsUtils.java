@@ -86,7 +86,6 @@ public class JaxWsUtils {
     
     private static boolean jwsdpSupported = false;
     private static boolean jsr109Supported = false;
-    private static boolean wsitSupported = false;
     
     /** Creates a new instance of JaxWsUtils */
     public JaxWsUtils() {
@@ -445,7 +444,6 @@ public class JaxWsUtils {
                 if (j2eePlatform != null) {
                     jwsdpSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP); //NOI18N
                     jsr109Supported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
-                    wsitSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT);
                 }
             }
         }

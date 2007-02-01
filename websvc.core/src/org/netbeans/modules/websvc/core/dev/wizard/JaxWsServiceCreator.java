@@ -116,7 +116,6 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 try {
 //                    if (Util.isJavaEE5orHigher(project) ||
 //                            (!jsr109Supported && projectType == WEB_PROJECT_TYPE && !jsr109oldSupported)
-//                            || (wsitSupported)
 //                            || jwsdpSupported) {
                         handle.start();
                         generateWsFromWsdl15(handle);

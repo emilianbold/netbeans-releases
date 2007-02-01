@@ -87,7 +87,6 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     private boolean jsr109Supported;
     private boolean jsr109oldSupported;
     private boolean jwsdpSupported;
-    private boolean wsitSupported;
     
     private RequestProcessor.Task generateWsdlModelTask;
     private URL wsdlURL;
@@ -297,8 +296,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         if (result == DialogDescriptor.OK_OPTION) {
             if (Util.isJavaEE5orHigher(project) ||
                     (!jsr109Supported && !jsr109oldSupported ||
-                    (!jsr109Supported && jsr109oldSupported && jwsdpSupported )) || 
-                    (wsitSupported)) {
+                    (!jsr109Supported && jsr109oldSupported && jwsdpSupported ))) {
                 jTextFieldPort.setText(chooser.getSelectedPortOwnerName() + "#" + chooser.getSelectedNodes()[0].getDisplayName()); //NOI18N
                 service = wsdlModel.getServiceByName(chooser.getSelectedPortOwnerName());
                 port = service.getPortByName(chooser.getSelectedNodes()[0].getDisplayName());
@@ -345,7 +343,6 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     jsr109Supported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
                     jsr109oldSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
                     jwsdpSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP);
-                    wsitSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT);
                 }
             }
         }
@@ -408,8 +405,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         
         if (Util.isJavaEE5orHigher(project) ||
                 (!jsr109Supported && !jsr109oldSupported ||
-                (!jsr109Supported && jsr109oldSupported && jwsdpSupported )) ||
-                (wsitSupported)) {
+                (!jsr109Supported && jsr109oldSupported && jwsdpSupported ))) {
             if (wsdlModel != null) {
                 if (service == null) {
                     wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_NoService")); // NOI18N
@@ -514,8 +510,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                 fireChange(); //call to disable Finish button
                 if (Util.isJavaEE5orHigher(project) ||
                         (!jsr109Supported && !jsr109oldSupported ||
-                        (!jsr109Supported && jsr109oldSupported && jwsdpSupported)) ||
-                        (wsitSupported)) {
+                        (!jsr109Supported && jsr109oldSupported && jwsdpSupported))) {
                     createModel();
                 }
             }

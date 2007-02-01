@@ -43,9 +43,8 @@ public class JaxWsServiceCreatorProvider implements ServiceCreatorProvider {
                 ) {
             return new JaxWsServiceCreator(projectInfo, wiz, false);
         } else if (!Util.isJavaEE5orHigher(project) &&
-                   (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE) || 
-                   projectInfo.isWsitSupported()) {
-               if ((!projectInfo.isJsr109Supported() && projectType == ProjectInfo.WEB_PROJECT_TYPE && !projectInfo.isJsr109oldSupported()) || projectInfo.isWsitSupported()) {
+                   (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) {
+               if ((!projectInfo.isJsr109Supported() && projectType == ProjectInfo.WEB_PROJECT_TYPE && !projectInfo.isJsr109oldSupported())) {
                    return new JaxWsServiceCreator(projectInfo, wiz, true);
                }
         }

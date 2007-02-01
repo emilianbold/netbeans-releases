@@ -44,9 +44,8 @@ public class JaxRpcServiceCreatorProvider implements ServiceCreatorProvider {
         System.out.println("projectInfo = " + projectInfo);
      
         if (!Util.isJavaEE5orHigher(project) &&
-                   (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE) || 
-                   projectInfo.isWsitSupported()) {
-               if ((!projectInfo.isJsr109Supported() && projectType == ProjectInfo.WEB_PROJECT_TYPE && !projectInfo.isJsr109oldSupported()) || projectInfo.isWsitSupported()) {
+                   (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) {
+               if ((!projectInfo.isJsr109Supported() && projectType == ProjectInfo.WEB_PROJECT_TYPE && !projectInfo.isJsr109oldSupported())) {
                    return null;
                } else {
                    System.out.println("returning JaxRpcServiceCreator");
