@@ -21,11 +21,13 @@ package org.netbeans.modules.j2ee.jpa.verification.common;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 
 /**
@@ -89,6 +91,15 @@ public abstract class Rule<E> {
     }
     
     protected ErrorDescription createProblem(Element subject, ProblemContext ctx){
+        return createProblem(subject, ctx, Collections.EMPTY_LIST);
+    }
+    
+    protected ErrorDescription createProblem(Element subject, ProblemContext ctx, Fix fix){
+        return createProblem(subject, ctx, Collections.singletonList(fix));
+    }
+    
+    protected ErrorDescription createProblem(Element subject, ProblemContext ctx, List<Fix> fixes){
+        List<Fix> fixList = fixes == null ? Collections.EMPTY_LIST : fixes;
         Tree elementTree = ctx.getCompilationInfo().getTrees().getTree(subject);
         SourcePositions srcPositions = ctx.getCompilationInfo().getTrees().getSourcePositions();
         
@@ -96,7 +107,7 @@ public abstract class Rule<E> {
                 ctx.getCompilationInfo(), elementTree);
         
         ErrorDescription err = ErrorDescriptionFactory.createErrorDescription(
-                getSeverity(), getDescription(), ctx.getFileObject(),
+                getSeverity(), getDescription(), fixList, ctx.getFileObject(),
                 underlineSpan.getStartOffset(), underlineSpan.getEndOffset());
         
         return err;

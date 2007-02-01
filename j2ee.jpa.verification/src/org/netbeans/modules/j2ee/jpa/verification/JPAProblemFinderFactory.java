@@ -38,6 +38,6 @@ public class JPAProblemFinderFactory extends EditorAwareJavaSourceTaskFactory {
     }
     
     public CancellableTask<CompilationInfo> createTask(FileObject file) {
-        return new JPAProblemFinder(file);
+        return new JPAProblemFinder.ProblemFinderCompInfo(file);
     }
 }

@@ -21,27 +21,44 @@ package org.netbeans.modules.j2ee.jpa.verification;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
+import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.model.JPAHelper;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class JPAProblemFinder implements CancellableTask<CompilationInfo> {
+public abstract class JPAProblemFinder {
     private boolean cancelled = false;
     private FileObject file = null;
     private Object cancellationLock = new Object();
     private JPAProblemContext context = null;
     public final static Logger LOG = Logger.getLogger(JPAProblemFinder.class.getName());
+    private final static String PERSISTENCE_SCOPES_LISTENER = "jpa.verification.scopes_listener";
     
     public JPAProblemFinder(FileObject file){
         this.file = file;
@@ -51,6 +68,7 @@ public class JPAProblemFinder implements CancellableTask<CompilationInfo> {
         // the 'cancelled' flag must be reset as the instance of JPAProblemFinder is reused
         cancelled = false;
         List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
+        createPersistenceScopesListener(file, info.getDocument());
         
         for (Tree tree : info.getCompilationUnit().getTypeDecls()){
             if (isCancelled()){
@@ -65,6 +83,7 @@ public class JPAProblemFinder implements CancellableTask<CompilationInfo> {
                 JPARulesEngine rulesEngine = new JPARulesEngine();
                 javaClass.accept(rulesEngine, context);
                 problemsFound.addAll(rulesEngine.getProblemsFound());
+                info.equals(tree);
                 
                 synchronized(cancellationLock){
                     context = null;
@@ -72,7 +91,8 @@ public class JPAProblemFinder implements CancellableTask<CompilationInfo> {
             }
         }
         
-        //TODO: should we really reset the errors if the task is cancelled? 
+        //TODO: should we really reset the errors if the task is cancelled?
+        LOG.info("resetting errors, current number of errors in file:" + problemsFound.size());
         HintsController.setErrors(file, "JPA Verification", problemsFound); //NOI18N
     }
     
@@ -96,5 +116,116 @@ public class JPAProblemFinder implements CancellableTask<CompilationInfo> {
     
     public boolean isCancelled(){
         return cancelled;
+    }
+    
+    private void createPersistenceScopesListener(FileObject file, Document doc){
+        if (doc == null){
+            return;
+        }
+        
+        LOG.fine("Creating PersistenceScopesListener on " + file.getName());
+        Project project = FileOwnerQuery.getOwner(file);
+        
+        if (project != null){
+            PersistenceScopes scopes = PersistenceScopes.getPersistenceScopes(project);
+            
+            if (scopes != null){
+                PersistenceScopesListener listener = (PersistenceScopesListener) doc.getProperty(PERSISTENCE_SCOPES_LISTENER);
+                
+                if (listener == null){
+                    listener = new PersistenceScopesListener(file);
+                    PropertyChangeListener weakListener = WeakListeners.create(PropertyChangeListener.class, listener, null);
+                    scopes.addPropertyChangeListener(weakListener);
+                    
+                    // scopes listener should live as long as the document
+                    doc.putProperty(PERSISTENCE_SCOPES_LISTENER, listener);
+                }
+                
+                ArrayList<PersistenceXMLListener> pxmlListeners = new ArrayList<PersistenceXMLListener>();
+                
+                for (PersistenceScope scope : scopes.getPersistenceScopes()){
+                    FileObject persistenceXML = scope.getPersistenceXml();
+                    PersistenceXMLListener pxmlListener = new PersistenceXMLListener(file);
+                    FileChangeListener weakPXMLListener = WeakListeners.create(FileChangeListener.class, pxmlListener, null);
+                    persistenceXML.addFileChangeListener(weakPXMLListener);
+                    pxmlListeners.add(pxmlListener);
+                    LOG.fine("Added PersistenceXMLListener to " + persistenceXML.getName());
+                }
+                
+                // persistence.xml listeners should live as long as the scopes listener
+                listener.setPXMLListeners(pxmlListeners);
+            }
+        }
+    }
+    
+    private abstract class RescanTrigger{
+        private FileObject file;
+        
+        RescanTrigger(FileObject file){
+            this.file = file;
+        }
+        
+        void rescan(){
+            JavaSource javaSrc = JavaSource.forFileObject(file);
+            
+            if (javaSrc != null){
+                try{
+                    javaSrc.runUserActionTask(new ProblemFinderCompControl(file), true);
+                } catch (IOException e){
+                    LOG.log(Level.WARNING, e.getMessage(), e);
+                }
+            }
+        }
+    }
+    
+    private class PersistenceScopesListener extends RescanTrigger implements PropertyChangeListener{
+        List<PersistenceXMLListener> pxmlListeners;
+        
+        PersistenceScopesListener(FileObject file){
+            super(file);
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt){
+            LOG.fine("Received a change event from PersistenceScopes");
+            rescan();
+        }
+        
+        void setPXMLListeners(List<PersistenceXMLListener> pxmlListeners){
+            this.pxmlListeners = pxmlListeners;
+        }
+    }
+    
+    private class PersistenceXMLListener extends RescanTrigger implements FileChangeListener{
+        PersistenceXMLListener(FileObject file){
+            super(file);
+        }
+        
+        public void fileChanged(FileEvent fe){
+            LOG.fine("Received a change event from persistence.xml");
+            rescan();
+        }
+        
+        public void fileFolderCreated(FileEvent fe){}
+        public void fileDataCreated(FileEvent fe){}
+        public void fileDeleted(FileEvent fe){}
+        public void fileRenamed(FileRenameEvent fe){}
+        public void fileAttributeChanged(FileAttributeEvent fe){}
+    }
+    
+    public static class ProblemFinderCompInfo extends JPAProblemFinder implements CancellableTask<CompilationInfo>{
+        public ProblemFinderCompInfo(FileObject file){
+            super(file);
+        }
+    }
+    
+    public static class ProblemFinderCompControl extends JPAProblemFinder implements CancellableTask<CompilationController>{
+        public ProblemFinderCompControl(FileObject file){
+            super(file);
+        }
+        
+        public void run(CompilationController controller) throws Exception {
+            controller.toPhase(JavaSource.Phase.RESOLVED);
+            super.run(controller);
+        }
     }
 }
