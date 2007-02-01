@@ -19,78 +19,98 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="qa-functional tests config">
-
+    
     <!-- Editor Test Application's Tests -->
 
     <!-- Validation tests-->
     <testbag testattribs="commit" name="Editor Commit Validation"
-executor="ide-nogui">
+             executor="ide-nogui">
         <testset dir="qa-functional/src">
-        <patternset>
-            <include name="general/EditorKitsRegistryTest.class"/>
-        </patternset>
+            <patternset>
+                <include name="general/EditorKitsRegistryTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+            
+    <!-- Pre-commit validation -->
+    <testbag testattribs="commit,stable,all,validation" name="Pre-commit Validation">
+        <testset dir="qa-functional/src">
+            <patternset>               
+                <include name="general/EditorKitsRegistryTest.class"/>
+                <include name="keyboard_shortcuts/*Test.class"/>
+                <include name="general/*Test.class"/>
+                <include name="popup_menus/MainMenuTest.class"/>
+                <include name="search_replace/SearchAndReplaceTestSuite.class"/>
+                <include name="org/netbeans/test/editor/formatting/*.class"/>            
+                <exclude name="org/netbeans/test/editor/formatting/BasicTest.class/testReformat2"/>            
+            </patternset>
         </testset>
     </testbag>
     
-    <!-- Validation tests-->
-   <testbag testattribs="validation" name="Editor Validation">
-         <testset dir="qa-functional/src">
-             <patternset>
-               <include name="lib/DummyTest.class"/>
-               <include name="keyboard_shortcuts/*Test.class"/>
-               <include name="general/*Test.class"/>
-               <include name="popup_menus/MainMenuTest.class"/>
-               <include name="search_replace/SearchAndReplaceTest.class"/>               
-             </patternset>
-         </testset>
-     </testbag>
-
-    <!-- Pre-commit validation -->
-    <testbag testattribs="commit,stable" name="Pre Commit Validation">
-         <testset dir="qa-functional/src">
-             <patternset>
-               <include name="lib/DummyTest.class"/>
-               <include name="keyboard_shortcuts/*Test.class"/>
-               <include name="general/*Test.class"/>
-               <include name="popup_menus/MainMenuTest.class"/>    
-             </patternset>
-         </testset>
-     </testbag>
-
     <!-- Stable -->
-    <testbag testattribs="stable" name="Stable Tests">
-         <testset dir="qa-functional/src">
-            <patternset>
-                <include name="org/netbeans/test/editor/suites/abbrevs/AbbreviationsAddRemovePerformer.class"/>
-                <include name="org/netbeans/test/editor/formatting/*.class"/>            
-                <exclude name="org/netbeans/test/editor/formatting/BasicTest.class/testReformat2"/>            
-             </patternset>
-         </testset>
-     </testbag>     
-
-    <!-- Search and Replace -->
-    <testbag testattribs="search_replace" name="Search and Replace">
-         <testset dir="qa-functional/src">
-             <patternset>
-               <include name="search_replace/SearchAndReplaceTestSuite.class"/>
-             </patternset>
-         </testset>
-     </testbag>
-    
-
-    <testbag testattribs="all,full,apps" name="TestApplication">
+    <testbag testattribs="stable,validation,all" name="Stable Tests">
         <testset dir="qa-functional/src">
             <patternset>
-		<include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
-                <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testDoWhile" />
-                <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTwoBrackets" />
-                <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTernary" />
-                <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class" />
+                <include name="org/netbeans/test/editor/suites/abbrevs/AbbreviationsAddRemovePerformer.class"/>                
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Test currently failing -->
+    <testbag testattribs="failing" name="Test failing due to known bug">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/editor/formatting/BasicTest.class/testReformat2"/>
             </patternset>
         </testset>
     </testbag>
         
-    <!-- Code completion Validation tests: -->
+    <!-- Search and Replace -->
+    <testbag testattribs="all,search_replace" name="Search and Replace">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="search_replace/SearchAndReplaceTestSuite.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Indentation tests -->
+    <testbag testattribs="all,indent" name="indentation-programmatic">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/editor/indentation/programmatic/*Performer.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Abbreviation dialog test -->
+    <testbag testattribs="all,abbrevs" name="abbrev-gui">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <!-- 
+                <include name="org/netbeans/test/editor/suites/abbrevs/*Performer.class"/>
+                -->
+                <include name="org/netbeans/test/editor/suites/abbrevs/AbbreviationsAddRemovePerformer.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Formatting tests -->
+    <testbag testattribs="all,formatting" name="FormattingTests">
+        <testset dir="qa-functional/src">
+            <patternset>            
+                <include name="org/netbeans/test/editor/formatting/*.class"/>            
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!--
+    =====================================================================
+    Following test cases are unstable and need fixing/rewritting or can
+    be leave out.
+    =====================================================================
+    -->
+    
     <!-- Code completion is covered in Java/Editor functional tests -->
     <!--
     <testbag testattribs="all,full,completion" name="Completion-Validation" compiler="qa-functional-compiler-completion" >
@@ -116,55 +136,37 @@ executor="ide-nogui">
         </testset>
     </testbag>    
     -->                
-    <testbag testattribs="all,full" name="indentation-programmatic">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<include name="org/netbeans/test/editor/indentation/programmatic/*Performer.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
-    <!-- Abbreviation dialog test -->
-
-    <testbag testattribs="all,full,abbrevs" name="abbrev-gui">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<!-- 
-                <include name="org/netbeans/test/editor/suites/abbrevs/*Performer.class"/>
-                -->
-                <include name="org/netbeans/test/editor/suites/abbrevs/AbbreviationsAddRemovePerformer.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
-    <testbag testattribs="all,full,focus" name="FocusTests">
+            
+    <!-- Focus tests -->
+    <testbag testattribs="focus" name="FocusTests">
         <testset dir="qa-functional/src">
             <patternset>            
                 <include name="org/netbeans/test/editor/suites/focus/FocusTestPerformer.class"/>            
             </patternset>
         </testset>
     </testbag>
-    
-    
-    <!-- Formatting tests -->
-    <testbag testattribs="all,full,formatting" name="FormattingTests">
-        <testset dir="qa-functional/src">
-            <patternset>            
-                <include name="org/netbeans/test/editor/formatting/*.class"/>            
-            </patternset>
-        </testset>
-    </testbag>
-            
+                
     <!-- Key bindings tests  - should be fixed with BasicOptionsOperator, keybindings were removed from Advanced options -->    
-    <testbag testattribs="all,full,keybindings" name="KeyBindings-Actions">
+    <testbag testattribs="keybindings" name="KeyBindings-Actions">
         <testset dir="qa-functional/src">
             <patternset>            
                 <include name="org/netbeans/test/editor/suites/keybindings/*Performer.class"/>            
             </patternset>
         </testset>
     </testbag>
-        
-        
+    
+    <testbag testattribs="apps" name="TestApplication">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
+                <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testDoWhile" />
+                <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTwoBrackets" />
+                <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTernary" />
+                <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class" />
+            </patternset>
+        </testset>
+    </testbag>
+            
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <executor name="ide-nogui" antfile="build-qa-functional.xml" target="runidetest-nogui"/>
     
