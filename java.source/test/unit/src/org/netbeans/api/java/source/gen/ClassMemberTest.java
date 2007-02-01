@@ -500,6 +500,106 @@ public class ClassMemberTest extends GeneratorTest {
         return newMethod;
     }
     
+    /**
+     * #92726, #92127: When semicolon is in class declaration, it is represented
+     * as an empty initilizer in the tree with position -1. This causes many
+     * problems during generating. See issues for details.
+     */
+    public void testAddAfterEmptyInit1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    static enum Enumerace {\n" +
+            "        A, B\n" +
+            "    };\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    static enum Enumerace {\n" +
+            "        A, B\n" +
+            "    };\n\n" +
+            "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree classTree = (ClassTree) typeDecl;
+                        ClassTree copy = make.addClassMember(classTree, m(make));
+                        workingCopy.rewrite(classTree, copy);
+                    }
+                }
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #92726, #92127: When semicolon is in class declaration, it is represented
+     * as an empty initilizer in the tree with position -1. This causes many
+     * problems during generating. See issues for details.
+     */
+    public void testAddAfterEmptyInit2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    ;\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    ;\n\n" +
+            "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree classTree = (ClassTree) typeDecl;
+                        ClassTree copy = make.addClassMember(classTree, m(make));
+                        workingCopy.rewrite(classTree, copy);
+                    }
+                }
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
