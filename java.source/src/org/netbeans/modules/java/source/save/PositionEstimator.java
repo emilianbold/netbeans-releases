@@ -19,6 +19,7 @@
 package org.netbeans.modules.java.source.save;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.tools.javac.tree.JCTree;
 import java.util.ArrayList;
@@ -266,10 +267,30 @@ abstract class PositionEstimator {
             for (JCTree item : oldL) {
                 int treeStart = (int) positions.getStartPosition(compilationUnit, item);
                 int treeEnd = (int) positions.getEndPosition(compilationUnit, item);
-                // stupid hack, we have to remove syntetic constructors --
-                // should be filtered before and shouldn't be part of this
-                // collection (oldL)
-                if (treeEnd < 0) continue;
+                if (treeEnd < 0) {
+                    if (Tree.Kind.BLOCK == item.getKind()) {
+                        // handle the semicolon written in the source. Represeted
+                        // by empty initializer in the source -- useful for
+                        // bluff API users. -- It does not have position, this
+                        // means we have to find it.
+                        if (i > 0) {
+                            seq.moveIndex(matrix[i-1][4]);
+                            seq.moveNext();
+                            TokenUtilities.moveFwdToToken(seq, seq.offset(), JavaTokenId.SEMICOLON);
+                            treeStart = seq.offset();
+                            treeEnd = treeStart + 1;
+                        } else {
+                            // a ted babo rad.
+                        }
+                    } else {
+                        // because the tree parsed does not represent exactly
+                        // the source, we have to do many stupid hacks like
+                        // this. -- Currently, we have found (hopefully) the
+                        // syntetic thing which does not have its source
+                        // representation.
+                        continue;
+                    }
+                }
                 
                 seq.move(treeStart);
                 seq.moveNext();
