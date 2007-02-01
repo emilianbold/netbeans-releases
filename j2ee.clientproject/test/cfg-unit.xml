@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="j2ee/clientproject">
     
-    <testbag testattribs="stable" executor="unit-executor" name="j2ee/clientproject">
+    <testbag testattribs="unstable" executor="unit-executor" name="j2ee/clientproject">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
