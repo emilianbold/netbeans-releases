@@ -46,6 +46,8 @@ public class SyntaxHighlightingTest extends NbTestCase {
     }
 
     private Document document;
+    private TokenHierarchy hierarchy;
+    private SyntaxHighlighting layer;
     
     protected void setUp() {
         // Create and load document
@@ -75,23 +77,35 @@ public class SyntaxHighlightingTest extends NbTestCase {
         
         
         this.document = d;
+        this.hierarchy= TokenHierarchy.get(document);
+        this.layer = new SyntaxHighlighting(document);
     }
     
     public void testLexer() {
-        lexerWarmUp();
-        highlightingCheck();
+        lexerWarmUpFirst();
+        lexerWarmUpNext();
+        highlightingCheckFirst();
+        highlightingCheckNext();
     }
     
-    private void lexerWarmUp() {
+    private void lexerWarmUpFirst() {
         long timestamp1, timestamp2;
-        for(int i = 0; i < 5; i++) {
-            timestamp1 = System.currentTimeMillis();
-            TokenHierarchy th = TokenHierarchy.get(document);
-            timestamp2 = System.currentTimeMillis();
-            System.out.println(i + ". TokenHierarchy.get(document) took " + (timestamp2 - timestamp1) + " msecs.");
+        timestamp1 = System.currentTimeMillis();
+        TokenSequence ts = hierarchy.tokenSequence();
+        timestamp2 = System.currentTimeMillis();
+        System.out.println("0. TokenHierarchy.tokenSequence() took " + (timestamp2 - timestamp1) + " msecs.");
 
+        timestamp1 = System.currentTimeMillis();
+        iterateOver(ts, null, null);
+        timestamp2 = System.currentTimeMillis();
+        System.out.println("0. Iterating through TokenSequence took " + (timestamp2 - timestamp1) + " msecs.");
+    }
+
+    private void lexerWarmUpNext() {
+        long timestamp1, timestamp2;
+        for(int i = 1; i < 5; i++) {
             timestamp1 = System.currentTimeMillis();
-            TokenSequence ts = th.tokenSequence();
+            TokenSequence ts = hierarchy.tokenSequence();
             timestamp2 = System.currentTimeMillis();
             System.out.println(i + ". TokenHierarchy.tokenSequence() took " + (timestamp2 - timestamp1) + " msecs.");
 
@@ -102,14 +116,22 @@ public class SyntaxHighlightingTest extends NbTestCase {
         }
     }
     
-    private void highlightingCheck() {
+    private void highlightingCheckFirst() {
         long timestamp1, timestamp2;
-        for(int i = 0; i < 5; i++) {
-            timestamp1 = System.currentTimeMillis();
-            SyntaxHighlighting layer = new SyntaxHighlighting(document);
-            timestamp2 = System.currentTimeMillis();
-            System.out.println(i + ". SyntaxHighlighting creation took " + (timestamp2 - timestamp1) + " msecs.");
+        timestamp1 = System.currentTimeMillis();
+        HighlightsSequence hs = layer.getHighlights(0, Integer.MAX_VALUE);
+        timestamp2 = System.currentTimeMillis();
+        System.out.println("0. SyntaxHighlighting.getHighlights() took " + (timestamp2 - timestamp1) + " msecs.");
 
+        timestamp1 = System.currentTimeMillis();
+        iterateOver(hs);
+        timestamp2 = System.currentTimeMillis();
+        System.out.println("0. Iterating through HighlightsSequence took " + (timestamp2 - timestamp1) + " msecs.");
+    }
+    
+    private void highlightingCheckNext() {
+        long timestamp1, timestamp2;
+        for(int i = 1; i < 5; i++) {
             timestamp1 = System.currentTimeMillis();
             HighlightsSequence hs = layer.getHighlights(0, Integer.MAX_VALUE);
             timestamp2 = System.currentTimeMillis();
@@ -121,7 +143,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
             System.out.println(i + ". Iterating through HighlightsSequence took " + (timestamp2 - timestamp1) + " msecs.");
         }
     }
-    
+
     private void iterateOver(TokenSequence ts, HashMap<String, Integer> distro, HashMap<String, Integer> flyweightDistro) {
         for( ; ts.moveNext(); ) {
             String name = ts.token().id().name();
