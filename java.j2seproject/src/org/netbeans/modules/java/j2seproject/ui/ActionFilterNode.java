@@ -13,13 +13,12 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.java.j2seproject.ui;
 
-
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -48,8 +47,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
-
 
 /**
  * This class decorates package nodes and file nodes under the Libraries Nodes.
@@ -98,12 +95,12 @@ class ActionFilterNode extends FilterNode {
     }
 
     private ActionFilterNode (Node original, int mode) {
-        super (original, new ActionFilterChildren (original, mode, null));
+        super(original, original.isLeaf() ? Children.LEAF : new ActionFilterChildren(original, mode, null));
         this.mode = mode;
     }
 
     private ActionFilterNode (Node original, int mode, FileObject root, Lookup lkp) {
-        super (original, new ActionFilterChildren (original, mode,root),lkp);
+        super(original, original.isLeaf() ? Children.LEAF : new ActionFilterChildren(original, mode, root), lkp);
         this.mode = mode;
     }
 

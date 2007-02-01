@@ -76,12 +76,12 @@ class ActionFilterNode extends FilterNode {
     }
     
     private ActionFilterNode(Node original, int mode) {
-        super(original, new ActionFilterChildren(original, mode, null));
+        super(original, original.isLeaf() ? Children.LEAF : new ActionFilterChildren(original, mode, null));
         this.mode = mode;
     }
     
     private ActionFilterNode(Node original, int mode, FileObject root, Lookup lkp) {
-        super(original, new ActionFilterChildren(original, mode,root),lkp);
+        super(original, original.isLeaf() ? Children.LEAF : new ActionFilterChildren(original, mode,root),lkp);
         this.mode = mode;
     }
     
