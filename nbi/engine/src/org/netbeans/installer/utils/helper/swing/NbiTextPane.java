@@ -33,7 +33,6 @@ public class NbiTextPane extends JTextPane {
     public NbiTextPane() {
         super();
         
-        setOpaque(false);
         setEditable(false);
         setBorder(new EmptyBorder(0, 0, 0, 0));
         

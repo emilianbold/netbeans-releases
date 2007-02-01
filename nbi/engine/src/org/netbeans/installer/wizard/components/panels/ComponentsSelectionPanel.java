@@ -334,9 +334,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             return null;
         }
         
+        // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
-            System.out.println(new JCheckBox().getPreferredSize().height);            
-            
             // componentsTree
             componentsTree = new NbiTree();
             componentsTree.setModel(
@@ -387,6 +386,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             
             // descriptionPane
             descriptionPane = new NbiTextPane();
+            descriptionPane.setOpaque(false);
             descriptionPane.setBorder(
                     new EmptyBorder(5, 5, 5, 5));
             
@@ -578,6 +578,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             panel.setBackground(selectionBackground);
             
             checkBox = new NbiCheckBox();
+            checkBox.setOpaque(false);
             checkBox.setFocusable(false);
             checkBox.addActionListener(new ActionListener() {
                 public void actionPerformed(final ActionEvent event) {

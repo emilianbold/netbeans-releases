@@ -43,7 +43,7 @@ public class DownloadConfigurationLogicAction extends WizardAction {
             "DCLA.title"); // NOI18N
     public static final String DEFAULT_DESCRIPTION = 
             ResourceUtils.getString(DownloadConfigurationLogicAction.class, 
-            "DCLA.title"); // NOI18N
+            "DCLA.description"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance

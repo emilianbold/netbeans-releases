@@ -33,7 +33,6 @@ public class NbiLabel extends JLabel {
     public NbiLabel() {
         super();
         
-        setOpaque(false);
         setText(null);
     }
     

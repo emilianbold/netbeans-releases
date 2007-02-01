@@ -30,8 +30,6 @@ import org.netbeans.installer.utils.StringUtils;
 public class NbiCheckBox extends JCheckBox {
     public NbiCheckBox() {
         super();
-        
-        setOpaque(false);
     }
     
     public void setText(String text) {
