@@ -21,6 +21,8 @@ package org.netbeans.modules.languages;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManagerListener;
@@ -38,15 +40,16 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.api.languages.SyntaxCookie;
 import org.netbeans.api.languages.ASTNode;
+import org.openide.cookies.EditorCookie;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -125,6 +128,7 @@ public class ParserManagerImpl extends ParserManager {
             ParserManagerListener l = (ParserManagerListener) it.next ();
             l.parsed (state, ast);
         }
+        refreshPanes();
     }
     
     private void setChange (ParseException ex) {
@@ -136,6 +140,27 @@ public class ParserManagerImpl extends ParserManager {
             ParserManagerListener l = (ParserManagerListener) it.next ();
             l.parsed (state, ast);
         }
+        refreshPanes();
+    }
+    
+    private void refreshPanes() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                Iterator it = TopComponent.getRegistry ().getOpened ().iterator ();
+                while (it.hasNext ()) {
+                    TopComponent tc = (TopComponent) it.next ();
+                    EditorCookie ec = (EditorCookie) tc.getLookup ().lookup (EditorCookie.class);
+                    if (ec == null) continue;
+                    JEditorPane[] eps = ec.getOpenedPanes ();
+                    int i, k = eps.length;
+                    for (i = 0; i < k; i++) {
+                        if (eps[i].getDocument () == doc) {
+                            eps[i].repaint ();
+                        }
+                    }
+                }
+            }
+        });
     }
     
     private void parseAST () {
