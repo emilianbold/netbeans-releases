@@ -30,7 +30,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -38,7 +38,6 @@ import org.openide.ErrorManager;
  */
 public class JavaCodeTemplateFilter implements CodeTemplateFilter, CancellableTask<CompilationController> {
     
-    private boolean initialized = false;
     private int startOffset;
     private int endOffset;
     private Tree.Kind ctx = null;
@@ -47,40 +46,30 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, CancellableTa
         this.startOffset = offset;
         this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;            
         JavaSource js = JavaSource.forDocument(component.getDocument());
-        try {
-            js.runUserActionTask(this, true);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+        if (js != null) {
+            try {
+                js.runUserActionTask(this, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
     public synchronized boolean accept(CodeTemplate template) {
-        try {
-            while(!initialized)
-                wait();
-        } catch (InterruptedException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
         return ctx != null && getTemplateContexts(template).contains(ctx);
     }
     
     public void cancel() {
     }
 
-    public synchronized void run(CompilationController controller) {
-        try {
-            controller.toPhase(Phase.PARSED);
-            TreePath startPath = controller.getTreeUtilities().pathFor(startOffset);
-            ctx = startPath.getLeaf().getKind();
-            if (endOffset >= 0 && startOffset != endOffset) {
-                TreePath endPath = controller.getTreeUtilities().pathFor(endOffset);
-                if (endPath.getLeaf().getKind() != ctx)
-                    ctx = null;
-            }
-            initialized = true;
-            notifyAll();
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+    public synchronized void run(CompilationController controller) throws IOException {
+        controller.toPhase(Phase.PARSED);
+        TreePath startPath = controller.getTreeUtilities().pathFor(startOffset);
+        ctx = startPath.getLeaf().getKind();
+        if (endOffset >= 0 && startOffset != endOffset) {
+            TreePath endPath = controller.getTreeUtilities().pathFor(endOffset);
+            if (endPath.getLeaf().getKind() != ctx)
+                ctx = null;
         }
     }
 
