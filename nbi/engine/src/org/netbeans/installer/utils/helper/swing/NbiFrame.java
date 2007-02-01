@@ -43,9 +43,9 @@ public class NbiFrame extends JFrame {
     public NbiFrame() {
         super();
         
-        frameWidth      = DEFAULT_FRAME_WIDTH;
-        frameHeight     = DEFAULT_FRAME_HEIGHT;
-        frameIcon       = DEFAULT_FRAME_ICON;
+        frameWidth  = DEFAULT_FRAME_WIDTH;
+        frameHeight = DEFAULT_FRAME_HEIGHT;
+        frameIcon   = DEFAULT_FRAME_ICON;
         
         initComponents();
     }
@@ -124,7 +124,7 @@ public class NbiFrame extends JFrame {
             getClassLoader().
             getResource("org/netbeans/installer/wizard/wizard-icon.png");
     
-    public static final String WIZARD_FRAME_WIDTH_PROPERTY  = "nbi.wizard.frame.width";
-    public static final String WIZARD_FRAME_HEIGHT_PROPERTY = "nbi.wizard.frame.height";
-    public static final String WIZARD_FRAME_ICON_PROPERTY   = "nbi.wizard.frame.icon";
+    public static final String WIZARD_FRAME_WIDTH_PROPERTY  = "nbi.ui.swing.frame.width";
+    public static final String WIZARD_FRAME_HEIGHT_PROPERTY = "nbi.ui.swing.frame.height";
+    public static final String WIZARD_FRAME_ICON_PROPERTY   = "nbi.ui.swing.frame.icon";
 }

@@ -134,12 +134,12 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         if (!isThereAnythingVisibleToInstall()) {
             setProperty(
                     DESCRIPTION_PROPERTY,
-                    getProperty(DESCRIPTION_INSTALL_PROPERTY));
+                    getProperty(DESCRIPTION_UNINSTALL_PROPERTY));
         }
         if (!isThereAnythingVisibleToUninstall()) {
             setProperty(
                     DESCRIPTION_PROPERTY,
-                    getProperty(DESCRIPTION_UNINSTALL_PROPERTY));
+                    getProperty(DESCRIPTION_INSTALL_PROPERTY));
         }
     }
     
@@ -433,6 +433,13 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     componentsTree.expandPath(node.getTreePath());
                 }
             }
+            
+            // L&F-specific tweaks
+            if (UIManager.getLookAndFeel().getID().equals("GTK")) {
+                treeScrollPane.setViewportBorder(null);
+                
+                descriptionPane.setOpaque(true);
+            }
         }
         
         private void updateDescription() {
@@ -449,19 +456,21 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         private void updateSizes() {
+            final Registry registry = Registry.getInstance();
+            
             long installationSize = 0;
             long downloadSize     = 0;
-            
-            for (Product product: Registry.getInstance().getProductsToInstall()) {
+            for (Product product: registry.getProductsToInstall()) {
                 installationSize += product.getRequiredDiskSpace();
                 downloadSize += product.getDownloadSize();
             }
             
-            String template;
-            if (Registry.getInstance().getNodes(RegistryType.REMOTE).size() == 0) {
-                template = component.getProperty(SIZES_LABEL_TEXT_NO_DOWNLOAD_PROPERTY);
-            } else {
-                template = component.getProperty(SIZES_LABEL_TEXT_PROPERTY);
+            String template = component.getProperty(SIZES_LABEL_TEXT_PROPERTY);
+            for (RegistryNode remoteNode: registry.getNodes(RegistryType.REMOTE)) {
+                if (remoteNode.isVisible()) {
+                    template = component.getProperty(
+                            SIZES_LABEL_TEXT_NO_DOWNLOAD_PROPERTY);
+                }
             }
             
             if (installationSize == 0) {
@@ -746,8 +755,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             if (value instanceof Product) {
                 final Product product = (Product) value;
                 
-                final String title = 
-                        product.getDisplayName() + 
+                final String title =
+                        product.getDisplayName() +
                         " [" + product.getStatus().getDisplayName() + "]";
                 
                 label.setText(title);
@@ -771,6 +780,11 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 label.setToolTipText(group.getDisplayName());
                 
                 checkBox.setVisible(false);
+            }
+            
+            // L&F-specific tweaks
+            if (UIManager.getLookAndFeel().getID().equals("GTK")) {
+                panel.setOpaque(false);
             }
             
             return panel;

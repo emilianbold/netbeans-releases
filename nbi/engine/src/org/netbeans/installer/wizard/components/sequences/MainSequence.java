@@ -46,7 +46,7 @@ public class MainSequence extends WizardSequence {
     public void executeForward() {
         final Registry      registry    = Registry.getInstance();
         final List<Product> toInstall   = registry.getProductsToInstall();
-        final List<Product> toUninstall = registry.getComponentsToUninstall();
+        final List<Product> toUninstall = registry.getProductsToUninstall();
         
         // remove all current children (if there are any), as the components 
         // selection has probably changed and we need to rebuild from scratch

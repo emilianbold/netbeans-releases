@@ -127,6 +127,8 @@ public class Registry {
         stateFileStubUri = DEFAULT_STATE_FILE_STUB_URI;
         
         registryRoot = new Group();
+        registryRoot.setRegistryType(RegistryType.LOCAL);
+        
         properties = new Properties();
         targetPlatform = SystemUtils.getCurrentPlatform();
     }
@@ -910,7 +912,7 @@ public class Registry {
         return products;
     }
     
-    public List<Product> getComponentsToUninstall() {
+    public List<Product> getProductsToUninstall() {
         final List<Product> products = new ArrayList<Product>();
         
         Product product;

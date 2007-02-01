@@ -97,7 +97,7 @@ public class InstallAction extends WizardAction {
                     for (Product toRollback: registry.getProducts(DetailedStatus.INSTALLED_WITH_WARNINGS)) {
                         toRollback.setStatus(Status.TO_BE_UNINSTALLED);
                     }
-                    for (Product toRollback: registry.getComponentsToUninstall()) {
+                    for (Product toRollback: registry.getProductsToUninstall()) {
                         toRollback.rollback(progresses.get(toRollback));
                     }
                     break;
@@ -108,8 +108,6 @@ public class InstallAction extends WizardAction {
                 // sleep a little so that the user can perceive that something
                 // is happening
                 SystemUtils.sleep(200);
-            } catch (UninstallationException e) {
-                ErrorManager.notifyError("Failed to rollback", e);
             } catch (Throwable e) {
                 if (!(e instanceof InstallationException)) {
                     e = new InstallationException("Unknown Error", e);

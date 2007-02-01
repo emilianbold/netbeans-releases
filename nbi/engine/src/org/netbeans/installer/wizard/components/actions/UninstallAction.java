@@ -55,7 +55,7 @@ public class UninstallAction extends WizardAction {
     
     public void execute() {
         final Registry registry = Registry.getInstance();
-        final List<Product> products = registry.getComponentsToUninstall();
+        final List<Product> products = registry.getProductsToUninstall();
         final int percentageChunk = Progress.COMPLETE / products.size();
         final int percentageLeak = Progress.COMPLETE % products.size();
         
@@ -102,7 +102,7 @@ public class UninstallAction extends WizardAction {
     }
     
     public boolean canExecuteForward() {
-        return Registry.getInstance().getComponentsToUninstall().size() > 0;
+        return Registry.getInstance().getProductsToUninstall().size() > 0;
     }
     
     public boolean isPointOfNoReturn() {

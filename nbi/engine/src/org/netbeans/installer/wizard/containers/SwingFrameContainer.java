@@ -29,8 +29,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.net.URL;
-import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiFrame;
@@ -235,7 +233,9 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             
             // descriptionPane
             descriptionPane = new NbiTextPane();
+            descriptionPane.setOpaque(false);
             
+            // add components
             titlePanel.add(titleLabel, new GridBagConstraints(
                     0, 0,                             // x, y
                     1, 1,                             // width, height

@@ -26,7 +26,6 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
-import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.components.WizardPanel;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelUi;
 import org.netbeans.installer.wizard.containers.SwingContainer;
@@ -102,12 +101,15 @@ public class TextPanel extends WizardPanel {
         }
         
         protected void initialize() {
-            textPane.setContentType(component.getProperty(CONTENT_TYPE_PROPERTY));
-            textPane.setText(component.getProperty(TEXT_PROPERTY));
+            textPane.setContentType(
+                    component.getProperty(CONTENT_TYPE_PROPERTY));
+            textPane.setText(
+                    component.getProperty(TEXT_PROPERTY));
         }
         
         private void initComponents() {
             textPane = new NbiTextPane();
+            textPane.setOpaque(false);
                     
             add(textPane, new GridBagConstraints(
                     0, 0,                             // x, y

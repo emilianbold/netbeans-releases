@@ -26,29 +26,21 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.product.filters.TrueFilter;
-import org.netbeans.installer.utils.helper.Status;
-import org.netbeans.installer.utils.helper.ErrorLevel;
-import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -56,10 +48,8 @@ import org.netbeans.installer.utils.helper.swing.NbiList;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
-import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
-import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.containers.SwingContainer;
 
 /**
@@ -297,6 +287,11 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                     GridBagConstraints.BOTH,          // fill
                     new Insets(4, 11, 0, 11),         // padding
                     0, 0));                           // padx, pady - ???
+            
+            // L&F-specific tweaks
+            if (UIManager.getLookAndFeel().getID().equals("GTK")) {
+                listScrollPane.setViewportBorder(null);
+            }
         }
         
         private void browseButtonPressed() {
