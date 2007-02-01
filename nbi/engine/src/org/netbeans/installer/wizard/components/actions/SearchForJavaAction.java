@@ -57,6 +57,7 @@ public class SearchForJavaAction extends WizardAction {
         return getLabel(javaHome, javaInfo);
     }
     
+    // private //////////////////////////////////////////////////////////////////////
     private static String getLabel(File javaHome, JavaInfo javaInfo) {
         return "" + javaHome +
                 " (v. " + javaInfo.getVersion().toJdkStyle() +
@@ -179,7 +180,7 @@ public class SearchForJavaAction extends WizardAction {
                             javaLabels.set(j, label2);
                             javaLabels.set(j - 1, label1);
                         }
-                    } else if (file1.getPath().compareTo(file2.getPath()) > 0) {
+                    } else if (file1.getPath().length() < file2.getPath().length()) {
                         javaLocations.set(j, file2);
                         javaLocations.set(j - 1, file1);
                         
