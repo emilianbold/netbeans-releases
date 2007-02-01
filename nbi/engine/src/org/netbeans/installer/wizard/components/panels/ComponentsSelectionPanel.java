@@ -82,23 +82,41 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ComponentsSelectionPanel() {
-        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
-        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+        setProperty(TITLE_PROPERTY,
+                DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY,
+                DEFAULT_DESCRIPTION);
+        setProperty(DESCRIPTION_INSTALL_PROPERTY,
+                DEFAULT_DESCRIPTION_INSTALL);
+        setProperty(DESCRIPTION_UNINSTALL_PROPERTY,
+                DEFAULT_DESCRIPTION_UNINSTALL);
         
-        setProperty(DESCRIPTION_TEXT_PROPERTY, DEFAULT_DESCRIPTION_TEXT);
-        setProperty(DESCRIPTION_CONTENT_TYPE_PROPERTY, DEFAULT_DESCRIPTION_CONTENT_TYPE);
-        setProperty(SIZES_LABEL_TEXT_PROPERTY, DEFAULT_SIZES_LABEL_TEXT);
-        setProperty(SIZES_LABEL_TEXT_NO_DOWNLOAD_PROPERTY, DEFAULT_SIZES_LABEL_TEXT_NO_DOWNLOAD);
+        setProperty(COMPONENT_DESCRIPTION_TEXT_PROPERTY,
+                DEFAULT_COMPONENT_DESCRIPTION_TEXT);
+        setProperty(COMPONENT_DESCRIPTION_CONTENT_TYPE_PROPERTY,
+                DEFAULT_COMPONENT_DESCRIPTION_CONTENT_TYPE);
+        setProperty(SIZES_LABEL_TEXT_PROPERTY,
+                DEFAULT_SIZES_LABEL_TEXT);
+        setProperty(SIZES_LABEL_TEXT_NO_DOWNLOAD_PROPERTY,
+                DEFAULT_SIZES_LABEL_TEXT_NO_DOWNLOAD);
         
-        setProperty(DEFAULT_INSTALLATION_SIZE_PROPERTY, DEFAULT_INSTALLATION_SIZE);
-        setProperty(DEFAULT_DOWNLOAD_SIZE_PROPERTY, DEFAULT_DOWNLOAD_SIZE);
+        setProperty(DEFAULT_INSTALLATION_SIZE_PROPERTY,
+                DEFAULT_INSTALLATION_SIZE);
+        setProperty(DEFAULT_DOWNLOAD_SIZE_PROPERTY,
+                DEFAULT_DOWNLOAD_SIZE);
         
-        setProperty(ERROR_NO_CHANGES_PROPERTY, DEFAULT_ERROR_NO_CHANGES);
-        setProperty(ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY, DEFAULT_ERROR_NO_CHANGES_INSTALL_ONLY);
-        setProperty(ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY, DEFAULT_ERROR_NO_CHANGES_UNINSTALL_ONLY);
-        setProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY, DEFAULT_ERROR_REQUIREMENT_INSTALL);
-        setProperty(ERROR_CONFLICT_INSTALL_PROPERTY, DEFAULT_ERROR_CONFLICT_INSTALL);
-        setProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY, DEFAULT_ERROR_REQUIREMENT_UNINSTALL);
+        setProperty(ERROR_NO_CHANGES_PROPERTY,
+                DEFAULT_ERROR_NO_CHANGES);
+        setProperty(ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY,
+                DEFAULT_ERROR_NO_CHANGES_INSTALL_ONLY);
+        setProperty(ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY,
+                DEFAULT_ERROR_NO_CHANGES_UNINSTALL_ONLY);
+        setProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY,
+                DEFAULT_ERROR_REQUIREMENT_INSTALL);
+        setProperty(ERROR_CONFLICT_INSTALL_PROPERTY,
+                DEFAULT_ERROR_CONFLICT_INSTALL);
+        setProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY,
+                DEFAULT_ERROR_REQUIREMENT_UNINSTALL);
     }
     
     public WizardUi getWizardUi() {
@@ -118,22 +136,27 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     }
     
     public void initialize() {
-        if (!isThereAnythingToInstall()) {
-            setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION_UNINSTALL);
+        if (!isThereAnythingVisibleToInstall()) {
+            setProperty(
+                    DESCRIPTION_PROPERTY,
+                    getProperty(DESCRIPTION_INSTALL_PROPERTY));
         }
-        if (!isThereAnythingToUninstall()) {
-            setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION_INSTALL);
+        if (!isThereAnythingVisibleToUninstall()) {
+            setProperty(
+                    DESCRIPTION_PROPERTY,
+                    getProperty(DESCRIPTION_UNINSTALL_PROPERTY));
         }
     }
     
+    // private //////////////////////////////////////////////////////////////////////
     private boolean canExecute() {
         return System.getProperty(Registry.FORCE_UNINSTALL_PROPERTY) == null;
     }
     
-    private boolean isThereAnythingToInstall() {
+    private boolean isThereAnythingVisibleToInstall() {
         final Registry registry = Registry.getInstance();
-        final List<Product> toInstall = new LinkedList<Product>();
         
+        final List<Product> toInstall = new LinkedList<Product>();
         toInstall.addAll(registry.getProducts(Status.NOT_INSTALLED));
         toInstall.addAll(registry.getProducts(Status.TO_BE_INSTALLED));
         
@@ -146,10 +169,10 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         return false;
     }
     
-    private boolean isThereAnythingToUninstall() {
+    private boolean isThereAnythingVisibleToUninstall() {
         final Registry registry = Registry.getInstance();
-        final List<Product> toUninstall = new LinkedList<Product>();
         
+        final List<Product> toUninstall = new LinkedList<Product>();
         toUninstall.addAll(registry.getProducts(Status.INSTALLED));
         toUninstall.addAll(registry.getProducts(Status.TO_BE_UNINSTALLED));
         
@@ -207,9 +230,9 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         
         protected void initialize() {
             descriptionPane.setContentType(
-                    component.getProperty(DESCRIPTION_CONTENT_TYPE_PROPERTY));
+                    component.getProperty(COMPONENT_DESCRIPTION_CONTENT_TYPE_PROPERTY));
             
-            if (!component.isThereAnythingToInstall()) {
+            if (!component.isThereAnythingVisibleToInstall()) {
                 sizesLabel.setVisible(false);
             }
             
@@ -228,10 +251,10 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     registry.getProducts(Status.TO_BE_UNINSTALLED);
             
             if ((toInstall.size() == 0) && (toUninstall.size() == 0)) {
-                if (!component.isThereAnythingToInstall()) {
+                if (!component.isThereAnythingVisibleToInstall()) {
                     return component.getProperty(ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY);
                 }
-                if (!component.isThereAnythingToUninstall()) {
+                if (!component.isThereAnythingVisibleToUninstall()) {
                     return component.getProperty(ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
                 }
                 return component.getProperty(ERROR_NO_CHANGES_PROPERTY);
@@ -317,14 +340,16 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         private void initComponents() {
+            System.out.println(new JCheckBox().getPreferredSize().height);            
+            
             // componentsTree
             componentsTree = new NbiTree();
             componentsTree.setModel(
                     new ComponentsTreeModel());
             componentsTree.setCellRenderer(
-                    new ComponentsTreeCellRenderer());
+                    new ComponentsTreeCell());
             componentsTree.setCellEditor(
-                    new ComponentsTreeCellRenderer());
+                    new ComponentsTreeCell());
             componentsTree.setShowsRootHandles(
                     true);
             componentsTree.setRootVisible(
@@ -456,312 +481,318 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                         StringUtils.formatSize(downloadSize)));
             }
         }
+    }
+    
+    public static class ComponentsTreeModel implements TreeModel {
+        private List<TreeModelListener> listeners =
+                new LinkedList<TreeModelListener>();
         
-        /////////////////////////////////////////////////////////////////////////////
-        // Inner Classes
-        public static class ComponentsTreeModel implements TreeModel {
-            private Vector<TreeModelListener> listeners =
-                    new Vector<TreeModelListener>();
+        public Object getRoot() {
+            return Registry.getInstance().getRegistryRoot();
+        }
+        
+        public Object getChild(final Object node, final int index) {
+            return ((RegistryNode) node).getVisibleChildren().get(index);
+        }
+        
+        public int getChildCount(final Object node) {
+            return ((RegistryNode) node).getVisibleChildren().size();
+        }
+        
+        public boolean isLeaf(final Object node) {
+            return ((RegistryNode) node).getVisibleChildren().size() == 0;
+        }
+        
+        public void valueForPathChanged(final TreePath path, final Object value) {
+            final RegistryNode node = (RegistryNode) path.getLastPathComponent();
             
-            public Object getRoot() {
-                return Registry.getInstance().getRegistryRoot();
-            }
-            
-            public Object getChild(Object node, int index) {
-                return ((RegistryNode) node).getVisibleChildren().get(index);
-            }
-            
-            public int getChildCount(Object node) {
-                return ((RegistryNode) node).getVisibleChildren().size();
-            }
-            
-            public boolean isLeaf(Object node) {
-                return ((RegistryNode) node).getVisibleChildren().size() == 0;
-            }
-            
-            public void valueForPathChanged(TreePath path, Object value) {
-                RegistryNode node = (RegistryNode) path.getLastPathComponent();
+            if (node instanceof Product) {
+                final Product product  = (Product) node;
+                final boolean selected = (Boolean) value;
                 
-                if (node instanceof Product) {
-                    Product product = (Product) node;
-                    boolean selected = (Boolean) value;
-                    
-                    if (selected && (product.getStatus() == Status.NOT_INSTALLED)) {
-                        product.setStatus(Status.TO_BE_INSTALLED);
-                    }
-                    if (selected && (product.getStatus() == Status.TO_BE_UNINSTALLED)) {
-                        product.setStatus(Status.INSTALLED);
-                    }
-                    if (!selected && (product.getStatus() == Status.INSTALLED)) {
-                        product.setStatus(Status.TO_BE_UNINSTALLED);
-                    }
-                    if (!selected && (product.getStatus() == Status.TO_BE_INSTALLED)) {
-                        product.setStatus(Status.NOT_INSTALLED);
-                    }
-                    
-                    fireNodeChanged(path);
+                if (selected && (product.getStatus() == Status.NOT_INSTALLED)) {
+                    product.setStatus(Status.TO_BE_INSTALLED);
                 }
-            }
-            
-            public int getIndexOfChild(Object node, Object child) {
-                return ((RegistryNode) node).getVisibleChildren().indexOf(child);
-            }
-            
-            public void addTreeModelListener(TreeModelListener listener) {
-                synchronized (listeners) {
-                    listeners.add(listener);
+                if (selected && (product.getStatus() == Status.TO_BE_UNINSTALLED)) {
+                    product.setStatus(Status.INSTALLED);
                 }
-            }
-            
-            public void removeTreeModelListener(TreeModelListener listener) {
-                synchronized (listeners) {
-                    listeners.remove(listener);
+                if (!selected && (product.getStatus() == Status.INSTALLED)) {
+                    product.setStatus(Status.TO_BE_UNINSTALLED);
                 }
-            }
-            
-            private void fireNodeChanged(TreePath path) {
-                TreeModelListener[] clone = listeners.toArray(new TreeModelListener[0]);
-                TreeModelEvent event = new TreeModelEvent(this, path);
+                if (!selected && (product.getStatus() == Status.TO_BE_INSTALLED)) {
+                    product.setStatus(Status.NOT_INSTALLED);
+                }
                 
-                for (TreeModelListener listener: clone) {
-                    listener.treeNodesChanged(event);
-                }
+                fireNodeChanged(path);
             }
         }
         
-        public static class ComponentsTreeCellRenderer
-                implements TreeCellRenderer, TreeCellEditor {
-            private List<CellEditorListener> listeners =
-                    new LinkedList<CellEditorListener>();
-            
-            private NbiCheckBox checkBox;
-            private NbiLabel    label;
-            private NbiPanel    panel;
-            
-            private Color foreground;
-            private Color background;
-            
-            private Color selectionForeground;
-            private Color selectionBackground;
-            
-            public ComponentsTreeCellRenderer() {
-                foreground = UIManager.getColor("Tree.textForeground");
-                background = UIManager.getColor("Tree.textBackground");
-                
-                selectionForeground = UIManager.getColor("Tree.selectionForeground");
-                selectionBackground = UIManager.getColor("Tree.selectionBackground");
-                
-                panel = new NbiPanel();
-                panel.setLayout(new GridBagLayout());
-                panel.setOpaque(false);
-                
-                checkBox = new NbiCheckBox();
-                checkBox.setOpaque(false);
-                checkBox.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent event) {
-                        stopCellEditing();
-                    }
-                });
-                
-                label = new NbiLabel();
-                label.setOpaque(false);
-                label.addMouseListener(new MouseAdapter() {
-                    public void mouseClicked(MouseEvent e) {
-                        stopCellEditing();
-                    }
-                    public void mouseEntered(MouseEvent e) {
-                    }
-                    public void mouseExited(MouseEvent e) {
-                    }
-                    public void mousePressed(MouseEvent e) {
-                        stopCellEditing();
-                    }
-                    public void mouseReleased(MouseEvent e) {
-                        stopCellEditing();
-                    }
-                });
-                
-                panel.add(checkBox, new GridBagConstraints(
-                        0, 0,                             // x, y
-                        1, 1,                             // width, height
-                        0.0, 0.0,                         // weight-x, weight-y
-                        GridBagConstraints.LINE_START,    // anchor
-                        GridBagConstraints.HORIZONTAL,    // fill
-                        new Insets(0, 0, 0, 0),           // padding
-                        0, 0));                           // padx, pady - ???);
-                panel.add(label, new GridBagConstraints(
-                        1, 0,                             // x, y
-                        1, 1,                             // width, height
-                        1.0, 0.0,                         // weight-x, weight-y
-                        GridBagConstraints.LINE_START,    // anchor
-                        GridBagConstraints.HORIZONTAL,    // fill
-                        new Insets(0, 0, 0, 0),           // padding
-                        0, 0));                           // padx, pady - ???);
+        public int getIndexOfChild(final Object node, final Object child) {
+            return ((RegistryNode) node).getVisibleChildren().indexOf(child);
+        }
+        
+        public void addTreeModelListener(final TreeModelListener listener) {
+            synchronized (listeners) {
+                listeners.add(listener);
+            }
+        }
+        
+        public void removeTreeModelListener(final TreeModelListener listener) {
+            synchronized (listeners) {
+                listeners.remove(listener);
+            }
+        }
+        
+        // private //////////////////////////////////////////////////////////////////
+        private void fireNodeChanged(final TreePath path) {
+            final TreeModelListener[] clone;
+            synchronized (listeners) {
+                clone = listeners.toArray(new TreeModelListener[0]);
             }
             
-            public Component getTreeCellRendererComponent(
-                    final JTree tree,
-                    final Object value,
-                    final boolean selected,
-                    final boolean expanded,
-                    final boolean leaf,
-                    final int row,
-                    final boolean focus) {
-                return getComponent(
-                        tree,
-                        value,
-                        selected,
-                        expanded,
-                        leaf,
-                        row,
-                        focus);
+            final TreeModelEvent event = new TreeModelEvent(this, path);
+            for (TreeModelListener listener: clone) {
+                listener.treeNodesChanged(event);
             }
+        }
+    }
+    
+    public static class ComponentsTreeCell implements TreeCellRenderer, TreeCellEditor {
+        private List<CellEditorListener> listeners =
+                new LinkedList<CellEditorListener>();
+        
+        private NbiPanel    panel;
+        private NbiCheckBox checkBox;
+        private NbiLabel    label;
+        
+        private Color foreground;
+        private Color background;
+        
+        private Color selectionForeground;
+        private Color selectionBackground;
+        
+        public ComponentsTreeCell() {
+            foreground = UIManager.getColor("Tree.textForeground");
+            background = UIManager.getColor("Tree.textBackground");
             
-            public Component getTreeCellEditorComponent(
-                    final JTree tree,
-                    final Object value,
-                    final boolean selected,
-                    final boolean expanded,
-                    final boolean leaf,
-                    final int row) {
-                return getComponent(
-                        tree,
-                        value,
-                        selected,
-                        expanded,
-                        leaf,
-                        row,
-                        true);
-            }
+            selectionForeground = UIManager.getColor("Tree.selectionForeground");
+            selectionBackground = UIManager.getColor("Tree.selectionBackground");
             
-            public Object getCellEditorValue() {
-                return checkBox.isSelected();
-            }
+            panel = new NbiPanel();
+            panel.setLayout(new GridBagLayout());
+            panel.setBackground(selectionBackground);
             
-            public boolean isCellEditable(EventObject event) {
-                if (event instanceof MouseEvent) {
-                    final MouseEvent mouseEvent = (MouseEvent) event;
-                    
-                    if (mouseEvent.getID() == MouseEvent.MOUSE_PRESSED) {
-                        return true;
-                    }
+            checkBox = new NbiCheckBox();
+            checkBox.setOpaque(false);
+            checkBox.setFocusable(false);
+            checkBox.addActionListener(new ActionListener() {
+                public void actionPerformed(final ActionEvent event) {
+                    stopCellEditing();
                 }
+            });
+            
+            label = new NbiLabel();
+            label.setOpaque(false);
+            label.setFocusable(false);
+            label.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(final MouseEvent event) {
+                    stopCellEditing();
+                }
+                public void mousePressed(final MouseEvent event) {
+                    stopCellEditing();
+                }
+                public void mouseReleased(final MouseEvent event) {
+                    stopCellEditing();
+                }
+            });
+            
+            panel.add(checkBox, new GridBagConstraints(
+                    0, 0,                             // x, y
+                    1, 1,                             // width, height
+                    0.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(0, 0, 0, 0),           // padding
+                    0, 0));                           // padx, pady - ???);
+            panel.add(label, new GridBagConstraints(
+                    1, 0,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(0, 0, 0, 0),           // padding
+                    0, 0));                           // padx, pady - ???);
+            
+            System.out.println(checkBox.getBorder());
+            System.out.println(checkBox.getWidth() + ", " + checkBox.getHeight());
+        }
+        
+        public Component getTreeCellRendererComponent(
+                final JTree tree,
+                final Object value,
+                final boolean selected,
+                final boolean expanded,
+                final boolean leaf,
+                final int row,
+                final boolean focus) {
+            return getComponent(
+                    tree,
+                    value,
+                    selected,
+                    expanded,
+                    leaf,
+                    row,
+                    focus);
+        }
+        
+        public Component getTreeCellEditorComponent(
+                final JTree tree,
+                final Object value,
+                final boolean selected,
+                final boolean expanded,
+                final boolean leaf,
+                final int row) {
+            return getComponent(
+                    tree,
+                    value,
+                    selected,
+                    expanded,
+                    leaf,
+                    row,
+                    true);
+        }
+        
+        public Object getCellEditorValue() {
+            return checkBox.isSelected();
+        }
+        
+        public boolean isCellEditable(EventObject event) {
+            if (event instanceof MouseEvent) {
+                final MouseEvent mouseEvent = (MouseEvent) event;
                 
-                if (event instanceof KeyEvent) {
+                if (mouseEvent.getID() == MouseEvent.MOUSE_PRESSED) {
                     return true;
                 }
-                
-                return false;
             }
             
-            public boolean shouldSelectCell(EventObject event) {
+            if (event instanceof KeyEvent) {
                 return true;
             }
             
-            public boolean stopCellEditing() {
-                fireEditingStopped();
-                return true;
+            return false;
+        }
+        
+        public boolean shouldSelectCell(EventObject event) {
+            return true;
+        }
+        
+        public boolean stopCellEditing() {
+            fireEditingStopped();
+            return true;
+        }
+        
+        public void cancelCellEditing() {
+            fireEditingCanceled();
+        }
+        
+        public void addCellEditorListener(CellEditorListener listener) {
+            synchronized (listeners) {
+                listeners.add(listener);
+            }
+        }
+        
+        public void removeCellEditorListener(CellEditorListener listener) {
+            synchronized (listeners) {
+                listeners.remove(listener);
+            }
+        }
+        
+        // private //////////////////////////////////////////////////////////////////
+        private void fireEditingStopped() {
+            final CellEditorListener[] clone;
+            synchronized (listeners) {
+                clone = listeners.toArray(new CellEditorListener[0]);
             }
             
-            public void cancelCellEditing() {
-                fireEditingCanceled();
+            final ChangeEvent event = new ChangeEvent(this);
+            for (CellEditorListener listener: clone) {
+                listener.editingStopped(event);
+            }
+        }
+        
+        private void fireEditingCanceled() {
+            final CellEditorListener[] clone;
+            synchronized (listeners) {
+                clone = listeners.toArray(new CellEditorListener[0]);
             }
             
-            public void addCellEditorListener(CellEditorListener listener) {
-                synchronized (listeners) {
-                    listeners.add(listener);
-                }
+            final ChangeEvent event = new ChangeEvent(this);
+            for (CellEditorListener listener: clone) {
+                listener.editingCanceled(event);
             }
-            
-            public void removeCellEditorListener(CellEditorListener listener) {
-                synchronized (listeners) {
-                    listeners.remove(listener);
-                }
-            }
-            
-            private void fireEditingStopped() {
-                final CellEditorListener[] clone =
-                        listeners.toArray(new CellEditorListener[0]);
-                final ChangeEvent event = new ChangeEvent(this);
+        }
+        
+        private JComponent getComponent(
+                final JTree tree,
+                final Object value,
+                final boolean selected,
+                final boolean expanded,
+                final boolean leaf,
+                final int row,
+                final boolean focus) {
+            if (selected) {
+                panel.setOpaque(true);
                 
-                for (CellEditorListener listener: clone) {
-                    listener.editingStopped(event);
-                }
-            }
-            
-            private void fireEditingCanceled() {
-                final CellEditorListener[] clone =
-                        listeners.toArray(new CellEditorListener[0]);
-                final ChangeEvent event = new ChangeEvent(this);
+                checkBox.setForeground(selectionForeground);
+                label.setForeground(selectionForeground);
+            } else {
+                panel.setOpaque(false);
                 
-                for (CellEditorListener listener: clone) {
-                    listener.editingCanceled(event);
-                }
+                checkBox.setForeground(foreground);
+                label.setForeground(foreground);
             }
             
-            private JComponent getComponent(
-                    final JTree tree,
-                    final Object value,
-                    final boolean selected,
-                    final boolean expanded,
-                    final boolean leaf,
-                    final int row,
-                    final boolean focus) {
-                if (selected) {
-                    panel.setOpaque(true);
-                    panel.setBackground(selectionBackground);
-                    
-                    checkBox.setForeground(selectionForeground);
-                    label.setForeground(selectionForeground);
+            if (value instanceof Product) {
+                final Product product = (Product) value;
+                
+                final String title = 
+                        product.getDisplayName() + 
+                        " [" + product.getStatus().getDisplayName() + "]";
+                
+                label.setText(title);
+                label.setIcon(product.getIcon());
+                label.setToolTipText(title);
+                
+                checkBox.setVisible(true);
+                checkBox.setToolTipText(title);
+                
+                if ((product.getStatus() == Status.INSTALLED) ||
+                        (product.getStatus() == Status.TO_BE_INSTALLED)) {
+                    checkBox.setSelected(true);
                 } else {
-                    panel.setOpaque(false);
-                    
-                    checkBox.setForeground(foreground);
-                    label.setForeground(foreground);
+                    checkBox.setSelected(false);
                 }
+            } else if (value instanceof Group) {
+                final Group group = (Group) value;
                 
-                if (value instanceof Product) {
-                    final Product product = (Product) value;
-                    
-                    String title = "<html>" + product.getDisplayName();
-                    
-                    if ((product.getStatus() == Status.TO_BE_INSTALLED) ||
-                            (product.getStatus() == Status.TO_BE_UNINSTALLED)) {
-                        title += " <span color=\"gray\">[" + product.getStatus().getDisplayName() + "]</span>";
-                    }
-                    
-                    title += "</html>";
-                    
-                    label.setText(title);
-                    label.setIcon(product.getIcon());
-                    label.setToolTipText(title);
-                    
-                    checkBox.setVisible(true);
-                    checkBox.setToolTipText(title);
-                    
-                    if ((product.getStatus() == Status.INSTALLED) ||
-                            (product.getStatus() == Status.TO_BE_INSTALLED)) {
-                        checkBox.setSelected(true);
-                    } else {
-                        checkBox.setSelected(false);
-                    }
-                } else if (value instanceof Group) {
-                    final Group group = (Group) value;
-                    
-                    label.setText(group.getDisplayName());
-                    label.setIcon(group.getIcon());
-                    label.setToolTipText(group.getDisplayName());
-                    
-                    checkBox.setVisible(false);
-                }
+                label.setText(group.getDisplayName());
+                label.setIcon(group.getIcon());
+                label.setToolTipText(group.getDisplayName());
                 
-                return panel;
+                checkBox.setVisible(false);
             }
+            
+            return panel;
         }
     }
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
+    public static final String DESCRIPTION_INSTALL_PROPERTY =
+            "description.install"; // NOI18N
+    public static final String DESCRIPTION_UNINSTALL_PROPERTY =
+            "description.uninstall"; // NOI18N
+    
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
             "CSP.title"); // NOI18N
@@ -775,10 +806,10 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             ResourceUtils.getString(ComponentsSelectionPanel.class,
             "CSP.description.uninstall"); // NOI18N
     
-    public static final String DESCRIPTION_TEXT_PROPERTY =
-            "description.text"; // NOI18N
-    public static final String DESCRIPTION_CONTENT_TYPE_PROPERTY =
-            "description.content.type"; // NOI18N
+    public static final String COMPONENT_DESCRIPTION_TEXT_PROPERTY =
+            "component.description.text"; // NOI18N
+    public static final String COMPONENT_DESCRIPTION_CONTENT_TYPE_PROPERTY =
+            "component.description.content.type"; // NOI18N
     public static final String SIZES_LABEL_TEXT_PROPERTY =
             "sizes.label.text"; // NOI18N
     public static final String SIZES_LABEL_TEXT_NO_DOWNLOAD_PROPERTY =
@@ -788,12 +819,12 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     public static final String DEFAULT_DOWNLOAD_SIZE_PROPERTY =
             "default.download.size"; // NOI18N
     
-    public static final String DEFAULT_DESCRIPTION_TEXT =
+    public static final String DEFAULT_COMPONENT_DESCRIPTION_TEXT =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.description.text"); // NOI18N
-    public static final String DEFAULT_DESCRIPTION_CONTENT_TYPE =
+            "CSP.component.description.text"); // NOI18N
+    public static final String DEFAULT_COMPONENT_DESCRIPTION_CONTENT_TYPE =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.description.content.type"); // NOI18N
+            "CSP.component.description.content.type"); // NOI18N
     public static final String DEFAULT_SIZES_LABEL_TEXT =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
             "CSP.sizes.label.text"); // NOI18N
