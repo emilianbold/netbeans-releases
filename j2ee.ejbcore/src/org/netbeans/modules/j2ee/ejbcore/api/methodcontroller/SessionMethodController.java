@@ -61,7 +61,9 @@ public final class SessionMethodController extends AbstractMethodController {
     @Override
     public MethodType getMethodTypeFromInterface(MethodModel clientView) {
         // see if the interface is home or local home, otherwise assume business
-        if (findInClass(model.getLocalHome(), clientView) || findInClass(model.getHome(), clientView)) {
+        String localHome = model.getLocalHome();
+        String home = model.getHome();
+        if ((localHome != null && findInClass(localHome, clientView)) || (home != null && findInClass(home, clientView))) {
             return new MethodType.CreateMethodType(clientView);
         } else {
             return new MethodType.BusinessMethodType(clientView);
