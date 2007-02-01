@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.midpnb.components.displayables;
 
 import java.util.Arrays;
 import java.util.List;
-
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
@@ -32,17 +31,11 @@ import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.api.model.Versionable;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
-import org.netbeans.modules.vmd.api.properties.common.TextFieldBC;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
-import org.netbeans.modules.vmd.midp.components.resources.FontCD;
-import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.propertyeditors.eventhandler.PropertyEditorEventHandler;
 
 /**
@@ -69,14 +62,14 @@ public class SplashScreenCD extends ComponentDescriptor {
     }
 
     public VersionDescriptor getVersionDescriptor() {
-        return MidpVersionDescriptor.MIDP;
+        return MidpVersionDescriptor.MIDP_2;
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-            new PropertyDescriptor(PROP_TIMEOUT, MidpTypes.TYPEID_INT, PropertyValue.createNull(), false, true, MidpVersionable.MIDP),
-            new PropertyDescriptor(PROP_ALLOW_TIMEOUT_INTERRUPT, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(Boolean.TRUE), false, false, Versionable.FOREVER),
-            new PropertyDescriptor(PROP_DISSMISS_ACTION, EventSourceCD.TYPEID, PropertyValue.createNull(), false, false, Versionable.FOREVER)
+            new PropertyDescriptor(PROP_TIMEOUT, MidpTypes.TYPEID_INT, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_ALLOW_TIMEOUT_INTERRUPT, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(Boolean.TRUE), false, false, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_DISSMISS_ACTION, EventSourceCD.TYPEID, PropertyValue.createNull(), false, false, MidpVersionable.MIDP_2)
         );
     }
     

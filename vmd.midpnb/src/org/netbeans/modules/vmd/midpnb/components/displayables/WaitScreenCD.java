@@ -35,7 +35,6 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
-import org.netbeans.modules.vmd.midp.propertyeditors.Bundle;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.eventhandler.PropertyEditorEventHandler;
@@ -66,7 +65,7 @@ public final class WaitScreenCD extends ComponentDescriptor {
     }
     
     public VersionDescriptor getVersionDescriptor() {
-        return MidpVersionDescriptor.MIDP;
+        return MidpVersionDescriptor.MIDP_2;
     }
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
