@@ -56,14 +56,19 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
             boolean hasExceptions,
             boolean hasInterfaces) {
         initComponents();
+        
         this.methodModel = methodModel;
+        
+        nameTextField.setText(methodModel.getName());
+        returnTypeTextField.setText(methodModel.getReturnType());
+        
         localCheckBox.setEnabled(hasLocal);
         remoteCheckBox.setEnabled(hasRemote);
         localCheckBox.setSelected(selectLocal);
         remoteCheckBox.setSelected(selectRemote);
+        
         if (!hasReturnType) {
-            returnTypeLabel.setVisible(false);
-            returnTypeTextField.setVisible(false);
+            disableReturnType();
         }
         if (ejbql == null) {
             disableEjbql();
@@ -80,8 +85,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
             disableInterfaces();;
         }
         
-        
-        parametersPanel = new ParametersPanel();
+        parametersPanel = new ParametersPanel(methodModel.getParameters());
         parametersContainerPanel.add(parametersPanel);
         
         // listeners
@@ -368,6 +372,11 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
     
     public boolean hasRemote() {
         return remoteCheckBox.isEnabled() && remoteCheckBox.isSelected();
+    }
+    
+    private void disableReturnType() {
+        returnTypeLabel.setVisible(false);
+        returnTypeTextField.setVisible(false);
     }
     
     private void disableCardinality() {

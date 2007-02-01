@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.common.method.impl;
 
-import java.util.Arrays;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -40,14 +39,12 @@ public final class ParametersPanel extends javax.swing.JPanel {
         NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.LBL_Final"),
     };
     
-    // this model is set to table in UI designer
-    private final ParamsTableModel tableModel = new ParamsTableModel(Arrays.asList(new MethodModel.Variable[] {
-        MethodModel.Variable.create("java.lang.String", "name", false),
-        MethodModel.Variable.create("java.lang.String", "address", true),
-    }));
+    private final ParamsTableModel tableModel;
 
-    public ParametersPanel() {
+    public ParametersPanel(List<MethodModel.Variable> parameters) {
         initComponents();
+        tableModel = new ParamsTableModel(parameters);
+        table.setModel(tableModel);
     }
     
     public List<MethodModel.Variable> getParameters() {
@@ -63,22 +60,33 @@ public final class ParametersPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        table = new javax.swing.JTable();
+        addButton = new javax.swing.JButton();
+        removeButton = new javax.swing.JButton();
+        upButton = new javax.swing.JButton();
+        downButton = new javax.swing.JButton();
 
-        jTable1.setModel(tableModel);
-        jScrollPane1.setViewportView(jTable1);
+        table.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.jButton1.text")); // NOI18N
+            },
+            new String [] {
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton2, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.jButton2.text")); // NOI18N
+            }
+        ));
+        jScrollPane1.setViewportView(table);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton3, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.jButton3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.addButton.text")); // NOI18N
+        addButton.setEnabled(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton4, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.jButton4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.removeButton.text")); // NOI18N
+        removeButton.setEnabled(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(upButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.upButton.text")); // NOI18N
+        upButton.setEnabled(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(downButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.downButton.text")); // NOI18N
+        downButton.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -89,14 +97,14 @@ public final class ParametersPanel extends javax.swing.JPanel {
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 241, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jButton1)
-                    .add(jButton2)
-                    .add(jButton3)
-                    .add(jButton4))
+                    .add(addButton)
+                    .add(removeButton)
+                    .add(upButton)
+                    .add(downButton))
                 .addContainerGap(58, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {jButton1, jButton2, jButton3, jButton4}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(new java.awt.Component[] {addButton, downButton, removeButton, upButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -104,13 +112,13 @@ public final class ParametersPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jButton1)
+                        .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton2)
+                        .add(removeButton)
                         .add(22, 22, 22)
-                        .add(jButton3)
+                        .add(upButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton4))
+                        .add(downButton))
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -118,14 +126,15 @@ public final class ParametersPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
+    private javax.swing.JButton addButton;
+    private javax.swing.JButton downButton;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JButton removeButton;
+    private javax.swing.JTable table;
+    private javax.swing.JButton upButton;
     // End of variables declaration//GEN-END:variables
     
+    // accessible for test
     static class ParamsTableModel extends AbstractTableModel {
         
         private final List<MethodModel.Variable> parameters;
