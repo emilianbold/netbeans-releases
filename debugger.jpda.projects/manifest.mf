@@ -1,5 +1,4 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.debugger.jpda.projects
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/debugger/jpda/projects/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Provides: org.netbeans.spi.debugger.jpda.EditorContext, org.netbeans.spi.debugger.jpda.SourcePathProvider
