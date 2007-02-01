@@ -135,7 +135,7 @@ public final class ASTService implements ASTModel {
             public void redo() {
                 root = tree;
             }
-            public Object getOld(Object o) {
+            public RootTree getOld(RootTree o) {
                 return (o == tree) ? old : null;
             }
         });
@@ -154,7 +154,7 @@ public final class ASTService implements ASTModel {
             public void redo() {
                 setContextImpl(newContext);
             }
-            public Object getOld(Object o) {
+            public RootTree getOld(RootTree o) {
                 return (o == newContext) ? old : null;
             }
         };
