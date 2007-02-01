@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -63,18 +63,16 @@ class ActionFilterNode extends FilterNode {
      * @return ActionFilterNode
      */
     static ActionFilterNode create(Node original) {
-        DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
+        DataObject dobj = original.getLookup().lookup(DataObject.class);
         assert dobj != null;
         FileObject root =  dobj.getPrimaryFile();
-        Lookup lkp = new ProxyLookup(new Lookup[] {
-            original.getLookup(), Lookups.singleton(new JavadocProvider(root,root))
-        });
+        Lookup lkp = new ProxyLookup(original.getLookup(), Lookups.singleton(new JavadocProvider(root, root)));
         return new ActionFilterNode(original, MODE_PACKAGE, root, lkp);
     }
     
     private ActionFilterNode(Node original, int mode, FileObject cpRoot, FileObject resource) {
         this(original, mode, cpRoot,
-                new ProxyLookup(new Lookup[] {original.getLookup(),Lookups.singleton(new JavadocProvider(cpRoot,resource))}));
+                new ProxyLookup(original.getLookup(),Lookups.singleton(new JavadocProvider(cpRoot,resource))));
     }
     
     private ActionFilterNode(Node original, int mode) {
@@ -104,25 +102,23 @@ class ActionFilterNode extends FilterNode {
     
     private Action[] initActions() {
         if (actionCache == null) {
-            List result = new ArrayList(2);
+            List<Action> result = new ArrayList<Action>(2);
             if (mode == MODE_FILE) {
-                Action[] superActions = super.getActions(false);
-                for (int i=0; i<superActions.length; i++) {
-                    if (superActions[i] instanceof OpenAction || superActions[i] instanceof EditAction) {
-                        result.add(superActions[i]);
+                for (Action superAction : super.getActions(false)) {
+                    if (superAction instanceof OpenAction || superAction instanceof EditAction) {
+                        result.add(superAction);
                     }
                 }
                 result.add(SystemAction.get(ShowJavadocAction.class));
             } else if (mode == MODE_PACKAGE) {
                 result.add(SystemAction.get(ShowJavadocAction.class));
-                Action[] superActions = super.getActions(false);
-                for (int i=0; i < superActions.length; i++) {
-                    if (superActions[i] instanceof FindAction) {
-                        result.add(superActions[i]);
+                for (Action superAction : super.getActions(false)) {
+                    if (superAction instanceof FindAction) {
+                        result.add(superAction);
                     }
                 }
             }
-            actionCache = (Action[]) result.toArray(new Action[result.size()]);
+            actionCache = result.toArray(new Action[result.size()]);
         }
         return actionCache;
     }
