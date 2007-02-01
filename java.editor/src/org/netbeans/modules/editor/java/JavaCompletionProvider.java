@@ -233,19 +233,21 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (fo != null)
                             js = JavaSource.forFileObject(fo);
                     }
-                    js.runUserActionTask(this, (queryType & COMPLETION_QUERY_TYPE) == 0);
-                    if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
-                        if (results != null)
-                            resultSet.addAllItems(results);
-                    } else if (queryType == TOOLTIP_QUERY_TYPE) {
-                        if (toolTip != null)
-                            resultSet.setToolTip(toolTip);
-                    } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
-                        if (documentation != null)
-                            resultSet.setDocumentation(documentation);
+                    if (js != null) {
+                        js.runUserActionTask(this, (queryType & COMPLETION_QUERY_TYPE) == 0);
+                        if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
+                            if (results != null)
+                                resultSet.addAllItems(results);
+                        } else if (queryType == TOOLTIP_QUERY_TYPE) {
+                            if (toolTip != null)
+                                resultSet.setToolTip(toolTip);
+                        } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
+                            if (documentation != null)
+                                resultSet.setDocumentation(documentation);
+                        }
+                        if (anchorOffset > -1)
+                            resultSet.setAnchorOffset(anchorOffset);
                     }
-                    if (anchorOffset > -1)
-                        resultSet.setAnchorOffset(anchorOffset);
                 }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
