@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -69,7 +69,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -152,7 +151,7 @@ final class LibrariesNode extends AbstractNode {
         return NbBundle.getMessage(LibrariesNode.class, bundleKey);
     }
     
-    private static final class LibrariesChildren extends Children.Keys implements AntProjectListener {
+    private static final class LibrariesChildren extends Children.Keys<Object/*JDK_PLATFORM_NAME|ModuleDependency*/> implements AntProjectListener {
         
         private static final String JDK_PLATFORM_NAME = "jdkPlatform"; // NOI18N
         
@@ -174,7 +173,7 @@ final class LibrariesNode extends AbstractNode {
         }
         
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.emptySet());
             project.getHelper().removeAntProjectListener(this);
             super.removeNotify();
         }
@@ -188,12 +187,12 @@ final class LibrariesNode extends AbstractNode {
             RP.post(new Runnable() {
                 public void run() {
                     try {
-                        ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
-                            public Object run() throws Exception {
+                        ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+                            public Void run() throws Exception {
                                 ProjectXMLManager pxm = new ProjectXMLManager(project);
-                                List keys = new ArrayList();
+                                List<Object> keys = new ArrayList<Object>();
                                 keys.add(JDK_PLATFORM_NAME);
-                                SortedSet deps = new TreeSet(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
+                                SortedSet<ModuleDependency> deps = new TreeSet<ModuleDependency>(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
                                 deps.addAll(pxm.getDirectDependencies());
                                 keys.addAll(deps);
                                 // XXX still not good when dependency was just edited, since Children use
@@ -283,7 +282,7 @@ final class LibrariesNode extends AbstractNode {
         private final NbModuleProject project;
         
         ProjectDependencyNode(final ModuleDependency dep, final NbModuleProject project) {
-            super(Children.LEAF, Lookups.fixed(new Object[] { dep, project, dep.getModuleEntry() }));
+            super(Children.LEAF, Lookups.fixed(dep, project, dep.getModuleEntry()));
             this.dep = dep;
             this.project = project;
             ModuleEntry me = dep.getModuleEntry();
@@ -322,10 +321,7 @@ final class LibrariesNode extends AbstractNode {
         
         LibraryDependencyNode(final ModuleDependency dep,
                 final NbModuleProject project, final Node original) {
-            super(original, null, new ProxyLookup(new Lookup[] {
-                original.getLookup(),
-                Lookups.fixed(new Object[] { dep, project })
-            }));
+            super(original, null, new ProxyLookup(original.getLookup(), Lookups.fixed(dep, project)));
             this.dep = dep;
             this.project = project;
             setShortDescription(LibrariesNode.createHtmlDescription(dep));
@@ -392,8 +388,8 @@ final class LibrariesNode extends AbstractNode {
                 ModuleDependency[] newDeps = addPanel.getSelectedDependencies();
                 ProjectXMLManager pxm = new ProjectXMLManager(project);
                 try {
-                    for (int i = 0; i < newDeps.length; i++) {
-                        pxm.addDependency(newDeps[i]);
+                    for (ModuleDependency dep : newDeps) {
+                        pxm.addDependency(dep);
                     }
                     ProjectManager.getDefault().saveProject(project);
                 } catch (IOException e) {
@@ -431,7 +427,7 @@ final class LibrariesNode extends AbstractNode {
                 ModuleDependency editedDep = editPanel.getEditedDependency();
                 try {
                     ProjectXMLManager pxm = new ProjectXMLManager(project);
-                    SortedSet<ModuleDependency> deps = new TreeSet(pxm.getDirectDependencies());
+                    SortedSet<ModuleDependency> deps = new TreeSet<ModuleDependency>(pxm.getDirectDependencies());
                     deps.remove(dep);
                     deps.add(editedDep);
                     pxm.replaceDependencies(deps);
@@ -480,7 +476,7 @@ final class LibrariesNode extends AbstractNode {
             try {
                 final Project[] projects = new Project[activatedNodes.length];
                 for (int i = 0; i < activatedNodes.length; i++) {
-                    ModuleEntry me = (ModuleEntry) activatedNodes[i].getLookup().lookup(ModuleEntry.class);
+                    ModuleEntry me = activatedNodes[i].getLookup().lookup(ModuleEntry.class);
                     assert me != null;
                     File prjDir = me.getSourceLocation();
                     assert prjDir != null;

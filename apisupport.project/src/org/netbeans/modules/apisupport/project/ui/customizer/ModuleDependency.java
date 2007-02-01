@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,7 +41,7 @@ import org.openide.util.Utilities;
  *
  * @author Martin Krauskopf
  */
-public final class ModuleDependency implements Comparable {
+public final class ModuleDependency implements Comparable<ModuleDependency> {
     
     // XXX refactor and use SpecificationVersion instead
     private String releaseVersion;
@@ -58,23 +58,23 @@ public final class ModuleDependency implements Comparable {
     private Set<String> filterTokensNotFriend;
     private Set<String> filterTokensFriend;
     
-    public static final Comparator LOCALIZED_NAME_COMPARATOR;
-    public static final Comparator CNB_COMPARATOR;
+    public static final Comparator<ModuleDependency> LOCALIZED_NAME_COMPARATOR;
+    public static final Comparator<ModuleDependency> CNB_COMPARATOR;
     
     static {
-        LOCALIZED_NAME_COMPARATOR = new Comparator() {
-            public int compare(Object o1, Object o2) {
-                ModuleEntry me1 = ((ModuleDependency) o1).getModuleEntry();
-                ModuleEntry me2 = ((ModuleDependency) o2).getModuleEntry();
+        LOCALIZED_NAME_COMPARATOR = new Comparator<ModuleDependency>() {
+            public int compare(ModuleDependency d1, ModuleDependency d2) {
+                ModuleEntry me1 = d1.getModuleEntry();
+                ModuleEntry me2 = d2.getModuleEntry();
                 int result = Collator.getInstance().compare(
                         me1.getLocalizedName(), me2.getLocalizedName());
                 return result != 0 ? result :
                     me1.getCodeNameBase().compareTo(me2.getCodeNameBase());
             }
         };
-        CNB_COMPARATOR = new Comparator() {
-            public int compare(Object o1, Object o2) {
-                return ((ModuleDependency) o1).getCodeNameBase().compareTo(((ModuleDependency) o2).getCodeNameBase());
+        CNB_COMPARATOR = new Comparator<ModuleDependency>() {
+            public int compare(ModuleDependency d1, ModuleDependency d2) {
+                return d1.getCodeNameBase().compareTo(d2.getCodeNameBase());
             }
         };
     }
@@ -123,8 +123,7 @@ public final class ModuleDependency implements Comparable {
         return getModuleEntry().getCodeNameBase();
     }
     
-    public int compareTo(Object o) {
-        ModuleDependency other = (ModuleDependency) o;
+    public int compareTo(ModuleDependency other) {
         int result = getCodeNameBase().compareTo(other.getCodeNameBase());
         if (result != 0) { return result; }
         
@@ -199,7 +198,7 @@ public final class ModuleDependency implements Comparable {
         boolean friend = me.isDeclaredAsFriend(dependingModuleCNB);
         Set<String> filterTokens = friend ? filterTokensFriend : filterTokensNotFriend;
         if (filterTokens == null) {
-            filterTokens = new HashSet();
+            filterTokens = new HashSet<String>();
             filterTokens.add(me.getCodeNameBase());
             filterTokens.add(me.getLocalizedName());
             filterTokens.add(me.getJarLocation().getAbsolutePath());
