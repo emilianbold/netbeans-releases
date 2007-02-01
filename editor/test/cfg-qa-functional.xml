@@ -91,6 +91,8 @@ executor="ide-nogui">
     </testbag>
         
     <!-- Code completion Validation tests: -->
+    <!-- Code completion is covered in Java/Editor functional tests -->
+    <!--
     <testbag testattribs="all,full,completion" name="Completion-Validation" compiler="qa-functional-compiler-completion" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -103,9 +105,7 @@ executor="ide-nogui">
             </patternset>
         </testset>
     </testbag>
-
-    <!-- Editor Application non-validation tests -->
-
+   
     <testbag testattribs="all,apps" name="TestApplication Non-Validation">
         <testset dir="qa-functional/src">
             <patternset>  
@@ -115,7 +115,7 @@ executor="ide-nogui">
             </patternset>
         </testset>
     </testbag>    
-                
+    -->                
     <testbag testattribs="all,full" name="indentation-programmatic">
         <testset dir="qa-functional/src">
             <patternset>
@@ -168,6 +168,5 @@ executor="ide-nogui">
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <executor name="ide-nogui" antfile="build-qa-functional.xml" target="runidetest-nogui"/>
     
-    <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true" />
-    <compiler name="qa-functional-compiler-completion" antfile="build-qa-functional.xml" target="qa-functional-compiler-completion" default="false" />
+    <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true" />    
 </mconfig>

@@ -43,6 +43,7 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 //retouche:
 //import org.netbeans.junit.ide.ProjectSupport;
 
@@ -386,6 +387,18 @@ public class EditorTestCase extends JellyTestCase {
         };
         
         return clipboardValueResolver;
+    }
+    
+    protected ValueResolver getTextFieldResolver(final JTextFieldOperator oper,final String newValue) {
+        ValueResolver textFieldResolver = new ValueResolver(){
+            public Object getValue(){
+                String actVal = oper.getText();
+                log("actual value:"+actVal);
+                return (newValue.equals(actVal)) ? Boolean.TRUE : Boolean.FALSE;
+            }
+        };
+        
+        return textFieldResolver;
     }
 
     protected void cutCopyViaStrokes(JEditorPaneOperator txtOper, int key, int mod){
