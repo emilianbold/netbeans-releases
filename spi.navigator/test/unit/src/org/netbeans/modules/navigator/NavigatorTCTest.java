@@ -19,9 +19,8 @@
 
 package org.netbeans.modules.navigator;
 
-import java.net.URL;
 import java.util.List;
-import java.util.Map;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import org.netbeans.junit.NbTest;
@@ -29,16 +28,11 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
-import org.openide.filesystems.FileObject;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.ContextGlobalProvider;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -68,12 +62,7 @@ public class NavigatorTCTest extends NbTestCase {
     
     public void testCorrectCallsOfNavigatorPanelMethods () throws Exception {
         System.out.println("Testing correct calls of NavigatorPanel methods...");
-        InstanceContent ic = new InstanceContent();
-        GlobalLookup4TestImpl nodesLkp = new GlobalLookup4TestImpl(ic);
-        UnitTestUtils.prepareTest(new String [] { 
-            "/org/netbeans/modules/navigator/resources/testCorrectCallsOfNavigatorPanelMethodsLayer.xml" }, 
-            Lookups.singleton(nodesLkp)
-        );
+        InstanceContent ic = getInstanceContent();
 
         TestLookupHint ostravskiHint = new TestLookupHint("ostravski/gyzd");
         //nodesLkp.setNodes(new Node[]{ostravskiNode});
@@ -131,16 +120,14 @@ public class NavigatorTCTest extends NbTestCase {
         selPanel = navTC.getSelectedPanel();
         assertNull("Selected panel should be null", selPanel);
         assertNull("Set of panels should be null", navTC.getPanels());
+        
+        // clean
+        ic.remove(ostravskiHint);
     }
     
     public void testBugfix80155_NotEmptyOnProperties () throws Exception {
         System.out.println("Testing bugfix 80155, keeping content on Properties window and similar...");
-        InstanceContent ic = new InstanceContent();
-        GlobalLookup4TestImpl nodesLkp = new GlobalLookup4TestImpl(ic);
-        UnitTestUtils.prepareTest(new String [] { 
-            "/org/netbeans/modules/navigator/resources/testCorrectCallsOfNavigatorPanelMethodsLayer.xml" }, 
-            Lookups.singleton(nodesLkp)
-        );
+        InstanceContent ic = getInstanceContent();
 
         TestLookupHint ostravskiHint = new TestLookupHint("ostravski/gyzd");
         ic.add(ostravskiHint);
@@ -163,6 +150,51 @@ public class NavigatorTCTest extends NbTestCase {
         selPanel = navTC.getSelectedPanel();
         assertNotNull("Selected panel is null", selPanel);
         assertTrue("Panel class not expected", selPanel instanceof OstravskiGyzdProvider);
+    }
+    
+    public void testBugfix93123_RefreshCombo () throws Exception {
+        System.out.println("Testing bugfix 93123, correct refreshing of combo box with providers list...");
+
+        InstanceContent ic = getInstanceContent();
+        
+        TestLookupHint ostravskiHint = new TestLookupHint("ostravski/gyzd");
+        ic.add(ostravskiHint);
+            
+        NavigatorTC navTC = NavigatorTC.getInstance();
+        navTC.componentOpened();
+
+        NavigatorPanel selPanel = navTC.getSelectedPanel();
+        
+        assertNotNull("Selected panel is null", selPanel);
+        
+        TestLookupHint prazskyHint = new TestLookupHint("prazsky/pepik");
+        ic.add(prazskyHint);
+        
+        // wait for selected node change to be applied, because changes are
+        // reflected with little delay
+        waitForChange();
+
+        List<NavigatorPanel> panels = navTC.getPanels();
+        assertTrue("Expected 2 provider panels, but got " + panels.size(), panels.size() == 2);
+        
+        JComboBox combo = navTC.getPanelSelector();
+        assertTrue("Expected 2 combo items, but got " + combo.getItemCount(), combo.getItemCount() == 2);
+    }
+    
+    /** Singleton global lookup. Lookup change notification won't come
+     * if setting global lookup (UnitTestUtils.prepareTest) is called
+     * multiple times.
+     */ 
+    private static InstanceContent getInstanceContent () throws Exception {
+        if (instanceContent == null) {
+            instanceContent = new InstanceContent();
+            GlobalLookup4TestImpl nodesLkp = new GlobalLookup4TestImpl(instanceContent);
+            UnitTestUtils.prepareTest(new String [] { 
+                "/org/netbeans/modules/navigator/resources/testCorrectCallsOfNavigatorPanelMethodsLayer.xml" }, 
+                Lookups.singleton(nodesLkp)
+            );
+        }
+        return instanceContent;
     }
     
     private void waitForChange () {
@@ -312,5 +344,6 @@ public class NavigatorTCTest extends NbTestCase {
             setLookups(new Lookup[] {Lookups.fixed(nodes)});
         }*/
     }
+    private static InstanceContent instanceContent;
     
 }

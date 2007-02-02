@@ -50,7 +50,6 @@ import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 import org.openide.loaders.DataObject;
 import org.openide.windows.WindowManager;
@@ -239,6 +238,15 @@ public final class NavigatorController implements LookupListener, ActionListener
             providers != null && providers.contains(selPanel)) {
             // trigger resultChanged() call on client side
             clientsLookup.lookup(Node.class);
+            // #93123: refresh providers list if needed
+            if (!oldProviders.equals(providers)) {
+                // we must disable combo-box listener to not receive unwanted events
+                // during combo box content change
+                navigatorTC.getPanelSelector().removeActionListener(this);
+                navigatorTC.setPanels(providers);
+                navigatorTC.setSelectedPanel(selPanel);
+                navigatorTC.getPanelSelector().addActionListener(this);
+            }
             return;
         }
         
@@ -278,13 +286,14 @@ public final class NavigatorController implements LookupListener, ActionListener
     /* package private for tests */ List obtainProviders (Node node) {
         List result = null; 
         // search in global lookup first, they had preference
-        // XXX - TBD - lookup for all instances, not only one
-        NavigatorLookupHint lkpHint =
-                (NavigatorLookupHint)Utilities.actionsGlobalContext().lookup(NavigatorLookupHint.class);
-        if (lkpHint != null) {
-            List providers = ProviderRegistry.getInstance().getProviders(lkpHint.getContentType());
+        Collection<? extends NavigatorLookupHint> lkpHints =
+                Utilities.actionsGlobalContext().lookupAll(NavigatorLookupHint.class);
+        for (NavigatorLookupHint curHint : lkpHints) {
+            List providers = ProviderRegistry.getInstance().getProviders(curHint.getContentType());
             if (providers != null && !providers.isEmpty()) {
-                result = new ArrayList(providers.size());
+                if (result == null) {
+                    result = new ArrayList(providers.size() * lkpHints.size());
+                }
                 result.addAll(providers);
             }
         }
