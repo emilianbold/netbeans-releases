@@ -56,6 +56,7 @@ implements ExplorerManager.Provider, PropertyChangeListener {
 
         tabs = new javax.swing.JTabbedPane();
         structured = new javax.swing.JPanel();
+        jSplitPane1 = new javax.swing.JSplitPane();
         listView1 = new org.openide.explorer.view.ListView();
         recordScroll = new javax.swing.JScrollPane();
         record = new javax.swing.JTextArea();
@@ -66,29 +67,30 @@ implements ExplorerManager.Provider, PropertyChangeListener {
         setPreferredSize(new java.awt.Dimension(640, 480));
         setLayout(new java.awt.BorderLayout());
 
+        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane1.setLeftComponent(listView1);
+
         record.setColumns(20);
         record.setEditable(false);
         record.setRows(5);
         recordScroll.setViewportView(record);
 
+        jSplitPane1.setRightComponent(recordScroll);
+
         org.jdesktop.layout.GroupLayout structuredLayout = new org.jdesktop.layout.GroupLayout(structured);
         structured.setLayout(structuredLayout);
         structuredLayout.setHorizontalGroup(
             structuredLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, structuredLayout.createSequentialGroup()
+            .add(structuredLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(structuredLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, listView1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, recordScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE))
+                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
                 .addContainerGap())
         );
         structuredLayout.setVerticalGroup(
             structuredLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, structuredLayout.createSequentialGroup()
+            .add(structuredLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(listView1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(recordScroll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 311, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 596, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -103,14 +105,16 @@ implements ExplorerManager.Provider, PropertyChangeListener {
         raw.setLayout(rawLayout);
         rawLayout.setHorizontalGroup(
             rawLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(rawLayout.createSequentialGroup()
-                .add(scroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 671, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, rawLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(scroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
                 .addContainerGap())
         );
         rawLayout.setVerticalGroup(
             rawLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(rawLayout.createSequentialGroup()
-                .add(scroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 608, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, rawLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(scroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 596, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -175,6 +179,7 @@ implements ExplorerManager.Provider, PropertyChangeListener {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JSplitPane jSplitPane1;
     private org.openide.explorer.view.ListView listView1;
     private javax.swing.JPanel raw;
     private javax.swing.JTextArea record;
