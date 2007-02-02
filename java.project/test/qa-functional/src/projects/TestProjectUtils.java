@@ -26,20 +26,18 @@
 package projects;
 
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-
 import org.netbeans.jellytools.actions.BuildProjectAction;
-
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
@@ -83,12 +81,12 @@ public class TestProjectUtils {
         BuildProjectAction buildProjectAction = new BuildProjectAction();
         buildProjectAction.perform(prn);
         
-        //MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-        //mainWindow.waitStatusText("Finished building");
+        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
+        mainWindow.waitStatusText("Finished building");
         
-        // Output should be checked for BUILD SUCCESSFUL
-        OutputTabOperator outputOper = new OutputTabOperator(projName);
-        outputOper.waitText("BUILD SUCCESSFUL");
+        // Output should be checked for BUILD SUCCESSFUL but it is not opened by default, code upon is used insted
+        //OutputTabOperator outputOper = new OutputTabOperator(projName);
+        //outputOper.waitText("BUILD SUCCESSFUL");
         
     }
     
