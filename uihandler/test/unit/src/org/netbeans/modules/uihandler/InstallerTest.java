@@ -20,12 +20,16 @@
 package org.netbeans.modules.uihandler;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import javax.swing.JButton;
+import javax.xml.parsers.ParserConfigurationException;
 import junit.framework.*;
 import java.net.URL;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.openide.DialogDescriptor;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -85,7 +89,7 @@ public class InstallerTest extends NbTestCase {
         
         InputStream is = new ByteArrayInputStream(page.getBytes());
         JButton def = new JButton("Default");
-        Object[] buttons = Installer.parseButtons(is, def);
+        Object[] buttons = parseButtons(is, def);
         is.close();
         
         assertNotNull("buttons parsed", buttons);
@@ -105,7 +109,7 @@ public class InstallerTest extends NbTestCase {
         
         InputStream is = new ByteArrayInputStream(page.getBytes());
         JButton def = new JButton("Default");
-        Object[] buttons = Installer.parseButtons(is, def);
+        Object[] buttons = parseButtons(is, def);
         is.close();
         
         assertNotNull("buttons parsed", buttons);
@@ -129,7 +133,7 @@ public class InstallerTest extends NbTestCase {
         
         InputStream is = new ByteArrayInputStream(page.getBytes());
         JButton def = new JButton("Default");
-        Object[] buttons = Installer.parseButtons(is, def);
+        Object[] buttons = parseButtons(is, def);
         is.close();
         
         assertNotNull("buttons parsed", buttons);
@@ -161,7 +165,7 @@ public class InstallerTest extends NbTestCase {
             "</form></body></html>";
         
         InputStream is = new ByteArrayInputStream(page.getBytes());
-        Object[] buttons = Installer.parseButtons(is, null);
+        Object[] buttons = parseButtons(is, null);
         is.close();
         
         assertNotNull("buttons parsed", buttons);
@@ -200,5 +204,69 @@ public class InstallerTest extends NbTestCase {
             assertEquals("action is ", "view-data", r);
             assertEquals("no url", null, url[0]);
         }
+    }
+
+    public void testLeftAligned() throws Exception {
+        String page = 
+            "<html><body><form action='http://xyz.cz' method='POST'>" +
+            "  <input type='hidden' name='submit' value=\"&amp;Send Feedback\"/>" +
+            "  <input type='hidden' name='never-again' value=\"&amp;No and do not Bother Again\"/>" +
+            "\n" +
+            "  <input type='hidden' name='view-data' align='left' value=\"&amp;View Data\" alt='Hide'/>" +
+            "\n" +
+            "</form></body></html>";
+        
+        InputStream is = new ByteArrayInputStream(page.getBytes());
+        DialogDescriptor dd = new DialogDescriptor(null, null);
+        Installer.parseButtons(is, null, dd);
+        is.close();
+        
+        Object[] buttons = dd.getOptions();
+        assertNotNull("buttons parsed", buttons);
+        assertEquals("There are 2 buttons", 2, buttons.length);
+        assertEquals("It is a button", JButton.class, buttons[0].getClass());
+        assertEquals("It is a button2", JButton.class, buttons[1].getClass());
+        
+        {
+            JButton b = (JButton)buttons[0];
+            assertEquals("It is named", "Send Feedback", b.getText());
+            assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
+            assertEquals("Mnemonics", 'S', b.getMnemonic());
+            assertEquals("submit", b.getActionCommand());
+            URL[] url = new URL[1];
+            String r = Installer.decodeButtons(b, url);
+            assertEquals("action is ", "submit", r);
+            assertEquals("no url", new URL("http://xyz.cz"), url[0]);
+        }
+        {
+            JButton b = (JButton)buttons[1];
+            assertEquals("It is named", "No and do not Bother Again", b.getText());
+            assertEquals("It url attribute is not set", null, b.getClientProperty("url"));
+            assertEquals("Mnemonics", 'N', b.getMnemonic());
+            assertEquals("never-again", b.getActionCommand());
+        }
+        
+        buttons = dd.getAdditionalOptions();
+        assertNotNull("There are some additionals", buttons);
+        assertEquals("One is there", 1, buttons.length);
+        {
+            JButton b = (JButton)buttons[0];
+            assertEquals("It is named", "View Data", b.getText());
+            assertEquals("It url attribute is not set", null, b.getClientProperty("url"));
+            assertEquals("Mnemonics", 'V', b.getMnemonic());
+            assertEquals("view-data", b.getActionCommand());
+            
+            URL[] url = new URL[1];
+            String r = Installer.decodeButtons(b, url);
+            assertEquals("action is ", "view-data", r);
+            assertEquals("no url", null, url[0]);
+            assertEquals("alt is there", "Hide", b.getClientProperty("alt"));
+        }
+    }
+    
+    private static Object[] parseButtons(InputStream is, Object def) throws IOException, ParserConfigurationException, SAXException {
+        DialogDescriptor dd = new DialogDescriptor(null, null);
+        Installer.parseButtons(is, def, dd);
+        return dd.getOptions();
     }
 }

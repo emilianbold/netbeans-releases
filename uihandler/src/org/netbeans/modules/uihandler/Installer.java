@@ -55,6 +55,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -246,7 +247,8 @@ public class Installer extends ModuleInstall {
      * @param u the url to read the page from
      * @param defaultButton the button to add always to the list
      */
-    static Object[] parseButtons(InputStream is, Object defaultButton) throws IOException, ParserConfigurationException, SAXException {
+    static void parseButtons(InputStream is, Object defaultButton, DialogDescriptor dd) 
+    throws IOException, ParserConfigurationException, SAXException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setValidating(false);
         factory.setIgnoringComments(true);
@@ -254,6 +256,7 @@ public class Installer extends ModuleInstall {
         Document doc = builder.parse(is);
 
         List<Object> buttons = new ArrayList<Object>();
+        List<Object> left = new ArrayList<Object>();
         
         NodeList forms = doc.getElementsByTagName("form");
         for (int i = 0; i < forms.getLength(); i++) {
@@ -265,6 +268,10 @@ public class Installer extends ModuleInstall {
                     String type = attrValue(in, "type");
                     String name = attrValue(in, "name");
                     String value = attrValue(in, "value");
+                    String align = attrValue(in, "align");
+                    String alt = attrValue(in, "alt");
+                    
+                    List<Object> addTo = "left".equals(align) ? left : buttons;
                     
                     if ("hidden".equals(type) && "submit".equals(name)) { // NOI18N
                         f.submitValue = value;
@@ -272,8 +279,10 @@ public class Installer extends ModuleInstall {
                         Mnemonics.setLocalizedText(b, f.submitValue);
                         b.setActionCommand("submit"); // NOI18N
                         b.putClientProperty("url", f.url); // NOI18N
-                        b.setDefaultCapable(buttons.isEmpty());
-                        buttons.add(b);
+                        b.setDefaultCapable(addTo.isEmpty() && addTo == buttons);
+                        b.putClientProperty("alt", alt); // NOI18N
+                        b.putClientProperty("now", f.submitValue); // NOI18N
+                        addTo.add(b);
                         continue;
                     }
 
@@ -282,8 +291,10 @@ public class Installer extends ModuleInstall {
                         JButton b = new JButton();
                         Mnemonics.setLocalizedText(b, value);
                         b.setActionCommand(name);
-                        b.setDefaultCapable(buttons.isEmpty());
-                        buttons.add(b);
+                        b.setDefaultCapable(addTo.isEmpty() && addTo == buttons);
+                        b.putClientProperty("alt", alt); // NOI18N
+                        b.putClientProperty("now", value); // NOI18N
+                        addTo.add(b);
                         if ("exit".equals(name)) { // NOI18N
                             defaultButton = null;
                         }
@@ -294,7 +305,8 @@ public class Installer extends ModuleInstall {
         if (defaultButton != null) {
             buttons.add(defaultButton);
         }
-        return buttons.toArray();
+        dd.setOptions(buttons.toArray());
+        dd.setAdditionalOptions(left.toArray());
     }
     
     static String decodeButtons(Object res, URL[] url) {
@@ -415,8 +427,8 @@ public class Installer extends ModuleInstall {
         private DialogDescriptor dd;
         private Dialog d;
         private SubmitPanel panel;
+        private HtmlBrowser browser;
         private URL url;
-        private Object[] buttons;
         private String exitMsg;
         public Submit(String msg) {
             this.msg = msg;
@@ -428,8 +440,9 @@ public class Installer extends ModuleInstall {
                 a.deactivated(log);
             }
 
+            dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "MSG_SubmitDialogTitle"));
+
             exitMsg = NbBundle.getMessage(Installer.class, "MSG_" + msg + "_EXIT"); // NOI18N
-            buttons = new Object[] { exitMsg };
             for (;;) {
                 try {
                     if (url == null) {
@@ -449,10 +462,7 @@ public class Installer extends ModuleInstall {
                     os.close();
                     conn.getInputStream().close();
                     InputStream is = new FileInputStream(tmp);
-                    Object[] newB = parseButtons(is, exitMsg);
-                    if (newB != null) {
-                        buttons = newB;
-                    }
+                    parseButtons(is, exitMsg, dd);
                     is.close();
                     url = tmp.toURI().toURL();
                 } catch (ParserConfigurationException ex) {
@@ -480,13 +490,14 @@ public class Installer extends ModuleInstall {
         }
         
         public Void run() {
-            HtmlBrowser browser = new HtmlBrowser();
+            browser = new HtmlBrowser();
             browser.setURL(url);
             browser.setEnableLocation(false);
             browser.setEnableHome(false);
             browser.setStatusLineVisible(false);
             browser.setToolbarVisible(false);
             browser.setPreferredSize(new Dimension(640, 480));
+            dd.setMessage(browser);
 
             //        AbstractNode root = new AbstractNode(new Children.Array());
             //        root.setName("root"); // NOI18N
@@ -498,8 +509,6 @@ public class Installer extends ModuleInstall {
             //
             //        panel.getExplorerManager().setRootContext(root);
 
-            dd = new DialogDescriptor(browser, NbBundle.getMessage(Installer.class, "MSG_SubmitDialogTitle"));
-            dd.setOptions(buttons);
             dd.setClosingOptions(new Object[] { exitMsg });
             dd.setButtonListener(this);
             dd.setModal(true);
@@ -555,10 +564,21 @@ public class Installer extends ModuleInstall {
                     root.getChildren().add(reverted.toArray(new Node[0]));
                     panel.getExplorerManager().setRootContext(root);
                 }
-                dd.setMessage(panel);
-                List<Object> buttons = new ArrayList<Object>(Arrays.asList(dd.getOptions()));
-                buttons.remove(e.getSource());
-                dd.setOptions(buttons.toArray());
+                if (dd.getMessage() == browser) {
+                    dd.setMessage(panel);
+                } else {
+                    dd.setMessage(browser);
+                }
+                if (e.getSource() instanceof AbstractButton) {
+                    AbstractButton abut = (AbstractButton)e.getSource();
+                    String alt = (String) abut.getClientProperty("alt"); // NOI18N
+                    if (alt != null) {
+                        String now = (String)abut.getClientProperty("now"); // NOI18N
+                        Mnemonics.setLocalizedText(abut, alt);
+                        abut.putClientProperty("alt", now); // NOI18N
+                        abut.putClientProperty("now", alt); // NOI18N
+                    }
+                }
                 return;
             }
             
