@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Hashtable;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.jellytools.EditorOperator;
@@ -41,15 +42,15 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
 
 
 public class SearchAndReplaceTest extends lib.EditorTestCase{
-
+    
     // private PrintStream wrapper for System.out
     private PrintStream systemOutPSWrapper = new PrintStream(System.out);
-    private int index = 0;    
+    private int index = 0;
     private EditorOperator editor;
     private JEditorPaneOperator txtOper;
     private int WAIT_MAX_MILIS_FOR_FIND_OPERATION = 5000;
-
-    public static final int NO_OPERATION              = 0x00000000;    
+    
+    public static final int NO_OPERATION              = 0x00000000;
     public static final int MATCH_CASE                = 0x00000001;
     public static final int WHOLE_WORDS               = 0x00000002;
     public static final int REGULAR_EXPRESSIONS       = 0x00000004;
@@ -60,7 +61,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
     public static final int INCREMENTAL_SEARCH        = 0x00000080;
     public static final int ALL_UNCHECKED             = 0x10000000;
     public static final int NO_RESET                  = 0x20000000;
-    public static final int NO_RESET_SEARCH_SELECTION = 0x40000000;    
+    public static final int NO_RESET_SEARCH_SELECTION = 0x40000000;
     
     /** Creates a new instance of Main */
     public SearchAndReplaceTest(String testMethodName) {
@@ -133,12 +134,12 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             return  systemOutPSWrapper;
         }
     }
-
+    
     protected void compareToGoldenFile(Document testDoc){
         try {
-        ref(testDoc.getText(0, testDoc.getLength()));
-        compareReferenceFiles(getRefFileName(), getGoldenFileName(), getDiffFileName());
-        index++;
+            ref(testDoc.getText(0, testDoc.getLength()));
+            compareReferenceFiles(getRefFileName(), getGoldenFileName(), getDiffFileName());
+            index++;
         } catch (BadLocationException e) {
             e.printStackTrace(getLog());
             fail();
@@ -195,7 +196,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
         }
         return find;
     }
-
+    
     private ValueResolver getSelectionResolver(final JEditorPaneOperator txtOper, final int startEtalon, final int endEtalon){
         
         ValueResolver clipboardValueResolver = new ValueResolver(){
@@ -216,7 +217,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
         
         return clipboardValueResolver;
     }
-
+    
     private ValueResolver getIncFindResolver(final JEditorPaneOperator txtOper, final int startEtalon, final int endEtalon){
         
         ValueResolver clipboardValueResolver = new ValueResolver(){
@@ -224,8 +225,8 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
                 org.netbeans.editor.BaseTextUI ui = (org.netbeans.editor.BaseTextUI)txtOper.getUI();
                 org.netbeans.editor.EditorUI editorUI = ui.getEditorUI();
                 org.netbeans.editor.DrawLayerFactory.IncSearchLayer incLayer
-                = (org.netbeans.editor.DrawLayerFactory.IncSearchLayer)editorUI.findLayer(
-                      org.netbeans.editor.DrawLayerFactory.INC_SEARCH_LAYER_NAME);
+                        = (org.netbeans.editor.DrawLayerFactory.IncSearchLayer)editorUI.findLayer(
+                        org.netbeans.editor.DrawLayerFactory.INC_SEARCH_LAYER_NAME);
                 int selectionStart = -1;
                 int selectionEnd = -1;
                 if (incLayer == null) {
@@ -281,30 +282,30 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
                     );
             log("--------------------------------------------------");
             fail("Find operation failed. Selected text: "+selectionStart+" - "+selectionEnd+" >>> Expected values: "+startEtalon+" - "+endEtalon); //NOI18N
-            find.close();            
+            find.close();
             return false;
         }
         find.close();
         return true;
     }
-
+    
     private void checkIncrementalSearch(Find find, String s, int startEtalon, int endEtalon){
         // Checking Disabled - the new highlighting SPI will be used so the draw layer's data should not be checked directly.
         if (true)
             return;
-
+        
         find.cboFindWhat().typeText(s);
         
         waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_FIND_OPERATION, getIncFindResolver(txtOper, startEtalon, endEtalon), Boolean.TRUE);
-
+        
         int selectionStart = -1;
         int selectionEnd = -1;
         
         org.netbeans.editor.BaseTextUI ui = (org.netbeans.editor.BaseTextUI)txtOper.getUI();
         org.netbeans.editor.EditorUI editorUI = ui.getEditorUI();
         org.netbeans.editor.DrawLayerFactory.IncSearchLayer incLayer
-        = (org.netbeans.editor.DrawLayerFactory.IncSearchLayer)editorUI.findLayer(
-              org.netbeans.editor.DrawLayerFactory.INC_SEARCH_LAYER_NAME);
+                = (org.netbeans.editor.DrawLayerFactory.IncSearchLayer)editorUI.findLayer(
+                org.netbeans.editor.DrawLayerFactory.INC_SEARCH_LAYER_NAME);
         if (incLayer == null) {
             System.out.println("fail: layer not initialized");
         } else {
@@ -347,7 +348,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
         try {
             editor = getDefaultSampleEditorOperator();
             txtOper = editor.txtEditorPane();
-
+            
             find("searchText", ALL_UNCHECKED, 161, 171, 0);
             find("SeArCHText", MATCH_CASE, 175, 185, 0);
             find("SeArCHText", WHOLE_WORDS, 275, 285, 206);
@@ -390,7 +391,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             txtOper.setSelectionEnd(100);
             // NO_OPERATION - no check box reset, no checkbox set by default.
             final Find blockFind = openFindDialog(null, NO_OPERATION);
-
+            
             // check if the "search selection" checkbox was checked
             waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_FIND_OPERATION, new ValueResolver(){
                 public Object getValue(){
@@ -416,7 +417,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             preselect(txtOper, 46, 132);
             // make sure that text outside the selection is not found
             find("searchText", NO_OPERATION, -1, -1, -1);
-
+            
             // selection begins at ublic. 'p' is not selected. Next public
             // should be found
             preselect(txtOper, 47, 123);
@@ -436,7 +437,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             find("search", NO_RESET_SEARCH_SELECTION | SEARCH_BACKWARDS | WHOLE_WORDS, 318, 324, -1);
             preselect(txtOper, 161, 544);
             find("search", NO_RESET_SEARCH_SELECTION | SEARCH_BACKWARDS | MATCH_CASE | WHOLE_WORDS, 311, 317, -1);
-
+            
             // wrap around block forwardSearch testing
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
             find.close();
@@ -454,7 +455,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             find.find();
             checkSelection(txtOper, 410, 420, "Wrap around block testing failed!");
             find.close();
-
+            
             // wrap around block bacwardSearch testing
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
             find.close();
@@ -484,7 +485,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             checkIncrementalSearch(find, "t", 325, 329);
             checkIncrementalSearch(find, "x", -1, -1); // inc should fail
             find.close();
-
+            
             //incremental search backwards + Match case in selected block
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
             find.close();
@@ -505,8 +506,12 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             editor.setCaretPosition(1, 1);
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
             find.cboFindWhat().requestFocus(); // [temp] failing tests on SunOS & Linux
-            pasteViaStrokes(find, KeyEvent.VK_V, KeyEvent.CTRL_MASK, getTextFieldResolver(find.cboFindWhat().getTextField(), "search"));
-            log("Searching for: "+find.cboFindWhat().getTextField().getText());
+            waitForAWTThread();                        
+            pasteViaStrokes(find, KeyEvent.VK_V, KeyEvent.CTRL_MASK, null);
+            waitForAWTThread();
+            find.btFind().requestFocus();
+            waitForAWTThread();
+            log("Searching for: "+find.cboFindWhat().getTextField().getText());            
             find.find();
             find.close();
             checkSelection(txtOper, 8, 14, "Issue #52115 testing failed on CTRL+V!");
@@ -517,8 +522,12 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             editor.setCaretPosition(1, 1);
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
             find.cboFindWhat().requestFocus(); // [temp] failing tests on SunOS & Linux
-            pasteViaStrokes(find, KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK, getTextFieldResolver(find.cboFindWhat().getTextField(), "text"));            
-            log("Searching for: "+find.cboFindWhat().getTextField().getText());
+            waitForAWTThread();                        
+            pasteViaStrokes(find, KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK, null);
+            waitForAWTThread();
+            find.btFind().requestFocus();
+            waitForAWTThread();
+            log("Searching for: "+find.cboFindWhat().getTextField().getText());            
             find.find();
             find.close();
             checkSelection(txtOper, 167, 171, "Issue #52115 testing failed on Shift+Insert!");
@@ -528,19 +537,31 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
         }
     }
     
+    public void waitForAWTThread() {
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {                    
+                    log("Stop waiting");
+                }
+            });
+        } catch (Exception e) {
+            //ignored
+        }
+    }
+      
     public void testRegExSearch(){
         openDefaultProject();
         openDefaultSampleFile();
         try {
             editor = getDefaultSampleEditorOperator();
             txtOper = editor.txtEditorPane();
-
+            
             //test whether the "Whole Words" and "Incremental Search" are disabled during regEx
             final Find findRegEx = openFindDialog(null, REGULAR_EXPRESSIONS);
             waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_FIND_OPERATION, new ValueResolver(){
                 public Object getValue(){
                     return Boolean.valueOf(
-                            findRegEx.cbMatchWholeWordsOnly().isEnabled() && 
+                            findRegEx.cbMatchWholeWordsOnly().isEnabled() &&
                             findRegEx.cbIncrementalSearch().isEnabled());
                 }
             }, Boolean.FALSE);
@@ -550,7 +571,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
                         ", \"Incremental Search\" = "+findRegEx.cbIncrementalSearch().isEnabled()+")"); //NOI18N
             }
             findRegEx.close();
-
+            
             
             find("teest", REGULAR_EXPRESSIONS, 309, 314, 0);
             find("t.*st", REGULAR_EXPRESSIONS, 325, 337, 314);// find next teee...st
@@ -591,7 +612,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             //multiline strings
             find("\"[^\"]*\"", REGULAR_EXPRESSIONS, 456, 510, 432);
             
-             // wrap around block forwardRegExSearch testing
+            // wrap around block forwardRegExSearch testing
             find = openFindDialog(null, REGULAR_EXPRESSIONS); // reset find dialog checkboxes
             find.close();
             preselect(txtOper, 326, 389);
@@ -606,8 +627,8 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             find.find();
             checkSelection(txtOper, 348, 356, "Wrap around block regEx testing failed!");
             find.close();
-           
-             // wrap around block backward RegExSearch testing + match case
+            
+            // wrap around block backward RegExSearch testing + match case
             find = openFindDialog(null, REGULAR_EXPRESSIONS | SEARCH_BACKWARDS | MATCH_CASE); // reset find dialog checkboxes
             find.close();
             preselect(txtOper, 252, 369);
@@ -622,7 +643,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             find.find();
             checkSelection(txtOper, 325, 337, "Wrap around block BWV regEx testing failed!");
             find.close();
-
+            
             // find end line whitespaces
             String lineEndWhitespaces = "[ \\t]+$";
             editor.setCaretPosition(1);
@@ -640,7 +661,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             
         } finally {
             closeFileWithDiscard();
-        }        
+        }
     }
     
 }
