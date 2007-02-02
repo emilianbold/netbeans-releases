@@ -129,14 +129,17 @@ public final class ASTService implements ASTModel {
         
         undoList.addAndApply(new UndoEntry() {
             private final RootTree old = root;
+            @Override
             public void undo() {
                 root = old;
             }
+            @Override
             public void redo() {
                 root = tree;
             }
-            public RootTree getOld(RootTree o) {
-                return (o == tree) ? old : null;
+            @Override
+            public <T> T getOld(T o) {
+                return (o == tree) ? (T)old : null;
             }
         });
     }
@@ -148,14 +151,17 @@ public final class ASTService implements ASTModel {
             return;
         UndoEntry u = new UndoEntry() {
             private final Context old = oldContext;
+            @Override
             public void undo() {
                 setContextImpl(old);
             }
+            @Override
             public void redo() {
                 setContextImpl(newContext);
             }
-            public RootTree getOld(RootTree o) {
-                return (o == newContext) ? old : null;
+            @Override
+            public <T> T getOld(T o) {
+                return (o == newContext) ? (T)old : null;
             }
         };
 	undoList.add(u); // UndoLists are shared between contexts
