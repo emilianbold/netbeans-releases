@@ -51,51 +51,14 @@ public class MainSequence extends WizardSequence {
         // remove all current children (if there are any), as the components 
         // selection has probably changed and we need to rebuild from scratch
         getChildren().clear();
-        
-        // the set of wizard components differs greatly depending on the execution
-        // mode - if we're installing, we ask for input, run a wizard sequence for 
-        // each selected component and then download and install; if we're creating 
-        // a bundle, we only need to download and package things
-        switch (Installer.getInstance().getExecutionMode()) {
-            case NORMAL:
-                if (toInstall.size() > 0) {
+        if (toInstall.size() > 0) {
                     addChild(new DownloadConfigurationLogicAction());
                     addChild(new SelectedComponentsLicensesPanel());
                     
                     for (Product component: toInstall) {
-                        addChild(new ProductComponentWizardSequence(component));
+                        addChild(new ProductWizardSequence(component));
                     }
                 }
-                
-                addChild(new NbPreInstallSummaryPanel());
-                
-                if (toUninstall.size() > 0) {
-                    addChild(new UninstallAction());
-                }
-                
-                if (toInstall.size() > 0) {
-                    addChild(new DownloadInstallationDataAction());
-                    addChild(new InstallAction());
-                }
-                
-                addChild(new NbPostInstallSummaryPanel());
-                break;
-            case CREATE_BUNDLE:
-                addChild(new PreCreateBundleSummaryPanel());
-                addChild(new DownloadConfigurationLogicAction());
-                addChild(new DownloadInstallationDataAction());
-                addChild(new CreateBundleAction());
-                addChild(new CreateNativeLauncherAction());
-                addChild(new PostCreateBundleSummaryPanel());
-                break;
-            default:
-                // there is no real way to recover from this fancy error, so we 
-                // inform the user and die
-                ErrorManager.notifyCritical(
-                        "A terrible and weird error happened - installer's " +
-                        "execution mode is not recognized");
-        }
-        
         super.executeForward();
     }
     

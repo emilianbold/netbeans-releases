@@ -32,21 +32,16 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import org.netbeans.installer.Installer;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.PropertyContainer;
 import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.wizard.components.WizardComponent;
-import static org.netbeans.installer.utils.helper.ErrorLevel.DEBUG;
-import static org.netbeans.installer.utils.helper.ErrorLevel.MESSAGE;
-import static org.netbeans.installer.utils.helper.ErrorLevel.WARNING;
-import static org.netbeans.installer.utils.helper.ErrorLevel.ERROR;
-import static org.netbeans.installer.utils.helper.ErrorLevel.CRITICAL;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.helper.FinishHandler;
+import org.netbeans.installer.utils.helper.Context;
 import org.netbeans.installer.wizard.containers.WizardContainer;
 import org.netbeans.installer.wizard.containers.SwingFrameContainer;
 import org.w3c.dom.Document;
@@ -101,7 +96,7 @@ public class Wizard {
             try {
                 instance.components = loadWizardComponents(componentsInstanceURI);
             } catch (InitializationException e) {
-                ErrorManager.notify(ErrorLevel.CRITICAL,
+                ErrorManager.notifyCritical(
                         "Failed to load wizard components", e);
             }
         }
@@ -115,7 +110,7 @@ public class Wizard {
     }
     
     public static List<WizardComponent> loadWizardComponents(
-            final String componentsURI, 
+            final String componentsURI,
             final ClassLoader loader) throws InitializationException {
         try {
             File schemaFile =
@@ -156,7 +151,7 @@ public class Wizard {
     
     // private //////////////////////////////////////////////////////////////////////
     private static List<WizardComponent> loadWizardComponents(
-            final Element element, 
+            final Element element,
             final ClassLoader loader) throws InitializationException {
         List<WizardComponent> components = new ArrayList<WizardComponent>();
         
@@ -168,7 +163,7 @@ public class Wizard {
     }
     
     private static WizardComponent loadWizardComponent(
-            final Element element, 
+            final Element element,
             final ClassLoader loader) throws InitializationException {
         WizardComponent component = null;
         Element         child     = null;
@@ -204,25 +199,32 @@ public class Wizard {
     protected WizardContainer       container;
     
     private   PropertyContainer     product;
+    private   Context               context;
     private   ClassLoader           loader;
     
     private   int                   index;
     private   Wizard                parent;
     
+    private   FinishHandler         finishHandler;
+    
     // constructors /////////////////////////////////////////////////////////////////
     private Wizard() {
-        this.index  = -1;
-        this.loader = getClass().getClassLoader();
+        this.index   = -1;
+        this.context = new Context();
+        this.loader  = getClass().getClassLoader();
     }
     
     private Wizard(final Wizard parent) {
         this();
         
-        this.parent    = parent;
-        this.container = parent.container;
+        this.parent        = parent;
+        this.container     = parent.container;
         
-        this.product   = parent.product;
-        this.loader    = parent.loader;
+        this.product       = parent.product;
+        this.context       = new Context(parent.context);
+        this.loader        = parent.loader;
+        
+        this.finishHandler = parent.finishHandler;
     }
     
     private Wizard(final List<WizardComponent> components, final Wizard parent, int index) {
@@ -241,57 +243,69 @@ public class Wizard {
     
     // wizard lifecycle control methods /////////////////////////////////////////////
     public void open() {
+        // if a parent exists, ask it - it knows better
+        if (parent != null) {
+            parent.open();
+            return;
+        }
+        
         switch (UiMode.getCurrentUiMode()) {
-            case SWING:
-                container = new SwingFrameContainer();
-
-                try {
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        public void run() {
-                            Thread.currentThread().setUncaughtExceptionHandler(
-                                    ErrorManager.getExceptionHandler());
-                        }
-                    });
-                } catch (InvocationTargetException e) {
-                    ErrorManager.notifyDebug(
-                            "Could not attach error handler to the EDT.", 
-                            e);
-                } catch (InterruptedException e) {
-                    ErrorManager.notifyDebug(
-                            "Could not attach error handler to the EDT.", 
-                            e);
-                }
-                
-                SwingUtilities.invokeLater(new Runnable(){
+        case SWING:
+            container = new SwingFrameContainer();
+            
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
-                        container.setVisible(true);
+                        Thread.currentThread().setUncaughtExceptionHandler(
+                                ErrorManager.getExceptionHandler());
                     }
                 });
-                break;
-            case SILENT:
-                // we don't have to initialize anything for silent mode
-                break;
-            default:
-                ErrorManager.notify(CRITICAL, "Something terrible has " +
-                        "happened - we have an execution mode which is not " +
-                        "in its enum");
+            } catch (InvocationTargetException e) {
+                ErrorManager.notifyDebug(
+                        "Could not attach error handler to the EDT.",
+                        e);
+            } catch (InterruptedException e) {
+                ErrorManager.notifyDebug(
+                        "Could not attach error handler to the EDT.",
+                        e);
+            }
+            
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run() {
+                    container.setVisible(true);
+                }
+            });
+            break;
+        case SILENT:
+            // we don't have to initialize anything for silent mode
+            break;
+        default:
+            ErrorManager.notifyCritical("Something terrible has " +
+                    "happened - we have an execution mode which is not " +
+                    "in its enum");
         }
         
         next();
     }
     
     public void close() {
+        // if a parent exists, ask it - it knows better
+        if (parent != null) {
+            parent.close();
+            return;
+        }
+        
         switch (UiMode.getCurrentUiMode()) {
-            case SWING:
-                container.setVisible(false);
-                break;
-            case SILENT:
-                // we don't have to initialize anything for silent mode
-                break;
-            default:
-                ErrorManager.notify(ERROR, "Something terrible has " +
-                        "happened - we have an execution mode which is not " +
-                        "in its enum");
+        case SWING:
+            container.setVisible(false);
+            break;
+        case SILENT:
+            // we don't have to initialize anything for silent mode
+            break;
+        default:
+            ErrorManager.notifyCritical("Something terrible has " +
+                    "happened - we have an execution mode which is not " +
+                    "in its enum");
         }
     }
     
@@ -309,25 +323,25 @@ public class Wizard {
             component.initialize();
             
             switch (UiMode.getCurrentUiMode()) {
-                case SWING:
-                    if (component.getWizardUi() != null) {
-                        container.updateWizardUi(component.getWizardUi());
-                    }
-                    break;
-                case SILENT:
-                    // nothing special should be done for silent mode
-                    break;
-                default:
-                    ErrorManager.notify(CRITICAL, "Something terrible has " +
-                            "happened - we have an execution mode which is not " +
-                            "in its enum");
+            case SWING:
+                if (component.getWizardUi() != null) {
+                    container.updateWizardUi(component.getWizardUi());
+                }
+                break;
+            case SILENT:
+                // nothing special should be done for silent mode
+                break;
+            default:
+                ErrorManager.notifyCritical("Something terrible has " +
+                        "happened - we have an execution mode which is not " +
+                        "in its enum");
             }
             
             component.executeForward();
         } else if (parent != null) {
             parent.next();
         } else {
-            Installer.getInstance().finish();
+            finishHandler.finish();
         }
     }
     
@@ -344,26 +358,26 @@ public class Wizard {
             component.initialize();
             
             switch (UiMode.getCurrentUiMode()) {
-                case SWING:
-                    if (component.getWizardUi() != null) {
-                        container.updateWizardUi(component.getWizardUi());
-                    }
-                    break;
-                case SILENT:
-                    ErrorManager.notify(CRITICAL, "Moving backward is " +
-                            "not possible in silent mode");
-                    break;
-                default:
-                    ErrorManager.notify(CRITICAL, "Something terrible has " +
-                            "happened - we have an execution mode which is not " +
-                            "in its enum");
+            case SWING:
+                if (component.getWizardUi() != null) {
+                    container.updateWizardUi(component.getWizardUi());
+                }
+                break;
+            case SILENT:
+                ErrorManager.notifyCritical("Moving backward is " +
+                        "not possible in silent mode");
+                break;
+            default:
+                ErrorManager.notifyCritical("Something terrible has " +
+                        "happened - we have an execution mode which is not " +
+                        "in its enum");
             }
             
             component.executeBackward();
         } else if (parent != null) {
             parent.previous();
         } else {
-            ErrorManager.notify(ERROR, "Cannot move to the previous " +
+            ErrorManager.notifyError("Cannot move to the previous " +
                     "component - the wizard is at the first component");
         }
     }
@@ -404,7 +418,7 @@ public class Wizard {
         return (getNext() != null) || ((parent != null) && parent.hasNext());
     }
     
-    // getters //////////////////////////////////////////////////////////////////////
+    // getters/setters //////////////////////////////////////////////////////////////
     public int getIndex() {
         return index;
     }
@@ -413,12 +427,28 @@ public class Wizard {
         return container;
     }
     
-    public PropertyContainer getProduct() {
-        return product;
+    public String getProperty(String name) {
+        return product.getProperty(name);
+    }
+    
+    public void setProperty(String name, String value) {
+        product.setProperty(name, value);
+    }
+    
+    public Context getContext() {
+        return context;
     }
     
     public ClassLoader getClassLoader() {
         return loader;
+    }
+    
+    public FinishHandler getFinishHandler() {
+        return finishHandler;
+    }
+    
+    public void setFinishHandler(final FinishHandler finishHandler) {
+        this.finishHandler = finishHandler;
     }
     
     // factory methods for children /////////////////////////////////////////////////

@@ -46,6 +46,8 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
+import org.netbeans.installer.utils.helper.ExecutionMode;
+import org.netbeans.installer.utils.helper.FinishHandler;
 import static org.netbeans.installer.utils.helper.ErrorLevel.DEBUG;
 import static org.netbeans.installer.utils.helper.ErrorLevel.MESSAGE;
 import static org.netbeans.installer.utils.helper.ErrorLevel.WARNING;
@@ -62,7 +64,7 @@ import org.w3c.dom.Document;
  *
  * @author Kirill Sorokin
  */
-public class Installer {
+public class Installer implements FinishHandler {
     /////////////////////////////////////////////////////////////////////////////////
     // Main
     /**
@@ -112,8 +114,6 @@ public class Installer {
     
     private File cachedEngine;
     
-    private InstallerExecutionMode executionMode = InstallerExecutionMode.NORMAL;
-    
     // Constructor //////////////////////////////////////////////////////////////////
     /**
      * The only private constructor - we need to hide the default one as
@@ -162,8 +162,14 @@ public class Installer {
      * @param arguments The command line arguments
      */
     public void start() {
-        final Wizard wizard = Wizard.getInstance();
+        final Wizard wizard     = Wizard.getInstance();
+        final Registry registry = Registry.getInstance();
         
+        registry.setLocalDirectory(localDirectory);
+        registry.setFinishHandler(this);
+        
+        wizard.setFinishHandler(this);
+        wizard.getContext().put(Registry.getInstance());
         wizard.open();
     }
     
@@ -215,10 +221,6 @@ public class Installer {
     
     public File getCachedEngine() {
         return cachedEngine;
-    }
-    
-    public InstallerExecutionMode getExecutionMode() {
-        return executionMode;
     }
     
     // Private stuff ////////////////////////////////////////////////////////////////
@@ -420,7 +422,7 @@ public class Installer {
                     if (targetFile.exists()) {
                         ErrorManager.notify(WARNING, "The specified target file \"" + targetFile + "\", exists. \"--create-bundle\" parameter is ignored.");
                     } else {
-                        executionMode = InstallerExecutionMode.CREATE_BUNDLE;
+                        ExecutionMode.setCurrentExecutionMode(ExecutionMode.CREATE_BUNDLE);
                         System.setProperty(CREATE_BUNDLE_PATH_PROPERTY, targetFile.getAbsolutePath());
                     }
                     
@@ -740,13 +742,6 @@ public class Installer {
         }
         
         LogManager.logUnindent("finished creating lock file");
-    }
-    
-    /////////////////////////////////////////////////////////////////////////////////
-    // Inner classes
-    public static enum InstallerExecutionMode {
-        NORMAL,
-        CREATE_BUNDLE;
     }
     
     /////////////////////////////////////////////////////////////////////////////////

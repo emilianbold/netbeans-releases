@@ -167,7 +167,10 @@ public class DestinationPanel extends ErrorMessagePanel {
             destinationButton.setText(
                     component.getProperty(DESTINATION_BUTTON_TEXT_PROPERTY));
             
-            final Product product = (Product) component.getWizard().getProduct();
+            final Product product = (Product) component.
+                    getWizard().
+                    getContext().
+                    get(Product.class);
             
             String destination = product.
                     getProperty(Product.INSTALLATION_LOCATION_PROPERTY);
@@ -195,7 +198,7 @@ public class DestinationPanel extends ErrorMessagePanel {
             String value =
                     new File(destinationField.getText().trim()).getAbsolutePath();
             
-            component.getWizard().getProduct().setProperty(
+            component.getWizard().setProperty(
                     Product.INSTALLATION_LOCATION_PROPERTY,
                     value);
         }
@@ -204,7 +207,10 @@ public class DestinationPanel extends ErrorMessagePanel {
             final String  string  = destinationField.getText().trim();
             final File    file    = new File(string);
             final String  path    = file.getAbsolutePath();
-            final Product product = (Product) component.getWizard().getProduct();
+            final Product product = (Product) component.
+                    getWizard().
+                    getContext().
+                    get(Product.class);
             
             if (string.equals("")) {
                 return StringUtils.format(

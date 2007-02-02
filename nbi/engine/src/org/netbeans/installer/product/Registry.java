@@ -30,15 +30,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Queue;
-import javax.swing.SwingUtilities;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import org.netbeans.installer.Installer;
-import org.netbeans.installer.Installer.InstallerExecutionMode;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.filters.OrFilter;
@@ -66,10 +63,11 @@ import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.exceptions.XMLException;
+import org.netbeans.installer.utils.helper.ExecutionMode;
+import org.netbeans.installer.utils.helper.FinishHandler;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
-import org.netbeans.installer.wizard.utils.ProxySettingsDialog;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -94,31 +92,27 @@ public class Registry {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private File         localProductCache;
+    private File          localDirectory;
+    private File          localProductCache;
+    private File          localRegistryFile;
     
-    private String       localRegistryStubUri;
-    private File         localRegistryFile;
-    private String       bundledRegistryUri;
-    private List<String> remoteRegistryUris;
-    private String       registrySchemaUri;
+    private String        localRegistryStubUri;
+    private String        bundledRegistryUri;
+    private List<String>  remoteRegistryUris;
+    private String        registrySchemaUri;
     
-    private String       stateFileSchemaUri;
-    private String       stateFileStubUri;
+    private String        stateFileSchemaUri;
+    private String        stateFileStubUri;
     
-    private RegistryNode registryRoot;
-    private Properties   properties;
-    private Platform     targetPlatform;
+    private RegistryNode  registryRoot;
+    private Properties    properties;
+    private Platform      targetPlatform;
+    
+    private FinishHandler finishHandler;
     
     // constructors /////////////////////////////////////////////////////////////////
-    private Registry() {
-        localProductCache = new File(
-                Installer.getInstance().getLocalDirectory(),
-                DEFAULT_LOCAL_PRODUCT_CACHE_DIRECTORY_NAME);
-        
+    public Registry() {
         localRegistryStubUri = DEFAULT_LOCAL_PRODUCT_REGISTRY_STUB_URI;
-        localRegistryFile = new File(
-                Installer.getInstance().getLocalDirectory(),
-                DEFAULT_LOCAL_REGISTRY_FILE_NAME);
         bundledRegistryUri = DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI;
         remoteRegistryUris = new ArrayList<String>();
         registrySchemaUri = DEFAULT_PRODUCT_REGISTRY_SCHEMA_URI;
@@ -133,46 +127,22 @@ public class Registry {
         targetPlatform = SystemUtils.getCurrentPlatform();
     }
     
-    public Registry(final File file) throws InitializationException {
-        this();
-        
-        setRegistryProperties();
-        
-        loadProductRegistry(
-                file.toURI().toString(),
-                new Progress(),
-                RegistryType.REMOTE);
-    }
-    
-    public Registry(final List<File> files) throws InitializationException {
-        this();
-        
-        setRegistryProperties();
-        
-        for (File file: files) {
-            loadProductRegistry(
-                    file.toURI().toString(),
-                    new Progress(),
-                    RegistryType.REMOTE);
-        }
-    }
-    
-    public Registry(final Platform platform, final List<File> files) throws InitializationException {
-        this();
-        
-        setRegistryProperties();
-        
-        this.targetPlatform = platform;
-        
-        for (File file: files) {
-            loadProductRegistry(
-                    file.toURI().toString(),
-                    new Progress(),
-                    RegistryType.REMOTE);
-        }
-    }
-    
     // initialization/finalization //////////////////////////////////////////////////
+    public void setLocalDirectory(final File localDirectory) {
+        this.localDirectory = localDirectory;
+        
+        localProductCache = new File(
+                localDirectory,
+                DEFAULT_LOCAL_PRODUCT_CACHE_DIRECTORY_NAME);
+        localRegistryFile = new File(
+                localDirectory,
+                DEFAULT_LOCAL_REGISTRY_FILE_NAME);
+    }
+    
+    public void setFinishHandler(final FinishHandler finishHandler) {
+        this.finishHandler = finishHandler;
+    }
+    
     public void initializeRegistry(final Progress progress) throws InitializationException {
         LogManager.logEntry("initializing product registry");
         
@@ -243,8 +213,7 @@ public class Registry {
         
         // save the local registry if we're executing in normal mode (i.e. not
         // creating a bundle)
-        if (Installer.getInstance().getExecutionMode() ==
-                InstallerExecutionMode.NORMAL) {
+        if (ExecutionMode.getCurrentExecutionMode() == ExecutionMode.NORMAL) {
             progress.setTitle("Saving local registry");
             progress.setDetail("Saving to " + localRegistryFile);
             
@@ -269,8 +238,6 @@ public class Registry {
     
     private void setRegistryProperties() throws InitializationException {
         LogManager.logEntry("initializing product registry properties");
-        
-        final File localDirectory = Installer.getInstance().getLocalDirectory();
         
         /////////////////////////////////////////////////////////////////////////////
         LogManager.logIndent("initializing local product cache directory");
@@ -603,7 +570,7 @@ public class Registry {
                     if (result) {
                         product.setStatus(Status.NOT_INSTALLED);
                     } else {
-                        Installer.getInstance().criticalExit();
+                        finishHandler.criticalExit();
                     }
                 }
             }
@@ -1325,7 +1292,6 @@ public class Registry {
     public static final String DEFAULT_LOCAL_PRODUCT_CACHE_DIRECTORY_NAME =
             "product-cache";
     
-    
     public static final String LOCAL_PRODUCT_CACHE_DIRECTORY_PROPERTY =
             "nbi.product.local.cache.directory.name";
     
@@ -1344,7 +1310,7 @@ public class Registry {
     
     public static final String DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX +
-            Installer.DATA_DIRECTORY + "/bundled-registry.xml";
+            "data/bundled-registry.xml";
     
     public static final String BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY =
             "nbi.product.bundled.registry.uri";

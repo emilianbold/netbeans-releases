@@ -49,7 +49,7 @@ public class SetInstallationLocationAction extends WizardAction {
         
         // we do expect the property container of the wizard to be a product, if
         // it's not we should fail
-        final Product target = (Product) getWizard().getProduct();
+        final Product target = (Product) getWizard().getContext().get(Product.class);
         
         final List<Dependency> dependencies = target.getDependencyByUid(uid);
         final Product source =

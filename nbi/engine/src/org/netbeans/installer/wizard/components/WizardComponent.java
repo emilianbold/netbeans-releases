@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -251,7 +250,7 @@ public abstract class WizardComponent {
                 return;
             }
             
-            Installer.getInstance().cancel();
+            component.getWizard().getFinishHandler().cancel();
         }
         
         public NbiButton getDefaultButton() {

@@ -22,7 +22,6 @@ package org.netbeans.installer.wizard.components;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -182,7 +181,7 @@ public abstract class WizardAction extends WizardComponent {
             new Thread() {
                 public void run() {
                     ((WizardAction) component).cancel();
-                    Installer.getInstance().cancel();
+                    component.getWizard().getFinishHandler().cancel();
                 }
             }.start();
         }

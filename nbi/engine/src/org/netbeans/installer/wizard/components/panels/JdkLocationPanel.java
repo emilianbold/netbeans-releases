@@ -21,14 +21,10 @@
 package org.netbeans.installer.wizard.components.panels;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.utils.helper.ErrorLevel;
-import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -154,7 +150,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     
     public File getSelectedLocation() {
         final String path =
-                getWizard().getProduct().getProperty(JDK_LOCATION_PROPERTY);
+                getWizard().getProperty(JDK_LOCATION_PROPERTY);
         
         // the first obvious choice is the jdk that has already been selected for
         // this product; if it has not yet been set - check whether we can reuse the
@@ -232,8 +228,6 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                     SearchForJavaAction.getLabel(location));
         }
         
-        getWizard().getProduct().setProperty(
-                JDK_LOCATION_PROPERTY,
-                location.getAbsolutePath());
+        getWizard().setProperty(JDK_LOCATION_PROPERTY, location.getAbsolutePath());
     }
 }

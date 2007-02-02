@@ -136,7 +136,9 @@ public class SearchForJavaAction extends WizardAction {
         // finally we should scan the registry for jdks planned for installation, if
         // the current product is scheduled to be installed after 'jdk', i.e. has
         // an install-after dependency on 'jdk' uid
-        final Product product = (Product) getWizard().getProduct();
+        final Product product = (Product) getWizard().
+                getContext().
+                get(Product.class);
         for (Dependency dependency: product.getDependencies(
                 DependencyType.INSTALL_AFTER)) {
             if (dependency.getUid().equals("jdk")) {
