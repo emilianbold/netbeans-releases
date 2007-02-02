@@ -610,13 +610,16 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                                 return null;
                             }
                             String dir = configDir.toString();
-                            File domainLocationAsReturnedByTheServer = new File(dir).getParentFile().getParentFile();
+                            File domainLocationAsReturnedByTheServer = new File(dir).getParentFile();
                             
                             String l1 =  domainLocationAsReturnedByTheServer.getCanonicalPath();
                             if (null == domainDir) {
                                 DeploymentManagerProperties dmProps = new DeploymentManagerProperties(this);
                                 domainDir =  dmProps.getLocation();
+                                String domainName = dmProps.getDomainName();
                                 domainDir = new File(domainDir).getCanonicalPath();
+                                domainDir += File.separator +
+                                        domainName;
                             }
                             
                             if (l1.equals(domainDir)==false){ //not the same location, so let's make sure we do not reutrn an invalid target
