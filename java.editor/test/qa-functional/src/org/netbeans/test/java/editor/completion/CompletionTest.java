@@ -41,6 +41,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.editor.completion.CompletionImpl;
 import org.netbeans.modules.editor.completion.CompletionResultSetImpl;
 import org.netbeans.modules.editor.java.JavaCompletionProvider;
+import org.netbeans.modules.editor.java.LazyTypeCompletionItem;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -151,13 +152,16 @@ public class CompletionTest extends java.lang.Object {
         if(!unsorted) {
             Arrays.sort(array, new Comparator<CompletionItem>(){
                 public int compare(CompletionItem arg0, CompletionItem arg1) {
-                    return arg0.toString().compareTo(arg1.toString());
+                    String a0 = (arg0 instanceof LazyTypeCompletionItem)? arg0.getSortText().toString():arg0.toString();
+                    String a1 = (arg1 instanceof LazyTypeCompletionItem)? arg1.getSortText().toString():arg1.toString();
+                    return a0.compareTo(a1);
                 }
             });
         }
         for (int i = 0; i < array.length; i++) {
             CompletionItem completionItem = array[i];
-            out.println(completionItem.toString());            
+            if(completionItem instanceof LazyTypeCompletionItem) out.println(completionItem.getSortText().toString());
+            else out.println(completionItem.toString());            
         }
         /*Completion completion = ExtUtilities.getCompletion(editor);
         if (completion != null) {
