@@ -30,6 +30,11 @@ import org.openide.filesystems.FileUtil;
 
 import java.io.*;
 import org.openide.util.*;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.DataObject;
+import org.openide.cookies.EditorCookie;
+
+import javax.swing.text.Document;
 
 /**
  * Stream source for diffing CVS managed files.
@@ -115,6 +120,32 @@ public class DiffStreamSource extends StreamSource {
         throw new IOException("Operation not supported"); // NOI18N
     }
 
+    public boolean isEditable() {
+        return VersionsCache.REVISION_CURRENT.equals(revision);
+    }
+
+    public Document createDocument() {
+        try {
+            init(null);
+        } catch (IOException e) {
+            return null;
+        }
+        if (!VersionsCache.REVISION_CURRENT.equals(revision) || remoteFile == null) return null;
+        FileObject remoteFo = FileUtil.toFileObject(remoteFile);
+        if (remoteFo == null) return null;
+
+        try {
+            DataObject dao = DataObject.find(remoteFo);
+            EditorCookie ec = dao.getCookie(EditorCookie.class);
+            if (ec == null) return null;
+            return ec.openDocument();
+        } catch (DataObjectNotFoundException e) {
+            return null;
+        } catch (IOException e) {
+            return null;
+        }
+    }
+    
     /**
      * Loads data over network.
      *
