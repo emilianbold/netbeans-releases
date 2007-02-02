@@ -26,8 +26,6 @@ Microsystems, Inc. All Rights Reserved.
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/activation.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/FastInfoset.jar!/</resource>
-<!--        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/dom.jar!/</resource>-->
-        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/jax-qname.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/jaxp-api.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/jaxrpc-api.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/jaxrpc-impl.jar!/</resource>
@@ -37,14 +35,6 @@ Microsystems, Inc. All Rights Reserved.
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/relaxngDatatype.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/saaj-api.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/saaj-impl.jar!/</resource>
-<!--        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/sax.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/xalan.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/xercesImpl.jar!/</resource>-->
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/xsdlib.jar!/</resource>
-    </volume>
-<!--    <volume>
-        <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/docs/jaxrpc16-javadoc.zip!/</resource>        
-        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/docs/jsr181-javadoc.zip!/</resource>        
-    </volume> -->   
+    </volume> 
 </library>

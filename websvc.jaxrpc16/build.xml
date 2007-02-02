@@ -29,12 +29,8 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         <copy file="../external/jaxrpc16/activation.jar"
               tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/activation.jar"/>
-<!--        <copy file="../external/jaxrpc16/dom.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/dom.jar"/>-->
         <copy file="../external/jaxrpc16/FastInfoset.jar"
               tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/FastInfoset.jar"/>
-        <copy file="../external/jaxrpc16/jax-qname.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jax-qname.jar"/>
         <copy file="../external/jaxrpc16/jaxp-api.jar"
               tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jaxp-api.jar"/>
         <copy file="../external/jaxrpc16/jaxrpc-api.jar"
@@ -53,40 +49,12 @@ Microsystems, Inc. All Rights Reserved.
               tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/saaj-api.jar"/>
         <copy file="../external/jaxrpc16/saaj-impl.jar"
               tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/saaj-impl.jar"/>
-<!--        <copy file="../external/jaxrpc16/sax.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/sax.jar"/>
-        <copy file="../external/jaxrpc16/xalan.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/xalan.jar"/>
-        <copy file="../external/jaxrpc16/xercesImpl.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/xercesImpl.jar"/>-->
         <copy file="../external/jaxrpc16/xsdlib.jar"
               tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/xsdlib.jar"/>              
-              
-   <!--     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
-        <copy file="../external/jaxws20-javadoc.zip"
-              todir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
-        <copy file="../external/jsr181-javadoc.zip"
-              todir="${netbeans.dest.dir}/${cluster.dir}/docs"/>-->
     </target>
-
-<!--    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
-        <mkdir dir="build"/>
-        <makenbm file="build/${nbm}"
-                 productdir="${netbeans.dest.dir}/${cluster.dir}"
-                 module="${module.jar}"
-                 homepage="${nbm.homepage}"
-                 distribution="http://${dist.base}/${nbm}"
-                 needsrestart="${nbm.needs.restart}"
-                 releasedate="${nbm.release.date}"
-		 moduleauthor="${nbm.module.author}">
-            <license>
-                <text>For the integration module:</text>
-                <file location="${license.file}"/>
-                <text>For the JSTL 1.1 library:</text>
-                <file location="${nb_all}/nbbuild/external/apache-license-2.0.txt"/>
-            </license>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>-->
-
+    
+    <target name="clean" depends="init">
+        <echo message="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/"/>
+        <delete dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/"/>
+    </target>
 </project>
