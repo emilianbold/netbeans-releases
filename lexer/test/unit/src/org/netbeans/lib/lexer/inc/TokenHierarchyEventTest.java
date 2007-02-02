@@ -52,8 +52,7 @@ public class TokenHierarchyEventTest extends NbTestCase {
         // Assign a language to the document
         doc.putProperty(Language.class, SimpleTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        THListener listener = new THListener();
-        hi.addTokenHierarchyListener(listener);
+        LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
         TokenSequence<? extends TokenId> ts = hi.tokenSequence();
 
         assertTrue(ts.moveNext());
@@ -72,7 +71,7 @@ public class TokenHierarchyEventTest extends NbTestCase {
         doc.insertString(5, "x", null);
         
         // Check the fired event
-        TokenHierarchyEvent evt = listener.fetchLastEvent();
+        TokenHierarchyEvent evt = LexerTestUtilities.getLastTokenHierarchyEvent(doc);
         assertNotNull(evt);
         TokenChange<? extends TokenId> tc = evt.tokenChange();
         assertNotNull(tc);
@@ -85,20 +84,4 @@ public class TokenHierarchyEventTest extends NbTestCase {
         
     }
     
-    private static final class THListener implements TokenHierarchyListener {
-        
-        private TokenHierarchyEvent lastEvent;
-    
-        public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
-            this.lastEvent = evt;
-        }
-        
-        public TokenHierarchyEvent fetchLastEvent() {
-            TokenHierarchyEvent evt = lastEvent;
-            lastEvent = null;
-            return evt;
-        }
-
-    }
-
 }

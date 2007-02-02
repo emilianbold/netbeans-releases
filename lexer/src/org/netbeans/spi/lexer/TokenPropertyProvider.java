@@ -37,7 +37,34 @@ import org.netbeans.api.lexer.TokenId;
  * <ul>
  *  <li>
  *    A new instance of the provider per each token.
- *    This is suitable for all situations.
+ *    <br/>
+ *    Example of storing a value for "key" key in the provider:
+ *    <pre>
+ *    final class MyTokenPropertyProvider implements TokenPropertyProvider {
+ * 
+ *       private final Object value;
+ * 
+ *       MyTokenPropertyProvider(Object value) {
+ *           this.value = value;
+ *       }
+ *
+ *       public Object getValue(Token token, Object key) {
+ *           if ("key".equals(key)) {
+ *               return value;
+ *           }
+ *           return null;
+ *       }
+ * 
+ *       public Object getValue(Token token, Object tokenStoreKey, Object tokenStoreValue) {
+ *           return null; // not using token's storage
+ *       }
+ * 
+ *       public Object tokenStoreKey() {
+ *           return null; // not using token's storage
+ *       }
+ * 
+ *    }
+ *    </pre>
  *  </li>
  * 
  *  <li>
@@ -47,14 +74,69 @@ import org.netbeans.api.lexer.TokenId;
  *    This might be achieved by returning the particular key
  *    from {@link #tokenStoreKey()} and using the token store value
  *    for the storage of the property value.
+ *    <br/>
+ *    Example of storing a value for "key" by the token's storage:
+ *    <pre>
+ *    final class MyTokenPropertyProvider implements TokenPropertyProvider {
+ * 
+ *       static final MyTokenPropertyProvider INSTANCE = new MyTokenPropertyProvider();
+ * 
+ *       private MyTokenPropertyProvider() {
+ *       }
+ *
+ *       public Object getValue(Token token, Object key) {
+ *           return null; // no extra properties
+ *       }
+ * 
+ *       public Object getValue(Token token, Object tokenStoreKey, Object tokenStoreValue) {
+ *           // Assuming that the appropriate tokenStoreValue was passed to
+ *           // TokenFactory.createPropertyToken(id, length, propertyProvider, tokenStoreValue);
+ *           return tokenStoreValue;
+ *       }
+ * 
+ *       public Object tokenStoreKey() {
+ *           return "key";
+ *       }
+ * 
+ *    }
+ *    </pre>
  *  </li>
  * 
  *  <li>
  *    Multiple flyweight instances of the provider.
  *    This might be useful if there is just several values for the property.
- *    For example if there is a boolean property there will be two instances
- *    of the provider (one returning <code>Boolean.TRUE</code>
- *    and the other one returning <code>Boolean.FALSE</code>).
+ *    <br/>
+ *    Example of two instances of a provider for "key":
+ *    <pre>
+ *    final class MyTokenPropertyProvider implements TokenPropertyProvider {
+ * 
+ *       static final MyTokenPropertyProvider TRUE = new MyTokenPropertyProvider(Boolean.TRUE);
+ * 
+ *       static final MyTokenPropertyProvider FALSE = new MyTokenPropertyProvider(Boolean.FALSE);
+ * 
+ *       private final Boolean value;
+ * 
+ *       private MyTokenPropertyProvider(Boolean value) {
+ *           this.value = value;
+ *       }
+ *
+ *       public Object getValue(Token token, Object key) {
+ *           if ("key".equals(key)) {
+ *               return value;
+ *           }
+ *           return null;
+ *       }
+ * 
+ *       public Object getValue(Token token, Object tokenStoreKey, Object tokenStoreValue) {
+ *           return null; // not using token's storage
+ *       }
+ * 
+ *       public Object tokenStoreKey() {
+ *           return null; // not using token's storage
+ *       }
+ * 
+ *    }
+ *    </pre>
  *  </li>
  * </ul>
  *

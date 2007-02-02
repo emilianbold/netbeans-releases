@@ -412,6 +412,24 @@ public final class LexerTestUtilities {
         });
     }
     
+    public static DocumentEvent getLastDocumentEvent(Document doc) {
+        return (DocumentEvent)doc.getProperty(DocumentEvent.class);
+    }
+    
+    public static void initLastTokenHierarchyEventListening(Document doc) {
+        TokenHierarchy hi = TokenHierarchy.get(doc);
+        hi.addTokenHierarchyListener(new TokenHierarchyListener() {
+            public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
+                ((Document)evt.tokenHierarchy().mutableInputSource()).putProperty(
+                        TokenHierarchyEvent.class, evt);
+            }
+        });
+    }
+    
+    public static TokenHierarchyEvent getLastTokenHierarchyEvent(Document doc) {
+        return (TokenHierarchyEvent)doc.getProperty(TokenHierarchyEvent.class);
+    }
+    
     /**
      * Get token list from the given token sequence for testing purposes.
      */

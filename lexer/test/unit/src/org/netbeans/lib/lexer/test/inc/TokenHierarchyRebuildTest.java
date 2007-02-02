@@ -17,9 +17,11 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
 import org.netbeans.lib.lexer.test.simple.SimpleTokenId;
 import org.netbeans.spi.lexer.MutableTextInput;
@@ -45,6 +47,7 @@ public class TokenHierarchyRebuildTest extends NbTestCase {
         Token<?> t = ts.token();
         assertNotNull(t);
         String tText = t.text().toString();
+        LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
         
         // Should write-lock the document
         // doc.writeLock();
@@ -52,9 +55,16 @@ public class TokenHierarchyRebuildTest extends NbTestCase {
             MutableTextInput input = (MutableTextInput)doc.getProperty(MutableTextInput.class);
             assertNotNull(input);
             input.tokenHierarchyControl().rebuild();
+            LexerTestUtilities.initLastDocumentEventListening(doc);
         } finally {
             // doc.writeUnlock();
         }
+        
+        // Check the fired token hierarchy event
+        int docLen = doc.getLength();
+        TokenHierarchyEvent evt = LexerTestUtilities.getLastTokenHierarchyEvent(doc);
+        assertEquals(0, evt.affectedStartOffset());
+        assertEquals(docLen, evt.affectedEndOffset());
         
         try { // ts should no longer work
             ts.moveNext();

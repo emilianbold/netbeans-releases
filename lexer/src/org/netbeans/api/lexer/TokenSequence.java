@@ -182,7 +182,7 @@ public final class TokenSequence<T extends TokenId> {
      *
      * @return token instance to which this token sequence is currently positioned
      *  or null if this token sequence is not positioned to any token which may
-     *  happen after TS creation or after use of {@link #move(int)} or {@link moveIndex(int)}.
+     *  happen after TS creation or after use of {@link #move(int)} or {@link #moveIndex(int)}.
      * 
      * @see #offsetToken()
      */

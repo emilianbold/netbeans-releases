@@ -167,6 +167,8 @@ public final class TokenFactory<T extends TokenId> {
      * @param propertyProvider non-null token property provider.
      * @param tokenStoreValue explicit value for property stored in the token itself
      *  or null if there is no explicit value (value will be computed lazily when asked).
+     *  <br/>
+     *  See {@link TokenPropertyProvider} for examples how this parameter may be used.
      * @return non-null property token instance.
      *  <br/>
      *  If there were any characters preprocessed by {@link CharPreprocessor}
