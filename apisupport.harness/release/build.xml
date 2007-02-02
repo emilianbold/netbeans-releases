@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="harness" basedir="." default="netbeans">
@@ -130,6 +130,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Would be nice to have: -->
         <!-- 5. [not done yet] If ${netbeans.sources} includes a NB source tree, use xtest sources. -->
         <!-- ...but that would be more difficult to do, since you would need to parse netbeans.sources. -->
+        <!-- 6. If run tests from command-line outside of NB source tree, use libraries from ${xtest.home}. -->
         <path id="test.unit.lib.cp">
             <pathelement path="${test.unit.lib.cp}"/> <!-- for manual override -->
             <fileset dir="${netbeans.dest.dir}">
@@ -153,6 +154,9 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${netbeans.dest.dir}/../../xtest/lib/junit.jar"/>
             <pathelement location="${netbeans.dest.dir}/../../xtest/lib/nbjunit.jar"/>
             <pathelement location="${netbeans.dest.dir}/../../xtest/lib/insanelib.jar"/>
+            <pathelement location="${xtest.home}/lib/junit.jar"/>
+            <pathelement location="${xtest.home}/lib/nbjunit.jar"/>
+            <pathelement location="${xtest.home}/lib/insanelib.jar"/>
         </path>
     </target>
     
