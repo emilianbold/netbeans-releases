@@ -31,6 +31,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.persistence.action.spi.ApplicationManagedResourceTransactionInJ2SE;
 import org.netbeans.modules.j2ee.persistence.action.spi.EntityManagerGenerationStrategy;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
@@ -130,8 +131,9 @@ public final class EntityManagerGenerator {
         if (resolver != null){
             return resolver.resolveStrategy(targetFo);
         }
-
-        return null;
+        
+        // must be a java se project (we don't want it to implement the EntityManagerGenerationStrategyResolver SPI)
+        return ApplicationManagedResourceTransactionInJ2SE.class;
     }
     
     private EntityManagerGenerationStrategy instantiateStrategy(Class<? extends EntityManagerGenerationStrategy> strategy, WorkingCopy workingCopy,
