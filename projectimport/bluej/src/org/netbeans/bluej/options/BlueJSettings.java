@@ -19,48 +19,66 @@
 
 package org.netbeans.bluej.options;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
-import org.openide.options.SystemOption;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
  *
  * @author Milos Kleint
  */
-public class BlueJSettings extends SystemOption {
+public class BlueJSettings {
     public static final String PROP_HOME = "home"; // NOI18N
-
-    private static final long serialVersionUID = -4857548488373437L;
-
-    protected void initialize() {
-        super.initialize();
-        //TODO try to guess the correct locations..
+    
+    private static final BlueJSettings INSTANCE = new BlueJSettings();
+    
+    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    
+    protected final Preferences getPreferences() {
+        return NbPreferences.forModule(BlueJSettings.class);
     }
     
-    public String displayName() {
-        return NbBundle.getMessage(BlueJSettings.class, "LBL_Settings"); // NOI18N
+    protected final String putProperty(String key, String value) {
+        String retval = getProperty(key);
+        if (value != null) {
+            getPreferences().put(key, value);
+        } else {
+            getPreferences().remove(key);
+        }
+        support.firePropertyChange(key, retval, value);
+        return retval;
     }
     
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
     }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+
+    protected final String getProperty(String key) {
+        return getPreferences().get(key, null);
+    }    
     
     public static BlueJSettings getDefault() {
-        return (BlueJSettings) findObject(BlueJSettings.class, true);
+        return INSTANCE;
     }
     
     public File getHome() {
-        return (File)getProperty(PROP_HOME);
+        String s = getProperty(PROP_HOME);
+        return s != null ? new File(s) : null;
     }
     
     public void setHome(File home) {
-        putProperty(PROP_HOME, home, true);
+        putProperty(PROP_HOME, home == null ? null : home.getAbsolutePath());
     }    
     
     /**

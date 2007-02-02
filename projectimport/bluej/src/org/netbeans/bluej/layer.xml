@@ -32,9 +32,7 @@
     
       <folder name="JavaHelp">
             <file name="bluej-helpset.xml" url="bluej-helpset.xml"/>
-        </folder>
-        <file name="org-netbeans-bluej-options-BlueJSettings.settings" url="options/BlueJSettings.xml">
-      </file>
+      </folder>
   </folder>
     <folder name="Templates">
         <folder name="Bluej">
