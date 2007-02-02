@@ -288,8 +288,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 String textToReplace = doc.getText(offset, len);
                 if (text.equals(textToReplace)) return;
                 
+                Position position = doc.createPosition(offset);
                 doc.remove(offset, len);
-                doc.insertString(offset, text, null);
+                doc.insertString(position.getOffset(), text, null);
             } catch (BadLocationException e) {
                 // Can't update
             } finally {
@@ -663,7 +664,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     if (textToReplace.contentEquals(text)) return;
                     
                     doc.remove(offset, len);
-                    doc.insertString(offset, text.toString(), null);
+                    doc.insertString(position != null ? position.getOffset() : offset, text.toString(), null);
                 } catch (BadLocationException e) {
                     // Can't update
                 } finally {
@@ -1449,18 +1450,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     add = null;
                 }
             }
+            Position position = null;
             doc.atomicLock();
             try {
+                position = doc.createPosition(offset);
                 doc.remove(offset, len);
-                doc.insertString(offset, text, null);
+                doc.insertString(position.getOffset(), text, null);
             } catch (BadLocationException e) {
             } finally {
                 doc.atomicUnlock();
             }
-            Position position = null;
             if (isAbstract && text.length() > 3) {
                 try {
-                    position = doc.createPosition(offset);
                     JavaSource js = JavaSource.forDocument(doc);
                     final int off = offset + 4;
                     js.runModificationTask(new CancellableTask<WorkingCopy>() {
@@ -1615,8 +1616,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             doc.atomicLock();
             try {
+                Position position = doc.createPosition(offset);
                 doc.remove(offset, len);
-                doc.insertString(offset, text, null);
+                doc.insertString(position.getOffset(), text, null);
             } catch (BadLocationException e) {
             } finally {
                 doc.atomicUnlock();
@@ -1720,7 +1722,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 if (textToReplace.contentEquals(text)) return;
                 
                 doc.remove(offset, len);
-                doc.insertString(offset, text.toString(), null);
+                doc.insertString(position != null ? position.getOffset() : offset, text.toString(), null);
             } catch (BadLocationException e) {
                 // Can't update
             } finally {
