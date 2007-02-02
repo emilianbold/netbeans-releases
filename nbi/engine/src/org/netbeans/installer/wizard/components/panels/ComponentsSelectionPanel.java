@@ -33,9 +33,11 @@ import java.awt.event.MouseEvent;
 import java.util.EventObject;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
@@ -49,6 +51,7 @@ import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.installer.product.RegistryType;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
@@ -59,6 +62,7 @@ import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
@@ -206,7 +210,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         private ComponentsSelectionPanel component;
         
         private NbiTree       componentsTree;
-        private NbiScrollPane treeScrollPane;
+        private NbiScrollPane componentsTreeScrollPane;
         
         private NbiTextPane   descriptionPane;
         private NbiScrollPane descriptionScrollPane;
@@ -342,6 +346,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     new ComponentsTreeModel());
             componentsTree.setCellRenderer(
                     new ComponentsTreeCell());
+            componentsTree.setEditable(
+                    true);
             componentsTree.setCellEditor(
                     new ComponentsTreeCell());
             componentsTree.setShowsRootHandles(
@@ -350,10 +356,10 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     false);
             componentsTree.setBorder(
                     new EmptyBorder(5, 5, 5, 5));
-            componentsTree.setEditable(
-                    true);
             componentsTree.setRowHeight(
                     new JCheckBox().getPreferredSize().height);
+            componentsTree.getSelectionModel().setSelectionMode(
+                    TreeSelectionModel.SINGLE_TREE_SELECTION);
             componentsTree.getSelectionModel().addTreeSelectionListener(
                     new TreeSelectionListener() {
                 public void valueChanged(TreeSelectionEvent event) {
@@ -363,26 +369,34 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             componentsTree.getModel().addTreeModelListener(
                     new TreeModelListener() {
                 public void treeNodesChanged(TreeModelEvent event) {
-                    handleEvent(event);
-                }
-                public void treeNodesInserted(TreeModelEvent event) {
-                    handleEvent(event);
-                }
-                public void treeNodesRemoved(TreeModelEvent event) {
-                    handleEvent(event);
-                }
-                public void treeStructureChanged(TreeModelEvent event) {
-                    handleEvent(event);
-                }
-                
-                private void handleEvent(TreeModelEvent event) {
                     updateSizes();
                     updateErrorMessage();
                 }
+                public void treeNodesInserted(TreeModelEvent event) {
+                    // does nothing
+                }
+                public void treeNodesRemoved(TreeModelEvent event) {
+                    // does nothing
+                }
+                public void treeStructureChanged(TreeModelEvent event) {
+                    // does nothing
+                }
             });
+            componentsTree.getActionMap().put(
+                    "checkbox.update",
+                    new AbstractAction("checkbox.update") {
+                public void actionPerformed(ActionEvent event) {
+                    componentsTree.getModel().valueForPathChanged(
+                            componentsTree.getSelectionPath(),
+                            null);
+                }
+            });
+            componentsTree.getInputMap().put(
+                    KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, false),
+                    "checkbox.update");
             
-            // componentsTree scrollPane
-            treeScrollPane = new NbiScrollPane(componentsTree);
+            // componentsTreeScrollPane
+            componentsTreeScrollPane = new NbiScrollPane(componentsTree);
             
             // descriptionPane
             descriptionPane = new NbiTextPane();
@@ -401,7 +415,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             sizesLabel = new NbiLabel();
             
             // add the components
-            add(treeScrollPane, new GridBagConstraints(
+            add(componentsTreeScrollPane, new GridBagConstraints(
                     0, 0,                             // x, y
                     1, 1,                             // width, height
                     0.7, 1.0,                         // weight-x, weight-y
@@ -436,7 +450,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             
             // L&F-specific tweaks
             if (UIManager.getLookAndFeel().getID().equals("GTK")) {
-                treeScrollPane.setViewportBorder(null);
+                componentsTreeScrollPane.setViewportBorder(null);
                 
                 descriptionPane.setOpaque(true);
             }
@@ -508,26 +522,34 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         public void valueForPathChanged(final TreePath path, final Object value) {
-            final RegistryNode node = (RegistryNode) path.getLastPathComponent();
-            
-            if (node instanceof Product) {
-                final Product product  = (Product) node;
-                final boolean selected = (Boolean) value;
+            if (path.getLastPathComponent() instanceof Product) {
+                final Product product = (Product) path.getLastPathComponent();
                 
-                if (selected && (product.getStatus() == Status.NOT_INSTALLED)) {
+                switch (product.getStatus()) {
+                case NOT_INSTALLED:
                     product.setStatus(Status.TO_BE_INSTALLED);
-                }
-                if (selected && (product.getStatus() == Status.TO_BE_UNINSTALLED)) {
-                    product.setStatus(Status.INSTALLED);
-                }
-                if (!selected && (product.getStatus() == Status.INSTALLED)) {
-                    product.setStatus(Status.TO_BE_UNINSTALLED);
-                }
-                if (!selected && (product.getStatus() == Status.TO_BE_INSTALLED)) {
+                    updateRequirements(product);
+                    break;
+                case TO_BE_INSTALLED:
                     product.setStatus(Status.NOT_INSTALLED);
+                    break;
+                case INSTALLED:
+                    product.setStatus(Status.TO_BE_UNINSTALLED);
+                    break;
+                case TO_BE_UNINSTALLED:
+                    product.setStatus(Status.INSTALLED);
+                    break;
                 }
-                
-                fireNodeChanged(path);
+            }
+            
+            final TreeModelListener[] clone;
+            synchronized (listeners) {
+                clone = listeners.toArray(new TreeModelListener[0]);
+            }
+            
+            final TreeModelEvent event = new TreeModelEvent(this, path);
+            for (TreeModelListener listener: clone) {
+                listener.treeNodesChanged(event);
             }
         }
         
@@ -548,15 +570,34 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         // private //////////////////////////////////////////////////////////////////
-        private void fireNodeChanged(final TreePath path) {
-            final TreeModelListener[] clone;
-            synchronized (listeners) {
-                clone = listeners.toArray(new TreeModelListener[0]);
-            }
-            
-            final TreeModelEvent event = new TreeModelEvent(this, path);
-            for (TreeModelListener listener: clone) {
-                listener.treeNodesChanged(event);
+        private void updateRequirements(final Product product) {
+            // check whether the requirements are satisfied and if there
+            // is an unsatisfied requirement - pick an appropriate
+            // product and select it
+            for (Dependency requirement: product.getDependencies(
+                    DependencyType.REQUIREMENT)) {
+                final List<Product> requirees =
+                        Registry.getInstance().getProducts(requirement);
+                
+                boolean requireesNeedUpdate = true;
+                Product correctRequiree = null;
+                for (Product requiree: requirees) {
+                    final Version version = requiree.getVersion();
+                    
+                    if ((requiree.getStatus() == Status.INSTALLED) ||
+                            (requiree.getStatus() == Status.TO_BE_INSTALLED)) {
+                        requireesNeedUpdate = false;
+                        break;
+                    }
+                    if ((correctRequiree == null) || 
+                            correctRequiree.getVersion().olderThan(version)) {
+                        correctRequiree = requiree;
+                    }
+                }
+                
+                if (requireesNeedUpdate && !requirees.isEmpty()) {
+                    valueForPathChanged(correctRequiree.getTreePath(), null);
+                }
             }
         }
     }
@@ -599,13 +640,15 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             label.setFocusable(false);
             label.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(final MouseEvent event) {
-                    stopCellEditing();
+                    cancelCellEditing();
                 }
+                
                 public void mousePressed(final MouseEvent event) {
-                    stopCellEditing();
+                    cancelCellEditing();
                 }
+                
                 public void mouseReleased(final MouseEvent event) {
-                    stopCellEditing();
+                    cancelCellEditing();
                 }
             });
             
@@ -635,14 +678,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 final boolean leaf,
                 final int row,
                 final boolean focus) {
-            return getComponent(
-                    tree,
-                    value,
-                    selected,
-                    expanded,
-                    leaf,
-                    row,
-                    focus);
+            return getComponent(tree, value, selected, expanded, leaf, row, focus);
         }
         
         public Component getTreeCellEditorComponent(
@@ -652,37 +688,18 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 final boolean expanded,
                 final boolean leaf,
                 final int row) {
-            return getComponent(
-                    tree,
-                    value,
-                    selected,
-                    expanded,
-                    leaf,
-                    row,
-                    true);
+            return getComponent(tree, value, selected, expanded, leaf, row, true);
         }
         
         public Object getCellEditorValue() {
-            return checkBox.isSelected();
+            return null;
         }
         
-        public boolean isCellEditable(EventObject event) {
-            if (event instanceof MouseEvent) {
-                final MouseEvent mouseEvent = (MouseEvent) event;
-                
-                if (mouseEvent.getID() == MouseEvent.MOUSE_PRESSED) {
-                    return true;
-                }
-            }
-            
-            if (event instanceof KeyEvent) {
-                return true;
-            }
-            
-            return false;
+        public boolean isCellEditable(final EventObject event) {
+            return true;
         }
         
-        public boolean shouldSelectCell(EventObject event) {
+        public boolean shouldSelectCell(final EventObject event) {
             return true;
         }
         
