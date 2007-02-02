@@ -37,8 +37,6 @@ import com.sun.rave.designtime.Position;
 import org.netbeans.modules.visualweb.insync.beans.Bean;
 import org.netbeans.modules.visualweb.insync.beans.EventSet;
 import org.netbeans.modules.visualweb.insync.beans.Property;
-import org.netbeans.jmi.javamodel.Field;
-import org.netbeans.jmi.javamodel.Method;
 
 /**
  * A MarkupBean for a JSF component that lives in a FacesPageUnit.
@@ -63,8 +61,8 @@ public class FacesBean extends MarkupBean {
      * @param setter
      * @param element
      */
-    FacesBean(FacesPageUnit unit, BeanInfo beanInfo, String name, Field field, Method getter,
-              Method setter, Element element) {
+    FacesBean(FacesPageUnit unit, BeanInfo beanInfo, String name, Object/*VariableElement*/ field, Object/*ExecutableElement*/ getter,
+              Object/*ExecutableElement*/ setter, Element element) {
         super(unit, beanInfo, name, field, getter, setter, element);
     }
 

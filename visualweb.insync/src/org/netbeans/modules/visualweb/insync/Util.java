@@ -211,7 +211,7 @@ public final class Util {
         try {
             BufferedInputStream inputStream = new BufferedInputStream(fileObject.getInputStream());
             if (fileObject.getExt().equals(JAVA_EXT)){
-                encoding = org.netbeans.modules.java.Util.getFileEncoding(fileObject);
+//NB60          encoding = org.netbeans.modules.java.Util.getFileEncoding(fileObject); // Talk to Wiston or Java folks
             } if (fileExt.equals(JSP_EXT) || fileExt.equals(JSPF_EXT) || fileExt.equals(XML_EXT)){
                 encoding = EncodingHelper.detectEncoding(inputStream);
             }else{

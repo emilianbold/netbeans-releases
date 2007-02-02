@@ -26,12 +26,6 @@ import java.beans.MethodDescriptor;
 
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import java.util.List;
-import org.netbeans.jmi.javamodel.Expression;
-import org.netbeans.jmi.javamodel.ExpressionStatement;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.MethodInvocation;
-import org.netbeans.jmi.javamodel.ReturnStatement;
-import org.netbeans.jmi.javamodel.Statement;
 
 /**
  * Representation of a wiring for a single event handler within an EventSet's listener adapter in
@@ -51,9 +45,9 @@ public class Event extends BeansNode {
     protected String[] requiredImports;
 
     // Java source-based event fields
-    protected Method delegator;
-    protected Method handler;
-    protected MethodInvocation mExpr;
+    protected Object/*ExecutableElement*/ delegator;
+    protected Object/*ExecutableElement*/ handler;
+    protected Object/*MethodInvocationTree*/ mExpr;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -79,7 +73,7 @@ public class Event extends BeansNode {
      * @param handler  Our handler method that is populated by the user.
      */
     private Event(EventSet set, MethodDescriptor descriptor,
-            Method delegator, MethodInvocation call, Method handler) {
+            Object/*ExecutableElement*/ delegator, Object/*MethodInvocationTree*/ call, Object/*ExecutableElement*/ handler) {
         this(set, descriptor);
         this.delegator = delegator;
         this.mExpr = call;
@@ -102,7 +96,8 @@ public class Event extends BeansNode {
      * @param am  The adapter
      * @return the new bound property if bindable, else null
      */
-    static Event newBoundInstance(EventSet set, MethodDescriptor md, Method am) {
+    static Event newBoundInstance(EventSet set, MethodDescriptor md, Object/*ExecutableElement*/ am) {
+/*//NB6.0
         JMIUtils.beginTrans(false);
         try {
             List stmts = am.getBody().getStatements();
@@ -136,6 +131,8 @@ public class Event extends BeansNode {
         }finally {
             JMIUtils.endTrans();
         }
+ //*/
+        return null;
     }
 
     /**
@@ -192,6 +189,7 @@ public class Event extends BeansNode {
         // now add arg(s)
         Class[] pts = descriptor.getMethod().getParameterTypes();
         String[] pns = Naming.paramNames(pts, descriptor.getParameterDescriptors());
+/*//NB6.0
         JMIUtils.beginTrans(true);
         boolean rollback = true;
         try {
@@ -210,6 +208,7 @@ public class Event extends BeansNode {
         }finally {
             JMIUtils.endTrans(rollback);
         }
+ //*/
     }
 
     /**
@@ -264,6 +263,7 @@ public class Event extends BeansNode {
      * @param name  The new handler method name.
      */
     public void setHandler(String name) {
+/*//NB6.0
         JMIUtils.beginTrans(true);
         boolean rollback = true;
         try {
@@ -280,14 +280,14 @@ public class Event extends BeansNode {
                 /*
                 if(!mExpr.isValid())
                     initializeCall();
-                 **/
+                 ** /
                 mExpr.setName(name);
             }
             rollback = false;
         }finally {
             JMIUtils.endTrans(rollback);
         }
-        
+//*/
     }
 
     /**
@@ -295,18 +295,21 @@ public class Event extends BeansNode {
      * @return The handler method name.
      */
     public String getHandlerName() {
+/*//NB6.0
         // should match handler.getName() too, but handler may be null (temporarily lost)
         //return ((Identifier)call.getMethod()).getFullname();
         if(handler != null)
             return handler.getName();
-        /*
+        /NB6.0*
         else {
             if(!mExpr.isValid()) {
                 initializeCall();
             }
         }
-         **/
+ **NB6.0/
         return mExpr.getName();
+        //*/
+        return null;
     }
 
     /*
@@ -329,7 +332,7 @@ public class Event extends BeansNode {
      * 
      * @return The handler method itself.
      */
-    public Method getHandlerMethod() {
+    public Object/*ExecutableElement*/ getHandlerMethod() {
         return handler;
     }
 

@@ -37,10 +37,6 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIForm;
 import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
-import org.netbeans.jmi.javamodel.Field;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Statement;
-import org.netbeans.jmi.javamodel.StatementBlock;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 
@@ -495,7 +491,7 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
      * @see org.netbeans.modules.visualweb.insync.beans.BeansUnit#newBoundBean(java.beans.BeanInfo, java.lang.String, org.netbeans.modules.visualweb.insync.java.Field, org.netbeans.modules.visualweb.insync.java.Method, org.netbeans.modules.visualweb.insync.java.Method)
      */
     protected Bean newBoundBean(BeanInfo bi, String name, 
-            Field field, Method getter, Method setter) {
+            Object/*VariableElement*/ field, Object/*ExecutableElement*/ getter, Object/*ExecutableElement*/ setter) {
         // Determine the source tag for this bean and thus if it is faces
         String tag = getBeanTagName(bi);
         String tlUri = getBeanTaglibUri(bi);
@@ -750,14 +746,14 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
     /*
      * @see org.netbeans.modules.visualweb.insync.beans.BeansUnit#newBoundProperty(org.netbeans.modules.visualweb.insync.java.Statement)
      */
-    protected Property newBoundProperty(Statement s) {
+    protected Property newBoundProperty(Object/*StatementTree*/ s) {
         return MarkupProperty.newBoundInstance(this, s);
     }
 
     /*
      * @see org.netbeans.modules.visualweb.insync.beans.BeansUnit#bindEventSets()
      */
-    protected void bindEventSets(StatementBlock b) {
+    protected void bindEventSets(Object/*BlockTree*/ b) {
         // bind statement-based event wiring
         super.bindEventSets(b);
 

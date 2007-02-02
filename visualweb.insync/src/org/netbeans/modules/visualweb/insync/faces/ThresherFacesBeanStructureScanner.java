@@ -27,11 +27,7 @@ import org.netbeans.modules.visualweb.insync.java.MethodInfo;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.ListIterator;
-import org.netbeans.jmi.javamodel.Statement;
-import org.netbeans.jmi.javamodel.StatementBlock;
-import org.netbeans.jmi.javamodel.TryStatement;
 import org.openide.util.NbBundle;
-
 
 public class ThresherFacesBeanStructureScanner extends FacesBeanStructureScanner {
     public static String PROP_INITMETHOD = "_init";
@@ -50,9 +46,10 @@ public class ThresherFacesBeanStructureScanner extends FacesBeanStructureScanner
                 getComment("COMMENT_PropInitMethodComment"), ENSURE_EMPTYBLOCK, "Exception");
     }
 
-   public StatementBlock[] getPropertiesInitBlocks() {
+   public Object/*BlockTree*/[] getPropertiesInitBlocks() {
+/*//NB6.0
        StatementBlock b = ctorInfo.getBlock();
-
+ 
        //Look for property initializers in the first try catch block, this is
        //to support the code generated in constructor prior to FCS
        List stats = b.getStatements();
@@ -66,16 +63,19 @@ public class ThresherFacesBeanStructureScanner extends FacesBeanStructureScanner
                tryBlock = tryStmt.getBody();
            }
        }
-
+ 
        if(tryBlock != null)
            return new StatementBlock[]{tryBlock, propertiesInitInfo.getBlock()};
        else
            return super.getPropertiesInitBlocks();
+//*/
+       return null;
    }
 
-   protected StatementBlock ensureInitBlock(MethodInfo mi) {
+   protected Object/*BlockTree*/ ensureInitBlock(MethodInfo mi) {
+/*//NB6.0
        StatementBlock body = mi.getMethod().getBody();
-
+ 
        List stats = body.getStatements();
        ListIterator iter = stats.listIterator();
        while(iter.hasNext()) {
@@ -83,7 +83,7 @@ public class ThresherFacesBeanStructureScanner extends FacesBeanStructureScanner
            if(s instanceof TryStatement)
                return null;
        }
-
+ 
        String bodyText = "// " + getComment("COMMENT_InitSuperCall") + "\n" +
                "super.init();\n" +
                "// " + getComment("COMMENT_UserPreInit") + "\n\n" +
@@ -107,8 +107,10 @@ public class ThresherFacesBeanStructureScanner extends FacesBeanStructureScanner
        }finally {
            JMIUtils.endTrans(rollback);
        }
-
+ 
        return body;
+//*/
+       return null;
    }
 
    public String getConstructorComment() {

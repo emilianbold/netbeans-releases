@@ -38,14 +38,6 @@ import org.netbeans.modules.visualweb.insync.ParserAnnotation;
 import org.netbeans.modules.visualweb.insync.SourceUnit;
 import org.netbeans.modules.visualweb.insync.UndoManager;
 import org.netbeans.modules.visualweb.insync.Util;
-import org.netbeans.jmi.javamodel.ErrorInfo;
-import org.netbeans.jmi.javamodel.ErrorTypeEnum;
-import org.netbeans.jmi.javamodel.Import;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
-
-import org.netbeans.modules.javacore.api.JavaModel;
-
 
 /**
  * <p>A SourceUnit that manages a Java source file.</p>
@@ -107,17 +99,18 @@ public class JavaUnit extends SourceUnit {
      * Read the errors in source
      */
     protected void readErrors() {
+/*//NB6.0
         JMIUtils.beginTrans(true);
         try {
             Resource res = JavaModel.getResource(fobj);
             List errorsList = res.getErrors();
             int size = errorsList.size();
-
+ 
             if (size == 0) {
                 errors = ParserAnnotation.EMPTY_ARRAY;
                 return;
             }
-
+ 
             List parserAnnotationsList = new ArrayList();
             for (int i = 0; i < size; i++) {
                 ErrorInfo info = (ErrorInfo)errorsList.get(i);
@@ -128,18 +121,19 @@ public class JavaUnit extends SourceUnit {
                     parserAnnotationsList.add(annotation);
                 }
             }
-
-			// no errors found
+ 
+            // no errors found
             if (parserAnnotationsList.size() == 0) {
                 errors = ParserAnnotation.EMPTY_ARRAY;
                 return;
             }
-
+ 
             errors = new ParserAnnotation[parserAnnotationsList.size()];
             parserAnnotationsList.toArray(errors);
         }finally {
             JMIUtils.endTrans();
         }
+//*/
     }
 
     /**
@@ -193,12 +187,13 @@ public class JavaUnit extends SourceUnit {
     /*
      * Returns the public class in the file JavaUnit represents
      */
-    public JavaClass getJavaClass() {
+    public Object/*TypeElement or ClassType*/ getJavaClass() {
+/*//NB6.0
         // get the resource corresponding to a given file
         JMIUtils.beginTrans(false);
         try {
             Resource res = JavaModel.getResource(fobj);
-
+ 
             // get the public class from the resource
             ListIterator iter = res.getClassifiers().listIterator();
             while(iter.hasNext()) {
@@ -209,12 +204,15 @@ public class JavaUnit extends SourceUnit {
         }finally {
             JMIUtils.endTrans();
         }
-
+ 
+        return null;
+//*/
         return null;
     }
 
 
     public String getPackageName() {
+/*//NB6.0
         JMIUtils.beginTrans(false);
         try {
             Resource resource = getJavaClass().getResource();
@@ -229,6 +227,8 @@ public class JavaUnit extends SourceUnit {
         }finally {
             JMIUtils.endTrans();
         }
+//*/
+        return null;
     }
 
 
@@ -248,7 +248,7 @@ public class JavaUnit extends SourceUnit {
      * @param ident
      * @return
      */
-    public Import addImport(String ident) {
+    public Object/*ImportTree*/ addImport(String ident) {
         return null;
     }
 
@@ -257,7 +257,7 @@ public class JavaUnit extends SourceUnit {
      * @param ident
      * @return The existing or added import
      */
-    public Import ensureImport(String ident) {
+    public Object/*ImportTree*/ ensureImport(String ident) {
         return null;
     }
 

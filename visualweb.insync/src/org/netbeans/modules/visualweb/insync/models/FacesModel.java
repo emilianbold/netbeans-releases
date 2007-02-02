@@ -38,10 +38,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Statement;
-import org.netbeans.modules.javacore.JMManager;
 import org.openide.ErrorManager;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
@@ -768,7 +764,7 @@ public class FacesModel extends Model {
 
         //In case we are reacting to .java file creation but before the file is
         //well formed, we may not be able to get the public class
-        JavaClass javaClass = javaUnit.getJavaClass();
+        Object/*TypeElement or ClassType*/ javaClass = javaUnit.getJavaClass();
         if(javaClass == null) {
             javaUnit.setBusted();
             return;
@@ -1250,7 +1246,7 @@ public class FacesModel extends Model {
      * double clicks on the document itself, not on any of the components on the page.
      **/
     public void openDefaultHandler() {
-        Method m = facesUnit.getInitializerMethod();
+        Object/*ExecutableElement*/ m = facesUnit.getInitializerMethod();
         positionTheCursor(m, false);
     }
 
@@ -1278,7 +1274,7 @@ public class FacesModel extends Model {
         String handlerName = event.getHandlerName();
         
         // now navigate the editor to the body of the newly created method
-        Method m =
+        Object/*ExecutableElement*/ m =
                 beansUnit.getEventMethod(handlerName, event.getEventDescriptor().getListenerMethodDescriptor());
         positionTheCursor(m, inserted);
     }
@@ -1347,7 +1343,8 @@ public class FacesModel extends Model {
      * @param Method 
      * @param boolean indicates if the method is newly added
      */    
-    void positionTheCursor(Method m, boolean inserted) {
+    void positionTheCursor(Object/*ExecutableElement*/ m, boolean inserted) {
+/*//NB6.0
         try {
             int indent = 0;
             
@@ -1402,6 +1399,7 @@ public class FacesModel extends Model {
         catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
+//*/
     }
 
     //--------------------------------------------------------------------------- ModelSet Utilities

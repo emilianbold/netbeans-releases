@@ -32,7 +32,7 @@ import com.sun.rave.designtime.event.DesignContextListener;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.markup.MarkupMouseRegion;
 import org.netbeans.modules.visualweb.insync.FacesDnDSupport;
-import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
+//NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
@@ -1147,6 +1147,7 @@ class JsfForm {
 //                    getPane().getPaneUI().setPageBox(null);
 //                }
                 
+/*//NB6.0
                 // Reconfigure the data object: throw away the old model
                 // and find the new model associated with the new file object.
 //                InSyncServiceProvider.get().doOutsideOfRefactoringSession(new Runnable() {
@@ -1160,6 +1161,7 @@ class JsfForm {
                         });
                     }
                 });
+//*/
             }
         }
     } // End of DataObjectPropertyChangeListener.

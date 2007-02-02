@@ -140,7 +140,7 @@ public class BeansDesignProperty extends SourceDesignProperty {
      * @param value
      * @return
      */
-    protected String toSource(Object value) {
+    protected String toSource(Object value) {        
         boolean isMarkup = isMarkupSource();
         //System.err.println("JLP.toSource: " + liveBean.getInstanceName() + "." + descriptor.getName() + " to:" + value);
         //System.err.println("JLP.toSource: isMarkup:" + isMarkup);
@@ -151,13 +151,15 @@ public class BeansDesignProperty extends SourceDesignProperty {
             // Look locally first as an optimization
             DesignBean lb = liveBean.unit.getBeanForInstance(value);
             
-            //VB expressions cannot be used to refer the properties in the same bean 
+/*//NB6.0
+            //VB expressions cannot be used to refer the properties in the same bean
             //when the initializers are added into the constructor
             //This is required for migrated reef projects
             if((liveBean.unit.getBeansUnit().getPropertiesInitMethod().getName() == null) &&
                lb != null) {
                 return lb.getInstanceName();
             }
+//*/
             
             if(lb == null) {
                 // Now look through all contexts and see if we can find it

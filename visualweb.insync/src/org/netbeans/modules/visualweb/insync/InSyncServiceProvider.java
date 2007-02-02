@@ -51,7 +51,7 @@ import org.netbeans.modules.visualweb.api.insync.JsfJspDataObjectMarker;
 import com.sun.rave.designtime.DesignProject;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.insync.faces.ElAttrUpdater;
-import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
+//NB6.0 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
 import org.netbeans.modules.visualweb.insync.jsf.SourceMonitor;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupVisitor;
@@ -133,7 +133,7 @@ public class InSyncServiceProvider extends InSyncService {
     }
     
     public void doOutsideOfRefactoringSession(Runnable runnable) {
-        MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(runnable);
+        //NB6.0 MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(runnable);
     }
     
     public String getBeanNameForJsp(FileObject fileObject) {

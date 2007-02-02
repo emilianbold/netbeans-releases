@@ -77,7 +77,7 @@ import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
-import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
+//NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
 import org.netbeans.modules.visualweb.insync.models.ConfigModel;
 
 /**
@@ -982,7 +982,7 @@ public abstract class ModelSet implements FileChangeListener {
         // Do this outside of refactoring session, as we cannot guarantee when the Java or the JSP file will be
         // "added", this way we wait until everything is done and we have all the files already moved prior
         // to building the models
-        
+/*//NB6.0
         MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(new Runnable() {
             public void run() {
                 ModelCreateVisitor visitor = new ModelCreateVisitor();
@@ -1005,6 +1005,7 @@ public abstract class ModelSet implements FileChangeListener {
                 }
             }
         });
+//*/
     }
     
     public void fileDeleted (final FileEvent event) {
@@ -1022,6 +1023,7 @@ public abstract class ModelSet implements FileChangeListener {
             models.remove(model.getFile());
         }
         final Model finalModel = model;
+/*//NB6.0
         MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(new Runnable() {
             public void run() {
                 // There are some elements that get refreshed that assume they are on UI thread
@@ -1032,6 +1034,7 @@ public abstract class ModelSet implements FileChangeListener {
                 });
             }
         });
+ //*/
     }
     
     public void fileRenamed(final FileRenameEvent event) {
@@ -1044,6 +1047,7 @@ public abstract class ModelSet implements FileChangeListener {
         final boolean needToRemove = getLocalFileObject(fileObject) == null ? true : false;
         final Model[] models = getModels();
         final Model[] configModels = getConfigModels();
+/*//NB6.0
         MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(new Runnable() {
             public void run() {
                 for (int i=0; i < models.length; i++) {
@@ -1056,6 +1060,7 @@ public abstract class ModelSet implements FileChangeListener {
                 }
             }
         });
+//*/
     }
     
     private /*static*/ class ModelSetOperationListener implements OperationListener {

@@ -25,7 +25,7 @@
         </path>
         
         <path id="jsf.jars">
-            <pathelement location="${netbeans.dest.dir}/ide7/modules/ext/commons-logging-1.0.4.jar"/>
+            <pathelement location="${netbeans.dest.dir}/ide8/modules/ext/commons-logging-1.0.4.jar"/>
             <pathelement location="${cluster}/modules/ext/commons-collections.jar"/>
             <pathelement location="${netbeans.dest.dir}/enterprise2/modules/ext/servlet-api-2.4.jar"/>
             <pathelement location="${cluster}/modules/ext/jsp-api.jar"/>

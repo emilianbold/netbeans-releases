@@ -35,8 +35,6 @@ import com.sun.rave.designtime.markup.AttributeDescriptor;
 import com.sun.rave.designtime.markup.MarkupPosition;
 import org.netbeans.modules.visualweb.insync.beans.Bean;
 import org.netbeans.modules.visualweb.insync.beans.Property;
-import org.netbeans.jmi.javamodel.Field;
-import org.netbeans.jmi.javamodel.Method;
 
 /**
  * Abstract superclass for a Bean that may have entries in markup source as well as Java source
@@ -62,8 +60,8 @@ public abstract class MarkupBean extends Bean {
      * @param getter
      * @param setter
      */
-    public MarkupBean(FacesPageUnit unit, BeanInfo beanInfo, String name, Field field, Method getter,
-                      Method setter, Element element) {
+    public MarkupBean(FacesPageUnit unit, BeanInfo beanInfo, String name, Object/*VariableElement*/ field, Object/*ExecutableElement*/ getter,
+                      Object/*ExecutableElement*/ setter, Element element) {
         super(unit, beanInfo, name, field, getter, setter);
         this.element = element;
         children = isParentCapableBean(beanInfo) ? new ArrayList() : null;

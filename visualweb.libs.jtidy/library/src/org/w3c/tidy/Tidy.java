@@ -1794,7 +1794,9 @@ public class Tidy implements java.io.Serializable {
                     continue;
                 }
                 String entity = unexpanded.substring(begin, end);
-                int e = org.apache.xml.serialize.HTMLdtd.charFromName(entity);
+                
+                //NB60 Talk to Peter Zavadsky
+                int e = com.sun.org.apache.xml.internal.serialize.HTMLdtd.charFromName(entity);
                 if (e == -1) {
                     sb.append('&'); // browsers show the &
                     continue;

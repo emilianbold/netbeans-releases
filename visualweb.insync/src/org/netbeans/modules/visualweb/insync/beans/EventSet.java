@@ -31,17 +31,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
-import org.netbeans.jmi.javamodel.CallableFeature;
-import org.netbeans.jmi.javamodel.ClassDefinition;
-import org.netbeans.jmi.javamodel.Expression;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.MethodInvocation;
-import org.netbeans.jmi.javamodel.MultipartId;
-import org.netbeans.jmi.javamodel.NewClassExpression;
-import org.netbeans.jmi.javamodel.PrimaryExpression;
-import org.netbeans.jmi.javamodel.Statement;
-import org.netbeans.jmi.javamodel.StatementBlock;
-import org.netbeans.jmi.javamodel.VariableAccess;
 
 /**
  * Representation of a wiring for a single event listener, which maps to a single add*Listener
@@ -59,7 +48,7 @@ public class EventSet extends BeansNode {
     final protected ArrayList events = new ArrayList();
 
     // Java source-based event set fields
-    Statement stmt;
+    Object/*StatementTree*/ stmt;
     JavaClassAdapter adapterClass;
 
     //--------------------------------------------------------------------------------- Construction
@@ -82,8 +71,8 @@ public class EventSet extends BeansNode {
      *
      * @param beansUnit
      */
-    protected EventSet(Bean bean, EventSetDescriptor descriptor, Statement stmnt,
-                        ClassDefinition adapter) {
+    protected EventSet(Bean bean, EventSetDescriptor descriptor, Object/*StatementTree*/ stmnt,
+                        Object/*TypeElement*/ adapter) {
         this(bean, descriptor);
         this.stmt = stmnt;
         this.adapterClass = new JavaClassAdapter(unit.getJavaUnit(), adapter);
@@ -106,7 +95,8 @@ public class EventSet extends BeansNode {
      * @param s
      * @return the new bound event set if bindable, else null
      */
-    static EventSet newBoundInstance(BeansUnit unit, Statement s) {
+    static EventSet newBoundInstance(BeansUnit unit, Object/*StatementTree*/ s) {
+/*//NB6.0
         // statement must be an exec (execute expression)
         JMIUtils.beginTrans(false);
         try {
@@ -136,6 +126,8 @@ public class EventSet extends BeansNode {
         }finally {
             JMIUtils.endTrans();
         }
+ //*/
+        return null;
     }
 
     /**
@@ -155,7 +147,7 @@ public class EventSet extends BeansNode {
      * @param m
      * @return
      */
-    protected Event newBoundEvent(MethodDescriptor md, Method m) {
+    protected Event newBoundEvent(MethodDescriptor md, Object/*ExecutableElement*/ m) {
         return Event.newBoundInstance(this, md, m);
     }
 
@@ -163,6 +155,7 @@ public class EventSet extends BeansNode {
      * Scan our descriptor's methods and create individual events that match
      */
     protected void bindEvents() {
+/*//NB6.0
         MethodDescriptor[] lmds = descriptor.getListenerMethodDescriptors();
         for (int i = 0; i < lmds.length; i++) {
             Method m = adapterClass.getMethod(lmds[i].getName(), 
@@ -173,9 +166,11 @@ public class EventSet extends BeansNode {
                     events.add(e);
             }
         }
+ //*/
     }
 
-    protected Method stubDelegatorMethod(MethodDescriptor mdescr) {
+    protected Object/*ExecutableElement*/ stubDelegatorMethod(MethodDescriptor mdescr) {
+/*//NB6.0
         Class retType = mdescr.getMethod().getReturnType();
         
         // now add parameter(s)
@@ -191,26 +186,33 @@ public class EventSet extends BeansNode {
                 new org.netbeans.modules.visualweb.insync.java.MethodInfo(mdescr.getName(), retType, Modifier.PUBLIC, 
                 pns, pts, body, null);        
         return (Method)adapterClass.addMethod(info);
+ //*/
+        return null;
     }
 
-    private void stubBody(Method method) {
+    private void stubBody(Object/*ExecutableElement*/ method) {
+/*//NB6.0
         String body = null;
         if (!method.getType().equals("void")) {
             body = "return null;";
         }
         
         JMIMethodUtils.replaceMethodBody(method, body);
+ //*/
     }
 
-    protected Method getDelegatorMethod(MethodDescriptor mdescr) {
+    protected Object/*ExecutableElement*/ getDelegatorMethod(MethodDescriptor mdescr) {
+/*//NB6.0
         Method delegate = adapterClass.getMethod(mdescr.getMethod().getName(), 
                 mdescr.getMethod().getParameterTypes());
         if (delegate == null)
             delegate = stubDelegatorMethod(mdescr);
         return delegate;
+ //*/
+        return null;
     }
 
-    protected void removeDelegatorMethod(Method delegator) {
+    protected void removeDelegatorMethod(Object/*ExecutableElement*/ delegator) {
         Class atype = getAdapterType();
         if (atype != null) {
             adapterClass.removeMethod(delegator);
@@ -224,6 +226,7 @@ public class EventSet extends BeansNode {
      * Insert the stub source entry for this EventSet
      */
     protected void insertEntry() {
+/*//NB6.0
         JMIUtils.beginTrans(true);
         boolean rollback = true;
         try {
@@ -254,6 +257,7 @@ public class EventSet extends BeansNode {
         }finally {
             JMIUtils.endTrans(rollback);
         }
+ //*/
     }
 
     /**
@@ -276,6 +280,7 @@ public class EventSet extends BeansNode {
         assert Trace.trace("insync.beans", "ES.removeEntry: " + this);
         events.clear();
         boolean retVal = false;
+/*//NB6.0
         JMIUtils.beginTrans(true);
         boolean rollback = true;
         try {
@@ -296,7 +301,7 @@ public class EventSet extends BeansNode {
         }finally {
             JMIUtils.endTrans(rollback);
         }
-        
+//*/
         return retVal;        
     }
 

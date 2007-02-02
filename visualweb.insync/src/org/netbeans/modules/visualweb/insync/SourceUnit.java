@@ -48,7 +48,7 @@ import org.openide.cookies.SaveCookie;
 
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.netbeans.modules.visualweb.insync.Unit.State;
-import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
+//NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
 
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileEvent;
@@ -167,6 +167,7 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
     public void propertyChange(PropertyChangeEvent event) {
         if (EditorCookie.Observable.PROP_DOCUMENT.equals(event.getPropertyName())) {
             if (event.getNewValue() == null) {
+/*//NB6.0
             	// Bug Fix # 6473201 llegalStateException, When renaming a page
             	// When a document (e.g. managed-beans.xml) is reloaded during refactoring
             	// do not set the source dirty. The changes to the model will be flushed
@@ -174,6 +175,7 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
             	if (!MdrInSyncSynchronizer.get().isRefactoringSessionInProgress()) {
             		setSourceDirty();
             	}
+ //*/
                 releaseDocument();
             }
             if ((event.getNewValue() != null) && (event.getOldValue() == null)){

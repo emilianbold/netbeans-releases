@@ -34,7 +34,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import org.netbeans.jmi.javamodel.StatementBlock;
 
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
@@ -47,12 +46,6 @@ import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.Unit;
 import org.netbeans.modules.visualweb.insync.java.JavaUnit;
 import org.netbeans.modules.visualweb.insync.java.ClassUtil;
-import org.netbeans.jmi.javamodel.CallableFeature;
-import org.netbeans.jmi.javamodel.Field;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Statement;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.jmi.javamodel.JavaClass;
 
 /**
  * An abstract compilation Unit that represents a single outer (or 'this' or 'root') JavaBean class
@@ -262,6 +255,7 @@ public class BeansUnit implements Unit {
      * Bind beans & their properties, events and parents
      */
     protected void bind() {
+/*//NB6.0
         bindBeans();
         StatementBlock[] blocks = getInitBlocks();
         for(int i = 0; i < blocks.length; i++) {
@@ -269,6 +263,7 @@ public class BeansUnit implements Unit {
             bindEventSets(blocks[i]);
         }
         bindBeanParents();
+//*/
     }
 
     //---------------------------------------------------------------------------------- Unit Output
@@ -420,8 +415,8 @@ public class BeansUnit implements Unit {
     /**
      * Return a new Bean instance bound to an existing field, getter & setter
      */
-    protected Bean newBoundBean(BeanInfo beanInfo, String name, Field field, 
-            Method getter, Method setter) {
+    protected Bean newBoundBean(BeanInfo beanInfo, String name, Object/*VariableElement*/ field, 
+            Object/*ExecutableElement*/ getter, Object/*ExecutableElement*/ setter) {
          return new Bean(this, beanInfo, name, field, getter, setter);
     }
 
@@ -463,6 +458,7 @@ public class BeansUnit implements Unit {
      * Run a second parent-child wiring pass
      */
     protected void bindBeans() {
+/*//NB6.0
         beans.clear();
         try {
             JMIUtils.beginTrans(false);
@@ -476,6 +472,7 @@ public class BeansUnit implements Unit {
         }finally {
             JMIUtils.endTrans();
         }
+ //*/
    }
 
    /**
@@ -496,7 +493,8 @@ public class BeansUnit implements Unit {
      * @param field
      * @return the new bound bean if bindable, else null
      */
-    protected Bean bindBean(Method getter) {
+    protected Bean bindBean(Object/*ExecutableElement*/ getter) {
+/*//NB6.0
         // can't be abstract or static, and must be public
         long modifiers = getter.getModifiers();
         if ((modifiers & (Modifier.ABSTRACT | Modifier.STATIC)) != 0
@@ -517,7 +515,7 @@ public class BeansUnit implements Unit {
         String type = getter.getResultType().getSymbol().getFullNameWithDims();
         if (type == null || type.equals("void"))  //NOI18N
             return null;
-         **/
+         ** /
 
         // must have a getXxx style name (or isXxx for boolean)
         String name = Naming.propertyName(getter.getName(), type.getName().equals("boolean"));
@@ -576,20 +574,23 @@ public class BeansUnit implements Unit {
         }
 
         return null;
+ //*/
+        return null;
     }
 
     /**
      * @param s
      * @return
      */
-    protected Property newBoundProperty(Statement s) {
+    protected Property newBoundProperty(Object/*StatementTree*/ s) {
         return Property.newBoundInstance(this, s);
     }
 
     /**
      *
      */
-    protected void bindProperties(StatementBlock block) {
+    protected void bindProperties(Object/*BlockTree*/  block) {
+/*//NB6.0
         if (block != null) {
             List statements = block.getStatements();
             ListIterator listIter = statements.listIterator();
@@ -605,6 +606,7 @@ public class BeansUnit implements Unit {
                 }
             }
         }
+ //*/
     }
 
     /**
@@ -614,14 +616,15 @@ public class BeansUnit implements Unit {
      * @param s
      * @return
      */
-    protected EventSet newBoundEventSet(Statement s) {
+    protected EventSet newBoundEventSet(Object/*StatementTree*/  s) {
         return EventSet.newBoundInstance(this, s);
     }
 
     /**
      * Scan the init block statements and create matching EventSets and register with their beans
      */
-    protected void bindEventSets(StatementBlock block) {
+    protected void bindEventSets(Object/*BlockTree*/ block) {
+/*//NB6.0
         if (block != null) {
             List statements = block.getStatements();
             ListIterator listIter = statements.listIterator();
@@ -636,6 +639,7 @@ public class BeansUnit implements Unit {
                 }
             }
         }
+ //*/
     }
 
     //------------------------------------------------------------------------------------ Accessors
@@ -704,21 +708,21 @@ public class BeansUnit implements Unit {
     /**
      * @return
      */
-    public StatementBlock[] getInitBlocks() {
+    public Object/*BlockTree*/[]  getInitBlocks() {
         return getBeanStructureScanner().getPropertiesInitBlocks();
     }
 
     /**
      * @return
      */
-    public StatementBlock getPropertiesInitBlock() {
+    public Object/*BlockTree*/ getPropertiesInitBlock() {
         return getBeanStructureScanner().getPropertiesInitBlock();
     }
     
     /**
      * @return
      */
-    public CallableFeature getPropertiesInitMethod() {
+    public Object/*ExecutableElement*/ getPropertiesInitMethod() {
         return getBeanStructureScanner().getPropertiesInitMethod();
     }
     
@@ -726,14 +730,14 @@ public class BeansUnit implements Unit {
     /**
      * @return
      */
-    public StatementBlock getCleanupBlock() {
+    public Object/*BlockTree*/ getCleanupBlock() {
         return getBeanStructureScanner().getDestroyBlock();
     }
     
     /**
      * @return
      */
-    public Method getCleanupMethod() {
+    public Object/*ExecutableElement*/ getCleanupMethod() {
         return getBeanStructureScanner().getDestroyMethod();
     }
 
@@ -873,11 +877,14 @@ public class BeansUnit implements Unit {
      * @param name
      * @return
      */
-    public Method getEventMethod(String name, MethodDescriptor md) {
+    public Object/*ExecutableElement*/ getEventMethod(String name, MethodDescriptor md) {
+/*//NB6.0
         Class[] pts = md.getMethod().getParameterTypes();
         Method m = javaClass.getMethod(name, pts);
         assert Trace.trace("insync.beans", "BU.getEventMethod name:" + name + " null");  //NOI18N
         return m;
+//*/
+        return null;
     }
 
     /**
@@ -886,7 +893,7 @@ public class BeansUnit implements Unit {
      * @param name
      * @return
      */
-    public Method getInitializerMethod() {
+    public Object/*ExecutableElement*/ getInitializerMethod() {
         return javaClass.getMethod("init", new Class[0]);
     }
     
@@ -910,7 +917,7 @@ public class BeansUnit implements Unit {
      * @param name  The name of the metod to find or create.
      * @return The existing or newly created method.
      */
-    public  Method ensureEventMethod(MethodDescriptor md, String name, String defaultBody, 
+    public Object/*ExecutableElement*/ ensureEventMethod(MethodDescriptor md, String name, String defaultBody, 
              String[] parameterNames, String[] requiredImports) {
         return getBeanStructureScanner().ensureEventMethod(md, name, defaultBody, 
                 parameterNames, requiredImports);

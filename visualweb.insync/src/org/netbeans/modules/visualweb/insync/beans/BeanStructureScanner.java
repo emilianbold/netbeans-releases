@@ -26,19 +26,12 @@ import java.beans.MethodDescriptor;
 import java.io.File;
 import java.util.List;
 import java.util.ListIterator;
-import org.netbeans.jmi.javamodel.CallableFeature;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Statement;
-import org.netbeans.jmi.javamodel.StatementBlock;
-import org.netbeans.jmi.javamodel.TryStatement;
-import org.netbeans.jmi.javamodel.TypeReference;
 
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.netbeans.modules.visualweb.insync.java.JMIUtils;
 import java.lang.reflect.Modifier;
-import org.netbeans.jmi.javamodel.Field;
 
 /**
  * Manage the methods, fields and such that should be defined for the bean described by my model.
@@ -80,7 +73,8 @@ public class BeanStructureScanner {
     /**
     *
     */
-   protected StatementBlock ensureInitBlock(MethodInfo mi) {
+   protected Object/*BlockTree*/ ensureInitBlock(MethodInfo mi) {
+/*//NB6.0
        UndoEvent event = null;
        try {
            String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureInitBlock"); //NOI18N
@@ -119,6 +113,8 @@ public class BeanStructureScanner {
                beansUnit.getModel().writeUnlock(event);
            }
        }
+ //*/
+       return null;
    }
 
     /**
@@ -134,9 +130,10 @@ public class BeanStructureScanner {
      * @param requiredImports An array of classes to be imported, or null to import nothing
      * @return The existing or newly created method.
      */
-    public  Method ensureEventMethod(MethodDescriptor md, String name, 
+    public  Object/*ExecutableElement*/ ensureEventMethod(MethodDescriptor md, String name, 
                                     String defaultBody, String[] parameterNames,
                                     String[] requiredImports) {
+/*// NB6.0
         Class retType = md.getMethod().getReturnType();
         String body = defaultBody;
         if(defaultBody == null) {
@@ -181,6 +178,8 @@ public class BeanStructureScanner {
                 beansUnit.getModel().writeUnlock(event);
             }
         }
+ //*/
+        return null;
     }
 
     /**
@@ -199,19 +198,22 @@ public class BeanStructureScanner {
         }
     }
 
-   protected StatementBlock ensureBlock(MethodInfo mi) {
-       return mi.getMethod().getBody();
+   protected Object/*BlockTree*/ ensureBlock(MethodInfo mi) {
+//NB60        return mi.getMethod().getBody();
+       return null;
    }   
 
     /**
     *
     */
-   protected StatementBlock ensurePropertiesInitBlock() {
-       return getPropertiesInitMethod().getBody();
+   protected Object/*BlockTree*/ ensurePropertiesInitBlock() {
+//NB60        return getPropertiesInitMethod().getBody();
+       return null;
    }
 
    
-   protected CallableFeature ensureMethod(Object location, MethodInfo mi) {
+   protected Object/*ExecutableElement*/ ensureMethod(Object location, MethodInfo mi) {
+/*//NB6.0
         org.netbeans.modules.visualweb.insync.java.MethodInfo info = 
                 new org.netbeans.modules.visualweb.insync.java.MethodInfo(mi.getName(), 
                 mi.getReturnType(), mi.getModifiers(), null, null, 
@@ -235,6 +237,8 @@ public class BeanStructureScanner {
             }
         }
         return cf;
+ //*/
+        return null;
     }
 
    /**
@@ -242,7 +246,8 @@ public class BeanStructureScanner {
     * 
     * @return
     */
-    protected CallableFeature ensureMethods() {
+    protected Object/*ExecutableElement*/ ensureMethods() {
+/*//NB6.0
         CallableFeature m = null;
         MethodInfo[] methodInfos = getMethodInfos();
         for(int i = 0;i < methodInfos.length; i++) {
@@ -259,12 +264,15 @@ public class BeanStructureScanner {
         }
             
         return m;
+ //*/
+        return null;
     }
     
     /**
      * TODO: We need to change how this region is created.
      */
-    protected Field ensurePropertyRegion() {
+    protected Object/*VariableElement*/ ensurePropertyRegion() {
+/*//NB6.0
         JavaClassAdapter javaClass = beansUnit.getThisClass();
         UndoEvent event = null;
         try {
@@ -292,6 +300,8 @@ public class BeanStructureScanner {
                 beansUnit.getModel().writeUnlock(event);
             }
         }
+ //*/
+        return null;
     }
     
 
@@ -376,6 +386,7 @@ public class BeanStructureScanner {
        try {
            String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureXrefAccessor"); //NOI18N
            event = beansUnit.getModel().writeLock(eventName);
+/*//NB6.0
            boolean rollback = true;
            try {
                JMIUtils.beginTrans(true);
@@ -392,6 +403,7 @@ public class BeanStructureScanner {
            }finally {
                JMIUtils.endTrans(rollback);
            }
+ //*/
        }finally {
            if(event != null) {
                beansUnit.getModel().writeUnlock(event);
@@ -402,43 +414,50 @@ public class BeanStructureScanner {
    /**
     * Finds a possibly existing cross-reference accessor to a sibling bean
     */
-   protected Method findXRefAccessor(String name) {
-       return beansUnit.getThisClass().getMethod("get" + name, new Class[] {}); //NOI18N
+   protected Object/*ExecutableElement*/  findXRefAccessor(String name) {
+//NB60        return beansUnit.getThisClass().getMethod("get" + name, new Class[] {}); //NOI18N
+       return null;
    }
 
-   public StatementBlock getPropertiesInitBlock() {
-       return propertiesInitInfo.getBlock();
+   public Object/*BlockTree*/ getPropertiesInitBlock() {
+//NB60        return propertiesInitInfo.getBlock();
+       return null;
    }
    
    public String getComment(String id) {
        return NbBundle.getMessage(BeanStructureScanner.class, id);
    }
    
-   public CallableFeature getConstructorMethod() {
-       return ctorInfo.getMethod();
+   public Object/*ExecutableElement*/ getConstructorMethod() {
+//NB60        return ctorInfo.getMethod();
+       return null;
    }
    
-   public CallableFeature getPropertiesInitMethod() {
-       return propertiesInitInfo.getMethod();
-   }
-   
-   /**
-    * @return
-    */
-   public StatementBlock getDestroyBlock() {
-       return destroyInfo.getBlock();
+   public Object/*ExecutableElement*/ getPropertiesInitMethod() {
+//NB60        return propertiesInitInfo.getMethod();
+       return null;
    }
    
    /**
     * @return
     */
-   public Method getDestroyMethod() {
-       return beansUnit.getThisClass().getMethod(destroyInfo.getName(), new Class[]{});
+   public Object/*BlockTree*/ getDestroyBlock() {
+//NB60        return destroyInfo.getBlock();
+       return null;
+   }
+   
+   /**
+    * @return
+    */
+   public Object/*ExecutableElement*/ getDestroyMethod() {
+//NB60        return beansUnit.getThisClass().getMethod(destroyInfo.getName(), new Class[]{});
+       return null;
    }
    
 
-   public StatementBlock[] getPropertiesInitBlocks() {
-       return new StatementBlock[]{propertiesInitInfo.getBlock()};
+   public Object/*BlockTree*/[] getPropertiesInitBlocks() {
+//NB60        return new StatementBlock[]{propertiesInitInfo.getBlock()};
+       return null;
    }    
 
     public JavaUnit getJavaUnit() {
@@ -460,9 +479,11 @@ public class BeanStructureScanner {
      * @param name
      */
     public void removeXRefAccessor(String name) {
+/*//NB6.0
         Method m = findXRefAccessor(name);
         if (m != null)
             beansUnit.getThisClass().removeMethod(m);
+ //*/
     }
 
     public void scan() {
@@ -488,8 +509,8 @@ public class BeanStructureScanner {
        String name, comment, ensureMethodName, exception;
        Class retType;
        int modifiers;
-       CallableFeature method;
-       StatementBlock block;
+       Object/*ExecutableElement*/ method;
+       Object/*BlockTree*/ block;
        
        public MethodInfo(String name, int modifiers, Class retType, String comment, String ensureMethodName, String exception) {
            this.retType = retType;
@@ -528,15 +549,17 @@ public class BeanStructureScanner {
            return exception;
        }
 
-       public StatementBlock getBlock() {
-           return method.getBody();
+       public Object/*BlockTree*/ getBlock() {
+//NB60            return method.getBody();
+           return null;
        }
        
-       public CallableFeature getMethod() {
-           return method;
+       public Object/*ExecutableElement*/ getMethod() {
+//NB60            return method;
+           return null;
        }
        
-       public void setMethod(CallableFeature method) {
+       public void setMethod(Object/*ExecutableElement*/ method) {
            this.method = method;
        }
 

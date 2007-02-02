@@ -29,7 +29,6 @@ import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.jmi.javamodel.Statement;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
@@ -42,8 +41,7 @@ import org.netbeans.modules.visualweb.insync.java.JMIRefactor.MethodInvocationRe
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
-import org.netbeans.jmi.javamodel.Field;
-import org.netbeans.jmi.javamodel.Method;
+
 
 /**
  * Representation of a JavaBean instance field within our outer host BeansUnit being built. Initial
@@ -64,9 +62,9 @@ public class Bean extends BeansNode {
     protected final ArrayList eventSets = new ArrayList();
 
     private String name;
-    private Field field;
-    private Method getter;
-    private Method setter;
+    private Object/*VariableElement*/  field;
+    private Object/*ExecutableElement*/ getter;
+    private Object/*ExecutableElement*/ setter;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -93,7 +91,7 @@ public class Bean extends BeansNode {
      * @param setter
      */
     protected Bean(BeansUnit unit, BeanInfo beanInfo, String name,
-            Field field, Method getter, Method setter) {
+            Object/*VariableElement*/ field, Object/*ExecutableElement*/ getter, Object/*ExecutableElement*/ setter) {
         this(unit, beanInfo, name);
         this.field = field;
         this.getter = getter;
@@ -107,6 +105,7 @@ public class Bean extends BeansNode {
      * @param after existing bean that this bean's entries will be added after
      */
     public void insertEntry(Bean after) {
+/*//NB6.0
         Class typec = beanInfo.getBeanDescriptor().getBeanClass();
         JMIUtils.beginTrans(true);
         boolean rollback = true;
@@ -133,6 +132,7 @@ public class Bean extends BeansNode {
         }finally {
             JMIUtils.endTrans(rollback);
         }
+ //*/
     }
 
     /**
@@ -142,6 +142,7 @@ public class Bean extends BeansNode {
      * @return true iff the source entry for this bean was actually removed.
      */
     protected boolean removeEntry() {
+/*//NB6.0
         assert Trace.trace("insync.beans", "B.removeEntry: " + this);
         boolean removed = false;
         for (Iterator i = properties.iterator(); i.hasNext(); ) {
@@ -177,6 +178,8 @@ public class Bean extends BeansNode {
         getter = setter = null;
 
         return removed;
+ //*/
+        return false;
     }
 
     /**
@@ -284,7 +287,7 @@ public class Bean extends BeansNode {
     /**
      * @return the underlying field for this bean, null if dead.
      */
-    public Field getField() {
+    public Object/*VariableElement*/ getField() {
         return field;
     }
 

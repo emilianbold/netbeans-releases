@@ -26,17 +26,6 @@ import java.beans.PropertyDescriptor;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.jmi.javamodel.CallableFeature;
-import org.netbeans.jmi.javamodel.Element;
-import org.netbeans.jmi.javamodel.Expression;
-import org.netbeans.jmi.javamodel.ExpressionStatement;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.MethodInvocation;
-import org.netbeans.jmi.javamodel.MultipartId;
-import org.netbeans.jmi.javamodel.PrimaryExpression;
-import org.netbeans.jmi.javamodel.Statement;
-import org.netbeans.jmi.javamodel.StatementBlock;
-import org.netbeans.jmi.javamodel.VariableAccess;
 
 /**
  * Representation of a single property setting on our parent bean, which maps to a single property
@@ -51,8 +40,8 @@ public class Property extends BeansNode {
     final PropertyDescriptor descriptor;
 
     // Java source-based property fields
-    Statement stmt;
-    Expression valueExpr;
+    Object/*StatementTree*/ stmt;
+    Object/*ExpressionTree*/ valueExpr;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -75,7 +64,7 @@ public class Property extends BeansNode {
      * @param beansUnit
      */
     private Property(Bean bean, PropertyDescriptor descriptor,
-            Statement stmnt, Expression valueExpr
+            Object/*StatementTree*/ stmnt, Object/*ExpressionTree*/ valueExpr
                      ) {
         this(bean, descriptor, false);
         this.stmt = stmnt;
@@ -84,23 +73,26 @@ public class Property extends BeansNode {
     }
 
 
-    static protected MethodInvocation getExpression
-            (BeansUnit unit, Statement s) {
+    static protected Object/*MethodInvocationTree*/ getExpression
+            (BeansUnit unit, Object/*StatementTree*/ s) {
+/*//NB6.0
         if(!(s instanceof ExpressionStatement))
             return null;
         ExpressionStatement exStmt = (ExpressionStatement)s;
-
+ 
         if(!(exStmt.getExpression() instanceof MethodInvocation))
             return null;
         MethodInvocation mExpr = (MethodInvocation)exStmt.getExpression();
-
+ 
         if(mExpr.getParameters().size() > 1)
             return null;
-
+ 
         PrimaryExpression pExpr = mExpr.getParentClass();
         if(pExpr == null && !(pExpr instanceof VariableAccess))
             return null;
-        return mExpr;
+        return mExpr; 
+//*/
+        return null;
     }
 
     /**
@@ -109,7 +101,8 @@ public class Property extends BeansNode {
      * @param s
      * @return the new bound property if bindable, else null
      */
-    static protected Property newBoundInstance(BeansUnit unit, Statement s) {
+    static protected Property newBoundInstance(BeansUnit unit, Object/*StatementTree*/ s) {
+/*//NB6.0
         JMIUtils.beginTrans(false);
         try {
             MethodInvocation mExpr = getExpression(unit, s);
@@ -129,12 +122,14 @@ public class Property extends BeansNode {
             PropertyDescriptor pd = bean.getPropertyDescriptorForSetter(mname);
             if (pd == null)
                 return null;
-
+ 
             return new Property(bean, pd, s,
                     (Expression) mExpr.getParameters().get(0));
         }finally {
             JMIUtils.endTrans();
-        }
+        } 
+//*/
+        return null;
     }
 
     /**
@@ -152,6 +147,7 @@ public class Property extends BeansNode {
      * Insert this property's statement into the init method. 
      */
     protected void insertEntry() {
+/*//NB6.0
         JMIUtils.beginTrans(true);
         boolean rollback = true;
         try {
@@ -162,8 +158,9 @@ public class Property extends BeansNode {
         }finally {
             JMIUtils.endTrans(rollback);
         }
-
+ 
         // Args are added in setValue()
+//*/
     }
 
     /**
@@ -172,7 +169,8 @@ public class Property extends BeansNode {
      * 
      * @return true iff the source entry for this property was actually removed.
      */
-    protected boolean removeEntry() {
+    protected boolean removeEntry() {        
+/*//NB6.0
         boolean retVal = false;
         JMIUtils.beginTrans(true);
         boolean rollback = true;
@@ -194,10 +192,12 @@ public class Property extends BeansNode {
         }finally {
             JMIUtils.endTrans(rollback);
         }
-        
+ 
         if(retVal)
             stmt = null;
-        return retVal;
+        return retVal; 
+//*/
+        return false;
     }
 
     //------------------------------------------------------------------------------------ Accessors
@@ -248,24 +248,28 @@ public class Property extends BeansNode {
      * default, but may be returned in other forms by subclasses.
      */
     public String getValueSource() {
+/*//NB6.0
         JMIUtils.beginTrans(false);
         try {
             if(unit.getJavaUnit() != null) {
                 valueExpr = getValueExpression();
                 JavaClass jCls = unit.getJavaUnit().getJavaClass();
-                return valueExpr != null ? JMIExpressionUtils.getArgumentSource( 
+                return valueExpr != null ? JMIExpressionUtils.getArgumentSource(
                         valueExpr) : null;
             }
             return null;
         }finally {
             JMIUtils.endTrans();
-        }
+        } 
+//*/
+        return null;
     }
 
     /**
      * Set the value of this property, creating the call arg expression of the appropriate type
      */
     public void setValue(Object value, String valueSource) {
+/*//NB6.0
         CallableFeature method = unit.getPropertiesInitMethod();
         JMIUtils.beginTrans(true);
         boolean rollback = true;
@@ -273,7 +277,7 @@ public class Property extends BeansNode {
             int startPos = -1;
             int endPos = -1;
             MethodInvocation mExpr = getMethodInvocation();
-            
+ 
             if(mExpr != null) {
                 List l = mExpr.getParameters();
                 if(l.size() == 0) {
@@ -285,7 +289,7 @@ public class Property extends BeansNode {
                     endPos = mExpr.getEndOffset()-1;
                 }
             }
-            
+ 
             int methStartPos = method.getBody().getStartOffset()+1;
             String bodyText = method.getBodyText();
             String body = bodyText.substring(1, startPos-methStartPos);
@@ -296,10 +300,12 @@ public class Property extends BeansNode {
         }finally {
             JMIUtils.endTrans(rollback);
         }
+//*/
     }
     
-    MethodInvocation getMethodInvocation() {
-        JMIUtils.beginTrans(false);       
+    Object/*MethodInvocationTree*/ getMethodInvocation() {
+/*//NB6.0
+        JMIUtils.beginTrans(false);
         try {
             StatementBlock[] blocks = unit.getInitBlocks();
             for (int i = 0; i < blocks.length; i++) {
@@ -307,22 +313,25 @@ public class Property extends BeansNode {
                         blocks[i],
                         descriptor.getWriteMethod().getName(), bean.getName());
                 if (stmt != null) {
-                    ExpressionStatement exStmt = 
+                    ExpressionStatement exStmt =
                             (ExpressionStatement)stmt;
-                    
+ 
                     MethodInvocation mExpr =
                             (MethodInvocation)exStmt.getExpression();
                     return mExpr;
                 }
-            }            
+            }
         } finally {
             JMIUtils.endTrans();
         }
-        
+ 
+        return null;
+//*/
         return null;
     }
     
-    Expression getValueExpression() {
+    Object/*ExpressionTree*/ getValueExpression() {
+/*//NB6.0
         MethodInvocation mExpr = getMethodInvocation();
         if (mExpr == null) {
             return null;
@@ -332,6 +341,8 @@ public class Property extends BeansNode {
             return (Expression)params.get(0);
         else
             return null;
+//*/
+        return null;
     }
 
     /**

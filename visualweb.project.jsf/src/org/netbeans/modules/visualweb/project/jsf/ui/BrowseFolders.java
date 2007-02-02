@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
@@ -194,7 +195,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
              // Try to find the node
              for ( int i = 0; i < nodes.length; i++ ) {            
                 try { 
-                    sel = NodeOp.findPath( nodes[i], new StringTokenizer( preselectedFileName, "/" ) );
+                    sel = NodeOp.findPath( nodes[i], (Enumeration) new StringTokenizer( preselectedFileName, "/" ) );
                     break;
                 }
                 catch ( NodeNotFoundException e ) {            

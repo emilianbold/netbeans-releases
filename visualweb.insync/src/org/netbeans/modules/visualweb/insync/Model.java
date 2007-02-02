@@ -19,11 +19,10 @@
 package org.netbeans.modules.visualweb.insync;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javacore.JMManager;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
-import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
+//NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
 
 /**
  * General Model abstraction. A Model is a wrapper for one or more Units and serves to bootstrap the
@@ -185,16 +184,9 @@ public abstract class Model implements SourceUnitListener {
     public abstract boolean isWriteLocked();
 
     protected void beginMdrTransation() {
-        // !EAT TODO
-        // The MDR transaction setup is done in order to guarantee that while a sync is being performed
-        // no updates are being made to my likely Java source documents
-        // This does beg the question however of how we should really be working with concurrent modifications
-        // what happens when a sync() is done, then documents get modified underneath me.
-    	JMManager.getDefaultRepository().beginTrans(false);
     }
     
     protected void endMdrTransaction() {
-    	JMManager.getDefaultRepository().endTrans();
     }
 
     /**
@@ -278,13 +270,13 @@ public abstract class Model implements SourceUnitListener {
     }
     
     public void sourceUnitModelDirtied(SourceUnit unit) {
-        MdrInSyncSynchronizer.get().addModelDirtied(this);
+//NB60         MdrInSyncSynchronizer.get().addModelDirtied(this);
     }
 
     protected  boolean needSyncing = true;
 
     public void sourceUnitSourceDirtied(SourceUnit unit) {
-        MdrInSyncSynchronizer.get().addModelDirtied(this);
+//NB60         MdrInSyncSynchronizer.get().addModelDirtied(this);
         needSyncing = true;
         getOwner().addToModelsToSync(this);
     }

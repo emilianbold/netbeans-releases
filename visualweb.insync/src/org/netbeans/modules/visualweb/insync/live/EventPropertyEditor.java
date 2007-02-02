@@ -24,7 +24,6 @@ import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 
 import com.sun.rave.designtime.EventDescriptor;
-import org.netbeans.jmi.javamodel.Method;
 
 /**
  *
@@ -51,10 +50,12 @@ public class EventPropertyEditor extends PropertyEditorSupport {
         EventDescriptor ed = event.getEventDescriptor();
         java.lang.reflect.Method m = ed.getListenerMethodDescriptor().getMethod();
 
+/*//NB6.0
         Method[] ms = unit.sourceUnit.getThisClass().getMethods(m.getParameterTypes(), m.getReturnType());
         methods = new String[ms.length];
         for (int i = 0; i < ms.length; i++)
             methods[i] = ms[i].getName();
+//*/
     }
 
     void update() {

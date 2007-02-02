@@ -21,11 +21,6 @@ package org.netbeans.modules.visualweb.insync.live;
 import org.netbeans.modules.visualweb.insync.java.JMIUtils;
 import org.netbeans.modules.visualweb.insync.java.JMIRefactor;
 import java.util.List;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.NullLiteral;
-import org.netbeans.jmi.javamodel.ReturnStatement;
-import org.netbeans.jmi.javamodel.StatementBlock;
-import org.netbeans.jmi.javamodel.StringLiteral;
 
 import org.openide.util.NbBundle;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
@@ -34,9 +29,6 @@ import com.sun.rave.designtime.EventDescriptor;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.beans.Event;
 import org.netbeans.modules.visualweb.insync.beans.EventSet;
-import org.netbeans.jmi.javamodel.Expression;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Statement;
 
 /**
  * DesignEvent implementation based on delegation to beans.Event and subclasses, using Java and/or
@@ -168,12 +160,14 @@ public class BeansDesignEvent extends SourceDesignEvent {
         try {
             String description = NbBundle.getMessage(BeansDesignEvent.class, "SetHandlerMethodSource", methodBody != null ? methodBody : "");  //NOI18N
             undoEvent = liveBean.unit.model.writeLock(description);
+/*//NB6.0
             JMIUtils.beginTrans(true);
             try {
                 event.getHandlerMethod().setBodyText(methodBody);
             }finally {
                 JMIUtils.endTrans();
             }
+//*/
         }
         finally {
             liveBean.unit.model.writeUnlock(undoEvent);
@@ -184,16 +178,20 @@ public class BeansDesignEvent extends SourceDesignEvent {
      * @see com.sun.rave.designtime.DesignEvent#getHandlerMethodSource()
      */
     public String getHandlerMethodSource() {
+/*//NB6.0
         return (event != null && event.getHandlerMethod() != null)
             ? event.getHandlerMethod().getBodyText()
             : null;
+//*/
+        return null;
     }
 
 
     /**
      * @return
      */
-    protected ReturnStatement getHandlerMethodReturnStatement() {
+    protected Object/*ReturnTree*/ getHandlerMethodReturnStatement() {
+/*//NB6.0
         if (event != null && event.getHandlerMethod() != null) {
             StatementBlock stmtBlk = event.getHandlerMethod().getBody();
             List stmts = stmtBlk.getStatements();
@@ -204,12 +202,15 @@ public class BeansDesignEvent extends SourceDesignEvent {
             }
         }
         return null;
+//*/
+        return null;
     }
 
     /**
      * @return
      */
     public Object getHandlerMethodReturn() {
+/*//NB6.0
         ReturnStatement ret = getHandlerMethodReturnStatement();
         if (ret != null) {
             Expression expr = ret.getExpression();
@@ -217,12 +218,14 @@ public class BeansDesignEvent extends SourceDesignEvent {
                 return ((StringLiteral)expr).getValue();
         }
         return null;
+//*/    return null;
     }
 
     
     /*
      */
     public void updateReturnStrings(String oldStr, String newStr) {    
+/*//NB6.0
         if(event != null) {
             Method method = event.getHandlerMethod();
             if(method != null) {
@@ -255,5 +258,6 @@ public class BeansDesignEvent extends SourceDesignEvent {
                 }
             }
         }
+//*/
     }
 }
