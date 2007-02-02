@@ -198,7 +198,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.websvc.dev</friend>
                 <friend>org.netbeans.modules.websvc.jaxwsapi</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
-                <friend>com.sun.rave.project.jsfproject</friend>
+                <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
                 <package>org.netbeans.modules.websvc.api.jaxws.project</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.project.config</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.wsdlmodel</package>

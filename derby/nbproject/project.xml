@@ -144,7 +144,7 @@ Microsystems, Inc. All Rights Reserved.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>com.sun.rave.dataconnectivity</friend>
+                <friend>org.netbeans.modules.visualweb.dataconnectivity</friend>
                 <friend>org.netbeans.modules.derby.bundled</friend>
                 <friend>org.netbeans.modules.j2ee.blueprints</friend>
                 <friend>org.netbeans.modules.j2ee.samples</friend>

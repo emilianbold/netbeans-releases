@@ -142,7 +142,7 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
-                <friend>com.sun.rave.project.navigationloader</friend>
+                <friend>org.netbeans.modules.visualweb.project.navigationloader</friend>
                 <friend>org.netbeans.modules.e2e.end2end</friend>
                 <friend>org.netbeans.modules.e2e.jsr172</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>

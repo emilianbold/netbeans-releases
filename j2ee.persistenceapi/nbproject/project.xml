@@ -41,7 +41,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>com.sun.rave.project.jsfproject</friend>
+                <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.jpa.verification</friend>

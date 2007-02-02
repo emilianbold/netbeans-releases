@@ -25,10 +25,10 @@ Microsystems, Inc. All Rights Reserved.
             <module-dependencies/>
             <friend-packages>
                 <friend>org.netbeans.modules.web.jspparser</friend>
-                <friend>com.sun.rave.libs.apache.commons</friend>
-                <friend>com.sun.rave.libs.jsf.ri12</friend>
-                <friend>com.sun.rave.j2ee14classloaderprovider</friend>
-                <friend>com.sun.rave.j2ee15classloaderprovider</friend>
+                <friend>org.netbeans.modules.visualweb.libs.apache.commons</friend>
+                <friend>org.netbeans.modules.visualweb.libs.jsf.ri12</friend>
+                <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
+                <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
                 <package>com.sun.org.apache.commons.logging</package>
                 <package>com.sun.org.apache.commons.logging.impl</package>
             </friend-packages>

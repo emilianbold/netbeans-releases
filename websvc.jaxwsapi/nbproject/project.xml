@@ -105,7 +105,7 @@ Microsystems, Inc. All Rights Reserved.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>com.sun.rave.project.jsfproject</friend>
+                <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.refactoring</friend>

@@ -353,7 +353,7 @@ Microsystems, Inc. All Rights Reserved.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>com.sun.rave.project.jsfloader</friend>
+                <friend>org.netbeans.modules.visualweb.project.jsfloader</friend>
                 <package>org.netbeans.modules.web.core.jsploader.api</package>
             </friend-packages>
         </data>
