@@ -148,9 +148,11 @@ public class CustomizerPlatform extends JPanel implements ComposedCustomizerPane
 
     public void initGroupValues(boolean useDefault) {
         this.useDefault = useDefault;
+        jComboBox1.removeActionListener(this);
         jComboBox1.setEditable(true);
         VisualPropertySupport.getDefault(props).register(jComboBox1, null, DefaultPropertiesDescriptor.PLATFORM_TRIGGER, useDefault);
         jComboBox1.setEditable(false);
+        jComboBox1.addActionListener(this);
         boolean showCombo = jComboBox1.getItemCount() > 1 || jComboBox1.getSelectedIndex() < 0;
         jLabel1.setVisible(showCombo);
         jComboBox1.setVisible(showCombo);
@@ -184,7 +186,6 @@ public class CustomizerPlatform extends JPanel implements ComposedCustomizerPane
     public void setHelpContextCallback(HelpCtxCallback callback) {
         this.callback = callback;
         if (typeElements.size() == 1) callback.updateHelpCtx(new HelpCtx(typeElements.get(0).getCustomizer().getClass()));
-        actionPerformed(null);
     }
 
     private class TypeComboElement {

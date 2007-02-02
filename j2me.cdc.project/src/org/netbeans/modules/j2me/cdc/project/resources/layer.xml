@@ -37,6 +37,17 @@
             </folder>
         </folder>
     </folder>
+    <folder name="Customizer">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <folder name="Platform">
+                <attr name="CLDC/CDC" boolvalue="true"/>
+                <file name="CDC">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.j2me.cdc.project.CDCPlatformCustomizer"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
     <folder name="RecommendedTemplates">
         <folder name="org.netbeans.modules.kjava.j2meproject">
             <attr name="midp/cdc" boolvalue="true"/>

@@ -129,7 +129,6 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
         configs.add(ADD_CONFIGURATION);
         configurationCombo.setModel(new DefaultComboBoxModel(configs));
         configurationCombo.setSelectedItem(sel);
-        categoryView.updateCustomizerPanel();
     }
     
     /** This method is called from within the constructor to
@@ -370,9 +369,9 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
             btv.setMaximumSize( size );
             this.add( btv, BorderLayout.CENTER );
             manager.setRootContext( rootNode );
-            manager.addPropertyChangeListener( new ManagerChangeListener() );
             selectFirstNode();
             btv.expandAll();
+            manager.addPropertyChangeListener( new ManagerChangeListener() );
         }
         
         public ExplorerManager getExplorerManager() {

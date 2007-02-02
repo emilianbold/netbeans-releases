@@ -260,7 +260,9 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
             for (int i=0; i<devices.length; i++) if (devices[i].isValid()) {
                 name2device.put(devices[i].getName(), devices[i]);
             }
-            vps.register(jComboDevice, name2device.keySet().toArray(new String[name2device.size()]), DefaultPropertiesDescriptor.PLATFORM_DEVICE, useDefault);
+            String[] devNames = name2device.keySet().toArray(new String[name2device.size()]);
+            Arrays.sort(devNames);
+            vps.register(jComboDevice, devNames, DefaultPropertiesDescriptor.PLATFORM_DEVICE, useDefault);
             initAllProfiles((String)jComboDevice.getSelectedItem(), reset);
             jComboDevice.addActionListener(this);
         } else {
@@ -346,7 +348,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         saveClassPath();
     }
         
-	private Set<String> getOptionalValues() {
+    private Set<String> getOptionalValues() {
         final String s = (String)props.get(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_APIS, useDefault));
         if (s == null) return Collections.EMPTY_SET;
         final HashSet<String> vals = new HashSet<String>();
