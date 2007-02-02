@@ -36,7 +36,9 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.model.JPAHelper;
+import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -98,7 +100,9 @@ public abstract class JPAProblemFinder {
     
     private JPAProblemContext findProblemContext(CompilationInfo info, TypeElement javaClass){
         JPAProblemContext context = new JPAProblemContext();
-        context.setEntity(JPAHelper.isEntityClass(javaClass));
+        context.setEntity(Utilities.hasAnnotation(javaClass, JPAAnnotations.ENTITY));
+        context.setEmbeddable(Utilities.hasAnnotation(javaClass, JPAAnnotations.EMBEDDABLE));
+        context.setIdClass(Utilities.hasAnnotation(javaClass, JPAAnnotations.ID_CLASS));
         context.setFileObject(file);
         context.setCompilationInfo(info);
         return context;

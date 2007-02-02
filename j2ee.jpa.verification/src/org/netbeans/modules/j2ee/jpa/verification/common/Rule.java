@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.jpa.verification.common;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
@@ -38,19 +37,19 @@ public abstract class Rule<E> {
     protected List<? extends Predicate> preConditions;
     protected Predicate predicate;
     
-    protected Rule() {
-        preConditions = Collections.emptyList();
+    public final ErrorDescription[] execute(E subject, ProblemContext ctx){
+        if (isApplicable(subject, ctx)){
+            return apply(subject, ctx);
+        }
+        
+        return null;
     }
     
-    protected Rule(Predicate assertion) {
-        this.predicate = assertion;
-        preConditions = Collections.emptyList();
+    protected void setPredicate(Predicate predicate){
+        this.predicate = predicate;
     }
     
-    protected Rule(
-            Predicate assertion,
-            List<? extends Predicate> preConditions) {
-        this.predicate = assertion;
+    protected void setPreConditions(List<? extends Predicate> preConditions){
         this.preConditions = preConditions;
     }
     
@@ -62,7 +61,7 @@ public abstract class Rule<E> {
      * @return a problem object which represents a violation of a rule. It
      *         returns null, if no violation was detected.
      */
-    public ErrorDescription[] apply(E subject, ProblemContext ctx){
+    protected ErrorDescription[] apply(E subject, ProblemContext ctx){
         if (isApplicable(subject, ctx)) {
             if (!predicate.evaluate(subject)) { // found a violation
                 // TODO: remove this hack (cast)
@@ -81,12 +80,16 @@ public abstract class Rule<E> {
     }
     
     public abstract String getDescription();
-
+    
     protected boolean isApplicable(E subject, ProblemContext ctx) {
         boolean result = true;
-        for (Predicate pred : preConditions) {
-            result = result && pred.evaluate(subject);
+        
+        if (preConditions != null){
+            for (Predicate pred : preConditions) {
+                result = result && pred.evaluate(subject);
+            }
         }
+        
         return result;
     }
     

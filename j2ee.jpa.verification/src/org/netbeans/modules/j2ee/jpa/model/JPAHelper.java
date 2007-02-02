@@ -44,7 +44,7 @@ public class JPAHelper {
      */
     public static boolean isAnyMemberAnnotatedAsIdOrEmbeddedId(TypeElement javaClass) {
         for (Element classElement : javaClass.getEnclosedElements()) {
-
+            
             if (Utilities.findAnnotation(classElement, JPAAnnotations.ID) != null){
                 return true;
             }
@@ -55,11 +55,4 @@ public class JPAHelper {
         }
         return false;
     }
-    
-    public static boolean isEntityClass(TypeElement javaClass){
-        AnnotationMirror annEntity = Utilities.findAnnotation(javaClass, JPAAnnotations.ENTITY);
-        return annEntity != null;
-    }
-    
-
 }

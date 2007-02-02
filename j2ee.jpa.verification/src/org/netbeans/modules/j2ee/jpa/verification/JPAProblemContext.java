@@ -28,6 +28,8 @@ import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
  */
 public class JPAProblemContext extends ProblemContext {
     private boolean entity;
+    private boolean embeddable;
+    private boolean idClass;
     
     public boolean isEntity(){
         return entity;
@@ -35,5 +37,21 @@ public class JPAProblemContext extends ProblemContext {
     
     public void setEntity(boolean entity){
         this.entity = entity;
+    }
+    
+    public boolean isEmbeddable(){
+        return embeddable;
+    }
+    
+    public void setEmbeddable(boolean embeddable){
+        this.embeddable = embeddable;
+    }
+    
+    public boolean isIdClass(){
+        return idClass;
+    }
+    
+    public void setIdClass(boolean idClass){
+        this.idClass = idClass;
     }
 }

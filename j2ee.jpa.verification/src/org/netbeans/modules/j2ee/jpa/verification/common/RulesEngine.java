@@ -41,7 +41,7 @@ public abstract class RulesEngine extends ElementKindVisitor6<Void, ProblemConte
                 break;
             }
             
-            ErrorDescription problems[] = rule.apply(javaClass, ctx);
+            ErrorDescription problems[] = rule.execute(javaClass, ctx);
             
             if (problems != null){
                 for (ErrorDescription problem : problems){

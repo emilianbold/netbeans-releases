@@ -20,30 +20,32 @@
 package org.netbeans.modules.j2ee.jpa.verification;
 
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
-import org.netbeans.modules.j2ee.jpa.verification.common.RulesEngine;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.HasNoArgConstructor;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.IdDefinedInHierarchy;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.PersistenceUnitPresent;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class JPARulesEngine extends RulesEngine {
-    private static final List<Rule<TypeElement>> classRules = new LinkedList<Rule<TypeElement>>();
+public abstract class JPAClassRule extends Rule<TypeElement> {
+    public enum ClassConstraints {ENTITY, EMBEDDABLE, IDCLASS}
+    private Collection<ClassConstraints> classContraints;
     
-    static{
-        classRules.add(new PersistenceUnitPresent());
-        classRules.add(new IdDefinedInHierarchy());
-        classRules.add(new HasNoArgConstructor());
+    protected void setClassContraints(Collection<ClassConstraints> classContraints){
+        this.classContraints = classContraints;
     }
     
-    protected Collection<Rule<TypeElement>> getClassRules() {
-        return classRules;
+    @Override protected boolean isApplicable(TypeElement subject, ProblemContext ctx) {
+        JPAProblemContext jpaCtx = (JPAProblemContext)ctx;
+        
+        if (classContraints != null && !(
+                jpaCtx.isEntity() && classContraints.contains(ClassConstraints.ENTITY)
+                || jpaCtx.isEmbeddable() && classContraints.contains(ClassConstraints.EMBEDDABLE)
+                || jpaCtx.isIdClass() && classContraints.contains(ClassConstraints.IDCLASS))){
+            return false;
+        }
+        
+        return super.isApplicable(subject, ctx);
     }
-
 }

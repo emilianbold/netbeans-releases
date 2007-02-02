@@ -46,6 +46,11 @@ public class Utilities {
         return null;
     }
     
+    public static boolean hasAnnotation(Element element, String annClass){
+        AnnotationMirror annEntity = findAnnotation(element, annClass);
+        return annEntity != null;
+    }
+    
     /**
      * This method returns the part of the syntax tree to be highlighted.
      * It will be usually the class/method/variable identifier.
