@@ -27,6 +27,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
@@ -67,12 +69,14 @@ public final class PersistenceProviderComboboxHelper {
     public PersistenceProviderComboboxHelper(Project project) {
         Parameters.notNull("project", project);
         
-        this.providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class); 
+        PersistenceProviderSupplier aProviderSupplier =project.getLookup().lookup(PersistenceProviderSupplier.class); 
         
-        if (providerSupplier == null){
-            throw new IllegalArgumentException("The given project[" + project + "] did not have " +
-                    "a PersistenceProviderSupplier in its lookup"); // NO18N
+        if (aProviderSupplier == null){
+            // a java se project
+            aProviderSupplier = new DefaultPersistenceProviderSupplier();
         }
+        
+        this.providerSupplier = aProviderSupplier;
     }
     
     /**
@@ -247,4 +251,20 @@ public final class PersistenceProviderComboboxHelper {
         
     }
     
+    /**
+     * An implementation of the PersistenceProviderSupplier that returns an empty list for supported
+     * providers and doesn't support a default provider. Used when an implementation of 
+     * the PersistenceProviderSupplier can't be found in the project lookup (as is the case
+     * for instance for Java SE projects).
+     */ 
+    private static class DefaultPersistenceProviderSupplier implements PersistenceProviderSupplier{
+        
+        public List<Provider> getSupportedProviders() {
+            return Collections.<Provider>emptyList();
+        }
+
+        public boolean supportsDefaultProvider() {
+            return false;
+        }
+}
 }
