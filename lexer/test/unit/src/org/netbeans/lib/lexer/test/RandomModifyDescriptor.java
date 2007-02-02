@@ -1,38 +1,44 @@
 /*
- *                 Sun Public License Notice
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
  *
- * The contents of this file are subject to the Sun Public License
- * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
- * http://www.sun.com/
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
  *
- * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.lib.lexer.test;
 
 public class RandomModifyDescriptor {
-    
+
     private final int opCount;
-    
+
     private final RandomTextProvider randomTextProvider;
 
     private final double insertCharRatio;
-    
+
     private final double insertTextRatio;
-    
+
     private int insertTextMaxLength = 10;
-    
+
     private final double insertFixedTextRatio;
-    
+
     private final double removeCharRatio;
-    
+
     private final double removeTextRatio;
-    
+
     private int removeTextMaxLength = 10;
-    
+
     private final double createSnapshotRatio;
     
     private final double destroySnapshotRatio;
