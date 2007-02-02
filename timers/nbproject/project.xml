@@ -72,6 +72,7 @@
                 <friend>org.netbeans.modules.java.editor</friend>
                 <friend>org.netbeans.modules.java.hints</friend>
                 <friend>org.netbeans.modules.java.source</friend>
+                <friend>org.netbeans.spi.editor.hints</friend>
                 <package>org.netbeans.api.timers</package>
             </friend-packages>
             <class-path-extension>
