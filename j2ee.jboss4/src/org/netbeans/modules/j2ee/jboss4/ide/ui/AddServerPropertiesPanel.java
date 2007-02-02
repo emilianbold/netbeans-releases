@@ -58,7 +58,9 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
         if(panel.isLocalServer()){
             // wrong domain path
             String path = panel.getDomainPath();
-            if (!JBPluginUtils.isGoodJBInstanceLocation(new File(path))){
+            if (!JBPluginUtils.isGoodJBInstanceLocation4x(new File(path)) &&
+                !JBPluginUtils.isGoodJBInstanceLocation5x(new File(path))) 
+            {
                 wizard.putProperty(PROP_ERROR_MESSAGE,NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_WrongDomainPath"));
                 return false;
             }

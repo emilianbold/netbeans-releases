@@ -24,6 +24,8 @@ import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
+import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.OpenURLAction;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.OpenURLActionCookie;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.UndeployModuleAction;
@@ -40,12 +42,14 @@ import org.openide.util.actions.SystemAction;
 public class JBWebModuleNode extends AbstractNode {
 
     final boolean isRemoteManagementSupported;
+    final boolean isJB4x;
 
     public JBWebModuleNode(String fileName, Lookup lookup, String url) {
         super(new JBServletsChildren(fileName, lookup));
         setDisplayName(fileName.substring(0, fileName.indexOf('.')));
         isRemoteManagementSupported = Util.isRemoteManagementSupported(lookup);
-        if (isRemoteManagementSupported) {
+        isJB4x = JBPluginUtils.isGoodJBServerLocation4x((JBDeploymentManager)lookup.lookup(JBDeploymentManager.class));
+        if (isRemoteManagementSupported && isJB4x) {
             // we cannot find out the .war name w/o the management support, thus we cannot enable the Undeploy action
             getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.WAR, lookup));
         }
@@ -61,7 +65,7 @@ public class JBWebModuleNode extends AbstractNode {
             };
         }
         else {
-            if (isRemoteManagementSupported) {
+            if (isRemoteManagementSupported && isJB4x) {
                 return new SystemAction[] {
                     SystemAction.get(OpenURLAction.class),
                     SystemAction.get(UndeployModuleAction.class)

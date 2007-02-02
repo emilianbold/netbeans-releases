@@ -203,8 +203,8 @@ public class JBStartServer extends StartServer implements ProgressObject{
                     result = false;
                 }
                 
-                Object serverName = Util.getMBeanParameter(dm, "ServerName", "jboss.system:type=ServerConfig", String.class);
-                Object serverHome = Util.getMBeanParameter(dm, "ServerHomeDir", "jboss.system:type=ServerConfig", String.class);
+                Object serverName = Util.getMBeanParameter(dm, "ServerName", "jboss.system:type=ServerConfig");
+                Object serverHome = Util.getMBeanParameter(dm, "ServerHomeDir", "jboss.system:type=ServerConfig");
                 
                 if(serverName == null || serverHome == null) {
                     result = false;

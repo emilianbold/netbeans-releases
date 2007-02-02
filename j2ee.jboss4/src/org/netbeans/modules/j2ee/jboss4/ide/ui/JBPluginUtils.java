@@ -24,10 +24,12 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
-import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.openide.ErrorManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -54,7 +56,9 @@ public class JBPluginUtils {
         Hashtable result = new Hashtable();
         //  String domainListFile = File.separator+"common"+File.separator+"nodemanager"+File.separator+"nodemanager.domains";  // NOI18N
         
-        if (isGoodJBServerLocation(new File(serverLocation))){
+        if (isGoodJBServerLocation4x(new File(serverLocation)) || 
+            isGoodJBServerLocation5x(new File(serverLocation)))
+        {
            File file = new File(serverLocation + File.separator + "server");  // NOI18N
             
             String[] files = file.list(new FilenameFilter(){
@@ -67,7 +71,9 @@ public class JBPluginUtils {
             for(int i =0; i<files.length; i++){
                 String path = file.getAbsolutePath() + File.separator + files[i];
                 
-                if (isGoodJBInstanceLocation(new File(path))){
+                if (isGoodJBInstanceLocation4x(new File(path)) || 
+                    isGoodJBInstanceLocation5x(new File(path)))
+                {
                     result.put(files[i], path);
                 }
             }
@@ -76,59 +82,108 @@ public class JBPluginUtils {
     }
     
     
-    //--------------- checking for possible server directory -------------
-    private static Collection serverFileColl = new java.util.ArrayList();
+    //--------------- checking for possible domain directory -------------
+    private static List<String> domainRequirements4x = new LinkedList<String>();
     static {
-        serverFileColl.add("conf");              // NOI18N
-        serverFileColl.add("deploy");               // NOI18N
-        serverFileColl.add("lib");    // NOI18N
-        serverFileColl.add("conf/jboss-service.xml");      // NOI18N
-        serverFileColl.add("lib/jboss-j2ee.jar");   // NOI18N
-        serverFileColl.add("lib/jboss.jar");   // NOI18N
-        serverFileColl.add("lib/jbosssx.jar");   // NOI18N
-        serverFileColl.add("lib/jboss-transaction.jar");   // NOI18N
-        serverFileColl.add("lib/jmx-adaptor-plugin.jar");   // NOI18N
-        serverFileColl.add("lib/jnpserver.jar");   // NOI18N
-        serverFileColl.add("lib/log4j.jar");   // NOI18N
-        serverFileColl.add("lib/xmlentitymgr.jar");   // NOI18N
-        serverFileColl.add("deploy/jmx-invoker-service.xml");   // NOI18N
+        domainRequirements4x.add("conf");                               // NOI18N
+        domainRequirements4x.add("deploy");                             // NOI18N
+        domainRequirements4x.add("lib");                                // NOI18N
+        domainRequirements4x.add("conf/jboss-service.xml");             // NOI18N
+        domainRequirements4x.add("lib/jboss-j2ee.jar");                 // NOI18N
+        domainRequirements4x.add("lib/jboss.jar");                      // NOI18N
+        domainRequirements4x.add("lib/jbosssx.jar");                    // NOI18N
+        domainRequirements4x.add("lib/jboss-transaction.jar");          // NOI18N
+        domainRequirements4x.add("lib/jmx-adaptor-plugin.jar");         // NOI18N
+        domainRequirements4x.add("lib/jnpserver.jar");                  // NOI18N
+        domainRequirements4x.add("lib/log4j.jar");                      // NOI18N
+        domainRequirements4x.add("lib/xmlentitymgr.jar");               // NOI18N
+        domainRequirements4x.add("deploy/jmx-invoker-service.xml");     // NOI18N
     }
     
-    public static boolean isGoodJBInstanceLocation(File candidate){
+    private static List<String> domainRequirements5x = new LinkedList<String>();
+
+    static {
+        domainRequirements5x.add("conf");                               // NOI18N
+        domainRequirements5x.add("deploy");                             // NOI18N
+        domainRequirements5x.add("lib");                                // NOI18N
+        domainRequirements5x.add("conf/jboss-service.xml");             // NOI18N
+        domainRequirements5x.add("lib/jboss-j2ee.jar");                 // NOI18N
+        domainRequirements5x.add("lib/jboss.jar");                      // NOI18N
+        domainRequirements5x.add("lib/jbosssx.jar");                    // NOI18N
+        domainRequirements5x.add("lib/jboss-transaction.jar");          // NOI18N
+        domainRequirements5x.add("lib/jmx-adaptor-plugin.jar");         // NOI18N
+        domainRequirements5x.add("lib/jnpserver.jar");                  // NOI18N
+        domainRequirements5x.add("lib/log4j.jar");                      // NOI18N
+        domainRequirements5x.add("deploy/jmx-invoker-service.xml");     // NOI18N
+    }
+    
+    private static boolean isGoodJBInstanceLocation(File candidate, List<String> requirements){
         if (null == candidate ||
                 !candidate.exists() ||
                 !candidate.canRead() ||
                 !candidate.isDirectory()  ||
-                !hasRequiredChildren(candidate, serverFileColl)) {
+                !hasRequiredChildren(candidate, requirements)) {
             return false;
         }
         return true;
     }
     
+    public static boolean isGoodJBInstanceLocation4x(File candidate){
+        return isGoodJBInstanceLocation(candidate, domainRequirements4x);
+    }
+    
+    public static boolean isGoodJBInstanceLocation5x(File candidate){
+        return isGoodJBInstanceLocation(candidate, domainRequirements5x);
+    }
+    
     //--------------- checking for possible server directory -------------
-    private static Collection fileColl = new java.util.ArrayList();
+    private static List<String> serverRequirements4x = new LinkedList<String>();
     
     static {
-        fileColl.add("bin");        // NOI18N
-        fileColl.add("client");       // NOI18N
-        fileColl.add("lib");     // NOI18N
-        fileColl.add("server");    // NOI18N
-        fileColl.add("lib/jboss-common.jar"); // NOI18N
-        fileColl.add("lib/endorsed/resolver.jar"); // NOI18N
+        serverRequirements4x.add("bin");                        // NOI18N
+        serverRequirements4x.add("client");                     // NOI18N
+        serverRequirements4x.add("lib");                        // NOI18N
+        serverRequirements4x.add("server");                     // NOI18N
+        serverRequirements4x.add("lib/jboss-common.jar");       // NOI18N
+        serverRequirements4x.add("lib/endorsed/resolver.jar");  // NOI18N
     }  
     
-    public static boolean isGoodJBServerLocation(File candidate){
+    private static List<String> serverRequirements5x = new LinkedList<String>();
+    
+    static {
+        serverRequirements5x.add("bin");                        // NOI18N
+        serverRequirements5x.add("client");                     // NOI18N
+        serverRequirements5x.add("lib");                        // NOI18N
+        serverRequirements5x.add("server");                     // NOI18N
+        serverRequirements5x.add("lib/jboss-common-core.jar");  // NOI18N
+        serverRequirements5x.add("lib/endorsed/resolver.jar");  // NOI18N
+    }  
+    
+    private static boolean isGoodJBServerLocation(File candidate, List<String> requirements){
         if (null == candidate ||
                 !candidate.exists() ||
                 !candidate.canRead() ||
                 !candidate.isDirectory()  ||
-                !hasRequiredChildren(candidate, fileColl)) {
+                !hasRequiredChildren(candidate, requirements)) {
             return false;
         }
         return true;
     }
     
-    private static boolean hasRequiredChildren(File candidate, Collection requiredChildren) {
+    public static boolean isGoodJBServerLocation4x(File candidate){
+        return isGoodJBServerLocation(candidate, serverRequirements4x);
+    }
+    
+    public static boolean isGoodJBServerLocation4x(JBDeploymentManager dm){
+        String installDir = dm.getInstanceProperties().getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+        return isGoodJBServerLocation4x(new File(installDir));
+    }
+    
+    public static boolean isGoodJBServerLocation5x(File candidate){
+        return isGoodJBServerLocation(candidate, serverRequirements5x);
+    }
+    
+    private static boolean hasRequiredChildren(File candidate, List<String> requiredChildren) {
         if (null == candidate)
             return false;
         String[] children = candidate.list();
@@ -146,6 +201,7 @@ public class JBPluginUtils {
         return true;
     }
     
+    //--------------------------------------------------------------------
   
     /**
      *

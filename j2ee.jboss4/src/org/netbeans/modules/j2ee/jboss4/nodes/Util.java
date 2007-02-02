@@ -22,19 +22,19 @@ package org.netbeans.modules.j2ee.jboss4.nodes;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URLClassLoader;
 import java.util.Set;
 import javax.enterprise.deploy.shared.ModuleType;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
+import javax.management.ReflectionException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
-import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.openide.ErrorManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -55,14 +55,14 @@ public class Util {
     /**
      * Lookup a JBoss4 RMI Adaptor
      */
-    public static Object getRMIServer(Lookup lookup) {
+    public static MBeanServerConnection getRMIServer(Lookup lookup) {
         return getRMIServer((JBDeploymentManager)lookup.lookup(JBDeploymentManager.class));
     }
     
     /**
      * Lookup a JBoss4 RMI Adaptor
      */
-    public static Object getRMIServer(JBDeploymentManager manager) {
+    public static MBeanServerConnection getRMIServer(JBDeploymentManager manager) {
         return manager.getRMIServer();
     }
     
@@ -172,43 +172,27 @@ public class Util {
      *
      * @return MBean attribute
      */
-    public static Object getMBeanParameter(JBDeploymentManager dm, String name, String targetObject, Class paramClass) {
-        ClassLoader oldLoader = null;
-        InstanceProperties ip = dm.getInstanceProperties();
-        
-        try{
-            oldLoader = Thread.currentThread().getContextClassLoader();
-
-            URLClassLoader loader = JBDeploymentFactory.getJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR), 
-                    ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
-            Thread.currentThread().setContextClassLoader(loader);
-            
-            Object srv = dm.refreshRMIServer();
-            
-            Class objectName = loader.loadClass("javax.management.ObjectName"); // NOI18N
-            Method getInstance = objectName.getMethod("getInstance", new Class[] {String.class} );          // NOI18N
-            Object target = getInstance.invoke(null, new Object[]{targetObject});       // NOI18N
-            Class[] params = new Class[]{loader.loadClass("javax.management.ObjectName"), paramClass};    // NOI18N
-            Method getAttribute = srv.getClass().getMethod("getAttribute", params);                 // NOI18N
-            return getAttribute.invoke(srv, new Object[]{target, name});       // NOI18N
-            
+    public static Object getMBeanParameter(JBDeploymentManager dm, String name, String targetObject) {
+        MBeanServerConnection server = dm.refreshRMIServer();
+        try {
+            return server.getAttribute(new ObjectName(targetObject), name);            
+        } catch (InstanceNotFoundException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch (AttributeNotFoundException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch (MalformedObjectNameException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } catch (NullPointerException ex) {
-            // It's normal behaviour when the server is off
-            return null;
-        } catch (IllegalAccessException ex) {
+            // it's normal behaviour when the server is not running
+        } catch (IllegalArgumentException ex) {
+            // it's normal behaviour when the server is not running
+        } catch (ReflectionException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        } catch (ClassNotFoundException ex) {
+        } catch (MBeanException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        } catch (NoSuchMethodException ex) {
+        } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        } catch (InvocationTargetException ex) {
-            // It's normal behaviour when the server is off
-            return null;
-        } finally{
-            if (oldLoader != null) {
-                Thread.currentThread().setContextClassLoader(oldLoader);
-            }
-        }
+        }            
         
         return null;
     }
@@ -219,6 +203,11 @@ public class Util {
      * @return context-root of web application
      */
     public static String getWebContextRoot(String dd) {
+        
+        if (dd == null) {
+            return null;
+        }
+        
         Document doc = null;
         
         try {

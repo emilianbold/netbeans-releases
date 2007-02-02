@@ -100,7 +100,7 @@ public class JBossValidation extends JellyTestCase {
         Node node = new Node(new RuntimeTabOperator().getRootNode(),Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE"));
         node.performPopupActionNoBlock(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"));
         NbDialogOperator dialog = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"));
-        new JComboBoxOperator(dialog).selectItem("JBoss Application Server 4");
+        new JComboBoxOperator(dialog).selectItem("JBoss Application Server");
         new JButtonOperator(dialog,Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT")).push();
         new JTextFieldOperator(dialog).setText("");
         new JTextFieldOperator(dialog).typeText(path);
@@ -134,7 +134,7 @@ public class JBossValidation extends JellyTestCase {
         Node serverNode = new Node(runtimeTab.getRootNode(), Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE")
                                    +"|JBoss");        
         serverNode.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "LBL_Stop"));
-        org.netbeans.test.j2ee.lib.ProgressOperator.waitFinished("Stopping JBoss Application Server 4.0",300000);
+        org.netbeans.test.j2ee.lib.ProgressOperator.waitFinished("Stopping JBoss Application Server",300000);
         new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
     }
     
@@ -234,7 +234,7 @@ public class JBossValidation extends JellyTestCase {
                                    +"|JBoss");
                 
         serverNode.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "LBL_Start"));
-        org.netbeans.test.j2ee.lib.ProgressOperator.waitFinished("Starting JBoss Application Server 4.0",300000);
+        org.netbeans.test.j2ee.lib.ProgressOperator.waitFinished("Starting JBoss Application Server",300000);
         new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
     }
     

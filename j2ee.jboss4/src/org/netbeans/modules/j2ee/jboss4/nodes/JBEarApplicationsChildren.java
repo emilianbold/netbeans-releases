@@ -19,14 +19,14 @@
 
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
+import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
 import org.openide.ErrorManager;
 import org.openide.nodes.Children;
@@ -44,6 +44,7 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
     
     private Lookup lookup;
     private Boolean remoteManagementSupported = null;
+    private Boolean isJB4x = null;
     
     JBEarApplicationsChildren(Lookup lookup) {
         this.lookup = lookup;
@@ -60,7 +61,7 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
                     // Query to the jboss4 server
                     ObjectName searchPattern;
                     String propertyName;
-                    if (isRemoteManagementSupported()) {
+                    if (isRemoteManagementSupported() && isJB4x()) {
                         searchPattern = new ObjectName("jboss.management.local:j2eeType=J2EEApplication,*"); // NOI18N
                         propertyName = "name"; // NOI18N
                     }
@@ -79,7 +80,7 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
                             ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
                             String name = elem.getKeyProperty(propertyName);
 
-                            if (isRemoteManagementSupported()) {
+                            if (isRemoteManagementSupported() && isJB4x) {
                                 if (name.endsWith(".sar")) { // NOI18N
                                     continue;
                                 }
@@ -128,6 +129,14 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
             remoteManagementSupported = Util.isRemoteManagementSupported(lookup);
         }
         return remoteManagementSupported;
+    }
+ 
+    private boolean isJB4x() {
+        if (isJB4x == null) {
+            JBDeploymentManager dm = (JBDeploymentManager)lookup.lookup(JBDeploymentManager.class);
+            isJB4x = JBPluginUtils.isGoodJBServerLocation4x(dm);
+        }
+        return isJB4x;
     }
     
 }

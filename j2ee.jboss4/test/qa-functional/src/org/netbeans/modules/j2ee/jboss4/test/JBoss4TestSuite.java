@@ -55,7 +55,7 @@ import org.openide.util.RequestProcessor.Task;
  */
 public class JBoss4TestSuite extends NbTestCase {
     
-    private static final String DISPLAY_NAME = "JBoss Application Server 4";
+    private static final String DISPLAY_NAME = "JBoss Application Server";
     private static final String EJB_PROJECT_NAME = "JBoss4EjbTest";
     private static final String WEB_PROJECT_NAME = "JBoss4WebTest";
     private static final String EJB_PROJECT_PATH = System.getProperty("xtest.tmpdir") + File.separator + EJB_PROJECT_NAME;

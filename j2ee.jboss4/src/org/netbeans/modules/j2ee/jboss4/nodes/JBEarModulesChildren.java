@@ -74,7 +74,7 @@ public class JBEarModulesChildren extends Children.Keys {
                             else if(elem.getKeyProperty("j2eeType").equals("WebModule")) {
                                 String url = "http://"+dm.getHost()+":"+dm.getPort();
                                 String context = Util.getWebContextRoot((String)Util.getMBeanParameter(dm, "jbossWebDeploymentDescriptor",
-                                        elem.getCanonicalName(), String.class));
+                                        elem.getCanonicalName()));
                                 keys.add(new JBWebModuleNode(name, lookup, (context == null) ? null : url+context));
                             }
                         } catch (Exception ex) {

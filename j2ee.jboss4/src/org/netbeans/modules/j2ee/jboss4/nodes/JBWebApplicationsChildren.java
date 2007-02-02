@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
@@ -26,6 +27,8 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
 import org.openide.ErrorManager;
 import org.openide.nodes.Children;
@@ -43,6 +46,7 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
     
     private Lookup lookup;
     private Boolean remoteManagementSupported = null;
+    private Boolean isJB4x = null;
     
     public JBWebApplicationsChildren(Lookup lookup) {
         this.lookup = lookup;
@@ -53,13 +57,12 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
         
         RequestProcessor.getDefault().post(new Runnable() {
             Vector keys = new Vector();
-            JBDeploymentManager dm = (JBDeploymentManager)lookup.lookup(JBDeploymentManager.class);
             
             public void run() {
                 try {
-                    // Query to the jboss4 server
+                    // Query to the jboss server
                     ObjectName searchPattern;
-                    if (isRemoteManagementSupported()) {
+                    if (isRemoteManagementSupported() && isJB4x()) {
                         searchPattern = new ObjectName("jboss.management.local:j2eeType=WebModule,J2EEApplication=null,*"); // NOI18N
                     }
                     else {
@@ -71,6 +74,8 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
                     
                     Iterator it = managedObj.iterator();
                     
+                    JBDeploymentManager dm = (JBDeploymentManager)lookup.lookup(JBDeploymentManager.class);
+                    
                     // Query results processing
                     while(it.hasNext()) {
                         try {
@@ -78,25 +83,27 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
                             String name = elem.getKeyProperty("name");
                             String url = "http://" + dm.getHost() + ":" + dm.getPort();
                             String context = "";
-                            if (isRemoteManagementSupported()) {
+                            if (isRemoteManagementSupported() && isJB4x()) {
                                 if("jmx-console.war".equals(name)) { // Excluding it. It's system package
                                     continue;
                                 }
-                                String descr = (String)Util.getMBeanParameter(dm, "jbossWebDeploymentDescriptor", elem.getCanonicalName(), String.class); // NOI18N
+                                String descr = (String)Util.getMBeanParameter(dm, "jbossWebDeploymentDescriptor", elem.getCanonicalName()); // NOI18N
                                 context = Util.getWebContextRoot(descr);
                             }
                             else {
                                 if (name.startsWith("//localhost/")) { // NOI18N
                                     name = name.substring("//localhost/".length()); // NOI18N
                                 }
-                                if("".equals(name) || "jmx-console".equals(name) || "jbossws".equals(name)) { // Excluding it. It's system package
+                                // excluding system packages
+                                if("".equals(name) || "jmx-console".equals(name) || "jbossws".equals(name) ||
+                                   "web-console".equals(name) || "invoker".equals(name)) {
                                     continue;
                                 }
                                 name +=  ".war"; // NOI18N
 
-                                context = (String)Util.getMBeanParameter(dm, "path", elem.getCanonicalName(), String.class); // NOI18N
+                                context = (String)Util.getMBeanParameter(dm, "path", elem.getCanonicalName()); // NOI18N
                             }
-                            keys.add(new JBWebModuleNode(name, lookup, url + context));                        
+                            keys.add(new JBWebModuleNode(name, lookup, (context == null ? null : url + context)));                        
                         } catch (Exception ex) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         }
@@ -136,5 +143,13 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
         }
         return remoteManagementSupported;
     }
-    
+
+    private boolean isJB4x() {
+        if (isJB4x == null) {
+            JBDeploymentManager dm = (JBDeploymentManager)lookup.lookup(JBDeploymentManager.class);
+            isJB4x = JBPluginUtils.isGoodJBServerLocation4x(dm);
+        }
+        return isJB4x;
+    }
+
 }

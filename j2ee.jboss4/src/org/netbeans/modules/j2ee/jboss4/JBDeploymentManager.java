@@ -42,6 +42,7 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.management.MBeanServerConnection;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import org.netbeans.modules.j2ee.jboss4.config.CarDeploymentConfiguration;
@@ -58,7 +59,7 @@ public class JBDeploymentManager implements DeploymentManager {
     
     private DeploymentManager dm;
     private String realUri;
-    private Object rmiServer;
+    private MBeanServerConnection rmiServer;
     
     private int debuggingPort = 8787;
     
@@ -109,7 +110,7 @@ public class JBDeploymentManager implements DeploymentManager {
         return instanceProperties;
     }
     
-    public synchronized Object getRMIServer() {
+    public synchronized MBeanServerConnection getRMIServer() {
         if(rmiServer == null) {
             ClassLoader oldLoader = null;
             
@@ -124,20 +125,27 @@ public class JBDeploymentManager implements DeploymentManager {
                 Hashtable env = new Hashtable();
                 
                 // Sets the jboss naming environment
-                env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.security.jndi.LoginInitialContextFactory");
+                env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.NamingContextFactory");
                 env.put(Context.PROVIDER_URL, "jnp://localhost:"+JBPluginUtils.getJnpPort(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR)));
-                env.put(Context.SECURITY_PRINCIPAL, props.getUsername());
-                env.put(Context.SECURITY_CREDENTIALS, props.getPassword());
                 env.put(Context.OBJECT_FACTORIES, "org.jboss.naming");
                 env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces" );
                 env.put("jnp.disableDiscovery", Boolean.TRUE);
                 
-                // set the java.security.auth.login.config system property needed by InitialContext 
                 final String JAVA_SEC_AUTH_LOGIN_CONF = "java.security.auth.login.config"; // NOI18N
                 String oldAuthConf = System.getProperty(JAVA_SEC_AUTH_LOGIN_CONF);
-                System.setProperty(JAVA_SEC_AUTH_LOGIN_CONF, props.getRootDir() + "/client/auth.conf"); // NOI18N
+                
+                File securityConf = new File(props.getRootDir(), "/client/auth.conf");
+                if (securityConf.exists()) {
+                    env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.security.jndi.LoginInitialContextFactory");
+                    env.put(Context.SECURITY_PRINCIPAL, props.getUsername());
+                    env.put(Context.SECURITY_CREDENTIALS, props.getPassword());
+                    System.setProperty(JAVA_SEC_AUTH_LOGIN_CONF, securityConf.getAbsolutePath()); // NOI18N
+                }
+                
                 // Gets naming context
                 InitialContext ctx = new InitialContext(env);
+
+                //restore java.security.auth.login.config system property 
                 if (oldAuthConf != null) {
                     System.setProperty(JAVA_SEC_AUTH_LOGIN_CONF, oldAuthConf);
                 } else {
@@ -145,7 +153,7 @@ public class JBDeploymentManager implements DeploymentManager {
                 }
                 
                 // Lookup RMI Adaptor
-                rmiServer = ctx.lookup("/jmx/invoker/RMIAdaptor");
+                rmiServer = (MBeanServerConnection)ctx.lookup("/jmx/invoker/RMIAdaptor");
             } catch (NameNotFoundException ex) {
             } catch (NamingException ex) {
                 // Nothing to do
@@ -158,7 +166,7 @@ public class JBDeploymentManager implements DeploymentManager {
         return rmiServer;
     }
     
-    public synchronized Object refreshRMIServer() {
+    public synchronized MBeanServerConnection refreshRMIServer() {
         rmiServer = null;
         return getRMIServer();
     }

@@ -30,9 +30,11 @@ import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.openide.ErrorManager;
@@ -99,21 +101,44 @@ public class JBDeploymentFactory implements DeploymentFactory {
 
     public static URLClassLoader getJBClassLoader(String serverRoot, String domainRoot){
         try {
+            // dom4j.jar library for JBoss Application Server 4.0.4 and lower and JBoss Application Server 5.0
+            File dom404 = new File(serverRoot + "/lib/dom4j.jar"); // NOI18N
 
-            // dom4j.jar library for JBoss Application Server 4.0.4 and lower
-            File dom404 = new File(serverRoot + "/lib/dom4j.jar");
-            
             // dom4j.jar library for JBoss Application Server 4.0.5
-            File dom405 = new File(domainRoot + "/lib/dom4j.jar");
+            File dom405 = new File(domainRoot + "/lib/dom4j.jar"); // NOI18N
+
+            // jboss-common-client.jar JBoss Application Server 4.x
+            File client40 = new File(serverRoot + "/client/jboss-common-client.jar"); // NOI18N
+
+            // jboss-client.jar JBoss Application Server 5.0
+            File client50 = new File(serverRoot + "/client/jboss-client.jar"); // NOI18N
+
+            // jboss-common-core.jar for JBoss Application Server 5.0
+            File core50 = new File(serverRoot + "/client/jboss-common-core.jar"); // NOI18N
+
+            // jboss-logging-spi.jar for JBoss Application Server 5.0
+            File logging50 = new File(serverRoot + "/client/jboss-logging-spi.jar"); // NOI18N
+
+            List<URL> urlList = new ArrayList<URL>();
             
-            URL urls[] = new URL[]{
-                    new File(serverRoot + "/client/jbossall-client.jar").toURI().toURL(),      //NOI18N
-                    new File(serverRoot + "/client/jboss-common-client.jar").toURI().toURL(),  //NOI18N
-                    new File(serverRoot + "/client/jboss-deployment.jar").toURI().toURL(),     //NOI18N
-                    new File(serverRoot + "/client/jnp-client.jar").toURI().toURL(),           //NOI18N
-                    (dom404.exists()) ? (dom404.toURI().toURL()) : (dom405.toURI().toURL())    //NOI18N
-            };
-            URLClassLoader loader = new JBClassLoader(urls, JBDeploymentFactory.class.getClassLoader());
+            urlList.add(new File(serverRoot + "/client/jbossall-client.jar").toURI().toURL());      //NOI18N
+            urlList.add(new File(serverRoot + "/client/jboss-deployment.jar").toURI().toURL());     //NOI18N
+            urlList.add(new File(serverRoot + "/client/jnp-client.jar").toURI().toURL());           //NOI18N
+            urlList.add((dom404.exists()) ? (dom404.toURI().toURL()) : (dom405.toURI().toURL()));   //NOI18N
+
+            if(client40.exists())
+                urlList.add(client40.toURI().toURL());
+
+            if(client50.exists())
+                urlList.add(client50.toURI().toURL());
+
+            if(core50.exists())
+                urlList.add(core50.toURI().toURL());
+
+            if(logging50.exists())
+                urlList.add(logging50.toURI().toURL());
+            
+            URLClassLoader loader = new JBClassLoader(urlList.toArray(new URL[] {}), JBDeploymentFactory.class.getClassLoader());
             return loader;
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
@@ -232,13 +257,15 @@ public class JBDeploymentFactory implements DeploymentFactory {
             String serverLocation = getDefaultInstallLocation();
             String domainLocation = serverLocation + File.separator + "server" + File.separator + "default"; // NOI18N
             setRemovability(serverInstanceDir, domainLocation);
-            if (JBPluginUtils.isGoodJBServerLocation(new File(serverLocation))) {
-                if (JBPluginUtils.isGoodJBInstanceLocation(new File(domainLocation))) {
-                    if (!isAlreadyRegistered(serverInstanceDir, domainLocation)) {
-                        String host = "localhost"; // NOI18N
-                        String port = JBPluginUtils.getHTTPConnectorPort(domainLocation); // NOI18N
-                        register(serverInstanceDir, serverLocation, domainLocation, host, port);
-                    }
+            if (JBPluginUtils.isGoodJBServerLocation4x(new File(serverLocation))    &&
+                JBPluginUtils.isGoodJBInstanceLocation4x(new File(domainLocation))  ||
+                JBPluginUtils.isGoodJBServerLocation5x(new File(serverLocation))    &&
+                JBPluginUtils.isGoodJBInstanceLocation5x(new File(domainLocation)))
+            {
+                if (!isAlreadyRegistered(serverInstanceDir, domainLocation)) {
+                    String host = "localhost"; // NOI18N
+                    String port = JBPluginUtils.getHTTPConnectorPort(domainLocation); // NOI18N
+                    register(serverInstanceDir, serverLocation, domainLocation, host, port);
                 }
             }
         }

@@ -86,8 +86,13 @@ public class JBProperties {
         ip = manager.getInstanceProperties();
     }
     
-    public boolean isJavaEE5() {
-        return new File(getServerDir(), "deploy/ejb3.deployer").exists(); // NOI18N
+    public boolean supportsJavaEE5ejb3() {
+        return new File(getServerDir(), "deploy/ejb3.deployer").exists() || // JBoss 4 // NOI18N
+               new File(getServerDir(), "deployers/ejb3.deployer").exists(); // JBoss 5 // NOI18N
+    }
+
+    public boolean supportsJavaEE5web() {
+        return new File(getServerDir(), "deployers/jbossweb.deployer").exists(); // JBoss 5 // NOI18N
     }
     
     public File getServerDir() {
@@ -142,17 +147,25 @@ public class JBProperties {
             File rootDir = getRootDir();
             File serverDir = getServerDir();
             list.add(fileToUrl(new File(rootDir, "client/jboss-j2ee.jar")));  // NOI18N
-            if (isJavaEE5()) {
-                File wsClientLib = new File(rootDir, "client/jbossws-client.jar"); // NOI18N
-                if (wsClientLib.exists()) {
-                    list.add(fileToUrl(wsClientLib));
-                }
+
+            File wsClientLib = new File(rootDir, "client/jbossws-client.jar"); // NOI18N
+            if (wsClientLib.exists()) {
+                list.add(fileToUrl(wsClientLib));
             }
+
             addFiles(new File(rootDir, "lib"), list); //NOI18N
             addFiles(new File(serverDir, "/lib"), list); //NOI18N
-            if (isJavaEE5()) {
-                addFiles(new File(serverDir, "/deploy/ejb3.deployer/"), list); // NOI18N
+            if (supportsJavaEE5ejb3()) {
+                File ejb3deployer = new File(serverDir, "/deploy/ejb3.deployer/");  // NOI18N
+                if (ejb3deployer.exists()) {
+                    addFiles(ejb3deployer, list);
+                }
+                else
+                if ((ejb3deployer = new File(serverDir, "/deployers/ejb3.deployer/")).exists()) {        // NOI18N
+                    addFiles(ejb3deployer, list);
+                }
             }
+            
             File jsfAPI = new File(serverDir, "/deploy/jbossweb-tomcat55.sar/jsf-libs/myfaces-api.jar"); // NOI18N
             if (jsfAPI.exists()) {
                 try {
@@ -161,8 +174,25 @@ public class JBProperties {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
+            else 
+            if ((jsfAPI = new File(serverDir, "/deployers/jbossweb.deployer/jsf-libs/jsf-api.jar")).exists()) { // NOI18N 
+                try {
+                    list.add(fileToUrl(jsfAPI));
+                } catch (MalformedURLException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+            
             File jsfIMPL = new File(serverDir, "/deploy/jbossweb-tomcat55.sar/jsf-libs/myfaces-impl.jar"); // NOI18N
             if (jsfIMPL.exists()) {
+                try {
+                    list.add(fileToUrl(jsfIMPL));
+                } catch (MalformedURLException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+            else
+            if ((jsfIMPL = new File(serverDir, "/deployers/jbossweb.deployer/jsf-libs/jsf-impl.jar")).exists()) { // NOI18N
                 try {
                     list.add(fileToUrl(jsfIMPL));
                 } catch (MalformedURLException e) {

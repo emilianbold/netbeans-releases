@@ -61,7 +61,7 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         assert JBDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
         // Ensure that for each server instance will be always used the same instance of the J2eePlatformImpl
         JBDeploymentManager manager  = (JBDeploymentManager) dm;
-        InstanceProperties ip = ((JBDeploymentManager) manager).getInstanceProperties();
+        InstanceProperties ip = manager.getInstanceProperties();
         if (ip == null) {
             throw new RuntimeException("Cannot create J2eePlatformImpl instance for " + manager.getUrl()); // NOI18N
         }
@@ -101,7 +101,7 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         }
 
         public Set getSupportedSpecVersions() {
-            if (properties.isJavaEE5()) {
+            if (properties.supportsJavaEE5ejb3() && properties.supportsJavaEE5web()) {
                 return SPEC_VERSIONS_5;
             } else {
                 return SPEC_VERSIONS;
@@ -109,14 +109,17 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         }
 
         public Set<String> getSupportedSpecVersions(Object moduleType) {
-            // JavaEE5 web and app client modules are not supported
-            if (properties.isJavaEE5() && !(J2eeModule.WAR.equals(moduleType) || J2eeModule.CLIENT.equals(moduleType))) {
+            // JavaEE5 app client is not supported for JBoss 5.x
+            if (properties.supportsJavaEE5ejb3() && properties.supportsJavaEE5web() && !J2eeModule.CLIENT.equals(moduleType)) {
+                return SPEC_VERSIONS_5;
+            }
+            // JavaEE5 web and app client modules are not supported for JBoss 4.x
+            if (properties.supportsJavaEE5ejb3() && !(J2eeModule.WAR.equals(moduleType) || J2eeModule.CLIENT.equals(moduleType))) {
                 return SPEC_VERSIONS_5;
             } else {
                 return SPEC_VERSIONS;
             }
         }
-
 
         public Set getSupportedModuleTypes() {
             return MODULE_TYPES;

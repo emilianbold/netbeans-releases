@@ -80,16 +80,18 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     public boolean isValid() {
         String locationStr = ((AddServerLocationVisualPanel)getComponent()).getInstallLocation();
         File location = new File(locationStr);
-        if (!JBPluginUtils.isGoodJBServerLocation(location)) {
+        if (!JBPluginUtils.isGoodJBServerLocation4x(location) &&
+            !JBPluginUtils.isGoodJBServerLocation5x(location)) 
+        {
             wizard.putProperty(PROP_ERROR_MESSAGE,  NbBundle.getMessage(AddServerLocationPanel.class, "MSG_InvalidServerLocation")); // NOI18N
             return false;
-        } else {
-            wizard.putProperty(PROP_ERROR_MESSAGE, null);
-            JBPluginProperties.getInstance().setInstallLocation(((AddServerLocationVisualPanel)getComponent()).getInstallLocation());
-            JBPluginProperties.getInstance().saveProperties();
-            instantiatingIterator.setInstallLocation(locationStr);
-            return true;
         }
+        
+        wizard.putProperty(PROP_ERROR_MESSAGE, null);
+        JBPluginProperties.getInstance().setInstallLocation(((AddServerLocationVisualPanel)getComponent()).getInstallLocation());
+        JBPluginProperties.getInstance().saveProperties();
+        instantiatingIterator.setInstallLocation(locationStr);
+        return true;
     }
 
     public void removeChangeListener(ChangeListener l) {
