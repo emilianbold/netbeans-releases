@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
          <testset dir="qa-functional/src">
              <patternset>
                <include name="bookmarks/BookmarksPersistenceTest.class"/>
+               <include name="bookmarks/BookmarksPersistenceTest.class/testBookmarkMerge" expectedFail="See issue 93816"/>
              </patternset>
          </testset>
      </testbag>

@@ -20,8 +20,6 @@
 
 package bookmarks;
 
-import lib.EditorTestCase;
-
 /**
  *
  * @author Miloslav Metelka
