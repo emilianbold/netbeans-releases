@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
         
-    <testbag testattribs="validation, autocompletion" executor="ide_as" name="JSP Syntax autocompletion">
+    <testbag testattribs="stable, validation, autocompletion" executor="ide_as" name="JSP Syntax autocompletion">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="**/AutoCompletionTest.class"/>
@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>   
     
     <!-- Validation suite for my module -->
-    <testbag testattribs="validation, completion" executor="ide_as" name="JSP Syntax validation">
+    <testbag testattribs="stable, validation, completion" executor="ide_as" name="JSP Syntax validation">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="**/JspColoringTest.class"/>
@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="validation, indentation" executor="ide_as" name="JSP indentation test">
+    <testbag testattribs="stable, validation, indentation" executor="ide_as" name="JSP indentation test">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="**/IndentationTest.class"/>
