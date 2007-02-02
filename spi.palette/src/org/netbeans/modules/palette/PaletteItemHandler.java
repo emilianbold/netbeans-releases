@@ -130,7 +130,6 @@ public final class PaletteItemHandler extends DefaultHandler {
             tooltip = textBuffer.toString();
             textBuffer = null;
         }
-        System.err.println( qName + ">" );
     }
     
     public void characters(char buf[], int offset, int len)
