@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -17,15 +17,17 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project name="versioncontrol/localhistory/test" basedir="." default="all" >
 
-    <!-- Name of tested module -->
-    <property name="xtest.module" value="versioncontrol/localhistory"/>
+<project name="versioncontrol/localhistory/test-qa-functional" basedir="." default="all">
 
-    <import file="../../../nbbuild/templates/xtest.xml"/>
+    <target name="qa-functional-compiler" depends="init,init-cp">
+        <buildTests srcdir="qa-functional/src">
+            <classpath refid="test.qa-functional.compile.cp"/>
+        </buildTests>
+    </target>
 
-    <!-- default testtypes, attributes used when no value is supplied from command line -->
-    <property name="xtest.testtype" value="qa-functional"/>
-    <property name="xtest.attribs" value="validation"/>
+    <!-- Imports default qa-functional-compiler and runidetest executor.
+         jemmy and jellytools jars are on classpath for both. -->
+    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
 
 </project>
