@@ -595,7 +595,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         setName(ui.getName());
         Component c=null;
         if (ui instanceof RefactoringCustomUI) {
-            c = ((RefactoringCustomUI) ui).getCustomComponent(getImplCollection(elements));
+            c = ((RefactoringCustomUI) ui).getCustomComponent(elements);
             this.left.remove(c);
         }
         final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RefactoringPanel.class, isQuery ? "LBL_PreparingUsagesTree":"LBL_PreparingRefactoringTree"));
@@ -742,15 +742,6 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             isVisible = true;
         }
         setRefactoringEnabled(false, true);
-    }
-    
-    private Collection<RefactoringElementImplementation> getImplCollection(Collection<RefactoringElement> elements) {
-        Collection<RefactoringElementImplementation> result = new ArrayList();
-        for (RefactoringElement e:elements) {
-            result.add(APIAccessor.DEFAULT.getRefactoringElementImplementation(e));
-        }
-        return Collections.unmodifiableCollection(result);
-        
     }
     
     public void requestFocus() {

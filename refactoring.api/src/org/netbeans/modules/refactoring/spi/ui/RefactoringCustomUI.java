@@ -21,7 +21,7 @@ package org.netbeans.modules.refactoring.spi.ui;
 import java.awt.Component;
 import java.util.Collection;
 import javax.swing.Icon;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.netbeans.modules.refactoring.api.RefactoringElement;
 
 /**
  * Backward compatible extension to RefactoringUI providing custom preview panel.
@@ -37,7 +37,7 @@ public interface RefactoringCustomUI {
     /**
      * @return component to show
      */ 
-    Component getCustomComponent(Collection<RefactoringElementImplementation> elements);
+    Component getCustomComponent(Collection<RefactoringElement> elements);
     /**
      * @return icon for toggle button
      */
