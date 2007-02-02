@@ -69,7 +69,7 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
         return State.REJECTED;
     }
 
-    public State keyTyped (Widget widget, WidgetKeyEvent event) {
+    public State keyPressed (Widget widget, WidgetKeyEvent event) {
         if (event.getKeyChar () == KeyEvent.VK_ENTER)
             if (openEditor (widget))
                 return State.createLocked (widget, this);
