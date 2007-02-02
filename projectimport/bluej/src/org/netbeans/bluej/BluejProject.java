@@ -478,7 +478,7 @@ public final class BluejProject implements Project, AntProjectListener {
                     EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     File bjHome = BlueJSettings.getDefault().getHome();
                     if (bjHome != null) {
-                        ep.setProperty(PROP_BLUEJ_HOME, bjHome.getAbsolutePath());
+                        ep.setProperty(PROP_BLUEJ_HOME, getUserLibPath(bjHome).getAbsolutePath());
                     } else {
                         ep.remove(PROP_BLUEJ_HOME);
                     }

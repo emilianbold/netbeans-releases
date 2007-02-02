@@ -30,10 +30,14 @@ import org.netbeans.bluej.BluejProject;
 import org.netbeans.bluej.options.BlueJSettings;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -45,9 +49,31 @@ public class CPImpl implements ClassPathImplementation {
     private List listeners = new ArrayList();
 
     private BluejProject project;
+    private FileObject userLib;
+    private PropertyChangeListener settingsListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent arg0) {
+            fireChange();
+        }
+    };
+    
+    private FileChangeListener fileListener = new FileChangeAdapter() {
+        public void fileDataCreated(FileEvent arg0) {
+            fireChange();
+        }
+
+        public void fileDeleted(FileEvent arg0) {
+            fireChange();
+        }
+
+        public void fileRenamed(FileRenameEvent arg0) {
+            fireChange();
+        }
+    };
     /** Creates a new instance of CPImpl */
     public CPImpl(BluejProject prj) {
         project = prj;
+        BlueJSettings.getDefault().addPropertyChangeListener(
+                WeakListeners.propertyChange(settingsListener, BlueJSettings.getDefault()));
     }
 
     public synchronized List getResources() {
@@ -72,7 +98,18 @@ public class CPImpl implements ClassPathImplementation {
                             resources.add(ClassPathSupport.createResource(URLMapper.findURL(FileUtil.getArchiveRoot(fos[i]), URLMapper.INTERNAL)));
                         }
                     }
+                } 
+                if (userLib != null && !userLib.equals(fo)) {
+                    //remove
+                    userLib.removeFileChangeListener(fileListener);
                 }
+                userLib = fo;
+                //add
+                userLib.addFileChangeListener(fileListener);
+            } else if (userLib != null) {
+                //remove listener
+                userLib.removeFileChangeListener(fileListener);
+                userLib = null;
             }
             String userPath = BlueJSettings.getDefault().getUserLibrariesAsClassPath();
             if (userPath.length() > 0) {
