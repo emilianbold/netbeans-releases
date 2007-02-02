@@ -70,6 +70,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.db.sql.visualeditor</friend>
                 <friend>org.netbeans.modules.db.sql.editor</friend>
                 <friend>org.netbeans.modules.j2ee.jpa.verification</friend>
+                <friend>org.netbeans.modules.form.j2ee</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
                 <package>org.netbeans.modules.db.api.explorer</package>
                 <package>org.netbeans.modules.db.api.sql</package>

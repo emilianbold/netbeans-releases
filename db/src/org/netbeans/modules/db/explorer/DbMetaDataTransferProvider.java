@@ -33,15 +33,30 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 public interface DbMetaDataTransferProvider {
 
     /**
+     * Returns the data flavor representing database connections.
+     */
+    DataFlavor getConnectionDataFlavor();
+
+    /**
      * Returns the data flavor representing database tables.
      */
     DataFlavor getTableDataFlavor();
-
+    
     /**
      * Returns the data flavor representing database views.
      */
     DataFlavor getViewDataFlavor();
 
+    /**
+     * Returns the data flavor representing columns of database tables.
+     */
+    DataFlavor getColumnDataFlavor();
+
+    /**
+     * Returns an object which encapsulates a database connection.
+     */
+    Object createConnectionData(DatabaseConnection dbconn, JDBCDriver jdbcDriver);
+    
     /**
      * Returns an object which encapsulates a database table.
      */
@@ -51,4 +66,9 @@ public interface DbMetaDataTransferProvider {
      * Returns an object which encapsulates a database view.
      */
     Object createViewData(DatabaseConnection dbconn, JDBCDriver jdbcDriver, String viewName);
+    
+    /**
+     * Returns an object which encapsulates a column of a database table.
+     */
+    Object createColumnData(DatabaseConnection dbconn, JDBCDriver jdbcDriver, String tableName, String columnName);
 }

@@ -19,10 +19,17 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
+import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DbMetaDataTransferProvider;
+import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
+import org.openide.util.Lookup;
 
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
@@ -33,6 +40,7 @@ import org.openide.util.RequestProcessor;
 import org.netbeans.lib.ddl.adaptors.DefaultAdaptor;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
 * Node representing open or closed connection to database.
@@ -354,6 +362,25 @@ public class ConnectionNode extends DatabaseNode {
 
     public String getShortDescription() {
         return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_Connection"); //NOI18N
+    }
+
+    public Transferable clipboardCopy() throws IOException {
+        Transferable result;
+        final DbMetaDataTransferProvider dbTansferProvider = (DbMetaDataTransferProvider)Lookup.getDefault().lookup(DbMetaDataTransferProvider.class);
+        if (dbTansferProvider != null) {
+            ExTransferable exTransferable = ExTransferable.create(super.clipboardCopy());
+            ConnectionNodeInfo cni = (ConnectionNodeInfo)getInfo().getParent(DatabaseNode.CONNECTION);
+            final DatabaseConnection dbconn = ConnectionList.getDefault().getConnection(cni.getDatabaseConnection());
+            exTransferable.put(new ExTransferable.Single(dbTansferProvider.getConnectionDataFlavor()) {
+                protected Object getData() {
+                    return dbTansferProvider.createConnectionData(dbconn.getDatabaseConnection(), dbconn.findJDBCDriver());
+                }
+            });
+            result = exTransferable;
+        } else {
+            result = super.clipboardCopy();
+        }
+        return result;
     }
 
 }
