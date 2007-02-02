@@ -30,7 +30,7 @@ import org.openide.util.*;
  *
  * @author Jiri Rechtacek
  */
-final class NewObjectWizardPanel implements WizardDescriptor.FinishablePanel {
+final class NewObjectWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
     private NewObjectPanel newObjectPanelUI;
     /** listener to changes in the wizard */
     private ChangeListener listener;
@@ -135,7 +135,7 @@ final class NewObjectWizardPanel implements WizardDescriptor.FinishablePanel {
      * This method can be called multiple times on one instance of <code>WizardDescriptor.Panel</code>.
      * @param settings the object representing wizard panel state, as originally supplied to {@link WizardDescriptor#WizardDescriptor(WizardDescriptor.Iterator,Object)}
      */
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
         this.wizard = (TemplateWizard)settings;
         DataObject template = wizard.getTemplate ();
         if (template != null) {
@@ -159,7 +159,7 @@ final class NewObjectWizardPanel implements WizardDescriptor.FinishablePanel {
      * This method can be called multiple times on one instance of <code>WizardDescriptor.Panel</code>.
      * @param settings the object representing a settings of the wizard
      */
-    public void storeSettings(Object settings) {
+    public void storeSettings(WizardDescriptor settings) {
         String name = getPanelUI ().getNewObjectName ();
         if (name.equals (NewObjectPanel.defaultNewObjectName ())) {
             name = null;

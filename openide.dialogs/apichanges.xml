@@ -23,6 +23,22 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="dialogs">Dialogs API</apidef>
 </apidefs>
 <changes>
+    <change id="generified.wizarddescriptor.panel">
+           <api name="dialogs"/>
+           <summary>Generified <code>WizardDescriptor.Panel</code></summary>
+           <version major="7" minor="2"/>
+           <date day="2" month="2" year="2007"/>
+           <author login="jtulach"/>
+           <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
+           <description>
+               <code>WizardDescriptor.Panel</code> and <code>WizardDescriptor.Iterator</code>
+               has been generified to take generic type for data passed
+               into <code>readSettings</code> and <code>storeSettings</code>
+               objects.
+           </description>
+           <class package="org.openide" name="WizardDescriptor"/>
+           <issue number="92762"/>
+    </change>
     <change id="WizardDescriptor.ProgressInstantiatingIterator">
            <api name="dialogs"/>
            <summary>Interface <code>ProgressInstantiatingIterator</code> added</summary>

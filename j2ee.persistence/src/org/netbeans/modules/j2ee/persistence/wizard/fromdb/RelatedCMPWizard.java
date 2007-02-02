@@ -41,6 +41,8 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -51,7 +53,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Chris Webster, Martin Adamek, Andrei Badea
  */
-public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements TemplateWizard.Iterator {
+public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescriptor> implements TemplateWizard.Iterator {
     
     private static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
     private static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; //NOI18N;
@@ -62,12 +64,12 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
     private static final String TYPE_CMP = "cmp"; // NOI18N
     private static final String TYPE_JPA = "jpa"; // NOI18N
     
-    private static final Lookup.Result/*<PersistenceGeneratorProvider>*/ PERSISTENCE_PROVIDERS =
-            Lookup.getDefault().lookup(new Lookup.Template(PersistenceGeneratorProvider.class));
+    private static final Lookup.Result<PersistenceGeneratorProvider> PERSISTENCE_PROVIDERS =
+            Lookup.getDefault().lookupResult(PersistenceGeneratorProvider.class);
     
     private final String type;
     
-    private WizardDescriptor.Panel[] panels;
+    private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private String[] steps;
     private int stepsStartPos;
     
@@ -92,7 +94,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
     private static PersistenceGenerator createPersistenceGenerator(String type) {
         assert type != null;
         
-        Collection<PersistenceGeneratorProvider> providers = PERSISTENCE_PROVIDERS.allInstances();
+        Collection<? extends PersistenceGeneratorProvider> providers = PERSISTENCE_PROVIDERS.allInstances();
         for (PersistenceGeneratorProvider provider : providers) {
             if (type.equals(provider.getGeneratorType())) {
                 return provider.createGenerator();
@@ -105,8 +107,9 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
         return TYPE_CMP.equals(type);
     }
     
-    protected WizardDescriptor.Panel[] initializePanels() {
-        panels = new WizardDescriptor.Panel[] {
+    @SuppressWarnings("unchecked")
+    protected WizardDescriptor.Panel<WizardDescriptor>[] initializePanels() {
+        panels = (WizardDescriptor.Panel<WizardDescriptor>[])new WizardDescriptor.Panel<?>[] {
             new DatabaseTablesPanel.WizardPanel(),
             new EntityClassesPanel.WizardPanel()
         };
@@ -118,8 +121,8 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
      * each panel when it is needed, not in advance (which would cause
      * all the panels' components to be created prematurely).
      */
-    public WizardDescriptor.Panel current() {
-        WizardDescriptor.Panel panel = super.current();
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
+        WizardDescriptor.Panel<WizardDescriptor> panel = super.current();
         
         if (steps == null) {
             mergeSteps(new String[] {
@@ -200,7 +203,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
         generator.uninit();
     }
     
-    public Set instantiate(final TemplateWizard wiz) throws IOException {
+    public Set<DataObject> instantiate(final TemplateWizard wiz) throws IOException {
         Component c = WindowManager.getDefault().getMainWindow();
         
         // create the pu first if needed
@@ -274,7 +277,9 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
         //     created = Collections.singleton(SourceGroupSupport.getFolderForPackage(helper.getLocation(), helper.getPackageName()));
         // }
         
-        return Collections.singleton(SourceGroupSupport.getFolderForPackage(helper.getLocation(), helper.getPackageName()));
+        return Collections.<DataObject>singleton(DataFolder.findFolder(
+            SourceGroupSupport.getFolderForPackage(helper.getLocation(), helper.getPackageName())
+        ));
     }
     
     private void createBeans(TemplateWizard wiz, ProgressHandle handle) throws IOException {

@@ -28,7 +28,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Jiri Rechtacek
  */
-final class TemplateWizardPanel1 implements WizardDescriptor.Panel {
+final class TemplateWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor> {
     private TemplateWizard1 templateWizard1UI;
     /** listener to changes in the wizard */
     private ChangeListener listener;
@@ -101,7 +101,7 @@ final class TemplateWizardPanel1 implements WizardDescriptor.Panel {
     * This method can be called multiple times on one instance of <code>WizardDescriptor.Panel</code>.
     * @param settings the object representing wizard panel state, as originally supplied to {@link WizardDescriptor#WizardDescriptor(WizardDescriptor.Iterator,Object)}
     */
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
         getPanelUI ().implReadSettings (settings);
     }
     
@@ -114,7 +114,7 @@ final class TemplateWizardPanel1 implements WizardDescriptor.Panel {
     * This method can be called multiple times on one instance of <code>WizardDescriptor.Panel</code>.
     * @param settings the object representing a settings of the wizard
     */
-    public void storeSettings(Object settings) {
+    public void storeSettings(WizardDescriptor settings) {
         getPanelUI ().implStoreSettings (settings);
     }
     

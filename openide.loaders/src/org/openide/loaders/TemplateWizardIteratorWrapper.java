@@ -29,7 +29,7 @@ import org.openide.WizardDescriptor;
  *
  * @author Jiri Rechtacek
  */
-class TemplateWizardIteratorWrapper implements WizardDescriptor.Iterator, ChangeListener {
+class TemplateWizardIteratorWrapper implements WizardDescriptor.Iterator<WizardDescriptor>, ChangeListener {
 
     private TemplateWizardIterImpl iterImpl;
     
@@ -63,7 +63,7 @@ class TemplateWizardIteratorWrapper implements WizardDescriptor.Iterator, Change
     /** Get the current panel.
      * @return the panel
      */
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         return iterImpl.current ();
     }
 
@@ -143,19 +143,19 @@ class TemplateWizardIteratorWrapper implements WizardDescriptor.Iterator, Change
         return iterImpl.instantiate (handle);
     }
     
-    static class InstantiatingIterator extends TemplateWizardIteratorWrapper implements WizardDescriptor.InstantiatingIterator {
+    static class InstantiatingIterator extends TemplateWizardIteratorWrapper implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         public InstantiatingIterator (TemplateWizardIterImpl it) {
             super (it);
         }
     }
     
-    static class AsynchronousInstantiatingIterator extends InstantiatingIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
+    static class AsynchronousInstantiatingIterator extends InstantiatingIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
         public AsynchronousInstantiatingIterator (TemplateWizardIterImpl it) {
             super (it);
         }
     }
     
-    static class ProgressInstantiatingIterator extends InstantiatingIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+    static class ProgressInstantiatingIterator extends InstantiatingIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
         private TemplateWizardIterImpl itImpl;
         public ProgressInstantiatingIterator (TemplateWizardIterImpl it) {
             super (it);

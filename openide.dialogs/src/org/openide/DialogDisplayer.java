@@ -286,7 +286,7 @@ public abstract class DialogDisplayer {
             }
 
             public void updateOptions() {
-                Set addedOptions = new HashSet(5);
+                Set<Object> addedOptions = new HashSet<Object>(5);
                 Object[] options = nd.getOptions();
 
                 if (options == null) {

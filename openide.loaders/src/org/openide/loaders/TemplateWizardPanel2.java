@@ -27,7 +27,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Jiri Rechtacek
  */
-final class TemplateWizardPanel2 implements WizardDescriptor.FinishablePanel {
+final class TemplateWizardPanel2 implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
     private TemplateWizard2 templateWizard2UI;
     /** listener to changes in the wizard */
     private ChangeListener listener;
@@ -111,7 +111,7 @@ final class TemplateWizardPanel2 implements WizardDescriptor.FinishablePanel {
      * by the wizard are not valid.
      *
      */
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
         this.settings = (WizardDescriptor)settings;
         getPanelUI ().implReadSettings (settings);
     }
@@ -130,7 +130,7 @@ final class TemplateWizardPanel2 implements WizardDescriptor.FinishablePanel {
      * @param settings the object representing wizard panel state
      *
      */
-    public void storeSettings(Object settings) {
+    public void storeSettings(WizardDescriptor settings) {
         getPanelUI ().implStoreSettings (settings);
         this.settings = null;
     }

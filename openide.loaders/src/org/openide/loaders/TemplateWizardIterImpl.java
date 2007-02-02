@@ -57,7 +57,7 @@ class TemplateWizardIterImpl extends Object
     /** Getter for the first panel.
      * @return the first and default panel
      */
-    private WizardDescriptor.Panel firstPanel () {
+    private WizardDescriptor.Panel<WizardDescriptor> firstPanel () {
         return wizardInstance.templateChooser();
     }
 
@@ -114,7 +114,7 @@ class TemplateWizardIterImpl extends Object
     /** Get the current panel.
      * @return the panel
      */
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         return showingPanel ? firstPanel () : getIterator ().current ();
     }
 

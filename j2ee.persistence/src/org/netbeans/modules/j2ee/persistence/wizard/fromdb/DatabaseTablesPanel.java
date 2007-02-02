@@ -786,7 +786,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         }
     }
     
-    public static final class WizardPanel implements WizardDescriptor.Panel, ChangeListener {
+    public static final class WizardPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
         
         private DatabaseTablesPanel component;
         private boolean componentInitialized;
@@ -827,8 +827,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             changeSupport.removeChangeListener(listener);
         }
         
-        public void readSettings(Object settings) {
-            wizardDescriptor = (WizardDescriptor)settings;
+        public void readSettings(WizardDescriptor settings) {
+            wizardDescriptor = settings;
             if (!componentInitialized) {
                 componentInitialized = true;
                 
@@ -888,8 +888,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             return true;
         }
         
-        public void storeSettings(Object settings) {
-            WizardDescriptor wiz = (WizardDescriptor)settings;
+        public void storeSettings(WizardDescriptor settings) {
+            WizardDescriptor wiz = settings;
             Object buttonPressed = wiz.getValue();
             if (buttonPressed.equals(WizardDescriptor.NEXT_OPTION) ||
                     buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {

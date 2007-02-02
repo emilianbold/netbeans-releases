@@ -68,9 +68,9 @@ public class TemplateWizard extends WizardDescriptor {
     static java.awt.Dimension PREF_DIM = new java.awt.Dimension (560, 350);
 
     /** panel */
-    private Panel templateChooser;
+    private Panel<WizardDescriptor> templateChooser;
     /** panel */
-    private Panel targetChooser;
+    private Panel<WizardDescriptor> targetChooser;
     /** whether to show target chooser */
     private boolean showTargetChooser = true;
     
@@ -271,7 +271,7 @@ public class TemplateWizard extends WizardDescriptor {
     /** Returns wizard panel that is used to choose a template.
      * @return wizard panel
      */
-    public Panel templateChooser () {
+    public Panel<WizardDescriptor> templateChooser () {
         synchronized (this) {
             if (templateChooser == null) {
                 templateChooser = createTemplateChooser ();
@@ -284,7 +284,7 @@ public class TemplateWizard extends WizardDescriptor {
      * name of the template.
      * @return wizard panel
      */
-    public Panel targetChooser () {
+    public Panel<WizardDescriptor> targetChooser () {
         synchronized (this) {
             if (targetChooser == null) {
                 targetChooser = createTargetChooser ();
@@ -307,7 +307,7 @@ public class TemplateWizard extends WizardDescriptor {
      * 
      * @return the panel
      */
-    protected Panel createTemplateChooser () {
+    protected Panel<WizardDescriptor> createTemplateChooser () {
         return new TemplateWizardPanel1 ();
     }
 
@@ -315,8 +315,12 @@ public class TemplateWizard extends WizardDescriptor {
      * 
      * @return the panel
      */
-    protected Panel createTargetChooser () {
-        return showTargetChooser ? (Panel)new TemplateWizardPanel2 () : (Panel)new NewObjectWizardPanel ();
+    protected Panel<WizardDescriptor> createTargetChooser () {
+        if (showTargetChooser) {
+            return new TemplateWizardPanel2 ();
+        } else {
+            return new NewObjectWizardPanel ();
+        }
     }
     
     /** Allows subclasses to provide their own default iterator
@@ -661,6 +665,7 @@ public class TemplateWizard extends WizardDescriptor {
     * @param obj the data object
     * @return custom iterator or null
     */
+    @SuppressWarnings("unchecked")
     public static Iterator getIterator (DataObject obj) {
         Object unknownIterator = obj.getPrimaryFile ().getAttribute(CUSTOM_ITERATOR);
         if (unknownIterator == null) {
@@ -672,7 +677,7 @@ public class TemplateWizard extends WizardDescriptor {
             it = (Iterator)unknownIterator;
         // own brigde for each one iterator type
         } if (unknownIterator instanceof WizardDescriptor.InstantiatingIterator) {
-            it = new InstantiatingIteratorBridge((WizardDescriptor.InstantiatingIterator) unknownIterator);
+            it = new InstantiatingIteratorBridge((WizardDescriptor.InstantiatingIterator<WizardDescriptor>) unknownIterator);
         }
         if (it != null) {
             return it;
@@ -808,7 +813,7 @@ public class TemplateWizard extends WizardDescriptor {
     * <P>
     * Implements <code>Node.Cookie</code> since version 2.13
     */
-    public interface Iterator extends WizardDescriptor.Iterator,
+    public interface Iterator extends WizardDescriptor.Iterator<WizardDescriptor>,
     java.io.Serializable, org.openide.nodes.Node.Cookie {
         /** Instantiates the template using information provided by
          * the wizard. If instantiation fails then wizard remains open to enable correct values.
@@ -890,7 +895,7 @@ public class TemplateWizard extends WizardDescriptor {
         /** Get the current panel.
         * @return the panel
         */
-        public Panel current() {
+        public Panel<WizardDescriptor> current() {
             return targetChooser ();
         }
         
@@ -939,8 +944,8 @@ public class TemplateWizard extends WizardDescriptor {
     }
     
     private static class InstantiatingIteratorBridge implements TemplateWizard.Iterator {
-        private WizardDescriptor.InstantiatingIterator instantiatingIterator;
-        public InstantiatingIteratorBridge (WizardDescriptor.InstantiatingIterator it) {
+        private WizardDescriptor.InstantiatingIterator<WizardDescriptor> instantiatingIterator;
+        public InstantiatingIteratorBridge (WizardDescriptor.InstantiatingIterator<WizardDescriptor> it) {
             instantiatingIterator = it;
         }
         
@@ -952,7 +957,7 @@ public class TemplateWizard extends WizardDescriptor {
             instantiatingIterator.addChangeListener (l);
         }
         
-        public org.openide.WizardDescriptor.Panel current () {
+        public org.openide.WizardDescriptor.Panel<WizardDescriptor> current () {
             return instantiatingIterator.current ();
         }
         

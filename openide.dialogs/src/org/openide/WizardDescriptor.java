@@ -253,8 +253,8 @@ public class WizardDescriptor extends DialogDescriptor {
     /** 'North' or 'South' */
     private String imageAlignment = "North"; // NOI18N
 
-    /** Iterator between panels in the wizard */
-    private Iterator panels;
+    /** Iterator between panels in the wizard and its settings */
+    private SettingsAndIterator<?> data;
 
     /** Change listener that invokes method update state */
     private ChangeListener weakChangeListener;
@@ -267,19 +267,13 @@ public class WizardDescriptor extends DialogDescriptor {
     // base listener which won't be directly attached, will only wrapped by WeakListener
     private Listener baseListener;
 
-    /** current panel */
-    private Panel current;
-
-    /** settings to be used for the panels */
-    private Object settings;
-
     /** message format to create title of the document */
     private MessageFormat titleFormat;
 
     /** hashtable with additional settings that is usually used
     * by Panels to store their data
     */
-    private Map properties;
+    private Map<String,Object> properties;
     ResourceBundle bundle = NbBundle.getBundle(WizardDescriptor.class);
 
     /** Request processor that is used for asynchronous jobs (background validation, 
@@ -320,19 +314,18 @@ public class WizardDescriptor extends DialogDescriptor {
     * @param settings the settings to pass to panels, or <code>null</code>
     * @see #WizardDescriptor(WizardDescriptor.Iterator, Object)
     */
-    public WizardDescriptor(Panel[] wizardPanels, Object settings) {
-        this(new ArrayIterator(wizardPanels), settings);
+    public <Data> WizardDescriptor(Panel<Data>[] wizardPanels, Data settings) {
+        this(new SettingsAndIterator<Data>(new ArrayIterator<Data>(wizardPanels), settings));
     }
-
+    
     /** Create a new wizard from a fixed list of panels with settings
     * defaulted to <CODE>this</CODE>.
     *
     * @param wizardPanels the panels to use
     * @see #WizardDescriptor(WizardDescriptor.Iterator, Object)
     */
-    public WizardDescriptor(Panel[] wizardPanels) {
-        // passing CLOSE_PREVENTER which is treated especially
-        this(wizardPanels, CLOSE_PREVENTER);
+    public WizardDescriptor(Panel<WizardDescriptor>[] wizardPanels) {
+        this(SettingsAndIterator.create(new ArrayIterator<WizardDescriptor>(wizardPanels)));
     }
 
     /** Create wizard for a sequence of panels, passing some settings to the panels.
@@ -341,29 +334,29 @@ public class WizardDescriptor extends DialogDescriptor {
     * @see WizardDescriptor.Panel#readSettings
     * @see WizardDescriptor.Panel#storeSettings
     */
-    public WizardDescriptor(Iterator panels, Object settings) {
+    public <Data>WizardDescriptor(Iterator<Data> panels, Data settings) {
+        this(new SettingsAndIterator<Data>(panels, settings));
+    }
+    
+    private <Data> WizardDescriptor(SettingsAndIterator<Data> data) {
         super("", "", true, DEFAULT_OPTION, null, CLOSE_PREVENTER); // NOI18N
 
-        this.settings = (settings == CLOSE_PREVENTER) ? this : settings;
+        this.data = data;
 
         baseListener = new Listener();
 
-        try {
-            weakNextButtonListener = (ActionListener) WeakListeners.create(
-                    Class.forName("java.awt.event.ActionListener"), baseListener, nextButton
-                ); // NOI18N
-            weakPreviousButtonListener = (ActionListener) WeakListeners.create(
-                    Class.forName("java.awt.event.ActionListener"), baseListener, previousButton
-                ); // NOI18N
-            weakFinishButtonListener = (ActionListener) WeakListeners.create(
-                    Class.forName("java.awt.event.ActionListener"), baseListener, finishButton
-                ); // NOI18N
-            weakCancelButtonListener = (ActionListener) WeakListeners.create(
-                    Class.forName("java.awt.event.ActionListener"), baseListener, cancelButton
-                ); // NOI18N
-        } catch (ClassNotFoundException e) {
-            // cannot happen, java.awt.event.ActionListener listener can always be found
-        }
+        weakNextButtonListener = WeakListeners.create(ActionListener.class, 
+                baseListener, nextButton
+            ); // NOI18N
+        weakPreviousButtonListener = WeakListeners.create(
+                ActionListener.class, baseListener, previousButton
+            ); // NOI18N
+        weakFinishButtonListener = WeakListeners.create(
+                ActionListener.class, baseListener, finishButton
+            ); // NOI18N
+        weakCancelButtonListener = WeakListeners.create(
+                ActionListener.class, baseListener, cancelButton
+            ); // NOI18N
 
         nextButton.addActionListener(weakNextButtonListener);
         previousButton.addActionListener(weakPreviousButtonListener);
@@ -375,11 +368,9 @@ public class WizardDescriptor extends DialogDescriptor {
         super.setOptions(new Object[] { previousButton, nextButton, finishButton, cancelButton });
         super.setClosingOptions(new Object[] { finishOption, cancelButton });
 
-        this.panels = panels;
-
         // attach the change listener to iterator
-        weakChangeListener = WeakListeners.change(baseListener, panels);
-        panels.addChangeListener(weakChangeListener);
+        weakChangeListener = WeakListeners.change(baseListener, data.getIterator(this));
+        data.getIterator(this).addChangeListener(weakChangeListener);
 
         callInitialize();
     }
@@ -389,9 +380,8 @@ public class WizardDescriptor extends DialogDescriptor {
     *
     * @param panels iterator over all {@link WizardDescriptor.Panel}s that can appear in the wizard
     */
-    public WizardDescriptor(Iterator panels) {
-        // passing CLOSE_PREVENTER which is treated especially
-        this(panels, CLOSE_PREVENTER);
+    public WizardDescriptor(Iterator<WizardDescriptor> panels) {
+        this(SettingsAndIterator.create(panels));
     }
 
     /** Initializes settings.
@@ -434,15 +424,37 @@ public class WizardDescriptor extends DialogDescriptor {
     /** Set a different list of panels.
     * Correctly updates the buttons.
     * @param panels the new list of {@link WizardDescriptor.Panel}s
+    * @deprecated use setPanelsAndSettings if needed.
     */
+    @Deprecated
+    @SuppressWarnings("unchecked")
     public final synchronized void setPanels(Iterator panels) {
-        if (this.panels != null) {
-            this.panels.removeChangeListener(weakChangeListener);
+        if (data.getIterator(this) != null) {
+            data.getIterator(this).removeChangeListener(weakChangeListener);
         }
 
-        this.panels = panels;
-        weakChangeListener = WeakListeners.change(baseListener, panels);
-        panels.addChangeListener(weakChangeListener);
+        data = data.clone(panels);
+        weakChangeListener = WeakListeners.change(baseListener, data.getIterator(this));
+        data.getIterator(this).addChangeListener(weakChangeListener);
+        init = false;
+
+        updateState();
+    }
+
+    /** Set a different list of panels.
+    * Correctly updates the buttons.
+    * @param panels the new list of {@link WizardDescriptor.Panel}s
+    * @param settings the new settings that will be passed to the panels
+    * @since 7.2
+    */
+    public final synchronized <Data> void setPanelsAndSettings(Iterator<Data> panels, Data settings) {
+        if (data.getIterator(this) != null) {
+            data.getIterator(this).removeChangeListener(weakChangeListener);
+        }
+
+        data = new SettingsAndIterator<Data>(panels, settings);
+        weakChangeListener = WeakListeners.change(baseListener, data.getIterator(this));
+        data.getIterator(this).addChangeListener(weakChangeListener);
         init = false;
 
         updateState();
@@ -474,7 +486,7 @@ public class WizardDescriptor extends DialogDescriptor {
     /** Converts some options.
     */
     private Object[] convertOptions(Object[] options) {
-        Object[] clonedOptions = (Object[]) options.clone();
+        Object[] clonedOptions = options.clone();
 
         for (int i = clonedOptions.length - 1; i >= 0; i--) {
             if (clonedOptions[i] == NEXT_OPTION) {
@@ -576,7 +588,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
         synchronized (this) {
             if (properties == null) {
-                properties = new HashMap(7);
+                properties = new HashMap<String,Object>(7);
             }
 
             oldValue = properties.get(name);
@@ -653,33 +665,36 @@ public class WizardDescriptor extends DialogDescriptor {
     * </PRE></code>
     */
     protected synchronized void updateState() {
-        Panel p = panels.current();
+        updateStateOpen(data);
+    }
+    private <A> void updateStateOpen(SettingsAndIterator<A> data) {
+        Panel<A> p = data.getIterator(this).current();
 
         // listeners on the panel
-        if (current != p) {
-            if (current != null) {
+        if (data.current != p) {
+            if (data.current != null) {
                 // remove
-                current.removeChangeListener(weakChangeListener);
-                current.storeSettings(settings);
+                data.current.removeChangeListener(weakChangeListener);
+                data.current.storeSettings(data.getSettings(this));
             }
 
             // Hack - obtain current panel again
             // It's here to allow dynamic change of panels in wizard
             // (which can be done in storeSettings method)
-            p = panels.current();
+            p = data.getIterator(this).current();
 
             // add to new, detach old change listener and attach new one
-            panels.removeChangeListener(weakChangeListener);
+            data.getIterator(this).removeChangeListener(weakChangeListener);
             weakChangeListener = WeakListeners.change(baseListener, p);
-            panels.addChangeListener(weakChangeListener);
+            data.getIterator(this).addChangeListener(weakChangeListener);
             p.addChangeListener(weakChangeListener);
 
-            current = p;
-            current.readSettings(settings);
+            data.current = p;
+            p.readSettings(data.getSettings(this));
         }
 
-        boolean next = panels.hasNext();
-        boolean prev = panels.hasPrevious();
+        boolean next = data.getIterator(this).hasNext();
+        boolean prev = data.getIterator(this).hasPrevious();
         boolean valid = p.isValid();
 
         // AWT sensitive code
@@ -774,7 +789,7 @@ public class WizardDescriptor extends DialogDescriptor {
             panelName = ""; // NOI18N
         }
 
-        Object[] args = { panelName, panels.name() };
+        Object[] args = { panelName, data.getIterator(this).name() };
         MessageFormat mf = getTitleFormat();
 
         if (autoWizardStyle) {
@@ -792,22 +807,22 @@ public class WizardDescriptor extends DialogDescriptor {
     
     // for xtesting usage only
     boolean isForwardEnabled () {
-        return panels.current ().isValid () && !validationRuns;
+        return data.getIterator(this).current ().isValid () && !validationRuns;
     }
 
     private void updateStateInAWT () {
-        Panel p = panels.current ();        
-        boolean next = panels.hasNext ();
-        boolean prev = panels.hasPrevious ();
+        Panel<?> p = data.getIterator(this).current ();        
+        boolean next = data.getIterator(this).hasNext ();
+        boolean prev = data.getIterator(this).hasPrevious ();
         boolean valid = p.isValid () && !validationRuns;
 
         nextButton.setEnabled (next && valid);
         previousButton.setEnabled (prev);
         cancelButton.setEnabled (true);
         
-        if (current instanceof FinishablePanel) {
+        if (data.current instanceof FinishablePanel) {
             // check if isFinishPanel
-            if (((FinishablePanel)current).isFinishPanel ()) {
+            if (((FinishablePanel)data.current).isFinishPanel ()) {
                 finishButton.setEnabled (valid);
             } else {
                 // XXX What if the last panel is not FinishPanel ??? enable ?
@@ -817,7 +832,7 @@ public class WizardDescriptor extends DialogDescriptor {
             // original way
             finishButton.setEnabled (
                 valid &&
-                (!next || (current instanceof FinishPanel))
+                (!next || (data.current instanceof FinishPanel))
             );
         }
     }
@@ -877,7 +892,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * wizard window exceeds screen bounds after resize.
      */
     private void resizeWizard(Window parentWindow, Dimension prevSize) {
-        Dimension curSize = panels.current().getComponent().getPreferredSize();
+        Dimension curSize = data.getIterator(this).current().getComponent().getPreferredSize();
 
         // only enlarge if needed, don't shrink
         if ((curSize.width > prevSize.width) || (curSize.height > prevSize.height)) {
@@ -1113,8 +1128,11 @@ public class WizardDescriptor extends DialogDescriptor {
     /** Overrides superclass method. Adds reseting of wizard
      * for <code>CLOSED_OPTION</code>. */
     public void setValue(Object value) {
+        setValueOpen(value, data);
+    }
+    
+    private <A> void setValueOpen(Object value, SettingsAndIterator<A> data) {
         Object convertedValue = backConvertOption(value);
-
         // set new value w/o fire PROP_VALUE change
         Object oldValue = getValue();
         setValueWithoutPCH(convertedValue);
@@ -1125,8 +1143,8 @@ public class WizardDescriptor extends DialogDescriptor {
         } else if (FINISH_OPTION.equals(convertedValue) || NEXT_OPTION.equals(convertedValue)) {
             //Bugfix #25820: make sure that storeSettings
             //is called before propertyChange.
-            if (current != null) {
-                current.storeSettings(settings);
+            if (data.current != null) {
+                data.current.storeSettings(data.getSettings(this));
             }
         }
 
@@ -1136,10 +1154,14 @@ public class WizardDescriptor extends DialogDescriptor {
 
     /** Resets wizard when after closed/cancelled/finished the wizard dialog. */
     private void resetWizard() {
-        if (current != null) {
-            current.storeSettings(settings);
-            current.removeChangeListener(weakChangeListener);
-            current = null;
+        resetWizardOpen(data);
+    }
+    
+    private <A> void resetWizardOpen(SettingsAndIterator<A> data) {
+        if (data.current != null) {
+            data.current.storeSettings(data.getSettings(this));
+            data.current.removeChangeListener(weakChangeListener);
+            data.current = null;
 
             if (wizardPanel != null) {
                 wizardPanel.resetPreferredSize();
@@ -1149,7 +1171,7 @@ public class WizardDescriptor extends DialogDescriptor {
         callUninitialize();
 
         // detach the change listener at the end of wizard
-        panels.removeChangeListener(weakChangeListener);
+        data.getIterator(this).removeChangeListener(weakChangeListener);
     }
 
     private int getIntFromBundle(String key) {
@@ -1210,7 +1232,7 @@ public class WizardDescriptor extends DialogDescriptor {
                     }
 
                     // focus source of this problem
-                    final JComponent comp = (JComponent) wve.getSource();
+                    final JComponent comp = wve.getSource();
                     if (comp != null && comp.isFocusable()) {
                         comp.requestFocus();
                     }
@@ -1239,24 +1261,30 @@ public class WizardDescriptor extends DialogDescriptor {
 
     // helper methods which call to InstantiatingIterator
     private void callInitialize() {
-        assert panels != null;
+        assert data.getIterator(this) != null;
 
-        if (panels instanceof InstantiatingIterator) {
-            ((InstantiatingIterator) panels).initialize(this);
+        if (data.getIterator(this) instanceof InstantiatingIterator) {
+            ((InstantiatingIterator) data.getIterator(this)).initialize(this);
         }
 
         newObjects = Collections.EMPTY_SET;
     }
 
     private void callUninitialize() {
-        assert panels != null;
+        assert data.getIterator(this) != null;
 
-        if (panels instanceof InstantiatingIterator) {
-            ((InstantiatingIterator) panels).uninitialize(this);
+        if (data.getIterator(this) instanceof InstantiatingIterator) {
+            ((InstantiatingIterator) data.getIterator(this)).uninitialize(this);
         }
     }
 
     private void callInstantiate() throws IOException {
+        callInstantiateOpen(data);
+    }
+    
+    private <A> void callInstantiateOpen(SettingsAndIterator<A> data) throws IOException {
+        Iterator<A> panels = data.getIterator(this);
+        
         assert panels != null;
         
         err.log (Level.FINE, "Is AsynchronousInstantiatingIterator? " + (panels instanceof AsynchronousInstantiatingIterator));
@@ -1283,7 +1311,7 @@ public class WizardDescriptor extends DialogDescriptor {
         }
          
         // bugfix #44444, force store settings before do instantiate new objects
-        panels.current().storeSettings(settings);
+        panels.current().storeSettings(data.getSettings(this));
 
         if (panels instanceof InstantiatingIterator) {
             showWaitCursor();
@@ -1357,11 +1385,11 @@ public class WizardDescriptor extends DialogDescriptor {
     /** Iterator on the sequence of panels.
     * @see WizardDescriptor.Panel
     */
-    public interface Iterator {
+    public interface Iterator<Data> {
         /** Get the current panel.
         * @return the panel
         */
-        public Panel current();
+        public Panel<Data> current();
 
         /** Get the name of the current panel.
         * @return the name
@@ -1410,7 +1438,7 @@ public class WizardDescriptor extends DialogDescriptor {
      *
      * Please see complete guide at http://performance.netbeans.org/howto/dialogs/wizard-panels.html
      */
-    public interface Panel {
+    public interface Panel<Data> {
         /** Get the component displayed in this panel.
          *
          * Note; method can be called from any thread, but not concurrently
@@ -1438,7 +1466,7 @@ public class WizardDescriptor extends DialogDescriptor {
         * @exception IllegalStateException if the the data provided
         * by the wizard are not valid.
         */
-        public void readSettings(Object settings);
+        public void readSettings(Data settings);
 
         /** Provides the wizard panel with the opportunity to update the
         * settings with its current customized state.
@@ -1453,7 +1481,7 @@ public class WizardDescriptor extends DialogDescriptor {
         * in fact the <code>TemplateWizard</code>.
         * @param settings the object representing wizard panel state
         */
-        public void storeSettings(Object settings);
+        public void storeSettings(Data settings);
 
         /** Test whether the panel is finished and it is safe to proceed to the next one.
         * If the panel is valid, the "Next" (or "Finish") button will be enabled.
@@ -1483,14 +1511,15 @@ public class WizardDescriptor extends DialogDescriptor {
     * implementing this interface.
     * @deprecated 4.28 Use FinishablePanel instead.
     */
-    public interface FinishPanel extends Panel {
+    @Deprecated
+    public interface FinishPanel<Data> extends Panel<Data> {
     }
 
     /** A special interface for panels that need to do additional
      * validation when Next or Finish button is clicked.
      * @since 4.28
      */
-    public interface ValidatingPanel extends Panel {
+    public interface ValidatingPanel<Data> extends Panel<Data> {
         /**
          * Is called when Next of Finish buttons are clicked and
          * allows deeper check to find out that panel is in valid
@@ -1516,7 +1545,7 @@ public class WizardDescriptor extends DialogDescriptor {
      *
      * @since 6.2 (16 May 2005)
      */
-    public interface AsynchronousValidatingPanel extends ValidatingPanel {
+    public interface AsynchronousValidatingPanel<Data> extends ValidatingPanel<Data> {
 
         /**
          * Called synchronously from UI thread when Next
@@ -1540,7 +1569,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * Finish button.
      * @since 4.28
      */
-    public interface FinishablePanel extends Panel {
+    public interface FinishablePanel<Data> extends Panel<Data> {
         /** Specify if this panel would enable Finish button. Finish button is
          * enabled if and only if isValid() returns true and isFinishPanel()
          * returns true.
@@ -1558,7 +1587,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * in a template's declaration.)
      * @since org.openide/1 4.33
      */
-    public interface InstantiatingIterator extends Iterator {
+    public interface InstantiatingIterator<Data> extends Iterator<Data> {
         /** Returns set of instantiated objects. If instantiation fails then wizard remains open to enable correct values.
          *
          * @throws IOException
@@ -1587,7 +1616,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * in a template's declaration.)
      * @since org.openide/1 6.5
      */
-    public interface AsynchronousInstantiatingIterator extends InstantiatingIterator {
+    public interface AsynchronousInstantiatingIterator<Data> extends InstantiatingIterator<Data> {
 
         /**
          * Is called in separate thread when the Finish button
@@ -1609,7 +1638,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * in a template's declaration.)
      * @since org.openide.dialogs 7.1
      */
-    public interface ProgressInstantiatingIterator extends AsynchronousInstantiatingIterator {
+    public interface ProgressInstantiatingIterator<Data> extends AsynchronousInstantiatingIterator<Data> {
 
         /**
          * Is called in separate thread when the Finish button
@@ -1629,10 +1658,10 @@ public class WizardDescriptor extends DialogDescriptor {
 
     /** Special iterator that works on an array of <code>Panel</code>s.
     */
-    public static class ArrayIterator extends Object implements Iterator {
+    public static class ArrayIterator<Data> extends Object implements Iterator<Data> {
         /** Array of items.
         */
-        private Panel[] panels;
+        private Panel<Data>[] panels;
 
         /** Index into the array
         */
@@ -1649,7 +1678,7 @@ public class WizardDescriptor extends DialogDescriptor {
         /** Construct an iterator.
         * @param array the list of panels to use
         */
-        public ArrayIterator(Panel[] array) {
+        public ArrayIterator(Panel<Data>[] array) {
             panels = array;
             index = 0;
         }
@@ -1658,13 +1687,14 @@ public class WizardDescriptor extends DialogDescriptor {
         * constructed using default constructor.
         * (for example during deserialization.
         * Default implementation returns empty array. */
-        protected Panel[] initializePanels() {
+        @SuppressWarnings("unchecked")
+        protected Panel<Data>[] initializePanels() {
             return new Panel[0];
         }
 
         /* The current panel.
         */
-        public Panel current() {
+        public Panel<Data> current() {
             return panels[index];
         }
 
@@ -1742,6 +1772,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
         /** Action listener */
         public void actionPerformed(ActionEvent ev) {
+            final Iterator<?> panels = data.getIterator(WizardDescriptor.this);
             if (wizardPanel != null) {
                 wizardPanel.setErrorMessage(" ", null); //NOI18N
             }
@@ -2546,6 +2577,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
         /** Overriden to delegate call to user component.
          */
+        @Deprecated
         public boolean requestDefaultFocus() {
             if (rightComponent instanceof JComponent) {
                 return ((JComponent) rightComponent).requestDefaultFocus();
@@ -2633,6 +2665,41 @@ public class WizardDescriptor extends DialogDescriptor {
             assert ESTIMATED_HEIGHT == Utilities.loadImage ("org/netbeans/modules/dialogs/warning.gif").getHeight (null) : "Use only 16px icon.";
             preferredSize.height = Math.max (ESTIMATED_HEIGHT, preferredSize.height);
             return preferredSize;
+        }
+    }
+    
+    private static final class SettingsAndIterator<Data> {
+        private final Iterator<Data> panels;
+        private final Data settings;
+        private final boolean useThis;
+        /** current panel */
+        private Panel<Data> current;
+
+        
+        public SettingsAndIterator(Iterator<Data> iterator, Data settings) {
+            this(iterator, settings, false);
+        }
+        public SettingsAndIterator(Iterator<Data> iterator, Data settings, boolean useThis) {
+            this.panels = iterator;
+            this.settings = settings;
+            this.useThis = useThis;
+        }
+        public static SettingsAndIterator<WizardDescriptor> create(Iterator<WizardDescriptor> iterator) {
+            return new SettingsAndIterator<WizardDescriptor>(iterator, null, true);
+        }
+
+        public Iterator<Data> getIterator(WizardDescriptor caller) {
+            return panels;
+        }
+        
+        @SuppressWarnings("unchecked")
+        public Data getSettings(WizardDescriptor caller) {
+            return useThis ? (Data)caller : settings;
+        }
+        
+        public SettingsAndIterator<Data> clone(Iterator<Data> it) {
+            SettingsAndIterator<Data> s = new SettingsAndIterator<Data>(it, settings, useThis);
+            return s;
         }
     }
 }
