@@ -19,6 +19,7 @@
 package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
@@ -485,6 +486,7 @@ public class Installer extends ModuleInstall {
             browser.setEnableHome(false);
             browser.setStatusLineVisible(false);
             browser.setToolbarVisible(false);
+            browser.setPreferredSize(new Dimension(640, 480));
 
             //        AbstractNode root = new AbstractNode(new Children.Array());
             //        root.setName("root"); // NOI18N

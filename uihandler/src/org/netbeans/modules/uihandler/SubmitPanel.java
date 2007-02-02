@@ -63,9 +63,11 @@ implements ExplorerManager.Provider, PropertyChangeListener {
         scroll = new javax.swing.JScrollPane();
         text = new javax.swing.JTextArea();
 
+        setPreferredSize(new java.awt.Dimension(640, 480));
         setLayout(new java.awt.BorderLayout());
 
         record.setColumns(20);
+        record.setEditable(false);
         record.setRows(5);
         recordScroll.setViewportView(record);
 
