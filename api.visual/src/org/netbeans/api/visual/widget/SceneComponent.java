@@ -388,7 +388,7 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         Widget disabledWidget = null;
         Widget tempWidget = widget;
         while (tempWidget != null) {
-            if (! ! tempWidget.isVisible ()  ||  ! tempWidget.isEnabled ())
+            if (! tempWidget.isVisible ()  ||  ! tempWidget.isEnabled ())
                 disabledWidget = tempWidget;
             tempWidget = tempWidget.getParentWidget ();
         }
