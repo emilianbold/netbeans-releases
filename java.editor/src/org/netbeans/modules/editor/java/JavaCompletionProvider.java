@@ -402,7 +402,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                         }
                         if (params != null)
-                            toolTip = new MethodParamsTipPaintComponent(params, types.length);
+                            toolTip = new MethodParamsTipPaintComponent(params, types.length, component);
                         startPos = (int)sourcePositions.getEndPosition(env.getRoot(), mi.getMethodSelect());
                         anchorOffset = controller.getText().indexOf('(', startPos); //NOI18N
                         return;
@@ -433,7 +433,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         };
                         List<List<String>> params = getMatchingParams(type, controller.getElementUtilities().getMembers(type, acceptor), INIT, types, controller.getTypes());
                         if (params != null)
-                            toolTip = new MethodParamsTipPaintComponent(params, types.length);
+                            toolTip = new MethodParamsTipPaintComponent(params, types.length, component);
                         startPos = (int)sourcePositions.getEndPosition(env.getRoot(), nc.getIdentifier());
                         anchorOffset = controller.getText().indexOf('(', startPos); //NOI18N
                         return;

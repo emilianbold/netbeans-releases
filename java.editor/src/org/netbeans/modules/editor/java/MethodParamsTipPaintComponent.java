@@ -20,9 +20,9 @@
 package org.netbeans.modules.editor.java;
 
 import java.awt.*;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 
 /**
  *
@@ -36,16 +36,18 @@ public class MethodParamsTipPaintComponent extends JToolTip {
     private int drawWidth;
     private Font drawFont;
     private int fontHeight;
-    private int ascent;
+    private int descent;
     private FontMetrics fontMetrics;
 
     private List<List<String>> params;
     private int idx;
+    private JTextComponent component;
 
-    public MethodParamsTipPaintComponent(List<List<String>> params, int idx){
+    public MethodParamsTipPaintComponent(List<List<String>> params, int idx, JTextComponent component){
         super();
         this.params = params;
         this.idx = idx;
+        this.component = component;
     }
     
     public void paintComponent(Graphics g) {
@@ -59,6 +61,8 @@ public class MethodParamsTipPaintComponent extends JToolTip {
 
     protected void draw(Graphics g) {
         Insets in = getInsets();
+        GraphicsConfiguration gc = component.getGraphicsConfiguration();
+        int screenWidth = gc != null ? gc.getBounds().width : Integer.MAX_VALUE;
         if (in != null) {
             drawX = in.left;
             drawY = in.top;
@@ -66,24 +70,28 @@ public class MethodParamsTipPaintComponent extends JToolTip {
             drawX = 0;
             drawY = 0;
         }
-        drawHeight = fontHeight;
-        if (in != null) {
-            drawHeight += in.bottom;
-        }
-        drawHeight += drawY;
-        drawY += ascent;
+        drawY += (fontHeight - descent);
 
         int startX = drawX;
         drawWidth = drawX;
         for (List<String> p : params) {
             int i = 0;
             for (String s : p) {
-                drawString(g, s, i++ == idx ? getDrawFont().deriveFont(Font.BOLD) : null);
+                if (getWidth(s, i == idx ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont()) + drawX > screenWidth) {
+                    drawY += fontHeight;
+                    drawX = startX + getWidth("        ", drawFont); //NOI18N
+                }
+                drawString(g, s, i++ == idx ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont());
+                if (drawWidth < drawX)
+                    drawWidth = drawX;
             }
-            if (drawWidth < drawX)
-                drawWidth = drawX;
-            drawY += drawHeight;
+            drawY += fontHeight;
             drawX = startX;
+        }
+        drawHeight = drawY - fontHeight + descent;
+        if (in != null) {
+            drawHeight += in.bottom;
+            drawWidth += in.right;
         }
     }
 
@@ -110,7 +118,8 @@ public class MethodParamsTipPaintComponent extends JToolTip {
         super.setFont(font);
         fontMetrics = this.getFontMetrics(font);
         fontHeight = fontMetrics.getHeight();
-        ascent = fontMetrics.getAscent();
+        
+        descent = fontMetrics.getDescent();
         drawFont = font;
     }
 
@@ -124,7 +133,7 @@ public class MethodParamsTipPaintComponent extends JToolTip {
         if (i != null) {
             drawX += i.right;
         }
-        return new Dimension(drawWidth, drawHeight * params.size());
+        return new Dimension(drawWidth, drawHeight);
     }
 
 }
