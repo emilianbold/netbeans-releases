@@ -165,7 +165,7 @@ public final class LogRecords {
                 // ok, the key is there
                 r.setResourceBundle(b);
             } catch (MissingResourceException e) {
-                LOG.log(Level.INFO, "Cannot find resource bundle for {0} and key {1}", new Object[] { catalog, key });
+                LOG.log(Level.CONFIG, "Cannot find resource bundle for {0} and key {1}", new Object[] { catalog, key });
                 r.setResourceBundle(new FakeBundle(key, msg));
             }
         
@@ -391,9 +391,9 @@ public final class LogRecords {
                     }
                     params.add(v);
                     if (params.size() > 500) {
-                        LOG.severe("Too long params when reading a record. Deleting the following:"); // NOI18N
+                        LOG.severe("Too long params when reading a record. Deleting few."); // NOI18N
                         for (String p : params) {
-                            LOG.severe(p);
+                            LOG.fine(p);
                         }
                         params.clear();
                     }
@@ -446,7 +446,7 @@ public final class LogRecords {
                         // ok, the key is there
                         r.setResourceBundle(b);
                     } catch (MissingResourceException e) {
-                        LOG.log(Level.INFO, "Cannot find resource bundle {0} for key {1}", new Object[] { catalog, key });
+                        LOG.log(Level.CONFIG, "Cannot find resource bundle {0} for key {1}", new Object[] { catalog, key });
                         r.setResourceBundle(new FakeBundle(key, msg));
                     }
                     if (params != null) {
