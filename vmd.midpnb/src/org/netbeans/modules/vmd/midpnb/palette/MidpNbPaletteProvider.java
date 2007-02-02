@@ -20,6 +20,7 @@
 package org.netbeans.modules.vmd.midpnb.palette;
 
 import java.io.IOException;
+
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.palette.PaletteProvider;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;

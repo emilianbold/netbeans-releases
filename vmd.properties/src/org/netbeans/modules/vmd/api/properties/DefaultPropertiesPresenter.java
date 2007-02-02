@@ -282,5 +282,5 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     
     protected void presenterChanged(PresenterEvent event) {
     }
-    
+
 }

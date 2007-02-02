@@ -20,8 +20,11 @@
 package org.netbeans.modules.vmd.midpnb.producers;
 
 
-import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
@@ -59,67 +62,67 @@ public abstract class CustomComponentProducer extends ComponentProducer {
 
     public static final class WaitScreen extends CustomComponentProducer {
         public WaitScreen() {
-            super(WaitScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "Wait Screen", "Wait Screen", WaitScreenCD.ICON_PATH, WaitScreenCD.ICON_LARGE_PATH)); // NOI18N
+            super(WaitScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "WaitScreen", "WaitScreen", WaitScreenCD.ICON_PATH, WaitScreenCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
     
     public static final class SplashScreen extends CustomComponentProducer {
         public SplashScreen() {
-            super(SplashScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "Splash Screen", "Splash Screen", SplashScreenCD.ICON_PATH, SplashScreenCD.ICON_LARGE_PATH)); // NOI18N
+            super(SplashScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "SplashScreen", "SplashScreen", SplashScreenCD.ICON_PATH, SplashScreenCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
     
     public static final class SVGSplashScreen extends CustomComponentProducer {
         public SVGSplashScreen() {
-            super(SplashScreenCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Splash Screen", "SVG Splash Screen", SVGSplashScreenCD.ICON_PATH, SVGSplashScreenCD.ICON_LARGE_PATH)); // NOI18N
+            super(SplashScreenCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVGSplashScreen", "SVGSplashScreen", SVGSplashScreenCD.ICON_PATH, SVGSplashScreenCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
     
     public static final class SVGWaitScreen extends CustomComponentProducer {
         public SVGWaitScreen() {
-            super(SVGWaitScreenCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Wait Screen", "SVG Wait Screen", SVGWaitScreenCD.ICON_PATH, SVGWaitScreenCD.ICON_LARGE_PATH)); // NOI18N
+            super(SVGWaitScreenCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVGWaitScreen", "SVGWaitScreen", SVGWaitScreenCD.ICON_PATH, SVGWaitScreenCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
     
     public static final class SVGAnimatorWrapper extends CustomComponentProducer {
         public SVGAnimatorWrapper() {
-            super(SVGAnimatorWrapperCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Animator Wrapper", "SVG Animator Wrapper", SVGAnimatorWrapperCD.ICON_PATH, SVGAnimatorWrapperCD.ICON_LARGE_PATH)); // NOI18N
+            super(SVGAnimatorWrapperCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVGAnimatorWrapper", "SVGAnimatorWrapper", SVGAnimatorWrapperCD.ICON_PATH, SVGAnimatorWrapperCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
     
     public static final class SVGImage extends CustomComponentProducer {
         public SVGImage() {
-            super(SVGImageCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Image", "SVG Image", ResourceCD.ICON_PATH, null)); // NOI18N
+            super(SVGImageCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVGImage", "SVGImage", ResourceCD.ICON_PATH, null)); // NOI18N
         }
     }
     
     public static final class SVGMenu extends CustomComponentProducer {
         public SVGMenu() {
-            super(SVGMenuCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Image", "SVG Image", SVGMenuCD.ICON_PATH, SVGMenuCD.ICON_LARGE_PATH)); // NOI18N
+            super(SVGMenuCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVGImage", "SVGImage", SVGMenuCD.ICON_PATH, SVGMenuCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
     
     public static final class SVGMenuItem extends CustomComponentProducer {
         public SVGMenuItem() {
-            super(SVGMenuItemCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Image Item", "SVG Image Item", SVGMenuItemCD.ICON_PATH, null)); // NOI18N
+            super(SVGMenuItemCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVGImageItem", "SVGImageItem", SVGMenuItemCD.ICON_PATH, null)); // NOI18N
         }
     }
     
     public static final class TableItem extends CustomComponentProducer {
         public TableItem() {
-            super(TableItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Table Item", "Table Item", TableItemCD.ICON_PATH, null)); // NOI18N
+            super(TableItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "TableItem", "TableItem", TableItemCD.ICON_PATH, null)); // NOI18N
         }
     }
     
     public static final class SimpleCancellableTask extends CustomComponentProducer {
         public SimpleCancellableTask() {
-            super(SimpleCancellableTaskCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Simple Cancellable Task", "Simple Cancellable Task", ResourceCD.ICON_PATH, null)); // NOI18N
+            super(SimpleCancellableTaskCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "SimpleCancellableTask", "SimpleCancellableTask", ResourceCD.ICON_PATH, null)); // NOI18N
         }
     }
     
      public static final class SimpleTableModel extends CustomComponentProducer {
         public SimpleTableModel() {
-            super(SimpleTableModelCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Simple Table Model", "Simple Table Model", ResourceCD.ICON_PATH, null)); // NOI18N
+            super(SimpleTableModelCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "SimpleTableModel", "SimpleTableModel", ResourceCD.ICON_PATH, null)); // NOI18N
         }
     }
 }
