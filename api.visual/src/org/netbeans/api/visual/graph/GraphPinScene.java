@@ -98,6 +98,19 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
     }
 
     /**
+     * Removes a node with all pins that are assign to the node and with all edges that are connected to the pins.
+     * @param node the node to be removed; the node must not be null and must be already in the model
+     */
+    public final void removeNodeWithEdges (N node) {
+        assert node != null && nodes.contains (node);
+        for (P pin : nodePins.get (node))
+            for (E edge : findPinEdges (pin, true, true))
+                if (isEdge (edge))
+                    removeEdge (edge);
+        removeNode (node);
+    }
+
+    /**
      * Returns a collection of all nodes registered in the graph model.
      * @return the collection of all nodes registered in the graph model
      */
@@ -184,6 +197,18 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
         Widget widget = findWidget (pin);
         removeObject (pin);
         detachPinWidget (pin, widget);
+    }
+
+    /**
+     * Removes a pin with all edges that are connected to the pin.
+     * @param pin the pin to be removed; the pin must not be null and must be already in the model
+     */
+    public final void removePinWithEdges (P pin) {
+        assert pin != null && pins.contains (pin);
+        for (E edge : findPinEdges (pin, true, true))
+            if (isEdge (edge))
+                removeEdge (edge);
+        removePin (pin);
     }
 
     /**
