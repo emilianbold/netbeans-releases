@@ -88,7 +88,7 @@ class DelegatingInputBridge extends CharInput {
         if (!input.eof () && start.next (input) != null) {
             while (!input.eof () && end.next (input) == null)
                 input.read ();
-            embeddings.add (new Vojta (tokenType, startIndex, input.getIndex ()));
+            embeddings.add (new Vojta (tokenType, startIndex, input.getIndex (), "E"));
         }
     }
 }

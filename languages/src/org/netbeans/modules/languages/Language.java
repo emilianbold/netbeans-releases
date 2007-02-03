@@ -72,7 +72,7 @@ public class Language {
     private Set                 skipTokenTypes = new HashSet ();
     private String              mimeType;
     private LLSyntaxAnalyser    analyser = null;
-    private Map                 analyserRules = new HashMap ();
+    private List                analyserRules = new ArrayList ();
     private List                analyserRules2;
     private List                importedLangauges = new ArrayList ();
 
@@ -121,12 +121,9 @@ public class Language {
     }
     
     public Object getProperty (
-        String mimeType, 
         String propertyName
     ) {
-        if (!properties.containsKey (mimeType)) return null;
-        Map m = (Map) properties.get (mimeType);
-        return m.get (propertyName);
+        return properties.get (propertyName);
     }
     
     public static Identifier createIdentifier (List name) {
@@ -152,7 +149,6 @@ public class Language {
     public static TokenType createTokenType (
         String      startState,
         Pattern     pattern,
-        String      mimeType,
         String      type,
         String      endState,
         int         priority,
@@ -161,7 +157,6 @@ public class Language {
         return new TokenType (
             startState,
             pattern,
-            mimeType,
             type,
             endState,
             priority,
@@ -174,7 +169,6 @@ public class Language {
 
     void addToken (
         String      startState,
-        String      mimeType,
         String      type,
         Pattern     pattern,
         String      endState,
@@ -185,7 +179,6 @@ public class Language {
         tokenTypes.add (createTokenType (
             startState,
             pattern,
-            mimeType,
             type,
             endState,
             tokenTypes.size (),
@@ -200,12 +193,7 @@ public class Language {
     void addRule (ASTNode rule) {
         if (analyser != null)
             throw new InternalError ();
-        List r = (List) analyserRules.get (mimeType);
-        if (r == null) {
-            r = new ArrayList ();
-            analyserRules.put (mimeType, r);
-        }
-        r.add (rule);
+        analyserRules.add (rule);
     }
     
     public void addRule (LLSyntaxAnalyser.Rule rule) {
@@ -222,20 +210,11 @@ public class Language {
     private Map properties = new HashMap ();
     
     void addProperties (Map properties) {
-        Map m = (Map) this.properties.get (mimeType);
-        if (m == null)
-            this.properties.put (mimeType, properties);
-        else
-            m.putAll (properties);
+        properties.putAll (properties);
     }
     
     void addProperty (String key, Object value) {
-        Map m = (Map) properties.get (mimeType);
-        if (m == null) {
-            m = new HashMap ();
-            properties.put (mimeType, m);
-        }
-        m.put (key, value);
+        properties.put (key, value);
     }
     
     void importLanguage (
@@ -257,7 +236,6 @@ public class Language {
         if (properties.containsKey ("start")) {
             addToken (
                 null,
-                mimeType,
                 name,
                 null,
                 null,
@@ -290,11 +268,11 @@ public class Language {
                 endState = state;
             else
                 endState = name + '-' + endState;
-            addToken (startState, tt.getMimeType (), tt.getType (), pattern, endState, tt.getProperties ());
+            addToken (startState, tt.getType (), pattern, endState, tt.getProperties ());
         }
         
         // import grammar rues
-        analyserRules.putAll (l.analyserRules);
+        analyserRules.addAll (l.analyserRules);
         // import colorings
         importColorings (l);
         // import other features
@@ -381,25 +359,16 @@ public class Language {
     
     // private helper methods ..................................................
     
-    private Map getProperties (
-        String mimeType
-    ) {
-        if (!properties.containsKey (mimeType)) return null;
-        return (Map) properties.get (mimeType);
-    }
-    
     private Map features = new HashMap ();
     
     public Object getFeature (String featureName, ASTNode node) {
         Map m = (Map) features.get (featureName);
         if (m == null) return null;
-        Map mm = (Map) m.get (node.getMimeType ());
-        if (mm == null) return null;
         while (true) {
-            Object value = mm.get (node.getNT ());
-            if (value == null) return mm.get ("");
+            Object value = m.get (node.getNT ());
+            if (value == null) return m.get ("");
             if (value instanceof MMap) {
-                mm = (Map) value;
+                m = (Map) value;
                 node = node.getParent ();
                 if (node == null) return null;
                 continue;
@@ -408,16 +377,14 @@ public class Language {
         }
     }
     
-    public Object getFeature (String featureName, String mimeType, String nt) {
+    public Object getFeature (String featureName, String nt) {
         Map m = (Map) features.get (featureName);
         if (m == null) return null;
-        Map mm = (Map) m.get (mimeType);
-        if (mm == null) return null;
-        Object value = mm.get (nt);
-        if (value == null) return mm.get ("");
+        Object value = m.get (nt);
+        if (value == null) return m.get ("");
         if (value instanceof MMap) {
-            mm = (Map) value;
-            return mm.get ("");
+            m = (Map) value;
+            return m.get ("");
         }
         return value;
     }
@@ -429,9 +396,7 @@ public class Language {
     public Object getFeature (String featureName, SToken token) {
         Map m = (Map) features.get (featureName);
         if (m == null) return null;
-        Map mm = (Map) m.get (token.getMimeType ());
-        if (mm == null) return null;
-        Object result = mm.get (token.getType ());
+        Object result = m.get (token.getType ());
         if (result instanceof MMap) return null;
         return result;
     }
@@ -441,7 +406,7 @@ public class Language {
     }
 
     void addFeature (String featureName, Identifier id, Object feature) {
-        Map m = getFolder (featureName, mimeType);
+        Map m = getFolder (featureName);
         for (int i = id.name.size () - 1; i > 0; i--) {
             Object o = m.get (id.name.get (i));
             if (o instanceof MMap)
@@ -464,18 +429,13 @@ public class Language {
             );
     }
     
-    private Map getFolder (String featureName, String mimeType) {
+    private Map getFolder (String featureName) {
         Map m = (Map) features.get (featureName);
         if (m == null) {
             m = new HashMap ();
             features.put (featureName, m);
         }
-        Map mm = (Map) m.get (mimeType);
-        if (mm == null) {
-            mm = new HashMap ();
-            m.put (mimeType, mm);
-        }
-        return mm;
+        return m;
     }
     
     void print () {
@@ -536,7 +496,7 @@ public class Language {
         while (it.hasNext ()) {
             TokenType token = (TokenType) it.next ();
             SimpleAttributeSet as = (SimpleAttributeSet) getFeature 
-                (Language.COLOR, token.getMimeType (), token.getType ());
+                (Language.COLOR, token.getType ());
             addColor (token.getType (), as, colorsMap, defaultsMap);
         }
         Map m = getFeature (Language.COLOR);
@@ -544,16 +504,11 @@ public class Language {
             return Collections.EMPTY_MAP;
         it = m.keySet ().iterator ();
         while (it.hasNext ()) {
-            String mt = (String) it.next ();
-            Map mm = (Map) m.get (mt);
-            Iterator it2 = mm.keySet ().iterator ();
-            while (it2.hasNext ()) {
-                String type = (String) it2.next ();
-                if (colorsMap.containsKey (type))
-                    continue;
-                SimpleAttributeSet as = (SimpleAttributeSet) mm.get (type);
-                addColor (type, as, colorsMap, defaultsMap);
-            }
+            String type = (String) it.next ();
+            if (colorsMap.containsKey (type))
+                continue;
+            SimpleAttributeSet as = (SimpleAttributeSet) m.get (type);
+            addColor (type, as, colorsMap, defaultsMap);
         }
         addColor ("error", null, colorsMap, defaultsMap);
         return colorsMap;
@@ -649,7 +604,6 @@ public class Language {
         
         private String  startState;
         private Pattern pattern;
-        private String  mimeType;
         private String  type;
         private String  endState;
         private int     priority;
@@ -658,7 +612,6 @@ public class Language {
         private TokenType (
             String      startState,
             Pattern     pattern,
-            String      mimeType,
             String      type,
             String      endState,
             int         priority,
@@ -666,15 +619,10 @@ public class Language {
         ) {
             this.startState = startState == null ? Parser.DEFAULT_STATE : startState;
             this.pattern = pattern;
-            this.mimeType = mimeType;
             this.type = type;
             this.endState = endState == null ? Parser.DEFAULT_STATE : endState;
             this.priority = priority;
             this.properties = properties == null ? Collections.EMPTY_MAP : properties;
-        }
-
-        public String getMimeType () {
-            return mimeType;
         }
         
         public String getType () {
@@ -702,7 +650,7 @@ public class Language {
         }
         
         public String toString () {
-            return "Rule " + startState + " : mimeType " + mimeType + " : type " + type + " : " + endState;
+            return "Rule " + startState + " : type " + type + " : " + endState;
         }
     }
 }

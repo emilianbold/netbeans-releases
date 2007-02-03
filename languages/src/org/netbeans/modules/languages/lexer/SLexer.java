@@ -24,7 +24,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.languages.CharInput;
-import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.SToken;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.languages.SToken;
@@ -35,6 +34,7 @@ import org.netbeans.spi.lexer.TokenFactory;
 import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.parser.Parser;
+import org.netbeans.spi.lexer.TokenPropertyProvider;
 import org.openide.ErrorManager;
 
 
@@ -68,8 +68,8 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     }
     
     public Token<STokenId> nextToken () {
-        if (state instanceof LinkedList) {
-            return createToken ((LinkedList) state);
+        if (state instanceof Marenka) {
+            return createToken ((Marenka) state);
         }
         if (input.eof ()) return null;
         int index = input.getIndex ();
@@ -81,7 +81,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         }
         if (evaluator != null) {
             input.setIndex (index);
-            Object[] r = (Object[]) evaluator.evaluate (new Object[] {input, language.getMimeType ()});
+            Object[] r = (Object[]) evaluator.evaluate (new Object[] {input});
             token = (SToken) r [0];
             if (r [1] != null)
                 setState (((Integer) r [1]).intValue ());
@@ -94,7 +94,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
                 else
                 if (input.getIndex () == index)
                     input.read ();
-                return createToken ("error");
+                return createToken ("error", index);
             } catch (AssertionError ex) {
                 ErrorManager.getDefault ().notify (ex);
                 System.out.println(input.getIndex ());
@@ -104,7 +104,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             System.out.println("SLexer:unknown token: " + token.getType ());
             return null;
         }
-        return createToken (token.getType ());
+        return createToken (token.getType (), index);
     }
 
     public Object state () {
@@ -142,8 +142,6 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         Pattern start = null, end = null;
         String tokenType = null;
         Map m = language.getFeature (Language.IMPORT);
-        if (m != null)
-            m = (Map) m.get (language.getMimeType ());
         if (m != null) {
             Iterator it = m.keySet ().iterator ();
             while (it.hasNext ()) {
@@ -151,7 +149,6 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
                 Map properties = (Map) m.get (name);
                 if (!properties.containsKey ("start"))
                     continue;
-                System.out.println("import " + name + ":" + properties.get ("start"));
                 start = (Pattern) properties.get ("start");
                 end = (Pattern) properties.get ("end");
                 tokenType = name;
@@ -167,37 +164,60 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         );
     }
     
-    private Token createToken (String type) {
+    private Token createToken (String type, int start) {
         if (!(input instanceof DelegatingInputBridge))
             return tokenFactory.createToken ((STokenId) tokensMap.get (type));
         List embeddings = ((DelegatingInputBridge) input).getEmbeddings ();
         if (embeddings.isEmpty ())
             return tokenFactory.createToken ((STokenId) tokensMap.get (type));
-        int start = 0;
-        LinkedList state = new LinkedList ();
+        Marenka marenka = new Marenka ((Integer) state);
+        String property = "S";
         Iterator it = embeddings.iterator ();
         while(it.hasNext ()) {
             Vojta v = (Vojta) it.next ();
             if (start < v.startOffset) {
-                state.add (new Vojta (type, start, v.startOffset));
+                marenka.add (new Vojta (type, start, v.startOffset, property));
+                property = "C";
             }
-            state.add (v);
+            marenka.add (v);
             start = v.endOffset;
         }
         if (start < input.getIndex ())
-            state.add (new Vojta (type, start, input.getIndex ()));
-        return createToken (state);
+            marenka.add (new Vojta (type, start, input.getIndex (), property));
+        return createToken (marenka);
     }
     
-    private Token createToken (LinkedList state) {
-        Vojta v = (Vojta) state.removeFirst ();
+    private Token createToken (Marenka marenka) {
+        Vojta v = marenka.removeFirst ();
         input.setIndex (v.endOffset);
-        if (state.isEmpty ())
-            this.state = null;
+        if (marenka.isEmpty ())
+            this.state = marenka.getState ();
         else
-            this.state = state;
-        return tokenFactory.createToken ((STokenId) tokensMap.get (v.type));
+            this.state = marenka;
+        return tokenFactory.createPropertyToken (
+            (STokenId) tokensMap.get (v.type),
+            v.endOffset - v.startOffset,
+            tokenPropertyProvider,
+            v.property
+        );
     }
+    
+    private static TokenPropertyProvider tokenPropertyProvider = new TokenPropertyProvider () {
+        
+        public Object getValue (Token token, Object key) {
+            return null;
+        }
+
+        public Object getValue (Token token, Object tokenStoreKey, Object tokenStoreValue) {
+            if (tokenStoreKey.equals ("type"))
+                return tokenStoreValue;
+            return null;
+        }
+
+        public Object tokenStoreKey() {
+            return "type";
+        }
+    };
     
     
     // innerclasses ............................................................
@@ -207,19 +227,50 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         String      type;
         int         startOffset;
         int         endOffset;
+        Object      property;
         
         Vojta (
             String  type, 
             int     startOffset, 
-            int     endOffset
+            int     endOffset,
+            Object  property
         ) {
             this.type =         type;
             this.startOffset =  startOffset;
             this.endOffset =    endOffset;
+            this.property =     property;
         }
         
         int size () {
             return endOffset - startOffset;
         }
     }
+    
+    static class Marenka {
+        
+        Integer state;
+        LinkedList vojta = new LinkedList ();
+        
+        Marenka (Integer state) {
+            this.state = state;
+        }
+        
+        void add (Vojta vojta) {
+            this.vojta.add (vojta);
+        }
+        
+        Vojta removeFirst () {
+            return (Vojta) vojta.removeFirst ();
+        }
+        
+        boolean isEmpty () {
+            return vojta.isEmpty ();
+        }
+        
+        Integer getState () {
+            return state;
+        }
+    }
 }
+
+

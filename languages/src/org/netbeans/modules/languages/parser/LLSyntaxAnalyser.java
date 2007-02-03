@@ -102,25 +102,8 @@ public class LLSyntaxAnalyser {
         Stack stack = new Stack ();
         Node root = null, node = null;
         Iterator it = Collections.singleton ("S").iterator ();
-        String mimeType = input.next (1).getMimeType ();
-        int offset = input.getOffset ();
         do {
-            List initialWhitespaces = readWhitespaces (node, input, mimeType, embeded, skipErrors);
-            //S ystem.out.println(input.getIndex () + ":" + input.next (1));
-            if ((!input.eof ()) &&
-                !input.next (1).getMimeType ().equals (mimeType)
-            ) {
-                if (node != null) 
-                    return root.createASTNode ();
-                else
-                    return ASTNode.create (
-                        mimeType,
-                        "S",
-                        -1,
-                        initialWhitespaces,
-                        offset
-                    );
-            }
+            List whitespaces = readWhitespaces (node, input, embeded, skipErrors);
             while (!it.hasNext ()) {
                 if (stack.empty ()) break;
                 node = (Node) stack.pop ();
@@ -130,13 +113,13 @@ public class LLSyntaxAnalyser {
             Object current = it.next ();
             if (current instanceof String) {
                 String nt = (String) current;
-                int newRule = getRule (mimeType, nt, input);
+                int newRule = getRule (nt, input);
                 if (newRule == -1) {
                     if (!skipErrors)
                         throw new ParseException ("No rule for " + input.next (1) + " in " + input, root.createASTNode ());
                     if (input.eof ()) {
                         if (node == null)
-                            root = node = new Node (mimeType, "Root", -1, input.getOffset (), initialWhitespaces);
+                            root = node = new Node ("Root", -1, input.getOffset (), whitespaces);
                         createErrorNode (node, input.getOffset ());
                         //S ystem.out.println(input.getIndex () + ": unexpected eof " + nt);
                         return root.createASTNode ();
@@ -148,7 +131,6 @@ public class LLSyntaxAnalyser {
                     Evaluator.Method evaluator = null;
                     evaluator = (Evaluator.Method) language.getFeature (
                         language.PARSE, 
-                        mimeType, 
                         rule.getNT ()
                     );
                     if (evaluator != null) {
@@ -166,7 +148,7 @@ public class LLSyntaxAnalyser {
                                 stack.push (it);
                                 stack.push (node);
                             } else {
-                                Node nnode = new Node (mimeType, rule.getNT (), newRule, input.getOffset (), initialWhitespaces);
+                                Node nnode = new Node ( rule.getNT (), newRule, input.getOffset (), whitespaces);
                                 if (node != null) {
                                     node.addNode (nnode);
                                     stack.push (it);
@@ -203,8 +185,8 @@ public class LLSyntaxAnalyser {
         } while (true);
         if (embeded) {
             while (
-                !input.eof () && 
-                input.next (1).getMimeType () == mimeType
+                !input.eof () //&& 
+                //input.next (1).getMimeType () == mimeType
             )
                 createErrorNode (node, input.getOffset ()).addToken (input.read ());
         }
@@ -214,25 +196,13 @@ public class LLSyntaxAnalyser {
     private List readWhitespaces (
         Node node, 
         TokenInput input, 
-        String mimeType, 
         boolean embeded, 
         boolean skipErrors
     ) throws ParseException {
         List l = null;
         while (!input.eof ()) {
             Object result = null;
-            if (!input.next (1).getMimeType ().equals (mimeType)) {
-                if (embeded)
-                    break;
-                else
-                    result = read (input, true, skipErrors);
-            } else
-            if (mimeType.equals (input.next (1).getMimeType ()) && 
-                skip.contains (input.next (1).getType ())
-            ) {
-                result = input.read ();
-            } else
-            if (!first.containsKey (mimeType)) {
+            if (skip.contains (input.next (1).getType ())) {
                 result = input.read ();
             } else
                 break;
@@ -258,7 +228,6 @@ public class LLSyntaxAnalyser {
             }
         }
         Node errorNode = new Node (
-            parentNode == null ? "?" : parentNode.mimeType, 
             "ERROR", 
             -2, 
             offset,
@@ -269,15 +238,13 @@ public class LLSyntaxAnalyser {
         return errorNode;
     }
     
-    private int getRule (String mimeType, String nt, TokenInput input) {
-        Map m = (Map) first.get (mimeType);
-        if (m == null) return -1;
-        m = (Map) m.get (nt);
+    private int getRule (String nt, TokenInput input) {
+        Map m = (Map) first.get (nt);
         if (m == null) return -1;
         int i = 1;
         while (true) {
             SToken token = input.next (i);
-            if (token == null || !mimeType.equals (token.getMimeType ())) {
+            if (token == null /*|| !mimeType.equals (token.getMimeType ())*/) {
                 Set result = (Set) (Set) m.get ("#");
                 if (result == null || result.size () > 1) return -1;
                 return ((Integer) result.iterator ().next ()).intValue ();
@@ -312,17 +279,17 @@ public class LLSyntaxAnalyser {
     }
     
     private void initTracing () {
-        Evaluator e = (Evaluator) language.getProperty (language.getMimeType (), "traceSteps");
+        Evaluator e = (Evaluator) language.getProperty ("traceSteps");
         if (e != null)
             try {
                 traceSteps = Integer.parseInt ((String) e.evaluate ());
             } catch (NumberFormatException ex) {
                 traceSteps = -2;
             }
-        e = (Evaluator) language.getProperty (language.getMimeType (), "printRules");
+        e = (Evaluator) language.getProperty ("printRules");
         if (e != null && "true".equals (e.evaluate ()))
             AnalyserAnalyser.printRules (rules, null);
-        e = (Evaluator) language.getProperty (language.getMimeType (), "printFirst");
+        e = (Evaluator) language.getProperty ("printFirst");
         if (e != null && "true".equals (e.evaluate ()))
             printFirst = true;
     }
@@ -337,8 +304,7 @@ public class LLSyntaxAnalyser {
     
     private boolean removeNT (Node n) {
         if (optimiseProperty == null) {
-            optimiseProperty = (Map) language.getProperty 
-                (language.getMimeType (), Language.AST);
+            optimiseProperty = (Map) language.getProperty (Language.AST);
             if (optimiseProperty != null) {
                 Evaluator e = (Evaluator) optimiseProperty.get ("removeEmpty");
                 if (e != null) {
@@ -382,7 +348,6 @@ public class LLSyntaxAnalyser {
     
     public static class Rule {
         
-        private String  mimeType;
         private String  nt;
         private List    right;
         private int     save;
@@ -391,14 +356,12 @@ public class LLSyntaxAnalyser {
         private Rule () {}
         
         public static Rule create (
-            String      mimeType, 
             String      nt, 
             List        right,
             int         save,
             int         load
         ) {
             Rule r = new Rule ();
-            r.mimeType = mimeType;
             r.nt = nt;
             r.right = right;
             r.save = save;
@@ -407,18 +370,12 @@ public class LLSyntaxAnalyser {
         }
         
         public static Rule create (
-            String      mimeType, 
             String      nt, 
             List        right
         ) {
             return create (
-                mimeType, nt, right, -1, -1
+                nt, right, -1, -1
             );
-        }
-
-
-        public String getMimeType () {
-            return mimeType;
         }
 
         public String getNT () {
@@ -504,20 +461,17 @@ public class LLSyntaxAnalyser {
     
     private class Node {
         
-        String      mimeType;
         String      nt;
         int         rule;
         int         offset;
         List        children;
         
         Node (
-            String mimeType,
             String nt,
             int rule,
             int offset,
             List children
         ) {
-            this.mimeType = mimeType;
             this.nt = nt;
             this.rule = rule;
             this.offset = offset;
@@ -566,7 +520,7 @@ public class LLSyntaxAnalyser {
                 }
             }
             return ASTNode.create (
-                mimeType,
+                language.getMimeType (),
                 nt,
                 rule,
                 l,

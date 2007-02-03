@@ -64,7 +64,6 @@ public class SLanguageProvider extends LanguageProvider {
                 getLanguage (mimeType);
             Map properties = (Map) language.getFeature (
                 org.netbeans.modules.languages.Language.IMPORT, 
-                mimeType, 
                 token.id ().name ()
             );
             if (properties == null)

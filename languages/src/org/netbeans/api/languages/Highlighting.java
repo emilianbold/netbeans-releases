@@ -21,13 +21,13 @@ package org.netbeans.api.languages;
 
 import java.lang.ref.WeakReference;
 import java.util.WeakHashMap;
-import org.netbeans.api.languages.ASTNode;
-
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
-import org.netbeans.modules.languages.Utils;
+
+import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.SToken;
 
 
 /**
@@ -60,16 +60,30 @@ public class Highlighting {
     
     private Highlighting () {}
     
-    public void highlight (int tokenOffset, AttributeSet as) {
-        tokens.put (new Integer (tokenOffset), as);
+    public void highlight (SToken token, AttributeSet as) {
+        Integer id = new Integer (token.getOffset ());
+        Map m = (Map) tokens.get (id);
+        if (m == null) {
+            m = new HashMap ();
+            tokens.put (id, m);
+        }
+        m.put (token.getIdentifier (), as);
     }
     
-    public void removeHighlight (int tokenOffset) {
-        tokens.remove (new Integer (tokenOffset));
+    public void removeHighlight (SToken token) {
+        Integer id = new Integer (token.getOffset ());
+        Map m = (Map) tokens.get (id);
+        if (m == null) return;
+        m.remove (token.getIdentifier ());
+        if (m.isEmpty ())
+            tokens.remove (id);
     }
     
-   public  AttributeSet get (int tokenOffset) {
-        return (AttributeSet) tokens.get (new Integer (tokenOffset));
+   public AttributeSet get (SToken token) {
+        Integer id = new Integer (token.getOffset ());
+        Map m = (Map) tokens.get (id);
+        if (m == null) return null;
+        return (AttributeSet) m.get (token.getIdentifier ());
     }
     
     public void highlight (ASTNode node, AttributeSet as) {

@@ -172,7 +172,7 @@ public class NBSLanguageReader {
         } else {
             String patternString = node.getNode ("token2.regularExpression").getAsText ();
             endState = node.getTokenTypeIdentifier ("token2.token3.state.identifier");
-            pattern = Pattern.create (patternString, language.getMimeType ());
+            pattern = Pattern.create (patternString);
         }
         if (startState != null && state != null) 
             throw new ParseException ("Start state should not be specified inside token group block!");
@@ -180,7 +180,6 @@ public class NBSLanguageReader {
         if (endState == null) endState = state;
         language.addToken (
             startState,
-            language.getMimeType (),
             name,
             pattern,
             endState,
@@ -288,7 +287,7 @@ public class NBSLanguageReader {
                 result.put (key, evaluator);
             } else {
                 value = n.getNode ("propertyValue.regularExpression").getAsText ();
-                Pattern pattern = Pattern.create (value, language.getMimeType ());
+                Pattern pattern = Pattern.create (value);
                 result.put (key, pattern);
             }
         }
@@ -306,8 +305,7 @@ public class NBSLanguageReader {
                 throw new ParseException ("Syntax error.");
             if (!(feature instanceof Map))
                 throw new ParseException ("Syntax error.");
-            List[] l = (List[]) language.getProperty 
-                (language.getMimeType (), featureName);
+            List[] l = (List[]) language.getProperty (featureName);
             if (l == null) {
                 l = new List[] {new ArrayList (), new ArrayList ()};
                 language.addProperty (featureName, l);
@@ -337,12 +335,12 @@ public class NBSLanguageReader {
             if (identifier != null)
                 throw new ParseException ("Syntax error.");
             if (feature instanceof Evaluator.Method) {
-                if (language.getProperty (language.getMimeType (), featureName) != null)
+                if (language.getProperty (featureName) != null)
                     throw new ParseException ("Syntax error.");
                 language.addProperty (featureName, feature);
             } else
             if (feature instanceof Evaluator.Expression) {
-                Object ov = language.getProperty (language.getMimeType (), featureName);
+                Object ov = language.getProperty (featureName);
                 if (ov != null && !(ov instanceof Object[]))
                     throw new ParseException ("Syntax error.");
                 Object[] ss = (Object[]) ov;
@@ -389,7 +387,7 @@ public class NBSLanguageReader {
         if (Language.COMPLETE.equals (featureName)) {
             if (identifier != null)
                 throw new ParseException ("Syntax error.");
-            Object ov = language.getProperty (language.getMimeType (), Language.COMPLETE);
+            Object ov = language.getProperty (Language.COMPLETE);
             Object[] ss = (Object[]) ov;
             if (ss == null) {
                 ss = new Object [] {new ArrayList (), new ArrayList (), null};
@@ -442,12 +440,12 @@ public class NBSLanguageReader {
             if (identifier != null)
                 throw new ParseException ("Syntax error.");
             if (feature instanceof Evaluator.Method) {
-                if (language.getProperty (language.getMimeType (), featureName) != null)
+                if (language.getProperty (featureName) != null)
                     throw new ParseException ("Syntax error.");
                 language.addProperty (featureName, feature);
             } else
             if (feature instanceof Evaluator.Expression) {
-                Object ov = language.getProperty (language.getMimeType (), featureName);
+                Object ov = language.getProperty (featureName);
                 if (ov != null && !(ov instanceof Object[]))
                     throw new ParseException ("Syntax error.");
                 Object[] ss = (Object[]) ov;

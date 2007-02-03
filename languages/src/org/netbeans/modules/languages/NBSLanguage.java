@@ -37,34 +37,34 @@ import org.netbeans.api.languages.SToken;
 public class NBSLanguage {
     
     static final String NBS = "text/x-nbs";
-    static final SToken STRING = SToken.create (NBS, "string", null);
-    static final SToken OPERATOR = SToken.create (NBS, "operator", null);
-    static final SToken KEYWORD = SToken.create (NBS, "keyword", null);
-    static final SToken IDENTIFIER = SToken.create (NBS, "identifier", null);
-    static final SToken COMMENT = SToken.create (NBS, "comment", null);
-    static final SToken WHITESPACE = SToken.create (NBS, "whitespace", null);
-    static final SToken BRACE = SToken.create (NBS, "operator", "{");
-    static final SToken BRACE2 = SToken.create (NBS, "operator", "}");
-    static final SToken BRACKET = SToken.create (NBS, "operator", "[");
-    static final SToken BRACKET2 = SToken.create (NBS, "operator", "]");
-    static final SToken KEYWORD_TOKEN = SToken.create (NBS, "keyword", "TOKEN");
-    static final SToken COLON = SToken.create (NBS, "operator", ":");
-    static final SToken SEMICOLON = SToken.create (NBS, "operator", ";");
-    static final SToken EQUAL = SToken.create (NBS, "operator", "=");
-    static final SToken MINUS = SToken.create (NBS, "operator", "-");
-    static final SToken DOLLAR = SToken.create (NBS, "operator", "$");
-    static final SToken UPP = SToken.create (NBS, "operator", "^");
-    static final SToken OR = SToken.create (NBS, "operator", "|");
-    static final SToken COMMA = SToken.create (NBS, "operator", ",");
-    static final SToken DOT = SToken.create (NBS, "operator", ".");
-    static final SToken PLUS = SToken.create (NBS, "operator", "+");
-    static final SToken MULTIPLY = SToken.create (NBS, "operator", "*");
-    static final SToken QUESTION = SToken.create (NBS, "operator", "?");
-    static final SToken DOUBLE_QUOTES = SToken.create (NBS, "operator", "\"");
-    static final SToken LT = SToken.create (NBS, "operator", "<");
-    static final SToken GT = SToken.create (NBS, "operator", ">");
-    static final SToken PARENTHESIS = SToken.create (NBS, "operator", "(");
-    static final SToken PARENTHESIS2 = SToken.create (NBS, "operator", ")");
+    static final SToken STRING = SToken.create ("string", null);
+    static final SToken OPERATOR = SToken.create ("operator", null);
+    static final SToken KEYWORD = SToken.create ("keyword", null);
+    static final SToken IDENTIFIER = SToken.create ("identifier", null);
+    static final SToken COMMENT = SToken.create ("comment", null);
+    static final SToken WHITESPACE = SToken.create ("whitespace", null);
+    static final SToken BRACE = SToken.create ("operator", "{");
+    static final SToken BRACE2 = SToken.create ("operator", "}");
+    static final SToken BRACKET = SToken.create ("operator", "[");
+    static final SToken BRACKET2 = SToken.create ("operator", "]");
+    static final SToken KEYWORD_TOKEN = SToken.create ("keyword", "TOKEN");
+    static final SToken COLON = SToken.create ("operator", ":");
+    static final SToken SEMICOLON = SToken.create ("operator", ";");
+    static final SToken EQUAL = SToken.create ("operator", "=");
+    static final SToken MINUS = SToken.create ("operator", "-");
+    static final SToken DOLLAR = SToken.create ("operator", "$");
+    static final SToken UPP = SToken.create ("operator", "^");
+    static final SToken OR = SToken.create ("operator", "|");
+    static final SToken COMMA = SToken.create ("operator", ",");
+    static final SToken DOT = SToken.create ("operator", ".");
+    static final SToken PLUS = SToken.create ("operator", "+");
+    static final SToken MULTIPLY = SToken.create ("operator", "*");
+    static final SToken QUESTION = SToken.create ("operator", "?");
+    static final SToken DOUBLE_QUOTES = SToken.create ("operator", "\"");
+    static final SToken LT = SToken.create ("operator", "<");
+    static final SToken GT = SToken.create ("operator", ">");
+    static final SToken PARENTHESIS = SToken.create ("operator", "(");
+    static final SToken PARENTHESIS2 = SToken.create ("operator", ")");
     
     private static Parser nbsParser;
     
@@ -72,7 +72,6 @@ public class NBSLanguage {
         Language l = new Language (NBS);
         l.addToken (
             Parser.DEFAULT_STATE, 
-            NBS,
             "keyword",
             Pattern.create (
                 "'ACTION' |" +
@@ -93,73 +92,62 @@ public class NBSLanguage {
                 "'SKIP' |" +
                 "'STORE' |" +
                 "'TOKEN' |" +
-                "'TOOLTIP'",
-                NBS
+                "'TOOLTIP'"
             ),
             Parser.DEFAULT_STATE,
             null
         );
         l.addToken (
             Parser.DEFAULT_STATE, 
-            NBS,
             "identifier",
             Pattern.create (
-                "['a'-'z' 'A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*",
-                NBS
+                "['a'-'z' 'A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*"
             ),
             Parser.DEFAULT_STATE,
             null
         );
         l.addToken (
             Parser.DEFAULT_STATE, 
-            NBS,
             "operator",
             Pattern.create (
                 "':' | '*' | '?' | '+' | '-' | '[' | ']' | '<' | " +
                 "'>' | '^' | '|' | '{' | '}' | '(' | ')' | ',' | " +
-                "'=' | ';' | '.' | '$'",
-                NBS
+                "'=' | ';' | '.' | '$'"
             ),
             Parser.DEFAULT_STATE,
             null
         );
         l.addToken (
             Parser.DEFAULT_STATE, 
-            NBS,
             "string",
             Pattern.create (
                 "'\\\"' ([^'\\\"' '\\\\' '\\r' '\\n'] |" +
-                "('\\\\' ['r' 'n' 't' '\\\\' '\\\'' '\\\"']) )* '\\\"'",
-                NBS
+                "('\\\\' ['r' 'n' 't' '\\\\' '\\\'' '\\\"']) )* '\\\"'"
             ),
             Parser.DEFAULT_STATE,
             null
         );
         l.addToken (
             Parser.DEFAULT_STATE, 
-            NBS,
             "string",
             Pattern.create (
                 "'\\\'' ([^'\\\'' '\\\\' '\\r' '\\n'] |" +
-                "('\\\\' ['r' 'n' 't' '\\\\' '\\\'' '\\\"']) )* '\\\''",
-                NBS
+                "('\\\\' ['r' 'n' 't' '\\\\' '\\\'' '\\\"']) )* '\\\''"
             ),
             Parser.DEFAULT_STATE,
             null
         );
         l.addToken (
             Parser.DEFAULT_STATE, 
-            NBS,
             "comment",
-            Pattern.create ("'#' [^'\\n' '\\r']* ['\\n' '\\r']+", NBS),
+            Pattern.create ("'#' [^'\\n' '\\r']* ['\\n' '\\r']+"),
             Parser.DEFAULT_STATE,
             null
         );
         l.addToken (
             Parser.DEFAULT_STATE, 
-            NBS,
             "whitespace",
-            Pattern.create ("['\\n' '\\r' ' ' '\\t']+", NBS),
+            Pattern.create ("['\\n' '\\r' ' ' '\\t']+"),
             Parser.DEFAULT_STATE,
             null
         );
@@ -254,7 +242,6 @@ public class NBSLanguage {
     
     private static LLSyntaxAnalyser.Rule rule (String nt, Object[] right) {
         return LLSyntaxAnalyser.Rule.create (
-            "text/x-nbs", 
             nt, 
             Arrays.asList (right)
         );

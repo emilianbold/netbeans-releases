@@ -38,18 +38,18 @@ public class Pattern {
         return new Pattern ();
     }
     
-    public static Pattern create (String input, String mimeType) throws ParseException {
+    public static Pattern create (String input) throws ParseException {
         if (input.length () == 0) throw new ParseException ();
-        return create (new StringInput (input, ""), mimeType);
+        return create (new StringInput (input, ""));
     }
     
-    public static Pattern create (CharInput input, String mimeType) throws ParseException {
-        Pattern p = createIn (input, mimeType);
+    public static Pattern create (CharInput input) throws ParseException {
+        Pattern p = createIn (input);
         DG ndg = DGUtils.reduce (p.dg);
         return new Pattern (ndg);
     }
     
-    private static Pattern createIn (CharInput input, String mimeType) throws ParseException {
+    private static Pattern createIn (CharInput input) throws ParseException {
         Pattern pattern = new Pattern ();
         Pattern last = null;
         char ch = input.next ();
@@ -79,14 +79,14 @@ public class Pattern {
                 case '(':
                     input.read ();
                     if (last != null) pattern = pattern.append (last);
-                    last = createIn (input, mimeType);
+                    last = createIn (input);
                     if (input.read () != ')')
                         throw new ParseException (") expected: " + input);
                     break;
                 case '<':
                     input.read ();
                     if (last != null) pattern = pattern.append (last);
-                    last = new Pattern (readToken (input, mimeType));
+                    last = new Pattern (readToken (input));
                     if (input.read () != '>')
                         throw new ParseException ("> expected: " + input);
                     break;
@@ -161,7 +161,7 @@ public class Pattern {
                     input.read ();
                     if (last != null) pattern = pattern.append (last);
                     last = null;
-                    pattern = pattern.merge (createIn (input, mimeType));
+                    pattern = pattern.merge (createIn (input));
                     return pattern;
                 case '-':
                     if (last != null) pattern = pattern.append (last);
@@ -277,7 +277,7 @@ public class Pattern {
                                 if (minus) throw new ParseException (input.toString ());
                                 if (l != 0) 
                                     set.add (new Character (l));
-                                set.add (readToken (input, mimeType));
+                                set.add (readToken (input));
                                 if (input.read () != '>')
                                     throw new ParseException ("> expected: " + input);
                                 break;
@@ -304,7 +304,7 @@ public class Pattern {
         return pattern;
     }
 
-    private static SToken readToken (CharInput input, String mimeType) throws ParseException {
+    private static SToken readToken (CharInput input) throws ParseException {
         StringBuilder sb = new StringBuilder ();
         char ch = input.next ();
         while (ch != ',' && ch != '>') {
@@ -315,7 +315,7 @@ public class Pattern {
         }
         ch = input.next ();
         String type = sb.toString ().trim ();
-        if (ch == '>') return SToken.create (mimeType, type, null);
+        if (ch == '>') return SToken.create (type, null);
         input.read ();
         skipWhitespaces (input);
         sb = new StringBuilder ();
@@ -348,7 +348,7 @@ public class Pattern {
             }
             name = sb.toString ();
         }
-        return SToken.create (mimeType, type, identifier);
+        return SToken.create (type, identifier);
     }
     
     private static Set whitespace = new HashSet ();

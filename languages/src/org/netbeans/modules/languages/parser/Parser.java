@@ -94,7 +94,6 @@ public class Parser {
                 cookie.setProperties (lastTT.getProperties ());
                 input.setIndex (lastIndex);
                 return SToken.create (
-                    lastTT.getMimeType (),
                     lastTT.getType (),
                     input.getString (originalIndex, lastIndex),
                     originalIndex
@@ -117,7 +116,6 @@ public class Parser {
         }
         cookie.setProperties (lastTT.getProperties ());
         return SToken.create (
-            lastTT.getMimeType (),
             lastTT.getType (),
             input.getString (originalIndex, lastIndex),
             originalIndex

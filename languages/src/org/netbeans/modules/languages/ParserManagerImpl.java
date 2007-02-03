@@ -195,7 +195,7 @@ public class ParserManagerImpl extends ParserManager {
             String mimeType = (String) doc.getProperty ("mimeType");
             Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
                 getLanguage (mimeType);
-            Map m = (Map) l.getProperty (mimeType, Language.AST);
+            Map m = (Map) l.getProperty (Language.AST);
             if (m != null && ast != null) {
                 Evaluator e = (Evaluator) m.get ("process");
                 if (e != null) 
@@ -228,19 +228,51 @@ public class ParserManagerImpl extends ParserManager {
             doc.readLock ();
             TokenHierarchy th = TokenHierarchy.get (doc);
             TokenSequence ts = th.tokenSequence ();
-
-            String mt = mimeType;
             while (ts.moveNext ()) {
                 Token t = ts.token ();
                 String type = t.id ().name ();
-                if (!type.equals("error"))
-                    mt = Hack.getMimeType (mimeType, type);
-                tokens.add (SToken.create (
-                    mt, 
-                    type, 
-                    t.text ().toString (), 
-                    t.offset (th)
-                ));
+                int offset = t.offset (th);
+                String ttype = (String) t.getProperty ("type");
+                if (ttype == null)
+                    tokens.add (SToken.create (
+                        type, 
+                        t.text ().toString (), 
+                        offset
+                    ));
+                else
+                if (ttype.equals ("E"))
+                    continue;
+                else
+                if (ttype.equals ("S")) {
+                    StringBuilder sb = new StringBuilder (t.text ().toString ());
+                    while (ts.moveNext ()) {
+                        t = ts.token ();
+                        ttype = (String) t.getProperty ("type");
+                        if (ttype == null) {
+                            ts.movePrevious ();
+                            break;
+                        }
+                        if (ttype.equals ("E"))
+                            continue;
+                        if (ttype.equals ("S")) {
+                            ts.movePrevious ();
+                            break;
+                        }
+                        if (!ttype.equals ("C"))
+                            throw new IllegalArgumentException ();
+                        if (!type.equals (t.id ().name ()))
+                            throw new IllegalArgumentException ();
+                        sb.append (t.text ().toString ());
+                    }
+                    int no = ts.offset () + ts.token ().length ();
+                    tokens.add (SToken.create (
+                        type, 
+                        sb.toString (), 
+                        offset,
+                        no - offset
+                    ));
+                } else
+                    throw new IllegalArgumentException ();
             }
             return TokenInput.create (tokens);
         } finally {

@@ -152,18 +152,13 @@ public class AnalyserAnalyser {
         boolean[] ff = new boolean[] {true};
         Iterator it = f.keySet ().iterator ();
         while (it.hasNext ()) {
-            String mt = (String) it.next ();
-            Map m = (Map) f.get (mt);
-            Iterator it2 = m.keySet ().iterator ();
-            while (it2.hasNext ()) {
-                String nt = (String) it2.next ();
-                pf (mt, nt, (Map) m.get (nt), new LinkedList (), ff, writer);
-            }
+            String nt = (String) it.next ();
+            pf (nt, (Map) f.get (nt), new LinkedList (), ff, writer);
         }
         return !ff [0];
     }
     
-    private static void pf (String mt, String nt, Map m, LinkedList l, boolean[] f, PrintWriter writer) {
+    private static void pf (String nt, Map m, LinkedList l, boolean[] f, PrintWriter writer) {
         if (((Set) m.get ("&")).size () < 2) return;
         boolean end = true;
         Iterator it = m.keySet ().iterator ();
@@ -172,7 +167,7 @@ public class AnalyserAnalyser {
             if (e instanceof T) {
                 end = false;
                 l.addLast (e);
-                pf (mt, nt, (Map) m.get (e), l, f, writer);
+                pf (nt, (Map) m.get (e), l, f, writer);
                 l.removeLast ();
             }
         }
@@ -185,9 +180,9 @@ public class AnalyserAnalyser {
                     writer.println ("Conflicts:");
             }
             if (writer == null)
-                System.out.println ("  " + mt + ":" + nt + ":" + l + " " + m.get ("&"));
+                System.out.println ("  " + nt + ":" + l + " " + m.get ("&"));
             else
-                writer.println ("  " + mt + ":" + nt + ":" + l + " " + m.get ("&"));
+                writer.println ("  " + nt + ":" + l + " " + m.get ("&"));
         }
     }
     

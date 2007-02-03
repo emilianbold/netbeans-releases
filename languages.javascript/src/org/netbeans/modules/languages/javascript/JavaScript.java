@@ -83,7 +83,7 @@ public class JavaScript {
         regExp.add (new Integer (';'));
     }
     
-    public static Object[] parseRegularExpression (CharInput input, String mimeType) {
+    public static Object[] parseRegularExpression (CharInput input) {
         if (input.read () != '/')
             throw new InternalError ();
         int start = input.getIndex ();
@@ -95,7 +95,7 @@ public class JavaScript {
             ) {
                 input.setIndex (start);
                 return new Object[] {
-                    SToken.create (mimeType, "js_operator", ""),
+                    SToken.create ("js_operator", ""),
                     null
                 };
             }
@@ -129,13 +129,13 @@ public class JavaScript {
             ) {
                 input.setIndex (start);
                 return new Object[] {
-                    SToken.create (mimeType, "js_operator", ""),
+                    SToken.create ("js_operator", ""),
                     null
                 };
             } else {
                 input.setIndex (end);
                 return new Object[] {
-                    SToken.create (mimeType, "js_regularExpression", ""),
+                    SToken.create ("js_regularExpression", ""),
                     null
                 };
             }
@@ -145,13 +145,13 @@ public class JavaScript {
         ) {
             input.setIndex (end);
             return new Object[] {
-                SToken.create (mimeType, "js_regularExpression", ""),
+                SToken.create ("js_regularExpression", ""),
                 null
             };
         }
         input.setIndex (start);
         return new Object[] {
-            SToken.create (mimeType, "js_operator", ""),
+            SToken.create ("js_operator", ""),
             null
         };
     }

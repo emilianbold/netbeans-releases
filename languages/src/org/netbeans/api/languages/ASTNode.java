@@ -198,7 +198,7 @@ public class ASTNode {
                 Object last = l.get (l.size () - 1);
                 if (last instanceof SToken)
                     endOffset = ((SToken) last).getOffset () + 
-                        ((SToken) last).getIdentifier ().length ();
+                        ((SToken) last).getLength ();
                 else
                     endOffset = ((ASTNode) last).getEndOffset ();
             }
@@ -288,7 +288,7 @@ public class ASTNode {
             Object e = (Object) it.next ();
             if (e instanceof SToken) {
                 SToken token = (SToken) e;
-                if (offset < token.getOffset () + token.getIdentifier ().length () &&
+                if (offset < token.getOffset () + token.getLength () &&
                     token.getOffset () <= offset
                 ) {
                     return PTPath.create (this, token);

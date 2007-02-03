@@ -150,7 +150,7 @@ public abstract class TokenInput {
             if (eof ()) {
                 if (getIndex () == 0) return 0;
                 t = ((SToken) tokens.get (tokens.size () - 1));
-                return t.getOffset () + t.getIdentifier ().length ();
+                return t.getOffset () + t.getLength ();
             } else {
                 t = (SToken) next (1);
                 return t.getOffset ();
@@ -208,7 +208,7 @@ public abstract class TokenInput {
             if (eof ()) {
                 if (getIndex () == 0) return 0;
                 t = (SToken) array [array.length - 1];
-                return t.getOffset () + t.getIdentifier ().length ();
+                return t.getOffset () + t.getLength ();
             } else {
                 t = (SToken) next (1);
                 return t.getOffset ();
@@ -266,7 +266,7 @@ public abstract class TokenInput {
             if (eof ()) {
                 if (getIndex () == 0) return 0;
                 t = ((SToken) list.get (list.size () - 1));
-                return t.getOffset () + t.getIdentifier ().length ();
+                return t.getOffset () + t.getLength ();
             } else {
                 t = (SToken) next (1);
                 return t.getOffset ();

@@ -35,24 +35,20 @@ public class AnalyserTest extends TestCase {
     private static String mimeType = "text/test";
 
     public void test1 () throws ParseException {
-        List r = Arrays.asList (new LLSyntaxAnalyser.Rule [] {
-            LLSyntaxAnalyser.Rule.create (mimeType, "S", Arrays.asList (new Object[] {
-                SToken.create (mimeType, "identifier", null), 
-                "S"
-            })),
-            LLSyntaxAnalyser.Rule.create (mimeType, "S", Arrays.asList (new Object[] {
-                SToken.create (mimeType, "operator", "{"), 
-                "S", 
-                SToken.create (mimeType, "operator", "}"), 
-                "S"
-            })),
-            LLSyntaxAnalyser.Rule.create (mimeType, "S", Arrays.asList (new Object[] {
-            }))
-        });
-        LLSyntaxAnalyser a = LLSyntaxAnalyser.create (
-            r,
-            Collections.emptySet ()
-        );
+        Language l = new Language (mimeType);
+        l.addRule (LLSyntaxAnalyser.Rule.create (mimeType, "S", Arrays.asList (new Object[] {
+            SToken.create (mimeType, "identifier", null), 
+            "S"
+        })));
+        l.addRule (LLSyntaxAnalyser.Rule.create (mimeType, "S", Arrays.asList (new Object[] {
+            SToken.create (mimeType, "operator", "{"), 
+            "S", 
+            SToken.create (mimeType, "operator", "}"), 
+            "S"
+        })));
+        l.addRule (LLSyntaxAnalyser.Rule.create (mimeType, "S", Arrays.asList (new Object[] {
+        })));
+        LLSyntaxAnalyser a = l.getAnalyser ();
         //PetraTest.print (Petra.first (r, 5));
         TokenInput input = TokenInput.create (new SToken[] {
             SToken.create (mimeType, "identifier", "asd"),
