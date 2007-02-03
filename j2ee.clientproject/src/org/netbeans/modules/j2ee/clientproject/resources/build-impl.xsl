@@ -77,6 +77,10 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
+             <target name="-pre-init-am">
+                <xsl:comment> Access Manager pre-initialization </xsl:comment>
+            </target>
+            
             <target name="-init-private">
                 <xsl:attribute name="depends">-pre-init</xsl:attribute>
                 <property file="nbproject/private/private.properties"/>
@@ -516,7 +520,7 @@ Microsystems, Inc. All Rights Reserved.
             </target>
             
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-debug-appclient</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-pre-init-am,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-debug-appclient</xsl:attribute>
             </target>
             
             <xsl:comment>
