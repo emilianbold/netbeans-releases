@@ -35,6 +35,7 @@ public abstract class ParserManager {
     public static final int PARSING = 1;
     public static final int OK = 2;
     public static final int ERROR = 3;
+    public static final int NOT_PARSED = 4;
     
     
     private static Map managers = new WeakHashMap ();

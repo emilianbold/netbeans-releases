@@ -61,7 +61,7 @@ public class ParserManagerImpl extends ParserManager {
     private NbEditorDocument        doc;
     private ASTNode                 ast = null;
     private ParseException          exception = null;
-    private int                     state = PARSING;
+    private int                     state = NOT_PARSED;
     private Vector                  listeners = new Vector ();
     private static RequestProcessor rp = new RequestProcessor ("Parser");
     
@@ -152,6 +152,9 @@ public class ParserManagerImpl extends ParserManager {
                     EditorCookie ec = (EditorCookie) tc.getLookup ().lookup (EditorCookie.class);
                     if (ec == null) continue;
                     JEditorPane[] eps = ec.getOpenedPanes ();
+                    if (eps == null) {
+                        continue;
+                    }
                     int i, k = eps.length;
                     for (i = 0; i < k; i++) {
                         if (eps[i].getDocument () == doc) {
