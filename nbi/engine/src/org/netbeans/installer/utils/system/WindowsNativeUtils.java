@@ -43,7 +43,6 @@ import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.system.windows.SystemApplication;
 import org.netbeans.installer.utils.system.windows.FileExtension;
 import org.netbeans.installer.utils.system.windows.WindowsRegistry;
-import org.netbeans.installer.wizard.components.panels.ComponentsSelectionPanel;
 import static org.netbeans.installer.utils.StringUtils.*;
 import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 

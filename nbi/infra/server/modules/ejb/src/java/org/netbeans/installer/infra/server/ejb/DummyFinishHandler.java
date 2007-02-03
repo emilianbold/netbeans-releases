@@ -18,41 +18,27 @@
  *
  * $Id$
  */
-package org.netbeans.installer.utils.helper;
+package org.netbeans.installer.infra.server.ejb;
 
-import java.util.HashSet;
-import java.util.Set;
+import org.netbeans.installer.utils.helper.FinishHandler;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public class Context {
-    private Set<Object> objects;
-    
-    public Context() {
-        objects = new HashSet<Object>();
+public class DummyFinishHandler implements FinishHandler {
+    public DummyFinishHandler() {
     }
     
-    public Context(Context context) {
-        this();
-        
-        for (Object object: context.objects) {
-            objects.add(object);
-        }
+    public void cancel() {
+        // does nothing
     }
-    
-    public synchronized void put(Object object) {
-        objects.add(object);
+
+    public void finish() {
+        // does nothing
     }
-    
-    public synchronized Object get(Class<?> clazz) {
-        for (Object object: objects) {
-            if (clazz.isAssignableFrom((Class<?>) object.getClass())) {
-                return object;
-            }
-        }
-        
-        return null;
+
+    public void criticalExit() {
+        // does nothing
     }
 }

@@ -2,7 +2,6 @@
 package org.netbeans.installer.infra.server.ejb;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import javax.ejb.Local;
 import org.netbeans.installer.product.components.Product;

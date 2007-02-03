@@ -21,12 +21,13 @@ import java.util.Queue;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.ejb.Stateless;
 import org.netbeans.installer.Installer;
+import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
-import org.netbeans.installer.product.filters.TrueFilter;
 import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.XMLUtils;
@@ -76,10 +77,17 @@ public class ManagerBean implements Manager {
             
             Locale.setDefault(new Locale("en", "US"));
             
+            DownloadManager.getInstance().setLocalDirectory(NBI);
+            DownloadManager.getInstance().setFinishHandler(new DummyFinishHandler());
+            
             System.setProperty(
                     Installer.LOCAL_DIRECTORY_PATH_PROPERTY, NBI.getAbsolutePath());
             System.setProperty(
                     Installer.IGNORE_LOCK_FILE_PROPERTY, "true");
+            System.setProperty(
+                    LogManager.LOG_TO_CONSOLE_PROPERTY, "false");
+            System.setProperty(
+                    Registry.LAZY_LOAD_ICONS_PROPERTY, "true");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ManagerException e) {
@@ -164,7 +172,11 @@ public class ManagerBean implements Manager {
         String string = null;
         
         try {
-            final Registry registry = new Registry(registryXml);
+            final Registry registry = new Registry();
+            
+            registry.setLocalDirectory(NBI);
+            registry.setFinishHandler(new DummyFinishHandler());
+            registry.loadProductRegistry(registryXml);
             
             final File descriptor = new File(componentsDir,
                     FileUtils.getJarAttribute(archive, "Product-Descriptor"));
@@ -293,7 +305,11 @@ public class ManagerBean implements Manager {
         final File registryXml   = new File(registryDir, REGISTRY_XML);
         
         try {
-            final Registry registry = new Registry(registryXml);
+            final Registry registry = new Registry();
+            
+            registry.setLocalDirectory(NBI);
+            registry.setFinishHandler(new DummyFinishHandler());
+            registry.loadProductRegistry(registryXml);
             
             final List<Product> existing = registry.getProducts(
                     uid,
@@ -357,7 +373,11 @@ public class ManagerBean implements Manager {
         String string = null;
         
         try {
-            final Registry registry = new Registry(registryXml);
+            final Registry registry = new Registry();
+            
+            registry.setLocalDirectory(NBI);
+            registry.setFinishHandler(new DummyFinishHandler());
+            registry.loadProductRegistry(registryXml);
             
             final File descriptor = new File(groupsDir,
                     FileUtils.getJarAttribute(archive, "Group-Descriptor"));
@@ -465,7 +485,11 @@ public class ManagerBean implements Manager {
         final File registryXml = new File(registryDir, REGISTRY_XML);
         
         try {
-            final Registry registry = new Registry(registryXml);
+            final Registry registry = new Registry();
+            
+            registry.setLocalDirectory(NBI);
+            registry.setFinishHandler(new DummyFinishHandler());
+            registry.loadProductRegistry(registryXml);
             
             final Group existing = registry.getGroup(uid);
             
@@ -527,12 +551,19 @@ public class ManagerBean implements Manager {
                     addRegistry(name);
                 }
                 
-                
                 files.add(new File(registries.get(name), REGISTRY_XML));
             }
             
             try {
-                return new Registry(platform, files).getRegistryRoot();
+                final Registry registry = new Registry();
+                
+                registry.setLocalDirectory(NBI);
+                registry.setFinishHandler(new DummyFinishHandler());
+                for (File file: files) {
+                    registry.loadProductRegistry(file);
+                }
+                
+                return registry.getRegistryRoot();
             } catch (InitializationException e) {
                 e.printStackTrace();
                 throw new ManagerException("Could not load registry", e);
@@ -558,8 +589,15 @@ public class ManagerBean implements Manager {
             }
             
             try {
-                components.addAll(new Registry(platform, files).
-                        queryProducts(new TrueFilter()));
+                final Registry registry = new Registry();
+                
+                registry.setLocalDirectory(NBI);
+                registry.setFinishHandler(new DummyFinishHandler());
+                for (File file: files) {
+                    registry.loadProductRegistry(file);
+                }
+                
+                components.addAll(registry.getProducts());
             } catch (InitializationException e) {
                 e.printStackTrace();
                 throw new ManagerException("Could not load registry", e);
@@ -612,7 +650,14 @@ public class ManagerBean implements Manager {
                 }
                 remote = remote.trim();
                 
-                Registry registry = new Registry(platform, files);
+                final Registry registry = new Registry();
+                
+                registry.setLocalDirectory(NBI);
+                registry.setFinishHandler(new DummyFinishHandler());
+                for (File file: files) {
+                    registry.loadProductRegistry(file);
+                }
+                
                 for (String string: components) {
                     String[] parts = string.split(",");
                     
@@ -697,7 +742,14 @@ public class ManagerBean implements Manager {
             }
             
             for (Platform platform: Platform.values()) {
-                final Registry registry = new Registry(platform, files);
+                final Registry registry = new Registry();
+                
+                registry.setLocalDirectory(NBI);
+                registry.setFinishHandler(new DummyFinishHandler());
+                for (File file: files) {
+                    registry.loadProductRegistry(file);
+                }
+                
                 final List<Product> products = registry.getProducts(platform);
                 
                 for (int i = 1; i <= products.size(); i++) {
@@ -727,7 +779,7 @@ public class ManagerBean implements Manager {
                     String[] components = new String[combination.length];
                     
                     for (int j = 0; j < combination.length; j++) {
-                        components[j] = combination[j].getUid() + "," + 
+                        components[j] = combination[j].getUid() + "," +
                                 combination[j].getVersion().toString();
                     }
                     

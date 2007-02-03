@@ -21,67 +21,89 @@
 package org.netbeans.installer.downloader;
 
 import java.io.File;
-import java.io.IOException;
-import org.netbeans.installer.Installer;
-
 import org.netbeans.installer.downloader.queue.DispatchedQueue;
-import org.netbeans.installer.utils.FileUtils;
-
-/**
- * @author Danila_Dugurov
- */
+import org.netbeans.installer.utils.helper.FinishHandler;
 
 /**
  * It's main downloader class. It's singleton.
  * Only from here client can access download service and register there own listeners.
  * Also from here managed execution of downloding process.
+ * 
+ * @author Danila_Dugurov
  */
 public class DownloadManager {
-  
-  /////////////////////////////////////////////////////////////////////////////////
-  // Constants
-  public static final DownloadManager instance = new DownloadManager();
-  private static File defaultFolder;
-  
-  /////////////////////////////////////////////////////////////////////////////////
-  // Instance
-  private final DispatchedQueue queue;
-  private final File wd;
-  
-  private DownloadManager() {
-    wd = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "wd");
-    defaultFolder = DownloadConfig.DEFAULT_OUTPUT_DIR;
-    wd.mkdirs();
-    queue = new DispatchedQueue(new File(wd, "state.xml"));
-    queue.reset();
-  }
-  
-  public PumpingsQueue queue() {
-    return queue;
-  }
-  
-  public void registerListener(DownloadListener listener) {
-    queue.addListener(listener);
-  }
-  
-  public void invoke() {
-    queue.invoke();
-  }
-  
-  public void terminate() {
-    queue.terminate();
-  }
-  
-  public boolean isActive() {
-    return queue.isActive();
-  }
-  
-  public File getWd() {
-    return wd;
-  }
-  
-  public File defaultFolder() {
-    defaultFolder.mkdirs();
-    return defaultFolder;
-  }
+    /////////////////////////////////////////////////////////////////////////////////
+    // Static
+    public static final DownloadManager instance = new DownloadManager();
+    
+    public static DownloadManager getInstance() {
+        return instance;
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    private File          localDirectory;
+    private FinishHandler finishHandler;
+    
+    private File defaultFolder;
+    private DispatchedQueue queue;
+    private File wd;
+    
+    private DownloadManager() {
+    }
+    
+    public void init() {
+        defaultFolder = new File(localDirectory, "downloads");
+        defaultFolder.mkdirs();
+        
+        wd = new File(localDirectory, "wd");
+        wd.mkdirs();
+        
+        queue = new DispatchedQueue(new File(wd, "state.xml"));
+        queue.reset();
+    }
+    
+    public PumpingsQueue queue() {
+        return queue;
+    }
+    
+    public void registerListener(final DownloadListener listener) {
+        queue.addListener(listener);
+    }
+    
+    public void invoke() {
+        queue.invoke();
+    }
+    
+    public void terminate() {
+        queue.terminate();
+    }
+    
+    public boolean isActive() {
+        return queue.isActive();
+    }
+    
+    public File getWd() {
+        return wd;
+    }
+    
+    public File defaultFolder() {
+        return defaultFolder;
+    }
+    
+    public File getLocalDirectory() {
+        return localDirectory;
+    }
+    
+    public void setLocalDirectory(final File localDirectory) {
+        this.localDirectory = localDirectory;
+    }
+    
+    public FinishHandler getFinishHandler() {
+        return finishHandler;
+    }
+    
+    public void setFinishHandler(final FinishHandler finishHandler) {
+        this.finishHandler = finishHandler;
+    }
 }

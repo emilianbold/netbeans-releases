@@ -26,14 +26,10 @@ import java.net.URLClassLoader;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.util.List;
-import org.netbeans.installer.Installer;
-
-/////////////////////////////////////////////////////////////////////////////////
-// Inner Classes
 
 public class NbiClassLoader extends URLClassLoader {
     public NbiClassLoader(final List<ExtendedUri> uris) throws MalformedURLException {
-        super(new URL[]{}, Installer.getInstance().getClass().getClassLoader());
+        super(new URL[]{}, NbiClassLoader.class.getClassLoader());
         
         for(ExtendedUri uri : uris) {
             addURL(uri.getLocal().toURL());

@@ -21,10 +21,10 @@
 package org.netbeans.installer.wizard.components.sequences;
 
 import java.util.List;
-import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.wizard.components.WizardSequence;
 import org.netbeans.installer.wizard.components.actions.CreateBundleAction;
 import org.netbeans.installer.wizard.components.actions.CreateNativeLauncherAction;
@@ -51,7 +51,14 @@ public class MainSequence extends WizardSequence {
         // remove all current children (if there are any), as the components 
         // selection has probably changed and we need to rebuild from scratch
         getChildren().clear();
-        if (toInstall.size() > 0) {
+        
+        // the set of wizard components differs greatly depending on the execution
+        // mode - if we're installing, we ask for input, run a wizard sequence for 
+        // each selected component and then download and install; if we're creating 
+        // a bundle, we only need to download and package things
+        switch (ExecutionMode.getCurrentExecutionMode()) {
+            case NORMAL:
+                if (toInstall.size() > 0) {
                     addChild(new DownloadConfigurationLogicAction());
                     addChild(new SelectedComponentsLicensesPanel());
                     
@@ -59,6 +66,36 @@ public class MainSequence extends WizardSequence {
                         addChild(new ProductWizardSequence(component));
                     }
                 }
+                
+                addChild(new NbPreInstallSummaryPanel());
+                
+                if (toUninstall.size() > 0) {
+                    addChild(new UninstallAction());
+                }
+                
+                if (toInstall.size() > 0) {
+                    addChild(new DownloadInstallationDataAction());
+                    addChild(new InstallAction());
+                }
+                
+                addChild(new NbPostInstallSummaryPanel());
+                break;
+            case CREATE_BUNDLE:
+                addChild(new PreCreateBundleSummaryPanel());
+                addChild(new DownloadConfigurationLogicAction());
+                addChild(new DownloadInstallationDataAction());
+                addChild(new CreateBundleAction());
+                addChild(new CreateNativeLauncherAction());
+                addChild(new PostCreateBundleSummaryPanel());
+                break;
+            default:
+                // there is no real way to recover from this fancy error, so we 
+                // inform the user and die
+                ErrorManager.notifyCritical(
+                        "A terrible and weird error happened - installer's " +
+                        "execution mode is not recognized");
+        }
+        
         super.executeForward();
     }
     

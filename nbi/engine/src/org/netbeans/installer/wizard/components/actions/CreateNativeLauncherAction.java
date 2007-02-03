@@ -20,16 +20,13 @@
 
 package org.netbeans.installer.wizard.components.actions;
 
-import java.io.*;
-import org.netbeans.installer.Installer;
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.applications.JavaUtils;
-import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.NativeLauncher;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.progress.Progress;
@@ -40,7 +37,8 @@ import org.netbeans.installer.wizard.components.WizardAction;
  * @author Dmitry Lipin
  */
 public class CreateNativeLauncherAction extends WizardAction {
-    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
     public static final String DEFAULT_TITLE = ResourceUtils.getString(
             CreateNativeLauncherAction.class,
             "CNLA.title"); // NOI18N
@@ -49,7 +47,7 @@ public class CreateNativeLauncherAction extends WizardAction {
             CreateNativeLauncherAction.class,
             "CNLA.description"); // NOI18N
     
-    ///////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public CreateNativeLauncherAction() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
@@ -59,7 +57,7 @@ public class CreateNativeLauncherAction extends WizardAction {
     public void execute() {
         LogManager.log("Create native launcher...");
         LogManager.indent();
-        final String targetPath = System.getProperty(Installer.CREATE_BUNDLE_PATH_PROPERTY);
+        final String targetPath = System.getProperty(Registry.CREATE_BUNDLE_PATH_PROPERTY);
         final File   targetFile = new File(targetPath);
         
         Progress progress = new Progress();        
@@ -73,7 +71,7 @@ public class CreateNativeLauncherAction extends WizardAction {
             File f = nl.createLauncher(platform, progress);
             if ( !targetFile.equals(f)) {
                 FileUtils.deleteFile(targetFile);
-                System.setProperty(Installer.CREATE_BUNDLE_PATH_PROPERTY, f.getPath());
+                System.setProperty(Registry.CREATE_BUNDLE_PATH_PROPERTY, f.getPath());
             }            
         } catch (IOException e) {
             ErrorManager.notifyError("Failed to create the launcher", e);

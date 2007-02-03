@@ -578,6 +578,14 @@ public class Registry {
     }
     
     // registry <-> dom <-> xml operations //////////////////////////////////////////
+    public void loadProductRegistry(final File file) throws InitializationException {
+        loadProductRegistry(file.toURI().toString());
+    }
+    
+    public void loadProductRegistry(final String uri) throws InitializationException {
+        loadProductRegistry(uri, new Progress(), RegistryType.REMOTE);
+    }
+    
     public void loadProductRegistry(final String uri, final Progress progress, final RegistryType registryType) throws InitializationException {
         try {
             loadRegistryComponents(
@@ -1359,4 +1367,10 @@ public class Registry {
     
     public static final String FORCE_UNINSTALL_PROPERTY =
             "nbi.force.change.status.uninstall";
+    
+    public static final String CREATE_BUNDLE_PATH_PROPERTY =
+            "nbi.create.bundle.path";
+    
+    public static final String LAZY_LOAD_ICONS_PROPERTY = 
+            "nbi.product.lazy.load.icons";
 }

@@ -89,7 +89,7 @@ public class CreateBundleAction extends WizardAction {
                 Progress.COMPLETE % (products.size() + groups.size());
         
         final String targetPath = 
-                System.getProperty(Installer.CREATE_BUNDLE_PATH_PROPERTY);
+                System.getProperty(Registry.CREATE_BUNDLE_PATH_PROPERTY);
         final File targetFile = new File(targetPath);
         
         progress = new Progress();

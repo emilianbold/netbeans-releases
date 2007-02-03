@@ -31,19 +31,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.installer.Installer;
 import org.netbeans.installer.downloader.DownloadManager;
-import org.netbeans.installer.downloader.Pumping;
-import org.netbeans.installer.downloader.Pumping.Section;
-import org.netbeans.installer.downloader.PumpingsQueue;
-import org.netbeans.installer.downloader.DownloadListener;
 import org.netbeans.installer.downloader.services.FileProvider;
 import org.netbeans.installer.utils.exceptions.DownloadException;
-import org.netbeans.installer.utils.helper.Pair;
 import org.netbeans.installer.downloader.DownloadProgress;
 import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.utils.progress.Progress;
-import org.netbeans.installer.wizard.utils.ProxySettingsDialog;
+import org.netbeans.installer.downloader.ui.ProxySettingsDialog;
 
 /**
  *
@@ -54,7 +48,7 @@ public class FileProxy {
     private static final String RESOURCE_SCHEME = "resource";
     public static final String RESOURCE_SCHEME_PREFIX = RESOURCE_SCHEME + ":";
     
-    private final File tmpDir = new File(Installer.getInstance().getLocalDirectory(), "tmp");
+    private final File tmpDir = new File(DownloadManager.getInstance().getLocalDirectory(), "tmp");
     private final Map<String, File> cache = new HashMap<String, File>();
     {
         tmpDir.mkdirs();

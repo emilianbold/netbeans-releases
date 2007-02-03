@@ -22,61 +22,57 @@ package org.netbeans.installer.utils;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import javax.swing.JOptionPane;
-import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.helper.ErrorLevel;
-import static org.netbeans.installer.utils.helper.ErrorLevel.DEBUG;
-import static org.netbeans.installer.utils.helper.ErrorLevel.MESSAGE;
-import static org.netbeans.installer.utils.helper.ErrorLevel.WARNING;
-import static org.netbeans.installer.utils.helper.ErrorLevel.CRITICAL;
-import static org.netbeans.installer.utils.helper.ErrorLevel.ERROR;
+import org.netbeans.installer.utils.helper.FinishHandler;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public class ErrorManager {
+public final class ErrorManager {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static UncaughtExceptionHandler exceptionHandler;
+    private static FinishHandler finishHandler;
     
     public static synchronized void notifyDebug(String message) {
-        notify(DEBUG, message);
+        notify(ErrorLevel.DEBUG, message);
     }
     
     public static synchronized void notifyDebug(String message, Throwable e) {
-        notify(DEBUG, message, e);
+        notify(ErrorLevel.DEBUG, message, e);
     }
     
     public static synchronized void notify(String message) {
-        notify(MESSAGE, message);
+        notify(ErrorLevel.MESSAGE, message);
     }
     
     public static synchronized void notify(String message, Throwable e) {
-        notify(MESSAGE, message, e);
+        notify(ErrorLevel.MESSAGE, message, e);
     }
     
     public static synchronized void notifyWarning(String message) {
-        notify(WARNING, message);
+        notify(ErrorLevel.WARNING, message);
     }
     
     public static synchronized void notifyWarning(String message, Throwable e) {
-        notify(WARNING, message, e);
+        notify(ErrorLevel.WARNING, message, e);
     }
     
     public static synchronized void notifyError(String message) {
-        notify(ERROR, message);
+        notify(ErrorLevel.ERROR, message);
     }
     
     public static synchronized void notifyError(String message, Throwable e) {
-        notify(ERROR, message, e);
+        notify(ErrorLevel.ERROR, message, e);
     }
     
     public static synchronized void notifyCritical(String message) {
-        notify(CRITICAL, message);
+        notify(ErrorLevel.CRITICAL, message);
     }
     
     public static synchronized void notifyCritical(String message, Throwable e) {
-        notify(CRITICAL, message, e);
+        notify(ErrorLevel.CRITICAL, message, e);
     }
     
     public static synchronized void notify(int level, String message) {
@@ -91,9 +87,7 @@ public class ErrorManager {
         // parameters validation
         assert (message != null) || (exception != null);
         
-        String dialogTitle;
-        String dialogText = "Something wrong happened. Probably more details are available in the log file";
-        int dialogType;
+        String dialogText = "An unknown error occured.";
         
         if (message != null) {
             LogManager.log(level, message);
@@ -101,17 +95,16 @@ public class ErrorManager {
         }
         if (exception != null) {
             LogManager.log(level, exception);
-            if (message != null) {
-                dialogText += 
-                        "\n\nException:\n  " + 
-                        exception.getClass().getName() + ":\n  " + 
-                        exception.getMessage();
-            } else {
-                dialogText = exception.getMessage();
-            }
+            dialogText += 
+                    "\n\nException:\n  " + 
+                    exception.getClass().getName() + ":\n  " + 
+                    exception.getMessage();
         }
         
-        dialogText += "\n\nYou can get more details about the issue in the installer log file:\n" + LogManager.getLogFile().getAbsolutePath();
+        dialogText += 
+                "\n\nYou can get more details about the " +
+                "issue in the installer log file:\n" + 
+                LogManager.getLogFile().getAbsolutePath();
         
         switch (level) {
             case ErrorLevel.MESSAGE:
@@ -141,30 +134,40 @@ public class ErrorManager {
                         dialogText, 
                         "Critical Error", 
                         JOptionPane.ERROR_MESSAGE);
-                Installer.getInstance().criticalExit();
+                finishHandler.criticalExit();
                 return;
             default:
                 return;
         }
     }
     
-    public static synchronized UncaughtExceptionHandler getExceptionHandler() {
-        if (exceptionHandler == null) {
-            exceptionHandler = new ExceptionHandler();
-        }
-        
+    public static UncaughtExceptionHandler getExceptionHandler() {
         return exceptionHandler;
     }
     
+    public static void setExceptionHandler(final UncaughtExceptionHandler exceptionHandler) {
+        ErrorManager.exceptionHandler = exceptionHandler;
+    }
+    
+    public static FinishHandler getFinishHandler() {
+        return finishHandler;
+    }
+    
+    public static void setFinishHandler(final FinishHandler finishHandler) {
+        ErrorManager.finishHandler = finishHandler;
+    }
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private ErrorManager() {
+        // does nothing
     }
     
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
-    private static class ExceptionHandler implements UncaughtExceptionHandler {
-        public void uncaughtException(Thread thread, Throwable exception) {
+    public static class ExceptionHandler implements UncaughtExceptionHandler {
+        public void uncaughtException(
+                final Thread thread, 
+                final Throwable exception) {
             ErrorManager.notifyCritical(
                     "An unexpected exception happened in thread " + thread.getName(), 
                     exception);

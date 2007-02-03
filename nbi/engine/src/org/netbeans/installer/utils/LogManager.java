@@ -28,28 +28,21 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.installer.Installer;
-import static org.netbeans.installer.utils.helper.ErrorLevel.CRITICAL;
-import static org.netbeans.installer.utils.helper.ErrorLevel.ERROR;
-import static org.netbeans.installer.utils.helper.ErrorLevel.WARNING;
-import static org.netbeans.installer.utils.helper.ErrorLevel.MESSAGE;
-import static org.netbeans.installer.utils.helper.ErrorLevel.DEBUG;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public class LogManager {
+public final class LogManager {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String LOG_FILE_PROPERTY       = "nbi.utils.log.file";
     public static final String LOG_LEVEL_PROPERTY      = "nbi.utils.log.level";
     public static final String LOG_TO_CONSOLE_PROPERTY = "nbi.utils.log.to.console";
     
     public static final String INDENT = "    ";
     
-    public static final String  DEFAULT_LOG_FILE       = "log/" + DateUtils.getTimestamp() + ".log";
-    public static final int     DEFAULT_LOG_LEVEL      = DEBUG;
+    public static final int     DEFAULT_LOG_LEVEL      = ErrorLevel.DEBUG;
     public static final boolean DEFAULT_LOG_TO_CONSOLE = true;
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -66,13 +59,6 @@ public class LogManager {
     private static List<String> logCache     = new LinkedList<String>();
     
     public static synchronized void start() {
-        // set log file
-        if (System.getProperty(LOG_FILE_PROPERTY) != null) {
-            logFile = new File(System.getProperty(LOG_FILE_PROPERTY));
-        } else {
-            logFile = new File(Installer.getInstance().getLocalDirectory(), DEFAULT_LOG_FILE);
-        }
-        
         // check for custom log level
         if (System.getProperty(LOG_LEVEL_PROPERTY) != null) {
             try {
@@ -137,7 +123,7 @@ public class LogManager {
                 }
             } catch (IOException e) {
                 logWriter = null;
-                ErrorManager.notify(WARNING, "Error writing to the log file. Logging disabled.");
+                ErrorManager.notifyWarning("Error writing to the log file. Logging disabled.");
             }
         }
     }
@@ -151,15 +137,15 @@ public class LogManager {
     }
     
     public static synchronized void log(String message) {
-        log(MESSAGE, message);
+        log(ErrorLevel.MESSAGE, message);
     }
     
     public static synchronized void log(Throwable exception) {
-        log(MESSAGE, exception);
+        log(ErrorLevel.MESSAGE, exception);
     }
     
     public static synchronized void log(Object object) {
-        log(MESSAGE, object);
+        log(ErrorLevel.MESSAGE, object);
     }
     
     public static synchronized void log(String message, Throwable exception) {
@@ -170,12 +156,12 @@ public class LogManager {
     public static synchronized void logEntry(String message) {
         StackTraceElement traceElement = Thread.currentThread().getStackTrace()[2];
         
-        log(DEBUG, "entering -- " +
+        log(ErrorLevel.DEBUG, "entering -- " +
                 (traceElement.isNativeMethod() ? "[native] " : "") +
                 traceElement.getClassName() + "." +
                 traceElement.getMethodName() + "():" +
                 traceElement.getLineNumber());
-        log(MESSAGE, message);
+        log(ErrorLevel.MESSAGE, message);
         indent();
     }
     
@@ -184,7 +170,7 @@ public class LogManager {
         
         unindent();
         log(message);
-        log(DEBUG, "exiting -- " +
+        log(ErrorLevel.DEBUG, "exiting -- " +
                 (traceElement.isNativeMethod() ? "[native] " : "") +
                 traceElement.getClassName() + "." +
                 traceElement.getMethodName() + "():" +
@@ -203,6 +189,10 @@ public class LogManager {
     
     public static File getLogFile() {
         return logFile;
+    }
+    
+    public static void setLogFile(final File logFile) {
+        LogManager.logFile = logFile;
     }
     
     // private //////////////////////////////////////////////////////////////////////

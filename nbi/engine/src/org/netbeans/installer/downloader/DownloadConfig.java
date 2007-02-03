@@ -19,31 +19,16 @@
  */
 package org.netbeans.installer.downloader;
 
-import java.io.File;
-import org.netbeans.installer.Installer;
-
 /**
  *
  * @author Danila_Dugurov
  */
 public class DownloadConfig {
-  
-  /////////////////////////////////////////////////////////////////////////////////
-  // Constants
-  public static final int DISPATCHER_QUANTUM;
-  public static final int DISPATCHER_POOL;
-  
-  public static final File DEFAULT_OUTPUT_DIR;
-  
-  public static final int ATTEMPT_COUNT;
-  public static final int REATTEMPT_DELAY;
-  
-  static {
-    DISPATCHER_QUANTUM = 100;
-    DISPATCHER_POOL = 10;
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final int DISPATCHER_QUANTUM = 100;
+    public static final int DISPATCHER_POOL = 10;
     
-    DEFAULT_OUTPUT_DIR = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "downloads");
-    ATTEMPT_COUNT = 3;
-    REATTEMPT_DELAY = 1000;
-  }
+    public static final int ATTEMPT_COUNT = 3;
+    public static final int REATTEMPT_DELAY = 1000;
 }

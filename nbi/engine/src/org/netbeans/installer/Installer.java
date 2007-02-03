@@ -37,6 +37,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.utils.DateUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -46,13 +47,9 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.FinishHandler;
-import static org.netbeans.installer.utils.helper.ErrorLevel.DEBUG;
-import static org.netbeans.installer.utils.helper.ErrorLevel.MESSAGE;
-import static org.netbeans.installer.utils.helper.ErrorLevel.WARNING;
-import static org.netbeans.installer.utils.helper.ErrorLevel.ERROR;
-import static org.netbeans.installer.utils.helper.ErrorLevel.CRITICAL;
 import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.wizard.Wizard;
 import org.w3c.dom.Document;
@@ -123,6 +120,10 @@ public class Installer implements FinishHandler {
         LogManager.log("initializing the installer engine");
         LogManager.indent();
         
+        // init the error manager
+        ErrorManager.setFinishHandler(this);
+        ErrorManager.setExceptionHandler(new ErrorManager.ExceptionHandler());
+        
         // attach a handler for uncaught exceptions in the main thread
         Thread.currentThread().setUncaughtExceptionHandler(
                 ErrorManager.getExceptionHandler());
@@ -142,9 +143,26 @@ public class Installer implements FinishHandler {
         setLocalDirectory();
         
         // once we have set the local directory we can start logging safely
+        LogManager.setLogFile(new File(
+                localDirectory, 
+                "log/" + DateUtils.getTimestamp() + ".log"));
         LogManager.start();
         
         setLookAndFeel();
+        
+        final DownloadManager downloadManager = DownloadManager.getInstance();
+        final Registry registry = Registry.getInstance();
+        final Wizard wizard = Wizard.getInstance();
+        
+        downloadManager.setLocalDirectory(localDirectory);
+        downloadManager.setFinishHandler(this);
+        downloadManager.init();
+        
+        registry.setLocalDirectory(localDirectory);
+        registry.setFinishHandler(this);
+        
+        wizard.setFinishHandler(this);
+        wizard.getContext().put(Registry.getInstance());
         
         cacheEngineLocally();
         
@@ -162,15 +180,7 @@ public class Installer implements FinishHandler {
      * @param arguments The command line arguments
      */
     public void start() {
-        final Wizard wizard     = Wizard.getInstance();
-        final Registry registry = Registry.getInstance();
-        
-        registry.setLocalDirectory(localDirectory);
-        registry.setFinishHandler(this);
-        
-        wizard.setFinishHandler(this);
-        wizard.getContext().put(Registry.getInstance());
-        wizard.open();
+        Wizard.getInstance().open();
     }
     
     /**
@@ -289,7 +299,7 @@ public class Installer implements FinishHandler {
                     
                     LogManager.log("... class name: " + value);
                 } else {
-                    ErrorManager.notify(WARNING, "Required parameter missing for command line argument \"--look-and-feel\". Should be \"--look-and-feel <look-and-feel-class-name>\".");
+                    ErrorManager.notifyWarning("Required parameter missing for command line argument \"--look-and-feel\". Should be \"--look-and-feel <look-and-feel-class-name>\".");
                 }
                 
                 LogManager.unindent();
@@ -336,7 +346,7 @@ public class Installer implements FinishHandler {
                             targetLocale = new Locale(valueParts[0], valueParts[1], valueParts[2]);
                             break;
                         default:
-                            ErrorManager.notify(WARNING, "Invalid parameter command line argument \"--locale\". Should be \"<language>[_<country>[_<variant>]]\".");
+                            ErrorManager.notifyWarning("Invalid parameter command line argument \"--locale\". Should be \"<language>[_<country>[_<variant>]]\".");
                     }
                     
                     if (targetLocale != null) {
@@ -348,7 +358,7 @@ public class Installer implements FinishHandler {
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.notify(WARNING, "Required parameter missing for command line argument \"--locale\". Should be \"--locale <locale-name>\".");
+                    ErrorManager.notifyWarning("Required parameter missing for command line argument \"--locale\". Should be \"--locale <locale-name>\".");
                 }
                 
                 LogManager.unindent();
@@ -364,14 +374,14 @@ public class Installer implements FinishHandler {
                     
                     File stateFile = new File(value).getAbsoluteFile();
                     if (!stateFile.exists()) {
-                        ErrorManager.notify(WARNING, "The specified state file \"" + stateFile + "\", does not exist. \"--state\" parameter is ignored.");
+                        ErrorManager.notifyWarning("The specified state file \"" + stateFile + "\", does not exist. \"--state\" parameter is ignored.");
                     } else {
                         System.setProperty(Registry.SOURCE_STATE_FILE_PATH_PROPERTY, stateFile.getAbsolutePath());
                     }
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.notify(WARNING, "Required parameter missing for command line argument \"--state\". Should be \"--state <state-file-path>\".");
+                    ErrorManager.notifyWarning("Required parameter missing for command line argument \"--state\". Should be \"--state <state-file-path>\".");
                 }
                 
                 LogManager.unindent();
@@ -387,14 +397,14 @@ public class Installer implements FinishHandler {
                     
                     File stateFile = new File(value).getAbsoluteFile();
                     if (stateFile.exists()) {
-                        ErrorManager.notify(WARNING, "The specified state file \"" + stateFile + "\", exists. \"--record\" parameter is ignored.");
+                        ErrorManager.notifyWarning("The specified state file \"" + stateFile + "\", exists. \"--record\" parameter is ignored.");
                     } else {
                         System.setProperty(Registry.TARGET_STATE_FILE_PATH_PROPERTY, stateFile.getAbsolutePath());
                     }
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.notify(WARNING, "Required parameter missing for command line argument \"--record\". Should be \"--record <state-file-path>\".");
+                    ErrorManager.notifyWarning("Required parameter missing for command line argument \"--record\". Should be \"--record <state-file-path>\".");
                 }
                 
                 LogManager.unindent();
@@ -420,15 +430,17 @@ public class Installer implements FinishHandler {
                     
                     File targetFile = new File(value).getAbsoluteFile();
                     if (targetFile.exists()) {
-                        ErrorManager.notify(WARNING, "The specified target file \"" + targetFile + "\", exists. \"--create-bundle\" parameter is ignored.");
+                        ErrorManager.notifyWarning("The specified target file \"" + targetFile + "\", exists. \"--create-bundle\" parameter is ignored.");
                     } else {
                         ExecutionMode.setCurrentExecutionMode(ExecutionMode.CREATE_BUNDLE);
-                        System.setProperty(CREATE_BUNDLE_PATH_PROPERTY, targetFile.getAbsolutePath());
+                        System.setProperty(
+                                Registry.CREATE_BUNDLE_PATH_PROPERTY, 
+                                targetFile.getAbsolutePath());
                     }
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.notify(WARNING, "Required parameter missing for command line argument \"--create-bundle\". Should be \"--create-bundle <target-file-path>\".");
+                    ErrorManager.notifyWarning("Required parameter missing for command line argument \"--create-bundle\". Should be \"--create-bundle <target-file-path>\".");
                 }
                 
                 LogManager.unindent();
@@ -457,7 +469,7 @@ public class Installer implements FinishHandler {
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.notify(WARNING, "required parameter missing for command line argument \"--userdir\". Should be \"--userdir <userdir-path>\".");
+                    ErrorManager.notifyWarning("required parameter missing for command line argument \"--userdir\". Should be \"--userdir <userdir-path>\".");
                 }
                 
                 LogManager.unindent();
@@ -475,7 +487,7 @@ public class Installer implements FinishHandler {
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.notify(WARNING, "required parameter missing for command line argument \"--platform\". Should be \"--platform <target-platform>\".");
+                    ErrorManager.notifyWarning("required parameter missing for command line argument \"--platform\". Should be \"--platform <target-platform>\".");
                 }
                 
                 LogManager.unindent();
@@ -511,7 +523,7 @@ public class Installer implements FinishHandler {
         if (UiMode.getCurrentUiMode() != UiMode.DEFAULT_MODE) {
             if (System.getProperty(Registry.SOURCE_STATE_FILE_PATH_PROPERTY) == null) {
                 UiMode.setCurrentUiMode(UiMode.DEFAULT_MODE);
-                ErrorManager.notify(WARNING, "\"--state\" option is required when using \"--silent\". \"--silent\" will be ignored.");
+                ErrorManager.notifyWarning("\"--state\" option is required when using \"--silent\". \"--silent\" will be ignored.");
             }
         }
         
@@ -535,14 +547,14 @@ public class Installer implements FinishHandler {
         
         if (!localDirectory.exists()) {
             if (!localDirectory.mkdirs()) {
-                ErrorManager.notify(CRITICAL, "Cannot create local directory: " + localDirectory);
+                ErrorManager.notifyCritical("Cannot create local directory: " + localDirectory);
             }
         } else if (localDirectory.isFile()) {
-            ErrorManager.notify(CRITICAL, "Local directory exists and is a file: " + localDirectory);
+            ErrorManager.notifyCritical("Local directory exists and is a file: " + localDirectory);
         } else if (!localDirectory.canRead()) {
-            ErrorManager.notify(CRITICAL, "Cannot read local directory - not enought permissions");
+            ErrorManager.notifyCritical("Cannot read local directory - not enought permissions");
         } else if (!localDirectory.canWrite()) {
-            ErrorManager.notify(CRITICAL, "Cannot write to local directory - not enought permissions");
+            ErrorManager.notifyCritical("Cannot write to local directory - not enought permissions");
         }
         
         LogManager.unindent();
@@ -564,13 +576,13 @@ public class Installer implements FinishHandler {
             JFrame.setDefaultLookAndFeelDecorated(true);
             UIManager.setLookAndFeel(className);
         } catch (ClassNotFoundException e) {
-            ErrorManager.notify(WARNING, "Could not set the look and feel.", e);
+            ErrorManager.notifyWarning("Could not set the look and feel.", e);
         } catch (InstantiationException e) {
-            ErrorManager.notify(WARNING, "Could not set the look and feel.", e);
+            ErrorManager.notifyWarning("Could not set the look and feel.", e);
         } catch (IllegalAccessException e) {
-            ErrorManager.notify(WARNING, "Could not set the look and feel.", e);
+            ErrorManager.notifyWarning("Could not set the look and feel.", e);
         } catch (UnsupportedLookAndFeelException e) {
-            ErrorManager.notify(WARNING, "Could not set the look and feel.", e);
+            ErrorManager.notifyWarning("Could not set the look and feel.", e);
         }
         
         LogManager.logUnindent("... finished setting the look and feel");
@@ -652,8 +664,8 @@ public class Installer implements FinishHandler {
                 throw new IOException("No main Installer class in the engine");
             }
             
-            LogManager.log(DEBUG, "NBI Engine URL for Installer.Class = " + url);
-            LogManager.log(DEBUG, "URL Path = " + url.getPath());
+            LogManager.log(ErrorLevel.DEBUG, "NBI Engine URL for Installer.Class = " + url);
+            LogManager.log(ErrorLevel.DEBUG, "URL Path = " + url.getPath());
             
             boolean needCache = true;
             
@@ -701,8 +713,7 @@ public class Installer implements FinishHandler {
             }
             
         } catch (IOException ex) {
-            LogManager.log(CRITICAL, "can`t cache installer engine");
-            LogManager.log(CRITICAL, ex);
+            ErrorManager.notifyCritical("can`t cache installer engine", ex);
         }
         LogManager.unindent();
         LogManager.log("... finished caching engine data");
@@ -729,14 +740,15 @@ public class Installer implements FinishHandler {
                 try {
                     lock.createNewFile();
                 } catch (IOException e) {
-                    ErrorManager.notify(CRITICAL,
-                            "Can't create lock for the local registry file!", e);
+                    ErrorManager.notifyCritical(
+                            "Can't create lock for the local registry file!", 
+                            e);
                 }
-                
-                lock.deleteOnExit();
                 
                 LogManager.log("... created lock file: " + lock);
             }
+            
+            lock.deleteOnExit();
         } else {
             LogManager.log("... running with --ignore-lock, skipping this step");
         }
@@ -757,9 +769,6 @@ public class Installer implements FinishHandler {
     
     public static final String NBI_LOOK_AND_FEEL_CLASS_NAME_PROPERTY =
             "nbi.look.and.feel";
-    
-    public static final String CREATE_BUNDLE_PATH_PROPERTY =
-            "nbi.create.bundle.path";
     
     public static final String IGNORE_LOCK_FILE_PROPERTY =
             "nbi.ignore.lock.file";
