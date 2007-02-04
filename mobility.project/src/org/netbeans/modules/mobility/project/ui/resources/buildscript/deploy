@@ -2,29 +2,13 @@
     
     <target name="pre-deploy"/>
     
-    <target name="override-jad" if="deployment.do.override.jarurl">
-        <property name="deployment.jarurl" value="${{dist.jar}}"/>
-        <nb-jad jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="${{dist.dir}}/${{dist.jar}}" url="${{deployment.jarurl}}" sign="${{sign.enabled}}" keystore="${{sign.keystore}}" keystorepassword="${{sign.keystore.password}}" alias="${{sign.alias}}" aliaspassword="${{sign.alias.password}}" encoding="${{javac.encoding}}"/>
-    </target>
-    
     <target name="do-deploy" if="deployment.method" unless="skip.deployment">
-        <property name="deployment.number" value="0.0.1"/>
-        <property name="deployment.counter" value="000002"/>
         <fail unless="deployment.scriptfile">Property deployment.${deployment.method}.scriptfile not set. The property should point to an Ant script providing ${deployment.method} deployment.</fail>
-        <ant antfile="${{deployment.scriptfile}}" inheritall="true" inheritrefs="true">
-            <property name="deployment.jad" location="${{dist.dir}}/${{dist.jad}}"/>
-            <property name="deployment.jar" location="${{dist.dir}}/${{dist.jar}}"/>
-        </ant>
-        <propertyfile file="nbproject/private/private.properties">
-            <entry key="deployment.counter" type="int" operation="+" default="2" pattern="000000"/>
-            <entry key="deployment.number" value="${{deployment.counter}}"/>
-        </propertyfile>
-        <property name="deployment.number.pattern" value="\2\3.\5\6.\8\9"/>
-        <replaceregexp byline="true" file="nbproject/private/private.properties" match="^deployment.number=[0-9]*(0|([1-9]))([0-9])(0|([1-9]))([0-9])(0|([1-9]))([0-9])$" replace="deployment.number=${{deployment.number.pattern}}"/>
+        <ant antfile="${{deployment.scriptfile}}" inheritall="true" inheritrefs="true"/>
         <antcall target="post-deploy" inheritall="true" inheritrefs="true"/>
     </target>
     
     <target name="post-deploy"/>
 
-    <target name="deploy" depends="jar,pre-deploy,override-jad,do-deploy,post-deploy"/>
+    <target name="deploy" depends="build,pre-deploy,do-deploy,post-deploy"/>
 

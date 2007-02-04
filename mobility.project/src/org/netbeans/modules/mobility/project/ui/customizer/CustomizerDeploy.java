@@ -71,8 +71,6 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
         plugins = new TreeMap<String,DeploymentPlugin>();
         propNames.add(DefaultPropertiesDescriptor.DEPLOYMENT_METHOD);
         propNames.add(DefaultPropertiesDescriptor.DEPLOYMENT_INSTANCE);
-        propNames.add(DefaultPropertiesDescriptor.DEPLOYMENT_OVERRIDE_JARURL);
-        propNames.add(DefaultPropertiesDescriptor.DEPLOYMENT_JARURL);
         for ( DeploymentPlugin p : Lookup.getDefault().lookup(new Lookup.Template<DeploymentPlugin>(DeploymentPlugin.class)).allInstances() )
         {
             plugins.put(p.getDeploymentMethodDisplayName(), p);
@@ -81,7 +79,6 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
         propertyGroup = propNames.toArray(new String[propNames.size()]);
         methodNames = plugins.keySet().toArray(new String[plugins.size()]);
         jComboBoxMethod.addActionListener(this);
-        jCheckBoxOverride.addActionListener(this);
     }
     
     /** This method is called from within the constructor to
@@ -99,9 +96,6 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
         jLabelInstance = new javax.swing.JLabel();
         jComboBoxInstance = new javax.swing.JComboBox();
         jButtonManager = new javax.swing.JButton();
-        jCheckBoxOverride = new javax.swing.JCheckBox();
-        jTextFieldURL = new javax.swing.JTextField();
-        jLabelExpl = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         customPanel = new javax.swing.JPanel();
 
@@ -127,7 +121,6 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jLabelMethod, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -144,7 +137,6 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jLabelInstance, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -157,44 +149,10 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
                 manageDeployments(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
         add(jButtonManager, gridBagConstraints);
-
-        jCheckBoxOverride.setMnemonic(NbBundle.getMessage(CustomizerDeploy.class, "MNM_CustDeploy_OverrideURL").charAt(0));
-        jCheckBoxOverride.setText(NbBundle.getMessage(CustomizerDeploy.class, "LBL_CustDeploy_OverrideURL")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
-        add(jCheckBoxOverride, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
-        add(jTextFieldURL, gridBagConstraints);
-        jTextFieldURL.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerDeploy.class, "LBL_CustDeploy_JARURL")); // NOI18N
-        jTextFieldURL.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerDeploy.class, "ACSD_Deployment_JAR")); // NOI18N
-
-        jLabelExpl.setLabelFor(jTextFieldURL);
-        jLabelExpl.setText(NbBundle.getMessage(CustomizerDeploy.class, "LBL_CustDeploy_URLExpl")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-        add(jLabelExpl, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -204,7 +162,6 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
         add(jSeparator1, gridBagConstraints);
 
         customPanel.setLayout(new java.awt.BorderLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -215,7 +172,6 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(customPanel, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void manageDeployments(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageDeployments
@@ -242,10 +198,7 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
     public void initGroupValues(final boolean useDefault) {
         this.useDefault = useDefault;
         vps.register(jComboBoxMethod, methodNames, DefaultPropertiesDescriptor.DEPLOYMENT_METHOD, useDefault);
-        vps.register(jTextFieldURL, DefaultPropertiesDescriptor.DEPLOYMENT_JARURL, useDefault);
-        vps.register(jCheckBoxOverride, DefaultPropertiesDescriptor.DEPLOYMENT_OVERRIDE_JARURL, useDefault);
         jLabelMethod.setEnabled(!useDefault);
-        jLabelExpl.setEnabled(!useDefault);
         actionPerformed(null);
     }
     
@@ -267,7 +220,6 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
             customPanel.repaint();
             customPanel.validate();
         }
-        jTextFieldURL.setEditable(jCheckBoxOverride.isEnabled() && jCheckBoxOverride.isSelected());
     }
     
     private void registerSubcomponents(final Component c, final Set propertyNames) {
@@ -298,14 +250,11 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
     private javax.swing.JPanel customPanel;
     private javax.swing.JCheckBox defaultCheck;
     private javax.swing.JButton jButtonManager;
-    private javax.swing.JCheckBox jCheckBoxOverride;
     private javax.swing.JComboBox jComboBoxInstance;
     private javax.swing.JComboBox jComboBoxMethod;
-    private javax.swing.JLabel jLabelExpl;
     private javax.swing.JLabel jLabelInstance;
     private javax.swing.JLabel jLabelMethod;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTextField jTextFieldURL;
     // End of variables declaration//GEN-END:variables
     
 }

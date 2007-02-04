@@ -11,5 +11,13 @@
         <condition property="cldc-platform.trigger">
             <equals arg1="CLDC" arg2="${{platform.trigger}}" casesensitive="false"/>
         </condition>
+        <condition property="override.jarurl.trigger">
+            <and>
+                <istrue value="${{cldc-platform.trigger}}"/>
+                <istrue value="${{deployment.override.jarurl}}"/>
+            </and>
+        </condition>
+        <property name="deployment.jad" location="${{dist.dir}}/${{dist.jad}}"/>
+        <property name="deployment.jar" location="${{dist.dir}}/${{dist.jar}}"/>
     </target>
     

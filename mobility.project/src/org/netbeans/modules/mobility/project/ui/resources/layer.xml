@@ -209,6 +209,10 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="jar/build-subtargets" boolvalue="true"/>
                     <folder name="build-subtargets">
                         <file name="pre-build"/>
+                        <attr name="pre-build/override-jad" boolvalue="true"/>
+                        <file name="override-jad" url="buildscript/override-jad"/>
+                        <attr name="override-jad/increment-app-version" boolvalue="true"/>
+                        <file name="increment-app-version" url="buildscript/increment-app-version"/>
                     </folder>
                     <attr name="build-subtargets/build" boolvalue="true"/>
                     <file name="build" url="buildscript/build"/>
