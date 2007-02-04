@@ -32,7 +32,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.ResourceBundle;
@@ -53,15 +52,16 @@ import org.netbeans.spi.mobility.project.ui.customizer.HelpCtxCallback;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
 import org.netbeans.spi.mobility.project.ui.customizer.VisualPropertyGroup;
+import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -435,13 +435,20 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
                 tab.setBorder(BorderFactory.createEmptyBorder(5, 8, 8, 8));
                 boolean cfgSensitive = false;
                 for (int i=0; i<dob.length; i++) {
-                    c = (JComponent)dob[i].getPrimaryFile().getAttribute("customizerPanelClass");//NOI18N
-                    if (c != null) {
-                        c.setBorder(BorderFactory.createEmptyBorder(5, 8, 8, 8));
-                        tab.add(dob[i].getNodeDelegate().getDisplayName(), c);
-                        cfgSensitive |= c instanceof VisualPropertyGroup;
-                        if (c instanceof CustomizerPanel) {
-                            ((CustomizerPanel)c).initValues(props, configuration);
+                    FileObject fob = dob[i].getPrimaryFile();
+                    String triggerName = (String)fob.getAttribute("triggerPropertyName"); //NOI18N
+                    String triggerValue = triggerName == null ? null : (String)fob.getAttribute("triggerPropertyValue"); //NOI18N
+                    cfgSensitive |= triggerValue != null;
+                    String state = triggerValue == null ? null : evaluatePropertyRaw(configuration, triggerName);
+                    if (triggerValue == null || triggerValue.equalsIgnoreCase(state)) {
+                        c = (JComponent)fob.getAttribute("customizerPanelClass");//NOI18N
+                        if (c != null) {
+                            c.setBorder(BorderFactory.createEmptyBorder(5, 8, 8, 8));
+                            tab.add(dob[i].getNodeDelegate().getDisplayName(), c);
+                            cfgSensitive |= c instanceof VisualPropertyGroup;
+                            if (c instanceof CustomizerPanel) {
+                                ((CustomizerPanel)c).initValues(props, configuration);
+                            }
                         }
                     }
                 }
@@ -462,6 +469,14 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
             customizerPanel.repaint();
         }
         
+        
+        private String evaluatePropertyRaw(String configuration, String name) {
+            if (configuration != null) {
+                String s = props.getPropertyRawValue(VisualPropertySupport.prefixPropertyName(configuration, name));
+                if (s != null) return s;
+            }
+            return props.getPropertyRawValue(name);
+        }
         
         /** Listens to selection change and shows the customizers as
          *  panels
@@ -501,7 +516,7 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
         DataFolder df = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(REGISTRATION_FOLDER));
         return new FilterNode(df.getNodeDelegate(), new ConfigurationChildren(df));
     }
-    
+
     /** Children used for configuration
      */
     private static class ConfigurationChildren extends Children.Keys {

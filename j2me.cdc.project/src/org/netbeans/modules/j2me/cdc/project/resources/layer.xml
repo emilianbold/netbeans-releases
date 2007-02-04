@@ -46,6 +46,15 @@
                     <attr name="customizerPanelClass" newvalue="org.netbeans.modules.j2me.cdc.project.CDCPlatformCustomizer"/>
                 </file>
             </folder>
+            <folder name="Jad">
+                <attr name="Permissions/CDCGeneral" boolvalue="true"/>
+                <file name="CDCGeneral">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.j2me.cdc.project.CustomizerCDCGeneral"/>
+                    <attr name="triggerPropertyName" stringvalue="platform.trigger"/>
+                    <attr name="triggerPropertyValue" stringvalue="CDC"/>
+                </file>
+            </folder>
         </folder>
     </folder>
     <folder name="RecommendedTemplates">

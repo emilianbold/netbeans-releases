@@ -305,21 +305,29 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Attributes">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
                     <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerJad"/>
+                    <attr name="triggerPropertyName" stringvalue="platform.trigger"/>
+                    <attr name="triggerPropertyValue" stringvalue="CLDC"/>
                 </file>
                 <attr name="Attributes/MIDlets" boolvalue="true"/>
                 <file name="MIDlets">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
                     <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerMIDlets"/>
+                    <attr name="triggerPropertyName" stringvalue="platform.trigger"/>
+                    <attr name="triggerPropertyValue" stringvalue="CLDC"/>
                 </file>
                 <attr name="MIDlets/PushReg" boolvalue="true"/>
                 <file name="PushReg">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
                     <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerPushReg"/>
+                    <attr name="triggerPropertyName" stringvalue="platform.trigger"/>
+                    <attr name="triggerPropertyValue" stringvalue="CLDC"/>
                 </file>
                 <attr name="PushReg/Permissions" boolvalue="true"/>
                 <file name="Permissions">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
                     <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerPermissions"/>
+                    <attr name="triggerPropertyName" stringvalue="platform.trigger"/>
+                    <attr name="triggerPropertyValue" stringvalue="CLDC"/>
                 </file>
             </folder>
             <attr name="Jad/Build" boolvalue="true"/>
@@ -396,6 +404,8 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Run">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
                     <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerRun"/>
+                    <attr name="triggerPropertyName" stringvalue="platform.trigger"/>
+                    <attr name="triggerPropertyValue" stringvalue="CLDC"/>
                 </file>
             </folder>
             <attr name="Run/Deploy" boolvalue="true"/>
