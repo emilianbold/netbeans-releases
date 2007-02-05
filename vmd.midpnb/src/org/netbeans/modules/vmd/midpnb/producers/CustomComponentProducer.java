@@ -74,7 +74,7 @@ public abstract class CustomComponentProducer extends ComponentProducer {
     
     public static final class SVGSplashScreen extends CustomComponentProducer {
         public SVGSplashScreen() {
-            super(SplashScreenCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVGSplashScreen", "SVGSplashScreen", SVGSplashScreenCD.ICON_PATH, SVGSplashScreenCD.ICON_LARGE_PATH)); // NOI18N
+            super(SVGSplashScreenCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVGSplashScreen", "SVGSplashScreen", SVGSplashScreenCD.ICON_PATH, SVGSplashScreenCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
     

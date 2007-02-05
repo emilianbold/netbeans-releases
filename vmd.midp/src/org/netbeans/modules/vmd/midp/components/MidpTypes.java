@@ -32,6 +32,8 @@ public final class MidpTypes {
 
     public static final TypeID TYPEID_INT = new TypeID (TypeID.Kind.PRIMITIVE, "int"); // NOI18N
     public static final TypeID TYPEID_LONG = new TypeID (TypeID.Kind.PRIMITIVE, "long"); // NOI18N
+    public static final TypeID TYPEID_FLOAT = new TypeID (TypeID.Kind.PRIMITIVE, "float"); // NOI18N
+    public static final TypeID TYPEID_DOUBLE = new TypeID (TypeID.Kind.PRIMITIVE, "double"); // NOI18N
     public static final TypeID TYPEID_JAVA_LANG_STRING = new TypeID (TypeID.Kind.PRIMITIVE, "java.lang.String"); // NOI18N
     public static final TypeID TYPEID_BOOLEAN = new TypeID (TypeID.Kind.PRIMITIVE, "boolean"); // NOI18N
     public static final TypeID TYPEID_JAVA_CODE = new TypeID (TypeID.Kind.PRIMITIVE, "#javacode"); // NOI18N
@@ -61,6 +63,14 @@ public final class MidpTypes {
         return PropertyValue.createValue (MidpPrimitiveDescriptor.longPD, TYPEID_LONG, longValue);
     }
 
+    public static PropertyValue createFloatValue (float floatValue) {
+        return PropertyValue.createValue (MidpPrimitiveDescriptor.floatPD, TYPEID_FLOAT, floatValue);
+    }
+
+    public static PropertyValue createDoubleValue (double doubleValue) {
+        return PropertyValue.createValue (MidpPrimitiveDescriptor.doublePD, TYPEID_DOUBLE, doubleValue);
+    }
+
     public static PropertyValue createJavaCodeValue (String javaCode) {
         return PropertyValue.createValue (MidpPrimitiveDescriptor.stringPD, TYPEID_JAVA_CODE, javaCode);
     }
@@ -83,6 +93,14 @@ public final class MidpTypes {
 
     public static long getLong (PropertyValue propertyValue) {
         return (Long) propertyValue.getPrimitiveValue ();
+    }
+
+    public static float getFloat (PropertyValue propertyValue) {
+        return (Float) propertyValue.getPrimitiveValue ();
+    }
+
+    public static double getDouble (PropertyValue propertyValue) {
+        return (Double) propertyValue.getPrimitiveValue ();
     }
 
     public static String getJavaCode (PropertyValue propertyValue) {

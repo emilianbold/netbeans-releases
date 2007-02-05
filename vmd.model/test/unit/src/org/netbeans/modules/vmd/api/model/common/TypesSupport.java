@@ -61,23 +61,23 @@ public final class TypesSupport {
     }
 
     public static String getString (PropertyValue propertyValue) {
-        return (String) propertyValue.getValue ();
+        return (String) propertyValue.getPrimitiveValue();
     }
 
     public static boolean getBoolean (PropertyValue propertyValue) {
-        return (Boolean) propertyValue.getValue ();
+        return (Boolean) propertyValue.getPrimitiveValue();
     }
 
     public static int getInteger (PropertyValue propertyValue) {
-        return (Integer) propertyValue.getValue ();
+        return (Integer) propertyValue.getPrimitiveValue();
     }
 
     public static long getLong (PropertyValue propertyValue) {
-        return (Long) propertyValue.getValue ();
+        return (Long) propertyValue.getPrimitiveValue();
     }
 
     public static String getJavaCode (PropertyValue propertyValue) {
-        return (String) propertyValue.getValue ();
+        return (String) propertyValue.getPrimitiveValue();
     }
 
     public static String getSimpleClassName (TypeID type) {

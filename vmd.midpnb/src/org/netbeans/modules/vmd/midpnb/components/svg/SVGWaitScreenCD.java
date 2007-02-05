@@ -37,7 +37,7 @@ import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInteger;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorFloat;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.eventhandler.PropertyEditorEventHandler;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
@@ -72,40 +72,39 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
     }
     
     public VersionDescriptor getVersionDescriptor() {
-        return MidpVersionDescriptor.MIDP;
+        return MidpVersionDescriptor.FOREVER;
     }
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_TASK, SimpleCancellableTaskCD.TYPEID, PropertyValue.createNull(), false, true, Versionable.FOREVER),
-                new PropertyDescriptor(PROP_SUCCESS_ACTION, EventSourceCD.TYPEID, PropertyValue.createNull(), false, false, Versionable.FOREVER),
-                new PropertyDescriptor(PROP_FAILURE_ACTION, EventSourceCD.TYPEID, PropertyValue.createNull(), false, false, Versionable.FOREVER),
-                new PropertyDescriptor(PROP_SVG_IMAGE, SVGImageCD.TYPEID, PropertyValue.createNull(), false, true, Versionable.FOREVER),
-                new PropertyDescriptor(PROP_START_ANIM_IMMEDEATELY, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(true), false, true, Versionable.FOREVER),
-                new PropertyDescriptor(PROP_ANIM_TIME_INCREMENT, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(0 /*0.1f*/), false, true, Versionable.FOREVER), // TODO
-                new PropertyDescriptor(PROP_RESET_ANIMATION_WHEN_STOPPED, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(true), false, true, Versionable.FOREVER),
-                new PropertyDescriptor(PROP_FULL_SCREEN, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(false), false, true, Versionable.FOREVER)
-                );
+            new PropertyDescriptor(PROP_TASK, SimpleCancellableTaskCD.TYPEID, PropertyValue.createNull(), false, true, Versionable.FOREVER),
+            new PropertyDescriptor(PROP_SUCCESS_ACTION, EventSourceCD.TYPEID, PropertyValue.createNull(), false, false, Versionable.FOREVER),
+            new PropertyDescriptor(PROP_FAILURE_ACTION, EventSourceCD.TYPEID, PropertyValue.createNull(), false, false, Versionable.FOREVER),
+            new PropertyDescriptor(PROP_SVG_IMAGE, SVGImageCD.TYPEID, PropertyValue.createNull(), false, true, Versionable.FOREVER),
+            new PropertyDescriptor(PROP_START_ANIM_IMMEDEATELY, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(true), false, true, Versionable.FOREVER),
+            new PropertyDescriptor(PROP_ANIM_TIME_INCREMENT, MidpTypes.TYPEID_FLOAT, MidpTypes.createFloatValue(0.1f), false, true, Versionable.FOREVER),
+            new PropertyDescriptor(PROP_RESET_ANIMATION_WHEN_STOPPED, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(true), false, true, Versionable.FOREVER),
+            new PropertyDescriptor(PROP_FULL_SCREEN, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(false), false, true, Versionable.FOREVER)
+        );
     }
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
-                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("SVG Image", PropertyEditorResourcesComboBox.creater(SVGImageCD.TYPEID, NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NEW"), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NONE")), PROP_SVG_IMAGE)
-                    .addProperty("Task", PropertyEditorResourcesComboBox.creater(SimpleCancellableTaskCD.TYPEID, NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK)
-                    .addProperty("Success Action", PropertyEditorEventHandler.createInstance(), PROP_SUCCESS_ACTION)
-                    .addProperty("Failure Action", PropertyEditorEventHandler.createInstance(), PROP_FAILURE_ACTION)
-                    .addProperty("Start Animation Immideately", PropertyEditorBooleanUC.createInstance(), PROP_START_ANIM_IMMEDEATELY)
-                    .addProperty("Animation Time Increment", PropertyEditorInteger.createInstance(), PROP_ANIM_TIME_INCREMENT)
-                    .addProperty("Reset Animation When Stopped", PropertyEditorBooleanUC.createInstance(), PROP_RESET_ANIMATION_WHEN_STOPPED)
-                    .addProperty("Full Screen", PropertyEditorBooleanUC.createInstance(), PROP_FULL_SCREEN);
+            .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+                .addProperty("Task", PropertyEditorResourcesComboBox.creater(SimpleCancellableTaskCD.TYPEID, NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK)
+                .addProperty("Success Action", PropertyEditorEventHandler.createInstance(), PROP_SUCCESS_ACTION)
+                .addProperty("Failure Action", PropertyEditorEventHandler.createInstance(), PROP_FAILURE_ACTION)
+                .addProperty("SVG Image", PropertyEditorResourcesComboBox.creater(SVGImageCD.TYPEID, NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NEW"), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NONE")), PROP_SVG_IMAGE)
+                .addProperty("Start Animation Immideately", PropertyEditorBooleanUC.createInstance(), PROP_START_ANIM_IMMEDEATELY)
+                .addProperty("Animation Time Increment", PropertyEditorFloat.createInstance(), PROP_ANIM_TIME_INCREMENT)
+                .addProperty("Reset Animation When Stopped", PropertyEditorBooleanUC.createInstance(), PROP_RESET_ANIMATION_WHEN_STOPPED)
+                .addProperty("Full Screen", PropertyEditorBooleanUC.createInstance(), PROP_FULL_SCREEN);
     }
-    
     
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
-                createPropertiesPresenter()
-                );
+            createPropertiesPresenter()
+        );
     }
     
 }

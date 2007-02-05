@@ -29,6 +29,8 @@ public final class MidpPrimitiveDescriptor implements PrimitiveDescriptorFactory
 
     static final IntPD intPD = new IntPD ();
     static final LongPD longPD = new LongPD ();
+    static final FloatPD floatPD = new FloatPD ();
+    static final DoublePD doublePD = new DoublePD ();
     static final StringPD stringPD = new StringPD ();
     static final BooleanPD booleanPD = new BooleanPD ();
 
@@ -41,6 +43,10 @@ public final class MidpPrimitiveDescriptor implements PrimitiveDescriptorFactory
             return intPD;
         if (MidpTypes.TYPEID_LONG.getString ().equals (string))
             return longPD;
+        if (MidpTypes.TYPEID_FLOAT.getString ().equals (string))
+            return floatPD;
+        if (MidpTypes.TYPEID_DOUBLE.getString ().equals (string))
+            return doublePD;
         if (MidpTypes.TYPEID_BOOLEAN.getString ().equals (string))
             return booleanPD;
         if (MidpTypes.TYPEID_JAVA_LANG_STRING.getString ().equals (string))
@@ -79,6 +85,38 @@ public final class MidpPrimitiveDescriptor implements PrimitiveDescriptorFactory
 
         public boolean isValidInstance (Object object) {
             return object instanceof Long;
+        }
+
+    }
+
+    private static class FloatPD implements PrimitiveDescriptor {
+
+        public String serialize (Object value) {
+            return value.toString ();
+        }
+
+        public Object deserialize (String serialized) {
+            return Float.parseFloat (serialized);
+        }
+
+        public boolean isValidInstance (Object object) {
+            return object instanceof Float;
+        }
+
+    }
+
+    private static class DoublePD implements PrimitiveDescriptor {
+
+        public String serialize (Object value) {
+            return value.toString ();
+        }
+
+        public Object deserialize (String serialized) {
+            return Double.parseDouble (serialized);
+        }
+
+        public boolean isValidInstance (Object object) {
+            return object instanceof Double;
         }
 
     }
