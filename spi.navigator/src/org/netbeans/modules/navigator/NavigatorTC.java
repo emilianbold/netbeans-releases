@@ -126,8 +126,14 @@ public final class NavigatorTC extends TopComponent {
         int panelIdx = panels.indexOf(panel);
         assert panelIdx != -1 : "Panel to select is not available"; //NOI18N
         
+        if (panel.equals(selectedPanel)) {
+            return;
+        }
+        
         this.selectedPanel = panel;
         ((CardLayout)contentArea.getLayout()).show(contentArea, String.valueOf(panelIdx));
+        // #93123: follow-up, synchronizing combo selection with content area selection
+        panelSelector.setSelectedIndex(panelIdx);
     }
     
     /** Returns panel currently selected.

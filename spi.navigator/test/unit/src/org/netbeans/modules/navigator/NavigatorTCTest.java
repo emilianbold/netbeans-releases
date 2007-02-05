@@ -26,6 +26,7 @@ import javax.swing.JLabel;
 import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.spi.navigator.NavigatorHandler;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.ContextGlobalProvider;
@@ -159,26 +160,43 @@ public class NavigatorTCTest extends NbTestCase {
         
         TestLookupHint ostravskiHint = new TestLookupHint("ostravski/gyzd");
         ic.add(ostravskiHint);
+        TestLookupHint prazskyHint = new TestLookupHint("prazsky/pepik");
+        ic.add(prazskyHint);
             
         NavigatorTC navTC = NavigatorTC.getInstance();
         navTC.componentOpened();
 
+        List<NavigatorPanel> panels = navTC.getPanels();
+        
+        assertTrue("Expected 2 provider panels, but got " + panels.size(), panels.size() == 2);
+        
+        NavigatorHandler.activatePanel(panels.get(1));
+        
         NavigatorPanel selPanel = navTC.getSelectedPanel();
+        int selIdx = panels.indexOf(selPanel);
         
-        assertNotNull("Selected panel is null", selPanel);
+        assertTrue("Expected selected provider #2, but got #1", selIdx == 1);
         
-        TestLookupHint prazskyHint = new TestLookupHint("prazsky/pepik");
-        ic.add(prazskyHint);
+        TestLookupHint prazskyHint2 = new TestLookupHint("prazsky/pepik");
+        ic.add(prazskyHint2);
         
         // wait for selected node change to be applied, because changes are
         // reflected with little delay
         waitForChange();
 
-        List<NavigatorPanel> panels = navTC.getPanels();
-        assertTrue("Expected 2 provider panels, but got " + panels.size(), panels.size() == 2);
+        panels = navTC.getPanels();
+        assertTrue("Expected 3 provider panels, but got " + panels.size(), panels.size() == 3);
         
         JComboBox combo = navTC.getPanelSelector();
-        assertTrue("Expected 2 combo items, but got " + combo.getItemCount(), combo.getItemCount() == 2);
+        assertTrue("Expected 3 combo items, but got " + combo.getItemCount(), combo.getItemCount() == 3);
+     
+        assertTrue("Expected the same selection", selPanel.equals(navTC.getSelectedPanel()));
+        
+        selIdx = panels.indexOf(selPanel);
+        assertTrue("Expected the same selection in combo, sel panel index: "
+                + selIdx + ", sel in combo index: " + 
+                combo.getSelectedIndex(), selIdx == combo.getSelectedIndex());
+        
     }
     
     /** Singleton global lookup. Lookup change notification won't come
