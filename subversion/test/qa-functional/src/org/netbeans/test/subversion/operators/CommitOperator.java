@@ -204,7 +204,7 @@ public class CommitOperator extends NbDialogOperator {
     public void verify() {
         lblCommitMessage();
         txtCommitMessage();
-        lblFilesToCommit();
+//        lblFilesToCommit();
         tabFiles();
         btCommit();
         btCancel();
