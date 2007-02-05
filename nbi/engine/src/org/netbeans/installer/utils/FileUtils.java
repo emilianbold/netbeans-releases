@@ -43,6 +43,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
@@ -848,6 +849,49 @@ public final class FileUtils {
         }
         
         return false;
+    }
+    
+    public static File eliminateRelativity(String path) {
+        String corrected = path;
+        
+        corrected = corrected.replace(BACKSLASH, SLASH);
+        
+        while (corrected.indexOf(SLASH + SLASH) != -1) {
+            corrected.replace(SLASH + SLASH, SLASH);
+        }
+        
+        while (corrected.indexOf(SLASH + CURRENT + SLASH) != -1) {
+            corrected = corrected.replace(SLASH + CURRENT + SLASH, SLASH);
+        }
+        
+        Pattern pattern = Pattern.compile("(\\/([^\\/]+)\\/\\.\\.\\/)");
+        Matcher matcher = pattern.matcher(corrected);
+        
+        while (matcher.find()) {
+            if (matcher.group(2).equals(PARENT)) {
+                continue;
+            } else {
+                corrected = corrected.replace(matcher.group(), SLASH);
+                matcher = pattern.matcher(corrected);
+            }
+        }
+        
+        if (corrected.endsWith(SLASH + CURRENT)) {
+            corrected = corrected.substring(
+                    0, 
+                    corrected.length() - SLASH.length() - CURRENT.length());
+        }
+        
+        if (corrected.endsWith(SLASH + PARENT)) {
+            int index = corrected.lastIndexOf(
+                    SLASH, 
+                    corrected.length() - SLASH.length() - PARENT.length() - 1);
+            if (index != -1) {
+                corrected = corrected.substring(0, index);
+            }
+        }
+        
+        return new File(corrected);
     }
     
     // private //////////////////////////////////////////////////////////////////////

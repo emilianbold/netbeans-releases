@@ -73,6 +73,8 @@ public class DestinationPanel extends ErrorMessagePanel {
             "error.null"; // NOI18N
     public static final String ERROR_NOT_VALID_PROPERTY =
             "error.not.valid"; // NOI18N
+    public static final String ERROR_NOT_ABSOLUTE_PROPERTY =
+            "error.not.absolute"; // NOI18N
     public static final String ERROR_CANNOT_CANONIZE_PROPERTY =
             "error.cannot.canonize"; // NOI18N
     public static final String ERROR_NOT_DIRECTORY_PROPERTY =
@@ -90,6 +92,9 @@ public class DestinationPanel extends ErrorMessagePanel {
     public static final String DEFAULT_ERROR_NOT_VALID =
             ResourceUtils.getString(DestinationPanel.class,
             "DP.error.not.valid"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_ABSOLUTE =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.not.absolute"); // NOI18N
     public static final String DEFAULT_ERROR_CANNOT_CANONIZE =
             ResourceUtils.getString(DestinationPanel.class,
             "DP.error.cannot.canonize"); // NOI18N
@@ -129,6 +134,8 @@ public class DestinationPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_NOT_VALID);
         setProperty(ERROR_CANNOT_CANONIZE_PROPERTY,
                 DEFAULT_ERROR_CANNOT_CANONIZE);
+        setProperty(ERROR_NOT_ABSOLUTE_PROPERTY,
+                DEFAULT_ERROR_NOT_ABSOLUTE);
         setProperty(ERROR_NOT_DIRECTORY_PROPERTY,
                 DEFAULT_ERROR_NOT_DIRECTORY);
         setProperty(ERROR_NOT_READABLE_PROPERTY,
@@ -223,8 +230,8 @@ public class DestinationPanel extends ErrorMessagePanel {
         
         protected void saveInput() {
             try {
-                final String value = new File(
-                        destinationField.getText().trim()).getCanonicalPath();
+                String value = destinationField.getText().trim();
+                value = FileUtils.eliminateRelativity(value).getCanonicalPath();
                 
                 component.getWizard().setProperty(
                         Product.INSTALLATION_LOCATION_PROPERTY,
@@ -237,7 +244,7 @@ public class DestinationPanel extends ErrorMessagePanel {
         }
         
         protected String validateInput() {
-            final String  string  = destinationField.getText().trim();
+            final String string = destinationField.getText().trim();
             final Product product = (Product) component.
                     getWizard().
                     getContext().
@@ -249,13 +256,16 @@ public class DestinationPanel extends ErrorMessagePanel {
                         string);
             }
             
-            File file = new File(string);
-            
-            final String path = file.getAbsolutePath();
-            if (!SystemUtils.isPathValid(path)) {
+            File file = FileUtils.eliminateRelativity(string);
+            if (!SystemUtils.isPathValid(file.getAbsolutePath())) {
                 return StringUtils.format(
                         component.getProperty(ERROR_NOT_VALID_PROPERTY),
-                        path);
+                        file.getAbsolutePath());
+            }
+            if (!file.equals(file.getAbsoluteFile())) {
+                return StringUtils.format(
+                        component.getProperty(ERROR_NOT_ABSOLUTE_PROPERTY),
+                        file.getPath());
             }
             
             try {
@@ -269,25 +279,25 @@ public class DestinationPanel extends ErrorMessagePanel {
             if (file.exists() && !file.isDirectory()) {
                 return StringUtils.format(
                         component.getProperty(ERROR_NOT_DIRECTORY_PROPERTY),
-                        path);
+                        file.getAbsolutePath());
             }
             
             if (!FileUtils.canRead(file)) {
                 return StringUtils.format(
                         component.getProperty(ERROR_NOT_READABLE_PROPERTY),
-                        path);
+                        file.getAbsolutePath());
             }
             
             if (!FileUtils.canWrite(file)) {
                 return StringUtils.format(
                         component.getProperty(ERROR_NOT_WRITABLE_PROPERTY),
-                        path);
+                        file.getAbsolutePath());
             }
             
             if (!FileUtils.isEmpty(file)) {
                 return StringUtils.format(
                         component.getProperty(ERROR_NOT_EMPTY_PROPERTY),
-                        path);
+                        file.getAbsolutePath());
             }
             
             try {
