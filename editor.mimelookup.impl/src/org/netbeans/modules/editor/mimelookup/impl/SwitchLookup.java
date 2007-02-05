@@ -248,9 +248,12 @@ public class SwitchLookup extends Lookup {
         return paths;
     }
 
-    private static String getGenericPartOfCompoundMimeType(String mimeType) {
-        int plusIdx = mimeType.indexOf('+'); //NOI18N
-        if (plusIdx != -1) {
+    // See http://tools.ietf.org/html/rfc4288#section-4.2 for the structure of
+    // mime type strings.
+    // package private just for tests
+    /* package */ static String getGenericPartOfCompoundMimeType(String mimeType) {
+        int plusIdx = mimeType.lastIndexOf('+'); //NOI18N
+        if (plusIdx != -1 && plusIdx < mimeType.length() - 1) {
             int slashIdx = mimeType.indexOf('/'); //NOI18N
             String prefix = mimeType.substring(0, slashIdx + 1);
             String suffix = mimeType.substring(plusIdx + 1);

@@ -348,6 +348,15 @@ public class SwitchLookupTest extends NbTestCase {
         );
     }
     
+    public void testGetGenericPartOfCompoundMimeType() {
+        String generic = SwitchLookup.getGenericPartOfCompoundMimeType("text/x-ant+xml");
+        assertNotNull("Didn't detect compound mime type", generic);
+        assertEquals("Wrong generic part", "text/xml", generic);
+        
+        generic = SwitchLookup.getGenericPartOfCompoundMimeType("text/c++");
+        assertNull("text/c++ is not a compound mime type", generic);
+    }
+    
     private void checkPaths(List expectedPaths, List paths) {
 //        for(Iterator i = expectedPaths.iterator(); i.hasNext(); ) {
 //            System.out.println("Expected: " + i.next());
