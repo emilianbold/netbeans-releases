@@ -26,22 +26,21 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
- * Slow diff with better user-friendly output format.
- * Compares whole lines. Built on "Weighted matching in graphs".
+ * Line Diff with formated textual output.
  *
  *
  * @author  ehucka
  */
 public class LineDiff implements Diff {
-
+    
+    public static final int CONTEXT = 3;
+    
     boolean ignoreCase;
     boolean ignoreEmptyLines;
-
-    /** Creates a new instance of LineDiff */
+    
     public LineDiff() {
         this(false, false);
     }
@@ -81,305 +80,217 @@ public class LineDiff implements Diff {
      * @param diff difference file, caller can pass null value, when results are not needed.
      * @return true iff files differ
      */
-    public boolean diff(String first, String second, String diff) throws IOException {
-        File fFirst = new File(first);
-        File fSecond = new File(second);
+    public boolean diff(String ref, String pass, String diff) throws IOException {
+        File fFirst = new File(ref);
+        File fSecond = new File(pass);
         File fDiff = null != diff ? new File(diff) : null;
         return diff(fFirst, fSecond, fDiff);
     }
     
     /**
-     * @param firstFile first file to compare -- ref
-     * @param secondFile second file to compare -- golden
+     * @param refFile first file to compare -- ref
+     * @param passFile second file to compare -- golden
      * @param diffFile difference file, caller can pass null value, when results are not needed.
      * @return true iff files differ
      */
-    public boolean diff(File firstFile, File secondFile, File diffFile) throws IOException {
-        LineNumberReader first = new LineNumberReader(new FileReader(firstFile));
-        LineNumberReader second = new LineNumberReader(new FileReader(secondFile));
-        String passLine;
-        String testLine;
-        int lastPassIndex=0;
-        boolean match=true;
+    public boolean diff(File refFile,File passFile,File diffFile) throws IOException {
+        LineNumberReader first = new LineNumberReader(new FileReader(refFile));
+        LineNumberReader second = new LineNumberReader(new FileReader(passFile));
+        String line;
         
-        String[] testLines,passLines;
-        //read lines
-        List<String> tmp = new ArrayList<String>(128);
-        while ((passLine = second.readLine()) != null) {
-            if (ignoreEmptyLines && passLine.trim().length() == 0) {
+        String[] refLines, passLines;
+        
+        //read golden file
+        List<String> tmp = new ArrayList<String>(64);
+        while ((line = second.readLine()) != null) {
+            if (ignoreEmptyLines && line.trim().length() == 0) {
                 continue;
             }
-            tmp.add(passLine);
+            tmp.add(line);
         }
         passLines = tmp.toArray(new String[tmp.size()]);
         tmp.clear();
         second.close();
-        //first matching
-        while ((testLine = first.readLine()) != null) {
-            if (ignoreEmptyLines && testLine.trim().length() == 0) {
+        //read ref file
+        tmp = new ArrayList<String>(64);
+        while ((line = first.readLine()) != null) {
+            if (ignoreEmptyLines && line.trim().length() == 0) {
                 continue;
             }
-            if (match) {
-                if (lastPassIndex < passLines.length) {
-                    match=compareLines(passLines[lastPassIndex++],testLine);
-                    if (!match) {
-                        lastPassIndex--;
-                        if (diffFile == null) { //no diff file
-                            first.close();
-                            return true;
-                        }
-                    }
-                } else {
-                    match=false;
-                    if (diffFile == null) { //no diff file
-                        first.close();
-                        return true;
-                    }
-                }
-            }
-            tmp.add(testLine);
+            tmp.add(line);
         }
+        refLines = tmp.toArray(new String[tmp.size()]);
+        tmp.clear();
         first.close();
-        match &= passLines.length == tmp.size();
-        if (match || diffFile == null) {
-            return !match;
-        }
-        testLines = tmp.toArray(new String[tmp.size()]);
+        //collect differences
+        List<Result> results = findDifferences(passLines, refLines);
+        //without differences it can be finished here
+        if (results.size() == 0) return false;
+        if (diffFile == null) return results.size() > 0;
+        //merge
+        merge(results);
+        //print
+        printResults(passLines, refLines, results, diffFile);
+        return results.size() > 0;
+    }
+    
+    /**
+     * compare right to left lines (pass to ref) and left to right lines
+     *
+     */
+    private List<Result> findDifferences(String[] passLines, String[] refLines) {
+        int stepLeft = 0;
+        int stepRight = 0;
+        //test is left, pass is right
+        List<Result> results = new ArrayList<Result>(64);
+        //start right
+        boolean right = true;
         
-        //make indices
-        List<List<IndexValue>> passindices = new ArrayList<List<IndexValue>>(Collections.<List<IndexValue>>nCopies(passLines.length - lastPassIndex, null));
-        
-        for (int i=lastPassIndex;i < passLines.length;i++) {
-            passindices.set(i - lastPassIndex, new ArrayList<IndexValue>(testLines.length - lastPassIndex));
-            for (int j=lastPassIndex;j < testLines.length;j++) {
-                if (compareLines(passLines[i], testLines[j])) { //if equals add to indices
-                    IndexValue iv=new IndexValue(j, i);
-                    passindices.get(i-lastPassIndex).add(iv);
-                }
-            }
-            // init index values - better is to have low difference between indices (index-passIndex)
-            for (int j=0;j < passindices.get(i-lastPassIndex).size();j++) {
-                IndexValue iv = passindices.get(i-lastPassIndex).get(j);
-                iv.value=10.0/(1.0+Math.abs(iv.index-iv.passIndex));
-            }
-        }
-        
-        List<IndexValue> tmp2 = new ArrayList<IndexValue>();
-        //update values (weights) - add value to indices which has same deltas
-        for (int i=0; i < passindices.size(); i++) {
-            for (int j=0; j < passindices.get(i).size(); j++) {
-                IndexValue iv = passindices.get(i).get(j);
-                if (tmp2.contains(iv)) continue;
-                int delta=iv.index-iv.passIndex;
-                List<IndexValue> path = new ArrayList<IndexValue>(128);
-                path.add(iv);
-                int ind=i+1;
-                while (ind < passindices.size()) {
-                    if (passindices.get(ind).isEmpty()) {
-                        break;
+        while (stepRight < passLines.length || stepLeft < refLines.length) {
+            if (right) {
+                if (stepRight >= passLines.length) {
+                    if (stepLeft < refLines.length) {
+                        results.add(new Result(stepLeft, refLines.length, stepRight, true));  //add new lines
                     }
-                    boolean found=false;
-                    for (int k=0; k < passindices.get(ind).size(); k++) {
-                        IndexValue iv2 = passindices.get(ind).get(k);
-                        int delta2=iv2.index-iv2.passIndex;
-                        if (delta2 == delta) {
-                            path.add(iv2);
-                            found=true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        break;
-                    }
-                    ind++;
+                    break;
                 }
-                if (path.size() == 1) continue;
-                //path <=> sequence with same value of (index-passIndex)
-                //long sequences are probably matching - strong weight
-                for (int k=0;k < path.size();k++) {
-                    IndexValue iv2=(IndexValue)(path.get(k));
-                    iv2.value*=path.size()*10.0;
-                    tmp2.add(iv2);
+                String v = passLines[stepRight];
+                int found = find(v, refLines, stepLeft);
+                if (found >= 0) {
+                    if (found > stepLeft) {
+                        results.add(new Result(stepLeft, found, stepRight, true));  //add new lines
+                    }
+                    stepLeft=found+1;
+                } else {
+                    results.add(new Result(stepRight, stepRight+1, false));  //add one missing
+                    //switch to left
+                    right=false;
                 }
-            }
-        }
-        //preprocessing - sorting
-        for (int i=0; i < passindices.size(); i++) {
-            if (passindices.get(i).size() > 1) {
-                Collections.sort(passindices.get(i));
+                stepRight++;
+            } else {
+                if (stepLeft >= refLines.length) {
+                    if (stepRight < passLines.length) {
+                        results.add(new Result(stepRight, passLines.length-1, false));  //add missing lines
+                    }
+                    break;
+                }
+                String v = refLines[stepLeft];
+                int found = find(v, passLines, stepRight);
+                if (found >= 0) {
+                    if (found > stepRight) {
+                        results.add(new Result(stepRight, found, false));  //add missing lines
+                    }
+                    stepRight=found+1;
+                } else {
+                    results.add(new Result(stepLeft, stepLeft+1, stepRight, true));  //add one new
+                    //switch to right
+                    right=true;
+                }
+                stepLeft++;
             }
         }
-        //cut matchings with weak weight and which are crossing the heavy weight
-        //forward
-        for (int i=0; i < passindices.size() - 1; i++) {
-            if (passindices.get(i).isEmpty()) continue;
-            boolean once=false;
-            do {
-                once=false;
-                IndexValue better = passindices.get(i).get(0);
-                IndexValue nextbetter=null;
-                if (!passindices.get(i+1).isEmpty())
-                    nextbetter = passindices.get(i+1).get(0);
-                if (nextbetter != null && nextbetter.value > better.value) {
-                    if ((nextbetter.index-nextbetter.passIndex) < (better.index-better.passIndex)) {
-                        passindices.get(i).remove(better);
-                        once=true;
-                    }
-                }
-            } while (once && !passindices.get(i).isEmpty());
-        }
-        //backward
-        for (int i = passindices.size() - 1; i >= 1; i--) {
-            if (passindices.get(i).isEmpty()) continue;
-            boolean once=false;
-            do {
-                once=false;
-                IndexValue better = passindices.get(i).get(0);
-                IndexValue prebetter=null;
-                if (!passindices.get(i-1).isEmpty())
-                    prebetter = passindices.get(i-1).get(0);
-                if (prebetter != null && prebetter.value > better.value) {
-                    if ((prebetter.index-prebetter.passIndex) > (better.index-better.passIndex)) {
-                        passindices.get(i).remove(better);
-                        once=true;
-                    }
-                }
-            } while (once && !passindices.get(i).isEmpty());
-        }
-        //generate result list
-        List<Result> result=new ArrayList<Result>(128);
-        
-        for (int i=lastPassIndex;i < passLines.length;i++) {
-            if (!passindices.get(i-lastPassIndex).isEmpty()) {
-                IndexValue best=null;
-                int ind=0;
-                while (best == null && ind < passindices.get(i-lastPassIndex).size()) {
-                    IndexValue iv = passindices.get(i-lastPassIndex).get(ind++);
-                    if (testLines[iv.index] != null) {
-                        best=iv;
-                        testLines[iv.index]=null;
-                        break;
-                    }
+        return results;
+    }
+    
+    private void printResults(String[] passLines, String[] refLines, List<Result> results, File diffFile) throws IOException {
+        int numLength = (refLines.length > passLines.length) ? String.valueOf(refLines.length).length() :
+            String.valueOf(passLines.length).length();
+        PrintStream ps = new PrintStream(new FileOutputStream(diffFile));
+        boolean precontext=false;
+        for (int i = 0; i < results.size(); i++) {
+            Result rs = results.get(i);
+            if (!precontext) {
+                int si = rs.passIndex-CONTEXT;
+                if (si < 0) si = 0;
+                for (int j=si;j < rs.passIndex;j++) {
+                    printContext(passLines, ps, j, numLength);
                 }
             } else {
-                result.add(new Result(passLines[i], i, true));
+                precontext=false;
+            }
+            results.get(i).print(passLines, refLines, ps, numLength);
+            int e1 = (rs.newLine) ? rs.passIndex : rs.end;
+            int e2 = e1+CONTEXT;
+            if (i < results.size()-1 && results.get(i+1).passIndex < e2) {
+                e2 = results.get(i+1).passIndex;
+                precontext=true;
+            } else if (e2 > passLines.length) {
+                e2=passLines.length;
+            }
+            for (int j=e1;j < e2;j++) {
+                printContext(passLines, ps, j, numLength);
             }
         }
-        
-        for (int i=lastPassIndex;i < testLines.length;i++) {
-            if (testLines[i] != null) {
-                result.add(new Result(testLines[i], i, false));
-            }
-        }
-        if (result.size() > 0) {
-            Collections.sort(result);
-            PrintStream ps=new PrintStream(new FileOutputStream(diffFile));
-            for (int i=0;i < result.size();i++) {
-                ps.println(result.get(i));
-            }
-            ps.close();
-            //return true;
-        }
-        
-        return !match;
+        ps.close();
     }
     
-    public String formatOutput(boolean positive, int lineIndex, String line) {
-        char[] ret=new char[14];
-        
-        int index=0;
-        if (!positive) {
-            ret[index++]='-';
-            ret[index++]='p';
-            ret[index++]='a';
-            ret[index++]='s';
-            ret[index++]='s';
-        } else {
-            ret[index++]='+';
-            ret[index++]='t';
-            ret[index++]='e';
-            ret[index++]='s';
-            ret[index++]='t';
+    private int find(String value, String[] lines, int startIndex) {
+        for (int i  = startIndex;i < lines.length;i++) {
+            if (compareLines(value, lines[i])) {
+                return i;
+            }
         }
-        ret[index++]='[';
-        String tmp=String.valueOf(lineIndex+1);
-        for (int i=0;i < tmp.length();i++) {
-            ret[index++]=tmp.charAt(i);
-        }
-        ret[index++]=']';
-        for (int i=index;i < ret.length;i++) {
-            ret[i]=' ';
-        }
-        return new String(ret)+line;
+        return -1;
     }
     
-    public static void main(String[] argv) {
-        try {
-            LineDiff diff=new LineDiff(true);
-            File dir=new File("/tmp/diff");
-            for (int i=1;i < 10;i++) {
-                File subdir=new File(dir, String.valueOf(i));
-                File golden=new File(subdir, "old.txt");
-                File test=new File(subdir, "new.txt");
-                if (golden.exists() && test.exists()) {
-                    System.out.println("make diff of "+i);
-                    diff.diff(test, golden, new File(subdir, "test.diff"));
+    private void merge(List<Result> results) {
+        for (int i  = 0;i < results.size()-1;i++) {
+            if (results.get(i).newLine && results.get(i+1).newLine &&
+                    results.get(i).end == results.get(i+1).start) {
+                results.get(i).end = results.get(i+1).end;
+                results.remove(i+1);
+                i--;
+            }
+        }
+    }
+    
+    private void printContext(String[] passLines, PrintStream ps, int lineNumber, int numLength) {
+        String num=String.valueOf(lineNumber+1);
+        int rem=numLength+1-num.length();
+        for (int j=0;j < rem;j++)
+            ps.print(' ');
+        ps.print(num);
+        ps.print("   ");
+        ps.println(passLines[lineNumber]);
+    }
+    
+    static class Result {
+        
+        boolean newLine = false;
+        int start, end;
+        int passIndex;
+        
+        public Result(int start, int end, int passIndex, boolean newLine) {
+            this.start = start;
+            this.end = end;
+            this.passIndex = passIndex;
+            this.newLine = newLine;
+        }
+        
+        public Result(int start, int end, boolean newLine) {
+            this.passIndex = start;
+            this.start = start;
+            this.end = end;
+            this.newLine = newLine;
+        }
+        
+        public void print(String[] passLines, String[] refLines, PrintStream ps, int numLength) {
+            for  (int i=start;i < end;i++) {
+                if (newLine) {
+                    for (int j=0;j < numLength+2;j++)
+                        ps.print(' ');
+                    ps.print("+ ");
+                    ps.println(refLines[i]);
+                } else {
+                    String num=String.valueOf(i+1);
+                    int rem=numLength+1-num.length();
+                    for (int j=0;j < rem;j++)
+                        ps.print(' ');
+                    ps.print(num);
+                    ps.print(" - ");
+                    ps.println(passLines[i]);
                 }
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-    
-    class Result implements Comparable<Result> {
-        int index;
-        String line;
-        boolean missing=false;
-        public Result(String line, int index, boolean missing) {
-            this.index=index;
-            this.line=line;
-            this.missing=missing;
-        }
-        
-        public int compareTo(Result o) {
-            return index - o.index;
-        }
-        
-        public String toString() {
-            return formatOutput(!missing, index, line);
-        }
-    }
-    
-    class IndexValue implements Comparable<IndexValue> {
-        public int index;
-        public int passIndex;
-        public double value;
-        
-        public IndexValue(int index, int srcIndex) {
-            this.index=index;
-            this.passIndex=srcIndex;
-            value=1.0;
-        }
-        
-        public boolean isBetterThan(IndexValue v, int lastValue) {
-            if (value >= lastValue && v.value >= lastValue) {
-                return (value < v.value);
-            } else if (value < lastValue && v.value < lastValue) {
-                return (value < v.value);
-            } else if (value < lastValue) {
-                return false;
-            } else if (v.value < lastValue) {
-                return true;
-            }
-            return (value < v.value);
-        }
-        
-        public int compareTo(IndexValue o) {
-            return (int) (o.value - value);
-        }
-        
-        public String toString() {
-            return "["+String.valueOf(index+1)+", "+String.valueOf(passIndex+1)+"] = "+String.valueOf(value);
         }
     }
 }

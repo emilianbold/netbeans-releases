@@ -19,7 +19,9 @@
 
 package org.netbeans.junit.diff;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -27,49 +29,181 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Jan Lahoda, ehucka
  */
 public class LineDiffTest extends NbTestCase {
-
+    
     public LineDiffTest(String testName) {
-	super(testName);
+        super(testName);
     }
-
+    
+    protected void setUp() throws Exception {
+    }
+    
+    protected void tearDown() throws Exception {
+    }
+    
     private void doOutputToFile(File f, String content) throws IOException {
-	content = content.replaceAll("\n", System.getProperty("line.separator"));
-	
-	Writer w = new FileWriter(f);
-	
-	try {
-	    w.write(content);
-	} finally {
-	    w.close();
-	}
+        content = content.replaceAll("\n", System.getProperty("line.separator"));
+        Writer w = new FileWriter(f);
+        try {
+            w.write(content);
+        } finally {
+            w.close();
+        }
     }
     
-    public void testEmptyFile() throws Exception {
-	File workDir = getWorkDir();
-	
-	workDir.mkdirs();
-	
-	File test1 = new File(workDir, "test1");
-	File test2 = new File(workDir, "test2");
-	File test3 = new File(workDir, "test3");
-	File test4 = new File(workDir, "test4");
-	File test5 = new File(workDir, "test5");
-	
-	doOutputToFile(test1, "");
-	doOutputToFile(test2, "a\nb");
-	doOutputToFile(test3, "a\nc");
-	doOutputToFile(test4, "a\nb");
-	doOutputToFile(test5, "");
-	
-	LineDiff diff = new LineDiff();
-	
-	assertTrue(diff.diff(test1, test2, null));
-	assertTrue(diff.diff(test2, test3, null));
-	assertFalse(diff.diff(test2, test4, null));
-	assertFalse(diff.diff(test1, test5, null));
+    private String getFileContent(File f) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(f));
+        char[] buffer = new char[1024];
+        int read = br.read(buffer);
+        return new String(buffer, 0, read);
     }
     
+    public void testSimple() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        
+        doOutputToFile(test1, "a\nb\nc\nd\n");
+        doOutputToFile(test2, "a\nb\nc\nd\n");
+        
+        LineDiff diff = new LineDiff();
+        
+        assertFalse(diff.diff(test1, test2, null));
+    }
+    
+    public void testEmpty1() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        
+        doOutputToFile(test1, "a\nb\nc\nd\n");
+        doOutputToFile(test2, "");
+        
+        LineDiff diff = new LineDiff();
+        assertTrue(diff.diff(test1, test2, null));
+    }
+    
+    public void testEmpty2() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        
+        doOutputToFile(test1, "");
+        doOutputToFile(test2, "a\nb\nc\nd\n");
+        
+        LineDiff diff = new LineDiff();
+        assertTrue(diff.diff(test1, test2, null));
+    }
+    
+    public void testIgnoreCase() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        
+        doOutputToFile(test1, "A\nb\nC\nd\n");
+        doOutputToFile(test2, "a\nB\nc\nD\n");
+        
+        LineDiff diff = new LineDiff(true);
+        assertFalse(diff.diff(test1, test2, null));
+    }
+    
+    public void testIgnoreEmptyLines() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        
+        doOutputToFile(test1, "a\n\nb\n\nc\n\n\nd\n\n");
+        doOutputToFile(test2, "a\nb\nc\nd\n");
+        
+        LineDiff diff = new LineDiff(false, true);
+        assertFalse(diff.diff(test1, test2, null));
+    }
+    
+    public void testDiff1() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        File test3 = new File(getWorkDir(), "test3");
+        
+        doOutputToFile(test1, "a\nb\nc\n");
+        doOutputToFile(test2, "a\nb\nc\nd\n");
+        
+        LineDiff diff = new LineDiff(false, true);
+        assertTrue(diff.diff(test1, test2, test3));
+        assertEquals(" 1   a\n 2   b\n 3   c\n 4 - d\n", getFileContent(test3));
+    }
+    
+    public void testDiff2() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        File test3 = new File(getWorkDir(), "test3");
+        
+        doOutputToFile(test1, "b\nc\nd\n");
+        doOutputToFile(test2, "a\nb\nc\nd\n");
+        
+        LineDiff diff = new LineDiff(false, true);
+        assertTrue(diff.diff(test1, test2, test3));
+        assertEquals(" 1 - a\n 2   b\n 3   c\n 4   d\n", getFileContent(test3));
+    }
+    
+    public void testDiff3() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        File test3 = new File(getWorkDir(), "test3");
+        
+        doOutputToFile(test1, "a\nb\nb\nc\nc\nc\nb\nd\n");
+        doOutputToFile(test2, "a\nb\nc\nd\n");
+        
+        LineDiff diff = new LineDiff(false, true);
+        assertTrue(diff.diff(test1, test2, test3));
+        assertEquals(" 1   a\n 2   b\n   + b\n 3   c\n   + c\n   + c\n   + b\n 4   d\n", getFileContent(test3));
+    }
+    
+    public void testDiff4() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        File test3 = new File(getWorkDir(), "test3");
+        
+        doOutputToFile(test1, "a\nb\nb\nd\na\nb\nd\n");
+        doOutputToFile(test2, "a\nb\nc\nd\n");
+        
+        LineDiff diff = new LineDiff(false, true);
+        assertTrue(diff.diff(test1, test2, test3));
+        assertEquals(" 1   a\n 2   b\n 3 - c\n   + b\n 4   d\n   + a\n   + b\n   + d\n", getFileContent(test3));
+    }
+    
+    public void testDiff5() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        File test3 = new File(getWorkDir(), "test3");
+        
+        doOutputToFile(test1, "0\na\nb\nc\nd\n");
+        doOutputToFile(test2, "a\nb\nc\nd\n");
+        
+        LineDiff diff = new LineDiff(false, true);
+        assertTrue(diff.diff(test1, test2, test3));
+        assertEquals("   + 0\n 1   a\n 2   b\n 3   c\n", getFileContent(test3));
+    }
+    
+    public void testDiff6() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        File test3 = new File(getWorkDir(), "test3");
+        
+        doOutputToFile(test1, "a\nb\nc\nd\ne\n");
+        doOutputToFile(test2, "a\nb\nc\nd\n");
+        
+        LineDiff diff = new LineDiff(false, true);
+        assertTrue(diff.diff(test1, test2, test3));
+        assertEquals(" 2   b\n 3   c\n 4   d\n   + e\n", getFileContent(test3));
+    }
+    
+    public void testDiff7() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        File test3 = new File(getWorkDir(), "test3");
+        
+        doOutputToFile(test1, "e\nf\ng\nh\n");
+        doOutputToFile(test2, "a\nb\nc\nd\n");
+        
+        LineDiff diff = new LineDiff(false, true);
+        assertTrue(diff.diff(test1, test2, test3));
+        assertEquals(" 1 - a\n   + e\n 2 - b\n   + f\n 3 - c\n   + g\n 4 - d\n   + h\n", getFileContent(test3));
+    }
 }
