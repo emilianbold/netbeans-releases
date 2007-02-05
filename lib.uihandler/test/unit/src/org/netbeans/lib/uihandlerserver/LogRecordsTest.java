@@ -56,7 +56,7 @@ public class LogRecordsTest extends NbTestCase {
     }
     
     protected Level logLevel() {
-        return Level.INFO;
+        return Level.FINEST;
     }
 
     protected void setUp() throws Exception {
