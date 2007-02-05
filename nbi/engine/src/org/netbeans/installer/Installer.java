@@ -153,16 +153,15 @@ public class Installer implements FinishHandler {
         setLookAndFeel();
         
         final DownloadManager downloadManager = DownloadManager.getInstance();
-        final Registry registry = Registry.getInstance();
-        final Wizard wizard = Wizard.getInstance();
-        
         downloadManager.setLocalDirectory(localDirectory);
         downloadManager.setFinishHandler(this);
         downloadManager.init();
         
+        final Registry registry = Registry.getInstance();
         registry.setLocalDirectory(localDirectory);
         registry.setFinishHandler(this);
         
+        final Wizard wizard = Wizard.getInstance();
         wizard.setFinishHandler(this);
         wizard.getContext().put(Registry.getInstance());
         
