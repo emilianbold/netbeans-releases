@@ -227,7 +227,11 @@ public class WindowsNativeUtils extends NativeUtils {
     }
     
     public boolean isPathValid(String path) {
-        return path.matches("^[A-Z,a-z]:\\\\([^\\\\\\/:*\"<>|\\s]([^\\\\\\/:*\"<>|\t]*[^\\\\\\/:*\"<>|\\s])?\\\\?)*$");
+        if (path.length() > 256) {
+            return false;
+        } else {
+            return path.matches("^[A-Z,a-z]:\\\\([^\\\\\\/:*\"<>|\\s]([^\\\\\\/:*\"<>|\t]*[^\\\\\\/:*\"<>|\\s])?\\\\?)*$");
+        }
     }
     
     public File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {

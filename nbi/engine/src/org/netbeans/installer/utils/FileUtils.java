@@ -857,7 +857,7 @@ public final class FileUtils {
         corrected = corrected.replace(BACKSLASH, SLASH);
         
         while (corrected.indexOf(SLASH + SLASH) != -1) {
-            corrected.replace(SLASH + SLASH, SLASH);
+            corrected = corrected.replace(SLASH + SLASH, SLASH);
         }
         
         while (corrected.indexOf(SLASH + CURRENT + SLASH) != -1) {
