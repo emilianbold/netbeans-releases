@@ -38,7 +38,7 @@ import org.netbeans.modules.dbschema.SchemaElementUtil;
 import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
 import org.netbeans.modules.dbschema.jdbcimpl.SchemaElementImpl;
 import org.netbeans.modules.dbschema.util.NameUtil;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor;
+import org.netbeans.modules.j2ee.persistence.util.EventRequestProcessor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
