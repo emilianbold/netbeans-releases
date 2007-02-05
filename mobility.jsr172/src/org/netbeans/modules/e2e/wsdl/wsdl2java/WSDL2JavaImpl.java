@@ -10,6 +10,9 @@
 package org.netbeans.modules.e2e.wsdl.wsdl2java;
 
 import java.io.File;
+import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -72,7 +75,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
         
         try {
             validate();
-
+            
             generateInterfaces();
             generateTypes();
             generateStub();
@@ -85,11 +88,90 @@ public class WSDL2JavaImpl implements WSDL2Java {
         // TODO: Hack
         definition = wsdlParser.parse( configuration.getWSDLFileName());
         return new WSDLValidator( wsdlParser.getValidationResults(), definition ).validate();
+    }    
+    
+    /**
+     *  @return null when void type
+     */
+    public Element getReturnElement( Element element ) {
+        if( element.getMaxOccurs() > 1 ) return element;
+        Type type = element.getType();
+        if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
+            return element;
+        } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
+            if( type.getSubconstructs().size() == 0 ) {
+                return null;
+            } else if( type.getSubconstructs().size() == 1 ) {
+                return (Element) type.getSubconstructs().get( 0 );
+            }
+        }
+        return element;
     }
-
+    
+    public List<Element> getParameterElements( Element element ) {
+        List<Element> params = new ArrayList();
+        params.add( element );
+        
+        if( element.getMaxOccurs() > 1 ) {
+            return params;
+        }
+        Type type = element.getType();
+        if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
+            return params;
+        } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
+            params = new ArrayList();
+            for( SchemaConstruct sc : type.getSubconstructs()) {
+                if( SchemaConstruct.ConstructType.ELEMENT.equals( sc.getConstructType())) {
+                    Element sce = (Element) sc;
+                    params.add( sce );
+                }
+            }
+            return params;
+        }
+        return params;
+    }
+    
+    public String getJavaTypeName( Element e ) {
+        boolean isArray = e.getMaxOccurs() > 1;
+        String javaTypeName = "";
+        Type type = e.getType();
+        if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
+            if( e.isNillable()) {
+                javaTypeName = getWrapperTypeName( e.getType());
+            } else {
+                javaTypeName = type.getJavaTypeName();
+            }
+        } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
+            if( type.getSubconstructs().size() == 0 ) {
+                javaTypeName = "void";
+            } else {
+                javaTypeName = e.getType().getName() == null ? e.getName().getLocalPart() : e.getType().getName().getLocalPart();
+            }
+        }
+        return javaTypeName + ( isArray ? "[]" : "" );
+    }
+    
+//    public Element simplifyType( Element element ) {
+//        if( element.getMaxOccurs() > 1 ) return element;
+//        Type type = element.getType();
+//        if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
+//            return element;
+//        } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
+//            if( type.getSubconstructs().size() == 1 ) {
+//                SchemaConstruct sc = type.getSubconstructs().get( 0 );
+//                if( SchemaConstruct.ConstructType.ELEMENT.equals( sc.getConstructType())) {
+//                    return simplifyType((Element) sc);
+//                }
+//            }
+//        }
+//        return element;
+//    }
     
     private void generateInterfaces() throws Exception {        
         Set<QName> usedTypes = new HashSet();
+        
+        Set<QName> usedReturnTypeNames = new HashSet();
+        Set<QName> usedParameterTypeNames = new HashSet();
         
         for( String serviceName : definition.getServices().keySet()) {
             
@@ -122,50 +204,13 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             
                             Output output = operation.getOutput();                            
                             if (output != null) {
-                                Message message = definition.getMessage( output.getMessage().getName());
-                                for( Part part : message.getParts()) {
-                                    QName elementName = part.getElementName();
-                                    QName typeName = part.getTypeName();
-                                    Type type;
-                                    Element element = null;
-                                    if( elementName != null ) {
-                                        element = definition.getSchemaHolder().getSchemaElement( elementName );
-                                        type = element.getType();
-                                    } else if( typeName != null ) {
-                                        type = definition.getSchemaHolder().getSchemaType( typeName );
-                                    } else {
-                                        System.err.println(" ERROR ");
-                                        break;
-                                    }
+                                for( Part part : output.getMessage().getParts()) {
+                                    Element e = getReturnElement( definition.getSchemaHolder().getSchemaElement( part.getElementName()));
+                                    usedTypes.add( e.getName());
+                                    boolean isArray = e.getMaxOccurs() > 1;
+                                    String javaTypeName = getJavaTypeName( e );
                                     
-                                    String javaTypeName = "";
-                                    boolean isArray = definition.getSchemaHolder().getSchemaElement( elementName ).getMaxOccurs() > 1;
-                                    if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
-                                        javaTypeName = type.getJavaTypeName();
-                                    } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
-                                        if( type.getSubconstructs().size() == 0 ) {
-                                            javaTypeName = "void";
-                                        } else if( type.getSubconstructs().size() == 1 ) {
-                                            SchemaConstruct sc = type.getSubconstructs().get( 0 );
-                                            if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                                                Element sce = (Element)sc;
-                                                isArray = sce.getMaxOccurs() > 1;
-                                                if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
-                                                    if( sce.getMinOccurs() == 0 || sce.isNillable()) {
-                                                        javaTypeName = getWrapperTypeName( sce.getType());
-                                                    } else {
-                                                        javaTypeName = sce.getType().getJavaTypeName();
-                                                    }
-                                                } else {
-                                                    javaTypeName = sce.getName().getLocalPart();
-                                                }
-                                            }
-                                        } else {
-                                            javaTypeName = elementName.getLocalPart();
-                                        }
-                                    }
-                                    
-                                    off.write( "public " + javaTypeName + ( isArray ? "[] " : " " ));
+                                    off.write( "public " + javaTypeName + " " );
                                     break;
                                 }                                
                             } else {
@@ -177,48 +222,17 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             
                             Input input = operation.getInput();
                             if (input != null){
-                                Message message = definition.getMessage( input.getMessage().getName() );
-                                for( Iterator<Part> it = message.getParts().iterator(); it.hasNext(); ) {
-                                    Part part = it.next();
-                                    QName elementName = part.getElementName();
-                                    QName typeName = part.getTypeName();
-                                    Type type;
-                                    if( elementName != null ) {
-                                        type = definition.getSchemaHolder().getSchemaElement( elementName ).getType();
-                                    } else if( typeName != null ) {
-                                        type = definition.getSchemaHolder().getSchemaType( typeName );
-                                    } else {
-                                        System.err.println(" ERROR ");
-                                        break;
+                                for( Part part : input.getMessage().getParts()) {
+                                    Element element = definition.getSchemaHolder().getSchemaElement( part.getElementName());
+                                    usedTypes.add( element.getName());
+                                    List<Element> params = getParameterElements( element );
+                                    for( Iterator<Element> it = params.iterator(); it.hasNext(); ) {
+                                        Element e = it.next();
+                                        Type type = e.getType();
+                                        String javaTypeName = getJavaTypeName( e );
+                                        off.write( javaTypeName + " " + e.getName().getLocalPart());
+                                        if( it.hasNext()) off.write( ", " );
                                     }
-
-                                    if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
-                                        off.write( type.getJavaTypeName() + " " + elementName.getLocalPart());
-                                    } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
-                                        if( type.getSubconstructs().size() == 0 ) {
-                                        } else {
-                                            for( Iterator<SchemaConstruct> scs = type.getSubconstructs().iterator(); scs.hasNext(); ) {
-                                                SchemaConstruct sc = scs.next();
-                                                if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                                                    Element sce = (Element)sc;
-                                                    if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
-                                                        String javaTypeName;
-                                                        if( sce.getMinOccurs() == 0 || sce.isNillable()) {
-                                                            javaTypeName = getWrapperTypeName( sce.getType());
-                                                        } else {
-                                                            javaTypeName = sce.getType().getJavaTypeName();
-                                                        }
-                                                        off.write( javaTypeName );
-                                                    } else {
-                                                        off.write( sce.getType().getName().getLocalPart());
-                                                        usedTypes.add( sce.getType().getName());
-                                                    }
-                                                    off.write(" " + sce.getName().getLocalPart());
-                                                    if( scs.hasNext()) off.write(", ");
-                                                }
-                                            }
-                                        }
-                                    }                                
                                 }
                             } 
                             off.write(" ) throws java.rmi.RemoteException;\n");
@@ -238,7 +252,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
         
         for( QName typeName : usedTypeNames ) {
             System.err.println(" - " + typeName.getLocalPart());
-        }
+        }        
     }
     
     private String getWrapperTypeName( Type type ) {
@@ -273,21 +287,18 @@ public class WSDL2JavaImpl implements WSDL2Java {
     public Set<QName> traverseTypes( Set<QName> types, QName typeName ) {
         Set<QName> result = new HashSet();
         result.add( typeName );
-        
-        Type type = definition.getSchemaHolder().getSchemaType( typeName );
+        Element element = definition.getSchemaHolder().getSchemaElement( typeName );
+        Type type = element.getType();
         if( type == null ) {
-            type = definition.getSchemaHolder().getSchemaElement( typeName ).getType();
-        } 
-        if( type == null ) {
-            System.err.println(" ERROR ");
+            throw new IllegalArgumentException( "Invalid element type." );
         }
         if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
             for( SchemaConstruct sc : type.getSubconstructs()) {
                 if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
                     Element sce = (Element) sc;
                     if( Type.FLAVOR_SEQUENCE == sce.getType().getFlavor()) {
-                        result.add( sce.getType().getName());
-                        result.addAll( traverseTypes( types, sce.getType().getName()));
+                        result.add( sce.getName());
+                        result.addAll( traverseTypes( types, sce.getName()));
                     }
                 }
             }
@@ -299,20 +310,20 @@ public class WSDL2JavaImpl implements WSDL2Java {
      * Generates all used complex types
      */
     private void generateTypes() throws Exception {
-        for( QName typeName : usedTypeNames ) {                        
-            Type type = definition.getSchemaHolder().getSchemaType( typeName );
+        for( QName typeName : usedTypeNames ) {
+            Element element = definition.getSchemaHolder().getSchemaElement( typeName );
+            Type type = element.getType();
             if( type == null ) {
-                type = definition.getSchemaHolder().getSchemaElement( typeName ).getType();
-            } 
-            if( type == null ) {
-                System.err.println(" ERROR ");
+                throw new IllegalArgumentException( "Invalid element type." );
             }
+            if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) continue;
+            String name = element.getType().getName() == null ? element.getName().getLocalPart() : element.getType().getName().getLocalPart();
             File outputDirectoryF = new File( configuration.getOutputDirectory());
             FileObject outputDirectoryFO = FileUtil.toFileObject( FileUtil.normalizeFile( outputDirectoryF ));
             FileObject outputFileDirectoryFO = outputDirectoryFO.getFileObject( configuration.getPackageName().replace( '.', '/' ));           // NOI18N
-            FileObject outputFile = outputFileDirectoryFO.getFileObject( typeName.getLocalPart(), "java" );
+            FileObject outputFile = outputFileDirectoryFO.getFileObject( name, "java" );
             if( outputFile == null  ) {
-                outputFile = outputFileDirectoryFO.createData( typeName.getLocalPart(), "java" );
+                outputFile = outputFileDirectoryFO.createData( name, "java" );
             }
             
             OutputFileFormatter off = new OutputFileFormatter( outputFile );
@@ -321,7 +332,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                 off.write( "package " + configuration.getPackageName() + ";\t\t");
             }
             off.write( "\n" );
-            off.write( "public class " + typeName.getLocalPart() + " {\n" );
+            off.write( "public class " + name + " {\n" );
             for( SchemaConstruct sc : type.getSubconstructs()) {
                 if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
                     Element sce = (Element) sc;
@@ -452,6 +463,10 @@ public class WSDL2JavaImpl implements WSDL2Java {
                         Binding binding = port.getBinding();
                         PortType portType = binding.getPortType();
                         String returnTypeName = "", paramTypeName = "";
+                        
+                        Set<Element> fromObjects = new HashSet();
+                        Set<Element> toObjects = new HashSet();
+                        
                         for( Operation operation : portType.getOperations()) {
                             BindingOperation bindingOperation = binding.getBindingOperation( operation.getName());
                             
@@ -459,50 +474,14 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             
                             String messageName = operation.getOutput().getMessage().getName();
                             Message message = definition.getMessage( messageName );
-                            for( Part part : message.getParts()) {
-                                QName elementName = part.getElementName();
-                                QName typeName = part.getTypeName();
-                                Type type;
-                                if( elementName != null ) {
-                                    type = definition.getSchemaHolder().getSchemaElement( elementName ).getType();
-                                } else if( typeName != null ) {
-                                    type = definition.getSchemaHolder().getSchemaType( typeName );
-                                } else {
-                                    System.err.println(" ERROR ");
-                                    break;
-                                }
+                            for( Part part : message.getParts()) {                                                                
+                                Element e = getReturnElement( definition.getSchemaHolder().getSchemaElement( part.getElementName()));
+                                String javaTypeName = getJavaTypeName( e );
                                 
-                                String javaTypeName = "";
-                                boolean isArray = definition.getSchemaHolder().getSchemaElement( elementName ).getMaxOccurs() > 1;
-                                if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
-                                    javaTypeName = type.getJavaTypeName();
-                                } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
-                                    if( type.getSubconstructs().size() == 0 ) {
-                                        javaTypeName = "void";
-                                    } else if( type.getSubconstructs().size() == 1 ) {
-                                        SchemaConstruct sc = type.getSubconstructs().get( 0 );
-                                        if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                                            Element sce = (Element)sc;
-                                            isArray = sce.getMaxOccurs() > 1;
-                                            if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
-                                                if( sce.getMinOccurs() == 0 || sce.isNillable()) {
-                                                    javaTypeName = getWrapperTypeName( sce.getType());
-                                                } else {
-                                                    javaTypeName = sce.getType().getJavaTypeName();
-                                                }
-                                                //javaTypeName = sce.getType().getJavaTypeName();
-                                            } else {
-                                                javaTypeName = sce.getName().getLocalPart();
-                                            }
-                                        }
-                                    } else {
-                                        javaTypeName = elementName.getLocalPart();
-                                    }
-                                }
                                 off.write( "\n" );
-                                off.write( "public " + javaTypeName + ( isArray ? "[] " : " " ));
-                                returnTypeName = elementName.getLocalPart();
-                                usedParameterTypes.add( elementName );
+                                off.write( "public " + javaTypeName + " " );
+                                returnTypeName = e.getName().getLocalPart();
+                                usedParameterTypes.add( e.getName());
                                 break;
                             }
 
@@ -510,98 +489,54 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             
                             Input input = operation.getInput();
                             if (input != null) {
-                                message = definition.getMessage( input.getMessage().getName());
-                                for( Iterator<Part> it = message.getParts().iterator(); it.hasNext(); ) {
-                                    Part part = it.next();
-                                    QName elementName = part.getElementName();
-                                    QName typeName = part.getTypeName();
-                                    Type type;
-                                    if( elementName != null ) {
-                                        type = definition.getSchemaHolder().getSchemaElement( elementName ).getType();
-                                    } else if( typeName != null ) {
-                                        type = definition.getSchemaHolder().getSchemaType( typeName );
-                                    } else {
-                                        System.err.println(" ERROR ");
-                                        break;
+                                for( Part part : input.getMessage().getParts()) {
+                                    Element element = definition.getSchemaHolder().getSchemaElement( part.getElementName());
+                                    paramTypeName = element.getName().getLocalPart();
+                                    usedParameterTypes.add( element.getName());
+                                    List<Element> params = getParameterElements( element );
+                                    for( Iterator<Element> it = params.iterator(); it.hasNext(); ) {
+                                        Element e = it.next();
+                                        Type type = e.getType();
+                                        String javaTypeName = getJavaTypeName( e );
+                                        off.write( javaTypeName + " " + e.getName().getLocalPart());
+                                        if( it.hasNext()) off.write( ", " );
                                     }
-                                    if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
-                                        System.err.print( type.getJavaTypeName() + " " + elementName.getLocalPart());
-                                    } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
-                                        for( Iterator<SchemaConstruct> scs = type.getSubconstructs().iterator(); scs.hasNext(); ) {
-                                            SchemaConstruct sc = scs.next();
-                                            if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                                                Element sce = (Element)sc;
-                                                if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
-                                                    String javaTypeName;
-                                                    if( sce.getMinOccurs() == 0 || sce.isNillable()) {
-                                                        javaTypeName = getWrapperTypeName( sce.getType());
-                                                    } else {
-                                                        javaTypeName = sce.getType().getJavaTypeName();
-                                                    }
-                                                    off.write( javaTypeName );
-                                                    //off.write( sce.getType().getJavaTypeName());
-                                                } else {
-                                                    off.write( sce.getName().getLocalPart());
-                                                }
-                                                off.write( " " + sce.getName().getLocalPart());
-                                                if( scs.hasNext()) off.write( ", " );
-                                            }
-                                        }
-                                    }
-                                    paramTypeName = elementName.getLocalPart();
-                                    usedParameterTypes.add( elementName );
-                                }                                
+                                }
                             }
                             
                             off.write( " ) throws java.rmi.RemoteException {\n" );
-                            for( Iterator<Part> it = message.getParts().iterator(); it.hasNext(); ) {
+                            // Wrap to Object[] array                            
+                            for( Iterator<Part> it = input.getMessage().getParts().iterator(); it.hasNext(); ) {
                                 Part part = it.next();
-                                QName elementName = part.getElementName();
-                                QName typeName = part.getTypeName();
-                                Type type;
-                                if( elementName != null ) {
-                                    type = definition.getSchemaHolder().getSchemaElement( elementName ).getType();
-                                } else if( typeName != null ) {
-                                    type = definition.getSchemaHolder().getSchemaType( typeName );
-                                } else {
-                                    System.err.println(" ERROR ");
-                                    break;
-                                }
+                                Element e = definition.getSchemaHolder().getSchemaElement( part.getElementName());
                                 
+                                Type type = e.getType();
                                 if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
-                                    off.write( "Object[] inputObject = new Object[1];\n" );
-                                    off.write( "inputObject[0] = " + wrapPrimitiveType( type, elementName.getLocalPart()) + ";\n" );
-                                } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
-                                    // TODO: first check proper types to not allocate larger field
-                                    off.write( "Object[] inputObject = new Object[" + type.getSubconstructs().size() + "];\n" );
-                                    int i = 0;
-                                    for( Iterator<SchemaConstruct> scs = type.getSubconstructs().iterator(); scs.hasNext(); ) {
-                                        SchemaConstruct sc = scs.next();
-                                        if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                                            Element sce = (Element)sc;
-                                            if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
-                                                String javaVariable;
-                                                if( sce.getMinOccurs() == 0 || sce.isNillable()) {
-                                                    javaVariable = sce.getName().getLocalPart();
-                                                } else {
-                                                    javaVariable = wrapPrimitiveType( sce.getType(), sce.getName().getLocalPart());
-                                                }
-                                                off.write( "inputObject[" + i + "] = " + javaVariable + ";\n" );
-//                                                off.write( "inputObject[" + i + "] = " + wrapPrimitiveType( sce.getType(), sce.getName().getLocalPart()) + ";\n" );
-                                            } else {
-                                                off.write( "inputObject[" + i + "] = " + sce.getName().getLocalPart() + ";\n" );
+                                    off.write( "Object inputObject = " + wrapPrimitiveType( type, e.getName().getLocalPart()) + ";\n" );
+                                } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {                                    
+                                    off.write( "Object inputObject[] = new Object[] {\n" );
+                                    for( Iterator<SchemaConstruct> scit = type.getSubconstructs().iterator(); scit.hasNext(); ) {
+                                        SchemaConstruct sc = scit.next();
+                                        if( SchemaConstruct.ConstructType.ELEMENT.equals( sc.getConstructType())) {
+                                            Element sce = (Element) sc;
+                                            boolean isArray = sce.getMaxOccurs() > 1;
+                                            Type t = sce.getType();
+                                            if( Type.FLAVOR_PRIMITIVE == t.getFlavor()) {
+                                                off.write( wrapPrimitiveType( t, sce.getName().getLocalPart()));
+                                            } else if( Type.FLAVOR_SEQUENCE == t.getFlavor()) {
+                                                String typeName = sce.getType().getName() == null ? sce.getName().getLocalPart() : sce.getType().getName().getLocalPart();                                                
+                                                off.write( typeName + "_" + ( isArray ? "Array" : "" ) + "toObject( " + sce.getName().getLocalPart() + " )" );
+                                                toObjects.add( sce );
                                             }
-//                                            System.err.print(" " + sce.getName().getLocalPart());
-//                                            if( scs.hasNext()) System.err.print(", ");
-                                            i++;
+                                            if( scit.hasNext()) off.write( ", " );
+                                            off.write( "\n" );
                                         }
                                     }
+                                    off.write( "};\n" );
                                 }                                
-                                
-                                // TODO: create wrapper types
                             }
                             off.write( "\n" );
-                            off.write( "Operation op = Operation.newInstance( _qname_" + operation.getName() + ", _type_" + paramTypeName + ", _type_" + returnTypeName + " );\n" );
+                            off.write( "Operation op = Operation.newInstance( _qname_operation_" + operation.getName() + ", _type_" + paramTypeName + ", _type_" + returnTypeName + " );\n" );
                             off.write( "_prepOperation( op );\n");
                             off.write( "op.setProperty( Operation.SOAPACTION_URI_PROPERTY, \"" );
                             ExtensibilityElement exe = bindingOperation.getExtensibilityElements().get( 0 );
@@ -626,20 +561,29 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             if (output != null) {
                                 message = definition.getMessage( output.getMessage().getName() );
                                 for( Part part : message.getParts()) {
-                                    QName elementName = part.getElementName();
-                                    QName typeName = part.getTypeName();
-                                    Type type;
-                                    if( elementName != null ) {
-                                        type = definition.getSchemaHolder().getSchemaElement( elementName ).getType();
-                                    } else if( typeName != null ) {
-                                        type = definition.getSchemaHolder().getSchemaType( typeName );
-                                    } else {
-                                        System.err.println(" ERROR ");
-                                        break;
+                                    Element e = getReturnElement( definition.getSchemaHolder().getSchemaElement( part.getElementName()));
+                                    Type type = e.getType();
+                                    boolean isArray = e.getMaxOccurs() > 1;
+                                    if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
+                                        if( !isArray ) {
+                                            off.write( "return " + unwrapPrimitiveType( e, "resultObj" ) + ";\n");
+                                        } else {
+                                            off.write( "return " + type.getJavaTypeName() + "_ArrayfromObject((Object []) resultObj );\n" );
+                                            fromObjects.add( e );
+                                        }
+                                    } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
+                                        if( type.getSubconstructs().size() == 0 ) {
+                                            // void
+                                        } else {
+                                            String typeName = e.getType().getName() == null ? e.getName().getLocalPart() : e.getType().getName().getLocalPart();
+                                            if( !isArray ) {
+                                                off.write( "return " + typeName + "_fromObject((Object[]) resultObj );\n" );
+                                            } else {
+                                                off.write( "return " + typeName + "_ArrayfromObject((Object[]) resultObj );\n" );
+                                            }
+                                            fromObjects.add( e );
+                                        }
                                     }
-                                    
-                                    traverseReturnType( off, "resultObj", "result", definition.getSchemaHolder().getSchemaElement( elementName ), 0 );
-                                    off.write( "return result;\n" );
                                     break;
                                 }
                                 
@@ -647,8 +591,154 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             off.write("}\n");
                         }
                         
+                        // Generate object methods
+                        // Traversing
+                        Set<SchemaConstruct> to = new HashSet();
+                        for( Element e : toObjects ) {
+                            to.addAll( traverseObjectElements( e, to ));
+                        }
+                        Set<SchemaConstruct> from = new HashSet();
+                        for( Element e : fromObjects ) {
+                            from.addAll( traverseObjectElements( e, from ));
+                        }
+                        for( SchemaConstruct sc : from ) {
+                            System.err.println(" ~~~ " + sc.getName().getLocalPart());
+                        }
+                        // toObject methods
+                        Set<String> usedToMethods = new HashSet();
+                        for( SchemaConstruct sc : to ) {
+                            String typeName = sc.getName().getLocalPart();
+                            boolean isA = false;
+                            if( SchemaConstruct.ConstructType.ELEMENT.equals( sc.getConstructType())) {
+                                Element e = (Element) sc;
+                                if( e.getMaxOccurs() > 1 ) isA = true;
+                                if( e.getType().getName() != null ) typeName = e.getType().getName().getLocalPart();
+                            }
+                            String methodName = typeName + "_" + ( isA ? "Array" : "" ) + "toObject";
+                            if( usedToMethods.contains( methodName )) continue; else usedToMethods.add( methodName );
+                            off.write( "\n");
+                            off.write( "private static Object " + methodName + "( " + typeName + ( isA ? "[]" : "" ) + " obj ) {\n" );
+                            Type type = null;
+                            if( SchemaConstruct.ConstructType.ELEMENT.equals( sc.getConstructType())) {
+                                Element e = (Element) sc;
+                                type = e.getType();
+                            } else if( SchemaConstruct.ConstructType.TYPE.equals( sc.getConstructType())) {
+                                type = (Type) sc;
+                            } else {
+                                throw new InvalidParameterException( "Invalid SchemaConstruct type" );
+                            }                                                        
+                            String resultVariableName = ( isA ? "resultArray" : "result" );
+                            if( isA ) {
+                                off.write( "Object result[] = new Object[ obj.length ];\n" );
+                                off.write( "for( int i = 0; i < obj.length; i++ ) {\n" );
+                                off.write( "Object[] " + resultVariableName + " = new Object[ " + type.getSubconstructs().size() + " ];\n" );
+                            } else {                            
+                                off.write( "Object result[] = new Object[ " + type.getSubconstructs().size() + " ];\n" );
+                            }
+                            int i = 0;
+                            for( SchemaConstruct scc : type.getSubconstructs()) {
+                                if( SchemaConstruct.ConstructType.ELEMENT.equals( scc.getConstructType())) {
+                                    Element sce = (Element) scc;
+                                    Type t = sce.getType();
+                                    String variableName = scc.getName().getLocalPart();
+                                    boolean isArray = sce.getMaxOccurs() > 1;
+                                    off.write( resultVariableName + "[" + i + "] = " );
+                                    if( Type.FLAVOR_PRIMITIVE == t.getFlavor()) {
+                                        if( !isArray ) {
+                                            off.write( wrapPrimitiveType( t, "obj" + ( isA ? "[i]" : "" ) + "." + getter( variableName ) + "()" ));
+                                        } else {
+                                            if( sce.isNillable()) {
+                                                off.write( "null" );
+                                            } else {
+                                                off.write( "???" );
+                                            }
+                                        }
+                                    } else if( Type.FLAVOR_SEQUENCE == t.getFlavor()) {
+                                        String tn = t.getName() == null ? sce.getName().getLocalPart() : t.getName().getLocalPart();
+                                        if( !isArray ) {
+                                            off.write( tn + "_toObject( obj" + ( isA ? "[i]" : "" ) + "." + getter( variableName ) + "())" );
+                                        } else {
+                                            off.write( tn + "_ArraytoObject( obj" + ( isA ? "[i]" : "" ) + "." + getter( variableName ) + "())" );
+                                        }
+                                    }
+                                }
+                                off.write( ";\n" );
+                                i++;
+                            }
+                            if( isA ) {
+                                off.write( "result[i] = " + resultVariableName +";\n" );
+                                off.write( "}\n" );
+                            }
+                            off.write( "return result;\n" );
+                            off.write( "}\n" );
+                        }
+                        // fromObject methods
+                        Set<String> usedFromMethods = new HashSet();
+                        for( SchemaConstruct sc : from ) {
+                            String typeName = sc.getName().getLocalPart();
+                            boolean isA = false;
+                            if( SchemaConstruct.ConstructType.ELEMENT.equals( sc.getConstructType())) {
+                                Element e = (Element) sc;
+                                if( e.getMaxOccurs() > 1 ) isA = true;
+                                if( e.getType().getName() != null ) typeName = e.getType().getName().getLocalPart();
+                            }
+                            String methodName = typeName + "_" + ( isA ? "Array" : "" )+ "fromObject";
+                            if( usedFromMethods.contains( methodName )) continue; else usedFromMethods.add( methodName );
+                            off.write( "\n");
+                            off.write( "private static " + typeName + ( isA ? "[]" : "" ) + " " + methodName + "( Object obj[] ) {\n" );
+                            off.write( typeName + " result" + ( isA ? "[]" : "" )+ " = new " + typeName + ( isA ? "[obj.length]" : "()" ) + ";\n" );
+                            String objectVariableName = ( isA ? "oo" : "obj" );
+                            if( isA ) {
+                                off.write( "for( int i = 0; i < obj.length; i++ ) {\n" );
+                                off.write( "result[i] = new " + typeName + "();\n" );
+                                off.write( "Object[] " + objectVariableName + " = (Object[]) obj[i];\n" );
+                            }
+                            Type type = null;
+                            if( SchemaConstruct.ConstructType.ELEMENT.equals( sc.getConstructType())) {
+                                Element e = (Element) sc;
+                                type = e.getType();
+                            } else if( SchemaConstruct.ConstructType.TYPE.equals( sc.getConstructType())) {
+                                type = (Type) sc;
+                            } else {
+                                throw new InvalidParameterException( "Invalid SchemaConstruct type" );
+                            }
+                            int i = 0;
+                            for( SchemaConstruct scc : type.getSubconstructs()) {
+                                if( SchemaConstruct.ConstructType.ELEMENT.equals( scc.getConstructType())) {
+                                    Element sce = (Element) scc;
+                                    Type t = sce.getType();
+                                    String variableName = scc.getName().getLocalPart();
+                                    boolean isArray = sce.getMaxOccurs() > 1;
+                                    if( Type.FLAVOR_PRIMITIVE == t.getFlavor()) {
+                                        if( !isArray ) {
+                                            off.write( "result" + ( isA ? "[i]" : "" ) + "." + setter( variableName ) + "(" + unwrapPrimitiveType( sce, objectVariableName + "[" + i + "]" ) + ");\n" );
+                                        } else {
+                                            if( sce.isNillable()) {
+                                                off.write( "result" + ( isA ? "[i]" : "" ) + "." + setter( variableName ) + "( " + "_ArrayFromObject((Object[]) " + objectVariableName + "[" + i + "] ));\n" );
+                                            } else {
+                                                off.write( "???" );
+                                            }
+                                        }
+                                    } else if( Type.FLAVOR_SEQUENCE == t.getFlavor()) {
+                                        String tn = t.getName() == null ? sce.getName().getLocalPart() : t.getName().getLocalPart();
+                                        if( !isArray ) {
+                                            off.write( "result" + ( isA ? "[i]" : "" ) + "." + setter( variableName ) + "(" + tn + "_fromObject((Object[]) " + objectVariableName + "[" + i + "] ));\n" );
+                                        } else {
+                                            off.write( "result" + ( isA ? "[i]" : "" ) + "." + setter( variableName ) + "(" + tn + "_ArrayfromObject((Object[]) " + objectVariableName + "[" + i + "] ));\n" );
+                                        }
+                                    }
+                                }
+                                i++;
+                            }
+                            if( isA ) {
+                                off.write( "}\n" );
+                            }
+                            off.write( "return result;\n" );
+                            off.write( "}\n" );
+                        }
+                        
                         // Collect Qnames and Elements        
-                        Set<QName> qnames = new HashSet( operationQNames );
+                        Set<QName> qnames = new HashSet();
                         Set<Element> elements = new HashSet();
                         for( QName parameterName : usedParameterTypes ) {
                             SchemaConstruct sc;
@@ -657,24 +747,34 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             traverseParameterTypes( sc, qnames, elements );
                         }
                         off.write( "\n" );
+                        for( QName q : operationQNames ) {
+                            off.write( "protected static final QName ");
+                            off.write( "_qname_operation_" + q.getLocalPart() + " = new QName( " );
+                            off.write( '"' + q.getNamespaceURI() + "\", \"" + q.getLocalPart() + "\" );\n" );
+                        }
                         for( QName q : qnames ) {
                             off.write( "protected static final QName ");
                             off.write( "_qname_" + q.getLocalPart() + " = new QName( " );
                             off.write( '"' + q.getNamespaceURI() + "\", \"" + q.getLocalPart() + "\" );\n" );
                         }
 
+                        // _type_ static declaration 
                         for( Element e : elements ) {
                             off.write( "protected static final Element _type_" + e.getName().getLocalPart() + ";\n" );
                         }
                         off.write( "\nstatic {\n" );
 
+                        // static _type initialization
                         for( QName parameterName : usedParameterTypes ) {
                             SchemaConstruct sc;
                             sc = definition.getSchemaHolder().getSchemaElement( parameterName );
+                            off.write( "_type_" + sc.getName().getLocalPart() + " =" );
                             initTypes( off, sc, qnames, elements );
+                            off.write( ";\n" );
                         }
                         off.write( "}\n\n" );
 
+                        // Static wrapper for complex types
                         off.write( "private static ComplexType _complexType( Element[] elements ) {\n" );
                             off.write( "ComplexType result = new ComplexType();\n" );
                             off.write( "result.elements = elements;\n" );
@@ -687,6 +787,46 @@ public class WSDL2JavaImpl implements WSDL2Java {
                 }                    
             }
         }
+    }
+
+    private Set<SchemaConstruct> traverseObjectElements( SchemaConstruct schemaConstruct, Set<SchemaConstruct> elements ) {
+        Set<SchemaConstruct> result = new HashSet();
+        if( result.contains( schemaConstruct )) { 
+            return Collections.emptySet();
+        } else {
+            elements.add( schemaConstruct );
+        }
+        Type type = null;
+        Element element = null;
+        if( SchemaConstruct.ConstructType.ELEMENT.equals( schemaConstruct.getConstructType())) {
+            element = (Element) schemaConstruct;
+            type = element.getType();
+        } else if( SchemaConstruct.ConstructType.TYPE.equals( schemaConstruct.getConstructType())) {
+            type = (Type) schemaConstruct;
+        } else {
+            throw new InvalidParameterException( "Invalid SchemaConstruct type" );
+        }
+        if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
+            if( element != null ) {
+                // Is array
+                if( element.getMaxOccurs() > 1 ) {
+                    result.add( element );
+                    return result;
+                }                
+            }
+        } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
+            for( SchemaConstruct sc : type.getSubconstructs()) {
+                if( SchemaConstruct.ConstructType.ELEMENT.equals( sc.getConstructType())) {
+                    Element sce = (Element) sc;
+                    Type scetype = sce.getType();
+                    if( Type.FLAVOR_SEQUENCE == scetype.getFlavor()) {
+                        elements.add( sce );
+                        result.addAll( traverseObjectElements( sce, elements ));
+                    }
+                }
+            }
+        }
+        return result;
     }
     
     private String wrapPrimitiveType( Type type, String value ) {
@@ -736,17 +876,17 @@ public class WSDL2JavaImpl implements WSDL2Java {
             if( SchemaConstants.TYPE_INT.equals( typeName )) {
                 unwrapped = "(" + unwrapped + ").intValue()";
             } else if( SchemaConstants.TYPE_BOOLEAN.equals( typeName )) {
-                unwrapped = "(" + unwrapped + ").booleanValue();";
+                unwrapped = "(" + unwrapped + ").booleanValue()";
             } else if( SchemaConstants.TYPE_BYTE.equals( typeName )) {
-                unwrapped = "(" + unwrapped + ").byteValue();";
+                unwrapped = "(" + unwrapped + ").byteValue()";
             } else if( SchemaConstants.TYPE_DOUBLE.equals( typeName )) {
-                unwrapped = "(" + unwrapped + ").doubleValue();";
+                unwrapped = "(" + unwrapped + ").doubleValue()";
             } else if( SchemaConstants.TYPE_FLOAT.equals( typeName )) {
-                unwrapped = "(" + unwrapped + ").floatValue();";
+                unwrapped = "(" + unwrapped + ").floatValue()";
             } else if( SchemaConstants.TYPE_LONG.equals( typeName )) {
-                unwrapped = "(" + unwrapped + ").longValue();";
+                unwrapped = "(" + unwrapped + ").longValue()";
             } else if( SchemaConstants.TYPE_SHORT.equals( typeName )) {
-                unwrapped = "(" + unwrapped + ").shortValue();";
+                unwrapped = "(" + unwrapped + ").shortValue()";
             }
         }
         
@@ -761,7 +901,6 @@ public class WSDL2JavaImpl implements WSDL2Java {
         return "set" + variable.substring( 0, 1 ).toUpperCase() + variable.substring( 1 );
     }
     
-
     private void initTypes( OutputFileFormatter off, SchemaConstruct sc, Set<QName> qnames, Set<Element> elements ) {
         if( SchemaConstruct.ConstructType.ELEMENT.equals( sc.getConstructType())) {
             Element e = (Element) sc;
@@ -772,11 +911,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
             if( Type.FLAVOR_SEQUENCE == e.getType().getFlavor()) {
                 String ctName = elementName.getLocalPart();
                                      
-                if( elements.contains( e )) {
-                    off.write( "_type_" + ctName + " = new Element( " );
-                } else {
-                    off.write( "new Element( " );
-                }
+                off.write( "new Element( " );
                 if( qnames.contains( e.getName())) {
                     off.write( "_qname_" + ctName );
                 } else {
@@ -784,28 +919,21 @@ public class WSDL2JavaImpl implements WSDL2Java {
                 }
                 off.write( ", _complexType( new Element[] {\n" );                
                 
-                for( SchemaConstruct scc : t.getSubconstructs()) {
-                    initTypes( off, scc, qnames, elements );
-                    off.write( ",\n" );
+                for( Iterator<SchemaConstruct> scit = t.getSubconstructs().iterator(); scit.hasNext(); ) {
+                    initTypes( off, scit.next(), qnames, elements );
+                    if( scit.hasNext()) off.write( ",\n" );
                 }
                 off.write( "}))" );
-                if( elements.contains( e )) {
-                    off.write( ";\n" );
-                } 
             } else if( Type.FLAVOR_PRIMITIVE == e.getType().getFlavor()) {
                 String eName = e.getName().getLocalPart();
-                if( elements.contains( e )) {
-                    off.write( "_type_" + eName + " = new Element( " );
-                } else {
-                    off.write( "new Element( " );
-                }
+                off.write( "new Element( " );
                 if( qnames.contains( e.getName())) {
                     off.write( "_qname_" + eName + ", " );
                 } else {
                     off.write( "new QName( \"" + e.getName().getNamespaceURI() + "\", \"" + e.getName().getLocalPart() + "\" ), " );
                 }
                 int minOccurs = e.getMinOccurs();
-                int maxOccurs = e.getMinOccurs();
+                int maxOccurs = e.getMaxOccurs();
                 if( SchemaConstants.TYPE_STRING.equals( t.getName())) {
                     off.write( "Type.STRING" );
                 } else if( SchemaConstants.TYPE_INT.equals( t.getName())) {
@@ -831,13 +959,16 @@ public class WSDL2JavaImpl implements WSDL2Java {
                 } else {
                     System.err.println("Error type");
                 }
-                off.write( ", " + minOccurs + ", " );
-                if( maxOccurs == Element.UNBOUNDED ) {
-                    off.write( "Element.UNBOUNDED" );
-                } else {
-                    off.write( "" + maxOccurs );
+                if( minOccurs != 1 || maxOccurs != 1 || e.isNillable()) {
+                    off.write( ", " + minOccurs + ", " );
+                    if( maxOccurs == Element.UNBOUNDED ) {
+                        off.write( "Element.UNBOUNDED" );
+                    } else {
+                        off.write( "" + maxOccurs );
+                    }
+                    off.write( ", " + e.isNillable());
                 }
-                off.write( ", " + e.isNillable() + " )" );
+                off.write( " )" );
             }
         }
     }
@@ -855,94 +986,94 @@ public class WSDL2JavaImpl implements WSDL2Java {
         }
     }
     
-    public void traverseReturnType( OutputFileFormatter off, String holderName, String result, Element element, int item ) {
-        Type type = element.getType();
-        if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
-            String javaTypeName;
-            if( element.getMinOccurs() == 0 || element.isNillable()) {
-                javaTypeName = getWrapperTypeName( element.getType());
-            } else {
-                javaTypeName = type.getJavaTypeName();
-            }
-            if( element.getMaxOccurs() > 1 ) {
-                off.write( javaTypeName + "[] " + result + ";\n" );
-                off.write( "Object " + element.getName().getLocalPart() + "Obj = ((Object[]) " + holderName + ")[" + item + "];\n" );
-                off.write( result + " = (" + javaTypeName + "[]) " + element.getName().getLocalPart() + "Obj;\n" );
-            } else {
-                off.write( javaTypeName + " " + result + ";\n" );
-                off.write( "Object " + element.getName().getLocalPart() + "Obj = ((Object[]) " + holderName + ")[" + item + "];\n" );
-                off.write( result + " = " + unwrapPrimitiveType( element, element.getName().getLocalPart() + "Obj" ) + ";\n" );
-            }
-        } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
-            if( type.getSubconstructs().size() == 0 ) {
-            } else if( type.getSubconstructs().size() == 1 ) {
-                SchemaConstruct sc = type.getSubconstructs().get( 0 );
-                if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                    Element sce = (Element) sc;
-                    traverseReturnType( off, holderName, result, sce, 0 );
-                }
-            } else {
-                if( element.getMaxOccurs() > 1 ) {
-                    
-                    off.write( element.getName().getLocalPart() + "[] " + result + ";\n" );
-                    String resultObj = element.getName().getLocalPart().substring( 0, 1 ).toLowerCase() + element.getName().getLocalPart().substring( 1 );
-                    off.write( "Object[] " + resultObj + "Obj = (Object[]) ((Object[]) " + holderName + " ) [" + item + "];\n" );
-                    off.write( "if( " + resultObj + "Obj == null ) {\n" );
-                    off.write( result + " = null;\n" );
-                    off.write( "} else {\n" );
-                    off.write( "int " + result + "ArraySize = " + resultObj + "Obj.length;\n" );
-                    off.write( result + " = new " + element.getName().getLocalPart() + "[" + result + "ArraySize];\n" );
-                    off.write( "for( int " + result + "ArrayIndex = 0; " + result + "ArrayIndex < " + result + "ArraySize; " + result + "ArrayIndex++ ) {\n" );
-                    off.write( "if( " + resultObj + "Obj[ " + result + "ArrayIndex ] == null ) {\n" );
-                    off.write( result + "[ " + result + "ArrayIndex ] = null;\n" );
-                    off.write( "} else {\n" );
-                    off.write( result + "[ " + result + "ArrayIndex ] = new " + element.getName().getLocalPart() + "();\n" );
-                    
-                    int i = 0;
-                    for( SchemaConstruct sc : type.getSubconstructs()) {
-                        if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                            Element sce = (Element) sc;
-
-                            String variableName = sce.getName().getLocalPart();
-                            traverseReturnType( off, resultObj + "Obj[ " + result + "ArrayIndex ]", result + "Obj_" + variableName, sce, i );
-                            if( WSDL2Java.Configuration.TYPE_JAVA_BEANS == configuration.getGenerateType()) {
-                                off.write( result + "[ " + result + "ArrayIndex ]." + setter( variableName ) + "( " + result + "Obj_" + variableName + " );\n" );
-                            } else if( WSDL2Java.Configuration.TYPE_STRUCTURES == configuration.getGenerateType()) {
-                                off.write( result + "[ " + result + "ArrayIndex ]." + variableName + " = " + result + "Obj_" + variableName + ";\n" );
-                            }
-                        }
-                        i++;
-                    }
-                    off.write( "}\n" );
-                    off.write( "}\n" );
-                    off.write( "}\n" );
-                    
-                } else {
-                    off.write( element.getName().getLocalPart() + " " + result + ";\n" );
-                    //off.write( "Object[] " + result + "Obj = (Object[]) ((Object[]) " + result + "Obj) [" + item + "];\n" );
-                    off.write( "if( " + result + "Obj == null ) {\n");
-                    off.write( result + " = null;\n" );
-                    off.write( "} else {\n" );
-                    off.write( result + " = new " + element.getName().getLocalPart() + "();\n" );
-                    int i = 0;
-                    for( SchemaConstruct sc : type.getSubconstructs()) {
-                        if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                            Element sce = (Element) sc;
-                            String variableName = sce.getName().getLocalPart();
-                            traverseReturnType( off, result + "Obj", result + "Obj_" + variableName, sce, i );
-                            if( WSDL2Java.Configuration.TYPE_JAVA_BEANS == configuration.getGenerateType()) {
-                                off.write( result + "." + setter( variableName ) + "( " + result + "Obj_" + variableName + " );\n" );
-                            } else if( WSDL2Java.Configuration.TYPE_STRUCTURES == configuration.getGenerateType()) {
-                                off.write( result + "." + variableName + " = " + result + "Obj_" + variableName + ";\n" );
-                            }
-                        }
-                        i++;
-                    }
-                    off.write( "}\n" );
-                }
-            }
-        }        
-    }
+//    public void traverseReturnType( OutputFileFormatter off, String holderName, String result, Element element, int item ) {
+//        Type type = element.getType();
+//        if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
+//            String javaTypeName;
+//            if( element.getMinOccurs() == 0 || element.isNillable()) {
+//                javaTypeName = getWrapperTypeName( element.getType());
+//            } else {
+//                javaTypeName = type.getJavaTypeName();
+//            }
+//            if( element.getMaxOccurs() > 1 ) {
+//                off.write( javaTypeName + "[] " + result + ";\n" );
+//                off.write( "Object " + element.getName().getLocalPart() + "Obj = ((Object[]) " + holderName + ")[" + item + "];\n" );
+//                off.write( result + " = (" + javaTypeName + "[]) " + element.getName().getLocalPart() + "Obj;\n" );
+//            } else {
+//                off.write( javaTypeName + " " + result + ";\n" );
+//                off.write( "Object " + element.getName().getLocalPart() + "Obj = ((Object[]) " + holderName + ")[" + item + "];\n" );
+//                off.write( result + " = " + unwrapPrimitiveType( element, element.getName().getLocalPart() + "Obj" ) + ";\n" );
+//            }
+//        } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
+//            if( type.getSubconstructs().size() == 0 ) {
+////            } else if( type.getSubconstructs().size() == 1 ) {
+////                SchemaConstruct sc = type.getSubconstructs().get( 0 );
+////                if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
+////                    Element sce = (Element) sc;
+////                    traverseReturnType( off, holderName, result, sce, 0 );
+////                }
+//            } else {
+//                if( element.getMaxOccurs() > 1 ) {                    
+//                    off.write( type.getName().getLocalPart() + "[] " + result + ";\n" );
+//                    String resultObj = element.getName().getLocalPart().substring( 0, 1 ).toLowerCase() + element.getName().getLocalPart().substring( 1 );
+//                    off.write( "Object[] " + resultObj + "Obj = (Object[]) ((Object[]) " + holderName + " ) [" + item + "];\n" );
+//                    off.write( "if( " + resultObj + "Obj == null ) {\n" );
+//                    off.write( result + " = null;\n" );
+//                    off.write( "} else {\n" );
+//                    off.write( "int " + result + "ArraySize = " + resultObj + "Obj.length;\n" );
+//                    off.write( result + " = new " + element.getName().getLocalPart() + "[" + result + "ArraySize];\n" );
+//                    off.write( "for( int " + result + "ArrayIndex = 0; " + result + "ArrayIndex < " + result + "ArraySize; " + result + "ArrayIndex++ ) {\n" );
+//                    off.write( "if( " + resultObj + "Obj[ " + result + "ArrayIndex ] == null ) {\n" );
+//                    off.write( result + "[ " + result + "ArrayIndex ] = null;\n" );
+//                    off.write( "} else {\n" );
+//                    off.write( result + "[ " + result + "ArrayIndex ] = new " + element.getName().getLocalPart() + "();\n" );
+//                    
+//                    int i = 0;
+//                    for( SchemaConstruct sc : type.getSubconstructs()) {
+//                        if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
+//                            Element sce = (Element) sc;
+//
+//                            String variableName = sce.getName().getLocalPart();
+//                            traverseReturnType( off, resultObj + "Obj[ " + result + "ArrayIndex ]", result + "Obj_" + variableName, sce, i );
+//                            if( WSDL2Java.Configuration.TYPE_JAVA_BEANS == configuration.getGenerateType()) {
+//                                off.write( result + "[ " + result + "ArrayIndex ]." + setter( variableName ) + "( " + result + "Obj_" + variableName + " );\n" );
+//                            } else if( WSDL2Java.Configuration.TYPE_STRUCTURES == configuration.getGenerateType()) {
+//                                off.write( result + "[ " + result + "ArrayIndex ]." + variableName + " = " + result + "Obj_" + variableName + ";\n" );
+//                            }
+//                        }
+//                        i++;
+//                    }
+//                    off.write( "}\n" );
+//                    off.write( "}\n" );
+//                    off.write( "}\n" );
+//                    
+//                } else {
+//                    String typeName = type.getName() == null ? element.getName().getLocalPart() : type.getName().getLocalPart();
+//                    off.write( typeName + " " + result + ";\n" );
+//                    off.write( "Object[] " + result + "_" + typeName + "Obj = (Object[]) ((Object[]) " + holderName + " ) [" + item + "];\n" );
+//                    off.write( "if( " + result + "_" + typeName + "Obj == null ) {\n");
+//                    off.write( result + " = null;\n" );
+//                    off.write( "} else {\n" );
+//                    off.write( result + " = new " + typeName + "();\n" );
+//                    int i = 0;
+//                    for( SchemaConstruct sc : type.getSubconstructs()) {
+//                        if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
+//                            Element sce = (Element) sc;
+//                            String variableName = sce.getName().getLocalPart();
+//                            traverseReturnType( off, result + "_" + typeName + "Obj", result + "Obj_" + variableName, sce, i );
+//                            if( WSDL2Java.Configuration.TYPE_JAVA_BEANS == configuration.getGenerateType()) {
+//                                off.write( result + "." + setter( variableName ) + "( " + result + "Obj_" + variableName + " );\n" );
+//                            } else if( WSDL2Java.Configuration.TYPE_STRUCTURES == configuration.getGenerateType()) {
+//                                off.write( result + "." + variableName + " = " + result + "Obj_" + variableName + ";\n" );
+//                            }
+//                        }
+//                        i++;
+//                    }
+//                    off.write( "}\n" );
+//                }
+//            }
+//        }        
+//    }
     
     public String getUniqueTypeName( QName name ) {
         Integer index = uniqueTypeName.get( name );

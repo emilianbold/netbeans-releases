@@ -192,7 +192,7 @@ public class SchemaParser extends DefaultHandler {
             if( localName.equals( "import" )) {
                 String namespace = attributes.getValue( "namespace" );
                 String schemaLocation = attributes.getValue( "schemaLocation" );
-                System.err.println("<import namespace='" + namespace + "' schemaLocation='" + schemaLocation + "'/>" );
+//                System.err.println("<import namespace='" + namespace + "' schemaLocation='" + schemaLocation + "'/>" );
                 SchemaParser sp = new SchemaParser( false );
                 try {
                     sp.parseLocation( schemaLocation );
@@ -206,7 +206,7 @@ public class SchemaParser extends DefaultHandler {
             // schema
             if( localName.equalsIgnoreCase( SchemaConstants.SCHEMA.getLocalPart())) {
                 state.push( SCHEMA );
-                System.err.println("<schema>");
+//                System.err.println("<schema>");
                 targetNamespace = targetNamespaceStack.push( attributes.getValue( "targetNamespace" ));
                 if( "qualified".equals( attributes.getValue( "elementFormDefault" ))) {
                     elementFormDefault = true;
@@ -344,7 +344,7 @@ public class SchemaParser extends DefaultHandler {
                     throw new SAXException( "", new SchemaException( "Invalid end tag for 'element'." ));
                 }
                 if( SCHEMA.equals( state.peek())) {
-                    System.err.println(" - top element ");
+//                    System.err.println(" - top element ");
                 } else {
                     if( !SEQUENCE.equals( state.peek())) {
                         throw new SAXException( "", new SchemaException( "Invalid super tag for 'element'." ));
@@ -376,6 +376,8 @@ public class SchemaParser extends DefaultHandler {
         if( minOccurs != null ) {
             int value = Integer.parseInt( minOccurs );
             psc.setMinOccurs( value );
+        } else {
+            psc.setMinOccurs( 1 );
         }
         
         String maxOccurs = attributes.getValue( "maxOccurs" );
@@ -386,6 +388,8 @@ public class SchemaParser extends DefaultHandler {
                 int value = Integer.parseInt( maxOccurs );
                 psc.setMaxOccurs( value );
             }
+        } else {
+            psc.setMaxOccurs( 1 );
         }
     }
     

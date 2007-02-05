@@ -41,12 +41,7 @@ public class Element extends RepeatableSchemaConstruct {
     }
 
     public Element( QName name, Type elementType ) {
-        super( SchemaConstruct.ConstructType.ELEMENT, name );
-        setMinOccurs( 1 );
-        setMaxOccurs( 1 );
-        nillable = false;
-        
-        setName( name );
+        this( name );
         this.elementType = elementType;
     }
     
@@ -73,6 +68,10 @@ public class Element extends RepeatableSchemaConstruct {
     public Type getType() {
         return elementType;
     }
+    
+    public String getJavaName() {
+        return getName().getLocalPart() + ( getMaxOccurs() > 1 ? "[]" : "" ); 
+    }
 
     public String toString() {
         StringBuffer sb = new StringBuffer();
@@ -92,5 +91,5 @@ public class Element extends RepeatableSchemaConstruct {
 //        }
 
         return sb.toString();
-    }        
+    }
 }

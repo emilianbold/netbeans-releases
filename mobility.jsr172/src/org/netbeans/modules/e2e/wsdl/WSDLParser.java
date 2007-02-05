@@ -165,7 +165,7 @@ public class WSDLParser {
         }
         
         public void startPrefixMapping(String prefix, String uri) throws SAXException {
-            System.err.println(" - mapping : " + prefix + " ~ " + uri );
+//            System.err.println(" - mapping : " + prefix + " ~ " + uri );
             prefixMapping.put( prefix, uri );
         }        
 

@@ -22,6 +22,7 @@ public class SchemaConstruct {
     private String targetNamespace;
     private QName name;
     private ConstructType constructType;
+    private String javaName;
     
     public SchemaConstruct( SchemaConstruct.ConstructType constructType ) {
         this.constructType = constructType;
@@ -54,5 +55,13 @@ public class SchemaConstruct {
 
     public QName getName() {
         return name;
-    }    
+    }
+    
+    public void setJavaName( String name ) {
+        javaName = name;
+    }
+    
+    public String getJavaName() {
+        return javaName;
+    }
 }

@@ -13,12 +13,21 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.xml.namespace.QName;
+import org.netbeans.modules.e2e.api.schema.Element;
+import org.netbeans.modules.e2e.api.schema.SchemaConstruct;
+import org.netbeans.modules.e2e.api.schema.Type;
 import org.netbeans.modules.e2e.api.wsdl.Binding;
 import org.netbeans.modules.e2e.api.wsdl.BindingInput;
 import org.netbeans.modules.e2e.api.wsdl.BindingOperation;
 import org.netbeans.modules.e2e.api.wsdl.BindingOutput;
 import org.netbeans.modules.e2e.api.wsdl.Definition;
+import org.netbeans.modules.e2e.api.wsdl.Message;
+import org.netbeans.modules.e2e.api.wsdl.Operation;
+import org.netbeans.modules.e2e.api.wsdl.Output;
+import org.netbeans.modules.e2e.api.wsdl.Part;
 import org.netbeans.modules.e2e.api.wsdl.Port;
+import org.netbeans.modules.e2e.api.wsdl.PortType;
 import org.netbeans.modules.e2e.api.wsdl.Service;
 import org.netbeans.modules.e2e.api.wsdl.extensions.ExtensibilityElement;
 import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPAddress;
@@ -28,6 +37,7 @@ import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPOperation;
 import org.netbeans.modules.e2e.api.wsdl.wsdl2java.WSDL2Java;
 import org.netbeans.modules.e2e.api.wsdl.wsdl2java.WSDL2Java.ValidationResult;
 import org.netbeans.modules.e2e.api.wsdl.wsdl2java.WSDL2Java.ValidationResult.ErrorLevel;
+import org.netbeans.modules.e2e.schema.SchemaConstants;
 import org.netbeans.modules.e2e.wsdl.extensions.soap.SOAPConstants;
 import org.openide.util.NbBundle;
 
@@ -106,6 +116,10 @@ class WSDLValidator {
                 for( BindingOperation bindingOperation : binding.getBindingOperations()) {
                     checkBindingOperation( bindingOperation );
                 }
+                PortType portType = binding.getPortType();
+                for( Operation operation : portType.getOperations()) {
+                    checkOperation( operation );
+                }
             }
         }
     }
@@ -145,6 +159,71 @@ class WSDLValidator {
                 }
             }
         }                                                                                
+    }
+    
+    private void checkOperation( Operation operation ) {
+        Output output = operation.getOutput();
+        if( output == null ) {
+            addMessage( ErrorLevel.FATAL, "0007", operation.getName());
+            return;
+        }
+        Message message = operation.getOutput().getMessage();
+        if( message.getParts().size() == 0 ) {            
+        } else if( message.getParts().size() > 1 ) {
+            addMessage( ErrorLevel.FATAL, "0006", operation.getName());
+        } else {
+            
+        }
+        for( Part part : message.getParts()) {
+            QName elementName = part.getElementName();
+            QName typeName = part.getTypeName();
+            Element element = null;
+            Type type = null;
+            if( elementName != null ) {
+                element = definition.getSchemaHolder().getSchemaElement( elementName );
+                type = element.getType();
+                checkType( element );
+            } else if( typeName != null ) {
+                type = definition.getSchemaHolder().getSchemaType( typeName );
+            } else {
+                addMessage( ErrorLevel.FATAL, "0008", operation.getName());
+            }
+        }
+    }
+    
+    private void checkType( Element element ) {
+        Type type = element.getType();
+        if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
+            QName typeName = type.getName();
+            if( SchemaConstants.TYPE_INT.equals( typeName )) {
+            } else if( SchemaConstants.TYPE_BOOLEAN.equals( typeName )) {
+            } else if( SchemaConstants.TYPE_BYTE.equals( typeName )) {
+            } else if( SchemaConstants.TYPE_DOUBLE.equals( typeName )) {
+            } else if( SchemaConstants.TYPE_FLOAT.equals( typeName )) {
+            } else if( SchemaConstants.TYPE_LONG.equals( typeName )) {
+            } else if( SchemaConstants.TYPE_SHORT.equals( typeName )) {
+            } else if( SchemaConstants.TYPE_BASE64_BINARY.equals( typeName )) {
+            } else if( SchemaConstants.TYPE_HEX_BINARY.equals( typeName )) {
+            } else if( SchemaConstants.TYPE_STRING.equals( typeName )) {
+            } else {
+                addMessage( ErrorLevel.FATAL, "0003", typeName.toString());
+            }
+        } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
+            if( type.getSubconstructs().size() == 0 ) {
+                return;
+            } else {
+                for( SchemaConstruct sc : type.getSubconstructs()) {
+                    if( SchemaConstruct.ConstructType.ELEMENT.equals( sc.getConstructType())) {
+                        Element sce = (Element) sc;
+                        checkType( sce );
+                    } else {
+                        addMessage( ErrorLevel.FATAL, "0005", element.getName().toString());
+                    }
+                }
+            }
+        } else {
+            addMessage( ErrorLevel.FATAL, "0004", element.getName().toString());
+        }
     }
     
     private void printMessages() {
