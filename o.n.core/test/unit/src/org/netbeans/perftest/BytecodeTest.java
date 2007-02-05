@@ -67,7 +67,7 @@ public class BytecodeTest extends NbTestCase {
     public void testBytecode() throws Exception {
         JavaClass clz = 
                 new ClassParser(Main.class.getResourceAsStream("Main.class"), "Main.class").parse();
-        assertNotNull("classfile of Main parsed");
+        assertNotNull("classfile of Main parsed", clz);
         
         Set<Violation> violations = new HashSet<Violation>();
         MyVisitor v = new MyVisitor();
@@ -206,6 +206,34 @@ public class BytecodeTest extends NbTestCase {
         public boolean foundStaticMethods() {
             return hasStaticMethods;
         }
+    }
+
+    private static class StaticsVisitor extends EmptyVisitor {
+        
+        private static Type imageType = Type.getType("Ljava/awt/Image;");
+        private static Type image1Type = Type.getType("Ljavax/swing/ImageIcon;");
+        private static Type image2Type = Type.getType("Ljavax/swing/Icon;");
+        private static Type bType = Type.getType("Ljava/util/ResourceBundle;");
+        private static Type b2Type = Type.getType("Lorg/openide/util/NbBundle;");
+        private boolean hasStaticFields;
+        
+        public void visitField(Field obj) {
+            if (obj.isStatic()) {
+//                System.out.println("signature "+obj.getSignature());
+                Type name = Type.getReturnType(obj.getSignature());
+                if (imageType.equals(name) ||
+                        image1Type.equals(name) ||
+                        image2Type.equals(name) ||
+                        bType.equals(name) ||
+                        b2Type.equals(name)) {
+                    hasStaticFields = true;
+                }
+            }
+        }
+
+        public boolean foundStaticFields() {
+            return hasStaticFields;
+        }
 
     }
 
@@ -213,7 +241,6 @@ public class BytecodeTest extends NbTestCase {
      */
     public void testBeanInfos() throws Exception {
         JavaClass clz;
-        assertNotNull("classfile of Main parsed");
         
         Set<Violation> violations = new HashSet<Violation>();
         for (File f: org.netbeans.core.startup.Main.getModuleSystem().getModuleJars()) {
@@ -244,6 +271,45 @@ public class BytecodeTest extends NbTestCase {
         if (!violations.isEmpty()) {
             StringBuilder msg = new StringBuilder();
             msg.append("Some BeanInfo classes should be more optimized:\n");
+            for (Violation v: violations) {
+                msg.append(v.entry).append(" in ").append(v.jarFile).append(v.comment).append('\n');
+            }
+            fail(msg.toString());
+        }
+    }
+    /** Scan of all classes to check if they held statically things like Images or ResourceBundles
+     */
+    public void testStaticRefs() throws Exception {
+        JavaClass clz;
+        
+        // TODO need to exclude some usages that are justified
+        
+        Set<Violation> violations = new HashSet<Violation>();
+        for (File f: org.netbeans.core.startup.Main.getModuleSystem().getModuleJars()) {
+            if (!f.getName().endsWith(".jar"))
+                continue;
+            
+            JarFile jar = new JarFile(f);
+            Enumeration<JarEntry> entries = jar.entries();
+            JarEntry entry;
+            while (entries.hasMoreElements()) {
+                entry = entries.nextElement();
+                if (entry.getName().endsWith(".class")) {
+                    System.out.println("testing entry "+entry);
+                    clz = new ClassParser(jar.getInputStream(entry), entry.getName()).parse();
+                    assertNotNull("classfile of "+entry.toString()+" parsed");
+                    
+                    StaticsVisitor v = new StaticsVisitor();
+                    new DescendingVisitor(clz,v).visit();
+                    if (v.foundStaticFields()) {
+                        violations.add(new Violation(entry.toString(), jar.getName(), " found static fields that should be avoided"));
+                    }
+                }
+            }
+        }
+        if (!violations.isEmpty()) {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Some classes retain memory permanently:\n");
             for (Violation v: violations) {
                 msg.append(v.entry).append(" in ").append(v.jarFile).append(v.comment).append('\n');
             }
