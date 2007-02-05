@@ -59,7 +59,6 @@ import org.openide.modules.ModuleInstall;
  * Initialization code for dataconnectivity module.
  * Copies various files from application bundle into userdir.
  * Defines initial drivers.
- * Unlocks Datadirect drivers.
  */
 public class DataconnectivityModuleInstaller extends ModuleInstall {
 
@@ -79,17 +78,6 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
     // String origDsConfPath = ideHome + "/startup/" + XmlUtil.DS_CONFIG_FILE; //NOI18N
     String origDsConfPath = "startup/" + XmlUtil.DS_CONFIG_FILE; //NOI18N
     String oldDsConfPath = userDir + "/jdbc-drivers/" + XmlUtil.DS_CONFIG_FILE.replaceFirst("[.]", "-2_0.");; //NOI18N
-
-//     private static final String alphabet = "abcdefghijklmnopqrstuvwxyz"; // NOI18N
-//     static {
-//         /* construct password and keep just long enough to use it */
-//         char[] pw = new char[4];
-//         pw[0] = alphabet.charAt(18);
-//         pw[1] = alphabet.charAt(20);
-//         pw[2] = alphabet.charAt(13);
-//         pw[3] = alphabet.charAt(12);
-//         System.setProperty("module.core.status", new String(pw));
-//     }
 
     public void restored() {
 
