@@ -79,6 +79,31 @@ public class EditorSettingsImpl extends EditorSettings {
         }
         return instance;
     }
+
+    public Set<String> getAllMimeTypes () {
+        FileObject editorsFo = Repository.getDefault().getDefaultFileSystem().findResource(EDITORS_FOLDER);
+        HashSet<String> mimeTypes = new HashSet<String>();
+        
+        if (editorsFo != null) {
+            for(FileObject f : editorsFo.getChildren()) {
+                if (!f.isFolder()) {
+                    continue;
+                }
+
+                String firstPart = f.getNameExt();
+                for(FileObject ff : f.getChildren()) {
+                    if (!ff.isFolder()) {
+                        continue;
+                    }
+
+                    String mimeType = firstPart + "/" + ff.getNameExt(); //NOI18N
+                    mimeTypes.add(mimeType);
+                }
+            }
+        }
+        
+        return mimeTypes;
+    }
     
     /**
      * Returns set of mimetypes.
@@ -86,10 +111,10 @@ public class EditorSettingsImpl extends EditorSettings {
      * @return set of mimetypes
      */
     public Set<String> getMimeTypes () {
-	if (mimeToLanguage == null) {
+	if (mimeTypesWithColoring == null) {
             init ();
         }
-	return Collections.unmodifiableSet(mimeToLanguage.keySet());
+	return mimeTypesWithColoring;
     }
     
     /**
@@ -98,10 +123,8 @@ public class EditorSettingsImpl extends EditorSettings {
      * @return name of language for given mime type
      */
     public String getLanguageName (String mimeType) {
-	if (mimeToLanguage == null) {
-            init ();
-        }
-	return mimeToLanguage.get(mimeType);
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors/" + mimeType); //NOI18N
+        return fo == null ? mimeType : Utils.getLocalizedName(fo, mimeType, mimeType);
     }
 
     
@@ -477,7 +500,7 @@ public class EditorSettingsImpl extends EditorSettings {
     
     private Map<String, String> fontColorProfiles;
     private Map<String, String> keyMapProfiles;
-    private Map<String, String> mimeToLanguage;
+    private Set<String> mimeTypesWithColoring;
 
     private EditorSettingsImpl() {
         
@@ -487,7 +510,7 @@ public class EditorSettingsImpl extends EditorSettings {
 	fontColorProfiles = new HashMap<String, String>();
 	keyMapProfiles = new HashMap<String, String>();
 	keyMapProfiles.put (DEFAULT_PROFILE, DEFAULT_PROFILE);
-	mimeToLanguage = new HashMap<String, String>();
+	mimeTypesWithColoring = new HashSet<String>();
         systemFontColorProfiles = new HashSet<String>();
         systemKeymapProfiles = new HashSet<String>();
 	FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
@@ -498,6 +521,8 @@ public class EditorSettingsImpl extends EditorSettings {
                 init1 ((FileObject) e.nextElement ());
             }
         }
+        
+        mimeTypesWithColoring = Collections.unmodifiableSet(mimeTypesWithColoring);
     }
     
     private void init1 (FileObject fo) {
@@ -544,8 +569,7 @@ public class EditorSettingsImpl extends EditorSettings {
 
     private void addMimeType(FileObject fo) {
         String mimeType = fo.getPath().substring(8);
-        String displayName = Utils.getLocalizedName(fo, mimeType, mimeType);
-        mimeToLanguage.put(mimeType, displayName);
+        mimeTypesWithColoring.add(mimeType);
     }
     
     private void addFontColorsProfile(FileObject fo, boolean systemProfile) {

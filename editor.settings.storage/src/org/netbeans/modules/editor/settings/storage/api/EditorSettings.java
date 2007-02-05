@@ -44,9 +44,18 @@ public abstract class EditorSettings {
     public static EditorSettings getDefault () {
         return EditorSettingsImpl.getInstance();
     }
+
+    /**
+     * Gets all top level mime types registered under the <code>Editors/</code>
+     * folder.
+     *
+     * @return set of mimetypes
+     */
+    public abstract Set<String> getAllMimeTypes ();
     
     /**
-     * Returns set of mimetypes.
+     * Returns set of mimetypes. The set contains only mime types that have
+     * <code>coloring.xml</code> defined in the default profile.
      *
      * @return set of mimetypes
      */
