@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="Configuration of J2EE EJB core unit tests">
     
-    <testbag testattribs="stable" executor="ide" name="j2ee/ejbcore">
+    <testbag testattribs="stable" executor="unit-executor" name="j2ee/ejbcore">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
