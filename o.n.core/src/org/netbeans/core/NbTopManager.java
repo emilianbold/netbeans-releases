@@ -22,7 +22,6 @@ package org.netbeans.core;
 import java.awt.Dialog;
 import java.awt.Toolkit;
 import java.awt.Window;
-import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -234,6 +233,7 @@ public abstract class NbTopManager {
             for (int i = 0; i < _listeners.length; i++) {
                 _listeners[i].stateChanged(e);
             }
+            Logger.getLogger(NbStatusDisplayer.class.getName()).fine("Status text updated: "+text);
         }
         public synchronized String getStatusText() {
             return text;
