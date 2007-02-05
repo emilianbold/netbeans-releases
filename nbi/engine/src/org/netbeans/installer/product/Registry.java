@@ -402,7 +402,8 @@ public class Registry {
     }
     
     private void changeStatuses() {
-        if (System.getProperty(FORCE_INSTALL_PROPERTY) != null) {
+        if (Boolean.getBoolean(SUGGEST_INSTALL_PROPERTY) || 
+                Boolean.getBoolean(FORCE_INSTALL_PROPERTY)) {
             for (Product product: getProducts(Status.NOT_INSTALLED)) {
                 // we should not change the status of components that are not
                 // visible (were filtered out either at build time or runtime), as
@@ -414,7 +415,8 @@ public class Registry {
             }
         }
         
-        if (System.getProperty(FORCE_UNINSTALL_PROPERTY) != null) {
+        if (Boolean.getBoolean(SUGGEST_UNINSTALL_PROPERTY) || 
+                Boolean.getBoolean(FORCE_UNINSTALL_PROPERTY)) {
             for (Product product: getProducts(Status.INSTALLED)) {
                 // we should not change the status of components that are not
                 // visible (were filtered out either at build time or runtime), as
@@ -1362,11 +1364,17 @@ public class Registry {
     public static final String TARGET_PLATFORM_PROPERTY =
             "nbi.target.platform";
     
+    public static final String SUGGEST_INSTALL_PROPERTY =
+            "nbi.product.suggest.install";
+    
+    public static final String SUGGEST_UNINSTALL_PROPERTY =
+            "nbi.product.suggest.uninstall";
+    
     public static final String FORCE_INSTALL_PROPERTY =
-            "nbi.force.change.status.install";
+            "nbi.product.force.install";
     
     public static final String FORCE_UNINSTALL_PROPERTY =
-            "nbi.force.change.status.uninstall";
+            "nbi.product.force.uninstall";
     
     public static final String CREATE_BUNDLE_PATH_PROPERTY =
             "nbi.create.bundle.path";

@@ -486,6 +486,26 @@ public class Installer implements FinishHandler {
                 continue;
             }
             
+            if (arguments[i].equalsIgnoreCase("--suggest-install")) {
+                LogManager.log("parsing command line parameter \"--suggest-install\"");
+                LogManager.indent();
+                
+                System.setProperty(Registry.SUGGEST_INSTALL_PROPERTY, "true");
+                
+                LogManager.unindent();
+                continue;
+            }
+            
+            if (arguments[i].equalsIgnoreCase("--suggest-uninstall")) {
+                LogManager.log("parsing command line parameter \"--suggest-uninstall\"");
+                LogManager.indent();
+                
+                System.setProperty(Registry.SUGGEST_UNINSTALL_PROPERTY, "true");
+                
+                LogManager.unindent();
+                continue;
+            }
+            
             if (arguments[i].equalsIgnoreCase("--force-install")) {
                 LogManager.log("parsing command line parameter \"--force-install\"");
                 LogManager.indent();

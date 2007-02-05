@@ -149,7 +149,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     
     // private //////////////////////////////////////////////////////////////////////
     private boolean canExecute() {
-        return System.getProperty(Registry.FORCE_UNINSTALL_PROPERTY) == null;
+        return !(Boolean.getBoolean(Registry.FORCE_INSTALL_PROPERTY) || 
+                Boolean.getBoolean(Registry.FORCE_UNINSTALL_PROPERTY));
     }
     
     private boolean isThereAnythingVisibleToInstall() {
