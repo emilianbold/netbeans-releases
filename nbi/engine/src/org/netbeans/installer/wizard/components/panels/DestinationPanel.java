@@ -25,6 +25,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -49,12 +50,12 @@ import org.netbeans.installer.wizard.containers.SwingContainer;
 public class DestinationPanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final Class CLS = DestinationPanel.class;
-    
     public static final String DEFAULT_TITLE =
-            ResourceUtils.getString(CLS, "DP.title"); // NOI18N
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.title"); // NOI18N
     public static final String DEFAULT_DESCRIPTION =
-            ResourceUtils.getString(CLS, "DP.description"); // NOI18N
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.description"); // NOI18N
     
     public static final String DESTINATION_LABEL_TEXT_PROPERTY
             = "destination.label.text"; // NOI18N
@@ -62,14 +63,18 @@ public class DestinationPanel extends ErrorMessagePanel {
             = "destination.button.text"; // NOI18N
     
     public static final String DEFAULT_DESTINATION_LABEL_TEXT =
-            ResourceUtils.getString(CLS, "DP.destination.label.text"); // NOI18N
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.destination.label.text"); // NOI18N
     public static final String DEFAULT_DESTINATION_BUTTON_TEXT =
-            ResourceUtils.getString(CLS, "DP.destination.button.text"); // NOI18N
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.destination.button.text"); // NOI18N
     
     public static final String ERROR_NULL_PROPERTY =
             "error.null"; // NOI18N
     public static final String ERROR_NOT_VALID_PROPERTY =
             "error.not.valid"; // NOI18N
+    public static final String ERROR_CANNOT_CANONIZE_PROPERTY =
+            "error.cannot.canonize"; // NOI18N
     public static final String ERROR_NOT_DIRECTORY_PROPERTY =
             "error.not.directory"; // NOI18N
     public static final String ERROR_NOT_READABLE_PROPERTY =
@@ -80,36 +85,58 @@ public class DestinationPanel extends ErrorMessagePanel {
             "error.not.empty"; // NOI18N
     
     public static final String DEFAULT_ERROR_NULL =
-            ResourceUtils.getString(CLS, "DP.error.null"); // NOI18N
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.null"); // NOI18N
     public static final String DEFAULT_ERROR_NOT_VALID =
-            ResourceUtils.getString(CLS, "DP.error.not.valid"); // NOI18N
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.not.valid"); // NOI18N
+    public static final String DEFAULT_ERROR_CANNOT_CANONIZE =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.cannot.canonize"); // NOI18N
     public static final String DEFAULT_ERROR_NOT_DIRECTORY =
-            ResourceUtils.getString(CLS, "DP.error.not.directory"); // NOI18N
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.not.directory"); // NOI18N
     public static final String DEFAULT_ERROR_NOT_READABLE =
-            ResourceUtils.getString(CLS, "DP.error.not.readable"); // NOI18N
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.not.readable"); // NOI18N
     public static final String DEFAULT_ERROR_NOT_WRITABLE =
-            ResourceUtils.getString(CLS, "DP.error.not.writable"); // NOI18N
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.not.writable"); // NOI18N
     public static final String DEFAULT_ERROR_NOT_EMPTY =
-            ResourceUtils.getString(CLS, "DP.error.not.empty"); // NOI18N
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.not.empty"); // NOI18N
     
     public static final String DEFAULT_DESTINATION =
-            ResourceUtils.getString(CLS, "DP.default.destination"); // NOI18N
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.default.destination"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public DestinationPanel() {
-        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
-        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+        setProperty(TITLE_PROPERTY,
+                DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY,
+                DEFAULT_DESCRIPTION);
         
-        setProperty(DESTINATION_LABEL_TEXT_PROPERTY, DEFAULT_DESTINATION_LABEL_TEXT);
-        setProperty(DESTINATION_BUTTON_TEXT_PROPERTY, DEFAULT_DESTINATION_BUTTON_TEXT);
+        setProperty(DESTINATION_LABEL_TEXT_PROPERTY,
+                DEFAULT_DESTINATION_LABEL_TEXT);
+        setProperty(DESTINATION_BUTTON_TEXT_PROPERTY,
+                DEFAULT_DESTINATION_BUTTON_TEXT);
         
-        setProperty(ERROR_NULL_PROPERTY, DEFAULT_ERROR_NULL);
-        setProperty(ERROR_NOT_VALID_PROPERTY, DEFAULT_ERROR_NOT_VALID);
-        setProperty(ERROR_NOT_DIRECTORY_PROPERTY, DEFAULT_ERROR_NOT_DIRECTORY);
-        setProperty(ERROR_NOT_READABLE_PROPERTY, DEFAULT_ERROR_NOT_READABLE);
-        setProperty(ERROR_NOT_WRITABLE_PROPERTY, DEFAULT_ERROR_NOT_WRITABLE);
-        setProperty(ERROR_NOT_EMPTY_PROPERTY, DEFAULT_ERROR_NOT_EMPTY);
+        setProperty(ERROR_NULL_PROPERTY,
+                DEFAULT_ERROR_NULL);
+        setProperty(ERROR_NOT_VALID_PROPERTY,
+                DEFAULT_ERROR_NOT_VALID);
+        setProperty(ERROR_CANNOT_CANONIZE_PROPERTY,
+                DEFAULT_ERROR_CANNOT_CANONIZE);
+        setProperty(ERROR_NOT_DIRECTORY_PROPERTY,
+                DEFAULT_ERROR_NOT_DIRECTORY);
+        setProperty(ERROR_NOT_READABLE_PROPERTY,
+                DEFAULT_ERROR_NOT_READABLE);
+        setProperty(ERROR_NOT_WRITABLE_PROPERTY,
+                DEFAULT_ERROR_NOT_WRITABLE);
+        setProperty(ERROR_NOT_EMPTY_PROPERTY,
+                DEFAULT_ERROR_NOT_EMPTY);
     }
     
     public WizardUi getWizardUi() {
@@ -195,18 +222,22 @@ public class DestinationPanel extends ErrorMessagePanel {
         }
         
         protected void saveInput() {
-            String value =
-                    new File(destinationField.getText().trim()).getAbsolutePath();
-            
-            component.getWizard().setProperty(
-                    Product.INSTALLATION_LOCATION_PROPERTY,
-                    value);
+            try {
+                final String value = new File(
+                        destinationField.getText().trim()).getCanonicalPath();
+                
+                component.getWizard().setProperty(
+                        Product.INSTALLATION_LOCATION_PROPERTY,
+                        value);
+            } catch (IOException e) {
+                ErrorManager.notifyError(
+                        "Cannot canonize path, which is strange",
+                        e);
+            }
         }
         
         protected String validateInput() {
             final String  string  = destinationField.getText().trim();
-            final File    file    = new File(string);
-            final String  path    = file.getAbsolutePath();
             final Product product = (Product) component.
                     getWizard().
                     getContext().
@@ -215,13 +246,24 @@ public class DestinationPanel extends ErrorMessagePanel {
             if (string.equals("")) {
                 return StringUtils.format(
                         component.getProperty(ERROR_NULL_PROPERTY),
-                        path);
+                        string);
             }
             
+            File file = new File(string);
+            
+            final String path = file.getAbsolutePath();
             if (!SystemUtils.isPathValid(path)) {
                 return StringUtils.format(
                         component.getProperty(ERROR_NOT_VALID_PROPERTY),
                         path);
+            }
+            
+            try {
+                file = file.getCanonicalFile();
+            } catch (IOException e) {
+                return StringUtils.format(
+                        component.getProperty(ERROR_CANNOT_CANONIZE_PROPERTY),
+                        string);
             }
             
             if (file.exists() && !file.isDirectory()) {

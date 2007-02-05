@@ -99,7 +99,7 @@ public class JavaUtils {
         } else {
             probe = new File(javaHome, "lib/charsets.jar");
             if (!probe.exists() || !probe.isFile()) {
-                // if the probe does not exist, this may mean that we're on macos, 
+                // if the probe does not exist, this may mean that we're on macos,
                 // in this case additionally check for 'jce.jar'
                 probe = new File(javaHome, "lib/jce.jar");
                 if (!probe.exists() || !probe.isFile()) {
@@ -137,26 +137,25 @@ public class JavaUtils {
         return getInfo(javaHome).getVersion();
     }
     
-    public static JavaInfo getInfo(File javaHome) {
+    public static JavaInfo getInfo(final File javaHome) {
+        File location = javaHome;
         try {
-            javaHome = javaHome.getCanonicalFile();
+            location = javaHome.getCanonicalFile();
         } catch (IOException e) {
             ErrorManager.notifyDebug("Cannot canonize " + javaHome, e);
         }
         
-        if (knownJdks.get(javaHome) != null) {
-            return knownJdks.get(javaHome);
+        if (knownJdks.get(location) != null) {
+            return knownJdks.get(location);
         }
         
-        if (!isJavaHome(javaHome)) {
+        if (!isJavaHome(location)) {
             return null;
         }
         
-        final File executable = getExecutable(javaHome);
+        final File executable = getExecutable(location);
         
-        File    testJdk = null;
-        JavaInfo jdkInfo = null;
-        
+        final File testJdk;
         try {
             testJdk = FileProxy.getInstance().getFile(TEST_JDK_URI);
         } catch (DownloadException e) {
@@ -164,8 +163,9 @@ public class JavaUtils {
             return null;
         }
         
+        JavaInfo jdkInfo = null;
         try {
-            ExecutionResults results = SystemUtils.executeCommand(
+            final ExecutionResults results = SystemUtils.executeCommand(
                     executable.getAbsolutePath(),
                     "-classpath",
                     testJdk.getParentFile().getAbsolutePath(),
@@ -174,7 +174,7 @@ public class JavaUtils {
             jdkInfo = JavaInfo.getInfo(results.getStdOut());
             
             if (jdkInfo != null) {
-                knownJdks.put(javaHome, jdkInfo);
+                knownJdks.put(location, jdkInfo);
             }
         } catch (IOException e) {
             ErrorManager.notifyError("Failed to execute the jdk verification procedure", e);
