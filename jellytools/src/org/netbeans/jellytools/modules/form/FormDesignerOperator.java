@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -370,20 +370,9 @@ public class FormDesignerOperator extends TopComponentOperator {
      */
     public EditorOperator editor() {
         source();
-        return new EditorOperator((JComponent)this.waitSubComponent(new EditorOperator.EditorSubchooser()));
+        return new EditorOperator(findParentTopComponent(), "");
     }
 
-    /** Closes this TopComponent instance by IDE API call and wait until 
-     * it is not closed. If this TopComponent is modified (e.g. editor top
-     * component), question dialog is shown and you have to close it. To close 
-     * this TopComponent and discard possible changes use {@link #closeDiscard}
-     * method.
-     */
-    public void close() {
-        // need to find parent MultiviewTopComponent and close it
-        new TopComponentOperator(findParentTopComponent()).close();
-    }
-    
     /** SubChooser to determine FormDesigner TopComponent
      * Used in findTopComponent method.
      */
