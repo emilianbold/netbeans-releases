@@ -50,6 +50,7 @@ public class CDCPlatformCustomizer extends JPanel implements CustomizerPanel, Vi
         DefaultPropertiesDescriptor.PLATFORM_DEVICE,
         DefaultPropertiesDescriptor.PLATFORM_PROFILE,
         DefaultPropertiesDescriptor.PLATFORM_BOOTCLASSPATH,
+        DefaultPropertiesDescriptor.PLATFORM_TYPE,
         DefaultPropertiesDescriptor.JAVAC_SOURCE,
         DefaultPropertiesDescriptor.JAVAC_TARGET,
         CDCPropertiesDescriptor.PLATFORM_FAT_JAR
@@ -118,6 +119,7 @@ public class CDCPlatformCustomizer extends JPanel implements CustomizerPanel, Vi
             props.put(VisualPropertySupport.translatePropertyName(configuration, CDCPropertiesDescriptor.PLATFORM_FAT_JAR, useDefault), Boolean.valueOf(platform.isFatJar()));
             props.put(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.JAVAC_SOURCE, useDefault), platform.getClassVersion());
             props.put(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.JAVAC_TARGET, useDefault), platform.getClassVersion());
+            props.put(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_TYPE, useDefault), platform.getType());
             final CDCDevice[] devices = platform.getDevices();
             name2device = new HashMap<String,CDCDevice>();
             for (int i=0; i<devices.length; i++) {

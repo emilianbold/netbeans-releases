@@ -67,6 +67,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
     public static final String PLATFORM_PROFILE = "platform.profile"; //NOI18N
     public static final String PLATFORM_APIS = "platform.apis"; //NOI18N
     public static final String PLATFORM_BOOTCLASSPATH = "platform.bootclasspath"; //NOI18N
+    public static final String PLATFORM_TYPE = "platform.type"; //NOI18N
     public static final String RUN_METHOD = "run.method"; //NOI18N
     public static final String RUN_USE_SECURITY_DOMAIN = "run.use.security.domain"; //NOI18N
     public static final String RUN_SECURITY_DOMAIN = "run.security.domain"; //NOI18N
@@ -155,6 +156,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
             set.add(new PropertyDescriptor(PLATFORM_PROFILE, true, DefaultPropertyParsers.STRING_PARSER));
             set.add(new PropertyDescriptor(PLATFORM_APIS, true, DefaultPropertyParsers.STRING_PARSER));
             set.add(new PropertyDescriptor(PLATFORM_BOOTCLASSPATH, true, DefaultPropertyParsers.STRING_PARSER));
+            set.add(new PropertyDescriptor(PLATFORM_TYPE, true, DefaultPropertyParsers.STRING_PARSER));
             set.add(new PropertyDescriptor(RUN_METHOD, true, DefaultPropertyParsers.STRING_PARSER, "STANDARD")); //NOI18N
             set.add(new PropertyDescriptor(RUN_USE_SECURITY_DOMAIN, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));
             set.add(new PropertyDescriptor(RUN_SECURITY_DOMAIN, true, DefaultPropertyParsers.STRING_PARSER, "trusted")); //NOI18N

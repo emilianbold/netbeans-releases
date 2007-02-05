@@ -68,6 +68,7 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         jLabelMainClass.setEnabled(!useDefault);
         jLabelVMOptions.setEnabled(!useDefault);
         jLabelVMOptionsExample.setEnabled(!useDefault);
+        jButtonMainClass.setEnabled(!useDefault);
     }
     
     /** This method is called from within the constructor to

@@ -21,7 +21,9 @@ package org.netbeans.modules.j2me.cdc.project.nokiaS80;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.mobility.project.PropertyDescriptor;
 import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
+import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 
 /**
  *
@@ -29,12 +31,13 @@ import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
  */
 public class NokiaPropertiesDescriptor implements ProjectPropertiesDescriptor {
     
+    public static final String NOKIA_APP_ICON = "nokiaS80.application.icon"; //NOI18N
+    
     /** Creates a new instance of NokiaPropertiesDescriptor */
     public NokiaPropertiesDescriptor() {
     }
     
     public Set getPropertyDescriptors() {
-        return Collections.EMPTY_SET;
+        return Collections.singleton(new PropertyDescriptor(NOKIA_APP_ICON, true, DefaultPropertyParsers.STRING_PARSER,  "")); //NOI18N
     }
-
 }

@@ -647,7 +647,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     
     public static Map<String, String> extractPlatformProperties(final String prefix, final J2MEPlatform platform, J2MEPlatform.Device device, final String reqConfiguration, final String reqProfile) {
         final HashMap<String, String> props = new HashMap();
-        String pname, pdesc, dname;
+        String pname, pdesc, dname, type;
         J2MEPlatform.J2MEProfile configuration = null, profile = null;
         final StringBuffer apis = new StringBuffer(), classpath = new StringBuffer();
         final HashMap<String,String> abilities = new HashMap<String,String>();
@@ -655,9 +655,11 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             pname = ".default"; //NOI18N
             pdesc = EMPTY;
             dname = EMPTY;
+            type = EMPTY;
         } else {
             pname = platform.getName();
             pdesc = platform.getDisplayName();
+            type = platform.getType();
             if (device == null && platform.getDevices() != null && platform.getDevices().length > 0) device = platform.getDevices()[0];
             if (device == null) {
                 dname = EMPTY;
@@ -714,6 +716,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         props.put(prefix+"platform.apis", apis.toString()); //NOI18N
         props.put(prefix+"platform.bootclasspath", device == null ? classpath.toString() : device.sortClasspath(classpath.toString())); //NOI18N
         props.put(prefix+"abilities", encodeAbilities(abilities)); //NOI18N
+        props.put(prefix+"platform.type", type); //NOI18N
         return props;
     }
     

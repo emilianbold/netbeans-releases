@@ -254,6 +254,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         final J2MEPlatform platform = name2platform.get(platformName);
         if (platform != null) {
             props.put(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_ACTIVE_DESCRIPTION, useDefault), platform.getDisplayName());
+            props.put(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_TYPE, useDefault), platform.getType());
             final J2MEPlatform.Device[] devices = platform.getDevices();
             jComboDevice.removeActionListener(this);
             name2device = new HashMap<String,J2MEPlatform.Device>();
