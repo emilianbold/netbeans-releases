@@ -90,7 +90,7 @@ import org.netbeans.modules.editor.mimelookup.MimePathLookup;
  *
  * @author Miloslav Metelka, Vita Stejskal
  * @see MimeLookup
- * @see http://tools.ietf.org/html/rfc4288
+ * @see <a href="http://tools.ietf.org/html/rfc4288#section-4.2">RFC 4288</a>
  */
 public final class MimePath {
     
@@ -275,7 +275,7 @@ public final class MimePath {
      *
      * @param size >=0 && <= {@link #size()}.
      *  <br>
-     *  For zero size the {@link EMPTY} will be returned.
+     *  For zero size the {@link #EMPTY} will be returned.
      *  <br>
      *  For <code>size()</code> <code>this</code> will be returned.
      * @return non-null mime-type of the given size.

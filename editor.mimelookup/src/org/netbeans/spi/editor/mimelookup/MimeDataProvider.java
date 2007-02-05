@@ -46,7 +46,7 @@ public interface MimeDataProvider {
      *
      * @param mimePath The mime path to get the <code>Lookup</code> for. The mime
      * path passed in can't be <code>null</code>, but it can be the 
-     * {@link MimePath.EMPTY} mime path.
+     * {@link MimePath#EMPTY} mime path.
      *
      * @return The <code>Lookup</code> for the given <code>MimePath</code> or
      * <code>null</code> if there is no lookup available for this mime path.
