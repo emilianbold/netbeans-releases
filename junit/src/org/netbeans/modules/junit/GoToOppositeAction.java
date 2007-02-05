@@ -120,14 +120,15 @@ public final class GoToOppositeAction extends CallableSystemAction {
             fileObj = dataObj.getPrimaryFile();
         }
         
+        boolean isJavaFile = false;
         if ((fileObj == null)
-          || !TestUtil.isJavaFile(fileObj)
+          || !fileObj.isFolder() && !(isJavaFile = TestUtil.isJavaFile(fileObj))
           || ((srcCP = ClassPath.getClassPath(fileObj, ClassPath.SOURCE)) == null)
           || ((fileObjRoot = srcCP.findOwnerRoot(fileObj)) == null)
           || ((project = FileOwnerQuery.getOwner(fileObjRoot)) == null)
           || (UnitTestForSourceQuery.findUnitTests(fileObjRoot).length == 0)
               && !(sourceToTest = false)         //side effect - assignment
-              && (UnitTestForSourceQuery.findSources(fileObjRoot).length == 0)) {
+              && (!isJavaFile || (UnitTestForSourceQuery.findSources(fileObjRoot).length == 0))) {
             return;
         }
         
@@ -375,14 +376,15 @@ public final class GoToOppositeAction extends CallableSystemAction {
         ClassPath srcCP;
         FileObject fileObjRoot;
         
+        boolean isJavaFile = false;
         boolean sourceToTest = true;
         boolean enabled = (fileObj != null)
-          && TestUtil.isJavaFile(fileObj)
+          && (fileObj.isFolder() || (isJavaFile = TestUtil.isJavaFile(fileObj)))
           && ((srcCP = ClassPath.getClassPath(fileObj, ClassPath.SOURCE)) != null)
           && ((fileObjRoot = srcCP.findOwnerRoot(fileObj)) != null)
           && ((UnitTestForSourceQuery.findUnitTests(fileObjRoot).length != 0)
               || (sourceToTest = false)         //side effect - assignment
-              || (UnitTestForSourceQuery.findSources(fileObjRoot).length != 0));
+              || isJavaFile && (UnitTestForSourceQuery.findSources(fileObjRoot).length != 0));
         
         return enabled ? Boolean.valueOf(sourceToTest)
                        : null;
