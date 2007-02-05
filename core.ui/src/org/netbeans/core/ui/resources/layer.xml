@@ -309,6 +309,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="SwingBrowser.settings" url="SwingBrowser.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.Bundle"/>
                 <attr name="SystemFileSystem.icon" stringvalue="nbres:org/openide/resources/html/htmlView.gif"/>
+                <attr name="hidden" boolvalue="true"/>
             </file>
             <attr name="helpID" stringvalue="org.netbeans.core.services.Browsers"/>
         </folder>
