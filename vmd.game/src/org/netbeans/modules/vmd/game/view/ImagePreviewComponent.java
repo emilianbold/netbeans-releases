@@ -26,19 +26,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.net.URL;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
-import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Previewable;
-import org.netbeans.modules.vmd.game.model.Scene;
-import org.netbeans.modules.vmd.game.model.Sequence;
-import org.netbeans.modules.vmd.game.model.Sprite;
-import org.netbeans.modules.vmd.game.model.StaticTile;
-import org.netbeans.modules.vmd.game.view.main.MainView;
 
 
 public class ImagePreviewComponent extends JComponent {
@@ -99,38 +88,6 @@ public class ImagePreviewComponent extends JComponent {
 			}
 			this.previewable.paint((Graphics2D) g, offX, offY);
 		}
-	}
-	
-	public static void main(String[] args) {
-		ImagePreviewComponent imgPreview = new ImagePreviewComponent(true);
-		JFrame frame = new JFrame("ResourceImageGridTable Test");
-		frame.getContentPane().add(imgPreview);
-
-		frame.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				System.exit(0);
-			}
-		});
-
-		Scene scene = GlobalRepository.getInstance().createScene("scene1");
-		
-		URL urlRock = MainView.class.getResource("res/color_tiles.png");
-		Sprite rock = scene.createSprite("rock2", GlobalRepository.getInstance().getImageResource(urlRock, 20, 20), 5);
-		Sequence def = rock.getDefaultSequence();
-		ImageResource imgRock = GlobalRepository.getInstance().getImageResource(urlRock, 20, 20);
-		def.setFrame((StaticTile) imgRock.getTile(1), 0);
-		def.setFrame((StaticTile) imgRock.getTile(3), 1);
-		def.setFrame((StaticTile) imgRock.getTile(5), 2);
-		def.setFrame((StaticTile) imgRock.getTile(7), 3);
-		def.setFrame((StaticTile) imgRock.getTile(9), 4);
-		def.setName("Slow");
-		
-		imgPreview.setPreviewable(rock);
-
-		frame.setSize(new Dimension(300, 300));
-		frame.validate();
-		frame.setVisible(true);
-		
 	}
 	
 }

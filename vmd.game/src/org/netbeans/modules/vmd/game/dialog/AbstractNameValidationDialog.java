@@ -11,10 +11,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -22,6 +25,7 @@ import org.openide.NotifyDescriptor;
  */
 public abstract class AbstractNameValidationDialog extends javax.swing.JPanel implements ActionListener {
 	
+    private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif"));
 	private DialogDescriptor dd;
 
 	
@@ -107,11 +111,29 @@ public abstract class AbstractNameValidationDialog extends javax.swing.JPanel im
 		this.labelError.setForeground(Color.RED);		
 		this.labelSequenceName.setLabelFor(this.fieldName);		
 		this.fieldName.getDocument().addDocumentListener(new LayerFieldListener());
+		
+		this.labelError.setIcon(ICON_ERROR);
 		this.labelError.setText(getInitialStateDescriptionText());
 	}
 
 	public void setDialogDescriptor(DialogDescriptor dd) {
 		this.dd = dd;
+	}
+	
+	private static boolean isValidJavaIdentifier(String str) {
+		if (str == null || "".equals(str)) {
+			return false;
+		}
+		
+		if (!Character.isJavaIdentifierStart(str.charAt(0))) {
+			return false;
+		}
+		for (int i = 1; i < str.length(); i++) {
+			if (!Character.isJavaIdentifierPart(str.charAt(i))) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	private class LayerFieldListener implements DocumentListener, FocusListener {
@@ -126,13 +148,22 @@ public abstract class AbstractNameValidationDialog extends javax.swing.JPanel im
 			this.handleTextContentChange();
 		}
 		private void handleTextContentChange() {
-			String errMsg = AbstractNameValidationDialog.this.getCurrentStateErrorText();
+			String errMsg = null;
+			if (!isValidJavaIdentifier(AbstractNameValidationDialog.this.fieldName.getText())) {
+				errMsg = "Layer name must be a valid Java identifier.";
+			}
+			else {
+				errMsg = AbstractNameValidationDialog.this.getCurrentStateErrorText();
+			}
+			
 			if (errMsg != null) {
 				AbstractNameValidationDialog.this.labelError.setText(errMsg);
+				AbstractNameValidationDialog.this.labelError.setIcon(ICON_ERROR);
 				AbstractNameValidationDialog.this.dd.setValid(false);
 			}
 			else {
 				AbstractNameValidationDialog.this.labelError.setText("");
+				AbstractNameValidationDialog.this.labelError.setIcon(null);
 				AbstractNameValidationDialog.this.dd.setValid(true);
 			}
 		}

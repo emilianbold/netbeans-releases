@@ -41,6 +41,7 @@ public class ImageResource implements CodeGenerator {
 	EventListenerList listenerList = new EventListenerList();
 	
 	private URL imageURL;
+	private String relativeResourcePath;
 	private int cellWidth;
 	private int cellHeight;
 	
@@ -74,8 +75,9 @@ public class ImageResource implements CodeGenerator {
 	/**
 	 * Only called from GlobalRepository.getImageResource()
 	 */
-	ImageResource(URL imageURL, int cellWidth, int cellHeight) {
+	ImageResource(URL imageURL, String relativeResourcePath, int cellWidth, int cellHeight) {
 		this.imageURL = imageURL;
+		this.relativeResourcePath = relativeResourcePath;
 		this.cellWidth = cellWidth;
 		this.cellHeight = cellHeight;
 		this.emptyTile = createEmptyTile(cellWidth, cellHeight);
@@ -268,6 +270,10 @@ public class ImageResource implements CodeGenerator {
 		List<AnimatedTile> list = new ArrayList(this.animatedTiles.values());
 		Collections.sort(list);
 		return Collections.unmodifiableList(list);
+	}
+	
+	public String getRelativeResourcePath() {
+		return this.relativeResourcePath;
 	}
 	
 	public int getCellHeight() {

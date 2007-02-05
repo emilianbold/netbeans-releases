@@ -138,7 +138,9 @@ public class ScenePanel extends JPanel implements SceneListener,
 	}
 
 	public Dimension getPreferredSize() {
-		return this.scene.getAllLayersBounds().getSize();
+		Rectangle bounds = this.scene.getAllLayersBounds();
+		bounds.add(0, 0);
+		return bounds.getSize();
 	}
 
 	public void paintComponent(Graphics g) {
@@ -395,12 +397,14 @@ public class ScenePanel extends JPanel implements SceneListener,
 
 	private Point adjustFromOriginShift(Point p) {
 		Rectangle layersBox = this.scene.getAllLayersBounds();
+		layersBox.add(0, 0);
 		p.translate(-layersBox.x, -layersBox.y);
 		return p;
 	}
 
 	private Point adjustToOriginShift(Point p) {
 		Rectangle layersBox = this.scene.getAllLayersBounds();
+		layersBox.add(0, 0);
 		p.translate(layersBox.x, layersBox.y);
 		return p;
 	}
@@ -1314,16 +1318,6 @@ public class ScenePanel extends JPanel implements SceneListener,
 			ScenePanel.this.scene.insert(layer, ScenePanel.this.scene.getLayerCount()-1);
 		}		
 	}
-	/*
-	private class Action extends AbstractAction {
-		{
-			this.putValue(NAME, "");
-		}
-
-		public void actionPerformed(ActionEvent e) {
-		}		
-	}
-	*/
 	private class CreateSceneAction extends AbstractAction {
 		{
 			this.putValue(NAME, "Create new scene");
@@ -1400,17 +1394,6 @@ public class ScenePanel extends JPanel implements SceneListener,
 			ScenePanel.this.scene.setLayerPosition(layer, position, false);
 		}
 	}
-	/*
-	public class Action extends AbstractAction {
-		{
-			this.putValue(NAME, "");
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			
-		}
-	}
-    */
 	
 	public JComponent getGridButton() {
 		return this.gridButton;
@@ -1528,7 +1511,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 	    private final Color COLOR_MINOR = Color.GRAY;
 	    private final Font FONT = new Font("SansSerif", Font.PLAIN, 9);
 	    
-	    public final Color RulerColor = new Color(230, 230, 255); 
+	    public final Color RulerColor = new Color(230, 230, 255);
 	    
 	    public int orientation;
 	    private int increment = 10;
@@ -1540,10 +1523,12 @@ public class ScenePanel extends JPanel implements SceneListener,
 
 	    @Override
 	    public Dimension getPreferredSize() {
+			Rectangle bounds = ScenePanel.this.scene.getAllLayersBounds();
+			bounds.add(0, 0);
 	    	if (this.orientation == HORIZONTAL) {
-	    		return new Dimension(ScenePanel.this.scene.getAllLayersBounds().width, SIZE_H);
+	    		return new Dimension(bounds.width, SIZE_H);
 	    	}
-	    	return new Dimension(SIZE_W, ScenePanel.this.scene.getAllLayersBounds().height);
+	    	return new Dimension(SIZE_W, bounds.height);
 	    }
 	    
 	    public int getIncrement() {
@@ -1555,6 +1540,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 	        Rectangle clip = g.getClipBounds();
 
 	        Rectangle sceneBounds = ScenePanel.this.scene.getAllLayersBounds();
+			sceneBounds.add(0, 0);
 	        int offX = sceneBounds.x;
 	        int offY = sceneBounds.y;
 	        

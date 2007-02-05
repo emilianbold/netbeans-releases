@@ -34,7 +34,6 @@ import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
 import java.io.IOException;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -133,12 +132,6 @@ public class SceneLayerNavigator extends JTable {
 		
 		public void valueChanged(ListSelectionEvent e) {
 			if (e.getValueIsAdjusting()){
-//                    AbstractSceneItem asi;
-//                    int selectedLayerIndex = SceneLayerTable.this.getSelectionModel().getAnchorSelectionIndex();
-//                    Layer selectedLayer = SceneLayerTable.this.scene.getLayerAt(selectedLayerIndex);
-//
-				//asi = findTiledLayerAdapter(selectedLayer).getSceneItem();
-				//abstractSceneItemListener.AbstractSceneItemSelect(asi, false);
 				return;
 			}
 			ListSelectionModel lsm = (ListSelectionModel) e.getSource();

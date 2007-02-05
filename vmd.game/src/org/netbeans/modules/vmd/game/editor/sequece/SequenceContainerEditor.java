@@ -25,30 +25,22 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.Scrollable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
-import org.netbeans.modules.vmd.game.model.ImageResource;
-import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.Sequence;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
 import org.netbeans.modules.vmd.game.model.SequenceContainerListener;
-import org.netbeans.modules.vmd.game.model.Sprite;
-import org.netbeans.modules.vmd.game.model.StaticTile;
 import org.netbeans.modules.vmd.game.preview.SequencePreviewPanelSidebar;
-import org.netbeans.modules.vmd.game.view.main.MainView;
 
 /**
  *
@@ -255,63 +247,4 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 		
 	}
 	
-	public static void main(String args[]) {
-		Scene scene = GlobalRepository.getInstance().createScene("scene1");
-		
-		URL urlRock = MainView.class.getResource("res/color_tiles.png");
-		ImageResource imgRock = GlobalRepository.getInstance().getImageResource(urlRock, 20, 20);
-
-		Sprite rock = scene.createSprite("rock2", imgRock, 5);
-		Sequence def = rock.getDefaultSequence();
-		def.setFrame((StaticTile) imgRock.getTile(1), 0);
-		def.setFrame((StaticTile) imgRock.getTile(3), 1);
-		def.setFrame((StaticTile) imgRock.getTile(5), 2);
-		def.setFrame((StaticTile) imgRock.getTile(7), 3);
-		def.setFrame((StaticTile) imgRock.getTile(9), 4);
-		def.setName("Slow");
-
-		Sequence fast = rock.createSequence("Fast", 5);
-		fast.setFrame((StaticTile) imgRock.getTile(1), 0);
-		fast.setFrame((StaticTile) imgRock.getTile(3), 1);
-		fast.setFrame((StaticTile) imgRock.getTile(5), 2);
-		fast.setFrame((StaticTile) imgRock.getTile(7), 3);
-		fast.setFrame((StaticTile) imgRock.getTile(9), 4);
-		fast.setFrameMs(50);
-		
-		Sequence medium = rock.createSequence("Medium", 3);
-		medium.setFrame((StaticTile) imgRock.getTile(1), 0);
-		medium.setFrame((StaticTile) imgRock.getTile(5), 1);
-		medium.setFrame((StaticTile) imgRock.getTile(9), 2);
-		medium.setFrameMs(120);
-		
-		Sequence back = rock.createSequence("Back", 5);
-		back.setFrame((StaticTile) imgRock.getTile(1), 4);
-		back.setFrame((StaticTile) imgRock.getTile(3), 3);
-		back.setFrame((StaticTile) imgRock.getTile(5), 2);
-		back.setFrame((StaticTile) imgRock.getTile(7), 1);
-		back.setFrame((StaticTile) imgRock.getTile(9), 0);
-		back.setFrameMs(120);		
-		
-		JFrame f = new JFrame("TEST");
-		f.setSize(300,200);
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		SequenceContainerEditor editor = new SequenceContainerEditor(rock);
-		//JScrollPane scroll = new JScrollPane(editor);
-		//scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		f.getContentPane().setLayout(new BorderLayout());
-		f.getContentPane().add(editor, BorderLayout.CENTER);
-		f.pack();
-		f.setVisible(true);
-		
-		try {	
-			Thread.sleep(5000);
-			rock.remove(medium);
-			Thread.sleep(5000);
-			rock.append(medium);
-		} catch (InterruptedException ex) {
-			ex.printStackTrace();
-		}
-		
-	}
-
 }

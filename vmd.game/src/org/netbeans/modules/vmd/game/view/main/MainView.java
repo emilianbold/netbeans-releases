@@ -24,7 +24,6 @@ import org.netbeans.modules.vmd.game.model.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.Frame;
-import java.net.URL;
 import javax.swing.event.EventListenerList;
 
 public class MainView implements GlobalRepositoryListener, EditorManager {
@@ -55,7 +54,6 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 		GlobalRepository.getInstance().addGlobalRepositoryListener(this);
 		this.initComponents();
 		this.initLayout();
-		loadPreviews();
 	}
 
 	private void initComponents() {
@@ -225,122 +223,6 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 		frame.getContentPane().doLayout();
 	}
 
-	private static void loadPreviews() {
-		if (true) {
-			return;
-		}
-		
-		Scene scene = GlobalRepository.getInstance().createScene("test_scene");
-		
-		URL urlRock = MainView.class.getResource("res/color_tiles.png");
-		ImageResource imgRock = GlobalRepository.getInstance().getImageResource(urlRock, 20, 20);
-		Sprite rock = scene.createSprite("rock2", imgRock, 5);
-		Sequence def = rock.getDefaultSequence();
-		def.setFrame((StaticTile) imgRock.getTile(1), 0);
-		def.setFrame((StaticTile) imgRock.getTile(3), 1);
-		def.setFrame((StaticTile) imgRock.getTile(5), 2);
-		def.setFrame((StaticTile) imgRock.getTile(7), 3);
-		def.setFrame((StaticTile) imgRock.getTile(9), 4);
-		def.setName("Slow");
-
-		Sequence fast = rock.createSequence("Fast", 5);
-		fast.setFrame((StaticTile) imgRock.getTile(1), 0);
-		fast.setFrame((StaticTile) imgRock.getTile(3), 1);
-		fast.setFrame((StaticTile) imgRock.getTile(5), 2);
-		fast.setFrame((StaticTile) imgRock.getTile(7), 3);
-		fast.setFrame((StaticTile) imgRock.getTile(9), 4);
-		fast.setFrameMs(50);
-		
-		Sequence medium = rock.createSequence("Medium", 3);
-		medium.setFrame((StaticTile) imgRock.getTile(1), 0);
-		medium.setFrame((StaticTile) imgRock.getTile(5), 1);
-		medium.setFrame((StaticTile) imgRock.getTile(9), 2);
-		medium.setFrameMs(120);
-		
-		Sequence back = rock.createSequence("Back", 5);
-		back.setFrame((StaticTile) imgRock.getTile(1), 4);
-		back.setFrame((StaticTile) imgRock.getTile(3), 3);
-		back.setFrame((StaticTile) imgRock.getTile(5), 2);
-		back.setFrame((StaticTile) imgRock.getTile(7), 1);
-		back.setFrame((StaticTile) imgRock.getTile(9), 0);
-		back.setFrameMs(120);		
-		
-		URL urlBunny = MainView.class.getResource("res/color_tiles.png");
-		ImageResource bunnyImgRes = GlobalRepository.getInstance().getImageResource(urlBunny, 20, 20);
-		Sprite bunny = scene.createSprite("bunny2", bunnyImgRes, 8);
-		Sequence bunnyDefSeq = bunny.getDefaultSequence();
-		bunnyDefSeq.setFrame((StaticTile) bunnyImgRes.getTile(1), 0);
-		bunnyDefSeq.setFrame((StaticTile) bunnyImgRes.getTile(2), 1);
-		bunnyDefSeq.setFrame((StaticTile) bunnyImgRes.getTile(3), 2);
-		bunnyDefSeq.setFrame((StaticTile) bunnyImgRes.getTile(4), 3);
-		bunnyDefSeq.setFrame((StaticTile) bunnyImgRes.getTile(5), 4);
-		bunnyDefSeq.setFrame((StaticTile) bunnyImgRes.getTile(6), 5);
-		bunnyDefSeq.setFrame((StaticTile) bunnyImgRes.getTile(7), 6);
-		bunnyDefSeq.setFrame((StaticTile) bunnyImgRes.getTile(8), 7);
-		bunnyDefSeq.setFrameMs(100);
-		
-		Sequence shorter = bunny.createSequence("shorter", 4);
-		shorter.setFrame((StaticTile) bunnyImgRes.getTile(3), 0);
-		shorter.setFrame((StaticTile) bunnyImgRes.getTile(5), 1);
-		shorter.setFrame((StaticTile) bunnyImgRes.getTile(7), 2);
-		shorter.setFrame((StaticTile) bunnyImgRes.getTile(9), 3);
-		shorter.setFrameMs(130);
-		
-		URL urlTrees = MainView.class.getResource("res/color_tiles.png");
-		ImageResource treesImgRes = GlobalRepository.getInstance().getImageResource(urlTrees, 20, 20);
-		
-		AnimatedTile pineTree = treesImgRes.createAnimatedTile("pineTree2", 1);
-		pineTree.getDefaultSequence().addFrame((StaticTile) treesImgRes.getTile(2));
-		pineTree.getDefaultSequence().addFrame((StaticTile) treesImgRes.getTile(3));
-		
-		AnimatedTile palmTree = treesImgRes.createAnimatedTile("palmTree2", 4);
-		palmTree.getDefaultSequence().addFrame((StaticTile) treesImgRes.getTile(5));
-		
-		TiledLayer trees = scene.createTiledLayer("trees2", treesImgRes, 8, 8);
-		trees.setTileAt(palmTree.getIndex(), 0, 0);
-		trees.setTileAt(pineTree.getIndex(), 7, 7);
-		
-		URL urlTiles = MainView.class.getResource("res/color_tiles.png");
-		ImageResource imgRes = GlobalRepository.getInstance().getImageResource(urlTiles, 20, 20);
-		
-		TiledLayer grass = scene.createTiledLayer("grass2", GlobalRepository.getInstance().getImageResource(urlTiles, 20, 20), 10, 20);
-		for (int i = 0; i < 10; i++) {
-			for (int j = 0; j < 20; j++) {
-				grass.setTileAt(3, i, j);
-			}
-		}
-
-		TiledLayer water = scene.createTiledLayer("water2", GlobalRepository.getInstance().getImageResource(urlTiles, 20, 20), 4, 3);
-		water.setTileAt(4, 0, 0);
-		water.setTileAt(4, 0, 1);
-		water.setTileAt(4, 0, 2);
-		water.setTileAt(4, 1, 0);
-		water.setTileAt(4, 1, 1);
-		water.setTileAt(4, 1, 2);
-		water.setTileAt(4, 2, 0);
-		water.setTileAt(1, 2, 1);
-		water.setTileAt(5, 2, 2);
-		water.setTileAt(5, 3, 0);
-		water.setTileAt(6, 3, 1);
-		water.setTileAt(7, 3, 2);
-
-		TiledLayer things = scene.createTiledLayer("things2", GlobalRepository.getInstance().getImageResource(urlTiles, 20, 20), 7, 7);
-		things.setTileAt(7, 0, 5);
-		things.setTileAt(5, 0, 6);
-		things.setTileAt(4, 2, 0);
-		things.setTileAt(3, 4, 6);
-		things.setTileAt(2, 5, 2);
-		things.setTileAt(1, 6, 6);
-		
-		
-		scene.setLayerPosition(rock, new Point(300, 22), false);
-		scene.setLayerPosition(things, new Point(-210, -110), false);
-		scene.setLayerPosition(water, new Point(200, 300), false);
-		scene.setLayerPosition(grass, new Point(0, 0), false);
-		scene.setLayerPosition(bunny, new Point(10, 10), false);
-		scene.move(things, 0);
-		scene.move(water, 1);
-	}
 
 	public JComponent getRootComponent() {
 		return this.rootPanel;

@@ -65,8 +65,15 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 	}
 
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
+		//cannot manually edit layer position (Z) - this is done only by using DnD
 		if (columnIndex == COL_INDEX_LAYER_INDEX)
 			return false;
+		//if the layer is locked then disable editing of layer location (X, Y)
+		if (columnIndex == COL_INDEX_LAYER_POS_X || columnIndex == COL_INDEX_LAYER_POS_Y) {
+			if (this.scene.isLayerLocked(this.scene.getLayerAt(rowIndex))) {
+				return false;
+			}
+		}
 		return true;
 	}
 
