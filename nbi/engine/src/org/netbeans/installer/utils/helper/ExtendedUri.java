@@ -84,7 +84,7 @@ public class ExtendedUri {
     }
     
     public List<URI> getAlternates() {
-        return new LinkedList(alternates);
+        return new LinkedList<URI>(alternates);
     }
     
     public URI getLocal() {
