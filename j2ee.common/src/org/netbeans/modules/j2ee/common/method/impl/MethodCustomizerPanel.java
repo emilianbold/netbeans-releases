@@ -82,7 +82,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
             exceptionsPanel.setVisible(false);
         }
         if (!hasInterfaces) {
-            disableInterfaces();;
+            disableInterfaces();
         }
         
         parametersPanel = new ParametersPanel(methodModel.getParameters());
