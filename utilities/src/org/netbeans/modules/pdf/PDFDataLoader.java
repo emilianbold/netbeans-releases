@@ -44,12 +44,6 @@ public class PDFDataLoader extends UniFileLoader {
         super("org.netbeans.modules.pdf.PDFDataObject"); // NOI18N
     }
 
-    // PENDING who needs this constructor?
-    /** Creates loader for specified recognized class. */
-    public PDFDataLoader(Class recognizedObject) {
-        super(recognizedObject);
-    }
-
     
     /** Initizalized loader, i.e. its extension list. Overrides superclass method. */
     protected void initialize () {
