@@ -19,16 +19,7 @@
 
 package org.netbeans.modules.vmd.midpnb.components.displayables;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -37,6 +28,9 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.eventhandler.PropertyEditorEventHandler;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -51,7 +45,7 @@ public class SplashScreenCD extends ComponentDescriptor {
 
     private static final String PROP_TIMEOUT = "timeout"; //NOI18N
     private static final String PROP_ALLOW_TIMEOUT_INTERRUPT = "allowTimeoutInterrupt"; //NOI18N
-    private static final String PROP_DISSMISS_ACTION = "dissmissAction"; //NOI18N
+    private static final String PROP_DISMISS = "dismiss"; //NOI18N
   
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
@@ -69,7 +63,7 @@ public class SplashScreenCD extends ComponentDescriptor {
         return Arrays.asList(
             new PropertyDescriptor(PROP_TIMEOUT, MidpTypes.TYPEID_INT, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_ALLOW_TIMEOUT_INTERRUPT, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(Boolean.TRUE), false, false, MidpVersionable.MIDP_2),
-            new PropertyDescriptor(PROP_DISSMISS_ACTION, EventSourceCD.TYPEID, PropertyValue.createNull(), false, false, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_DISMISS, EventSourceCD.TYPEID, PropertyValue.createNull(), false, false, MidpVersionable.MIDP_2)
         );
     }
     
