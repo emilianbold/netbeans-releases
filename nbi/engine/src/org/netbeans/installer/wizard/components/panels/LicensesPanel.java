@@ -24,6 +24,8 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.product.components.Product;
@@ -97,6 +99,8 @@ public class LicensesPanel extends WizardPanel {
     public static class LicensesPanelSwingUi extends WizardPanelSwingUi {
         protected LicensesPanel component;
         
+        private List<Product> products;
+        
         private NbiTextPane   licensePane;
         private NbiScrollPane licenseScrollPane;
         
@@ -108,31 +112,42 @@ public class LicensesPanel extends WizardPanel {
             super(component, container);
             
             this.component = component;
+            this.products = new LinkedList<Product>();
             
             initComponents();
         }
         
         protected void initialize() {
-            acceptCheckBox.setText(component.getProperty(ACCEPT_CHECKBOX_TEXT_PROPERTY));
+            acceptCheckBox.setText(
+                    component.getProperty(ACCEPT_CHECKBOX_TEXT_PROPERTY));
             
-            StringBuilder text = new StringBuilder();
-            for (Product product: Registry.getInstance().getProductsToInstall()) {
-                text.append("-----------------------------------------------------");
-                text.append(StringUtils.CRLF);
-                text.append(product.getDisplayName() + ":");
-                text.append(StringUtils.CRLFCRLF);
-                try {
-                    text.append(product.getLogic().getLicense().getText());
-                } catch (InitializationException e) {
-                    ErrorManager.notifyError(
-                            "Could not access configuration logic", 
-                            e);
+            final List<Product> currentProducts =
+                    Registry.getInstance().getProductsToInstall();
+            
+            if (!products.equals(currentProducts)) {
+                final StringBuilder text = new StringBuilder();
+                for (Product product: currentProducts) {
+                    text.append("-------------------------------------------------");
+                    text.append(StringUtils.CRLF);
+                    text.append(product.getDisplayName() + ":");
+                    text.append(StringUtils.CRLFCRLF);
+                    try {
+                        text.append(product.getLogic().getLicense().getText());
+                    } catch (InitializationException e) {
+                        ErrorManager.notifyError(
+                                "Could not access configuration logic",
+                                e);
+                    }
+                    text.append(StringUtils.CRLFCRLF);
                 }
-                text.append(StringUtils.CRLFCRLF);
+                
+                licensePane.setText(text);
+                licensePane.setCaretPosition(0);
+                
+                acceptCheckBox.setSelected(false);
+                
+                products = currentProducts;
             }
-            
-            licensePane.setText(text);
-            licensePane.setCaretPosition(0);
             
             acceptCheckBoxToggled();
         }
@@ -143,7 +158,7 @@ public class LicensesPanel extends WizardPanel {
             licensePane.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
             
             licenseScrollPane = new NbiScrollPane(licensePane);
-                        
+            
             acceptCheckBox = new NbiCheckBox();
             acceptCheckBox.setSelected(false);
             acceptCheckBox.addActionListener(new ActionListener() {
@@ -186,17 +201,17 @@ public class LicensesPanel extends WizardPanel {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String ACCEPT_CHECKBOX_TEXT_PROPERTY = 
+    public static final String ACCEPT_CHECKBOX_TEXT_PROPERTY =
             "accept.checkbox.text"; // NOI18N
     
-    public static final String DEFAULT_TITLE = 
-            ResourceUtils.getString(LicensesPanel.class, 
+    public static final String DEFAULT_TITLE =
+            ResourceUtils.getString(LicensesPanel.class,
             "LP.title"); // NOI18N
-    public static final String DEFAULT_DESCRIPTION = 
-            ResourceUtils.getString(LicensesPanel.class, 
+    public static final String DEFAULT_DESCRIPTION =
+            ResourceUtils.getString(LicensesPanel.class,
             "LP.description"); // NOI18N
     
-    public static final String DEFAULT_ACCEPT_CHECKBOX_TEXT = 
-            ResourceUtils.getString(LicensesPanel.class, 
+    public static final String DEFAULT_ACCEPT_CHECKBOX_TEXT =
+            ResourceUtils.getString(LicensesPanel.class,
             "LP.accept.checkbox.text"); // NOI18N
 }

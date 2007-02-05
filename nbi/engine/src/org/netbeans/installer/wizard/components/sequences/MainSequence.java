@@ -20,7 +20,9 @@
  */
 package org.netbeans.installer.wizard.components.sequences;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ErrorManager;
@@ -43,57 +45,93 @@ import org.netbeans.installer.wizard.components.panels.netbeans.NbPreInstallSumm
  * @author Kirill Sorokin
  */
 public class MainSequence extends WizardSequence {
+    private DownloadConfigurationLogicAction downloadConfigurationLogicAction;
+    private LicensesPanel licensesPanel;
+    private NbPreInstallSummaryPanel nbPreInstallSummaryPanel;
+    private UninstallAction uninstallAction;
+    private DownloadInstallationDataAction downloadInstallationDataAction;
+    private InstallAction installAction;
+    private NbPostInstallSummaryPanel nbPostInstallSummaryPanel;
+    private PreCreateBundleSummaryPanel preCreateBundleSummaryPanel;
+    private CreateBundleAction createBundleAction;
+    private CreateNativeLauncherAction createNativeLauncherAction;
+    private PostCreateBundleSummaryPanel postCreateBundleSummaryPanel;
+    
+    private Map<Product, ProductWizardSequence> productSequences;
+    
+    public MainSequence() {
+        downloadConfigurationLogicAction = new DownloadConfigurationLogicAction();
+        licensesPanel = new LicensesPanel();
+        nbPreInstallSummaryPanel = new NbPreInstallSummaryPanel();
+        uninstallAction = new UninstallAction();
+        downloadInstallationDataAction = new DownloadInstallationDataAction();
+        installAction = new InstallAction();
+        nbPostInstallSummaryPanel = new NbPostInstallSummaryPanel();
+        preCreateBundleSummaryPanel = new PreCreateBundleSummaryPanel();
+        createBundleAction = new CreateBundleAction();
+        createNativeLauncherAction = new CreateNativeLauncherAction();
+        postCreateBundleSummaryPanel = new PostCreateBundleSummaryPanel();
+        
+        productSequences = new HashMap<Product, ProductWizardSequence>();
+    }
+    
     public void executeForward() {
         final Registry      registry    = Registry.getInstance();
         final List<Product> toInstall   = registry.getProductsToInstall();
         final List<Product> toUninstall = registry.getProductsToUninstall();
         
-        // remove all current children (if there are any), as the components 
+        // remove all current children (if there are any), as the components
         // selection has probably changed and we need to rebuild from scratch
         getChildren().clear();
         
         // the set of wizard components differs greatly depending on the execution
-        // mode - if we're installing, we ask for input, run a wizard sequence for 
-        // each selected component and then download and install; if we're creating 
+        // mode - if we're installing, we ask for input, run a wizard sequence for
+        // each selected component and then download and install; if we're creating
         // a bundle, we only need to download and package things
         switch (ExecutionMode.getCurrentExecutionMode()) {
-            case NORMAL:
-                if (toInstall.size() > 0) {
-                    addChild(new DownloadConfigurationLogicAction());
-                    addChild(new LicensesPanel());
-                    
-                    for (Product component: toInstall) {
-                        addChild(new ProductWizardSequence(component));
+        case NORMAL:
+            if (toInstall.size() > 0) {
+                addChild(downloadConfigurationLogicAction);
+                addChild(licensesPanel);
+                
+                for (Product product: toInstall) {
+                    if (!productSequences.containsKey(product)) {
+                        productSequences.put(
+                                product, 
+                                new ProductWizardSequence(product));
                     }
+                    
+                    addChild(productSequences.get(product));
                 }
-                
-                addChild(new NbPreInstallSummaryPanel());
-                
-                if (toUninstall.size() > 0) {
-                    addChild(new UninstallAction());
-                }
-                
-                if (toInstall.size() > 0) {
-                    addChild(new DownloadInstallationDataAction());
-                    addChild(new InstallAction());
-                }
-                
-                addChild(new NbPostInstallSummaryPanel());
-                break;
-            case CREATE_BUNDLE:
-                addChild(new PreCreateBundleSummaryPanel());
-                addChild(new DownloadConfigurationLogicAction());
-                addChild(new DownloadInstallationDataAction());
-                addChild(new CreateBundleAction());
-                addChild(new CreateNativeLauncherAction());
-                addChild(new PostCreateBundleSummaryPanel());
-                break;
-            default:
-                // there is no real way to recover from this fancy error, so we 
-                // inform the user and die
-                ErrorManager.notifyCritical(
-                        "A terrible and weird error happened - installer's " +
-                        "execution mode is not recognized");
+            }
+            
+            addChild(nbPreInstallSummaryPanel);
+            
+            if (toUninstall.size() > 0) {
+                addChild(uninstallAction);
+            }
+            
+            if (toInstall.size() > 0) {
+                addChild(downloadInstallationDataAction);
+                addChild(installAction);
+            }
+            
+            addChild(nbPostInstallSummaryPanel);
+            break;
+        case CREATE_BUNDLE:
+            addChild(preCreateBundleSummaryPanel);
+            addChild(downloadConfigurationLogicAction);
+            addChild(downloadInstallationDataAction);
+            addChild(createBundleAction);
+            addChild(createNativeLauncherAction);
+            addChild(postCreateBundleSummaryPanel);
+            break;
+        default:
+            // there is no real way to recover from this fancy error, so we
+            // inform the user and die
+            ErrorManager.notifyCritical(
+                    "A terrible and weird error happened - installer's " +
+                    "execution mode is not recognized");
         }
         
         super.executeForward();
