@@ -144,7 +144,9 @@ public class LicensesPanel extends WizardPanel {
                 licensePane.setText(text);
                 licensePane.setCaretPosition(0);
                 
-                acceptCheckBox.setSelected(false);
+                if (!products.containsAll(currentProducts)) {
+                    acceptCheckBox.setSelected(false);
+                }
                 
                 products = currentProducts;
             }

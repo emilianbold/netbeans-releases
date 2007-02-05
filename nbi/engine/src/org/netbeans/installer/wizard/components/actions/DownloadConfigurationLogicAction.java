@@ -56,7 +56,13 @@ public class DownloadConfigurationLogicAction extends WizardAction {
     }
     
     public boolean canExecuteForward() {
-        return Registry.getInstance().getProductsToInstall().size() > 0;
+        for (Product product: Registry.getInstance().getProductsToInstall()) {
+            if (!product.isLogicDownloaded()) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     public void execute() {
