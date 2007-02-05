@@ -509,7 +509,7 @@ public class JavaScript {
         }
     }
     
-    public static boolean isLocalVariable(Cookie cookie) {
+    public static boolean isFunctionParameter(Cookie cookie) {
         if (!(cookie instanceof SyntaxCookie)) {
             return false;
         }
@@ -544,7 +544,72 @@ public class JavaScript {
         return false;
     }
     
+    public static boolean isLocalVariable(Cookie cookie) {
+        try {
+        if (!(cookie instanceof SyntaxCookie)) {
+            return false;
+        }
+        SyntaxCookie scookie = (SyntaxCookie)cookie;
+        PTPath path = scookie.getPTPath();
+        int size = path.size();
+        ASTNode node = (ASTNode)path.get(size - 2);
+        String nt = node.getNT();
+        if ("VariableDeclaration".equals(nt) || "VariableDeclarationNoIn".equals(nt)) { // NOI18N
+            return true;
+        }
+        if ("MemberOperator".equals(nt)) { // NOI18N
+            return false;
+        }
+        SToken leaf = (SToken)path.getLeaf();
+        Object lastElem = leaf;
+        String varId = leaf.getIdentifier();
+        ListIterator iter = path.listIterator(size - 1);
+        while (iter.hasPrevious()) {
+            Object obj = iter.previous();
+            if (obj instanceof ASTNode) {
+                node = (ASTNode)obj;
+                if ("FunctionDeclaration".equals(node.getNT())) { // NOI18N
+                    return false;
+                }
+                Iterator it = node.getChildren().listIterator();
+                while (it.hasNext()) {
+                    Object o = it.next();
+                    if (o == lastElem) {
+                        break;
+                    }
+                    if (o instanceof ASTNode) {
+                        ASTNode n = (ASTNode)o;
+                        String nterm = n.getNT();
+                        if ("VariableStatement".equals(nterm) && containsVariable(n, varId)) { // NOI18N
+                            return true;
+                        }
+                    } // if
+                } // while
+            } // if
+            lastElem = obj;
+        } // while
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
     // helper methods ..........................................................
+    
+    private static boolean containsVariable(ASTNode node, String varId) {
+        for (Iterator iter = node.getChildren().iterator(); iter.hasNext(); ) {
+            Object obj = iter.next();
+            if (!(obj instanceof ASTNode)) {
+                continue;
+            }
+            ASTNode n = (ASTNode)obj;
+            if ("VariableDeclaration".equals(n.getNT()) && 
+                    ((SToken)n.getChildren().get(0)).getIdentifier().equals(varId)) { // NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
     
     private static LibrarySupport library;
     

@@ -311,10 +311,17 @@ COLOR:js_regularExpression {
 }
 
 COLOR:js_identifier {
+    color_name: "functionParameter";
+    default_coloring: "default";
+    condition:org.netbeans.modules.languages.javascript.JavaScript.isFunctionParameter;
+    foreground_color: "0xA06001";
+}
+
+COLOR:js_identifier {
     color_name: "localVariable";
     default_coloring: "default";
     condition:org.netbeans.modules.languages.javascript.JavaScript.isLocalVariable;
-    foreground_color: "0xA06001";
+    foreground_color: "0x098618";
 }
 
 ########### indentation ########################################################
@@ -382,6 +389,11 @@ STORE:VariableDeclaration {
 }
 
 STORE:FunctionDeclaration {
+    context:"Folder,Block";
+    name:"$js_identifier$";
+}
+
+STORE:FormalParameterList {
     context:"Folder,Block";
     name:"$js_identifier$";
 }
