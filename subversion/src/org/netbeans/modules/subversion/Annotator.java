@@ -47,7 +47,6 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.api.project.Project;
-
 import javax.swing.*;
 import java.util.*;
 import java.util.List;
@@ -57,6 +56,7 @@ import java.io.File;
 import java.awt.*;
 import java.lang.reflect.Field;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -97,7 +97,7 @@ public class Annotator {
     public static String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE};
     
     private final FileStatusCache cache;
-    private MessageFormat format;     
+    private MessageFormat format;        
     private String emptyFormat;
             
     private boolean mimeTypeFlag;
@@ -275,9 +275,9 @@ public class Annotator {
             return "";            
         } else {
             return " " + annotation;
-        }        
+        }
     }
- 
+
     private String getMimeType(File file) {
         try {
             SvnClient client = Subversion.getInstance().getClient(false);
@@ -464,6 +464,8 @@ public class Annotator {
             actions.add(SystemAction.get(RevertModificationsAction.class));
             actions.add(SystemAction.get(ResolveConflictsAction.class));
             actions.add(SystemAction.get(IgnoreAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(SvnPropertiesAction.class));
         } else {
             if (noneVersioned) {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(ImportAction.class).createContextAwareInstance(context), loc.getString("CTL_PopupMenuItem_Import"), context));
@@ -496,6 +498,10 @@ public class Annotator {
                                                                         loc.getString("CTL_PopupMenuItem_Unignore") : 
                                                                         loc.getString("CTL_PopupMenuItem_Ignore"), context));
                 }
+                actions.add(null);
+                actions.add(SystemActionBridge.createAction(
+                                SystemAction.get(SvnPropertiesAction.class), 
+                                loc.getString("CTL_PopupMenuItem_Properties"), context));                
             }
         }
         return actions.toArray(new Action[actions.size()]);

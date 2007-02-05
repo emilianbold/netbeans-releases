@@ -99,7 +99,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-subversion-ui-ignore-IgnoreAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.ignore.IgnoreAction"/>
             </file>
-
+             <file name="org-netbeans-modules-subversion-ui-properties-PropertiesAction.instance">
+                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.properties.PropertiesAction"/>
+             </file>            
         </folder>
     </folder>
     <folder name="Menu"> 
@@ -239,7 +241,9 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="IgnoreAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-ignore-IgnoreAction.instance"/>
                 </file>
-
+                <file name="PropertiesAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-properties-PropertiesAction.instance"/>                    
+                </file>                 
             </folder>
         </folder>
     </folder>
