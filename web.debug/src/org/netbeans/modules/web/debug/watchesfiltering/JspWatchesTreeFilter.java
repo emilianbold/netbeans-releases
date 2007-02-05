@@ -64,7 +64,7 @@ public class JspWatchesTreeFilter implements TreeModelFilter {
             
             synchronized (watch2JspElWatch) {
                 
-                for (int i = from; i < to; i++) {
+                for (int i = from; i < allWatches.length; i++) {
                     Watch w = allWatches[i];
                     String expression = w.getExpression();
                     if (isJSPexpression(expression)) {
