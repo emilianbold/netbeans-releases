@@ -28,7 +28,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.FileProxy;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
@@ -135,14 +134,16 @@ public class JavaUtils {
     }
     
     public static Version getVersion(File javaHome) {
-        if (knownJdks.get(javaHome) != null) {
-            return knownJdks.get(javaHome).getVersion();
-        }
-        
         return getInfo(javaHome).getVersion();
     }
     
     public static JavaInfo getInfo(File javaHome) {
+        try {
+            javaHome = javaHome.getCanonicalFile();
+        } catch (IOException e) {
+            ErrorManager.notifyDebug("Cannot canonize " + javaHome, e);
+        }
+        
         if (knownJdks.get(javaHome) != null) {
             return knownJdks.get(javaHome);
         }

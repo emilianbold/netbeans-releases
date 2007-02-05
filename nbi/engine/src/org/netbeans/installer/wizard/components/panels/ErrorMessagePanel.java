@@ -28,6 +28,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.wizard.ui.SwingUi;
@@ -110,28 +111,47 @@ public class ErrorMessagePanel extends WizardPanel {
             initComponents();
         }
         
-        public void evaluateNextButtonClick() {
-            super.evaluateNextButtonClick();
-            
+        public void evaluateBackButtonClick() {
             if (validatingThread != null) {
                 validatingThread.pause();
+            }
+            
+            super.evaluateBackButtonClick();
+        }
+        
+        public void evaluateNextButtonClick() {
+            if (validatingThread != null) {
+                validatingThread.pause();
+            }
+            
+            final String errorMessage = validateInput();
+            
+            if (errorMessage == null) {
+                saveInput();
+                component.getWizard().next();
+            } else {
+                ErrorManager.notifyError(errorMessage);
+                if (validatingThread != null) {
+                    validatingThread.play();
+                }
             }
         }
         
         public void evaluateCancelButtonClick() {
-            super.evaluateCancelButtonClick();
-            
             if (validatingThread != null) {
                 validatingThread.pause();
             }
-        }
-        
-        public void evaluateBackButtonClick() {
-            super.evaluateBackButtonClick();
             
-            if (validatingThread != null) {
-                validatingThread.pause();
+            if (!UiUtils.showYesNoDialog(
+                    "Cancel", 
+                    "Are you sure you want to cancel?")) {
+                if (validatingThread != null) {
+                    validatingThread.play();
+                }
+                return;
             }
+            
+            component.getWizard().getFinishHandler().cancel();
         }
         
         protected void initialize() {
@@ -145,7 +165,7 @@ public class ErrorMessagePanel extends WizardPanel {
             }
         }
         
-        protected void updateErrorMessage() {
+        protected synchronized void updateErrorMessage() {
             String errorMessage;
             
             try {

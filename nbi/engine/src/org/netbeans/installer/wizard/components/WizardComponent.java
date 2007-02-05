@@ -231,6 +231,10 @@ public abstract class WizardComponent {
         }
         
         public void evaluateBackButtonClick() {
+            if (validateInput() == null) {
+                saveInput();
+            }
+            
             component.getWizard().previous();
         }
         
@@ -246,7 +250,9 @@ public abstract class WizardComponent {
         }
         
         public void evaluateCancelButtonClick() {
-            if (!UiUtils.showYesNoDialog("Cancel", "Are you sure you want to cancel?")) {
+            if (!UiUtils.showYesNoDialog(
+                    "Cancel", 
+                    "Are you sure you want to cancel?")) {
                 return;
             }
             
