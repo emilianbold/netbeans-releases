@@ -371,13 +371,19 @@ public final class Util {
      * Actually deletages to {@link #findLocalizedBundleInfo(FileObject, Manifest)}.
      */
     public static LocalizedBundleInfo findLocalizedBundleInfo(File projectDir) {
-        NbModuleProject p = null;
-        try {
-            p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(projectDir));
-        } catch (IOException e) {
-            assert false : e;
+        FileObject projectDirFO = FileUtil.toFileObject(projectDir);
+        if (projectDirFO == null) {
+            return null;
         }
-        assert p != null : "Not valid project under " + projectDir;
+        NbModuleProject p;
+        try {
+            p = (NbModuleProject) ProjectManager.getDefault().findProject(projectDirFO);
+        } catch (IOException e) {
+            return null;
+        }
+        if (p == null) {
+            return null;
+        }
         String src = p.evaluator().getProperty("src.dir"); // NOI18N
         assert src != null : "Cannot evaluate src.dir property for " + p;
         File srcF = FileUtil.normalizeFile(new File(projectDir, src));
