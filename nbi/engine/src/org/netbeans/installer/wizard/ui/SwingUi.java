@@ -42,5 +42,7 @@ public abstract class SwingUi extends NbiPanel {
     
     public abstract void evaluateCancelButtonClick();
     
-    public abstract NbiButton getDefaultButton();
+    public abstract NbiButton getDefaultEnterButton();
+    
+    public abstract NbiButton getDefaultEscapeButton();
 }

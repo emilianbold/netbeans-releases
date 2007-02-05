@@ -27,8 +27,11 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import javax.swing.AbstractAction;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiFrame;
@@ -82,14 +85,34 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         // display the panel
         contentPane.updatePanel(currentUi);
         
-        // handle the default button
-        getRootPane().setDefaultButton(currentUi.getDefaultButton());
-        getRootPane().getDefaultButton().requestFocusInWindow();
-        
+        // handle the default buttons
+        getRootPane().setDefaultButton(currentUi.getDefaultEnterButton());
+        getRootPane().getInputMap().put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
+                "evaluate.cancel");
+        getRootPane().getActionMap().put("evaluate.cancel", new AbstractAction() {
+            public void actionPerformed(ActionEvent event) {
+                if (currentUi.getDefaultEscapeButton().equals(getHelpButton())) {
+                    currentUi.evaluateHelpButtonClick();
+                }
+                if (currentUi.getDefaultEscapeButton().equals(getBackButton())) {
+                    currentUi.evaluateBackButtonClick();
+                }
+                if (currentUi.getDefaultEscapeButton().equals(getNextButton())) {
+                    currentUi.evaluateNextButtonClick();
+                }
+                if (currentUi.getDefaultEscapeButton().equals(getCancelButton())) {
+                    currentUi.evaluateCancelButtonClick();
+                }
+            }
+        });
+
         // a11y - fwiw
         getAccessibleContext().setAccessibleName(currentUi.getTitle());
         getAccessibleContext().setAccessibleDescription(currentUi.getDescription());
     }
+    
+    
     
     public NbiButton getHelpButton() {
         return contentPane.getHelpButton();

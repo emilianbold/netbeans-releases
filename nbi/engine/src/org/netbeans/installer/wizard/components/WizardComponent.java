@@ -253,8 +253,12 @@ public abstract class WizardComponent {
             component.getWizard().getFinishHandler().cancel();
         }
         
-        public NbiButton getDefaultButton() {
+        public NbiButton getDefaultEnterButton() {
             return container.getNextButton();
+        }
+        
+        public NbiButton getDefaultEscapeButton() {
+            return container.getCancelButton();
         }
         
         protected void initializeContainer() {
