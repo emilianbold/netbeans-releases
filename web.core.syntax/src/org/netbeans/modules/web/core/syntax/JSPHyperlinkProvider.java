@@ -149,12 +149,16 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             
             // is it a bean in EL?
             tokenSequence.move(offset); //reset tokenSequence
-            tokenSequence.moveNext();
+            if(!tokenSequence.moveNext()) {
+                return false; //no token
+            }
             TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
             if (elTokenSequence != null){
                 ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
                 elTokenSequence.move(offset);
-                elTokenSequence.moveNext();
+                if(!elTokenSequence.moveNext()) {
+                    return false; //no token
+                }
                 
                 if (elTokenSequence.token().id() == ELTokenId.DOT){
                     return false;
@@ -222,7 +226,10 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             if (elTokenSequence != null){
                 ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
                 elTokenSequence.move(offset);
-                elTokenSequence.moveNext();
+                if(!elTokenSequence.moveNext()) {
+                    return null; //no token
+                }
+                
                 int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
                 int res = exp.parse(elEnd);
                 
@@ -278,7 +285,10 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                 ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
                 
                 elTokenSequence.move(offset);
-                elTokenSequence.moveNext();
+                if(!elTokenSequence.moveNext()) {
+                    return ;//not token
+                }
+                
                 int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
                 int res = exp.parse(elEnd);
                 if (res == ELExpression.EL_START ){
@@ -313,7 +323,10 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             }
             
             tokenSequence.move(offset);//reset tokenSequence
-            tokenSequence.moveNext();
+            if(!tokenSequence.moveNext()) {
+                return ; //no token
+            }
+            
             FileObject fObj = getTagFile(tokenSequence, jspSup);
             if ( fObj != null)
                 openInEditor(fObj);

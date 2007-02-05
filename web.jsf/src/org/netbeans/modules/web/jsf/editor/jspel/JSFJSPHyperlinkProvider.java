@@ -77,6 +77,8 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             return false;
         
         BaseDocument bdoc = (BaseDocument) doc;
+        bdoc.readLock();
+        try {
         JTextComponent target = Utilities.getFocusedComponent();
         
         if (target == null || target.getDocument() != bdoc)
@@ -90,7 +92,10 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             return false; //no token found
         }
         
-        tokenSequence.moveNext();
+        if(!tokenSequence.moveNext()) {
+            return false; //no token
+        }
+        
         Token token = tokenSequence.token();
         TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
         
@@ -101,7 +106,9 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             if (wm != null){
                 JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
                 elTokenSequence.move(offset);
-                elTokenSequence.moveNext();
+                if(!elTokenSequence.moveNext()) {
+                    return false; //no token
+                }
                 
                 if (elTokenSequence.token().id() == ELTokenId.DOT){
                     return false;
@@ -116,6 +123,10 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
                 
                 return res == JSFELExpression.EL_JSF_BEAN;
             }
+        }
+        
+        } finally {
+            bdoc.readUnlock();
         }
         
         return false;
@@ -153,7 +164,10 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
         if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
             return null; //no token found
         }
-        tokenSequence.moveNext();
+        if(!tokenSequence.moveNext()) {
+            return null; //no token
+        }
+        
         Token token = tokenSequence.token();
         
         // is it a bean in EL ?
@@ -165,7 +179,10 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             if (wm != null){
                 JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
                 elTokenSequence.move(offset);
-                elTokenSequence.moveNext();
+                if(!elTokenSequence.moveNext()) {
+                    return null; //no token
+                }
+                
                 int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
                 
                 int res = exp.parse(elEnd);
@@ -203,7 +220,10 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
         if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
             return; //no token found
         }
-        tokenSequence.moveNext();
+        if(!tokenSequence.moveNext()) {
+            return ; //no token
+        }
+        
         Token token = tokenSequence.token();
         
         // is it a bean in EL
@@ -214,7 +234,10 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             if (wm != null){
                 JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
                 elTokenSequence.move(offset);
-                elTokenSequence.moveNext();
+                if(!elTokenSequence.moveNext()) {
+                    return; //no token
+                }
+                
                 int res = exp.parse(elTokenSequence.offset() + elTokenSequence.token().length());
                 if (res == JSFELExpression.EL_START ){
                     (new OpenConfigFile(wm, elTokenSequence.token().text().toString())).run();
