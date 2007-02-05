@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.versioning.spi;
@@ -70,6 +70,9 @@ public abstract class VersioningSystem {
     /**
      * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
      * parent of the file that is still versioned.
+     * For example (for CVS) if all your CVS checkouts are in a directory /home/johndoe/projects/cvscheckouts/... then for all files
+     * that are under "cvscheckouts" directory and for the directory itselft this method should 
+     * return "/home/johndoe/projects/cvscheckouts/" and for all other files return null.
      *  
      * @param file a file
      * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
@@ -78,10 +81,20 @@ public abstract class VersioningSystem {
         return null;
     }
     
+    /**
+     * Retrieves a VCSAnnotator implementation if this versioning system provides one. 
+     * 
+     * @return a VCSAnnotator implementation or null
+     */ 
     public VCSAnnotator getVCSAnnotator() {
         return null;
     }
 
+    /**
+     * Retrieves a VCSInterceptor implementation if this versioning system provides one. 
+     * 
+     * @return a VCSInterceptor implementation or null
+     */ 
     public VCSInterceptor getVCSInterceptor() {
         return null;
     }
@@ -102,26 +115,56 @@ public abstract class VersioningSystem {
         return null;
     }
 
+    /**
+     * Adds a listener for change events.
+     * 
+     * @param listener a PropertyChangeListener 
+     */ 
     public final void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
+    /**
+     * Removes a listener for change events.
+     * 
+     * @param listener a PropertyChangeListener 
+     */ 
     public final void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 
+    /**
+     * Helper method to signal that annotations of a set of files changed. Do NOT fire this event when changes in
+     * annotations are caused by changes of status. Status change event will refresh annotations automatically.
+     *  
+     * @param files set of files whose annotations changed or null if the change affects all files 
+     */ 
     protected final void fireAnnotationsChanged(Set<File> files) {
         support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, files);
     }
     
+    /**
+     * Helper method to signal that status of a set of files changed. Status change event will refresh annotations automatically.
+     *  
+     * @param files set of files whose status changed or null if all files changed status 
+     */ 
     protected final void fireStatusChanged(Set<File> files) {
         support.firePropertyChange(PROP_STATUS_CHANGED, null, files);
     }
 
+    /**
+     * Helper method to signal that the versioning system started to manage some previously unversioned files 
+     * (those files were imported into repository).
+     */ 
     protected final void fireVersionedFilesChanged() {
         support.firePropertyChange(PROP_VERSIONED_ROOTS, null, null);
     }
     
+    /**
+     * Helper method to signal that status of a file changed. Status change event will refresh its annotations automatically.
+     *  
+     * @param file a file whose status changed 
+     */ 
     protected final void fireStatusChanged(File file) {
         fireStatusChanged(new HashSet<File>(Arrays.asList(new File[] { file })));
     }

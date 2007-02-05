@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.versioning.spi;
@@ -66,13 +66,35 @@ public abstract class VCSInterceptor {
     // MOVE
     // ==================================================================================================
     
+    /**
+     * Notifies the interceptor that the file or folder is about to be moved. The interceptor MUST NOT move
+     * the file here.
+     * 
+     * @param from the file to be moved
+     * @param to destination of the file being moved
+     * @return true if this interceptor wants to handle this operation (doMove will be called), false otherwise
+     */
     public boolean beforeMove(File from, File to) {
         return false;
     }
 
+    /**
+     * Called if beforeMove() returns true and delegates the move operation to this interceptor.
+     * 
+     * @param from the file to be moved
+     * @param to destination of the file being moved
+     * @throws IOException if the move operation failed
+     */
     public void doMove(File from, File to) throws IOException {
     }
 
+    /**
+     * Called after a file or folder has beed moved. In case the file was moved outside IDE, this method is not called but 
+     * a pair or afterDelete() / afterCreate() is called instead.
+     * 
+     * @param from original location of the file
+     * @param to current location of the file
+     */
     public void afterMove(File from, File to) {
     }
     
@@ -94,9 +116,22 @@ public abstract class VCSInterceptor {
         return false;
     }
 
+    /**
+     * Called if beforeCreate() returns true and delegates the create operation to this interceptor.
+     * 
+     * @param file the file to create
+     * @param isDirectory true if the new file should be a directory, false otherwise
+     * @throws IOException if the create operation failed
+     */
     public void doCreate(File file, boolean isDirectory) throws IOException {
     }
 
+    /**
+     * Called after a new file or folder has beed created. In case the file was created outside IDE, this is the only
+     * method called.
+     * 
+     * @param file the new file
+     */
     public void afterCreate(File file) {
     }
     

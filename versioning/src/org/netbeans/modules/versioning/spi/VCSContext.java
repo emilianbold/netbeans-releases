@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.versioning.spi;
@@ -39,7 +39,8 @@ import java.lang.ref.WeakReference;
 import java.lang.ref.Reference;
 
 /**
- * 
+ * This encapsulates a context, typically set of selected files or nodes. Context is passed to VCSAnnotators when
+ * asked for actions available on a given context or to annotate a name (label) representing a context.
  * 
  * @author Maros Sandor
  */
