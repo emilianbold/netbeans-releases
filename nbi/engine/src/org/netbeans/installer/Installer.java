@@ -46,7 +46,9 @@ import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.UiUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
+import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.FinishHandler;
@@ -144,7 +146,7 @@ public class Installer implements FinishHandler {
         
         // once we have set the local directory we can start logging safely
         LogManager.setLogFile(new File(
-                localDirectory, 
+                localDirectory,
                 "log/" + DateUtils.getTimestamp() + ".log"));
         LogManager.start();
         
@@ -224,16 +226,7 @@ public class Installer implements FinishHandler {
         System.exit(CRITICAL_ERRORCODE);
     }
     
-    // Getters //////////////////////////////////////////////////////////////////////
-    public File getLocalDirectory() {
-        return localDirectory;
-    }
-    
-    public File getCachedEngine() {
-        return cachedEngine;
-    }
-    
-    // Private stuff ////////////////////////////////////////////////////////////////
+    // private //////////////////////////////////////////////////////////////////////
     private void dumpSystemInfo() {
         LogManager.log("dumping target system information");
         LogManager.indent();
@@ -258,7 +251,7 @@ public class Installer implements FinishHandler {
         
         try {
             InputStream input =
-                    getClass().getClassLoader().getResourceAsStream(ENGINE_PROPERTIES);
+                    getClass().getClassLoader().getResourceAsStream(EngineResources.ENGINE_PROPERTIES);
             
             if (input != null) {
                 properties.load(input);
@@ -336,17 +329,17 @@ public class Installer implements FinishHandler {
                     
                     Locale targetLocale = null;
                     switch (valueParts.length) {
-                        case 1:
-                            targetLocale = new Locale(valueParts[0]);
-                            break;
-                        case 2:
-                            targetLocale = new Locale(valueParts[0], valueParts[1]);
-                            break;
-                        case 3:
-                            targetLocale = new Locale(valueParts[0], valueParts[1], valueParts[2]);
-                            break;
-                        default:
-                            ErrorManager.notifyWarning("Invalid parameter command line argument \"--locale\". Should be \"<language>[_<country>[_<variant>]]\".");
+                    case 1:
+                        targetLocale = new Locale(valueParts[0]);
+                        break;
+                    case 2:
+                        targetLocale = new Locale(valueParts[0], valueParts[1]);
+                        break;
+                    case 3:
+                        targetLocale = new Locale(valueParts[0], valueParts[1], valueParts[2]);
+                        break;
+                    default:
+                        ErrorManager.notifyWarning("Invalid parameter command line argument \"--locale\". Should be \"<language>[_<country>[_<variant>]]\".");
                     }
                     
                     if (targetLocale != null) {
@@ -434,7 +427,7 @@ public class Installer implements FinishHandler {
                     } else {
                         ExecutionMode.setCurrentExecutionMode(ExecutionMode.CREATE_BUNDLE);
                         System.setProperty(
-                                Registry.CREATE_BUNDLE_PATH_PROPERTY, 
+                                Registry.CREATE_BUNDLE_PATH_PROPERTY,
                                 targetFile.getAbsolutePath());
                     }
                     
@@ -591,7 +584,7 @@ public class Installer implements FinishHandler {
     private void cacheEngineJar() throws IOException, DownloadException {
         LogManager.log("... starting copying engine content to the new jar file");
         String [] entries = StreamUtils.readStream(
-                ResourceUtils.getResource(ENGINE_JAR_CONTENT_LIST)).
+                ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST)).
                 toString().split(StringUtils.NEW_LINE_PATTERN);
         
         File dest = getCacheExpectedFile();
@@ -606,7 +599,7 @@ public class Installer implements FinishHandler {
             LogManager.log("... total entries : " + entries.length);
             for(int i=0;i<entries.length;i++) {
                 String name = entries[i];
-                if(name.length() > 0 && !name.startsWith(DATA_DIRECTORY)) {
+                if(name.length() > 0 && !name.startsWith(EngineResources.DATA_DIRECTORY)) {
                     jos.putNextEntry(new JarEntry(name));
                     if(!name.endsWith(StringUtils.FORWARD_SLASH)) {
                         StreamUtils.transferData(ResourceUtils.getResource(name), jos);
@@ -614,19 +607,17 @@ public class Installer implements FinishHandler {
                 }
             }
             LogManager.log("... adding content list and some other stuff");
-            jos.putNextEntry(new JarEntry(DATA_DIRECTORY + StringUtils.FORWARD_SLASH));
+            jos.putNextEntry(new JarEntry(EngineResources.DATA_DIRECTORY + StringUtils.FORWARD_SLASH));
             
-            jos.putNextEntry(new JarEntry(DATA_DIRECTORY + StringUtils.FORWARD_SLASH +
+            jos.putNextEntry(new JarEntry(EngineResources.DATA_DIRECTORY + StringUtils.FORWARD_SLASH +
                     "bundled-registry.xml"));
             
             Document doc = Registry.getInstance().getEmptyRegistryDocument();
             Registry.getInstance().saveRegistryDocument(doc,jos);
             
-            jos.putNextEntry(new JarEntry(ENGINE_JAR_CONTENT_LIST));
+            jos.putNextEntry(new JarEntry(EngineResources.ENGINE_CONTENTS_LIST));
             jos.write(StringUtils.asString(entries, SystemUtils.getLineSeparator()).getBytes());
         } catch (XMLException ex) {
-            throw new IOException(ex.toString());
-        }  catch (IOException ex) {
             throw new IOException(ex.toString());
         } finally {
             if(jos!=null) {
@@ -640,19 +631,19 @@ public class Installer implements FinishHandler {
         }
         
         cachedEngine = (!dest.exists()) ? null : dest;
+        
         LogManager.log("NBI Engine jar file = [" +
                 cachedEngine + "], exist = " +
                 ((cachedEngine==null) ? false : cachedEngine.exists()));
     }
     
     private File getCacheExpectedFile() {
-        return new File(getLocalDirectory().getPath(), "nbi-engine.jar");
-        
+        return new File(localDirectory, "nbi-engine.jar");
     }
     
     private void cacheEngineLocally() {
-        LogManager.log("cache engine data locally to run uninstall in the future");
-        LogManager.indent();
+        LogManager.logIndent("cache engine data locally to run uninstall in the future");
+        
         String filePrefix = "file:";
         String httpPrefix = "http://";
         String jarSep = "!/";
@@ -686,6 +677,7 @@ public class Installer implements FinishHandler {
                         if(jarfile.getAbsolutePath().equals(
                                 getCacheExpectedFile().getAbsolutePath())) {
                             needCache = false; // we already run cached version
+                            cachedEngine = jarfile;
                         }
                         LogManager.log("... " + !needCache);
                     } else {
@@ -696,12 +688,12 @@ public class Installer implements FinishHandler {
                     LogManager.log("... classloader says that jar file is on remote server");
                 }
             } else {
-                // a quick hack to allow caching engine when run from
-                // the IDE (i.e. as a .class) - probably to be removed
-                // later. Or maybe not...
+                // a quick hack to allow caching engine when run from the IDE (i.e.
+                // as a .class) - probably to be removed later. Or maybe not...
                 LogManager.log("... running engine as a .class file");
             }
-            if(needCache) {
+            
+            if (needCache) {
                 try {
                     cacheEngineJar();
                 } catch (DownloadException ex) {
@@ -709,14 +701,35 @@ public class Installer implements FinishHandler {
                     LogManager.log(ex);
                     throw new IOException(ex.toString());
                 }
-                
             }
             
+            final String java = JavaUtils.getExecutableW(
+                    SystemUtils.getCurrentJavaHome()).getAbsolutePath();
+            
+            final String modifyCommand =
+                    "\"" + java + "\" " +
+                    "-jar \"" + cachedEngine.getAbsolutePath() + "\" " +
+                    "--target \"{0}\" \"{1}\"";
+            
+            final String uninstallCommand =
+                    modifyCommand + StringUtils.SPACE +
+                    "--force-uninstall";
+            
+            System.setProperty(
+                    EngineResources.LOCAL_ENGINE_PATH_PROPERTY,
+                    cachedEngine.getAbsolutePath());
+            
+            System.setProperty(
+                    EngineResources.LOCAL_ENGINE_MODIFY_COMMAND_PROPERTY, 
+                    modifyCommand);
+            System.setProperty(
+                    EngineResources.LOCAL_ENGINE_UNINSTALL_COMMAND_PROPERTY, 
+                    uninstallCommand);
         } catch (IOException ex) {
             ErrorManager.notifyCritical("can`t cache installer engine", ex);
         }
-        LogManager.unindent();
-        LogManager.log("... finished caching engine data");
+        
+        LogManager.logUnindent("... finished caching engine data");
     }
     
     private void createInstallerLockFile()  {
@@ -741,7 +754,7 @@ public class Installer implements FinishHandler {
                     lock.createNewFile();
                 } catch (IOException e) {
                     ErrorManager.notifyCritical(
-                            "Can't create lock for the local registry file!", 
+                            "Can't create lock for the local registry file!",
                             e);
                 }
                 
@@ -777,11 +790,4 @@ public class Installer implements FinishHandler {
             "Manifest-Version: 1.0" + SystemUtils.getLineSeparator() +
             "Main-Class: " + Installer.class.getName() + SystemUtils.getLineSeparator() +
             "Class-Path: " + SystemUtils.getLineSeparator();
-    
-    public static final String DATA_DIRECTORY = "data";
-    
-    public static final String ENGINE_JAR_CONTENT_LIST = DATA_DIRECTORY + "/engine.list";
-    
-    public static final String ENGINE_PROPERTIES = DATA_DIRECTORY + "/engine.properties";
-    
 }

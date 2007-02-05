@@ -21,25 +21,20 @@
 package org.netbeans.installer.utils;
 
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.ApplicationDescriptor;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
@@ -444,12 +439,12 @@ public final class SystemUtils {
         getNativeUtils().removeShortcut(shortcut, locationType, deleteEmptyParents);
     }
     
-    public static void addComponentToSystemInstallManager(Product comp) throws NativeException {
-        getNativeUtils().addComponentToSystemInstallManager(comp);
+    public static void addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
+        getNativeUtils().addComponentToSystemInstallManager(descriptor);
     }
     
-    public static void removeComponentFromSystemInstallManager(Product comp) throws NativeException {
-        getNativeUtils().removeComponentFromSystemInstallManager(comp);
+    public static void removeComponentFromSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
+        getNativeUtils().removeComponentFromSystemInstallManager(descriptor);
     }
     
     public static String getEnvironmentVariable(String name) throws NativeException {

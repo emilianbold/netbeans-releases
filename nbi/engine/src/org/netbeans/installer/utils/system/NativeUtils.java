@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
-import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
@@ -34,6 +33,7 @@ import org.netbeans.installer.utils.helper.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.ApplicationDescriptor;
 
 /**
  *
@@ -43,7 +43,7 @@ public abstract class NativeUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static NativeUtils instance;
-    private static HashSet <File> forbiddenDeletingFiles = new HashSet <File>();
+    private static HashSet<File> forbiddenDeletingFiles = new HashSet<File>();
     
     public static synchronized NativeUtils getInstance() {
         switch (SystemUtils.getCurrentPlatform()) {
@@ -70,6 +70,7 @@ public abstract class NativeUtils {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
+    
     // constructor //////////////////////////////////////////////////////////////////
     protected NativeUtils() {
         // does nothing
@@ -90,9 +91,9 @@ public abstract class NativeUtils {
     
     public abstract void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws NativeException;
     
-    public abstract void addComponentToSystemInstallManager(Product comp) throws NativeException;
+    public abstract void addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException;
     
-    public abstract void removeComponentFromSystemInstallManager(Product comp) throws NativeException;
+    public abstract void removeComponentFromSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException;
     
     public abstract String getEnvironmentVariable(String name, EnvironmentScope scope, boolean expand) throws NativeException;
     

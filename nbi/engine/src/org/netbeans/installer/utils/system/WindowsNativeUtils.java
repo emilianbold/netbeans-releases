@@ -22,14 +22,9 @@ package org.netbeans.installer.utils.system;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import org.netbeans.installer.Installer;
-import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
@@ -38,8 +33,8 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.ApplicationDescriptor;
 import org.netbeans.installer.utils.system.windows.SystemApplication;
 import org.netbeans.installer.utils.system.windows.FileExtension;
 import org.netbeans.installer.utils.system.windows.WindowsRegistry;
@@ -130,7 +125,7 @@ public class WindowsNativeUtils extends NativeUtils {
     private static final String CURRENT_USER_CLASSES = "Software\\Classes\\";
     private int clSection;
     private String clKey;
-    private int unistallSection;
+    private int uninstallSection;
     
     private boolean isUserAdminSet;
     private boolean isUserAdmin;
@@ -187,12 +182,12 @@ public class WindowsNativeUtils extends NativeUtils {
         try {
             clSection = registry.canModifyKey(HKCR, "") ? HKCR : HKCU;
             clKey = (result) ? EMPTY_STRING : CURRENT_USER_CLASSES;
-            unistallSection = registry.canModifyKey(HKLM,UNINSTALL_KEY) ? HKLM : HKCU;
+            uninstallSection = registry.canModifyKey(HKLM,UNINSTALL_KEY) ? HKLM : HKCU;
         } catch (NativeException ex) {
             LogManager.log(ex);
             clSection = HKCU;
             clKey = CURRENT_USER_CLASSES;
-            unistallSection = HKCU;
+            uninstallSection = HKCU;
         }
     }
     // parent implementation ////////////////////////////////////////////////////////
@@ -313,66 +308,55 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
-    public void addComponentToSystemInstallManager(Product product) throws NativeException {
-        try {
-            LogManager.logIndent("adding component to windows registry uninstall section");
+    public void addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
+        LogManager.log("adding new Add or Remove Programs entry with id [" + descriptor.getUid() + "]");
+        
+        final String uid = getVacantUninstallUid(descriptor.getUid());
+        final String key = UNINSTALL_KEY + WindowsRegistry.SEPARATOR + uid;
+        
+        registry.createKey(uninstallSection, key);
+        
+        if (descriptor.getDisplayName() != null) {
+            LogManager.log("Set '" + DISPLAY_NAME + "' = [" + descriptor.getDisplayName() + "]");
             
-            String key         = getUidKey(product);
-            String installPath = product.getInstallationLocation().getAbsolutePath();
-            String displayName = product.getDisplayName();
-            
-            String icon;
-            if (product.getLogic().getIcon() != null) {
-                icon = new File(
-                        product.getInstallationLocation(),
-                        product.getLogic().getIcon()).getAbsolutePath();
-            } else {
-                icon = null;
-            }
-            
-            File executable   = JavaUtils.getExecutableW(
-                    SystemUtils.getCurrentJavaHome());
-            File cachedEngine = Installer.getInstance().getCachedEngine();
-            
-            if (cachedEngine != null) {
-                String modifyString =
-                        QUOTE + executable.getPath() + QUOTE + SPACE +
-                        "-jar" + SPACE +
-                        QUOTE + cachedEngine.getPath() + QUOTE + SPACE +
-                        Installer.TARGET_ARG + SPACE +
-                        QUOTE + product.getUid() + QUOTE + SPACE +
-                        QUOTE + product.getVersion().toString() + QUOTE;
-                
-                String uninstallString =
-                        modifyString + SPACE +
-                        "--force-uninstall";
-                
-                LogManager.logIndent("adding entry to add/remove programs list with the following data:");
-                LogManager.log("key             = " + key);
-                LogManager.log("displayName     = " + displayName);
-                LogManager.log("icon            = " + icon);
-                LogManager.log("installPath     = " + installPath);
-                LogManager.log("modifyString    = " + modifyString);
-                LogManager.log("uninstallString = " + uninstallString);
-                LogManager.logUnindent("");
-                
-                addRemoveProgramsInstall(key, displayName, icon, installPath, modifyString, uninstallString);
-            } else {
-                LogManager.log(ErrorLevel.WARNING, "Can't find cached engine.");
-                LogManager.log(ErrorLevel.WARNING, "The entry would not be added to the add/remove programs list");
-            }
-            
-            LogManager.logUnindent("... finished adding of the component to windows registry uninstall section");
-        } catch (InitializationException e) {
-            throw new NativeException("Could not access the products configuration logic", e);
+            registry.setStringValue(uninstallSection, key, DISPLAY_NAME, descriptor.getDisplayName(), false);
         }
+        if (descriptor.getIcon() != null) {
+            LogManager.log("Set '" + DISPLAY_ICON + "' = [" + descriptor.getIcon() + "]");
+            
+            registry.setStringValue(uninstallSection, key, DISPLAY_ICON, descriptor.getIcon(), false);
+        }
+        if (descriptor.getInstallPath() != null) {
+            LogManager.log("Set '" + INSTALL_LOCATION + "' = [" + descriptor.getInstallPath() + "]");
+            
+            registry.setStringValue(uninstallSection, key, INSTALL_LOCATION, descriptor.getInstallPath(), false);
+        }
+        if (descriptor.getModifyCommand() != null) {
+            LogManager.log("Set '" + NO_REPAIR + "' = [" + 1 + "]");
+            
+            registry.set32BitValue(uninstallSection, key, NO_REPAIR, 1);
+            
+            LogManager.log("Set '" + MODIFY_STRING + "' = [" + descriptor.getModifyCommand() + "]");
+            
+            registry.setStringValue(uninstallSection, key, MODIFY_STRING, descriptor.getModifyCommand(), false);
+        }
+        if (descriptor.getUninstallCommand() != null) {
+            LogManager.log("Set '" + UNINSTALL_STRING + "' = [" + descriptor.getUninstallCommand() + "]");
+            
+            registry.setStringValue(uninstallSection, key, UNINSTALL_STRING, descriptor.getUninstallCommand(), false);
+        }
+        
+        registry.setAdditionalValues(uninstallSection, key, descriptor.getParameters());
     }
     
-    public void removeComponentFromSystemInstallManager(Product component) throws NativeException {
-        String uid         = getUidKey(component);
-        String installPath = component.getInstallationLocation().getPath();
+    public void removeComponentFromSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
+        String properUid = getProperUninstallUid(
+                descriptor.getUid(), 
+                descriptor.getInstallPath());
         
-        addRemoveProgramsUninstall(uid, installPath);
+        if (properUid != null) {
+            registry.deleteKey(uninstallSection, UNINSTALL_KEY, properUid);
+        }
     }
     
     public String getEnvironmentVariable(String name, EnvironmentScope scope, boolean expand) throws NativeException {
@@ -571,144 +555,16 @@ public class WindowsNativeUtils extends NativeUtils {
     }
     
     // private //////////////////////////////////////////////////////////////////////
-    private void addRemoveProgramsInstall(String uid, String displayName, String displayIcon, String installLocation, String modifyString, String uninstallString) throws NativeException {
-        addRemoveProgramsInstall(uid, displayName, displayIcon, installLocation, modifyString, uninstallString, new HashMap<String, Object>());
-    }
-    
-    /**
-     * Add new entry in Add/Remove programs.<br>
-     *
-     * @param uid
-     *      The uid of the entry<br>
-     *
-     * @param displayName
-     *      The name that would be displayed in Add/Remove window<br>
-     *
-     * @param displayIcon
-     *      The icon that would be displayed in Add/Remove window<br>
-     *
-     * @param installLocation
-     *      The location of the installation<br>
-     *
-     * @param uninstallString
-     *      The uninstaller location<br>
-     *
-     * @param additionalParameters
-     *      The hashmap of additional parametrs.<br>
-     *      The possible values are : <br>
-     *      <ul>
-     *      <li>int(Integer), long (Long), short(Short) -> REG_DWORD <br></li>
-     *      <li>byte[] -> REG_BINARY <br></li>
-     *      <li>String[] ->REG_MULTI_SZ <br></li>
-     *      <li>String - > REG_SZ <br></li></ul>
-     *
-     *      Other values would be set as REG_SZ with value .toString()
-     */
-    private void addRemoveProgramsInstall(String uid, String displayName, String displayIcon, String installLocation, String modifyString, String uninstallString, HashMap<String, Object> parameters) throws NativeException {
-        LogManager.log("Add new Add/Remove Programs entry with id [" + uid + "]");
-        
-        String vacantUid = getVacantUninstallUid(uid);
-        String key = UNINSTALL_KEY + WindowsRegistry.SEPARATOR + vacantUid;
-        
-        registry.createKey(unistallSection, key);
-        
-        if (displayName != null) {
-            LogManager.log("Set '" + DISPLAY_NAME + "' = [" + displayName + "]");
-            
-            registry.setStringValue(unistallSection, key, DISPLAY_NAME, displayName, false);
-        }
-        if (displayIcon != null) {
-            LogManager.log("Set '" + DISPLAY_ICON + "' = [" + displayIcon+ "]");
-            
-            registry.setStringValue(unistallSection, key, DISPLAY_ICON, displayIcon, false);
-        }
-        if (installLocation != null) {
-            LogManager.log("Set '" + INSTALL_LOCATION + "' = [" + installLocation+ "]");
-            
-            registry.setStringValue(unistallSection, key, INSTALL_LOCATION, installLocation, false);
-        }
-        if (modifyString != null) {
-            LogManager.log("Set '" + NO_REPAIR + "' = [" + 1 + "]");
-            
-            registry.set32BitValue(unistallSection, key, NO_REPAIR, 1);
-            
-            LogManager.log("Set '" + MODIFY_STRING + "' = [" + modifyString + "]");
-            
-            registry.setStringValue(unistallSection, key, MODIFY_STRING, modifyString, false);
-        }
-        if (uninstallString != null) {
-            LogManager.log("Set '" + UNINSTALL_STRING + "' = [" + uninstallString+ "]");
-            
-            registry.setStringValue(unistallSection, key, UNINSTALL_STRING, uninstallString, false);
-        }
-        
-        addAditionalParameters(vacantUid, parameters);
-    }
-    
-    private void addRemoveProgramsUninstall(String uid, String installLocation) throws NativeException {
-        String properUid = getProperUninstallUid(uid, installLocation);
-        
-        if (properUid != null) {
-            registry.deleteKey(unistallSection, UNINSTALL_KEY, properUid);
-        }
-    }
-    
-    private void addAditionalParameters(String uid, Map<String, Object> parameters) throws NativeException {
-        LogManager.log("Trying to set " + parameters.size() + " additional parameters");
-        
-        String key = UNINSTALL_KEY + WindowsRegistry.SEPARATOR + uid;
-        
-        for (String name: parameters.keySet()) {
-            Object value = parameters.get(name);
-            
-            LogManager.log(name + " = " + value.toString());
-            
-            if (value instanceof Short) {
-                LogManager.log("Type is short. Set REG_DWORD value");
-                
-                registry.set32BitValue(unistallSection, key, name, ((Short) value).intValue());
-            }  else if (value instanceof Integer) {
-                LogManager.log("Type is integer. Set REG_DWORD value");
-                
-                registry.set32BitValue(unistallSection, key, name, ((Integer) value).intValue());
-            }  else if (value instanceof Long) {
-                LogManager.log("Type is long. Set REG_DWORD value");
-                
-                registry.set32BitValue(unistallSection, key, name, ((Long) value).intValue());
-            }  else if (value instanceof byte[]) {
-                LogManager.log("Type is byte[]. Set REG_BINARY value");
-                
-                registry.setBinaryValue(unistallSection, key, name, (byte[]) value);
-            }  else if (value instanceof String[]) {
-                LogManager.log("Type is String[]. Set REG_MULTI_SZ value");
-                
-                registry.setMultiStringValue(unistallSection, key, name, (String[]) value);
-            }  else if (value instanceof String) {
-                LogManager.log("Type is String. Set REG_SZ value");
-                
-                registry.setStringValue(unistallSection, key, name, (String) value, false);
-            }  else {
-                LogManager.log("Type can`t be determined. Set REG_SZ value");
-                
-                registry.setStringValue(unistallSection, key, name, value.toString(), false);
-            }
-        }
-    }
-    
-    private String getUidKey(Product component) {
-        return NBI_UID_PREFIX + component.getUid() + "-" + component.getVersion().toString();
-    }
-    
     private String getVacantUninstallUid(final String baseUid) throws NativeException {
         String vacantUid = baseUid;
         
         String key = UNINSTALL_KEY + WindowsRegistry.SEPARATOR + vacantUid;
-        if (registry.keyExists(unistallSection, key)) {
+        if (registry.keyExists(uninstallSection, key)) {
             for (int index = MIN_UID_INDEX; index < MAX_UID_INDEX; index++) {
                 vacantUid = baseUid + UID_SEPARATOR + index;
                 key = UNINSTALL_KEY + WindowsRegistry.SEPARATOR + vacantUid;
                 
-                if (!registry.keyExists(unistallSection, key)) {
+                if (!registry.keyExists(uninstallSection, key)) {
                     return vacantUid;
                 }
             }
@@ -722,16 +578,16 @@ public class WindowsNativeUtils extends NativeUtils {
         String properUid = baseUid;
         
         String key = UNINSTALL_KEY + WindowsRegistry.SEPARATOR + properUid;
-        if (registry.keyExists(unistallSection, key) &&
-                registry.getStringValue(unistallSection, key, INSTALL_LOCATION).equals(installLocation)) {
+        if (registry.keyExists(uninstallSection, key) &&
+                registry.getStringValue(uninstallSection, key, INSTALL_LOCATION).equals(installLocation)) {
             return properUid;
         } else {
             for (int index = MIN_UID_INDEX; index < MAX_UID_INDEX; index++) {
                 properUid = baseUid + UID_SEPARATOR + index;
                 key = UNINSTALL_KEY + WindowsRegistry.SEPARATOR + properUid;
                 
-                if (registry.keyExists(unistallSection, key) &&
-                        registry.getStringValue(unistallSection, key, INSTALL_LOCATION).equals(installLocation)) {
+                if (registry.keyExists(uninstallSection, key) &&
+                        registry.getStringValue(uninstallSection, key, INSTALL_LOCATION).equals(installLocation)) {
                     return properUid;
                 }
             }

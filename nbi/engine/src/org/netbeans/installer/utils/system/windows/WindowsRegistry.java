@@ -20,6 +20,8 @@
  */
 package org.netbeans.installer.utils.system.windows;
 
+import java.util.Map;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import static org.netbeans.installer.utils.StringUtils.EMPTY_STRING;
 
@@ -29,43 +31,6 @@ import static org.netbeans.installer.utils.StringUtils.EMPTY_STRING;
  * @author Kirill Sorokin
  */
 public class WindowsRegistry {
-    /////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final int HKEY_CLASSES_ROOT              = 0;
-    public static final int HKEY_CURRENT_USER              = 1;
-    public static final int HKEY_LOCAL_MACHINE             = 2;
-    public static final int HKEY_USERS                     = 3;
-    public static final int HKEY_CURRENT_CONFIG            = 4;
-    
-    public static final int HKEY_DYN_DATA                  = 5;
-    public static final int HKEY_PERFORMANCE_DATA          = 6;
-    public static final int HKEY_PERFORMANCE_NLSTEXT       = 7;
-    public static final int HKEY_PERFORMANCE_TEXT          = 8;
-    
-    public static final int HKCR                           = HKEY_CLASSES_ROOT;
-    public static final int HKCU                           = HKEY_CURRENT_USER;
-    public static final int HKLM                           = HKEY_LOCAL_MACHINE;
-    
-    public static final int REG_NONE                       = 0;
-    public static final int REG_SZ                         = 1;
-    public static final int REG_EXPAND_SZ                  = 2;
-    public static final int REG_BINARY                     = 3;
-    public static final int REG_DWORD_LITTLE_ENDIAN        = 4;
-    public static final int REG_DWORD                      = 4;
-    public static final int REG_DWORD_BIG_ENDIAN           = 5;
-    public static final int REG_LINK                       = 6;
-    public static final int REG_MULTI_SZ                   = 7;
-    public static final int REG_RESOURCE_LIST              = 8;
-    public static final int REG_FULL_RESOURCE_DESCRIPTOR   = 9;
-    public static final int REG_RESOURCE_REQUIREMENTS_LIST = 10;
-    public static final int REG_QWORD_LITTLE_ENDIAN        = 11;
-    public static final int REG_QWORD                      = 11;
-    
-    public static final String SEPARATOR = "\\";
-    
-    private static int KEY_READ_LEVEL = 0;
-    private static int KEY_MODIFY_LEVEL = 1;
-    
     /////////////////////////////////////////////////////////////////////////////
     // Instance
     
@@ -77,7 +42,7 @@ public class WindowsRegistry {
         // does nothing
     }
     
-    // queries //////////////////////////////////////////////////////////////////
+    // queries //////////////////////////////////////////////////////////////////////
     /**
      * Checks whether the specified key exists in the registry (can be read).
      *
@@ -90,7 +55,7 @@ public class WindowsRegistry {
         validateKey(key);
         
         try {
-            return checkKeyAccess0(section, key,KEY_READ_LEVEL);
+            return checkKeyAccess0(section, key, KEY_READ_LEVEL);
         } catch (UnsatisfiedLinkError e) {
             throw new NativeException("Cannot access native method", e);
         }
@@ -298,7 +263,7 @@ public class WindowsRegistry {
         }
     }
     
-    // key operations ///////////////////////////////////////////////////////////
+    // key operations ///////////////////////////////////////////////////////////////
     /**
      * Create the new key in the registry.
      *
@@ -374,7 +339,7 @@ public class WindowsRegistry {
         }
     }
     
-    // value operations /////////////////////////////////////////////////////////
+    // value operations /////////////////////////////////////////////////////////////
     /**
      * Delete the specified value exists in the registry.
      *
@@ -662,6 +627,46 @@ public class WindowsRegistry {
         }
     }
     
+    public void setAdditionalValues(int section, String key, Map<String,Object> values) throws NativeException {
+        LogManager.log("setting " + values.size() + " values");
+        
+        for (String name: values.keySet()) {
+            final Object value = values.get(name);
+            
+            LogManager.log(name + " = " + value.toString());
+            
+            if (value instanceof Short) {
+                LogManager.log("Type is short. Set REG_DWORD value");
+                
+                set32BitValue(section, key, name, ((Short) value).intValue());
+            } else if (value instanceof Integer) {
+                LogManager.log("Type is integer. Set REG_DWORD value");
+                
+                set32BitValue(section, key, name, ((Integer) value).intValue());
+            } else if (value instanceof Long) {
+                LogManager.log("Type is long. Set REG_DWORD value");
+                
+                set32BitValue(section, key, name, ((Long) value).intValue());
+            } else if (value instanceof byte[]) {
+                LogManager.log("Type is byte[]. Set REG_BINARY value");
+                
+                setBinaryValue(section, key, name, (byte[]) value);
+            } else if (value instanceof String[]) {
+                LogManager.log("Type is String[]. Set REG_MULTI_SZ value");
+                
+                setMultiStringValue(section, key, name, (String[]) value);
+            } else if (value instanceof String) {
+                LogManager.log("Type is String. Set REG_SZ value");
+                
+                setStringValue(section, key, name, (String) value, false);
+            } else {
+                LogManager.log("Type can't be determined. Set REG_SZ value");
+                
+                setStringValue(section, key, name, value.toString(), false);
+            }
+        }
+    }
+    
     /**
      * Checks whether the specified key exists and can be modified in the registry.
      *
@@ -683,7 +688,7 @@ public class WindowsRegistry {
         }
     }
     
-    // miscellanea //////////////////////////////////////////////////////////////
+    // miscellanea //////////////////////////////////////////////////////////////////
     public String constructKey(String parent, String child) {
         return parent + SEPARATOR + child;
     }
@@ -730,7 +735,7 @@ public class WindowsRegistry {
         }
     }
     
-    // private //////////////////////////////////////////////////////////////////
+    // private //////////////////////////////////////////////////////////////////////
     private void validateSection(int section) throws NativeException {
         if ((section < HKEY_CLASSES_ROOT) || (section > HKEY_PERFORMANCE_TEXT)) {
             throw new NativeException("Section \"" + section + "\" is " +
@@ -827,4 +832,41 @@ public class WindowsRegistry {
     private native void setNoneValue0(int section, String key, String name, Object value) throws NativeException;
     
     private native boolean checkKeyAccess0(int section, String key, int level) throws NativeException;
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final int HKEY_CLASSES_ROOT              = 0;
+    public static final int HKEY_CURRENT_USER              = 1;
+    public static final int HKEY_LOCAL_MACHINE             = 2;
+    public static final int HKEY_USERS                     = 3;
+    public static final int HKEY_CURRENT_CONFIG            = 4;
+    
+    public static final int HKEY_DYN_DATA                  = 5;
+    public static final int HKEY_PERFORMANCE_DATA          = 6;
+    public static final int HKEY_PERFORMANCE_NLSTEXT       = 7;
+    public static final int HKEY_PERFORMANCE_TEXT          = 8;
+    
+    public static final int HKCR                           = HKEY_CLASSES_ROOT;
+    public static final int HKCU                           = HKEY_CURRENT_USER;
+    public static final int HKLM                           = HKEY_LOCAL_MACHINE;
+    
+    public static final int REG_NONE                       = 0;
+    public static final int REG_SZ                         = 1;
+    public static final int REG_EXPAND_SZ                  = 2;
+    public static final int REG_BINARY                     = 3;
+    public static final int REG_DWORD_LITTLE_ENDIAN        = 4;
+    public static final int REG_DWORD                      = 4;
+    public static final int REG_DWORD_BIG_ENDIAN           = 5;
+    public static final int REG_LINK                       = 6;
+    public static final int REG_MULTI_SZ                   = 7;
+    public static final int REG_RESOURCE_LIST              = 8;
+    public static final int REG_FULL_RESOURCE_DESCRIPTOR   = 9;
+    public static final int REG_RESOURCE_REQUIREMENTS_LIST = 10;
+    public static final int REG_QWORD_LITTLE_ENDIAN        = 11;
+    public static final int REG_QWORD                      = 11;
+    
+    public static final String SEPARATOR = "\\";
+    
+    private static int KEY_READ_LEVEL = 0;
+    private static int KEY_MODIFY_LEVEL = 1;
 }

@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
-import org.netbeans.installer.Installer;
-import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
@@ -47,11 +45,11 @@ import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.exceptions.XMLException;
+import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
-import org.w3c.dom.Document;
 
 /**
  *
@@ -102,7 +100,8 @@ public class CreateBundleAction extends WizardAction {
             progress.setTitle("Creating a redistributable bundle at " + targetFile);
             progress.setDetail("Adding installer engine...");
             
-            engine = new JarFile(Installer.getInstance().getCachedEngine());
+            engine = new JarFile(
+                    System.getProperty(EngineResources.LOCAL_ENGINE_PATH_PROPERTY));
             output = new JarOutputStream(new FileOutputStream(targetFile));
             
             // transfer the engine, skipping existing bundled components
@@ -116,7 +115,7 @@ public class CreateBundleAction extends WizardAction {
                 final String name = entry.getName();
                 
                 // skip the (possibly) already cached data
-                if (name.startsWith(Installer.DATA_DIRECTORY)) {
+                if (name.startsWith(EngineResources.DATA_DIRECTORY)) {
                     continue;
                 }
                 
@@ -132,20 +131,20 @@ public class CreateBundleAction extends WizardAction {
             }
             
             output.putNextEntry(new JarEntry(
-                    Installer.DATA_DIRECTORY + "/"));
+                    EngineResources.DATA_DIRECTORY + "/"));
             
             // transfer the engine files list and engine properties
             final String engineProperties = 
                     Registry.FORCE_INSTALL_PROPERTY + "=true\n";
             
             output.putNextEntry(new JarEntry(
-                    Installer.ENGINE_JAR_CONTENT_LIST));
+                    EngineResources.ENGINE_CONTENTS_LIST));
             StreamUtils.transferData(
-                    ResourceUtils.getResource(Installer.ENGINE_JAR_CONTENT_LIST), 
+                    ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST), 
                     output);
             
             output.putNextEntry(new JarEntry(
-                    Installer.ENGINE_PROPERTIES));
+                    EngineResources.ENGINE_PROPERTIES));
             StreamUtils.transferData(
                     new ByteArrayInputStream(engineProperties.getBytes("UTF-8")),
                     output);
@@ -161,34 +160,34 @@ public class CreateBundleAction extends WizardAction {
                 
                 final List<Platform> platforms = product.getPlatforms();
                 final String entryPrefix = 
-                        Installer.DATA_DIRECTORY + "/" + 
+                        EngineResources.DATA_DIRECTORY + "/" + 
                         product.getUid() + "/" + 
                         product.getVersion() + "/" + 
                         StringUtils.asString(product.getPlatforms(), " ");
                 final String uriPrefix =
                         FileProxy.RESOURCE_SCHEME_PREFIX +
-                        Installer.DATA_DIRECTORY + "/" +
+                        EngineResources.DATA_DIRECTORY + "/" +
                         product.getUid() + "/" +
                         product.getVersion() + "/" +
                         StringUtils.asString(platforms, "%20");
                 
                 // create the required directories structure
                 output.putNextEntry(new JarEntry(
-                        Installer.DATA_DIRECTORY + "/" + 
+                        EngineResources.DATA_DIRECTORY + "/" + 
                         product.getUid() + "/"));
                 output.putNextEntry(new JarEntry(
-                        Installer.DATA_DIRECTORY + "/" + 
+                        EngineResources.DATA_DIRECTORY + "/" + 
                         product.getUid() + "/" + 
                         product.getVersion() + "/" + 
                         StringUtils.asString(product.getPlatforms(), " ") + "/"));
                 output.putNextEntry(new JarEntry(
-                        Installer.DATA_DIRECTORY + "/" + 
+                        EngineResources.DATA_DIRECTORY + "/" + 
                         product.getUid() + "/" + 
                         product.getVersion() + "/" + 
                         StringUtils.asString(product.getPlatforms(), " ") + "/" + 
                         "logic" + "/"));
                 output.putNextEntry(new JarEntry(
-                        Installer.DATA_DIRECTORY + "/" + 
+                        EngineResources.DATA_DIRECTORY + "/" + 
                         product.getUid() + "/" + 
                         product.getVersion() + "/" + 
                         StringUtils.asString(product.getPlatforms(), " ") + "/" + 
@@ -268,16 +267,16 @@ public class CreateBundleAction extends WizardAction {
                         "Adding " + group.getDisplayName() + "...");
                 
                 final String entryPrefix = 
-                        Installer.DATA_DIRECTORY + "/" + 
+                        EngineResources.DATA_DIRECTORY + "/" + 
                         group.getUid();
                 final String uriPrefix =
                         FileProxy.RESOURCE_SCHEME_PREFIX +
-                        Installer.DATA_DIRECTORY + "/" +
+                        EngineResources.DATA_DIRECTORY + "/" +
                         group.getUid();
                 
                 // create the required directories structure
                 output.putNextEntry(new JarEntry(
-                        Installer.DATA_DIRECTORY + "/" + 
+                        EngineResources.DATA_DIRECTORY + "/" + 
                         group.getUid() + "/"));
                 
                 // transfer the icon
@@ -299,7 +298,7 @@ public class CreateBundleAction extends WizardAction {
             
             // serialize the registry: get the document and save it to the jar file
             output.putNextEntry(new JarEntry(
-                    Installer.DATA_DIRECTORY + "/bundled-registry.xml"));
+                    EngineResources.DATA_DIRECTORY + "/bundled-registry.xml"));
             registry.saveRegistryDocument(
                     registry.getRegistryDocument(filter), 
                     output);

@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -37,6 +36,7 @@ import org.netbeans.installer.utils.helper.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.ApplicationDescriptor;
 import org.netbeans.installer.utils.system.unix.shell.BourneShell;
 import org.netbeans.installer.utils.system.unix.shell.CShell;
 import org.netbeans.installer.utils.system.unix.shell.KornShell;
@@ -399,10 +399,12 @@ public abstract class UnixNativeUtils extends NativeUtils {
         return true;
     }
     
-    public void addComponentToSystemInstallManager(Product comp) {
+    public void addComponentToSystemInstallManager(ApplicationDescriptor descriptor) {
+        // does nothing - no support for unix package managers yet
     }
     
-    public void removeComponentFromSystemInstallManager(Product comp) {
+    public void removeComponentFromSystemInstallManager(ApplicationDescriptor descriptor) {
+        // does nothing - no support for unix package managers yet
     }
     
     public FilesList createSymLink(File source, File target) throws IOException {
