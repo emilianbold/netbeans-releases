@@ -18,10 +18,18 @@
  */
 
 package org.netbeans.modules.websvc.core.dev.wizard;
+
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.websvc.core.HandlerCreator;
 import org.netbeans.modules.websvc.core.HandlerCreatorProvider;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+
 
 /**
  *
@@ -33,11 +41,19 @@ public class JaxWsHandlerCreatorProvider implements HandlerCreatorProvider {
     }
     
     public HandlerCreator getHandlerCreator(Project project, WizardDescriptor wiz) {
-        //String jaxVersion = (String) wiz.getProperty(WizardProperties.JAX_VERSION);
-        //if (jaxVersion.equals(WizardProperties.JAX_WS)) {
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
+        FileObject wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); // NOI18N
+        ProjectInfo projectInfo = new ProjectInfo(project);
+        int projectType = projectInfo.getProjectType();
+        if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||
+                (projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.getSourceLevel(project).equals("1.5") && wsimportFO != null) || //NOI18N
+                (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) || //NOI18N
+                (projectInfo.isJwsdpSupported() || (!projectInfo.isJsr109Supported() && projectType == ProjectInfo.WEB_PROJECT_TYPE && !projectInfo.isJsr109oldSupported()))
+                ) {
             return new JaxWsHandlerCreator(project, wiz);
-        //}
-        //return null;
+        }
+        return null;
     }
 
 }
