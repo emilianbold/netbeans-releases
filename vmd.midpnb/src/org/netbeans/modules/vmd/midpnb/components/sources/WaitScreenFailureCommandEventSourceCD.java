@@ -18,20 +18,16 @@
  */
 package org.netbeans.modules.vmd.midpnb.components.sources;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Karo Harezlak
@@ -59,7 +55,8 @@ public final class WaitScreenFailureCommandEventSourceCD extends ComponentDescri
             // info
             InfoPresenter.createStatic ("WaitScreen.FAILURE", "Command", CommandCD.ICON_PATH), //NOI18N
             // delete
-            DeletePresenter.createIndeliblePresenter()
+            DeleteDependencyPresenter.createDependentOnParentComponentPresenter (),
+            DeletePresenter.createUserIndeliblePresenter ()
         );
     }
 

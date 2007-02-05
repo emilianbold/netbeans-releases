@@ -19,30 +19,19 @@
 
 package org.netbeans.modules.vmd.midpnb.components.displayables;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorListSingelton;
-import org.netbeans.modules.vmd.midpnb.components.commands.WaitScreenSuccessCommandCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.openide.util.NbBundle;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Karol Harezlak
@@ -56,9 +45,7 @@ public final class WaitScreenCD extends ComponentDescriptor {
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/wait_screen64.png"; // NOI18N
     
     public static final String PROP_TASK = "task"; //NOI18N
-    public static final String PROP_SUCCESS_ACTION = "successAction"; //NOI18N
-    public static final String PROP_FAILURE_ACTION = "failureAction"; //NOI18N
-    
+
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
@@ -73,28 +60,21 @@ public final class WaitScreenCD extends ComponentDescriptor {
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_TASK, SimpleCancellableTaskCD.TYPEID, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2),
-                new PropertyDescriptor(PROP_SUCCESS_ACTION, CommandEventSourceCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
-                new PropertyDescriptor(PROP_FAILURE_ACTION, CommandEventSourceCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
+                new PropertyDescriptor(PROP_TASK, SimpleCancellableTaskCD.TYPEID, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2)
         );
     }
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES) 
-                   .addProperty("Task", PropertyEditorResourcesComboBox.creater(SimpleCancellableTaskCD.TYPEID, NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK)
-                   .addProperty("Success Action", new PropertyEditorListSingelton(WaitScreenSuccessCommandCD.TYPEID, "Test", "None", "default item"), PROP_SUCCESS_ACTION)
-                   .addProperty("Failure Action", new PropertyEditorListSingelton(WaitScreenSuccessCommandCD.TYPEID, "Test failure", "None", "default item"), PROP_FAILURE_ACTION);  
+                   .addProperty("Task", PropertyEditorResourcesComboBox.creater(SimpleCancellableTaskCD.TYPEID, NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK);
     }
     
     
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             //properties
-            createPropertiesPresenter(),
-            //delete
-            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_FAILURE_ACTION, PROP_SUCCESS_ACTION)
-            //DeletePresenter.createIndeliblePresenter()
+            createPropertiesPresenter()
          );
     } 
     
