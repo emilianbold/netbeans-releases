@@ -152,12 +152,7 @@ public class CommitDataTest extends JellyTestCase {
         TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
         cmo.selectCommitAction("NewClass.java", "Exclude from Commit");
         TimeoutExpiredException tee = null;
-        try {
-            cmo.commit();
-        } catch (TimeoutExpiredException e) {
-            tee = e;
-        }
-        assertNotNull("TimeoutExpiredException was expected.", tee);
+        assertFalse(cmo.btCommit().isEnabled());
         cmo.cancel();
         nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
@@ -266,7 +261,8 @@ public class CommitDataTest extends JellyTestCase {
         //print log message
         TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
         cmo.selectCommitAction("xx", "Exclude from Commit");
-        cmo.commit();
+        assertFalse(cmo.btCommit().isEnabled());        
+        cmo.cancel();
         nodePack = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
         nodeIDE = (org.openide.nodes.Node) nodePack.getOpenideNode();
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
