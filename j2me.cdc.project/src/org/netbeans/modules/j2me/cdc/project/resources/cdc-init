@@ -5,6 +5,12 @@
             <equals arg1="CDC" arg2="${{platform.trigger}}" casesensitive="false"/>
         </condition>
         <available file="${{manifest.file}}" property="manifest.available"/>
+        <condition property="main.class.applet">
+            <equals arg1="${{main.class.class}}" arg2="applet" casesensitive="false"/>
+        </condition>
+        <condition property="main.class.xlet">
+            <equals arg1="${{main.class.class}}" arg2="xlet" casesensitive="false"/>
+        </condition>
         <condition property="manifest.available+main.class+fat.jar">
             <and>
                 <isset property="manifest.available"/>

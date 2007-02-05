@@ -39,8 +39,7 @@ public class CDCPropertiesDescriptor implements ProjectPropertiesDescriptor {
     public static final String APPLICATION_NAME = "application.name"; //NOI18N
     public static final String APPLICATION_VENDOR = "application.vendor"; //NOI18N
     public static final String DLL_DIR = "dll.dir"; //NOI18N
-    public static final String MAIN_CLASS_APPLET = "main.class.applet"; //NOI18N
-    public static final String MAIN_CLASS_XLET = "main.class.xlet"; //NOI18N
+    public static final String MAIN_CLASS_CLASS = "main.class.class"; //NOI18N
     public static final String MAIN_CLASS = "main.class"; //NOI18N
     public static final String MANIFEST_FILE = "manifest.file"; //NOI18N
     public static final String RESOURCES_DIR = "resources.dir"; //NOI18N
@@ -66,8 +65,7 @@ public class CDCPropertiesDescriptor implements ProjectPropertiesDescriptor {
             set.add(new PropertyDescriptor(APPLICATION_NAME, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
             set.add(new PropertyDescriptor(APPLICATION_VENDOR, true, DefaultPropertyParsers.STRING_PARSER,  "Vendor")); //NOI18N
             set.add(new PropertyDescriptor(DLL_DIR, true, DefaultPropertyParsers.FILE_REFERENCE_PARSER,  "dll")); //NOI18N
-            set.add(new PropertyDescriptor(MAIN_CLASS_APPLET, true, DefaultPropertyParsers.BOOLEAN_PARSER,  "false")); //NOI18N
-            set.add(new PropertyDescriptor(MAIN_CLASS_XLET, true, DefaultPropertyParsers.BOOLEAN_PARSER,  "false")); //NOI18N
+            set.add(new PropertyDescriptor(MAIN_CLASS_CLASS, true, DefaultPropertyParsers.STRING_PARSER,  "applet")); //NOI18N
             set.add(new PropertyDescriptor(MAIN_CLASS, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
             set.add(new PropertyDescriptor(MANIFEST_FILE, true, DefaultPropertyParsers.FILE_REFERENCE_PARSER,  "manifest.mf")); //NOI18N
             set.add(new PropertyDescriptor(RESOURCES_DIR, true, DefaultPropertyParsers.FILE_REFERENCE_PARSER,  "resources")); //NOI18N

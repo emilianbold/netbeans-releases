@@ -55,6 +55,14 @@
                     <attr name="triggerPropertyValue" stringvalue="CDC"/>
                 </file>
             </folder>
+            <folder name="Run">
+                <file name="CDCRun">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.j2me.cdc.project.CustomizerRun"/>
+                    <attr name="triggerPropertyName" stringvalue="platform.trigger"/>
+                    <attr name="triggerPropertyValue" stringvalue="CDC"/>
+                </file>
+            </folder>
         </folder>
     </folder>
     <folder name="RecommendedTemplates">
