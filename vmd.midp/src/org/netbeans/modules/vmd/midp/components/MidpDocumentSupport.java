@@ -46,10 +46,12 @@ public final class MidpDocumentSupport {
     
     public static final String PROJECT_TYPE_MIDP = "vmd-midp"; // NOI18N
     
+    private static DesignComponent newComponent;
+    
     public static final Comparator<DesignComponent> COMPONENT_DISPLAY_NAME_COMPARATOR = new Comparator<DesignComponent>() {
         public int compare(DesignComponent component1, DesignComponent component2) {
-            String name1 = (String) component1.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue ();
-            String name2 = (String) component2.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue ();
+            String name1 = (String) component1.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
+            String name2 = (String) component2.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
             if (name1 == null)
                 return -1;
             else if (name2 == null)
@@ -65,11 +67,20 @@ public final class MidpDocumentSupport {
         return list.get(0);
     }
     
-    public static DesignComponent getListSelectCommand(DesignDocument document) {
-        DesignComponent categoryComponent = getCategoryComponent(document, CommandsCategoryCD.TYPEID);
-        List<DesignComponent> list = DocumentSupport.gatherSubComponentsOfType(categoryComponent, ListSelectCommandCD.TYPEID);
-        assert list.size() == 1;
-        return list.get(0);
+    public static DesignComponent getListSelectCommand(final DesignDocument document, final TypeID typeID) {
+        final DesignComponent categoryComponent = getCategoryComponent(document, CommandsCategoryCD.TYPEID);
+        
+        assert categoryComponent != null;
+        List<DesignComponent> list = DocumentSupport.gatherSubComponentsOfType(categoryComponent, typeID);
+        if (list.size() == 1)
+            return list.get(0);
+        else if (list.size() == 0) {   
+            newComponent = document.createComponent(typeID);
+            categoryComponent.addComponent(newComponent);
+         
+            return newComponent;
+        }
+        throw new IllegalStateException("Component "+ typeID + " should be singelton per decument"); //NOI18N;
     }
     
     public static DesignComponent attachCommandToDisplayable(DesignComponent displayable, DesignComponent command) {
@@ -81,7 +92,7 @@ public final class MidpDocumentSupport {
         
         return source;
     }
-   
+    
     public static DesignComponent attachCommandToItem(DesignComponent item, DesignComponent command) {
         DesignComponent itemCommandEventSource = command.getDocument().createComponent(ItemCommandEventSourceCD.TYPEID);
         itemCommandEventSource.writeProperty(ItemCommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference(command));
@@ -90,7 +101,7 @@ public final class MidpDocumentSupport {
         item.addComponent(itemCommandEventSource);
         return itemCommandEventSource;
     }
-     
+    
     public static void addEventSource(DesignComponent component, String propertyName, DesignComponent eventSource) {
         component.addComponent(eventSource);
         PropertyValue sources = component.readProperty(propertyName);
@@ -99,13 +110,13 @@ public final class MidpDocumentSupport {
     }
     
     
-    //    // TODO - PropertyValue.equals is not implemented -> it is not working!
-    //    public static void removeEventSource (DesignComponent component, String propertyName, DesignComponent eventSource) {
-    //        PropertyValue sources = component.readProperty (propertyName);
-    //        PropertyValueSupport.removeArrayValue (sources, PropertyValue.createComponentReference (eventSource));
-    //        component.writeProperty (propertyName, sources);
-    //        component.removeComponent (eventSource);
-    //    }
+//    // TODO - PropertyValue.equals is not implemented -> it is not working!
+//    public static void removeEventSource (DesignComponent component, String propertyName, DesignComponent eventSource) {
+//        PropertyValue sources = component.readProperty (propertyName);
+//        PropertyValueSupport.removeArrayValue (sources, PropertyValue.createComponentReference (eventSource));
+//        component.writeProperty (propertyName, sources);
+//        component.removeComponent (eventSource);
+//    }
     
     public static boolean isCreatableEventHandlerTo(DesignComponent targetComponent) {
         if (targetComponent == null)
@@ -148,12 +159,12 @@ public final class MidpDocumentSupport {
             eventHandler.writeProperty(SwitchDisplayableEventHandlerCD.PROP_ALERT, PropertyValue.createNull());
         }
     }
-
-    public static void updateSwitchDisplayableEventHandler (DesignComponent eventHandler, DesignComponent alert, DesignComponent displayable) {
-        eventHandler.writeProperty (SwitchDisplayableEventHandlerCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference (displayable));
-        updateEventHandlerWithAlert (eventHandler, alert);
+    
+    public static void updateSwitchDisplayableEventHandler(DesignComponent eventHandler, DesignComponent alert, DesignComponent displayable) {
+        eventHandler.writeProperty(SwitchDisplayableEventHandlerCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(displayable));
+        updateEventHandlerWithAlert(eventHandler, alert);
     }
-
+    
     public static String createDisplayNameFromTypeID(TypeID type) {
         String str = type.getString();
         int i = str.lastIndexOf('.');
@@ -196,7 +207,7 @@ public final class MidpDocumentSupport {
         for (DesignComponent componentChild : componentsUnderCommandCategory) {
             if (usedCommands != null && usedCommands.contains(componentChild))
                 continue;
-            if (registry.isInHierarchy(CommandCD.TYPEID, componentChild.getType()) && (Boolean) componentChild.readProperty(CommandCD.PROP_ORDINARY).getPrimitiveValue ()) {
+            if (registry.isInHierarchy(CommandCD.TYPEID, componentChild.getType()) && (Boolean) componentChild.readProperty(CommandCD.PROP_ORDINARY).getPrimitiveValue()) {
                 if (unusedCommands == null)
                     unusedCommands = new ArrayList<DesignComponent>();
                 unusedCommands.add(componentChild);
@@ -224,5 +235,5 @@ public final class MidpDocumentSupport {
         PropertyValue propertyValue = document.getRootComponent().readProperty(RootCD.PROP_VERSION);
         return propertyValue.getKind() == PropertyValue.Kind.VALUE  &&  "MIDP-2.0".equals(MidpTypes.getString(propertyValue)) ? 2 : 1;
     }
-
+    
 }

@@ -42,7 +42,7 @@ public abstract class DeleteDependencyPresenter extends Presenter {
      */
     protected abstract void componentsDeleting (Collection<DesignComponent> componentsToDelete);
 
-    public static Presenter createNullableComponentReferencePresenter (final String propertyName) {
+    public static Presenter createNullableComponentReferencePresenter (final String... propertyNames) {
         return new DeleteDependencyPresenter() {
 
             protected boolean requiresToLive (Collection<DesignComponent> componentsToDelete) {
@@ -50,9 +50,11 @@ public abstract class DeleteDependencyPresenter extends Presenter {
             }
 
             protected void componentsDeleting (Collection<DesignComponent> componentsToDelete) {
-                DesignComponent component = getComponent ().readProperty (propertyName).getComponent ();
-                if (component != null  &&  componentsToDelete.contains (component))
-                    getComponent ().writeProperty (propertyName, PropertyValue.createNull ());
+                for (String propertyName : propertyNames) {
+                    DesignComponent component = getComponent ().readProperty (propertyName).getComponent ();
+                    if (component != null  &&  componentsToDelete.contains (component))
+                        getComponent ().writeProperty (propertyName, PropertyValue.createNull ());
+                }
             }
 
         };

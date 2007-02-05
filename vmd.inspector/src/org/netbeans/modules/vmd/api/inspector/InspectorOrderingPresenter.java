@@ -27,7 +27,7 @@ import org.netbeans.modules.vmd.api.model.Presenter;
  */
 public abstract class InspectorOrderingPresenter extends Presenter {
 
-    public static InspectorOrderingPresenter create(final InspectorOrderingController ... orderingControllers) {
+    public static InspectorOrderingPresenter create(final InspectorOrderingController... orderingControllers) {
 
         return new InspectorOrderingPresenter() {
 

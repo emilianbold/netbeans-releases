@@ -23,6 +23,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.components.commands.ListSelectCommandCD;
 import org.netbeans.modules.vmd.midp.components.sources.ListSelectCommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.components.handlers.ListEventHandlerCD;
@@ -41,7 +42,7 @@ public class ListProducer extends MidpComponentProducer {
 
     public Result createComponent (DesignDocument document) {
         DesignComponent list = document.createComponent (ListCD.TYPEID);
-        DesignComponent listSelectCommand = MidpDocumentSupport.getListSelectCommand (document);
+        DesignComponent listSelectCommand = MidpDocumentSupport.getListSelectCommand(document, ListSelectCommandCD.TYPEID);
 
         DesignComponent listSelectCommandEventSource = document.createComponent (ListSelectCommandEventSourceCD.TYPEID);
         listSelectCommandEventSource.writeProperty (CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference (list));
@@ -51,7 +52,7 @@ public class ListProducer extends MidpComponentProducer {
         DesignComponent listEventHandler = document.createComponent (ListEventHandlerCD.TYPEID);
         MidpDocumentSupport.updateEventHandlerWithNew (listSelectCommandEventSource, listEventHandler);
 
-        list.writeProperty (ListCD.PROP_SELECT_COMMAND, PropertyValue.createComponentReference (listSelectCommandEventSource));
+        list.writeProperty(ListCD.PROP_SELECT_COMMAND, PropertyValue.createComponentReference (listSelectCommandEventSource));
         
         return new Result (list, listSelectCommandEventSource, listEventHandler);
     }

@@ -46,7 +46,7 @@ public final class MidpInspectorSupport {
     
     
     //Ordering inside of category by array property defined by propertyName
-    public static final Presenter createComponentCategory(String categoryName, TypeID folderTypeID, Image icon, List<InspectorOrderingController> orderingControllers, TypeID ... filtersTypeID) {
+    public static final Presenter createComponentCategory(String categoryName, TypeID folderTypeID, Image icon, List<InspectorOrderingController> orderingControllers, TypeID... filtersTypeID) {
         
         return InspectorFolderPresenter.create(categoryName, 
                                                folderTypeID,
@@ -65,7 +65,7 @@ public final class MidpInspectorSupport {
                                        filtersTypeID); 
     }
     //Ordering inside of category by array property defined by propertyName
-    public static final Presenter createComponentCommandsCategory(List<InspectorOrderingController> orderingControllers, TypeID ... filtersTypeID) {
+    public static final Presenter createComponentCommandsCategory(List<InspectorOrderingController> orderingControllers, TypeID... filtersTypeID) {
         
         return createComponentCategory("Assigned Commands", 
                                        TYPEID_COMMANDS,
@@ -75,7 +75,7 @@ public final class MidpInspectorSupport {
     }
     
     //Default Sorting
-    public static final Presenter createComponentElementsCategory(String displayName, TypeID ... filtersTypeID) {
+    public static final Presenter createComponentElementsCategory(String displayName, TypeID... filtersTypeID) {
         
         return createComponentCategory(displayName,
                                        TYPEID_ELEMENTS,
@@ -85,7 +85,7 @@ public final class MidpInspectorSupport {
     }
     
     //Ordering inside of category by array property defined by propertyName
-    public static final Presenter createComponentElementsCategory(String displayName, List<InspectorOrderingController> orderingControllers, TypeID ... filtersTypeID) {
+    public static final Presenter createComponentElementsCategory(String displayName, List<InspectorOrderingController> orderingControllers, TypeID... filtersTypeID) {
         
         return createComponentCategory( displayName, 
                                        TYPEID_ELEMENTS,

@@ -45,9 +45,9 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.AddAction;
 
 public abstract class InspectorFolderPresenter extends DynamicPresenter {
     
-    public static InspectorFolderPresenter create(final boolean canRename,final String ... propertyNames) {
+    public static InspectorFolderPresenter create(final boolean canRename,final String... propertyNames) {
         
-        return new InspectorFolderPresenter(){
+        return new InspectorFolderPresenter() {
             private ComponentFolder folder;
             
             public InspectorFolder getFolder() {
@@ -76,7 +76,7 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
     
     public static InspectorFolderPresenter create(final boolean canRename) {
         
-        return new InspectorFolderPresenter(){
+        return new InspectorFolderPresenter() {
             private ComponentFolder folder;
             
             public InspectorFolder getFolder() {
@@ -94,7 +94,7 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
         final TypeID typeID,
         final Image icon,
         final TypeID[] filtersTypeID,
-        final InspectorOrderingController ... orderingControllers) {
+        final InspectorOrderingController... orderingControllers) {
         
         return new InspectorFolderPresenter() {
             private CategoryFolder folder;
@@ -112,13 +112,13 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
     
     public abstract InspectorFolder getFolder();
     
-    protected void notifyAttached(DesignComponent component){}
+    protected void notifyAttached(DesignComponent component) {}
     
-    protected void notifyDetached(DesignComponent component){}
+    protected void notifyDetached(DesignComponent component) {}
     
-    protected void designChanged(DesignEvent event){}
+    protected void designChanged(DesignEvent event) {}
     
-    protected void presenterChanged(PresenterEvent event){}
+    protected void presenterChanged(PresenterEvent event) {}
     
     protected DesignEventFilter getEventFilter() {
         getComponent();
@@ -149,7 +149,7 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
                 public void run() {
                     InfoPresenter presenter =  getComponent().getPresenter(InfoPresenter.class);
                     if (presenter == null)
-                        throw new IllegalStateException("No info presenter for this component"); //NOI18N
+                        throw new IllegalStateException("No InfoPresenter for this component"); //NOI18N
                     
                     icon = presenter.getIcon(InfoPresenter.IconType.COLOR_16x16);
                 }

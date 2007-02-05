@@ -55,7 +55,7 @@ public final class MidpActionsSupport {
             presenters.add(ActionsPresenter.create (50, MoveAction.createMoveUpAction(propertyName), MoveAction.createMoveDownAction(propertyName)));
     }
 
-    public static void addNewActionPresenter(List<Presenter> presenters, TypeID ... types) {
+    public static void addNewActionPresenter(List<Presenter> presenters, TypeID... types) {
        presenters.add(ActionsPresenter.create(10, AddAction.getInstance()));
        presenters.add(AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, types));
     }

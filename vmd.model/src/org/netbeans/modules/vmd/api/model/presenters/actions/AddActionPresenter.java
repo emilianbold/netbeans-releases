@@ -45,12 +45,12 @@ public abstract class AddActionPresenter extends Presenter {
     public static final String ADD_ACTION = NbBundle.getMessage(AddActionPresenter.class, "NAME_AddActionPresenter"); //NOI18N
 
     // TODO - move this method to a ActionsPresenterFactory class and hide this class
-    public static final Presenter create(Integer order, TypeID ... types) {
+    public static final Presenter create(Integer order, TypeID... types) {
         return create(null, order, types);
     }
 
     // TODO - move this method to a ActionsPresenterFactory class and hide this class
-    public final static Presenter create(final String name, final int order,final TypeID ... types) {
+    public final static Presenter create(final String name, final int order,final TypeID... types) {
         
         return new AddActionPresenter() {
             public Integer getOrder() {

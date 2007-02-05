@@ -54,7 +54,7 @@ public final class AddAction extends AbstractAction  implements ActionContext , 
     
     private static Map<Collection<TypeID>, AddAction> instances = new HashMap<Collection<TypeID>, AddAction>(); 
     
-    public static final AddAction getInstance(TypeID ... filters) {
+    public static final AddAction getInstance(TypeID... filters) {
         Collection<TypeID> filtersList = Arrays.asList(filters);
         
         for (Collection<TypeID> key : instances.keySet()) {
@@ -71,7 +71,7 @@ public final class AddAction extends AbstractAction  implements ActionContext , 
     private boolean enabled;
     private TypeID[] filtersTypeID =  new TypeID[0];
 
-    private AddAction(TypeID ... filtersTypeID) {
+    private AddAction(TypeID... filtersTypeID) {
         this.putValue(Action.NAME, DISPLAY_NAME);
         if (filtersTypeID != null)
             this.filtersTypeID = filtersTypeID;

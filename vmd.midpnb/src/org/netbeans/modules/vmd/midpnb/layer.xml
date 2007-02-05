@@ -37,10 +37,16 @@
             
             <file name="org-netbeans-modules-vmd-midpnb-components-resources-SimpleCancellableTaskCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-resources-SimpleTableModelCD.instance"/>
+            
+            <file name="org-netbeans-modules-vmd-midpnb-components-commands-WaitScreenFailureCommandCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-commands-WaitScreenSuccessCommandCD.instance"/>
+            
+            <file name="org-netbeans-modules-vmd-midpnb-components-sources-WaitScreenFailureCommandEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-sources-WaitScreenSuccessCommandEventSourceCD.instance"/>
         </folder>
         
         <folder name="producers">
-            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$WaitScreen.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-WaitScreenProducer.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SplashScreen.instance"/>
             
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGSplashScreen.instance"/>
@@ -54,6 +60,7 @@
             
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SimpleCancellableTask.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SimpleTableModel.instance"/>
+           
         </folder>
     
     </folder>

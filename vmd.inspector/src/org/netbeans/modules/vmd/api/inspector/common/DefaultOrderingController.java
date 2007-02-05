@@ -46,7 +46,7 @@ public class DefaultOrderingController implements InspectorOrderingController {
     private Integer order;
     private List<TypeID> types;
     
-    public DefaultOrderingController(Integer order, TypeID ... types) {
+    public DefaultOrderingController(Integer order, TypeID... types) {
         if (types == null )
             throw new IllegalArgumentException("types argument cant be null"); //NOI18N
         

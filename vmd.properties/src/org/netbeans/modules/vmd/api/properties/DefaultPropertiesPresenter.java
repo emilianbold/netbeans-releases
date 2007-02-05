@@ -58,7 +58,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
                                                   boolean editorEditableOnly,
                                                   DesignPropertyEditor propertyEditor,
                                                   PropertyBasicComponent basicPanelComponent,
-                                                  String ... propertyNames) {
+                                                  String... propertyNames) {
         
         if (propertyEditor == null)
             throw new IllegalArgumentException(); 
@@ -74,7 +74,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
                                                   boolean editorEditableOnly,
                                                   Class propertyEditorType,
                                                   PropertyBasicComponent basicPanelComponent,
-                                                  String ... propertyNames) {
+                                                  String... propertyNames) {
         
         if (propertyEditorType == null)
             throw new IllegalArgumentException(NULL_EDITOR); 
@@ -89,7 +89,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
                                                   String toolTip,
                                                   DesignPropertyEditor propertyEditor,
                                                   PropertyBasicComponent basicPanelComponent,
-                                                  String ... propertyNames) {
+                                                  String... propertyNames) {
         
         if (propertyEditor == null)
             throw new IllegalArgumentException(NULL_DEFAULT); 
@@ -104,7 +104,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
                                                   String toolTip,
                                                   Class propertyEditorType,
                                                   PropertyBasicComponent basicPanelComponent,
-                                                  String ... propertyNames) {
+                                                  String... propertyNames) {
         
         if (propertyEditorType == null)
             throw new IllegalArgumentException(NULL_EDITOR); 
@@ -118,7 +118,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     public DefaultPropertiesPresenter addProperty(String displayName,
                                                   DesignPropertyEditor propertyEditor,
                                                   PropertyBasicComponent basicPanelComponent,
-                                                  String ... propertyNames) {
+                                                  String... propertyNames) {
         if (propertyEditor == null)
             throw new IllegalArgumentException(NULL_DEFAULT); 
         
@@ -141,9 +141,9 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     }
     
     public DefaultPropertiesPresenter addProperty(String displayName,
-        Class propertyEditorType,
-        PropertyBasicComponent basicPanelComponent,
-        String ... propertyNames) {
+                                                  Class propertyEditorType,
+                                                  PropertyBasicComponent basicPanelComponent,
+                                                  String... propertyNames) {
         
         if (propertyEditorType == null)
             throw new IllegalArgumentException(NULL_EDITOR); 
@@ -155,9 +155,9 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     }
     
     public DefaultPropertiesPresenter addProperty(String displayName,
-        String toolTip,
-        DesignPropertyEditor propertyEditor,
-        String ... propertyNames) {
+                                                  String toolTip,
+                                                  DesignPropertyEditor propertyEditor,
+                                                  String... propertyNames) {
         
         if (propertyEditor == null)
             throw new IllegalArgumentException(NULL_DEFAULT); 
@@ -171,7 +171,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     public DefaultPropertiesPresenter addProperty(String displayName,
                                                   String toolTip,
                                                   Class propertyEditorType,
-                                                  String ... propertyNames) {
+                                                  String... propertyNames) {
 
         if (propertyEditorType == null)
             throw new IllegalArgumentException(NULL_EDITOR); 
@@ -184,7 +184,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     
     public DefaultPropertiesPresenter addProperty(String displayName,
                                                   DesignPropertyEditor propertyEditor,
-                                                  String ... propertyNames) {
+                                                  String... propertyNames) {
         
         if (propertyEditor == null)
             throw new IllegalArgumentException(NULL_DEFAULT); 
@@ -199,7 +199,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     
     public DefaultPropertiesPresenter addProperty(String displayName,
                                                   Class propertyEditorType,
-                                                  String ... propertyNames) {
+                                                  String... propertyNames) {
         
         if (propertyEditorType == null)
             throw new IllegalArgumentException(NULL_EDITOR); 

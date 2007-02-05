@@ -52,7 +52,7 @@ public final class ActionsSupport {
         return createAddActionArray(component, EMPTY_TYPEID_ARRAY);
     }
     
-    public static Action[] createAddActionArray(final DesignComponent component,final TypeID ... filtersTypeID) {
+    public static Action[] createAddActionArray(final DesignComponent component,final TypeID... filtersTypeID) {
         final List<Action> actions = new ArrayList<Action>();
         
         component.getDocument().getTransactionManager().readAccess(new Runnable() {

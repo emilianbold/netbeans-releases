@@ -51,7 +51,8 @@ public final class DeleteAction extends SystemAction {
         });
     }
 
-    public boolean isEnabled() {        final DesignDocument activeDocument = ActiveDocumentSupport.getDefault ().getActiveDocument ();
+    public boolean isEnabled() {        
+        final DesignDocument activeDocument = ActiveDocumentSupport.getDefault ().getActiveDocument ();
         if (activeDocument == null)
             return false;
         final boolean[] ret = new boolean[1];

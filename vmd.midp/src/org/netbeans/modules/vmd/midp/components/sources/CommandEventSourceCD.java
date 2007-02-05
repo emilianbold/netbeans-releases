@@ -92,7 +92,7 @@ public final class CommandEventSourceCD extends ComponentDescriptor {
     }
 
     
-    static class CommandEventSourceFlowPinPresenter extends FlowEventSourcePinPresenter {
+    public static class CommandEventSourceFlowPinPresenter extends FlowEventSourcePinPresenter {
 
         protected DesignComponent getComponentForAttachingPin () {
             return getComponent ().readProperty (PROP_DISPLAYABLE).getComponent ();

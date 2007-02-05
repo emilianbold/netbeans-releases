@@ -44,11 +44,11 @@ public class PropertiesPresenterForwarder extends PropertiesPresenter {
         return new PropertiesPresenterForwarder(propertyName);
     }
     
-    public static Presenter createByNames(String propertyName, String ... propertyNames) {
+    public static Presenter createByNames(String propertyName, String... propertyNames) {
         return new PropertiesPresenterForwarder(propertyName, propertyNames);
     }
     
-    private PropertiesPresenterForwarder(String propertyName, String ... propertyNames) {
+    private PropertiesPresenterForwarder(String propertyName, String... propertyNames) {
         this.propertyName = propertyName;
         this.propertyNames = propertyNames;
     }

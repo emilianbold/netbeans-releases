@@ -27,7 +27,7 @@ import org.netbeans.modules.vmd.api.model.Presenter;
  */
 public abstract class InspectorPositionPresenter extends Presenter {
 
-    public static InspectorPositionPresenter create(final InspectorPositionController ... positionControllers) {
+    public static InspectorPositionPresenter create(final InspectorPositionController... positionControllers) {
 
         return new InspectorPositionPresenter() {
 

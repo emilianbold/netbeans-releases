@@ -34,7 +34,7 @@ import org.netbeans.modules.vmd.api.model.presenters.OrderablePresenter;
  */
 public abstract class ActionsPresenter extends Presenter implements OrderablePresenter {
 
-    public final static ActionsPresenter create(final int order, final Action ... actions) {
+    public final static ActionsPresenter create(final int order, final Action... actions) {
         return new ActionsPresenter() {
             
             public List<Action> getActions() {

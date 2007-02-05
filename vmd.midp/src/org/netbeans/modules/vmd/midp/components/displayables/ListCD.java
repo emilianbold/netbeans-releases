@@ -41,7 +41,7 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorSelectCommand;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorListSingelton;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -89,7 +89,7 @@ public final class ListCD extends ComponentDescriptor {
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty("Type", PropertyEditorComboBox.createInstance( ChoiceCD.getListTypes(), TYPEID), PROP_LIST_TYPE) //NOI18N
                     .addProperty("Fit Policy", PropertyEditorComboBox.createInstance(ChoiceCD.getFitPolicyValues(), TYPEID), PROP_FIT_POLICY) //NOI18N
-                    .addProperty("Select Command", PropertyEditorSelectCommand.createInstance(), PROP_SELECT_COMMAND) //NOI18N
+                    .addProperty("Select Command", PropertyEditorListSingelton.createInstanceListSelect(), PROP_SELECT_COMMAND) //NOI18N
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_CODE_PROPERTIES)
                     .addProperty("Index Based Switch", Boolean.class, PROP_INDEX_BASED_SWITCH); //NOI18N
     }
@@ -141,7 +141,7 @@ public final class ListCD extends ComponentDescriptor {
                 ListCode.createListActionCodeNamePresenter (),
                 ListCode.createListActionCodeClassLevelPresenter (),
                 // delete
-                DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_SELECT_COMMAND)
+                DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SELECT_COMMAND)
         );
 
     }

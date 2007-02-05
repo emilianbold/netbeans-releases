@@ -18,12 +18,8 @@
                 <Component componentID="9" typeID="C#ItemStateListener"/>
             </Component>
             <Component componentID="10" typeID="C#DisplayablesCategory"/>
-            <Component componentID="11" typeID="C#CommandsCategory">
-                <Component componentID="12" typeID="C#ListSelectCommand">
-                    <Property name="ordinary" typeID="Pboolean" value="Vfalse"/>
-                </Component>
-            </Component>
             <Component componentID="13" typeID="C#ResourcesCategory"/>
+            <Component componentID="8" typeID="C#CommandsCategory"/>
         </Component>
     </Document>
 </VisualDesign>

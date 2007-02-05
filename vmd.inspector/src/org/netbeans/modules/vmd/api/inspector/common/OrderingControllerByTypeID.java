@@ -52,7 +52,7 @@ public class OrderingControllerByTypeID implements InspectorOrderingController {
         }
     };
     
-    public OrderingControllerByTypeID(Integer order, TypeID ... types) {
+    public OrderingControllerByTypeID(Integer order, TypeID... types) {
         if (types == null )
             throw new IllegalArgumentException("types argument cant be null"); //NOI18N
         
