@@ -495,9 +495,22 @@ public class Language {
         Iterator it = getTokens ().iterator ();
         while (it.hasNext ()) {
             TokenType token = (TokenType) it.next ();
-            SimpleAttributeSet as = (SimpleAttributeSet) getFeature 
-                (Language.COLOR, token.getType ());
-            addColor (token.getType (), as, colorsMap, defaultsMap);
+            Object obj = getFeature(Language.COLOR, token.getType ());
+            if (obj instanceof SimpleAttributeSet) {
+                SimpleAttributeSet as = (SimpleAttributeSet)obj;
+                String id = (String)as.getAttribute("color_name"); // NOI18N
+                if (id == null)
+                    id = token.getType ();
+                addColor (id, as, colorsMap, defaultsMap);
+            } else if (obj instanceof List) {
+                for (Iterator iter = ((List)obj).iterator(); iter.hasNext(); ) {
+                    SimpleAttributeSet as = (SimpleAttributeSet)iter.next();
+                    String id = (String)as.getAttribute("color_name"); // NOI18N
+                    if (id == null)
+                        id = token.getType ();
+                    addColor (id, as, colorsMap, defaultsMap);
+                }
+            }
         }
         Map m = getFeature (Language.COLOR);
         if (m == null)
@@ -507,8 +520,15 @@ public class Language {
             String type = (String) it.next ();
             if (colorsMap.containsKey (type))
                 continue;
-            SimpleAttributeSet as = (SimpleAttributeSet) m.get (type);
-            addColor (type, as, colorsMap, defaultsMap);
+            Object obj = m.get (type);
+            if (obj instanceof SimpleAttributeSet) {
+                addColor (type, (SimpleAttributeSet)obj, colorsMap, defaultsMap);
+            } else if (obj instanceof List) {
+                for (Iterator iter = ((List)obj).iterator(); iter.hasNext(); ) {
+                    SimpleAttributeSet as = (SimpleAttributeSet) iter.next();
+                    addColor (type, as, colorsMap, defaultsMap);
+                }
+            }
         }
         addColor ("error", null, colorsMap, defaultsMap);
         return colorsMap;

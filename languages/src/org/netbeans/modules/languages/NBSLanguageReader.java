@@ -382,7 +382,20 @@ public class NBSLanguageReader {
                 getString (m, "font_type", false),
                 getEvaluator (m, "condition", false)
             );
-            language.addFeature (featureName, identifier, feature);
+            Object f = language.getFeature (featureName, identifier.toString());
+            if (f == null) {
+                language.addFeature (featureName, identifier, feature);
+            } else {
+                List flist;
+                if (f instanceof List) {
+                    flist = (List)f;
+                } else {
+                    flist = new ArrayList();
+                    flist.add(f);
+                }
+                flist.add(feature);
+                language.addFeature (featureName, identifier, flist);
+            }
         } else
         if (Language.COMPLETE.equals (featureName)) {
             if (identifier != null)
