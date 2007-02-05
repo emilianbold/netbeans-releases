@@ -30,6 +30,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
@@ -67,6 +68,12 @@ public class GenerateJNLPApplicationTest extends TestBase {
     public GenerateJNLPApplicationTest(String name) {
         super(name);
     }
+    
+    @Override
+    protected Level logLevel() {
+        return Level.CONFIG;
+    }
+
 
     protected void setUp() throws Exception {
         super.setUp();
