@@ -199,19 +199,23 @@ public class JspCompletionProvider implements CompletionProvider {
         //this is handy after end tag autocompletion when user doesn't complete the
         //end tag and just types a text
         int adjustedOffset = caretOffset == 0 ? 0 : caretOffset - 1;
-        
-        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-        TokenSequence tokenSequence = JspSyntaxSupport.tokenSequence(tokenHierarchy, HTMLTokenId.language(), adjustedOffset);
-        if(tokenSequence != null) {
-            tokenSequence.move(adjustedOffset);
-            if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
-                return; //no token found
+        doc.readLock();
+        try {
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+            TokenSequence tokenSequence = JspSyntaxSupport.tokenSequence(tokenHierarchy, HTMLTokenId.language(), adjustedOffset);
+            if(tokenSequence != null) {
+                tokenSequence.move(adjustedOffset);
+                if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
+                    return; //no token found
+                }
+                
+                Token tokenItem = tokenSequence.token();
+                if(tokenItem.id() == HTMLTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
+                    hideCompletion();
+                }
             }
-            
-            Token tokenItem = tokenSequence.token();
-            if(tokenItem.id() == HTMLTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
-                hideCompletion();
-            }
+        } finally {
+            doc.readUnlock();
         }
     }
     
