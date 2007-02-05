@@ -12,12 +12,13 @@
  */
 package org.netbeans.modules.vmd.inspector;
 
-import javax.swing.JComponent;
-
+import org.netbeans.spi.navigator.NavigatorHandler;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+
+import javax.swing.*;
 
 /**
  * @author Karol Harezlak
@@ -46,9 +47,12 @@ public final class InspectorPanel implements NavigatorPanel , LookupListener {
         return ui;
     }
    
-    //TODO 
     public void panelActivated(Lookup lookup) {
-         //System.out.println("Navigator lookup Navigator hints: " + lookup.lookupAll(Object.class)); //NOI18N
+        SwingUtilities.invokeLater (new Runnable() {
+            public void run () {
+                NavigatorHandler.activatePanel (InspectorPanel.this);
+            }
+        });
     }
     
     public void panelDeactivated() {
