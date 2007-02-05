@@ -34,7 +34,7 @@ import org.netbeans.installer.wizard.components.actions.InstallAction;
 import org.netbeans.installer.wizard.components.actions.UninstallAction;
 import org.netbeans.installer.wizard.components.panels.PostCreateBundleSummaryPanel;
 import org.netbeans.installer.wizard.components.panels.PreCreateBundleSummaryPanel;
-import org.netbeans.installer.wizard.components.panels.SelectedComponentsLicensesPanel;
+import org.netbeans.installer.wizard.components.panels.LicensesPanel;
 import org.netbeans.installer.wizard.components.panels.netbeans.NbPostInstallSummaryPanel;
 import org.netbeans.installer.wizard.components.panels.netbeans.NbPreInstallSummaryPanel;
 
@@ -60,7 +60,7 @@ public class MainSequence extends WizardSequence {
             case NORMAL:
                 if (toInstall.size() > 0) {
                     addChild(new DownloadConfigurationLogicAction());
-                    addChild(new SelectedComponentsLicensesPanel());
+                    addChild(new LicensesPanel());
                     
                     for (Product component: toInstall) {
                         addChild(new ProductWizardSequence(component));
