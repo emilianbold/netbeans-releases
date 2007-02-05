@@ -24,6 +24,8 @@ import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.editor.mimelookup.MimePathLookup;
 
 /**
@@ -69,6 +71,10 @@ import org.netbeans.modules.editor.mimelookup.MimePathLookup;
  * implementation of a lexer there can be tokens with <code>MimePath</code> that
  * contains several consecutive same mime types.
  * 
+ * <p>The format of a valid mime type string is described in
+ * <a href="http://tools.ietf.org/html/rfc4288#section-4.2">RFC 4288</a>.
+ * <code>MimePath</code> performs internall checks according to this specification.
+ * 
  * <p><b>Identity:</b> By definition two <code>MimePath</code> instances are equal
  * if they represent the same string mime path. The implementation guarantees
  * that by caching and reusing instances of the <code>MimePath</code> that it
@@ -84,6 +90,7 @@ import org.netbeans.modules.editor.mimelookup.MimePathLookup;
  *
  * @author Miloslav Metelka, Vita Stejskal
  * @see MimeLookup
+ * @see http://tools.ietf.org/html/rfc4288
  */
 public final class MimePath {
     
@@ -98,9 +105,12 @@ public final class MimePath {
 
     /** The List of Recently Used mime paths. */
     private static final ArrayList<MimePath> LRU = new ArrayList<MimePath>();
-    
+
     /** The maximum size of the List of Recently Used mime paths.
     /* package */ static final int MAX_LRU_SIZE = 3;
+
+    private static final String REG_NAME = "[[\\p{Alnum}][!#$&.+\\-^_]]{1,127}"; //NOI18N
+    private static final Pattern MIME_TYPE_PATTERN = Pattern.compile("^" + REG_NAME + "/{1}" + REG_NAME + "$"); //NOI18N
     
     /**
      * Gets the mime path for the given mime type. The returned <code>MimePath</code>
@@ -290,14 +300,9 @@ public final class MimePath {
             MimePath mimePath;
             if (mpRef == null || (mimePath = (MimePath)mpRef.get()) == null) {
                 // Check mimeType correctness
-                int slashIndex = mimeType.indexOf('/'); //NOI18N
-                if (slashIndex == -1) { // no slash
-                    throw new IllegalArgumentException("mimeType=\"" + mimeType // NOI18N
-                            + "\" does not contain '/' character"); //NOI18N
-                }
-                if (mimeType.indexOf('/', slashIndex + 1) != -1) { // more than one slash
-                    throw new IllegalArgumentException("mimeType=\"" + mimeType // NOI18N
-                            + "\" contains more than one '/' character"); //NOI18N
+                Matcher m = MIME_TYPE_PATTERN.matcher(mimeType);
+                if (!m.matches()) {
+                    throw new IllegalArgumentException("Invalid mimeType=\"" + mimeType + "\""); //NOI18N
                 }
                 
                 // Construct the mimePath

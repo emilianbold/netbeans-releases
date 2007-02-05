@@ -55,4 +55,47 @@ public class MimePathTest extends NbTestCase {
         MimePath mpPrefix = mp.getPrefix(2);
         assertTrue("text/x-java/text/x-ant+xml".equals(mpPrefix.getPath()));
     }
+    
+    public void testMimeTypeCorrectnessCheck() {
+        String [] valid = new String [] {
+            "text/plain",
+            "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!#$&.+-^_/abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!#$&.+-^_"
+        };
+        String [] invalid = new String [] {
+            "/",
+            "text",
+            "text//aaa",
+            "text@aaa",
+            "text/aaa/bb",
+            "text/ aaa",
+        };
+
+        // Check an empty mime type.
+        // This is an exception to the mime type specs, we allow empty mime types
+        // and they denote MimePath.EMPTY
+        {
+            MimePath mimePath = MimePath.get("");
+            assertNotNull("MimePath should not be null", mimePath);
+            assertEquals("Wrong MimePath size", 0, mimePath.size());
+            assertSame("Wrong empty MimePath", MimePath.EMPTY, mimePath);
+        }
+        
+        // Check valid mime types
+        for(String mimeType : valid) {
+            MimePath mimePath = MimePath.get(mimeType);
+            assertNotNull("MimePath should not be null", mimePath);
+            assertEquals("Wrong MimePath size", 1, mimePath.size());
+            assertEquals("Wrong mime type", mimeType, mimePath.getMimeType(0));
+        }
+        
+        // Check invalid mime types
+        for(String mimeType : invalid) {
+            try {
+                MimePath mimePath = MimePath.get(mimeType);
+                fail("Should not create MimePath for an invalid mime type: '" + mimeType + "'");
+            } catch (IllegalArgumentException iae) {
+                // passed
+            }
+        }
+    }
 }
