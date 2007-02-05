@@ -22,6 +22,7 @@ package org.netbeans.modules.languages.lexer;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.languages.CharInput;
+import org.netbeans.modules.languages.lexer.SLexer.TokenProperties;
 import org.netbeans.modules.languages.lexer.SLexer.Vojta;
 import org.netbeans.modules.languages.parser.Pattern;
 
@@ -86,9 +87,25 @@ class DelegatingInputBridge extends CharInput {
     private void readEmbeddings () {
         int startIndex = input.getIndex ();
         if (!input.eof () && start.next (input) != null) {
-            while (!input.eof () && end.next (input) == null)
+            int startSkipLength = input.getIndex () - startIndex;
+            int endSkipLength = input.getIndex ();
+            while (!input.eof () && end.next (input) == null) {
                 input.read ();
-            embeddings.add (new Vojta (tokenType, startIndex, input.getIndex (), "E"));
+                endSkipLength = input.getIndex ();
+            }
+            endSkipLength = input.getIndex () - endSkipLength;
+            embeddings.add (
+                new Vojta (
+                    tokenType,
+                    startIndex,
+                    input.getIndex (),
+                    new TokenProperties (
+                        "E",
+                        startSkipLength,
+                        endSkipLength
+                    )
+                )
+            );
         }
     }
 }

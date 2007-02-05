@@ -74,10 +74,18 @@ public class SLanguageProvider extends LanguageProvider {
             if (properties.containsKey ("startSkipLength")) {
                 String s = (String) ((Evaluator) properties.get ("startSkipLength")).evaluate ();
                 startSkipLength = Integer.parseInt (s);
+            } else {
+                Integer i = (Integer) token.getProperty ("startSkipLength");
+                if (i != null)
+                    startSkipLength = i.intValue ();
             }
             if (properties.containsKey ("endSkipLength")) {
                 String s = (String) ((Evaluator) properties.get ("endSkipLength")).evaluate ();
                 endSkipLength = Integer.parseInt (s);
+            } else {
+                Integer i = (Integer) token.getProperty ("endSkipLength");
+                if (i != null)
+                    endSkipLength = i.intValue ();
             }
             return LanguageEmbedding.create (l, startSkipLength, endSkipLength);
         } catch (ParseException ex) {

@@ -20,6 +20,8 @@
 package org.netbeans.modules.languages;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -224,60 +226,81 @@ public class ParserManagerImpl extends ParserManager {
 
     private static TokenInput createTokenInput (NbEditorDocument doc, String mimeType) {
         try {
-            List tokens = new ArrayList ();
             doc.readLock ();
             TokenHierarchy th = TokenHierarchy.get (doc);
             TokenSequence ts = th.tokenSequence ();
-            while (ts.moveNext ()) {
-                Token t = ts.token ();
-                String type = t.id ().name ();
-                int offset = t.offset (th);
-                String ttype = (String) t.getProperty ("type");
-                if (ttype == null)
-                    tokens.add (SToken.create (
-                        type, 
-                        t.text ().toString (), 
-                        offset
-                    ));
-                else
-                if (ttype.equals ("E"))
-                    continue;
-                else
-                if (ttype.equals ("S")) {
-                    StringBuilder sb = new StringBuilder (t.text ().toString ());
-                    while (ts.moveNext ()) {
-                        t = ts.token ();
-                        ttype = (String) t.getProperty ("type");
-                        if (ttype == null) {
-                            ts.movePrevious ();
-                            break;
-                        }
-                        if (ttype.equals ("E"))
-                            continue;
-                        if (ttype.equals ("S")) {
-                            ts.movePrevious ();
-                            break;
-                        }
-                        if (!ttype.equals ("C"))
-                            throw new IllegalArgumentException ();
-                        if (!type.equals (t.id ().name ()))
-                            throw new IllegalArgumentException ();
-                        sb.append (t.text ().toString ());
-                    }
-                    int no = ts.offset () + ts.token ().length ();
-                    tokens.add (SToken.create (
-                        type, 
-                        sb.toString (), 
-                        offset,
-                        no - offset
-                    ));
-                } else
-                    throw new IllegalArgumentException ();
-            }
-            return TokenInput.create (tokens);
+            return TokenInput.create (getTokens (ts));
         } finally {
             doc.readUnlock ();
         }
+    }
+    
+    private static List getTokens (TokenSequence ts) {
+        List tokens = new ArrayList ();
+        while (ts.moveNext ()) {
+            Token t = ts.token ();
+            String type = t.id ().name ();
+            int offset = ts.offset ();
+            String ttype = (String) t.getProperty ("type");
+            if (ttype == null) {
+                Map embeddings = null;
+                TokenSequence ts2 = ts.embedded ();
+                if (ts2 != null)
+                    embeddings = Collections.singletonMap (
+                        ts2.language ().mimeType (),
+                        getTokens (ts2)
+                    );
+                tokens.add (SToken.create (
+                    type, 
+                    t.text ().toString (), 
+                    offset,
+                    t.length (),
+                    embeddings
+                ));
+            } else
+            if (ttype.equals ("E"))
+                continue;
+            else
+            if (ttype.equals ("S")) {
+                StringBuilder sb = new StringBuilder (t.text ().toString ());
+                Map embeddings = new HashMap ();
+                while (ts.moveNext ()) {
+                    t = ts.token ();
+                    TokenSequence ts2 = ts.embedded ();
+                    if (ts2 != null)
+                        embeddings.put (
+                            ts2.language ().mimeType (),
+                            getTokens (ts2)
+                        );
+                    ttype = (String) t.getProperty ("type");
+                    if (ttype == null) {
+                        ts.movePrevious ();
+                        break;
+                    }
+                    if (ttype.equals ("E"))
+                        continue;
+                    if (ttype.equals ("S")) {
+                        ts.movePrevious ();
+                        break;
+                    }
+                    if (!ttype.equals ("C"))
+                        throw new IllegalArgumentException ();
+                    if (!type.equals (t.id ().name ()))
+                        throw new IllegalArgumentException ();
+                    sb.append (t.text ().toString ());
+                }
+                int no = ts.offset () + ts.token ().length ();
+                tokens.add (SToken.create (
+                    type, 
+                    sb.toString (), 
+                    offset,
+                    no - offset,
+                    embeddings
+                ));
+            } else
+                throw new IllegalArgumentException ();
+        }
+        return tokens;
     }
     
     

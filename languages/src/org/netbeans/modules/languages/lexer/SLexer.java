@@ -194,13 +194,24 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             this.state = marenka.getState ();
         else
             this.state = marenka;
-        return tokenFactory.createPropertyToken (
-            (STokenId) tokensMap.get (v.type),
-            v.endOffset - v.startOffset,
-            tokenPropertyProvider,
-            v.property
-        );
+        if (v.property instanceof TokenProperties)
+            return tokenFactory.createPropertyToken (
+                (STokenId) tokensMap.get (v.type),
+                v.endOffset - v.startOffset,
+                (TokenProperties) v.property,
+                null
+            );
+        else
+            return tokenFactory.createPropertyToken (
+                (STokenId) tokensMap.get (v.type),
+                v.endOffset - v.startOffset,
+                tokenPropertyProvider,
+                v.property
+            );
     }
+    
+    
+    // innerclasses ............................................................
     
     private static TokenPropertyProvider tokenPropertyProvider = new TokenPropertyProvider () {
         
@@ -219,8 +230,37 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         }
     };
     
-    
-    // innerclasses ............................................................
+    static class TokenProperties implements TokenPropertyProvider {
+        
+        private String      type;
+        private int         startSkipLength;
+        private int         endSkipLength;
+        
+        TokenProperties (
+            String          type,
+            int             startSkipLength,
+            int             endSkipLength
+        ) {
+            this.type =     type;
+            this.startSkipLength = startSkipLength;
+            this.endSkipLength = endSkipLength;
+        }
+        
+        public Object getValue (Token token, Object key) {
+            if ("type".equals (key)) return type;
+            if ("startSkipLength".equals (key)) return new Integer (startSkipLength);
+            if ("endSkipLength".equals (key)) return new Integer (endSkipLength);
+            return null;
+        }
+
+        public Object getValue (Token token, Object tokenStoreKey, Object tokenStoreValue) {
+            return null;
+        }
+
+        public Object tokenStoreKey() {
+            return null;
+        }
+    };
     
     static class Vojta {
         

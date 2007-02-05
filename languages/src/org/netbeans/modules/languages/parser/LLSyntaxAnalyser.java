@@ -31,14 +31,15 @@ import java.util.Set;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
-
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.SToken;
 import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.Evaluator;
+import org.netbeans.modules.languages.LanguagesManagerImpl;
 
 
 /**
@@ -204,6 +205,19 @@ public class LLSyntaxAnalyser {
             Object result = null;
             if (skip.contains (input.next (1).getType ())) {
                 result = input.read ();
+                Map embeddings = ((SToken) result).getEmbeddings ();
+                if (!embeddings.isEmpty ()) {
+                    Iterator it = embeddings.keySet ().iterator ();
+                    while (it.hasNext ()) {
+                        String mimeType = (String) it.next ();
+                        List tokens = (List) embeddings.get (mimeType);
+                        TokenInput in = TokenInput.create (tokens);
+                        Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+                            getLanguage (mimeType);
+                        ASTNode n = language.getAnalyser ().read (in, skipErrors);
+                        result = n;
+                    }
+                }
             } else
                 break;
             if (node != null)
