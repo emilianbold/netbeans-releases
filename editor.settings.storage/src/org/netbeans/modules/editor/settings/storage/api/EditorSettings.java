@@ -50,6 +50,7 @@ public abstract class EditorSettings {
      * folder.
      *
      * @return set of mimetypes
+     * @since 1.9
      */
     public abstract Set<String> getAllMimeTypes ();
     
