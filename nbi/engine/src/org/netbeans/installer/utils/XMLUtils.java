@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
@@ -48,7 +47,6 @@ import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.ParseException;
-import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExtendedUri;
@@ -72,7 +70,7 @@ public abstract class XMLUtils {
     private static final String ATTR_DELIM  = "=";
     private static final String ATTRS_DELIM = " and ";
     
-    public static final String XSLT_REFORMAT_RESOURCE = 
+    public static final String XSLT_REFORMAT_RESOURCE =
             "org/netbeans/installer/utils/xml/reformat.xslt";
     public static final String XSLT_REFORMAT_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX + XSLT_REFORMAT_RESOURCE;
@@ -194,9 +192,10 @@ public abstract class XMLUtils {
     public static List<Element> getChildren(Element element, String... names) {
         List<Element> children = new LinkedList<Element>();
         
-        NodeList list = element.getChildNodes();
+        final NodeList list = element.getChildNodes();
         for (int i = 0; i < list.getLength(); i++) {
-            Node node = list.item(i);
+            final Node node = list.item(i);
+            
             if (node instanceof Element) {
                 for (int j = 0; j < names.length; j++) {
                     if (node.getNodeName().equals(names[j])) {
@@ -294,38 +293,84 @@ public abstract class XMLUtils {
         return properties;
     }
     
-    // parsing //////////////////////////////////////////////////////////////////////
-    public static Dependency parseDependency(Element element) throws ParseException {
-        final DependencyType type = 
+    // object <-> dom ///////////////////////////////////////////////////////////////
+    public static Dependency parseDependency(final Element element) throws ParseException {
+        final DependencyType type =
                 StringUtils.parseDependencyType(element.getNodeName());
-        final String uid = 
+        final String uid =
                 XMLUtils.getAttribute(element, "uid");
-        final Version lower = 
+        final Version lower =
                 Version.getVersion(element.getAttribute("version-lower"));
-        final Version upper = 
+        final Version upper =
                 Version.getVersion(element.getAttribute("version-upper"));
-        final Version resolved = 
+        final Version resolved =
                 Version.getVersion(element.getAttribute("version-resolved"));
         
         return new Dependency(type, uid, lower, upper, resolved);
     }
     
-    public static ExtendedUri parseExtendedUri(Element element) throws ParseException {
+    public static ExtendedUri parseExtendedUri(final Element element) throws ParseException {
         try {
-            URI    uri  = new URI(XMLUtils.getChildNodeTextContent(element, "default-uri"));
-            long   size = Long.parseLong(XMLUtils.getAttribute(element, "size"));
-            String md5  = XMLUtils.getAttribute(element, "md5");
+            final URI uri = new URI(XMLUtils.getChildNodeTextContent(
+                    element,
+                    "default-uri"));
+            final long size = Long.parseLong(XMLUtils.getAttribute(
+                    element,
+                    "size"));
+            final String md5 = XMLUtils.getAttribute(
+                    element,
+                    "md5");
+            
+            final List<URI> alternates = new LinkedList<URI>();
+            
+            for (Element alternateElement: XMLUtils.getChildren(
+                    element, "alternate-uri")) {
+                alternates.add(new URI(alternateElement.getTextContent()));
+            }
             
             if (uri.getScheme().equals("file")) {
-                return new ExtendedUri(uri, uri, size, md5);
+                return new ExtendedUri(uri, alternates, uri, size, md5);
             } else {
-                return new ExtendedUri(uri, size, md5);
+                return new ExtendedUri(uri, alternates, size, md5);
             }
         } catch (URISyntaxException e) {
             throw new ParseException("Cannot parse extended URI", e);
         } catch (NumberFormatException e) {
             throw new ParseException("Cannot parse extended URI", e);
         }
+    }
+    
+    public static Element saveExtendedUri(final ExtendedUri uri, final Element element) {
+        final Document document = element.getOwnerDocument();
+        
+        element.setAttribute("size", Long.toString(uri.getSize()));
+        element.setAttribute("md5", uri.getMd5());
+        
+        final Element defaultUriElement = document.createElement("default-uri");
+        if (uri.getLocal() != null) {
+            defaultUriElement.setTextContent(uri.getLocal().toString());
+        } else {
+            defaultUriElement.setTextContent(uri.getRemote().toString());
+        }
+        element.appendChild(defaultUriElement);
+        
+        // if the local uri is not null, we should save the remote uri as the first
+        // alternate
+        if (uri.getLocal() != null) {
+            final Element alternateUriElement = document.createElement("alternate-uri");
+            
+            alternateUriElement.setTextContent(uri.getRemote().toString());
+            element.appendChild(alternateUriElement);
+        }
+        
+        for (URI alternateUri: uri.getAlternates()) {
+            final Element alternateUriElement = document.createElement("alternate-uri");
+            
+            alternateUriElement.setTextContent(alternateUri.toString());
+            element.appendChild(alternateUriElement);
+        }
+        
+        return element;
     }
     
     // private //////////////////////////////////////////////////////////////////////

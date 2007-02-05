@@ -731,37 +731,17 @@ public final class Product extends RegistryNode {
         
         final Element logicNode = document.createElement("configuration-logic");
         for (ExtendedUri uri: logicUris) {
-            final Element node = document.createElement("file");
-            node.setAttribute("size", Long.toString(uri.getSize()));
-            node.setAttribute("md5", uri.getMd5());
-            
-            final Element uriNode = document.createElement("default-uri");
-            if (uri.getLocal() != null) {
-                uriNode.setTextContent(uri.getLocal().toString());
-            } else {
-                uriNode.setTextContent(uri.getRemote().toString());
-            }
-            node.appendChild(uriNode);
-            
-            logicNode.appendChild(node);
+            logicNode.appendChild(XMLUtils.saveExtendedUri(
+                    uri, 
+                    document.createElement("file")));
         }
         element.appendChild(logicNode);
         
         final Element dataNode = document.createElement("installation-data");
         for (ExtendedUri uri: dataUris) {
-            final Element node = document.createElement("file");
-            node.setAttribute("size", Long.toString(uri.getSize()));
-            node.setAttribute("md5", uri.getMd5());
-            
-            final Element uriNode = document.createElement("default-uri");
-            if (uri.getLocal() != null) {
-                uriNode.setTextContent(uri.getLocal().toString());
-            } else {
-                uriNode.setTextContent(uri.getRemote().toString());
-            }
-            node.appendChild(uriNode);
-            
-            dataNode.appendChild(node);
+            dataNode.appendChild(XMLUtils.saveExtendedUri(
+                    uri, 
+                    document.createElement("file")));
         }
         element.appendChild(dataNode);
         

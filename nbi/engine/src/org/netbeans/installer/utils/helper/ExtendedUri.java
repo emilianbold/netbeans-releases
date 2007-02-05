@@ -31,40 +31,52 @@ import java.util.List;
 public class ExtendedUri {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private URI       remote     = null;
-    private List<URI> alternates = new LinkedList<URI>();
-    private URI       local      = null;
-    private long      size       = 0;
-    private String    md5        = null;
+    private URI remote;
+    private List<URI> alternates;
+    private URI local;
+    private long size;
+    private String md5;
     
-    public ExtendedUri(final URI remote, final long size, final String md5) {
-        this.remote = remote;
-        this.size   = size;
-        this.md5    = md5;
-    }
-    
-    public ExtendedUri(final URI remote, final List<URI> alternates, final long size, final String md5) {
+    public ExtendedUri(
+            final URI remote, 
+            final long size, 
+            final String md5) {
         this.remote = remote;
         this.size   = size;
         this.md5    = md5;
         
-        this.alternates.addAll(alternates);
+        this.alternates = new LinkedList<URI>();
     }
     
-    public ExtendedUri(final URI remote, final URI local, final long size, final String md5) {
-        this.remote = remote;
-        this.local  = local;
-        this.size   = size;
-        this.md5    = md5;
-    }
-    
-    public ExtendedUri(final URI remote, final List<URI> alternates, final URI local, final long size, final String md5) {
-        this.remote = remote;
-        this.local  = local;
-        this.size   = size;
-        this.md5    = md5;
+    public ExtendedUri(
+            final URI remote, 
+            final List<URI> alternates, 
+            final long size, 
+            final String md5) {
+        this(remote, size, md5);
         
         this.alternates.addAll(alternates);
+    }
+    
+    public ExtendedUri(
+            final URI remote, 
+            final URI local, 
+            final long size, 
+            final String md5) {
+        this(remote, size, md5);
+        
+        this.local  = local;
+    }
+    
+    public ExtendedUri(
+            final URI remote, 
+            final List<URI> alternates, 
+            final URI local, 
+            final long size, 
+            final String md5) {
+        this(remote, alternates, size, md5);
+        
+        this.local  = local;
     }
     
     public URI getRemote() {
@@ -72,15 +84,15 @@ public class ExtendedUri {
     }
     
     public List<URI> getAlternates() {
-        return alternates;
+        return new LinkedList(alternates);
     }
     
     public URI getLocal() {
         return local;
     }
     
-    public void setLocal(URI uri) {
-        local = uri;
+    public void setLocal(final URI local) {
+        this.local = local;
     }
     
     public long getSize() {
@@ -90,4 +102,15 @@ public class ExtendedUri {
     public String getMd5() {
         return md5;
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String RESOURCE_SCHEME = 
+            "resource"; // NOI18N
+    
+    public static final String HTTP_SCHEME = 
+            "http"; // NOI18N
+    
+    public static final String FILE_SCHEME = 
+            "file"; // NOI18N
 }

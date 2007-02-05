@@ -309,7 +309,7 @@ public abstract class RegistryNode implements PropertyContainer {
         return "node";
     }
     
-    protected Element saveToDom(Element element) throws FinalizationException {
+    protected Element saveToDom(final Element element) throws FinalizationException {
         Document document = element.getOwnerDocument();
         
         element.setAttribute("uid", uid);
@@ -355,18 +355,9 @@ public abstract class RegistryNode implements PropertyContainer {
         }
         element.appendChild(descriptionNode);
         
-        Element iconNode = document.createElement("icon");
-        iconNode.setAttribute("size", Long.toString(iconUri.getSize()));
-        iconNode.setAttribute("md5", iconUri.getMd5());
-        
-        Element defaultUriNode = document.createElement("default-uri");
-        if (iconUri.getLocal() != null) {
-            defaultUriNode.setTextContent(iconUri.getLocal().toString());
-        } else {
-            defaultUriNode.setTextContent(iconUri.getRemote().toString());
-        }
-        iconNode.appendChild(defaultUriNode);
-        element.appendChild(iconNode);
+        element.appendChild(XMLUtils.saveExtendedUri(
+                iconUri, 
+                document.createElement("icon")));
         
         if (getProperties().size() > 0) {
             Element propertiesNode = document.createElement("properties");
