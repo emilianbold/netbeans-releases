@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
            <api name="dialogs"/>
            <summary>Method notifyLater improved to work before main window is opened</summary>
            <version major="7" minor="3"/>
-           <date day="06" month="2" year="2007"/>
+           <date day="6" month="2" year="2007"/>
            <author login="dsimonek"/>
            <compatibility addition="no" binary="compatible" semantic="compatible" source="incompatible" deprecation="no" deletion="no" modification="no"/>
            <description>
