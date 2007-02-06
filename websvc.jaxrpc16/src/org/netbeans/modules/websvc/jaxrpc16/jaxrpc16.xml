@@ -27,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/activation.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/FastInfoset.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/jaxp-api.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/jax-qname.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/jaxrpc-api.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/jaxrpc-impl.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/jaxrpc-spi.jar!/</resource>

@@ -33,6 +33,8 @@ Microsystems, Inc. All Rights Reserved.
               tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/FastInfoset.jar"/>
         <copy file="../external/jaxrpc16/jaxp-api.jar"
               tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jaxp-api.jar"/>
+        <copy file="../external/jaxrpc16/jax-qname.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jax-qname.jar"/>
         <copy file="../external/jaxrpc16/jaxrpc-api.jar"
               tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jaxrpc-api.jar"/>
         <copy file="../external/jaxrpc16/jaxrpc-impl.jar"
