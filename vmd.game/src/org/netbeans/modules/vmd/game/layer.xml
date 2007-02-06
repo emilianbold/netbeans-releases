@@ -28,7 +28,7 @@
             </folder>
         </folder>
     </folder>
-    
+<!--
     <folder name="Templates">        
         <folder name="MIDP">
             <file name="EmptyGame.java" url="integration/res/emptygame_java.template">
@@ -45,7 +45,7 @@
             </file>
         </folder>
     </folder>
-    
+-->    
     <folder name="vmd-midp-game">
         
         <folder name="components">
