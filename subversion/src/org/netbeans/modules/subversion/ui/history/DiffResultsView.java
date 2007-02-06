@@ -30,7 +30,6 @@ import org.netbeans.api.diff.Diff;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.subversion.ui.diff.DiffStreamSource;
 import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
-
 import javax.swing.event.AncestorListener;
 import javax.swing.event.AncestorEvent;
 import javax.swing.*;
@@ -38,6 +37,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -209,14 +209,27 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         showDiff(rev, Long.toString(revision1), Long.toString(revision2), showLastDifference);
     }
 
-    private void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
+    private void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {        
         List<RepositoryRevision.Event> revs = container.getEvents();
-        RepositoryRevision.Event newest = revs.get(0);
+        
+        RepositoryRevision.Event newest = null;
+        //try to get the root        
+        File[] roots = parent.getRoots();
+        for(File root : roots) {
+            for(RepositoryRevision.Event evt : revs) {
+                if(root.equals(evt.getFile())) {
+                    newest = evt;   
+                }   
+            }            
+        }
+        if(newest == null) {
+            newest = revs.get(0);   
+        }        
         if (newest.getFile() == null) return;
         long rev = newest.getLogInfoHeader().getLog().getRevision().getNumber();
         showDiff(newest, Long.toString(rev - 1), Long.toString(rev), showLastDifference);
     }
-
+    
     void onNextButton() {
         if (currentDiff != null) {
             if (++currentDifferenceIndex >= currentDiff.getDifferenceCount()) {
