@@ -19,8 +19,8 @@
 
 package org.netbeans.modules.j2ee.persistence.action;
 
-import org.netbeans.modules.j2ee.persistence.action.spi.ContainerManagedJTANonInjectableInWeb;
-import org.netbeans.modules.j2ee.persistence.action.spi.EntityManagerGenerationStrategy;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTANonInjectableInWeb;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
 import java.io.File;
 import junit.framework.*;
 import org.netbeans.jackpot.test.TestUtilities;

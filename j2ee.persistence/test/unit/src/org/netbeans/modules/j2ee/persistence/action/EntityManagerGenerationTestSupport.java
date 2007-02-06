@@ -7,7 +7,7 @@
 
 package org.netbeans.modules.j2ee.persistence.action;
 
-import org.netbeans.modules.j2ee.persistence.action.spi.EntityManagerGenerationStrategy;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
 import junit.framework.*;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;

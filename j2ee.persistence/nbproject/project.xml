@@ -412,7 +412,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.j2ee.jpa.verification</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.project</friend>
-                <package>org.netbeans.modules.j2ee.persistence.action.spi</package>
+                <package>org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0</package>

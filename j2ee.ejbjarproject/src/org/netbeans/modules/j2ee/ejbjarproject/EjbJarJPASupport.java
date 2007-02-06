@@ -45,8 +45,8 @@ public class EjbJarJPASupport implements JPADataSourcePopulator, JPADataSourcePr
     public void connect(JComboBox comboBox) {
         DatasourceUIHelper.connect(project.getEjbModule(), comboBox);
         // a bit of a hack. needs rethinking when j2ee/persistence doesn't 
-        // have a dependency to j2ee/utilities anymore (then the DatasourceUIHelper)
-        // may be changed to use JPADataSources directly.
+        // have a dependency to j2ee/utilities anymore (then the DatasourceUIHelper
+        // may be changed to use JPADataSources directly).
         int size = comboBox.getItemCount();
         for (int i = 0; i < size; i++){
             Object item = comboBox.getItemAt(i);

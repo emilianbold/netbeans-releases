@@ -34,11 +34,11 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistenc
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.persistence.action.spi.ApplicationManagedResourceTransactionInjectableInEJB;
-import org.netbeans.modules.j2ee.persistence.action.spi.ApplicationManagedResourceTransactionNonInjectableInEJB;
-import org.netbeans.modules.j2ee.persistence.action.spi.ContainerManagedJTAInjectableInEJB;
-import org.netbeans.modules.j2ee.persistence.action.spi.EntityManagerGenerationStrategy;
-import org.netbeans.modules.j2ee.persistence.action.spi.EntityManagerGenerationStrategyResolver;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionInjectableInEJB;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionNonInjectableInEJB;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolver;
 import org.openide.filesystems.FileObject;
 
 /**

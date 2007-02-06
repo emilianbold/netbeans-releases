@@ -20,13 +20,7 @@
 package org.netbeans.modules.j2ee.persistence.unit;
 
 import junit.framework.*;
-import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.api.debugger.jpda.This;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.xml.multiview.Error;
 
