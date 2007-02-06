@@ -32,7 +32,6 @@ import org.netbeans.installer.utils.helper.DetailedStatus;
 import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.FileProxy;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
@@ -111,13 +110,8 @@ public final class Product extends RegistryNode {
     // essential functionality //////////////////////////////////////////////////////
     public void install(final Progress progress) throws InstallationException {
         final CompositeProgress totalProgress = new CompositeProgress();
-        final Progress          unjarProgress = new Progress();
+        final CompositeProgress unjarProgress = new CompositeProgress();
         final Progress          logicProgress = new Progress();
-        
-        totalProgress.addChild(unjarProgress, 80);
-        totalProgress.addChild(logicProgress, 20);
-        totalProgress.synchronizeTo(progress);
-        totalProgress.synchronizeDetails(true);
         
         // initialization phase ////////////////////////////////////////////////
         installationPhase = InstallationPhase.INITIALIZATION;
@@ -130,6 +124,15 @@ public final class Product extends RegistryNode {
             throw new InstallationException(
                     "Cannot load configuration logic", e);
         }
+        
+        totalProgress.addChild(
+                unjarProgress, 
+                Progress.COMPLETE - configurationLogic.getLogicPercentage());
+        totalProgress.addChild(
+                logicProgress, 
+                configurationLogic.getLogicPercentage());
+        totalProgress.synchronizeTo(progress);
+        totalProgress.synchronizeDetails(true);
         
         // check whether the installation location was set, if it's not we
         // cannot continue
@@ -171,7 +174,7 @@ public final class Product extends RegistryNode {
         // directories structure and then extract the product
         if (SystemUtils.isMacOS() && configurationLogic.wrapForMacOs()) {
             setInstallationLocation(new File(resourcesDir,
-                    getInstallationLocation().getName().replaceAll("\\.app$","")));
+                    getInstallationLocation().getName().replaceAll("\\.app$", "")));
             
             final UnixNativeUtils utils =
                     (UnixNativeUtils) SystemUtils.getNativeUtils();
@@ -199,7 +202,14 @@ public final class Product extends RegistryNode {
         }
         
         // extract each of the defined installation data files
+        unjarProgress.setPercentage(Progress.COMPLETE % dataUris.size());
+        unjarProgress.synchronizeDetails(true);
         for (ExtendedUri uri: dataUris) {
+            final Progress currentProgress = new Progress();
+            unjarProgress.addChild(
+                    currentProgress,
+                    Progress.COMPLETE / dataUris.size());
+            
             // get the uri of the current data file
             final URI dataUri = uri.getLocal();
             if (dataUri == null) {
@@ -217,7 +227,7 @@ public final class Product extends RegistryNode {
                 installedFiles.add(FileUtils.unjar(
                         dataFile,
                         getInstallationLocation(),
-                        unjarProgress));
+                        currentProgress));
             } catch (IOException e) {
                 throw new InstallationException("Cannot extract installation data", e);
             } catch (XMLException e) {
@@ -283,13 +293,9 @@ public final class Product extends RegistryNode {
     }
     
     public void rollback(final Progress progress) throws UninstallationException {
-        final CompositeProgress totalProgress     = new CompositeProgress();
+        final CompositeProgress totalProgress = new CompositeProgress();
         final Progress          logicProgress = new Progress();
-        final Progress          eraseProgress  = new Progress();
-        
-        totalProgress.addChild(logicProgress, 20);
-        totalProgress.addChild(eraseProgress, 80);
-        totalProgress.reverseSynchronizeTo(progress);
+        final Progress          eraseProgress = new Progress();
         
         // initialization ///////////////////////////////////////////////////////////
         
@@ -302,22 +308,39 @@ public final class Product extends RegistryNode {
                     "Cannot load configuration logic", e);
         }
         
-        // rollback /////////////////////////////////////////////////////////////////
-        totalProgress.setTitle("Rolling back " + getDisplayName());
+        int logicChunk = (int) (progress.getPercentage() * (
+                (float) configurationLogic.getLogicPercentage() / 
+                (float) Progress.COMPLETE));
+        int eraseChunk = (int) (progress.getPercentage() * (1. - (
+                (float) configurationLogic.getLogicPercentage() / 
+                (float) Progress.COMPLETE)));
         
+        totalProgress.setPercentage(Progress.COMPLETE - logicChunk - eraseChunk);
+        totalProgress.addChild(logicProgress, logicChunk);
+        totalProgress.addChild(eraseProgress, eraseChunk);
+        totalProgress.synchronizeDetails(true);
+        totalProgress.reverseSynchronizeTo(progress);
+        
+        // rollback /////////////////////////////////////////////////////////////////
+        
+        // the starting point is chosen depending on the stage at which the
+        // installation process was canceled, or failed; note that we intentionally
+        // fall through all these cases, as they should be executed exactly in this
+        // order and the only unclear point is where to start
         switch (installationPhase) {
+        case COMPLETE:
         case FINALIZATION:
             try {
                 FileUtils.deleteFile(getInstalledFilesList());
             } catch (IOException e) {
-                ErrorManager.notify(ErrorLevel.WARNING, "Cannot delete installed files list", e);
+                ErrorManager.notifyWarning("Cannot delete installed files list", e);
             }
             
             if (configurationLogic.registerInSystem()) {
                 try {
                     SystemUtils.removeComponentFromSystemInstallManager(getApplicationDescriptor());
                 } catch (NativeException e) {
-                    ErrorManager.notify(ErrorLevel.WARNING, "Cannot remove component from system registry", e);
+                    ErrorManager.notifyWarning("Cannot remove component from system registry", e);
                 }
             }
             
@@ -342,7 +365,7 @@ public final class Product extends RegistryNode {
                 try {
                     FileUtils.deleteFile(file);
                 } catch (IOException e) {
-                    ErrorManager.notify(ErrorLevel.WARNING, "Cannot delete file", e);
+                    ErrorManager.notifyWarning("Cannot delete file", e);
                 }
             }
             
@@ -360,12 +383,25 @@ public final class Product extends RegistryNode {
         final Progress          logicProgress = new Progress();
         final Progress          eraseProgress = new Progress();
         
-        totalProgress.addChild(logicProgress, 20);
-        totalProgress.addChild(eraseProgress, 80);
+        // initialization phase /////////////////////////////////////////////////////
+        
+        // load the component's configuration logic (it should be already
+        // there, but we need to be sure)
+        try {
+            getLogic();
+        } catch (InitializationException e) {
+            throw new UninstallationException(
+                    "Cannot load configuration logic", e);
+        }
+        
+        totalProgress.addChild(
+                logicProgress, 
+                configurationLogic.getLogicPercentage());
+        totalProgress.addChild(
+                eraseProgress, 
+                Progress.COMPLETE - configurationLogic.getLogicPercentage());
         totalProgress.synchronizeTo(progress);
         totalProgress.synchronizeDetails(true);
-        
-        // initialization phase /////////////////////////////////////////////////////
         
         // load the installed files list
         try {
@@ -378,13 +414,8 @@ public final class Product extends RegistryNode {
         progress.setTitle("Unconfiguring " + getDisplayName());
         
         // run custom unconfiguration logic
-        try {
-            getLogic().uninstall(logicProgress);
-            
-            logicProgress.setPercentage(Progress.COMPLETE);
-        } catch (InitializationException e) {
-            throw new UninstallationException("initialization failed", e);
-        }
+        configurationLogic.uninstall(logicProgress);
+        logicProgress.setPercentage(Progress.COMPLETE);
         
         // files deletion phase /////////////////////////////////////////////////////
         progress.setTitle("Uninstalling " + getDisplayName());
@@ -399,9 +430,9 @@ public final class Product extends RegistryNode {
                         e));
             }
         } else {
-            int total   = installedFiles.getSize();
-            int current = 0;
+            final int total = installedFiles.getSize();
             
+            int current = 0;
             for (FileEntry entry: installedFiles) {
                 current++;
                 
@@ -556,8 +587,7 @@ public final class Product extends RegistryNode {
         try {
             return getLogic().getWizardComponents();
         } catch (InitializationException e) {
-            ErrorManager.notify(ErrorLevel.ERROR,
-                    "Cannot get component's wizard components", e);
+            ErrorManager.notifyError("Cannot get component's wizard components", e);
         }
         
         return null;
@@ -732,7 +762,7 @@ public final class Product extends RegistryNode {
         final Element logicNode = document.createElement("configuration-logic");
         for (ExtendedUri uri: logicUris) {
             logicNode.appendChild(XMLUtils.saveExtendedUri(
-                    uri, 
+                    uri,
                     document.createElement("file")));
         }
         element.appendChild(logicNode);
@@ -740,7 +770,7 @@ public final class Product extends RegistryNode {
         final Element dataNode = document.createElement("installation-data");
         for (ExtendedUri uri: dataUris) {
             dataNode.appendChild(XMLUtils.saveExtendedUri(
-                    uri, 
+                    uri,
                     document.createElement("file")));
         }
         element.appendChild(dataNode);
@@ -896,24 +926,24 @@ public final class Product extends RegistryNode {
         }
         
         final String installLocation = getInstallationLocation().getAbsolutePath();
-
+        
         final String modifyCommand = StringUtils.format(
-                System.getProperty(EngineResources.LOCAL_ENGINE_MODIFY_COMMAND_PROPERTY), 
-                uid, 
+                System.getProperty(EngineResources.LOCAL_ENGINE_MODIFY_COMMAND_PROPERTY),
+                uid,
                 version);
         
         final String uninstallCommand = StringUtils.format(
-                System.getProperty(EngineResources.LOCAL_ENGINE_UNINSTALL_COMMAND_PROPERTY), 
-                uid, 
+                System.getProperty(EngineResources.LOCAL_ENGINE_UNINSTALL_COMMAND_PROPERTY),
+                uid,
                 version);
         
         return new ApplicationDescriptor(
-                key, 
-                displayName, 
-                icon, 
-                installLocation, 
-                uninstallCommand, 
-                modifyCommand); 
+                key,
+                displayName,
+                icon,
+                installLocation,
+                uninstallCommand,
+                modifyCommand);
     }
     
     // miscellanea //////////////////////////////////////////////////////////////////

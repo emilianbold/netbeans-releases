@@ -87,4 +87,8 @@ public class SetInstallationLocationAction extends WizardAction {
     public WizardActionUi getWizardUi() {
         return null; // we do not have any ui for this action
     }
+    
+    public boolean isCancellable() {
+        return false;
+    }
 }

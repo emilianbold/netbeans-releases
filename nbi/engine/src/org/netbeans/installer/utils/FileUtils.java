@@ -1023,8 +1023,12 @@ public final class FileUtils {
         }
     }
     
-    private static FilesList extract(File file, File target, String excludes, Progress progress) throws IOException {
-        FilesList list = new FilesList();
+    private static FilesList extract(
+            final File file, 
+            final File target, 
+            final String excludes, 
+            final Progress progress) throws IOException {
+        final FilesList list = new FilesList();
         
         // first some basic validation of the destination directory
         if (exists(target) && target.isFile()) {
@@ -1033,7 +1037,7 @@ public final class FileUtils {
             list.add(mkdirs(target));
         }
         
-        ZipFile zip = new ZipFile(file);
+        final ZipFile zip = new ZipFile(file);
         
         try {
             FilesList extracted = null;
@@ -1053,7 +1057,9 @@ public final class FileUtils {
                     
                     extractedWithList = true;
                 } catch (XMLException e) {
-                    ErrorManager.notifyDebug("Could not load xml files list for extraction", e);
+                    ErrorManager.notifyDebug(
+                            "Could not load xml files list for extraction", 
+                            e);
                 }
             }
             
@@ -1071,14 +1077,16 @@ public final class FileUtils {
     }
     
     private static FilesList extractList(ZipFile zip, File target, FilesList list, Progress progress) throws IOException {
-        FilesList newList = new FilesList();
+        final FilesList newList = new FilesList();
+        final String targetPath = target.getAbsolutePath();
         
-        String targetPath = target.getAbsolutePath();
+        final int total = list.getSize();
         
-        int total     = list.getSize();
         int extracted = 0;
-        
         for (FileEntry listEntry: list) {
+            // check for cancel status
+            if (progress.isCanceled()) return newList;
+            
             final String listEntryName = listEntry.getName();
             final File listEntryFile = listEntry.getFile();
             
@@ -1161,6 +1169,9 @@ public final class FileUtils {
         // and only after that we actually extract them
         entries = (Enumeration<? extends ZipEntry>) zip.entries();
         while (entries.hasMoreElements()) {
+            // check for cancel status
+            if (progress.isCanceled()) return list;
+            
             final ZipEntry entry = entries.nextElement();
             
             // increase the extracted files count and update the progress percentage

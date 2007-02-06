@@ -27,7 +27,6 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
-import org.netbeans.installer.wizard.components.WizardAction.WizardActionUi;
 
 /**
  *
@@ -59,5 +58,9 @@ public class InitializeRegistryAction extends WizardAction {
         } catch (InitializationException e) {
             ErrorManager.notify(ErrorLevel.CRITICAL, "Cannot init registry", e);
         }
+    }
+    
+    public boolean isCancellable() {
+        return false;
     }
 }

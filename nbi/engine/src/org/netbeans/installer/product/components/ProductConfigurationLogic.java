@@ -149,6 +149,10 @@ public abstract class ProductConfigurationLogic {
         return null;
     }
     
+    public int getLogicPercentage() {
+        return 10;
+    }
+    
     // installation behavior ////////////////////////////////////////////////////////
     public RemovalMode getRemovalMode() {
         return RemovalMode.ALL;

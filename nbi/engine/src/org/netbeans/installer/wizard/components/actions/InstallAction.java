@@ -25,10 +25,11 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.product.filters.OrFilter;
+import org.netbeans.installer.product.filters.ProductFilter;
+import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.utils.helper.DetailedStatus;
 import org.netbeans.installer.utils.helper.Status;
-import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -83,21 +84,23 @@ public class InstallAction extends WizardAction {
             currentProgress = new Progress();
             
             overallProgress.addChild(currentProgress, percentageChunk);
-            overallProgress.setTitle("Installing " + product.getDisplayName());
+            overallProgress.setTitle("Installing " + product.getDisplayName() + "...");
             try {
                 product.install(currentProgress);
                 
                 if (canceled)  {
-                    currentProgress.setCanceled(false);
+                    overallProgress.setTitle("Canceling, rolling back " + product.getDisplayName() + "...");
                     product.rollback(currentProgress);
                     
-                    for (Product toRollback: registry.getProducts(DetailedStatus.INSTALLED_SUCCESSFULLY)) {
+                    final RegistryFilter filter = new OrFilter(
+                            new ProductFilter(DetailedStatus.INSTALLED_SUCCESSFULLY),
+                            new ProductFilter(DetailedStatus.INSTALLED_WITH_WARNINGS));
+                    for (Product toRollback: registry.queryProducts(filter)) {
                         toRollback.setStatus(Status.TO_BE_UNINSTALLED);
                     }
-                    for (Product toRollback: registry.getProducts(DetailedStatus.INSTALLED_WITH_WARNINGS)) {
-                        toRollback.setStatus(Status.TO_BE_UNINSTALLED);
-                    }
+                    
                     for (Product toRollback: registry.getProductsToUninstall()) {
+                        overallProgress.setTitle("Canceling, rolling back " + toRollback.getDisplayName() + "...");
                         toRollback.rollback(progresses.get(toRollback));
                     }
                     break;

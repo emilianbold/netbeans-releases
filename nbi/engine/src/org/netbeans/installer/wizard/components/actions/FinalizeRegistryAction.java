@@ -43,4 +43,8 @@ public class FinalizeRegistryAction extends WizardAction {
     public WizardActionUi getWizardUi() {
         return null; // this action does not have a ui
     }
+    
+    public boolean isCancellable() {
+        return false;
+    }
 }

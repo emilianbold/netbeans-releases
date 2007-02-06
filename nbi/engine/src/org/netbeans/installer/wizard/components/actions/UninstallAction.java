@@ -108,4 +108,8 @@ public class UninstallAction extends WizardAction {
     public boolean isPointOfNoReturn() {
         return true;
     }
+    
+    public boolean isCancellable() {
+        return false;
+    }
 }

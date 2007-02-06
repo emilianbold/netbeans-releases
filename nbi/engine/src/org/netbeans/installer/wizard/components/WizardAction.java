@@ -87,6 +87,10 @@ public abstract class WizardAction extends WizardComponent {
     
     public abstract void execute();
     
+    public boolean isCancellable() {
+        return true;
+    }
+    
     public void cancel() {
         canceled = true;
         
@@ -101,8 +105,8 @@ public abstract class WizardAction extends WizardComponent {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
-    public static class WizardActionUi 
-            extends WizardComponentUi 
+    public static class WizardActionUi
+            extends WizardComponentUi
             implements ProgressListener {
         protected WizardAction component;
         protected Progress     progress;
@@ -137,16 +141,20 @@ public abstract class WizardAction extends WizardComponent {
         }
     }
     
-    public static class WizardActionSwingUi 
+    public static class WizardActionSwingUi
             extends WizardComponentSwingUi {
+        private WizardAction component;
+        
         private NbiLabel       titleLabel;
         private NbiLabel       detailLabel;
         private NbiProgressBar progressBar;
         
         public WizardActionSwingUi(
-                final WizardComponent component,
+                final WizardAction component,
                 final SwingContainer container) {
             super(component, container);
+            
+            this.component = component;
             
             initComponents();
         }
@@ -168,22 +176,27 @@ public abstract class WizardAction extends WizardComponent {
             
             // set up the cancel button
             container.getCancelButton().setVisible(true);
-            container.getCancelButton().setEnabled(true);
+            container.getCancelButton().setEnabled(component.isCancellable());
         }
         
         public void evaluateCancelButtonClick() {
-            if (!UiUtils.showYesNoDialog(
-                    "Cancel", 
-                    "Are you sure you want to cancel?")) {
-                return;
-            }
-            
-            new Thread() {
-                public void run() {
-                    ((WizardAction) component).cancel();
-                    component.getWizard().getFinishHandler().cancel();
+            if (component.isCancellable()) {
+                if (!UiUtils.showYesNoDialog(
+                        "Cancel",
+                        "Are you sure you want to cancel?")) {
+                    return;
                 }
-            }.start();
+                
+                container.getCancelButton().setEnabled(false);
+                titleLabel.setText("Canceling, finishing current operation...");
+                
+                new Thread() {
+                    public void run() {
+                        ((WizardAction) component).cancel();
+                        component.getWizard().getFinishHandler().cancel();
+                    }
+                }.start();
+            }
         }
         
         public NbiButton getDefaultButton() {
