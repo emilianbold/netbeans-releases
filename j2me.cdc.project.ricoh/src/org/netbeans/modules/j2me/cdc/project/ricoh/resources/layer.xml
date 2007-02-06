@@ -29,6 +29,19 @@
             </folder>
         </folder>
     </folder>    
+    <folder name="Customizer">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <folder name="Jad">
+                <attr name="CDCGeneral/Ricoh" boolvalue="true"/>
+                <file name="Ricoh">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.j2me.cdc.project.ricoh.RicohProjectCategoryCustomizer"/>
+                    <attr name="triggerPropertyName" stringvalue="platform.type"/>
+                    <attr name="triggerPropertyValue" stringvalue="ricoh"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">

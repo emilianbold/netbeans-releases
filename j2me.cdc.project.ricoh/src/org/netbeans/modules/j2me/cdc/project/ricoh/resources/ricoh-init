@@ -16,6 +16,12 @@
         <condition property="servlet-project" value="true">
             <equals arg1="${{ricoh.application.type}}" arg2="server" trim="true"/>
         </condition>
+        <condition property="ricoh.dalp.install.mode" value="auto" else="manual">
+            <istrue value="${{ricoh.dalp.install.mode.auto}}"/>
+        </condition>
+        <condition property="ricoh.dalp.display-mode.type" value="COLOR" else="MONO">
+            <istrue value="${{ricoh.dalp.display-mode.color}}"/>
+        </condition>
         <property name="xml.dir" value="${{build.dir}}/dalp"/>
         <property name="xlet.dalp" value="RICOH.dalp"/>
         <property name="xlet.dalp.name-only" value="RICOH.dalp"/>
@@ -28,7 +34,6 @@
         <property name="ricoh.platform.target.version" value="2.0"/>
         <property name="ricoh.dalp.version" value=""/>
         <property name="ricoh.dalp.application-desc.visible" value="true"/>
-        <property name="ricoh.dalp.install.mode" value="auto"/>
         <property name="ricoh.dalp.install.destination" value="hdd"/>
         <property name="ricoh.dalp.install.work-dir" value="hdd"/>
         <property name="ricoh.dalp.information.abbreviation" value="RICOH"/>
