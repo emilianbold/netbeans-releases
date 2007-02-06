@@ -480,11 +480,11 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 downloadSize += product.getDownloadSize();
             }
             
-            String template = component.getProperty(SIZES_LABEL_TEXT_PROPERTY);
+            String template = component.getProperty(SIZES_LABEL_TEXT_NO_DOWNLOAD_PROPERTY);
             for (RegistryNode remoteNode: registry.getNodes(RegistryType.REMOTE)) {
                 if (remoteNode.isVisible()) {
                     template = component.getProperty(
-                            SIZES_LABEL_TEXT_NO_DOWNLOAD_PROPERTY);
+                            SIZES_LABEL_TEXT_PROPERTY);
                 }
             }
             
