@@ -242,6 +242,13 @@ public class XMLSyntaxParser {
                 {
                     coreTokenId = TokenType.TOKEN_DTD_VAL;
                     currentTokens.add(Token.create(image, coreTokenId));
+                    while(token.getNext() != null) {
+                        int nextNumericId = token.getNext().getTokenID().getNumericID();
+                        if(nextNumericId != XMLTokenIDs.DECLARATION_ID && nextNumericId != XMLTokenIDs.VALUE_ID)
+                            break;
+                        token = token.getNext();
+                        currentTokens.add(Token.create(token.getImage(),coreTokenId));
+                    }
                     break;
                 }
                 case XMLTokenIDs.PI_CONTENT_ID:
