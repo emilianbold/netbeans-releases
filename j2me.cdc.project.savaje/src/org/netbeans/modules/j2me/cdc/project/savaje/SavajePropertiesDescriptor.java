@@ -38,6 +38,7 @@ public class SavajePropertiesDescriptor implements ProjectPropertiesDescriptor {
     public static final String SAVAJE_BUNDLE_BASE = "savaje.bundle.base"; //NOI18N
     public static final String SAVAJE_APPLICATION_ICON = "savaje.application.icon"; //NOI18N
     public static final String SAVAJE_APPLICATION_ICON_SMALL = "savaje.application.icon.small"; //NOI18N
+    public static final String SAVAJE_APPLICATION_ICON_FOCUSED = "savaje.application.icon.focused"; //NOI18N
     public static final String SAVAJE_APPLICATION_UID = "savaje.application.uid"; //NOI18N
     
     private Reference<Set<PropertyDescriptor>> ref = new WeakReference(null);
@@ -56,6 +57,7 @@ public class SavajePropertiesDescriptor implements ProjectPropertiesDescriptor {
             set.add(new PropertyDescriptor(SAVAJE_BUNDLE_BASE, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
             set.add(new PropertyDescriptor(SAVAJE_APPLICATION_ICON, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
             set.add(new PropertyDescriptor(SAVAJE_APPLICATION_ICON_SMALL, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
+            set.add(new PropertyDescriptor(SAVAJE_APPLICATION_ICON_FOCUSED, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
             set.add(new PropertyDescriptor(SAVAJE_APPLICATION_UID, true, DefaultPropertyParsers.STRING_PARSER,  "TBD")); //NOI18N
             ref = new WeakReference(set);
         }
