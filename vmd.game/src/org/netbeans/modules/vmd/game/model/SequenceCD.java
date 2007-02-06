@@ -9,18 +9,13 @@
 
 package org.netbeans.modules.vmd.game.model;
 
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.game.integration.components.GameTypes;
+import org.netbeans.modules.vmd.game.integration.GameCodeSupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.Versionable;
-import org.netbeans.modules.vmd.game.integration.components.GameTypes;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 /**
  *
@@ -58,7 +53,9 @@ public class SequenceCD extends ComponentDescriptor {
 	}
 	
 	protected List<? extends Presenter> createPresenters() {
-		return null;
+		return Arrays.asList (
+            GameCodeSupport.createSequenceCodePresenter ()
+        );
 	}
 	
 }

@@ -18,9 +18,10 @@
  */
 package org.netbeans.modules.vmd.game.integration.components;
 
-import java.awt.Point;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
+
+import java.awt.*;
 
 /**
  * @author David Kaspar, Karel Herink
@@ -32,7 +33,7 @@ public class GameTypes {
 	public static final TypeID TYPEID_RECTANGLE = new TypeID(TypeID.Kind.PRIMITIVE, "#Rectangle"); // NOI18N
 
 	public static final TypeID TYPEID_TILED_LAYER_TILES = new TypeID(TypeID.Kind.PRIMITIVE, GamePrimitiveDescriptor.TYPEID_STRING_TILES);
-	public static final TypeID TYPEID_SEQUENCE_FRAMES = new TypeID(TypeID.Kind.PRIMITIVE, GamePrimitiveDescriptor.TYPEID_STRING_FAMES);
+	public static final TypeID TYPEID_SEQUENCE_FRAMES = new TypeID(TypeID.Kind.PRIMITIVE, GamePrimitiveDescriptor.TYPEID_STRING_FRAMES);
 
 	public static PropertyValue createTilesProperty(int[][] tiles) {
 		return PropertyValue.createValue(GamePrimitiveDescriptor.PRIMITIVE_DESCRIPTOR_TILES, TYPEID_TILED_LAYER_TILES, tiles);

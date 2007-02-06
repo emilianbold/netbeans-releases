@@ -18,11 +18,12 @@
  */
 package org.netbeans.modules.vmd.game.integration.components;
 
-import java.awt.Point;
 import org.netbeans.modules.vmd.api.model.PrimitiveDescriptor;
 import org.netbeans.modules.vmd.api.model.PrimitiveDescriptorFactory;
-import org.netbeans.modules.vmd.midp.components.MidpPrimitiveDescriptor;
 import org.netbeans.modules.vmd.game.GameController;
+import org.netbeans.modules.vmd.midp.components.MidpPrimitiveDescriptor;
+
+import java.awt.*;
 import java.util.StringTokenizer;
 
 /**
@@ -32,7 +33,7 @@ import java.util.StringTokenizer;
 public final class GamePrimitiveDescriptor implements PrimitiveDescriptorFactory {
 	
 	static final String TYPEID_STRING_TILES = "#TiledLayerTiles";
-	static final String TYPEID_STRING_FAMES = "#SequenceFrames";
+	static final String TYPEID_STRING_FRAMES = "#SequenceFrames";
 	static final String TYPEID_STRING_POINT = "#Point";
 	
 	static final TilesPrimitiveDescriptor PRIMITIVE_DESCRIPTOR_TILES = new TilesPrimitiveDescriptor();
@@ -48,7 +49,7 @@ public final class GamePrimitiveDescriptor implements PrimitiveDescriptorFactory
 	public PrimitiveDescriptor getDescriptorForTypeIDString(String string) {
 		if (TYPEID_STRING_TILES.equals(string))
 			return PRIMITIVE_DESCRIPTOR_TILES;
-		if (TYPEID_STRING_FAMES.equals(string))
+		if (TYPEID_STRING_FRAMES.equals(string))
 			return PRIMITIVE_DESCRIPTOR_FRAMES;
 		if (TYPEID_STRING_POINT.equals(string))
 			return PRIMITIVE_DESCRIPTOR_POINT;
