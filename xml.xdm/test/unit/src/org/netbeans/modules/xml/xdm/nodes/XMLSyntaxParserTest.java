@@ -150,4 +150,19 @@ public class XMLSyntaxParserTest extends TestCase {
         NodeList nl = doc.getChildNodes();
         assertEquals(2, nl.getLength());    
     }    
+
+    /**
+     * Test of parse method, of class org.netbeans.modules.xmltools.xmlmodel.nodes.XMLSyntaxParser.
+     * Test the parsing of doctype
+     */
+    public void testParseDoctype() throws Exception {
+        BaseDocument basedoc = (BaseDocument)Util.getResourceAsDocument("nodes/testDoctype.xml");
+        XMLSyntaxParser parser = new XMLSyntaxParser();
+        Document doc = parser.parse(basedoc);
+        assertNotNull("Document can not be null", doc);
+        FlushVisitor fv = new FlushVisitor();
+        String docBuf = fv.flushModel(doc);
+        assertEquals("The document should be unaltered",basedoc.getText(0,basedoc.getLength()),docBuf);
+    }
+	
 }
