@@ -116,6 +116,9 @@ public class UseDatabaseAction extends NodeAction {
             return false;
         }
         FileObject fileObject = nodes[0].getLookup().lookup(FileObject.class);
+        if (fileObject == null) {
+            return false;
+        }
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] isInterface = new boolean[1];
         try {
