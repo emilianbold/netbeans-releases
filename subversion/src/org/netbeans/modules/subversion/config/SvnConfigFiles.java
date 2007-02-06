@@ -254,6 +254,12 @@ public class SvnConfigFiles {
         tunnels.put(tunnelName, command);
         storeIni(config, "config");                                                     // NOI18N
     }
+
+    public String getExternalCommand(String tunnelName) {
+        Ini.Section tunnels = getSection(config, "tunnels", true);
+        String cmd = tunnels.get(tunnelName);
+        return cmd != null ? cmd : "";        
+    }
     
     private Ini.Section getSection(Ini ini, String key, boolean create) {
         Ini.Section section = ini.get(key);

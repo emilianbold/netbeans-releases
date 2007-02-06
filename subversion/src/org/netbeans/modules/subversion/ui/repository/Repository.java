@@ -343,6 +343,15 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                 //dcbm.setSelectedItem(urlString);                                                
                 refresh((RepositoryConnection)dcbm.getElementAt(idx));                
             } 
+            if(urlString.startsWith("svn+")) {
+                String tunnelName = getTunnelName(urlString).trim();
+                if( repositoryPanel.tunnelCommandTextField.getText().trim().equals("") && 
+                    tunnelName != null && 
+                    !tunnelName.equals("") ) 
+                {
+                    repositoryPanel.tunnelCommandTextField.setText(SvnConfigFiles.getInstance().getExternalCommand(tunnelName));
+                } 
+            }     
             
             editedrc.setUsername(repositoryPanel.userTextField.getText());
             editedrc.setPassword(new String(repositoryPanel.userPasswordField.getPassword()));
@@ -410,6 +419,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         String tunnelName = getTunnelName(urlString);
         return MessageFormat.format(SVN_SSH_URL_HELP, tunnelName).trim();
     }
+    
+    
     
     private String getTunnelName(String urlString) {
         int idx = urlString.indexOf(":", 4);
@@ -572,9 +583,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     
     private void refresh(RepositoryConnection rc) {        
         repositoryPanel.userTextField.setText(rc.getUsername());
-        repositoryPanel.userPasswordField.setText(rc.getPassword());
-        repositoryPanel.tunnelCommandTextField.setText(rc.getExternalCommand());        
-    }
+        repositoryPanel.userPasswordField.setText(rc.getPassword());        
+        repositoryPanel.tunnelCommandTextField.setText(rc.getExternalCommand());           
+    } 
 
     public boolean show(String title, HelpCtx helpCtx) {
         RepositoryDialogPanel corectPanel = new RepositoryDialogPanel();
