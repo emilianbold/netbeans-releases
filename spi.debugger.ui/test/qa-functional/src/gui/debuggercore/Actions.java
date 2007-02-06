@@ -39,6 +39,7 @@ import org.netbeans.jellytools.modules.debugger.actions.StepOutAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -48,8 +49,6 @@ import org.netbeans.junit.NbTestSuite;
  * @author cincura, ehucka
  */
 public class Actions extends JellyTestCase {
-    
-    private MainWindowOperator.StatusTextTracer stt;
     
     public Actions(String name) {
         super(name);
@@ -72,18 +71,24 @@ public class Actions extends JellyTestCase {
         suite.addTest(new Actions("testRunToCursor"));
         suite.addTest(new Actions("removeBreakpoint"));
         suite.addTest(new Actions("testPause"));
-        suite.addTest(new Actions("testFinishSession"));
         return suite;
     }
     
     /** setUp method  */
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
-        stt = MainWindowOperator.getDefault().getStatusTextTracer();
-        // start to track Main Window status bar
-        stt.start();
-        // increase timeout to 60 seconds when waiting for status bar text
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 30000);
+    }
+    
+    public void tearDown() {
+        if (getName().equals("testPause")) {
+            String finishPath = Utilities.runMenu+"|"+Utilities.finishSessionsItem;
+            while (MainWindowOperator.getDefault().menuBar().showMenuItem(finishPath).isEnabled()) {
+                new FinishDebuggerAction().performShortcut();
+                new EventTool().waitNoEvent(500);
+            }
+            Utilities.waitDebuggerToolbarVisible();
+            Utilities.deleteAllBreakpoints();
+        }
     }
     
     public void testCheckEnabledActions() {
@@ -101,34 +106,34 @@ public class Actions extends JellyTestCase {
         
         //main menu actions
         //check main menu debug main project action
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, true));
         //Step into
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.stepIntoItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepIntoItem, true));
         //new breakpoint
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.newBreakpointItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newBreakpointItem, true));
         //new watch
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.newWatchItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newWatchItem, true));
         //main menu actions disabled
         //check finish debugger
-        assertFalse(new Action(Utilities.runMenu+"|"+Utilities.finishSessionsItem, null).isEnabled());
+        assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.finishSessionsItem, false));
         //pause
-        assertFalse(new Action(Utilities.runMenu+"|"+Utilities.pauseItem, null).isEnabled());
+        assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.pauseItem, false));
         //continue
-        assertFalse(new Action(Utilities.runMenu+"|"+Utilities.continueItem, null).isEnabled());
+        assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.continueItem, false));
         //step over
-        assertFalse(new Action(Utilities.runMenu+"|"+Utilities.stepOverItem, null).isEnabled());
+        assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOverItem, false));
         //step out
-        assertFalse(new Action(Utilities.runMenu+"|"+Utilities.stepOutItem, null).isEnabled());
+        assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOutItem, false));
         //run to cursor
-        assertFalse(new Action(Utilities.runMenu+"|"+Utilities.runToCursorItem, null).isEnabled());
+        assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runToCursorItem, false));
         //run into method
-        assertFalse(new Action(Utilities.runMenu+"|"+Utilities.runIntoMethodItem, null).isEnabled());
+        assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runIntoMethodItem, false));
         //apply code changes
-        assertFalse(new Action(Utilities.runMenu+"|"+Utilities.applyCodeChangesItem, null).isEnabled());
+        assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.applyCodeChangesItem, false));
         //toggle breakpoint
-        assertFalse(new Action(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, null).isEnabled());
+        assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, false));
         //evaluate expression
-        assertFalse(new Action(Utilities.runMenu+"|"+Utilities.evaluateExpressionItem, null).isEnabled());
+        assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.evaluateExpressionItem, false));
         MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
         
         //open source file
@@ -136,17 +141,18 @@ public class Actions extends JellyTestCase {
         new OpenAction().performAPI(beanNode); // NOI18N
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.setCaret(eo, 80);
+        new EventTool().waitNoEvent(1000);  //because of issue 70731
         //main menu file actions
         //check run file action
         String actionName = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_RunSingleAction_Name", new Object[] {new Integer(1), "MemoryView.java"});
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.runFileMenu+"|"+actionName, null).isEnabled());
+        assertTrue(Utilities.runMenu+"|"+Utilities.runFileMenu+"|"+actionName+" is not enabled", Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runFileMenu+"|"+actionName, true));
         //check debug file action
         actionName = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_DebugSingleAction_Name", new Object[] {new Integer(1), "MemoryView.java"});
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.runFileMenu+"|"+actionName, null).isEnabled());
+        assertTrue(Utilities.runMenu+"|"+Utilities.runFileMenu+"|"+actionName+" is not enabled", Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runFileMenu+"|"+actionName, true));
         //run to cursor
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.runToCursorItem, null).isEnabled());
+        assertTrue(Utilities.runMenu+"|"+Utilities.runToCursorItem+" is not enabled", Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runToCursorItem, true));
         //toggle breakpoint
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, null).isEnabled());
+        assertTrue(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem+" is not enabled", Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, true));
         MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
         MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
         
@@ -190,33 +196,33 @@ public class Actions extends JellyTestCase {
         
         //main menu actions
         //check main menu debug main project action
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, true));
         //Step into
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.stepIntoItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepIntoItem, true));
         //new breakpoint
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.newBreakpointItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newBreakpointItem, true));
         //new watch
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.newWatchItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newWatchItem, true));
         //check finish debugger
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.finishSessionsItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.finishSessionsItem, true));
         //pause
-        assertFalse(new Action(Utilities.runMenu+"|"+Utilities.pauseItem, null).isEnabled());
+        assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.pauseItem, false));
         //continue
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.continueItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.continueItem, true));
         //step over
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.stepOverItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOverItem, true));
         //step out
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.stepOutItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOutItem, true));
         //run to cursor
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.runToCursorItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runToCursorItem, true));
         //run into method
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.runIntoMethodItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runIntoMethodItem, true));
         //apply code changes
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.applyCodeChangesItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.applyCodeChangesItem, true));
         //toggle breakpoint
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, true));
         //evaluate expression
-        assertTrue(new Action(Utilities.runMenu+"|"+Utilities.evaluateExpressionItem, null).isEnabled());
+        assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.evaluateExpressionItem, true));
         MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
         
         //debug toolbar
@@ -261,6 +267,8 @@ public class Actions extends JellyTestCase {
         assertTrue("Breakpoint annotation is not displayed", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
     }
     
+    static int lastLineNumber = 0;
+    
     public void testStartDebugging() {
         //start debugging
         Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
@@ -274,7 +282,7 @@ public class Actions extends JellyTestCase {
     
     public void testStepInto() {
         new StepIntoAction().performShortcut();
-        stt.waitText("Thread main stopped at MemoryView.java:92");
+        lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", lastLineNumber);
         //check 80, 92
         EditorOperator eo = new EditorOperator("MemoryView.java");
         assertTrue(Utilities.checkAnnotation(eo, 92, "CurrentPC"));
@@ -289,7 +297,7 @@ public class Actions extends JellyTestCase {
     
     public void testStepOut() {
         new StepOutAction().performShortcut();
-        stt.waitText("Thread main stopped at MemoryView.java:82");
+        lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:82", lastLineNumber);
         //check 82, 92
         EditorOperator eo = new EditorOperator("MemoryView.java");
         assertFalse(Utilities.checkAnnotation(eo, 92, "CurrentPC"));
@@ -297,8 +305,8 @@ public class Actions extends JellyTestCase {
     }
     
     public void testContinue() {
-        new ContinueAction().performShortcut();
-        stt.waitText("Thread main stopped at MemoryView.java:80");
+        new ContinueAction().perform();
+        lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:80", lastLineNumber);
         //check 80, 82
         EditorOperator eo = new EditorOperator("MemoryView.java");
         assertFalse(Utilities.checkAnnotation(eo, 82, "CurrentPC"));
@@ -307,7 +315,7 @@ public class Actions extends JellyTestCase {
     
     public void testStepOver() {
         new StepOverAction().performShortcut();
-        stt.waitText("Thread main stopped at MemoryView.java:82");
+        lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:82", lastLineNumber);
         //check 80, 82
         EditorOperator eo = new EditorOperator("MemoryView.java");
         assertFalse(Utilities.checkAnnotation(eo, 80, "CurrentPC"));
@@ -316,15 +324,16 @@ public class Actions extends JellyTestCase {
     
     public void testRunToCursor() {
         //continue
-        new ContinueAction().performShortcut();
-        stt.waitText("Thread main stopped at MemoryView.java:80");
+        new ContinueAction().perform();
+        lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:80", lastLineNumber);
         //get line number
         EditorOperator eo = new EditorOperator("MemoryView.java");
         eo.select("r.totalMemory");
         int line = eo.getLineNumber();
+        Utilities.setCaret(eo, line);
         //run to cursor
-        new RunToCursorAction().performShortcut();
-        stt.waitText("Thread main stopped at MemoryView.java:"+line);
+        new RunToCursorAction().perform();
+        lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:"+line, lastLineNumber);
         //check line
         assertFalse(Utilities.checkAnnotation(eo, 80, "CurrentPC"));
         assertTrue(Utilities.checkAnnotation(eo, line, "CurrentPC"));
@@ -335,7 +344,6 @@ public class Actions extends JellyTestCase {
         //place breakpoint
         Utilities.toggleBreakpoint(eo, 80, false);
         assertFalse("Breakpoint annotation is not removed", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
-        
     }
     
     public void testPause() {
@@ -343,23 +351,23 @@ public class Actions extends JellyTestCase {
         //place breakpoint
         Utilities.toggleBreakpoint(eo, 80);
         //continue
-        new ContinueAction().performShortcut();
-        stt.waitText("Thread main stopped at MemoryView.java:80");
+        new ContinueAction().perform();
+        lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:80", lastLineNumber);
         //remove breakpoint
         Utilities.toggleBreakpoint(eo, 80, false);
         //continue
-        new ContinueAction().performShortcut();
-        //pause after 300 ms - should be on sleep
-        Utilities.sleep(400);
-        new Action(Utilities.runMenu+"|"+Utilities.pauseItem, null).perform();
+        new ContinueAction().perform();
+        String pausePath = Utilities.runMenu+"|"+Utilities.pauseItem;
+        for (int i = 0; i < 10; i++) {
+            if(MainWindowOperator.getDefault().menuBar().showMenuItem(pausePath).isEnabled()) {
+                new Action(pausePath, null).perform();
+            }
+            MainWindowOperator.getDefault().menuBar().closeSubmenus();
+            new EventTool().waitNoEvent(500);
+        }
         Utilities.waitStatusTextPrefix("Thread main stopped at ");
         new EditorOperator("Thread.java").close();
         eo = new EditorOperator("MemoryView.java");
         assertTrue(Utilities.checkAnnotation(eo, 82, "CallSite"));
-    }
-    
-    public void testFinishSession() {
-        new FinishDebuggerAction().performShortcut();
-        Utilities.waitStatusTextPrefix("Finished building ");
     }
 }

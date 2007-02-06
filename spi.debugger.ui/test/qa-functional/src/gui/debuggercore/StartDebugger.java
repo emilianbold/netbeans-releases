@@ -80,7 +80,7 @@ public class StartDebugger extends JellyTestCase {
     }
     
     public void testRunInDebugger() {
-        Utilities.startDebugger(Utilities.runningStatusBarText);
+        //Utilities.startDebugger(Utilities.runningStatusBarText);
     }
     
     public void testDebugFile() {

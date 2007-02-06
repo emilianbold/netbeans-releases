@@ -23,17 +23,22 @@ package gui.debuggercore;
 
 import java.awt.Component;
 import java.awt.event.KeyEvent;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DebugProjectAction;
-import org.netbeans.jellytools.modules.debugger.actions.DebugAction;
 import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
@@ -88,11 +93,14 @@ public class Utilities {
     public static String customizeBreakpointTitle = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.models.Bundle", "CTL_Breakpoint_Customizer_Title");
     public static String newBreakpointTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Breakpoint_Title");
     public static String newWatchTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchDialog_Title");
+    public static String debuggerConsoleTitle = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_DebuggerConsole_Title");
+    
     
     public static String runningStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_running");
     public static String stoppedStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_stopped");
     public static String finishedStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_finished");
     public static String buildCompleteStatusBarText = "Finished building";
+    public static String evaluatingPropertyText = Bundle.getString("org.netbeans.modules.viewmodel.Bundle", "EvaluatingProp");
     
     public static String openSourceAction = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
     public static String setMainProjectAction = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
@@ -119,6 +127,23 @@ public class Utilities {
     
     
     public Utilities() {}
+    
+    public static boolean verifyMainMenu(String actionPath, boolean expected) {
+        if (expected == MainWindowOperator.getDefault().menuBar().showMenuItem(actionPath).isEnabled())
+            return MainWindowOperator.getDefault().menuBar().showMenuItem(actionPath).isEnabled();
+        else {
+            for (int i = 0; i < 10; i++) {
+                if(MainWindowOperator.getDefault().menuBar().showMenuItem(actionPath).isEnabled() == expected) {
+                    MainWindowOperator.getDefault().menuBar().closeSubmenus();
+                    return expected;
+                }
+                MainWindowOperator.getDefault().menuBar().closeSubmenus();
+                new EventTool().waitNoEvent(500);
+                System.err.println("waiting on "+actionPath);
+            }
+            return MainWindowOperator.getDefault().menuBar().showMenuItem(actionPath).isEnabled();
+        }
+    }
     
     public static boolean verifyPopup(Node node, String[] menus) {
         //invocation of root popup
@@ -274,24 +299,35 @@ public class Utilities {
         //MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
     }
     
-    public static void startDebugger(String statusText) {
+    public static void startDebugger() {
+        // "Set as Main Project"
+        String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
+        new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(testProjectName));
         new DebugProjectAction().performShortcut();
-        waitStatusText(statusText);
+        getDebugToolbar().waitComponentVisible(true);
     }
     
     public static ContainerOperator getDebugToolbar() {
         return MainWindowOperator.getDefault().getToolbar(debugToolbarLabel);
     }
     
+    public static void waitDebuggerToolbarVisible() {
+        for (int i =0;i< MainWindowOperator.getDefault().getToolbarCount();i++) {
+            if (MainWindowOperator.getDefault().getToolbar(i).getName().equals(debugToolbarLabel)) {
+                MainWindowOperator.getDefault().getToolbar(i).waitComponentVisible(true);
+            }
+        }
+    }
+    
     public static void setCaret(EditorOperator eo, final int line) {
+        eo.makeComponentVisible();
         eo.setCaretPositionToLine(line);
-        eo.requestFocus();
+        new EventTool().waitNoEvent(500);
         
         try {
             new Waiter(new Waitable() {
                 public Object actionProduced(Object editorOper) {
                     EditorOperator op = (EditorOperator)editorOper;
-                    System.err.print("get line "+op.hasFocus()+" "+op.getLineNumber());
                     if (op.getLineNumber() == line) {
                         return Boolean.TRUE;
                     }
@@ -395,16 +431,63 @@ public class Utilities {
         try {
             new Waiter(new Waitable() {
                 public Object actionProduced(Object anObject) {
+                    JemmyProperties.getProperties().getOutput().print(">>>>> status text: "+StatusDisplayer.getDefault().getStatusText()+" > "+anObject+"\n");
                     if (StatusDisplayer.getDefault().getStatusText().startsWith(text))
                         return Boolean.TRUE;
                     return null;
                 }
                 public String getDescription() {
-                    return("Wait status text prefix to "+text);
+                    return("Wait status text prefix: "+text);
                 }
             }).waitAction(StatusDisplayer.getDefault());
         } catch (InterruptedException ex) {
             ex.printStackTrace();
+        }
+    }
+    
+    public static int getDebuggerConsoleStatus() {
+        return new OutputTabOperator(debuggerConsoleTitle).getLineCount();
+    }
+    
+    public static int waitDebuggerConsole(final String text, final int status) {
+        OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
+        ConsoleChooser cch = new ConsoleChooser(op, text, status);
+        JemmyProperties.getCurrentOutput().printLine("Waiting on text in debugger console "+text+" from line "+status);
+        try {
+            op.waitState(cch);
+        } catch (TimeoutExpiredException ex) {
+            JemmyProperties.getCurrentOutput().printLine("Not found text in debugger console:");
+            JemmyProperties.getCurrentOutput().printLine(op.getText());
+            throw ex;
+        }
+        JemmyProperties.getCurrentOutput().printLine("Found text in debugger console "+text+" at line "+cch.getLastIndex());
+        return cch.getLastIndex();
+    }
+    
+    static class ConsoleChooser implements ComponentChooser {
+        int lastIndex = 0;
+        OutputTabOperator op;
+        String text;
+        int status;
+        public ConsoleChooser(OutputTabOperator op, String text, int status) {
+            this.op = op;
+            this.text = text;
+            this.status = status;
+        }
+        public boolean checkComponent(Component comp) {
+            for(int i = status; i < op.getLineCount(); i++) {
+                if(op.getLine(i).startsWith(text)) {
+                    lastIndex = i;
+                    return true;
+                }
+            }
+            return false;
+        }
+        public String getDescription() {
+            return("\"" + text + "\" text");
+        }
+        public int getLastIndex() {
+            return lastIndex;
         }
     }
 }
