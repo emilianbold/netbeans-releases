@@ -15,32 +15,33 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
  */
+
 package org.netbeans.modules.vmd.midpnb.components.commands;
 
-
-import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
+import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Karol Harezlak
  */
 
-public final class WaitScreenFailureCommandCD extends ComponentDescriptor {
+public final class SplashScreenDismissCommandCD extends ComponentDescriptor {
 
-    public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#WaitScreenFailureCommand"); // NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#SplashScreenDismissCommand"); // NOI18N
 
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(CommandCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(CommandCD.TYPEID, SplashScreenDismissCommandCD.TYPEID, true, true);
     }
 
     public VersionDescriptor getVersionDescriptor() {
@@ -48,10 +49,10 @@ public final class WaitScreenFailureCommandCD extends ComponentDescriptor {
     }
 
     public void postInitialize(DesignComponent component) {
-        component.writeProperty(CommandCD.PROP_LABEL, MidpTypes.createStringValue ("Failure")); // NOI18N
-        component.writeProperty(CommandCD.PROP_TYPE, MidpTypes.createIntegerValue (CommandCD.VALUE_OK));
-        component.writeProperty(CommandCD.PROP_PRIORITY, MidpTypes.createIntegerValue (0));
-        component.writeProperty(CommandCD.PROP_ORDINARY, MidpTypes.createBooleanValue (false));
+        component.writeProperty(CommandCD.PROP_LABEL, MidpTypes.createStringValue("Dismiss")); // NOI18N
+        component.writeProperty(CommandCD.PROP_TYPE, MidpTypes.createIntegerValue(CommandCD.VALUE_OK));
+        component.writeProperty(CommandCD.PROP_PRIORITY, MidpTypes.createIntegerValue(0));
+        component.writeProperty(CommandCD.PROP_ORDINARY, MidpTypes.createBooleanValue(false));
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
@@ -63,14 +64,14 @@ public final class WaitScreenFailureCommandCD extends ComponentDescriptor {
         super.gatherPresenters(presenters);
     }
 
-    protected List<? extends Presenter> createPresenters () {
-        return Arrays.asList (
+    protected List<? extends Presenter> createPresenters() {
+        return Arrays.asList(
             // general
-            InfoPresenter.createStatic("WaitScreen.FAILURE_COMMAND", "Command", CommandCD.ICON_PATH), // NOI18N
+            InfoPresenter.createStatic("SplashScreen.DISMISS_COMMAND", "Command", CommandCD.ICON_PATH), // NOI18N
             // code
             new CodeReferencePresenter() {
-                protected String generateAccessCode() { return generateDirectAccessCode (); }
-                protected String generateDirectAccessCode() { return "WaitScreen.FAILURE_COMMAND"; } // NOI18N
+                protected String generateAccessCode() { return generateDirectAccessCode(); }
+                protected String generateDirectAccessCode() { return "SplashScreen.DISMISS_COMMAND"; } // NOI18N
                 protected String generateTypeCode() { return null; }
             },
             // delete

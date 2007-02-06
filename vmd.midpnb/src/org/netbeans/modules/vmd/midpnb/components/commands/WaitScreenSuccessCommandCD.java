@@ -19,23 +19,17 @@
 package org.netbeans.modules.vmd.midpnb.components.commands;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Karol Harezlak
@@ -44,8 +38,6 @@ import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 public final class WaitScreenSuccessCommandCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#WaitScreenSuccessCommand"); // NOI18N
-
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/command_16.png"; // NOI18N
 
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(CommandCD.TYPEID, TYPEID, true, true);
@@ -56,8 +48,8 @@ public final class WaitScreenSuccessCommandCD extends ComponentDescriptor {
     }
 
     public void postInitialize(DesignComponent component) {
-        component.writeProperty(CommandCD.PROP_LABEL, MidpTypes.createStringValue("")); // NOI18N
-        component.writeProperty(CommandCD.PROP_TYPE, MidpTypes.createIntegerValue(CommandCD.VALUE_SCREEN));
+        component.writeProperty(CommandCD.PROP_LABEL, MidpTypes.createStringValue("Success")); // NOI18N
+        component.writeProperty(CommandCD.PROP_TYPE, MidpTypes.createIntegerValue(CommandCD.VALUE_OK));
         component.writeProperty(CommandCD.PROP_PRIORITY, MidpTypes.createIntegerValue(0));
         component.writeProperty(CommandCD.PROP_ORDINARY, MidpTypes.createBooleanValue(false));
     }
@@ -74,7 +66,7 @@ public final class WaitScreenSuccessCommandCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // general
-            InfoPresenter.createStatic("WaitScreen.SUCCESS_COMMAND", "Command", CommandCD.ICON_PATH),
+            InfoPresenter.createStatic("WaitScreen.SUCCESS_COMMAND", "Command", CommandCD.ICON_PATH), // NOI18N
             // code
             new CodeReferencePresenter() {
                 protected String generateAccessCode() { return generateDirectAccessCode(); }

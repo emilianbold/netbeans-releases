@@ -60,30 +60,18 @@ public abstract class CustomComponentProducer extends ComponentProducer {
         return MidpJavaSupport.checkValidity(document, getComponentTypeID());
     }
 
-    public static final class WaitScreen extends CustomComponentProducer {
-        public WaitScreen() {
-            super(WaitScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "WaitScreen", "WaitScreen", WaitScreenCD.ICON_PATH, WaitScreenCD.ICON_LARGE_PATH)); // NOI18N
-        }
-    }
-    
-    public static final class SplashScreen extends CustomComponentProducer {
-        public SplashScreen() {
-            super(SplashScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "SplashScreen", "SplashScreen", SplashScreenCD.ICON_PATH, SplashScreenCD.ICON_LARGE_PATH)); // NOI18N
-        }
-    }
-    
     public static final class SVGSplashScreen extends CustomComponentProducer {
         public SVGSplashScreen() {
             super(SVGSplashScreenCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVGSplashScreen", "SVGSplashScreen", SVGSplashScreenCD.ICON_PATH, SVGSplashScreenCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
-    
+
     public static final class SVGWaitScreen extends CustomComponentProducer {
         public SVGWaitScreen() {
             super(SVGWaitScreenCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVGWaitScreen", "SVGWaitScreen", SVGWaitScreenCD.ICON_PATH, SVGWaitScreenCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
-    
+
     public static final class SVGAnimatorWrapper extends CustomComponentProducer {
         public SVGAnimatorWrapper() {
             super(SVGAnimatorWrapperCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVGAnimatorWrapper", "SVGAnimatorWrapper", SVGAnimatorWrapperCD.ICON_PATH, SVGAnimatorWrapperCD.ICON_LARGE_PATH)); // NOI18N

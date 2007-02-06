@@ -24,7 +24,6 @@ import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.midp.components.categories.CommandsCategoryCD;
 import org.netbeans.modules.vmd.midp.components.categories.ControllersCategoryCD;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
-import org.netbeans.modules.vmd.midp.components.commands.ListSelectCommandCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.general.RootCD;
@@ -67,7 +66,7 @@ public final class MidpDocumentSupport {
         return list.get(0);
     }
     
-    public static DesignComponent getListSelectCommand(final DesignDocument document, final TypeID typeID) {
+    public static DesignComponent getSingletonCommand (final DesignDocument document, final TypeID typeID) {
         final DesignComponent categoryComponent = getCategoryComponent(document, CommandsCategoryCD.TYPEID);
         
         assert categoryComponent != null;

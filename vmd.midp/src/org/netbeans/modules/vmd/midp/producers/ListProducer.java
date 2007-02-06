@@ -42,7 +42,7 @@ public class ListProducer extends MidpComponentProducer {
 
     public Result createComponent (DesignDocument document) {
         DesignComponent list = document.createComponent (ListCD.TYPEID);
-        DesignComponent listSelectCommand = MidpDocumentSupport.getListSelectCommand(document, ListSelectCommandCD.TYPEID);
+        DesignComponent listSelectCommand = MidpDocumentSupport.getSingletonCommand (document, ListSelectCommandCD.TYPEID);
 
         DesignComponent listSelectCommandEventSource = document.createComponent (ListSelectCommandEventSourceCD.TYPEID);
         listSelectCommandEventSource.writeProperty (CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference (list));

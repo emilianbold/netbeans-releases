@@ -36,8 +36,8 @@ public class WaitScreenProducer extends MidpComponentProducer {
 
     public Result createComponent(DesignDocument document) {
         DesignComponent waitScreen = document.createComponent(WaitScreenCD.TYPEID);
-        DesignComponent successCommand = MidpDocumentSupport.getListSelectCommand(document, WaitScreenSuccessCommandCD.TYPEID);
-        DesignComponent failureCommand = MidpDocumentSupport.getListSelectCommand(document, WaitScreenFailureCommandCD.TYPEID);
+        DesignComponent successCommand = MidpDocumentSupport.getSingletonCommand (document, WaitScreenSuccessCommandCD.TYPEID);
+        DesignComponent failureCommand = MidpDocumentSupport.getSingletonCommand (document, WaitScreenFailureCommandCD.TYPEID);
         
         DesignComponent successEventSource = document.createComponent(WaitScreenSuccessCommandEventSourceCD.TYPEID);
         DesignComponent failureEventSource = document.createComponent(WaitScreenFailureCommandEventSourceCD.TYPEID);

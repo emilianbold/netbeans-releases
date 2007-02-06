@@ -40,8 +40,8 @@ public final class WaitScreenCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.WaitScreen"); // NOI18N
     
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/wait_screen16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/wait_screen64.png"; // NOI18N
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/wait_screen_16.png"; // NOI18N
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/wait_screen_64.png"; // NOI18N
     
     public static final String PROP_TASK = "task"; //NOI18N
 

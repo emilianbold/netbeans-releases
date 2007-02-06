@@ -25,9 +25,7 @@ import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midp.propertyeditors.eventhandler.PropertyEditorEventHandler;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,13 +38,12 @@ public class SplashScreenCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.SplashScreen"); // NOI18N
 
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/splash_screen16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/splash_screen64.png"; // NOI18N
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/splash_screen_16.png"; // NOI18N
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/splash_screen_64.png"; // NOI18N
 
     private static final String PROP_TIMEOUT = "timeout"; //NOI18N
     private static final String PROP_ALLOW_TIMEOUT_INTERRUPT = "allowTimeoutInterrupt"; //NOI18N
-    private static final String PROP_DISMISS = "dismiss"; //NOI18N
-  
+
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
@@ -61,9 +58,8 @@ public class SplashScreenCD extends ComponentDescriptor {
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-            new PropertyDescriptor(PROP_TIMEOUT, MidpTypes.TYPEID_INT, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2),
-            new PropertyDescriptor(PROP_ALLOW_TIMEOUT_INTERRUPT, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(Boolean.TRUE), false, false, MidpVersionable.MIDP_2),
-            new PropertyDescriptor(PROP_DISMISS, EventSourceCD.TYPEID, PropertyValue.createNull(), false, false, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_TIMEOUT, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (5000), false, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_ALLOW_TIMEOUT_INTERRUPT, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(Boolean.FALSE), false, false, MidpVersionable.MIDP_2)
         );
     }
     
@@ -71,12 +67,12 @@ public class SplashScreenCD extends ComponentDescriptor {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                    .addProperty("Timeout", Integer.class, PROP_TIMEOUT)
-                   .addProperty("Allow Timeout Interrupt", Boolean.class, PROP_ALLOW_TIMEOUT_INTERRUPT)
-                   .addProperty("Dissmiss Action", PropertyEditorEventHandler.createInstance(), PROP_ALLOW_TIMEOUT_INTERRUPT);    
+                   .addProperty("Allow Timeout Interrupt", Boolean.class, PROP_ALLOW_TIMEOUT_INTERRUPT);
     }
     
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
+            // properties
             createPropertiesPresenter()
         );
     }

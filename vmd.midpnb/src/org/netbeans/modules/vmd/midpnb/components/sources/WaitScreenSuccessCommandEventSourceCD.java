@@ -43,7 +43,7 @@ public final class WaitScreenSuccessCommandEventSourceCD extends ComponentDescri
     }
 
     public VersionDescriptor getVersionDescriptor () {
-        return MidpVersionDescriptor.MIDP;
+        return MidpVersionDescriptor.MIDP_2;
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
