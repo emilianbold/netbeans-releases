@@ -124,7 +124,7 @@ public class LineDiffTest extends NbTestCase {
         doOutputToFile(test1, "a\nb\nc\n");
         doOutputToFile(test2, "a\nb\nc\nd\n");
         
-        LineDiff diff = new LineDiff(false, true);
+        LineDiff diff = new LineDiff();
         assertTrue(diff.diff(test1, test2, test3));
         assertEquals(" 1   a\n 2   b\n 3   c\n 4 - d\n", getFileContent(test3));
     }
@@ -137,7 +137,7 @@ public class LineDiffTest extends NbTestCase {
         doOutputToFile(test1, "b\nc\nd\n");
         doOutputToFile(test2, "a\nb\nc\nd\n");
         
-        LineDiff diff = new LineDiff(false, true);
+        LineDiff diff = new LineDiff();
         assertTrue(diff.diff(test1, test2, test3));
         assertEquals(" 1 - a\n 2   b\n 3   c\n 4   d\n", getFileContent(test3));
     }
@@ -150,7 +150,7 @@ public class LineDiffTest extends NbTestCase {
         doOutputToFile(test1, "a\nb\nb\nc\nc\nc\nb\nd\n");
         doOutputToFile(test2, "a\nb\nc\nd\n");
         
-        LineDiff diff = new LineDiff(false, true);
+        LineDiff diff = new LineDiff();
         assertTrue(diff.diff(test1, test2, test3));
         assertEquals(" 1   a\n 2   b\n   + b\n 3   c\n   + c\n   + c\n   + b\n 4   d\n", getFileContent(test3));
     }
@@ -163,7 +163,7 @@ public class LineDiffTest extends NbTestCase {
         doOutputToFile(test1, "a\nb\nb\nd\na\nb\nd\n");
         doOutputToFile(test2, "a\nb\nc\nd\n");
         
-        LineDiff diff = new LineDiff(false, true);
+        LineDiff diff = new LineDiff();
         assertTrue(diff.diff(test1, test2, test3));
         assertEquals(" 1   a\n 2   b\n 3 - c\n   + b\n 4   d\n   + a\n   + b\n   + d\n", getFileContent(test3));
     }
@@ -176,7 +176,7 @@ public class LineDiffTest extends NbTestCase {
         doOutputToFile(test1, "0\na\nb\nc\nd\n");
         doOutputToFile(test2, "a\nb\nc\nd\n");
         
-        LineDiff diff = new LineDiff(false, true);
+        LineDiff diff = new LineDiff();
         assertTrue(diff.diff(test1, test2, test3));
         assertEquals("   + 0\n 1   a\n 2   b\n 3   c\n", getFileContent(test3));
     }
@@ -189,7 +189,7 @@ public class LineDiffTest extends NbTestCase {
         doOutputToFile(test1, "a\nb\nc\nd\ne\n");
         doOutputToFile(test2, "a\nb\nc\nd\n");
         
-        LineDiff diff = new LineDiff(false, true);
+        LineDiff diff = new LineDiff();
         assertTrue(diff.diff(test1, test2, test3));
         assertEquals(" 2   b\n 3   c\n 4   d\n   + e\n", getFileContent(test3));
     }
@@ -202,8 +202,34 @@ public class LineDiffTest extends NbTestCase {
         doOutputToFile(test1, "e\nf\ng\nh\n");
         doOutputToFile(test2, "a\nb\nc\nd\n");
         
-        LineDiff diff = new LineDiff(false, true);
+        LineDiff diff = new LineDiff();
         assertTrue(diff.diff(test1, test2, test3));
         assertEquals(" 1 - a\n   + e\n 2 - b\n   + f\n 3 - c\n   + g\n 4 - d\n   + h\n", getFileContent(test3));
+    }
+    
+    public void testDiff8() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        File test3 = new File(getWorkDir(), "test3");
+        
+        doOutputToFile(test1, "a\ne\nc\nd\n\nf\n");
+        doOutputToFile(test2, "a\nb\n\nc\nd\nf\n");
+        
+        LineDiff diff = new LineDiff();
+        assertTrue(diff.diff(test1, test2, test3));
+        assertEquals(" 1   a\n 2 - b\n   + e\n 3 - \n 4   c\n 5   d\n   + \n 6   f\n", getFileContent(test3));
+    }
+    
+    public void testDiff9() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        File test3 = new File(getWorkDir(), "test3");
+        
+        doOutputToFile(test1, "a\ne\nf\nb\nc\nd\n");
+        doOutputToFile(test2, "a\nb\nc\nd\n");
+        
+        LineDiff diff = new LineDiff();
+        assertTrue(diff.diff(test1, test2, test3));
+        assertEquals(" 1   a\n   + e\n   + f\n 2   b\n 3   c\n 4   d\n", getFileContent(test3));
     }
 }

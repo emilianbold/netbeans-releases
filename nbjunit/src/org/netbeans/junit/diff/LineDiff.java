@@ -158,7 +158,12 @@ public class LineDiff implements Diff {
                 int found = find(v, refLines, stepLeft);
                 if (found >= 0) {
                     if (found > stepLeft) {
-                        results.add(new Result(stepLeft, found, stepRight, true));  //add new lines
+                        if (found-stepLeft >= 2) { //could be wrong jump - try tp skip left
+                            right=false;
+                            continue;
+                        } else {
+                            results.add(new Result(stepLeft, found, stepRight, true));  //add new lines
+                        }
                     }
                     stepLeft=found+1;
                 } else {
