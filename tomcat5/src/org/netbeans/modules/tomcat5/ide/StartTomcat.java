@@ -27,9 +27,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -49,6 +52,7 @@ import org.netbeans.modules.tomcat5.util.LogManager;
 import org.netbeans.modules.tomcat5.util.Utils;
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
@@ -264,6 +268,75 @@ public final class StartTomcat extends StartServer implements ProgressObject {
             this.profilerSettings = profilerSettings;
         }
         
+        /**
+         * Default environment variables used when launching the startup or shutdown
+         * server process.
+         */
+        private List<String> defaultEnvironment(TomcatProperties tp, JavaPlatform platform, File homeDir, File baseDir) {
+            List<String> defaultEnvList = new ArrayList<String>(7);
+            defaultEnvList.add("JAVA_HOME=" + getJavaHome(platform)); // NOI18N
+            defaultEnvList.add("JRE_HOME="); // NOI18N ensure that JRE_HOME system property won't be used instead of JAVA_HOME
+            
+            // set the JAVA_OPTS value
+            String javaOpts = tp.getJavaOpts();            
+            // use the IDE proxy settings if the 'use proxy' checkbox is selected
+            // do not override a property if it was set manually by the user
+            if (tp.getProxyEnabled()) {
+                StringBuilder sb = new StringBuilder(javaOpts);
+                final String[] PROXY_PROPS = {
+                    "http.proxyHost",       // NOI18N
+                    "http.proxyPort",       // NOI18N
+                    "http.nonProxyHosts",   // NOI18N
+                    "https.proxyHost",      // NOI18N
+                    "https.proxyPort",      // NOI18N
+                };
+                boolean isWindows = Utilities.isWindows();
+                for (String prop : PROXY_PROPS) {
+                    if (javaOpts.indexOf(prop) == -1) {
+                        String value = System.getProperty(prop);
+                        if (value != null) {
+                            if (isWindows && "http.nonProxyHosts".equals(prop)) { // NOI18N
+                                // enclose in double quotes to escape the pipes separating the hosts on windows
+                                value = "\"" + value + "\""; // NOI18N
+                            }
+                            sb.append(" -D").append(prop).append("=").append(value); // NOI18N
+                        }
+                    }
+                }
+                javaOpts = sb.toString();
+            }
+            defaultEnvList.add("JAVA_OPTS=" + javaOpts); // NOI18N
+            
+            defaultEnvList.add("CATALINA_HOME=" + homeDir.getAbsolutePath()); // NOI18N
+            defaultEnvList.add("CATALINA_BASE=" + baseDir.getAbsolutePath()); // NOI18N
+            // this is used in the setclasspath.sb/bat script for work-arounding 
+            // problems caused by the compatibility pack when running on 1.5
+            SpecificationVersion jdkVersion = platform.getSpecification().getVersion();
+            defaultEnvList.add("NB_TOMCAT_JDK=" + jdkVersion.toString()); // NOI18N
+            if (jdkVersion.compareTo(new SpecificationVersion("1.6")) >= 0) { // NOI18N
+                // Work-around for issue 92342: Unable to create WS on Tomcat if using JDK1.6
+                String javaEndorsedDirs = System.getProperty("java.endorsed.dirs");
+                defaultEnvList.add("JAVA_ENDORSED_DIRS=" + absolutizePath(javaEndorsedDirs)); // NOI18N
+            }
+            return defaultEnvList;
+        }
+        
+        /**
+         * Take a path string which may be composed from multiple path entries,
+         * which may be either relative or absolute.
+         */
+        private String absolutizePath(String path) {
+            StringBuilder result = new StringBuilder(path.length());
+            for (StringTokenizer st = new StringTokenizer(path, File.pathSeparator); st.hasMoreElements(); ) {
+                String item = (String) st.nextElement();
+                result.append(new File(item).getAbsolutePath());
+                if (st.hasMoreElements()) {
+                    result.append(File.pathSeparator);
+                }
+            }
+            return result.toString();
+        }
+        
         public synchronized void run () {
             // PENDING check whether is runs or not
             TomcatProperties tp = tm.getTomcatProperties();
@@ -352,35 +425,6 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                 }
             }
             
-            // set the JAVA_OPTS value
-            String javaOpts = tp.getJavaOpts();            
-            // use the IDE proxy settings if the 'use proxy' checkbox is selected
-            // do not override a property if it was set manually by the user
-            if (tp.getProxyEnabled()) {
-                StringBuilder sb = new StringBuilder(javaOpts);
-                final String[] PROXY_PROPS = {
-                    "http.proxyHost",       // NOI18N
-                    "http.proxyPort",       // NOI18N
-                    "http.nonProxyHosts",   // NOI18N
-                    "https.proxyHost",      // NOI18N
-                    "https.proxyPort",      // NOI18N
-                };
-                boolean isWindows = Utilities.isWindows();
-                for (String prop : PROXY_PROPS) {
-                    if (javaOpts.indexOf(prop) == -1) {
-                        String value = System.getProperty(prop);
-                        if (value != null) {
-                            if (isWindows && "http.nonProxyHosts".equals(prop)) { // NOI18N
-                                // enclose in double quotes to escape the pipes separating the hosts on windows
-                                value = "\"" + value + "\""; // NOI18N
-                            }
-                            sb.append(" -D").append(prop).append("=").append(value); // NOI18N
-                        }
-                    }
-                }
-                javaOpts = sb.toString();
-            }
-            
             JavaPlatform platform = mode == MODE_PROFILE ? profilerSettings.getJavaPlatform()
                                                          : getJavaPlatform();
             String jdkVersion = platform.getSpecification().getVersion().toString();
@@ -416,20 +460,17 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         TomcatFactory.getEM ().log ("transport: " + transport);    // NOI18N
                         TomcatFactory.getEM ().log ("address: " + address);    // NOI18N
                     }
+                    
+                    
+                    List<String> defaultEnvList = new ArrayList<String>(defaultEnvironment(tp, platform, homeDir, baseDir));
+                    defaultEnvList.add("JPDA_TRANSPORT=" + transport);   // NOI18N
+                    defaultEnvList.add("JPDA_ADDRESS=" + address);   // NOI18N
+                    
+                    String[] defaultEnv = defaultEnvList.toArray(new String[defaultEnvList.size()]);
+                    
                     p = pd.exec (
                         new TomcatFormat(startupScript, homeDir),
-                        new String[] {
-                            "JAVA_HOME="        + getJavaHome(platform), // NOI18N
-                            "JRE_HOME=",  // NOI18N ensure that JRE_HOME system property won't be used instead of JAVA_HOME
-                            "JAVA_OPTS="        + javaOpts, // NOI18N
-                            "JPDA_TRANSPORT="   + transport,        // NOI18N
-                            "JPDA_ADDRESS="     + address,          // NOI18N
-                            "CATALINA_HOME="    + homeDir.getAbsolutePath(),    // NOI18N
-                            "CATALINA_BASE="    + baseDir.getAbsolutePath(),    // NOI18N
-                            // this is used in the setclasspath.sb/bat script for work-arounding 
-                            // problems caused by the compatibility pack when running on 1.5
-                            "NB_TOMCAT_JDK="    + jdkVersion   // NOI18N
-                        },
+                        defaultEnv,
                         true,
                         new File (homeDir, "bin") // NOI18N
                     );
@@ -460,17 +501,10 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     for (int i = 0; i < profJvmArgs.length; i++) {
                         catalinaOpts.append(profJvmArgs[i]).append(" "); // NOI18N
                     }
-                    String[] defaultEnv = new String[] {
-                        "JAVA_HOME="        + getJavaHome(platform),        // NOI18N
-                        "JRE_HOME=",  // NOI18N ensure that JRE_HOME system property won't be used instead of JAVA_HOME
-                        "JAVA_OPTS="        + javaOpts,             // NOI18N
-                        "CATALINA_OPTS="    + catalinaOpts.toString(),      // NOI18N
-                        "CATALINA_HOME="    + homeDir.getAbsolutePath(),    // NOI18N
-                        "CATALINA_BASE="    + baseDir.getAbsolutePath(),    // NOI18N
-                        // this is used in the setclasspath.sb/bat script for work-arounding 
-                        // problems caused by the compatibility pack when running on 1.5
-                        "NB_TOMCAT_JDK="    + jdkVersion       // NOI18N
-                    };
+                    List<String> defaultEnvList = new ArrayList<String>(defaultEnvironment(tp, platform, homeDir, baseDir));
+                    defaultEnvList.add("CATALINA_OPTS=" + catalinaOpts.toString());   // NOI18N
+                    
+                    String[] defaultEnv = defaultEnvList.toArray(new String[defaultEnvList.size()]);
                     String[] profEnv = profilerSettings.getEnv();
                     // merge Tomcat and profiler env properties
                     String[] envp = new String[defaultEnv.length + profEnv.length];
@@ -510,18 +544,13 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                 try {
                     fireCmdExecProgressEvent(command == CommandType.START ? "MSG_startProcess" : "MSG_stopProcess",
                             StateType.RUNNING);
+                    
+                    List<String> defaultEnvList = defaultEnvironment(tp, platform, homeDir, baseDir);
+                    String[] defaultEnv = defaultEnvList.toArray(new String[defaultEnvList.size()]);
+                    
                     Process p = pd.exec (
                         new TomcatFormat (startupScript, homeDir),
-                        new String[] { 
-                            "JAVA_HOME="        + getJavaHome(platform),   // NOI18N
-                            "JRE_HOME=",  // NOI18N ensure that JRE_HOME system property won't be used instead of JAVA_HOME
-                            "JAVA_OPTS="        + javaOpts, // NOI18N
-                            "CATALINA_HOME="    + homeDir.getAbsolutePath(),    // NOI18N
-                            "CATALINA_BASE="    + baseDir.getAbsolutePath(),    // NOI18N
-                            // this is used in the setclasspath.sb/bat script for work-arounding 
-                            // problems caused by the compatibility pack when running on 1.5
-                            "NB_TOMCAT_JDK="    + jdkVersion       // NOI18N
-                        },
+                        defaultEnv,
                         true,
                         new File (homeDir, "bin")
                     );
