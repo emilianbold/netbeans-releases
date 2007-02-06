@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.versioning.system.cvss;
@@ -84,7 +84,7 @@ public class CVS extends VersioningSystem implements VersioningListener, Prefere
         if (evt.getKey().startsWith(CvsModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             fireStatusChanged((Set<File>) null);
         } else if (evt.getKey().startsWith(CvsModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT)) {
-            fireAnnotationsChanged((Set<File>) null);
+            fireAnnotationsChanged(null);
         }
     }
 }

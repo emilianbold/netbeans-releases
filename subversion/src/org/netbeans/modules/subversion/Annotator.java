@@ -437,11 +437,6 @@ public class Annotator {
         
         List<Action> actions = new ArrayList<Action>(20);
         if (destination == VCSAnnotator.DEST_MAINMENU) {
-            actions.add(SystemAction.get(ShowAllChangesAction.class));
-            actions.add(SystemAction.get(DiffAllAction.class));
-            actions.add(SystemAction.get(UpdateAllAction.class));
-            actions.add(SystemAction.get(CommitAllAction.class));
-            actions.add(null);
             actions.add(SystemAction.get(CheckoutAction.class));
             actions.add(SystemAction.get(ImportAction.class));
             actions.add(null);

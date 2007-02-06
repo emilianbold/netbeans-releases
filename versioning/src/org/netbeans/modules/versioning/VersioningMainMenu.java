@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.versioning;
@@ -24,6 +24,7 @@ import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.LocalHistory;
 import org.netbeans.modules.versioning.util.Utils;
 
 import javax.swing.*;
@@ -55,11 +56,13 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
         List<JComponent> items = new ArrayList<JComponent>(20);
 
         final VCSContext ctx = VCSContext.forNodes(TopComponent.getRegistry().getActivatedNodes());
-        VersioningSystem [] systems = VersioningManager.getInstance().getVersioningSystems();
+        List<VersioningSystem> systems = Arrays.asList(VersioningManager.getInstance().getVersioningSystems());
         VersioningSystem [] vs = VersioningManager.getInstance().getOwners(ctx);
+        VersioningSystem ownerVS = null;
 
         if (vs.length == 1) {
             if (vs[0].getVCSAnnotator() != null) {
+                ownerVS = vs[0];
                 List<JComponent> systemItems = actionsToItems(vs[0].getVCSAnnotator().getActions(ctx, VCSAnnotator.DEST_MAINMENU));
                 items.addAll(systemItems);
             }
@@ -70,27 +73,50 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
             items.add(dummy);
             items.add(new JSeparator());
         }
+        
+        Collections.sort(systems, new Comparator<VersioningSystem>() {
+            public int compare(VersioningSystem a, VersioningSystem b) {
+                return a.getDisplayName().compareTo(b.getDisplayName());
+            }
+        });
 
-        for (int i = 0; i < systems.length; i++) {
-            final VersioningSystem system = systems[i];
-            final JMenu menu = new JMenu();
-            Mnemonics.setLocalizedText(menu, "&" + system.getDisplayName());
-            menu.addMenuListener(new MenuListener() {
-                public void menuSelected(MenuEvent e) {
-                    if (menu.getItemCount() != 0) return;
-                    constructMenu(menu, system, ctx);
+        VersioningSystem localHistory = null;
+        for (final VersioningSystem system : systems) {
+            if (system instanceof LocalHistory) {
+                localHistory = system;
+            } else {
+                JMenu menu = createVersioningSystemMenu(system, ctx);
+                if (system == ownerVS) {
+                    menu.setEnabled(false);
                 }
-    
-                public void menuDeselected(MenuEvent e) {
-                }
-    
-                public void menuCanceled(MenuEvent e) {
-                }
-            });
-            items.add(menu);
+                items.add(menu);
+            }
+        }
+        
+        if (localHistory != null) {
+            items.add(new JSeparator());
+            items.add(createVersioningSystemMenu(localHistory, ctx));
         }
 
-        return (JComponent[]) items.toArray(new JComponent[items.size()]);
+        return items.toArray(new JComponent[items.size()]);
+    }
+
+    private JMenu createVersioningSystemMenu(final VersioningSystem system, final VCSContext ctx) {
+        final JMenu menu = new JMenu();
+        Mnemonics.setLocalizedText(menu, "&" + system.getDisplayName());
+        menu.addMenuListener(new MenuListener() {
+            public void menuSelected(MenuEvent e) {
+                if (menu.getItemCount() != 0) return;
+                constructMenu(menu, system, ctx);
+            }
+    
+            public void menuDeselected(MenuEvent e) {
+            }
+    
+            public void menuCanceled(MenuEvent e) {
+            }
+        });
+        return menu;
     }
 
     private void constructMenu(JMenu menu, VersioningSystem system, VCSContext ctx) {

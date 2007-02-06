@@ -416,11 +416,6 @@ public class Annotator {
         
         List<Action> actions = new ArrayList<Action>(20);
         if (destination == VCSAnnotator.DEST_MAINMENU) {
-            actions.add(SystemAction.get(StatusProjectsAction.class));
-            actions.add(SystemAction.get(DiffProjectsAction.class));
-            actions.add(SystemAction.get(UpdateProjectsAction.class));
-            actions.add(SystemAction.get(CommitProjectsAction.class));
-            actions.add(null);
             actions.add(SystemAction.get(CheckoutAction.class));
             actions.add(SystemAction.get(AddToRepositoryAction.class));
             actions.add(null);
