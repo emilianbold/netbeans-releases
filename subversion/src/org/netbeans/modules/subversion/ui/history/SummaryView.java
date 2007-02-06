@@ -485,7 +485,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
                 sd.insertString(0, Long.toString(container.getLog().getRevision().getNumber()), null);
                 sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
-                sd.insertString(sd.getLength(), FIELDS_SEPARATOR + container.getLog().getAuthor(), null);
+                sd.insertString(sd.getLength(), FIELDS_SEPARATOR + container.getLog().getAuthor(), null);                
                 sd.insertString(sd.getLength(), FIELDS_SEPARATOR + defaultFormat.format(container.getLog().getDate()), null);
                 
                 String commitMessage = container.getLog().getMessage();
@@ -549,8 +549,9 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             try {
                 sd.remove(0, sd.getLength());
                 sd.setParagraphAttributes(0, sd.getLength(), indentStyle, false);
-
-                sd.insertString(sd.getLength(), dispRevision.getChangedPath().getPath(), null);
+                
+                sd.insertString(sd.getLength(), String.valueOf(dispRevision.getChangedPath().getAction()), null);
+                sd.insertString(sd.getLength(), FIELDS_SEPARATOR + dispRevision.getChangedPath().getPath(), null);
                 
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
             } catch (BadLocationException e) {
