@@ -30,11 +30,14 @@ import org.openide.filesystems.FileObject;
  */
 public class FileOwnerQueryImpl implements FileOwnerQueryImplementation {
     
-    private final Project project;
+    private Project project;
     
-    public FileOwnerQueryImpl(Project project) {
-        this.project = project;
+    public FileOwnerQueryImpl() {
     }
+    
+    public void setProject(Project project) {
+        this.project = project;
+    } 
     
     public Project getOwner(URI file) {
         return project;

@@ -19,14 +19,22 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
+import java.io.IOException;
+import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.openide.nodes.Node;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
@@ -54,7 +62,6 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
             SystemAction.get(ExposeInLocalAction.class),
             SystemAction.get(ExposeInRemoteAction.class),
             null,
-            //TODO: RETOUCHE
             new AddBusinessMethodAction(),
             new AddCreateMethodAction(),
             new AddFinderMethodAction(),
@@ -84,31 +91,29 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
     }
     
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
-        //TODO: RETOUCHE
-        return false;
-//        if (activatedNodes.length != 1) {
-//            return false;
-//        }
-//        FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
-//        if (fileObject == null) {
-//            return false;
-//        }
-//        JavaSource javaSource = JavaSource.forFileObject(fileObject);
-//        final String[] className = new String[1];
-//        try {
-//            javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-//                public void run(WorkingCopy workingCopy) throws Exception {
-//                    workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-//                    //TODO: RETOUCHE get selected class from Node
-//                    TypeElement typeElement = SourceUtils.newInstance(workingCopy).getTypeElement();
-//                    className[0] = typeElement.getQualifiedName().toString();
-//                }
-//            });
-//        } catch (IOException ex) {
-//            ErrorManager.getDefault().notify(ex);
-//        }
-//        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className[0]);
-//        return ejbMethodController != null;
+        if (activatedNodes.length != 1) {
+            return false;
+        }
+        FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
+        if (fileObject == null) {
+            return false;
+        }
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        final String[] className = new String[1];
+        try {
+            javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+                public void run(WorkingCopy workingCopy) throws IOException {
+                    workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    //TODO: RETOUCHE get selected class from Node
+                    TypeElement typeElement = SourceUtils.newInstance(workingCopy).getTypeElement();
+                    className[0] = typeElement.getQualifiedName().toString();
+                }
+            });
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className[0]);
+        return ejbMethodController != null;
     }
     
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {

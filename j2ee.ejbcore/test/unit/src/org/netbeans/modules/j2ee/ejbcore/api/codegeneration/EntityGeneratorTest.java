@@ -55,7 +55,8 @@ public class EntityGeneratorTest extends TestBase {
     
     private EjbJarProviderImpl ejbJarProvider;
     private ClassPathProviderImpl classPathProvider;
-    private ProjectImpl projectImpl;
+    private FileOwnerQueryImpl fileOwnerQuery;
+    
     private FileObject dataDir;
     private EJBNameOptions ejbNames;
 
@@ -70,11 +71,11 @@ public class EntityGeneratorTest extends TestBase {
         IndexUtil.setCacheFolder(file);
         ejbJarProvider = new EjbJarProviderImpl();
         classPathProvider = new ClassPathProviderImpl();
-        projectImpl = new ProjectImpl();
+        fileOwnerQuery = new FileOwnerQueryImpl();
         setLookups(
                 ejbJarProvider, 
                 classPathProvider, 
-                new FileOwnerQueryImpl(projectImpl),
+                fileOwnerQuery,
                 new FakeJavaDataLoaderPool()
                 );
         dataDir = FileUtil.toFileObject(getDataDir());
@@ -86,7 +87,9 @@ public class EntityGeneratorTest extends TestBase {
         FileObject[] sources = new FileObject[] {dataDir.getFileObject("EJBModule1/src/java")};
         ejbJarProvider.setEjbModule(EjbProjectConstants.J2EE_14_LEVEL, ddFileObject, sources);
         classPathProvider.setClassPath(sources);
+        ProjectImpl projectImpl = new ProjectImpl("2.1");
         projectImpl.setProjectDirectory(dataDir.getFileObject("EJBModule1"));
+        fileOwnerQuery.setProject(projectImpl);
         
         // Session EJB 2.1
         FileObject pkg = sources[0].getFileObject("entityEjb21");

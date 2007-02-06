@@ -20,11 +20,13 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 
+import java.io.IOException;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -54,8 +56,13 @@ public class AddCmpFieldAction extends NodeAction {
             return false;
         }
         EjbMethodController ejbMethodController;
-        TypeElement typeElement = Utils.getJavaClassFromNode(activatedNodes[0]);
-        if (typeElement == null) {
+        try {
+            ElementHandle<TypeElement> elementHandle = Utils.getJavaClassFromNode(activatedNodes[0]);
+            if (elementHandle == null) {
+                return false;
+            }
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
             return false;
         }
         //TODO: RETOUCHE
