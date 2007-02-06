@@ -115,8 +115,9 @@ public class DDTablePanel extends JPanel
 
 
 	addButton = new JButton ();
-	addButton.setText (bundle.getString ("CTL_Add"));
-	addButton.addActionListener (new ActionListener () {
+//	addButton.setText (bundle.getString ("CTL_Add"));
+    org.openide.awt.Mnemonics.setLocalizedText(addButton, bundle.getString ("CTL_Add")); // NOI18N	
+    addButton.addActionListener (new ActionListener () {
 	    public void actionPerformed (ActionEvent evt) {
 	        addButtonActionPerformed (evt);
 	    }
@@ -125,7 +126,8 @@ public class DDTablePanel extends JPanel
 	addButton.setVisible(allowAdd);
         
         editButton = new JButton ();
-	editButton.setText (bundle.getString ("CTL_Edit"));
+//	editButton.setText (bundle.getString ("CTL_Edit"));
+    org.openide.awt.Mnemonics.setLocalizedText(editButton, bundle.getString ("CTL_Edit")); // NOI18N	
 	editButton.addActionListener (new ActionListener () {
 	    public void actionPerformed (ActionEvent evt) {
 		editButtonActionPerformed (evt);
@@ -134,7 +136,8 @@ public class DDTablePanel extends JPanel
 	buttonPanel.add (editButton);
 
 	removeButton = new JButton ();
-	removeButton.setText (bundle.getString ("CTL_Remove"));
+//	removeButton.setText (bundle.getString ("CTL_Remove"));
+    org.openide.awt.Mnemonics.setLocalizedText(removeButton, bundle.getString ("CTL_Remove")); // NOI18N	
 	removeButton.addActionListener (new ActionListener () {
 	    public void actionPerformed (ActionEvent evt) {
 	        removeButtonActionPerformed (evt);
@@ -195,11 +198,8 @@ public class DDTablePanel extends JPanel
     private void initAccessibility(){
         getAccessibleContext().setAccessibleDescription(bundle.getString ("ACSD_DDTablePanel"));
         addButton.getAccessibleContext().setAccessibleDescription(bundle.getString ("ACSD_add"));
-        addButton.setMnemonic(bundle.getString ("ACS_add_mnc").charAt(0));
         editButton.getAccessibleContext().setAccessibleDescription(bundle.getString ("ACSD_edit"));
-        editButton.setMnemonic(bundle.getString ("ACS_edit_mnc").charAt(0));
         removeButton.getAccessibleContext().setAccessibleDescription(bundle.getString ("ACSD_remove"));
-        removeButton.setMnemonic(bundle.getString ("ACS_remove_mnc").charAt(0));
         tab.getAccessibleContext().setAccessibleDescription(bundle.getString ("ACSD_DDTable"));
         tab.getAccessibleContext().setAccessibleName(model.getModelName());
     }
