@@ -69,9 +69,6 @@ public class TextGraphics2D extends Graphics2D {
         return buf.toString();
     }
     
-    public void setText(CharSequence text){
-        buf.append(text);
-    }
     
     public String getTextUni() {
         String str;
