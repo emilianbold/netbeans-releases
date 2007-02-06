@@ -67,19 +67,6 @@ public class Utils {
     public static final String TOMCAT = "Tomcat";
     public static final String DEFAULT_SERVER = SUN_APP_SERVER;
     
-    /** Sets Swing HTML Browser as default browser. */
-    public static void setSwingBrowser() {
-        OptionsOperator optionsOper = OptionsOperator.invoke();
-        optionsOper.selectGeneral();
-        // "Web Browser:"
-        String webBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.options.general.Bundle", "CTL_Web_Browser");
-        JLabelOperator jloWebBrowser = new JLabelOperator(optionsOper, webBrowserLabel);
-        // "Swing HTML Browser"
-        String swingBrowserLabel = Bundle.getString("org.netbeans.core.ui.Bundle", "Services/Browsers/SwingBrowser.settings");
-        new JComboBoxOperator((JComboBox)jloWebBrowser.getLabelFor()).selectItem(swingBrowserLabel);
-        optionsOper.ok();
-    }
-    
     /** Sets a random port for Tomcat server and socket debugger transport. */
     public static void setTomcatProperties() throws Exception {
         // "Tools"

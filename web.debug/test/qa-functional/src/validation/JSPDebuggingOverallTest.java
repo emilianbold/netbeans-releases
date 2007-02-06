@@ -72,7 +72,6 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new JSPDebuggingOverallTest("testOpenProjects"));
-        suite.addTest(new JSPDebuggingOverallTest("testSetSwingBrowser"));
         if(Utils.DEFAULT_SERVER.equals(Utils.TOMCAT)) {
             suite.addTest(new JSPDebuggingOverallTest("testSetTomcatPort"));
         }
@@ -129,11 +128,6 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
         // confirm properties dialog
         propertiesDialogOper.ok();
-    }
-    
-    /** Set Swing HTML Browser as default browser. */
-    public void testSetSwingBrowser() {
-        Utils.setSwingBrowser();
     }
     
     /** Set a random port for Tomcat server and socket debugger transport. */
