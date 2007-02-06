@@ -79,12 +79,14 @@ public class ManageRegistries extends HttpServlet {
             out.println("            <a href=\"javascript: add_registry();\">Add Registry</a> |");
             if (registries.size() > 0) {
                 out.println("            <a href=\"javascript: remove_registry();\">Remove Registry</a> |");
+                out.println("            <a href=\"javascript: delete_bundles();\">Delete Bundles</a> | ");
+                out.println("            <a href=\"javascript: generate_bundles();\">Generate Bundles</a> | ");
             } else {
                 out.println("            Remove Registry |");
+                out.println("            Delete Bundles | ");
+                out.println("            Generate Bundles | ");
             }
             out.println("            <a href=\"javascript: update_engine();\">Update Engine</a>");
-            out.println("            <a href=\"javascript: delete_bundles();\">Delete Bundles</a>");
-            out.println("            <a href=\"javascript: generate_bundles();\">Generate Bundles</a>");
             out.println("        </div>");
             out.println("        ");
             if (registries.size() == 0) {

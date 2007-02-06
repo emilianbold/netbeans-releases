@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -108,6 +107,10 @@ public class RunCommand extends HttpServlet {
             
             if (command.equals("generate-bundles")) {
                 manager.generateBundles(new String[]{registry});
+            }
+            
+            if (command.equals("delete-bundles")) {
+                manager.deleteBundles(new String[]{registry});
             }
             
             response.getWriter().write(

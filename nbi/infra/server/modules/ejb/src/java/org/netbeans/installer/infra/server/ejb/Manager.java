@@ -62,7 +62,7 @@ public interface Manager {
     
     File createBundle(Platform platform, String[] names, String[] components) throws ManagerException;
     
-    void deleteBundles() throws ManagerException;
+    void deleteBundles(String[] names) throws ManagerException;
     
     void generateBundles(String[] names) throws ManagerException;
 }

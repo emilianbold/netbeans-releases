@@ -715,21 +715,6 @@ public class ManagerBean implements Manager {
         }
     }
     
-    public void deleteBundles() throws ManagerException {
-        bundlesLock.lock();
-        try {
-            for (String key: bundles.keySet()) {
-                FileUtils.deleteFile(bundles.get(key));
-            }
-            
-            bundles.clear();
-        } catch (IOException e) {
-            throw new ManagerException("Cannot clear bundles", e);
-        } finally {
-            bundlesLock.unlock();
-        }
-    }
-    
     public void generateBundles(String[] names) throws ManagerException {
         try {
             final List<File> files = new ArrayList<File>();
@@ -763,6 +748,28 @@ public class ManagerBean implements Manager {
         }
     }
     
+    public void deleteBundles(String[] names) throws ManagerException {
+        bundlesLock.lock();
+        try {
+            List<String> keys = new LinkedList<String>();
+            
+            for (String key: bundles.keySet()) {
+                if (key.startsWith(StringUtils.asString(names))) {
+                    FileUtils.deleteFile(bundles.get(key));
+                    keys.add(key);
+                }
+            }
+            
+            for (String key: keys) {
+                bundles.remove(key);
+            }
+        } catch (IOException e) {
+            throw new ManagerException("Cannot clear bundles", e);
+        } finally {
+            bundlesLock.unlock();
+        }
+    }
+    
     private void iterate(Platform platform, String[] names, Registry registry, Product[] combination, int index, List<Product> products, int start) throws ManagerException {
         for (int i = start; i < products.size(); i++) {
             combination[index] = products.get(i);
@@ -792,6 +799,21 @@ public class ManagerBean implements Manager {
     }
     
     // private //////////////////////////////////////////////////////////////////////
+    private void deleteBundles() throws ManagerException {
+        bundlesLock.lock();
+        try {
+            for (String key: bundles.keySet()) {
+                FileUtils.deleteFile(bundles.get(key));
+            }
+            
+            bundles.clear();
+        } catch (IOException e) {
+            throw new ManagerException("Cannot clear bundles", e);
+        } finally {
+            bundlesLock.unlock();
+        }
+    }
+    
     private void loadRegistriesList() throws ManagerException {
         try {
             BufferedReader reader = new BufferedReader(

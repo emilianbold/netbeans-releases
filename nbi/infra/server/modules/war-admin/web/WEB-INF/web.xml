@@ -40,6 +40,10 @@
         <servlet-name>generate-bundles</servlet-name>
         <servlet-class>org.netbeans.installer.infra.server.admin.servlets.GenerateBundles</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>DeleteBundles</servlet-name>
+        <servlet-class>org.netbeans.installer.infra.server.admin.servlets.DeleteBundles</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>run-command</servlet-name>
         <url-pattern>/run-command</url-pattern>
@@ -79,6 +83,10 @@
     <servlet-mapping>
         <servlet-name>generate-bundles</servlet-name>
         <url-pattern>/generate-bundles</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DeleteBundles</servlet-name>
+        <url-pattern>/delete-bundles</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
