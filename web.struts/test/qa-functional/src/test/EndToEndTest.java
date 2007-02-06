@@ -18,23 +18,26 @@
  */
 package test;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URLConnection;
 import java.util.Properties;
-import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -49,7 +52,6 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
@@ -327,36 +329,27 @@ public class EndToEndTest extends JellyTestCase {
         strutsConfigEditor.save();
     }
 
-    /** Set Swing HTML Browser as default and run created application. */
+    /** Run created application. */
     public void testRunApplication() {
-        // Set Swing HTML Browser as default browser
-        OptionsOperator optionsOper = OptionsOperator.invoke();
-        optionsOper.selectGeneral();
-        // "Web Browser:"
-        String webBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.options.general.Bundle", "CTL_Web_Browser");
-        JLabelOperator jloWebBrowser = new JLabelOperator(optionsOper, webBrowserLabel);
-        // "Swing HTML Browser"
-        String swingBrowserLabel = Bundle.getString("org.netbeans.core.ui.Bundle", "Services/Browsers/SwingBrowser.settings");
-        new JComboBoxOperator((JComboBox)jloWebBrowser.getLabelFor()).selectItem(swingBrowserLabel);
-        optionsOper.ok();
-        
-        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
+        // not display browser on run
+        // open project properties
+        ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME).properties();
+        // "Project Properties"
+        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
+        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
+        // select "Run" category
+        new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
+        String displayBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_CustomizeRun_DisplayBrowser_JCheckBox");
+        new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
+        // confirm properties dialog
+        propertiesDialogOper.ok();
+
         try {
             // "Run Project"
             String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
             new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME));
-            // increase time to wait to 240 second
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 240000);
-            // wait until page is displayed in internal browser
-            TopComponentOperator pageOper = new TopComponentOperator("Login Page");
-            new JButtonOperator(pageOper, "Login").push();
-            // wait for validation error messages
-            new JEditorPaneOperator(pageOper).waitText("Login Name is required.");
-            new JEditorPaneOperator(pageOper).waitText("Login Password is required.");
-            pageOper.close();
+            waitText(PROJECT_NAME, 240000, "Login Page");
         } finally {
-            // restore default timeout
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
             // log messages from output
             getLog("RunOutput").print(new OutputTabOperator(PROJECT_NAME).getText());
             getLog("ServerLog").print(new OutputTabOperator("Sun").getText());
@@ -367,6 +360,56 @@ public class EndToEndTest extends JellyTestCase {
             } catch (JemmyException e) {
                 // ignore it
             }
+        }
+    }
+    
+    /** Opens URL connection and waits for given text. It thows TimeoutExpiredException
+     * if timeout expires.
+     * @param urlSuffix suffix added to server URL
+     * @param timeout time to wait
+     * @param text text to be found
+     */
+    public static void waitText(final String urlSuffix, final long timeout, final String text) {
+        Waitable waitable = new Waitable() {
+            public Object actionProduced(Object obj) {
+                InputStream is = null;
+                try {
+                    URLConnection connection = new URI("http://localhost:8080/"+urlSuffix).toURL().openConnection();
+                    connection.setReadTimeout(Long.valueOf(timeout).intValue());
+                    is = connection.getInputStream();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                    String line = br.readLine();
+                    while(line != null) {
+                        if(line.indexOf(text) > -1) {
+                            return Boolean.TRUE;
+                        }
+                        line = br.readLine();
+                    }
+                    is.close();
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                    return null;
+                } finally {
+                    if(is != null) {
+                        try {
+                            is.close();
+                        } catch (IOException e) {
+                            // ignore
+                        }
+                    }
+                }
+                return null;
+            }
+            public String getDescription() {
+                return("Text \""+text+"\" at http://localhost:8080/"+urlSuffix);
+            }
+        };
+        Waiter waiter = new Waiter(waitable);
+        waiter.getTimeouts().setTimeout("Waiter.WaitingTime", timeout);
+        try {
+            waiter.waitAction(null);
+        } catch (InterruptedException e) {
+            throw new JemmyException("Exception while waiting for connection.", e);
         }
     }
 }
