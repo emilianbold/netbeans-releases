@@ -1,0 +1,119 @@
+[c|, const, const, 85]
+case
+catch
+char
+class
+const
+continue
+End cursor position = 91
+[v|, var, var, 106]
+var
+void
+volatile
+End cursor position = 110
+[S|, String, String, 133]
+String
+SyntaxError
+End cursor position = 140
+[my|, myfunction, myfunction, 169]
+myvariable
+EE: cannot find completion item: myfunction
+EE: unexpected CC result:
+< my
+> myfunction
+End cursor position = 172
+[my|, myvariable, myvariable, 205]
+myvariable
+End cursor position = 216
+[|, RangeError, RangeError, 240]
+Array
+Boolean
+Date
+Error
+Function
+Infinity
+Math
+NaN
+Number
+Object
+RangeError
+ReferenceError
+RegExp
+String
+SyntaxError
+TypeError
+URIError
+abstract
+arguments[]
+boolean
+break
+byte
+case
+catch
+char
+class
+const
+continue
+debugger
+decodeURI()
+decodeURIComponent()
+default
+delete
+do
+double
+else
+encodeURI()
+encodeURIComponent()
+enum
+escape()
+eval()
+export
+extends
+false
+final
+finally
+float
+for
+function
+goto
+if
+implements
+import
+in
+instanceof
+int
+interface
+isFinite()
+isNaN()
+long
+native
+new
+null
+package
+parseFloat()
+parseInt()
+private
+protected
+public
+return
+short
+static
+super
+switch
+synchronized
+this
+throw
+throws
+transient
+true
+try
+typeof
+undefined
+unescape()
+var
+void
+volatile
+while
+with
+myvariable
+End cursor position = 251
