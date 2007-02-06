@@ -22,6 +22,7 @@ package org.netbeans.modules.java.editor.codegen.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.List;
 import javax.lang.model.element.Element;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -56,7 +57,7 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         return result;
     }
     
-    public Iterable<ElementHandle<? extends Element>> getSelectedElements() {
+    public List<ElementHandle<? extends Element>> getSelectedElements() {
         ArrayList<ElementHandle<? extends Element>> handles = new ArrayList<ElementHandle<? extends Element>>();
         for (Node node : manager.getSelectedNodes()) {
             if (node instanceof ElementNode)

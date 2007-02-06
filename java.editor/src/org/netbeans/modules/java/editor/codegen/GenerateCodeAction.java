@@ -45,14 +45,12 @@ public class GenerateCodeAction extends BaseAction {
 
     public static final String generateCode = "generate-code"; //NOI18N
     
-    private CodeGenerator[] generators = new CodeGenerator[] {
-        new ConstructorGenerator(),
-        new GetterSetterGenerator(GeneratorUtils.GETTERS_ONLY),
-        new GetterSetterGenerator(GeneratorUtils.SETTERS_ONLY),
-        new GetterSetterGenerator(),
-        new EqualsHashCodeGenerator(),
-        new DelegateMethodGenerator(),
-        new OverrideMethodGenerator()
+    private CodeGenerator.Factory[] generators = new CodeGenerator.Factory[] {
+        new ConstructorGenerator.Factory(),
+        new GetterSetterGenerator.Factory(),
+        new EqualsHashCodeGenerator.Factory(),
+        new DelegateMethodGenerator.Factory(),
+        new OverrideMethodGenerator.Factory()
     };
 
     public GenerateCodeAction(){
@@ -74,8 +72,8 @@ public class GenerateCodeAction extends BaseAction {
                     public void run(CompilationController controller) throws Exception {
                         controller.toPhase(JavaSource.Phase.PARSED);
                         TreePath path = controller.getTreeUtilities().pathFor(caretOffset);
-                        for (CodeGenerator gen : getCodeGenerators()) {
-                            if (gen.accept(path))
+                        for (CodeGenerator.Factory factory : getCodeGeneratorFactories()) {
+                            for (CodeGenerator gen : factory.create(controller, path))
                                 gens.add(gen);
                         }
                     }
@@ -97,7 +95,7 @@ public class GenerateCodeAction extends BaseAction {
         }
     }
     
-    private CodeGenerator[] getCodeGenerators() {
+    private CodeGenerator.Factory[] getCodeGeneratorFactories() {
         return generators;
     }    
 }

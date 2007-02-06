@@ -2191,7 +2191,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 else
                                     break;
                             }
-                            GeneratorUtils.generateConstructor(copy, tp, fields, idx);
+                            GeneratorUtils.generateConstructor(copy, tp, fields, null, idx);
                         }
                     }
                 }).commit();

@@ -72,88 +72,90 @@ import org.openide.util.NbBundle;
  */
 public class DelegateMethodGenerator implements CodeGenerator {
 
+    public static class Factory implements CodeGenerator.Factory {
+        
+        Factory() {            
+        }
+        
+        public Iterable<? extends CodeGenerator> create(CompilationController controller, TreePath path) throws IOException {
+            if (Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) == null)
+                return Collections.emptySet();
+            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            Trees trees = controller.getTrees();
+            Elements elements = controller.getElements();
+            Scope scope = trees.getScope(path);
+            Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<Element, List<ElementNode.Description>>();
+            TypeElement cls;
+            while(scope != null && (cls = scope.getEnclosingClass()) != null) {
+                DeclaredType type = (DeclaredType)cls.asType();
+                for (VariableElement field : ElementFilter.fieldsIn(elements.getAllMembers(cls))) {
+                    if (!field.asType().getKind().isPrimitive() && trees.isAccessible(scope, field, type)) {
+                        List<ElementNode.Description> descriptions = map.get(field.getEnclosingElement());
+                        if (descriptions == null) {
+                            descriptions = new ArrayList<ElementNode.Description>();
+                            map.put(field.getEnclosingElement(), descriptions);
+                        }
+                        descriptions.add(ElementNode.Description.create(field, null));
+                    }
+                }
+                scope = scope.getEnclosingScope();
+            }
+            List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+            for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet())
+                descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue()));
+            if (descriptions.isEmpty())
+                return Collections.emptySet();
+            return Collections.singleton(new DelegateMethodGenerator(ElementNode.Description.create(descriptions)));
+        }
+    }
+
+    private ElementNode.Description description;
+    
     /** Creates a new instance of DelegateMethodGenerator */
-    DelegateMethodGenerator() {
+    private DelegateMethodGenerator(ElementNode.Description description) {
+        this.description = description;
     }
 
     public String getDisplayName() {
         return org.openide.util.NbBundle.getMessage(DelegateMethodGenerator.class, "LBL_delegate_method"); //NOI18N
     }
 
-    public boolean accept(TreePath path) {
-        return Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) != null;
-    }
-
     public void invoke(JTextComponent component) {
-        JavaSource js = JavaSource.forDocument(component.getDocument());
-        if (js != null) {
-            try {
-                final int caretOffset = component.getCaretPosition();
-                final ElementNode.Description[] description = new ElementNode.Description[1];
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
-                    public void run(CompilationController controller) throws IOException {
-                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        Scope scope = controller.getTreeUtilities().scopeFor(caretOffset);
-                        Trees trees = controller.getTrees();
-                        Elements elements = controller.getElements();
-                        Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<Element, List<ElementNode.Description>>();
-                        TypeElement cls;
-                        while(scope != null && (cls = scope.getEnclosingClass()) != null) {
-                            DeclaredType type = (DeclaredType)cls.asType();
-                            for (VariableElement field : ElementFilter.fieldsIn(elements.getAllMembers(cls))) {
-                                if (!field.asType().getKind().isPrimitive() && trees.isAccessible(scope, field, type)) {
-                                    List<ElementNode.Description> descriptions = map.get(field.getEnclosingElement());
-                                    if (descriptions == null) {
-                                        descriptions = new ArrayList<ElementNode.Description>();
-                                        map.put(field.getEnclosingElement(), descriptions);
-                                    }
-                                    descriptions.add(ElementNode.Description.create(field, null));
-                                }
-                            }
-                            scope = scope.getEnclosingScope();
+        final DelegatePanel panel = new DelegatePanel(component, description);
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_delegate")); //NOI18N
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        dialog.setVisible(true);
+        if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
+            JavaSource js = JavaSource.forDocument(component.getDocument());
+            if (js != null) {
+                try {
+                    final int caretOffset = component.getCaretPosition();
+                    js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                        public void cancel() {
                         }
-                        List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-                        for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet())
-                            descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue()));
-                        if (!descriptions.isEmpty())
-                            description[0] = ElementNode.Description.create(descriptions);
-                    }
-                }, true);
-                if (description[0] != null) {
-                    final DelegatePanel panel = new DelegatePanel(component, description[0]);
-                    DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_delegate")); //NOI18N
-                    Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-                    dialog.setVisible(true);
-                    if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                        js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                            public void cancel() {
+                        public void run(WorkingCopy copy) throws IOException {
+                            copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
+                            path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
+                            int idx = 0;
+                            SourcePositions sourcePositions = copy.getTrees().getSourcePositions();
+                            for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
+                                if (sourcePositions.getStartPosition(path.getCompilationUnit(), tree) < caretOffset)
+                                    idx++;
+                                else
+                                    break;
                             }
-                            public void run(WorkingCopy copy) throws IOException {
-                                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                                TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
-                                path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-                                int idx = 0;
-                                SourcePositions sourcePositions = copy.getTrees().getSourcePositions();
-                                for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
-                                    if (sourcePositions.getStartPosition(path.getCompilationUnit(), tree) < caretOffset)
-                                        idx++;
-                                    else
-                                        break;
-                                }
-                                ElementHandle<? extends Element> handle = panel.getDelegateField();
-                                VariableElement delegate = handle != null ? (VariableElement)handle.resolve(copy) : null;
-                                ArrayList<ExecutableElement> methods = new ArrayList<ExecutableElement>();
-                                for (ElementHandle<? extends Element> elementHandle : panel.getDelegateMethods())
-                                    methods.add((ExecutableElement)elementHandle.resolve(copy));
-                                generateDelegatingMethods(copy, path, delegate, methods, idx);
-                            }
-                        }).commit();
-                    }
+                            ElementHandle<? extends Element> handle = panel.getDelegateField();
+                            VariableElement delegate = handle != null ? (VariableElement)handle.resolve(copy) : null;
+                            ArrayList<ExecutableElement> methods = new ArrayList<ExecutableElement>();
+                            for (ElementHandle<? extends Element> elementHandle : panel.getDelegateMethods())
+                                methods.add((ExecutableElement)elementHandle.resolve(copy));
+                            generateDelegatingMethods(copy, path, delegate, methods, idx);
+                        }
+                    }).commit();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
     }

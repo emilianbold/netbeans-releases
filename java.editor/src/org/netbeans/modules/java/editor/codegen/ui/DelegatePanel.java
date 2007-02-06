@@ -20,7 +20,7 @@ package org.netbeans.modules.java.editor.codegen.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Iterator;
+import java.util.List;
 import javax.lang.model.element.Element;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ElementHandle;
@@ -69,12 +69,11 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
     }
 
     public ElementHandle<? extends Element> getDelegateField() {
-        Iterator<ElementHandle<? extends Element>> it = delegateSelector.getSelectedElements().iterator();
-        ElementHandle<? extends Element> handle = it.hasNext() ? it.next() : null;
-        return handle == null || it.hasNext() ? null : handle;
+        List<ElementHandle<? extends Element>> handles = delegateSelector.getSelectedElements();
+        return handles.size() == 1 ? handles.get(0) : null;
     }
 
-    public Iterable<ElementHandle<? extends Element>> getDelegateMethods() {
+    public List<ElementHandle<? extends Element>> getDelegateMethods() {
         return ((ElementSelectorPanel)methodSelector).getSelectedElements();
     }
 

@@ -25,11 +25,16 @@ import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -50,14 +55,88 @@ import org.openide.util.NbBundle;
  */
 public class GetterSetterGenerator implements CodeGenerator {
     
+    public static class Factory implements CodeGenerator.Factory {
+        
+        Factory() {
+        }
+
+        public Iterable<? extends CodeGenerator> create(CompilationController controller, TreePath path) throws IOException {
+            List<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
+            if (path == null)
+                return ret;
+            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            Elements elements = controller.getElements();
+            TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
+            Map<String, List<ExecutableElement>> methods = new HashMap<String, List<ExecutableElement>>();
+            for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(typeElement))) {
+                List<ExecutableElement> l = methods.get(method.getSimpleName().toString());
+                if (l == null) {
+                    l = new ArrayList<ExecutableElement>();
+                    methods.put(method.getSimpleName().toString(), l);
+                }
+                l.add(method);
+            }
+            Map<Element, List<ElementNode.Description>> gDescriptions = new LinkedHashMap<Element, List<ElementNode.Description>>();
+            Map<Element, List<ElementNode.Description>> sDescriptions = new LinkedHashMap<Element, List<ElementNode.Description>>();
+            Map<Element, List<ElementNode.Description>> gsDescriptions = new LinkedHashMap<Element, List<ElementNode.Description>>();
+            for (VariableElement variableElement : ElementFilter.fieldsIn(elements.getAllMembers(typeElement))) {
+                ElementNode.Description description = ElementNode.Description.create(variableElement, null);
+                boolean hasGetter = GeneratorUtils.hasGetter(controller, variableElement, methods);
+                boolean hasSetter = GeneratorUtils.hasSetter(controller, variableElement, methods);
+                if (!hasGetter) {
+                    List<ElementNode.Description> descriptions = gDescriptions.get(variableElement.getEnclosingElement());
+                    if (descriptions == null) {
+                        descriptions = new ArrayList<ElementNode.Description>();
+                        gDescriptions.put(variableElement.getEnclosingElement(), descriptions);
+                    }
+                    descriptions.add(description);
+                }
+                if (!hasSetter) {
+                    List<ElementNode.Description> descriptions = sDescriptions.get(variableElement.getEnclosingElement());
+                    if (descriptions == null) {
+                        descriptions = new ArrayList<ElementNode.Description>();
+                        sDescriptions.put(variableElement.getEnclosingElement(), descriptions);
+                    }
+                    descriptions.add(description);
+                }
+                if (!hasGetter && !hasSetter) {
+                    List<ElementNode.Description> descriptions = gsDescriptions.get(variableElement.getEnclosingElement());
+                    if (descriptions == null) {
+                        descriptions = new ArrayList<ElementNode.Description>();
+                        gsDescriptions.put(variableElement.getEnclosingElement(), descriptions);
+                    }
+                    descriptions.add(description);
+                }
+            }
+            if (!gDescriptions.isEmpty()) {
+                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+                for (Map.Entry<Element, List<ElementNode.Description>> entry : gDescriptions.entrySet())
+                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue()));
+                ret.add(new GetterSetterGenerator(ElementNode.Description.create(typeElement, descriptions), GeneratorUtils.GETTERS_ONLY));
+            }
+            if (!sDescriptions.isEmpty()) {
+                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+                for (Map.Entry<Element, List<ElementNode.Description>> entry : sDescriptions.entrySet())
+                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue()));
+                ret.add(new GetterSetterGenerator(ElementNode.Description.create(typeElement, descriptions), GeneratorUtils.SETTERS_ONLY));
+            }
+            if (!gsDescriptions.isEmpty()) {
+                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+                for (Map.Entry<Element, List<ElementNode.Description>> entry : gsDescriptions.entrySet())
+                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue()));
+                ret.add(new GetterSetterGenerator(ElementNode.Description.create(typeElement, descriptions), 0));
+            }
+            return ret;
+        }
+    }
+
+    private ElementNode.Description description;
     private int type;
 
     /** Creates a new instance of GetterSetterGenerator */
-    GetterSetterGenerator() {
-        this(0);
-    }
-    
-    GetterSetterGenerator(int type) {
+    private GetterSetterGenerator(ElementNode.Description description, int type) {
+        this.description = description;
         this.type = type;
     }
 
@@ -69,72 +148,48 @@ public class GetterSetterGenerator implements CodeGenerator {
         return org.openide.util.NbBundle.getMessage(GetterSetterGenerator.class, "LBL_getter_and_setter"); //NOI18N
     }
 
-    public boolean accept(TreePath path) {
-        return Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) != null;
-    }
-
     public void invoke(JTextComponent component) {
-        JavaSource js = JavaSource.forDocument(component.getDocument());
-        if (js != null) {
-            try {
-                final int caretOffset = component.getCaretPosition();
-                final ElementNode.Description[] description = new ElementNode.Description[1];
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
-                    public void run(CompilationController controller) throws IOException {
-                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        TreePath path = controller.getTreeUtilities().pathFor(caretOffset);
-                        path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-                        if (path != null) {
-                            TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-                            List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-                            for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements()))
-                                descriptions.add(ElementNode.Description.create(variableElement, null));
-                            description[0] = ElementNode.Description.create(typeElement, descriptions);
+        final GetterSetterPanel panel = new GetterSetterPanel(description, type);
+        String title;
+        if (type == GeneratorUtils.GETTERS_ONLY)
+            title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_getter"); //NOI18N
+        else if (type == GeneratorUtils.SETTERS_ONLY)
+            title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_setter"); //NOI18N
+        else
+            title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_getter_and_setter"); //NOI18N
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        dialog.setVisible(true);
+        if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
+            JavaSource js = JavaSource.forDocument(component.getDocument());
+            if (js != null) {
+                try {
+                    final int caretOffset = component.getCaretPosition();
+                    js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                        public void cancel() {
                         }
-                    }
-                }, true);
-                if (description[0] != null) {
-                    final GetterSetterPanel panel = new GetterSetterPanel(description[0], type);
-                    String title;
-                    if (type == GeneratorUtils.GETTERS_ONLY)
-                        title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_getter"); //NOI18N
-                    else if (type == GeneratorUtils.SETTERS_ONLY)
-                        title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_setter"); //NOI18N
-                    else
-                        title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_getter_and_setter"); //NOI18N
-                    DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
-                    Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-                    dialog.setVisible(true);
-                    if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                        js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                            public void cancel() {
+                        public void run(WorkingCopy copy) throws IOException {
+                            copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
+                            path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
+                            int idx = 0;
+                            SourcePositions sourcePositions = copy.getTrees().getSourcePositions();
+                            for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
+                                if (sourcePositions.getStartPosition(path.getCompilationUnit(), tree) < caretOffset)
+                                    idx++;
+                                else
+                                    break;
                             }
-                            public void run(WorkingCopy copy) throws IOException {
-                                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                                TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
-                                path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-                                int idx = 0;
-                                SourcePositions sourcePositions = copy.getTrees().getSourcePositions();
-                                for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
-                                    if (sourcePositions.getStartPosition(path.getCompilationUnit(), tree) < caretOffset)
-                                        idx++;
-                                    else
-                                        break;
-                                }
-                                ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
-                                for (ElementHandle<? extends Element> elementHandle : panel.getVariables())
-                                    variableElements.add((VariableElement)elementHandle.resolve(copy));
-                                GeneratorUtils.generateGettersAndSetters(copy, path, variableElements, type, idx);
-                            }
-                        }).commit();
-                    }
+                            ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
+                            for (ElementHandle<? extends Element> elementHandle : panel.getVariables())
+                                variableElements.add((VariableElement)elementHandle.resolve(copy));
+                            GeneratorUtils.generateGettersAndSetters(copy, path, variableElements, type, idx);
+                        }
+                    }).commit();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
     }
-
 }

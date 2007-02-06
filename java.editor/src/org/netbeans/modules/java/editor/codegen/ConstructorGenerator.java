@@ -25,10 +25,15 @@ import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CancellableTask;
@@ -50,69 +55,106 @@ import org.openide.util.NbBundle;
  */
 public class ConstructorGenerator implements CodeGenerator {
 
+    public static class Factory implements CodeGenerator.Factory {
+        
+        Factory() {            
+        }
+        
+        public Iterable<? extends CodeGenerator> create(CompilationController controller, TreePath path) throws IOException {
+            path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
+            if (path == null)
+                return Collections.emptySet();
+            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
+            final Set<VariableElement> initializedFields = new LinkedHashSet<VariableElement>();
+            final Set<VariableElement> uninitializedFields = new LinkedHashSet<VariableElement>();
+            final List<ExecutableElement> constructors = new ArrayList<ExecutableElement>();
+            final List<ExecutableElement> inheritedConstructors = new ArrayList<ExecutableElement>();
+            TypeElement superClass = (TypeElement)((DeclaredType)typeElement.getSuperclass()).asElement();
+            for (ExecutableElement executableElement : ElementFilter.constructorsIn(superClass.getEnclosedElements())) {
+                inheritedConstructors.add(executableElement);
+            }
+            GeneratorUtils.scanForFieldsAndConstructors(controller, path, initializedFields, uninitializedFields, constructors);
+            ElementHandle<? extends Element> constructorHandle = null;
+            ElementNode.Description constructorDescription = null;
+            if (inheritedConstructors.size() == 1) {
+                constructorHandle = ElementHandle.create(inheritedConstructors.get(0));
+            } else if (inheritedConstructors.size() > 1) {
+                List<ElementNode.Description> constructorDescriptions = new ArrayList<ElementNode.Description>();
+                for (ExecutableElement constructorElement : inheritedConstructors)
+                    constructorDescriptions.add(ElementNode.Description.create(constructorElement, null));
+                constructorDescription = ElementNode.Description.create(superClass, constructorDescriptions);
+            }
+            ElementNode.Description fieldsDescription = null;
+            if (!uninitializedFields.isEmpty()) {
+                List<ElementNode.Description> fieldDescriptions = new ArrayList<ElementNode.Description>();
+                for (VariableElement variableElement : uninitializedFields)
+                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null));
+                fieldsDescription = ElementNode.Description.create(typeElement, fieldDescriptions);
+            }
+            if (constructorHandle == null && constructorDescription == null && fieldsDescription == null)
+                return Collections.emptySet();
+            return Collections.singleton(new ConstructorGenerator(constructorHandle, constructorDescription, fieldsDescription));
+        }
+    }
+
+    private ElementHandle<? extends Element> constructorHandle;
+    private ElementNode.Description constructorDescription;
+    private ElementNode.Description fieldsDescription;
+    
     /** Creates a new instance of ConstructorGenerator */
-    ConstructorGenerator() {
+    private ConstructorGenerator(ElementHandle<? extends Element> constructorHandle, ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
+        this.constructorHandle = constructorHandle;
+        this.constructorDescription = constructorDescription;
+        this.fieldsDescription = fieldsDescription;
     }
 
     public String getDisplayName() {
         return org.openide.util.NbBundle.getMessage(ConstructorGenerator.class, "LBL_constructor"); //NOI18N
     }
 
-    public boolean accept(TreePath path) {
-        return Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) != null;
-    }
-
     public void invoke(JTextComponent component) {
+        final List<ElementHandle<? extends Element>> fieldHandles;
+        if (constructorDescription != null || fieldsDescription != null) {
+            ConstructorPanel panel = new ConstructorPanel(constructorDescription, fieldsDescription);
+            DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+            dialog.setVisible(true);
+            if (dialogDescriptor.getValue() == DialogDescriptor.CANCEL_OPTION)
+                return;
+            if (constructorHandle == null)
+                constructorHandle = panel.getInheritedConstructor();
+            fieldHandles = panel.getVariablesToInitialize();
+        } else {
+            fieldHandles = null;
+        }
         JavaSource js = JavaSource.forDocument(component.getDocument());
         if (js != null) {
             try {
                 final int caretOffset = component.getCaretPosition();
-                final ElementNode.Description[] description = new ElementNode.Description[1];
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
+                js.runModificationTask(new CancellableTask<WorkingCopy>() {
                     public void cancel() {
                     }
-                    public void run(CompilationController controller) throws IOException {
-                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        TreePath path = controller.getTreeUtilities().pathFor(caretOffset);
+                    public void run(WorkingCopy copy) throws IOException {
+                        copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
                         path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-                        if (path != null) {
-                            TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-                            List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-                            for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements()))
-                                descriptions.add(ElementNode.Description.create(variableElement, null));
-                            description[0] = ElementNode.Description.create(typeElement, descriptions);
+                        int idx = 0;
+                        SourcePositions sourcePositions = copy.getTrees().getSourcePositions();
+                        for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
+                            if (sourcePositions.getStartPosition(path.getCompilationUnit(), tree) < caretOffset)
+                                idx++;
+                            else
+                                break;
                         }
+                        ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
+                        if (fieldHandles != null) {
+                            for (ElementHandle<? extends Element> elementHandle : fieldHandles)
+                                variableElements.add((VariableElement)elementHandle.resolve(copy));
+                        }
+                        GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement)constructorHandle.resolve(copy) : null, idx);
                     }
-                }, true);
-                if (description[0] != null) {
-                    final ConstructorPanel panel = new ConstructorPanel(description[0]);
-                    DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
-                    Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-                    dialog.setVisible(true);
-                    if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                        js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                            public void cancel() {
-                            }
-                            public void run(WorkingCopy copy) throws IOException {
-                                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                                TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
-                                path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-                                int idx = 0;
-                                SourcePositions sourcePositions = copy.getTrees().getSourcePositions();
-                                for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
-                                    if (sourcePositions.getStartPosition(path.getCompilationUnit(), tree) < caretOffset)
-                                        idx++;
-                                    else
-                                        break;
-                                }
-                                ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
-                                for (ElementHandle<? extends Element> elementHandle : panel.getVariablesToInitialize())
-                                    variableElements.add((VariableElement)elementHandle.resolve(copy));
-                                GeneratorUtils.generateConstructor(copy, path, variableElements, idx);
-                            }
-                        }).commit();
-                    }
-                }
+                }).commit();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

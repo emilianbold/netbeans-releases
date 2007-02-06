@@ -20,14 +20,20 @@
 package org.netbeans.modules.java.editor.codegen;
 
 import com.sun.source.util.TreePath;
+import java.io.IOException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.CompilationController;
 
 /**
  *
  * @author Dusan Balek
  */
 public interface CodeGenerator {
+
     public String getDisplayName();
-    public boolean accept(TreePath path);
     public void invoke(JTextComponent component);
+    
+    public interface Factory {
+        public Iterable<? extends CodeGenerator> create(CompilationController controller, TreePath path) throws IOException;
+    }
 }

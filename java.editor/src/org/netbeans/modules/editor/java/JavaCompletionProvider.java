@@ -2968,35 +2968,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (e.getKind().isField())
                         initializedFields.add((VariableElement)e);
                 }
-                new TreePathScanner<Void, Boolean>() {
-                    @Override
-                    public Void visitVariable(VariableTree node, Boolean p) {
-                        Element el = trees.getElement(getCurrentPath());
-                        if (el != null && el.getKind() == ElementKind.FIELD && node.getInitializer() == null && !initializedFields.remove(el))
-                            uninitializedFields.add((VariableElement)el);
-                        return null;
-                    }
-                    @Override
-                    public Void visitAssignment(AssignmentTree node, Boolean p) {
-                        Element el = trees.getElement(new TreePath(getCurrentPath(), node.getVariable()));
-                        if (el != null && el.getKind() == ElementKind.FIELD && !uninitializedFields.remove(el))
-                            initializedFields.add((VariableElement)el);
-                        return null;
-                    }
-                    @Override
-                    public Void visitClass(ClassTree node, Boolean p) {
-                        //do not analyse the inner classes:
-                        return p ? super.visitClass(node, false) : null;
-                    }
-                    @Override
-                    public Void visitMethod(MethodTree node, Boolean p) {
-                        Element el = trees.getElement(getCurrentPath());
-                        if (el != null && el.getKind() == ElementKind.CONSTRUCTOR)
-                            constructors.add((ExecutableElement)el);
-                        return null;
-                    }
-                }.scan(clsPath, Boolean.TRUE);
-                
+                GeneratorUtils.scanForFieldsAndConstructors(controller, clsPath, initializedFields, uninitializedFields, constructors);
                 boolean hasDefaultConstructor = false;
                 boolean hasConstrutorForAllUnintialized = false;
                 for (ExecutableElement ee : constructors) {
@@ -3016,8 +2988,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (!uninitializedFields.isEmpty() && !hasConstrutorForAllUnintialized)
                     results.add(JavaCompletionItem.createInitializeAllConstructorItem(uninitializedFields, te, offset));
                 if (!hasDefaultConstructor)
-                    results.add(JavaCompletionItem.createInitializeAllConstructorItem(Collections.<VariableElement>emptySet(), te, offset));
-                
+                    results.add(JavaCompletionItem.createInitializeAllConstructorItem(Collections.<VariableElement>emptySet(), te, offset));                
             }
         }
         

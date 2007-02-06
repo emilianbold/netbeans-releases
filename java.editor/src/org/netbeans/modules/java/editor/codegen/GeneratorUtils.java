@@ -19,6 +19,7 @@
 package org.netbeans.modules.java.editor.codegen;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -31,6 +32,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,6 +57,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -133,6 +137,38 @@ public class GeneratorUtils {
 
         return result;
     }
+    
+    public static void scanForFieldsAndConstructors(CompilationInfo info, final TreePath clsPath, final Set<VariableElement> initializedFields, final Set<VariableElement> uninitializedFields, final List<ExecutableElement> constructors) {
+        final Trees trees = info.getTrees();
+        new TreePathScanner<Void, Boolean>() {
+            @Override
+            public Void visitVariable(VariableTree node, Boolean p) {
+                Element el = trees.getElement(getCurrentPath());
+                if (el != null && el.getKind() == ElementKind.FIELD && node.getInitializer() == null && !initializedFields.remove(el))
+                    uninitializedFields.add((VariableElement)el);
+                return null;
+            }
+            @Override
+            public Void visitAssignment(AssignmentTree node, Boolean p) {
+                Element el = trees.getElement(new TreePath(getCurrentPath(), node.getVariable()));
+                if (el != null && el.getKind() == ElementKind.FIELD && !uninitializedFields.remove(el))
+                    initializedFields.add((VariableElement)el);
+                return null;
+            }
+            @Override
+            public Void visitClass(ClassTree node, Boolean p) {
+                //do not analyse the inner classes:
+                return p ? super.visitClass(node, false) : null;
+            }
+            @Override
+            public Void visitMethod(MethodTree node, Boolean p) {
+                Element el = trees.getElement(getCurrentPath());
+                if (el != null && el.getKind() == ElementKind.CONSTRUCTOR)
+                    constructors.add((ExecutableElement)el);
+                return null;
+            }
+        }.scan(clsPath, Boolean.TRUE);
+    }
 
     public static void generateAllAbstractMethodImplementations(WorkingCopy wc, TreePath path) {
         assert path.getLeaf().getKind() == Tree.Kind.CLASS;
@@ -176,17 +212,25 @@ public class GeneratorUtils {
         }
     }
 
-    public static void generateConstructor(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, int index) {
+    public static void generateConstructor(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, ExecutableElement inheritedConstructor, int index) {
         TreeMaker make = wc.getTreeMaker();
-        List<VariableTree> arguments = new ArrayList<VariableTree>();
+        List<VariableTree> parameters = new ArrayList<VariableTree>();
         List<StatementTree> statements = new ArrayList<StatementTree>();
-        ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
+        ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));        
+        if (inheritedConstructor != null && !inheritedConstructor.getParameters().isEmpty()) {
+            List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
+            for (VariableElement ve : inheritedConstructor.getParameters()) {
+                parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(ve.asType()), null));
+                arguments.add(make.Identifier(ve.getSimpleName())); //NOI18N
+            }
+            statements.add(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), arguments)));
+        }
         for (VariableElement ve : initFields) {
-            arguments.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(ve.asType()), null));
+            parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(ve.asType()), null));
             statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
         }
         BlockTree body = make.Block(statements, false);
-        ClassTree decl = make.insertClassMember((ClassTree)path.getLeaf(), index, make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)), "<init>", null, Collections.<TypeParameterTree> emptyList(), arguments, Collections.<ExpressionTree>emptyList(), body, null)); //NOI18N
+        ClassTree decl = make.insertClassMember((ClassTree)path.getLeaf(), index, make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)), "<init>", null, Collections.<TypeParameterTree> emptyList(), parameters, Collections.<ExpressionTree>emptyList(), body, null)); //NOI18N
         wc.rewrite(path.getLeaf(), decl);
     }
     
@@ -198,12 +242,46 @@ public class GeneratorUtils {
             ClassTree nue = (ClassTree)path.getLeaf();
             for(VariableElement element : fields) {
                 if (type != SETTERS_ONLY)
-                    nue = make.addClassMember(nue, createGetterMethod(wc, element, (DeclaredType)te.asType()));
+                    nue = make.insertClassMember(nue, index, createGetterMethod(wc, element, (DeclaredType)te.asType()));
                 if (type != GETTERS_ONLY)
-                    nue = make.addClassMember(nue, createSetterMethod(wc, element, (DeclaredType)te.asType()));
+                    nue = make.insertClassMember(nue, index, createSetterMethod(wc, element, (DeclaredType)te.asType()));
             }
             wc.rewrite(path.getLeaf(), nue);
         }
+    }
+    
+    public static boolean hasGetter(CompilationInfo info, VariableElement field, Map<String, List<ExecutableElement>> methods) {
+        CharSequence name = field.getSimpleName();
+        assert name.length() > 0;
+        TypeMirror type = field.asType();
+        StringBuilder sb = new StringBuilder();
+        sb.append(type.getKind() == TypeKind.BOOLEAN ? "is" : "get").append(Character.toUpperCase(name.charAt(0))).append(name.subSequence(1, name.length())); //NOI18N
+        Types types = info.getTypes();
+        List<ExecutableElement> candidates = methods.get(sb.toString());
+        if (candidates != null) {
+            for (ExecutableElement candidate : candidates) {
+                if (candidate.getParameters().isEmpty() && types.isSameType(candidate.getReturnType(), type))
+                    return true;
+            }
+        }
+        return false;
+    }
+    
+    public static boolean hasSetter(CompilationInfo info, VariableElement field, Map<String, List<ExecutableElement>> methods) {
+        CharSequence name = field.getSimpleName();
+        assert name.length() > 0;
+        TypeMirror type = field.asType();
+        StringBuilder sb = new StringBuilder();
+        sb.append("set").append(Character.toUpperCase(name.charAt(0))).append(name.subSequence(1, name.length())); //NOI18N
+        Types types = info.getTypes();
+        List<ExecutableElement> candidates = methods.get(sb.toString());
+        if (candidates != null) {
+            for (ExecutableElement candidate : candidates) {
+                if (candidate.getReturnType().getKind() == TypeKind.VOID && candidate.getParameters().size() == 1 && types.isSameType(candidate.getParameters().get(0).asType(), type))
+                    return true;
+            }
+        }
+        return false;
     }
     
     private static MethodTree createMethodImplementation(WorkingCopy wc, ExecutableElement element, DeclaredType type) {

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.java.editor.codegen.ui;
 
+import java.util.List;
 import javax.lang.model.element.Element;
 import javax.swing.JPanel;
 import org.netbeans.api.java.source.ElementHandle;
@@ -64,11 +65,11 @@ public class EqualsHashCodePanel extends JPanel {
     }
     
     
-    public Iterable<ElementHandle<? extends Element>> getEqualsVariables() {
+    public List<ElementHandle<? extends Element>> getEqualsVariables() {
         return ((ElementSelectorPanel)equalsSelector).getSelectedElements();
     }
 
-    public Iterable<ElementHandle<? extends Element>> getHashCodeVariables() {
+    public List<ElementHandle<? extends Element>> getHashCodeVariables() {
         return ((ElementSelectorPanel)hashCodeSelector).getSelectedElements();
     }
 

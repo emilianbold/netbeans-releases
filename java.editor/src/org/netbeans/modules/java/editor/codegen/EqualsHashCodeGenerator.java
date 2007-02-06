@@ -64,74 +64,74 @@ import org.openide.util.NbBundle;
  */
 public class EqualsHashCodeGenerator implements CodeGenerator {
 
+    public static class Factory implements CodeGenerator.Factory {
+        
+        Factory() {            
+        }
+        
+        public Iterable<? extends CodeGenerator> create(CompilationController controller, TreePath path) throws IOException {
+            path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
+            if (path == null)
+                return Collections.emptySet();
+            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
+            List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+            for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements()))
+                descriptions.add(ElementNode.Description.create(variableElement, null));
+            if (descriptions.isEmpty())
+                return Collections.emptySet();
+            return Collections.singleton(new EqualsHashCodeGenerator(ElementNode.Description.create(typeElement, descriptions)));
+        }
+    }
+
+    ElementNode.Description description;
+    
     /** Creates a new instance of EqualsHashCodeGenerator */
-    EqualsHashCodeGenerator() {
+    private EqualsHashCodeGenerator(ElementNode.Description description) {
+        this.description = description;
     }
 
     public String getDisplayName() {
         return org.openide.util.NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_equals_and_hashcode"); //NOI18N
     }
 
-    public boolean accept(TreePath path) {
-        return Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) != null;
-    }
-
     public void invoke(JTextComponent component) {
-        JavaSource js = JavaSource.forDocument(component.getDocument());
-        if (js != null) {
-            try {
-                final int caretOffset = component.getCaretPosition();
-                final ElementNode.Description[] description = new ElementNode.Description[1];
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
-                    public void run(CompilationController controller) throws IOException {
-                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        TreePath path = controller.getTreeUtilities().pathFor(caretOffset);
-                        path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-                        if (path != null) {
-                            TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-                            List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-                            for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements()))
-                                descriptions.add(ElementNode.Description.create(variableElement, null));
-                            description[0] = ElementNode.Description.create(typeElement, descriptions);
+        final EqualsHashCodePanel panel = new EqualsHashCodePanel(description);
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_equals_and_hashcode")); //NOI18N
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        dialog.setVisible(true);
+        if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
+            JavaSource js = JavaSource.forDocument(component.getDocument());
+            if (js != null) {
+                try {
+                    final int caretOffset = component.getCaretPosition();
+                    js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                        public void cancel() {
                         }
-                    }
-                }, true);
-                if (description[0] != null) {
-                    final EqualsHashCodePanel panel = new EqualsHashCodePanel(description[0]);
-                    DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_equals_and_hashcode")); //NOI18N
-                    Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-                    dialog.setVisible(true);
-                    if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                        js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                            public void cancel() {
+                        public void run(WorkingCopy copy) throws IOException {
+                            copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
+                            path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
+                            int idx = 0;
+                            SourcePositions sourcePositions = copy.getTrees().getSourcePositions();
+                            for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
+                                if (sourcePositions.getStartPosition(path.getCompilationUnit(), tree) < caretOffset)
+                                    idx++;
+                                else
+                                    break;
                             }
-                            public void run(WorkingCopy copy) throws IOException {
-                                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                                TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
-                                path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-                                int idx = 0;
-                                SourcePositions sourcePositions = copy.getTrees().getSourcePositions();
-                                for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
-                                    if (sourcePositions.getStartPosition(path.getCompilationUnit(), tree) < caretOffset)
-                                        idx++;
-                                    else
-                                        break;
-                                }
-                                ArrayList<VariableElement> equalsElements = new ArrayList<VariableElement>();
-                                for (ElementHandle<? extends Element> elementHandle : panel.getEqualsVariables())
-                                    equalsElements.add((VariableElement)elementHandle.resolve(copy));
-                                ArrayList<VariableElement> hashCodeElements = new ArrayList<VariableElement>();
-                                for (ElementHandle<? extends Element> elementHandle : panel.getHashCodeVariables())
-                                    hashCodeElements.add((VariableElement)elementHandle.resolve(copy));                                
-                                generateEqualsAndHashCode(copy, path, equalsElements, hashCodeElements, idx);
-                            }
-                        }).commit();
-                    }
+                            ArrayList<VariableElement> equalsElements = new ArrayList<VariableElement>();
+                            for (ElementHandle<? extends Element> elementHandle : panel.getEqualsVariables())
+                                equalsElements.add((VariableElement)elementHandle.resolve(copy));
+                            ArrayList<VariableElement> hashCodeElements = new ArrayList<VariableElement>();
+                            for (ElementHandle<? extends Element> elementHandle : panel.getHashCodeVariables())
+                                hashCodeElements.add((VariableElement)elementHandle.resolve(copy));
+                            generateEqualsAndHashCode(copy, path, equalsElements, hashCodeElements, idx);
+                        }
+                    }).commit();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
     }
