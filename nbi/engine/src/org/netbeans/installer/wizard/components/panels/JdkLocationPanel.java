@@ -21,12 +21,13 @@
 package org.netbeans.installer.wizard.components.panels;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.product.filters.OrFilter;
+import org.netbeans.installer.product.filters.ProductFilter;
+import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -103,9 +104,10 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         jdkLabels    = new LinkedList<String>();
         
         for (int i = 0; i < SearchForJavaAction.javaLocations.size(); i++) {
-            File    location = SearchForJavaAction.javaLocations.get(i);
-            String  label    = SearchForJavaAction.javaLabels.get(i);
-            Version version  = null;
+            final File location = SearchForJavaAction.javaLocations.get(i);
+            
+            String label = SearchForJavaAction.javaLabels.get(i);
+            Version version = null;
             
             // initialize the version; if the location exists, it must be an
             // already installed jdk and we should fetch the version in a
@@ -127,6 +129,31 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             // installation
             if (version == null) {
                 continue;
+            }
+            
+            // run through the installed and to-be-installed products and check 
+            // whether this lcoation is already used somewhere
+            final RegistryFilter filter = new OrFilter(
+                    new ProductFilter(Status.INSTALLED), 
+                    new ProductFilter(Status.TO_BE_INSTALLED));
+            final List<Product> products = new LinkedList<Product>();
+            for (Product product: Registry.getInstance().queryProducts(filter)) {
+                String jdk = product.getProperty(JDK_LOCATION_PROPERTY);
+                
+                if ((jdk != null) && jdk.equals(location.getAbsolutePath())) {
+                    products.add(product);
+                }
+            }
+            
+            final Product product = (Product) getWizard().
+                    getContext().
+                    get(Product.class);
+            
+            if (products.contains(product)) {
+                products.remove(product);
+            }
+            if (products.size() > 0) {
+                label = label + " (used by " + StringUtils.asString(products) + ")";
             }
             
             // if the location exists and is a jdk installation (or if the

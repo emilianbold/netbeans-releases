@@ -340,6 +340,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
         
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             setText(value.toString());
+            setToolTipText(value.toString());
             
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
