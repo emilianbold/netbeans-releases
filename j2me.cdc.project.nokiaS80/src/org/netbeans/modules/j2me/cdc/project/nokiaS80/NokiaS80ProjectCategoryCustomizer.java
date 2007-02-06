@@ -42,6 +42,7 @@ public class NokiaS80ProjectCategoryCustomizer extends JPanel implements Customi
     };
     
     private VisualPropertySupport vps;
+    private String projectDir = ""; //NOI18N
     
     /** Creates new form SavaJeProjectCategoryCustomizer */
     public NokiaS80ProjectCategoryCustomizer() {
@@ -51,6 +52,7 @@ public class NokiaS80ProjectCategoryCustomizer extends JPanel implements Customi
     public void initValues(ProjectProperties props, String configuration) {
         vps = VisualPropertySupport.getDefault(props);
         vps.register(jCheckBox1, configuration, this);
+        projectDir = FileUtil.toFile(props.getProjectDirectory()).getAbsolutePath();
     }
     
     public String[] getGroupPropertyNames() {
@@ -164,9 +166,7 @@ public class NokiaS80ProjectCategoryCustomizer extends JPanel implements Customi
             }
         });
         String workDir = field.getText();
-//        if (workDir.equals("")) {
-//            workDir = FiFileUtil.toFile(getProject().getProjectDirectory()).getAbsolutePath();
-//        }
+        if (workDir.trim().length() == 0) workDir = projectDir; 
         chooser.setSelectedFile(new File(workDir));
         chooser.setDialogTitle(NbBundle.getMessage(NokiaS80ProjectCategoryCustomizer.class, "TITLE_BrowseLogo"));
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N

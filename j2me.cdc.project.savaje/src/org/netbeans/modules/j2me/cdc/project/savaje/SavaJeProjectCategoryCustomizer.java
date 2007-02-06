@@ -28,8 +28,6 @@ import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
 import org.netbeans.spi.mobility.project.ui.customizer.VisualPropertyGroup;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -46,6 +44,7 @@ public class SavaJeProjectCategoryCustomizer extends JPanel implements Customize
     };
     
     private VisualPropertySupport vps;
+    private String projectDir = ""; //NOI18N
 
     /** Creates new form SavaJeProjectCategoryCustomizer */
     public SavaJeProjectCategoryCustomizer() {
@@ -55,6 +54,7 @@ public class SavaJeProjectCategoryCustomizer extends JPanel implements Customize
     public void initValues(ProjectProperties props, String configuration) {
         vps = VisualPropertySupport.getDefault(props);
         vps.register(jCheckBox1, configuration, this);
+        projectDir = FileUtil.toFile(props.getProjectDirectory()).getAbsolutePath();
     }
     
     public String[] getGroupPropertyNames() {
@@ -204,9 +204,7 @@ public class SavaJeProjectCategoryCustomizer extends JPanel implements Customize
             }
         });
         String workDir = field.getText();
-//        if (workDir.equals("")) {
-//            workDir = FileUtil.toFile(getProject().getProjectDirectory()).getAbsolutePath();
-//        }
+        if (workDir.trim().length() == 0) workDir = projectDir; 
         chooser.setSelectedFile(new File(workDir));
         chooser.setDialogTitle(NbBundle.getMessage(SavaJeProjectCategoryCustomizer.class, "TITLE_BrowseImageFile")); //NOI18N
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N

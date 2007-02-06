@@ -35,6 +35,13 @@ public class SEMCPropertiesDescriptor implements ProjectPropertiesDescriptor {
         
     public static final String SEMC_APPLICATION_ICON_SPLASH_INSTALLONLY = "semc.application.icon.splash.installonly"; //NOI18N
     public static final String SEMC_APPLICATION_UID = "semc.application.uid"; //NOI18N
+    public static final String SEMC_APPLICATION_ICON = "semc.application.icon";
+    public static final String SEMC_APPLICATION_ICON_COUNT = "semc.application.icon.count";
+    public static final String SEMC_APPLICATION_ICON_SPLASH = "semc.application.icon.splash";
+    public static final String SEMC_APPLICATION_CAPS    = "semc.application.caps";
+    public static final String SEMC_CERTIFICATE = "semc.certificate.path";
+    public static final String SEMC_PRIVATEKEY  = "semc.private.key.path";
+    public static final String SEMC_PASSWORD    = "semc.private.key.password";
 
     private Reference<Set<PropertyDescriptor>> ref = new WeakReference(null);
     
@@ -46,8 +53,16 @@ public class SEMCPropertiesDescriptor implements ProjectPropertiesDescriptor {
         Set<PropertyDescriptor> set = ref.get();
         if (set == null) {
             set = new HashSet();
+            final String EMPTY = ""; //NOI18N
             set.add(new PropertyDescriptor(SEMC_APPLICATION_ICON_SPLASH_INSTALLONLY, true, DefaultPropertyParsers.BOOLEAN_PARSER,  "false")); //NOI18N
-            set.add(new PropertyDescriptor(SEMC_APPLICATION_UID, true, DefaultPropertyParsers.STRING_PARSER,  "")); //NOI18N
+            set.add(new PropertyDescriptor(SEMC_APPLICATION_UID, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
+            set.add(new PropertyDescriptor(SEMC_APPLICATION_ICON, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
+            set.add(new PropertyDescriptor(SEMC_APPLICATION_ICON_COUNT, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
+            set.add(new PropertyDescriptor(SEMC_APPLICATION_ICON_SPLASH, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
+            set.add(new PropertyDescriptor(SEMC_APPLICATION_CAPS, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
+            set.add(new PropertyDescriptor(SEMC_CERTIFICATE, true, DefaultPropertyParsers.FILE_REFERENCE_PARSER,  EMPTY));
+            set.add(new PropertyDescriptor(SEMC_PRIVATEKEY, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
+            set.add(new PropertyDescriptor(SEMC_PASSWORD, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
             ref = new WeakReference(set);
         }
         return set;
