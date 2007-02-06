@@ -50,8 +50,6 @@ public class WsTesterPageAction extends CookieAction {
     
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx(AddOperationAction.class);
     }
     
     protected int mode() {
