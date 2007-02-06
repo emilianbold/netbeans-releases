@@ -864,9 +864,9 @@ public final class FileUtils {
             corrected = corrected.replace(SLASH + CURRENT + SLASH, SLASH);
         }
         
-        Pattern pattern = Pattern.compile("(\\/([^\\/]+)\\/\\.\\.\\/)");
-        Matcher matcher = pattern.matcher(corrected);
+        final Pattern pattern = Pattern.compile("(\\/([^\\/]+)\\/\\.\\.\\/)");
         
+        Matcher matcher = pattern.matcher(corrected);
         while (matcher.find()) {
             if (matcher.group(2).equals(PARENT)) {
                 continue;
@@ -892,6 +892,25 @@ public final class FileUtils {
         }
         
         return new File(corrected);
+    }
+    
+    public static File find(File directory, String filename) {
+        if (directory.getName().equals(filename)) {
+            return directory;
+        }
+        
+        final File[] children = directory.listFiles();
+        if (children != null) {
+            for (File child: children) {
+                final File match = find(child, filename);
+                
+                if (match != null) {
+                    return match;
+                }
+            }
+        }
+        
+        return null;
     }
     
     // private //////////////////////////////////////////////////////////////////////

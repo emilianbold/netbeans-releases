@@ -49,73 +49,6 @@ import org.netbeans.installer.wizard.containers.SwingContainer;
  */
 public class DestinationPanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String DEFAULT_TITLE =
-            ResourceUtils.getString(DestinationPanel.class,
-            "DP.title"); // NOI18N
-    public static final String DEFAULT_DESCRIPTION =
-            ResourceUtils.getString(DestinationPanel.class,
-            "DP.description"); // NOI18N
-    
-    public static final String DESTINATION_LABEL_TEXT_PROPERTY
-            = "destination.label.text"; // NOI18N
-    public static final String DESTINATION_BUTTON_TEXT_PROPERTY
-            = "destination.button.text"; // NOI18N
-    
-    public static final String DEFAULT_DESTINATION_LABEL_TEXT =
-            ResourceUtils.getString(DestinationPanel.class,
-            "DP.destination.label.text"); // NOI18N
-    public static final String DEFAULT_DESTINATION_BUTTON_TEXT =
-            ResourceUtils.getString(DestinationPanel.class,
-            "DP.destination.button.text"); // NOI18N
-    
-    public static final String ERROR_NULL_PROPERTY =
-            "error.null"; // NOI18N
-    public static final String ERROR_NOT_VALID_PROPERTY =
-            "error.not.valid"; // NOI18N
-    public static final String ERROR_NOT_ABSOLUTE_PROPERTY =
-            "error.not.absolute"; // NOI18N
-    public static final String ERROR_CANNOT_CANONIZE_PROPERTY =
-            "error.cannot.canonize"; // NOI18N
-    public static final String ERROR_NOT_DIRECTORY_PROPERTY =
-            "error.not.directory"; // NOI18N
-    public static final String ERROR_NOT_READABLE_PROPERTY =
-            "error.not.readable"; // NOI18N
-    public static final String ERROR_NOT_WRITABLE_PROPERTY =
-            "error.not.writable"; // NOI18N
-    public static final String ERROR_NOT_EMPTY_PROPERTY =
-            "error.not.empty"; // NOI18N
-    
-    public static final String DEFAULT_ERROR_NULL =
-            ResourceUtils.getString(DestinationPanel.class,
-            "DP.error.null"); // NOI18N
-    public static final String DEFAULT_ERROR_NOT_VALID =
-            ResourceUtils.getString(DestinationPanel.class,
-            "DP.error.not.valid"); // NOI18N
-    public static final String DEFAULT_ERROR_NOT_ABSOLUTE =
-            ResourceUtils.getString(DestinationPanel.class,
-            "DP.error.not.absolute"); // NOI18N
-    public static final String DEFAULT_ERROR_CANNOT_CANONIZE =
-            ResourceUtils.getString(DestinationPanel.class,
-            "DP.error.cannot.canonize"); // NOI18N
-    public static final String DEFAULT_ERROR_NOT_DIRECTORY =
-            ResourceUtils.getString(DestinationPanel.class,
-            "DP.error.not.directory"); // NOI18N
-    public static final String DEFAULT_ERROR_NOT_READABLE =
-            ResourceUtils.getString(DestinationPanel.class,
-            "DP.error.not.readable"); // NOI18N
-    public static final String DEFAULT_ERROR_NOT_WRITABLE =
-            ResourceUtils.getString(DestinationPanel.class,
-            "DP.error.not.writable"); // NOI18N
-    public static final String DEFAULT_ERROR_NOT_EMPTY =
-            ResourceUtils.getString(DestinationPanel.class,
-            "DP.error.not.empty"); // NOI18N
-    
-    public static final String DEFAULT_DESTINATION =
-            ResourceUtils.getString(DestinationPanel.class,
-            "DP.default.destination"); // NOI18N
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public DestinationPanel() {
         setProperty(TITLE_PROPERTY,
@@ -132,6 +65,8 @@ public class DestinationPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_NULL);
         setProperty(ERROR_NOT_VALID_PROPERTY,
                 DEFAULT_ERROR_NOT_VALID);
+        setProperty(ERROR_CONTAINS_EXCLAMATION_PROPERTY,
+                DEFAULT_ERROR_CONTAINS_EXCLAMATION);
         setProperty(ERROR_CANNOT_CANONIZE_PROPERTY,
                 DEFAULT_ERROR_CANNOT_CANONIZE);
         setProperty(ERROR_NOT_ABSOLUTE_PROPERTY,
@@ -175,8 +110,6 @@ public class DestinationPanel extends ErrorMessagePanel {
     }
     
     public static class DestinationPanelSwingUi extends ErrorMessagePanelSwingUi {
-        /////////////////////////////////////////////////////////////////////////////
-        // Instance
         protected DestinationPanel component;
         
         private NbiLabel       destinationLabel;
@@ -206,24 +139,41 @@ public class DestinationPanel extends ErrorMessagePanel {
                     getContext().
                     get(Product.class);
             
-            String destination = product.
+            String destination = null;
+            
+            destination = product.
                     getProperty(Product.INSTALLATION_LOCATION_PROPERTY);
             
             if (destination == null) {
                 destination = DEFAULT_DESTINATION;
             }
             
+            destination = component.parsePath(destination).getAbsolutePath();
+            
             try {
-                if (SystemUtils.isMacOS() && product.getLogic().wrapForMacOs()) {
-                    if (!destination.endsWith(".app")) {
-                        destination += ".app";
+                if (SystemUtils.isMacOS() && (
+                        product.getLogic().wrapForMacOs() ||
+                        product.getLogic().correctForMacOs())) {
+                    if (!destination.endsWith(APP_SUFFIX)) {
+                        final File parent = new File(destination).getParentFile();
+                        final String suffix = product.getDisplayName() + APP_SUFFIX;
+                        
+                        if (parent != null) {
+                            destination = new File(
+                                    parent,
+                                    suffix).getAbsolutePath();
+                        } else {
+                            destination = new File(
+                                    destination,
+                                    suffix).getAbsolutePath();
+                        }
                     }
                 }
             } catch (InitializationException e) {
                 ErrorManager.notifyError("Cannot obtain confguration logic", e);
             }
             
-            destinationField.setText(component.parsePath(destination).getPath());
+            destinationField.setText(destination);
             
             super.initialize();
         }
@@ -250,61 +200,73 @@ public class DestinationPanel extends ErrorMessagePanel {
                     getContext().
                     get(Product.class);
             
-            if (string.equals("")) {
-                return StringUtils.format(
-                        component.getProperty(ERROR_NULL_PROPERTY),
-                        string);
-            }
-            
-            File file = FileUtils.eliminateRelativity(string);
-            if (!SystemUtils.isPathValid(file.getAbsolutePath())) {
-                return StringUtils.format(
-                        component.getProperty(ERROR_NOT_VALID_PROPERTY),
-                        file.getAbsolutePath());
-            }
-            if (!file.equals(file.getAbsoluteFile())) {
-                return StringUtils.format(
-                        component.getProperty(ERROR_NOT_ABSOLUTE_PROPERTY),
-                        file.getPath());
-            }
-            
             try {
-                file = file.getCanonicalFile();
-            } catch (IOException e) {
-                return StringUtils.format(
-                        component.getProperty(ERROR_CANNOT_CANONIZE_PROPERTY),
-                        string);
-            }
-            
-            if (file.exists() && !file.isDirectory()) {
-                return StringUtils.format(
-                        component.getProperty(ERROR_NOT_DIRECTORY_PROPERTY),
-                        file.getAbsolutePath());
-            }
-            
-            if (!FileUtils.canRead(file)) {
-                return StringUtils.format(
-                        component.getProperty(ERROR_NOT_READABLE_PROPERTY),
-                        file.getAbsolutePath());
-            }
-            
-            if (!FileUtils.canWrite(file)) {
-                return StringUtils.format(
-                        component.getProperty(ERROR_NOT_WRITABLE_PROPERTY),
-                        file.getAbsolutePath());
-            }
-            
-            if (!FileUtils.isEmpty(file)) {
-                return StringUtils.format(
-                        component.getProperty(ERROR_NOT_EMPTY_PROPERTY),
-                        file.getAbsolutePath());
-            }
-            
-            try {
-                if (SystemUtils.isMacOS() && product.getLogic().wrapForMacOs()) {
-                    if (!string.endsWith(".app")) {
-                        return "Product's installation directory should end with .app";
-                    }
+                if (string.equals("")) {
+                    return StringUtils.format(
+                            component.getProperty(ERROR_NULL_PROPERTY),
+                            string);
+                }
+                
+                File file = FileUtils.eliminateRelativity(string);
+                
+                if (!SystemUtils.isPathValid(file.getAbsolutePath())) {
+                    return StringUtils.format(
+                            component.getProperty(ERROR_NOT_VALID_PROPERTY),
+                            file.getAbsolutePath());
+                }
+                
+                if (product.getLogic().prohibitExclamation() &&
+                        file.getAbsolutePath().contains("!")) {
+                    return StringUtils.format(
+                            component.getProperty(ERROR_CONTAINS_EXCLAMATION_PROPERTY),
+                            file.getAbsolutePath());
+                }
+                
+                if (!file.equals(file.getAbsoluteFile())) {
+                    return StringUtils.format(
+                            component.getProperty(ERROR_NOT_ABSOLUTE_PROPERTY),
+                            file.getPath());
+                }
+                
+                try {
+                    file = file.getCanonicalFile();
+                } catch (IOException e) {
+                    return StringUtils.format(
+                            component.getProperty(ERROR_CANNOT_CANONIZE_PROPERTY),
+                            file.getAbsolutePath());
+                }
+                
+                if (file.exists() && !file.isDirectory()) {
+                    return StringUtils.format(
+                            component.getProperty(ERROR_NOT_DIRECTORY_PROPERTY),
+                            file.getAbsolutePath());
+                }
+                
+                if (!FileUtils.canRead(file)) {
+                    return StringUtils.format(
+                            component.getProperty(ERROR_NOT_READABLE_PROPERTY),
+                            file.getAbsolutePath());
+                }
+                
+                if (!FileUtils.canWrite(file)) {
+                    return StringUtils.format(
+                            component.getProperty(ERROR_NOT_WRITABLE_PROPERTY),
+                            file.getAbsolutePath());
+                }
+                
+                if (!FileUtils.isEmpty(file)) {
+                    return StringUtils.format(
+                            component.getProperty(ERROR_NOT_EMPTY_PROPERTY),
+                            file.getAbsolutePath());
+                }
+                
+                if (SystemUtils.isMacOS() && (
+                        product.getLogic().wrapForMacOs() ||
+                        product.getLogic().requireDotAppForMacOs()) &&
+                        !file.getAbsolutePath().endsWith(APP_SUFFIX)) {
+                    return StringUtils.format(
+                            component.getProperty(ERROR_NOT_ENDS_WITH_APP),
+                            file.getAbsolutePath());
                 }
             } catch (InitializationException e) {
                 ErrorManager.notifyError("Cannot obtain confguration logic", e);
@@ -368,11 +330,112 @@ public class DestinationPanel extends ErrorMessagePanel {
         }
         
         private void browseButtonPressed() {
+            final Product product = (Product) component.
+                    getWizard().
+                    getContext().
+                    get(Product.class);
+            
             fileChooser.setSelectedFile(new File(destinationField.getText()));
             
             if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                destinationField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+                String selected = fileChooser.getSelectedFile().getAbsolutePath();
+                
+                try {
+                    if (SystemUtils.isMacOS() &&
+                            !selected.endsWith(APP_SUFFIX) &&
+                            product.getLogic().correctForMacOs()) {
+                        final String suffix = product.getDisplayName() + APP_SUFFIX;
+                        
+                        selected = new File(
+                                selected,
+                                suffix).getAbsolutePath();
+                    }
+                } catch (InitializationException e) {
+                    ErrorManager.notifyError("Cannot obtain confguration logic", e);
+                }
+                
+                destinationField.setText(selected);
             }
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String DEFAULT_TITLE =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.title"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.description"); // NOI18N
+    
+    public static final String DESTINATION_LABEL_TEXT_PROPERTY
+            = "destination.label.text"; // NOI18N
+    public static final String DESTINATION_BUTTON_TEXT_PROPERTY
+            = "destination.button.text"; // NOI18N
+    
+    public static final String DEFAULT_DESTINATION_LABEL_TEXT =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.destination.label.text"); // NOI18N
+    public static final String DEFAULT_DESTINATION_BUTTON_TEXT =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.destination.button.text"); // NOI18N
+    
+    public static final String ERROR_NULL_PROPERTY =
+            "error.null"; // NOI18N
+    public static final String ERROR_NOT_VALID_PROPERTY =
+            "error.not.valid"; // NOI18N
+    public static final String ERROR_CONTAINS_EXCLAMATION_PROPERTY =
+            "error.contains.exclamation"; // NOI18N
+    public static final String ERROR_NOT_ABSOLUTE_PROPERTY =
+            "error.not.absolute"; // NOI18N
+    public static final String ERROR_CANNOT_CANONIZE_PROPERTY =
+            "error.cannot.canonize"; // NOI18N
+    public static final String ERROR_NOT_DIRECTORY_PROPERTY =
+            "error.not.directory"; // NOI18N
+    public static final String ERROR_NOT_READABLE_PROPERTY =
+            "error.not.readable"; // NOI18N
+    public static final String ERROR_NOT_WRITABLE_PROPERTY =
+            "error.not.writable"; // NOI18N
+    public static final String ERROR_NOT_EMPTY_PROPERTY =
+            "error.not.empty"; // NOI18N
+    public static final String ERROR_NOT_ENDS_WITH_APP =
+            "error.not.ends.with.app"; // NOI18N
+    
+    public static final String DEFAULT_ERROR_NULL =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.null"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_VALID =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.not.valid"); // NOI18N
+    public static final String DEFAULT_ERROR_CONTAINS_EXCLAMATION =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.contains.exclamation"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_ABSOLUTE =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.not.absolute"); // NOI18N
+    public static final String DEFAULT_ERROR_CANNOT_CANONIZE =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.cannot.canonize"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_DIRECTORY =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.not.directory"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_READABLE =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.not.readable"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_WRITABLE =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.not.writable"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_EMPTY =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.not.empty"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_ENDS_WITH_APP =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.not.ends.with.app"); // NOI18N
+    
+    public static final String DEFAULT_DESTINATION =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.default.destination"); // NOI18N
+    
+    public static final String APP_SUFFIX =
+            ".app"; // NOI18N
 }

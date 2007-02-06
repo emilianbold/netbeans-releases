@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
@@ -227,11 +228,31 @@ public class WindowsNativeUtils extends NativeUtils {
     }
     
     public boolean isPathValid(String path) {
+        // there is a max length limitation
         if (path.length() > 256) {
             return false;
-        } else {
-            return path.matches("^[A-Z,a-z]:\\\\([^\\\\\\/:*\"<>|\\s]([^\\\\\\/:*\"<>|\t]*[^\\\\\\/:*\"<>|\\s])?\\\\?)*$");
         }
+        
+        // the path should be absolute, i.e. should start with "<Drive>:\"
+        if (!path.matches("^[A-Z,a-z]:\\\\.*")) {
+            return false;
+        }
+        
+        String[] parts = path.split("\\\\");
+        
+        for (int i = 1; i < parts.length; i++) {
+            if (Pattern.compile("[\\/:*\\?\"<>|]").matcher(parts[i]).find()) {
+                return false;
+            }
+            if (parts[i].startsWith(" ") || 
+                    parts[i].startsWith("\t") || 
+                    parts[i].endsWith(" ") || 
+                    parts[i].endsWith("\t")) {
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     public File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {

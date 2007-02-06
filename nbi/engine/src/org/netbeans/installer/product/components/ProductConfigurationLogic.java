@@ -36,10 +36,6 @@ import org.netbeans.installer.utils.helper.Text.ContentType;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardComponent;
 
-
-/////////////////////////////////////////////////////////////////////////////////
-// Inner Classes
-
 public abstract class ProductConfigurationLogic {
     private Product product;
     
@@ -124,13 +120,25 @@ public abstract class ProductConfigurationLogic {
         return null;
     }
     
-    // system integration ///////////////////////////////////////////////////////////
+    // various informational probes /////////////////////////////////////////////////
     public boolean registerInSystem() {
         return true;
     }
     
     public boolean wrapForMacOs() {
         return false;
+    }
+    
+    public boolean correctForMacOs() {
+        return false;
+    }
+    
+    public boolean requireDotAppForMacOs() {
+        return false;
+    }
+    
+    public boolean prohibitExclamation() {
+        return true;
     }
     
     public String getExecutable() {

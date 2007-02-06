@@ -205,7 +205,7 @@ public class ErrorMessagePanel extends WizardPanel {
         protected static class ValidatingThread extends NbiThread {
             /////////////////////////////////////////////////////////////////////////
             // Constants
-            public static final long VALIDATION_DELAY = 1000;
+            public static final long VALIDATION_DELAY = 10000;
             
             /////////////////////////////////////////////////////////////////////////
             // Instance
