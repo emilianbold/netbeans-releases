@@ -23,6 +23,22 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="dialogs">Dialogs API</apidef>
 </apidefs>
 <changes>
+    <change id="notifyLater_improved">
+           <api name="dialogs"/>
+           <summary>Method notifyLater improved to work before main window is opened</summary>
+           <version major="7" minor="3"/>
+           <date day="06" month="2" year="2007"/>
+           <author login="dsimonek"/>
+           <compatibility addition="no" binary="compatible" semantic="compatible" source="incompatible" deprecation="no" deletion="no" modification="no"/>
+           <description>
+             Implementation of method notifyLater improved to work before 
+             main window is opened. For example: When method is called from 
+             ModuleInstall.restored, then modal dialog is opened and blocks main
+             window until dialog is closed. Typical use case is login dialog.
+           </description>
+           <class package="org.openide" name="DialogDisplayer"/>
+           <issue number="92570"/>
+    </change>
     <change id="generified.wizarddescriptor.panel">
            <api name="dialogs"/>
            <summary>Generified <code>WizardDescriptor.Panel</code></summary>

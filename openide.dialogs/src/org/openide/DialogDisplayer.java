@@ -77,6 +77,13 @@ public abstract class DialogDisplayer {
      * from any thread. The thread will return immediately and
      * the dialog will be shown <q>later</q>, usually when AWT thread
      * is empty and can handle the request.
+     * 
+     * <p class="non-normative">
+     * Implementation note: Since version 7.3, implementation improved to work
+     * also before main window is opened. For example: When method is called
+     * from ModuleInstall.restored, then modal dialog is opened and blocks main
+     * window until dialog is closed. Typical use case is login dialog.
+     * </p>
      *
      * @param descriptor description of the notification
      * @since 7.0

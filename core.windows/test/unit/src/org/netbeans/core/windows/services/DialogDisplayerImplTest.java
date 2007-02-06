@@ -226,4 +226,45 @@ public class DialogDisplayerImplTest extends NbTestCase {
         }
     }
     
+    private void waitAWT() throws Exception {
+        SwingUtilities.invokeAndWait(new Runnable() { public void run() { } });
+    }
+
+    public void testIfLasterWhenSplashShownThanWaitTillItFinished() throws Exception {
+        class MyObj extends Object {
+            public int called;
+            
+            public String toString() {
+                called = 1;
+                return "Kuk";
+            }
+        }
+        MyObj obj = new MyObj();
+        
+        NotifyDescriptor ownerDD = new NotifyDescriptor.Message(obj);
+        
+        
+        
+        DialogDisplayer.getDefault ().notifyLater(ownerDD);
+        waitAWT();
+        assertEquals("No notify yet", 0, obj.called);
+        
+        postInAwtAndWaitOutsideAwt(new Runnable () {
+            public void run() {
+                DialogDisplayerImpl.runDelayed();
+            }
+        });
+        
+        
+        waitAWT();
+        assertEquals("Now it is showing", 1, obj.called);
+        
+        SwingUtilities.invokeAndWait(new Runnable () {
+            public void run() {
+                DialogDisplayerImpl.runDelayed();
+            }
+        });
+        
+    }
+    
 }

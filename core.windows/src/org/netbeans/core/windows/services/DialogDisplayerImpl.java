@@ -21,16 +21,20 @@
 package org.netbeans.core.windows.services;
 
 
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import javax.swing.JDialog;
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.EventQueue;
+import java.awt.Frame;
+import java.awt.KeyboardFocusManager;
+import java.awt.Window;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Mutex;
 import org.openide.windows.WindowManager;
-
-import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 
 // Extracted from core/NbTopManager.
@@ -40,6 +44,9 @@ import java.awt.*;
  * @author  Jesse Glick
  */
 public class DialogDisplayerImpl extends DialogDisplayer {
+    /** delayed runnables */
+    private static List<Runnable> run = Collections.synchronizedList(new ArrayList<Runnable>());
+    
     /** non-null if we are running in unit test and should no show any dialogs */
     private Object testResult;
     
@@ -51,6 +58,21 @@ public class DialogDisplayerImpl extends DialogDisplayer {
     DialogDisplayerImpl (Object testResult) {
         this.testResult = testResult;
     }
+    
+    /* Runs list of tasks gathered from notifyLater calls */
+    public static void runDelayed() {
+        List<Runnable> local = run;
+        run = null;
+        if (local == null) {
+            return;
+        }
+        
+        assert EventQueue.isDispatchThread();
+        for (Runnable r : local) {
+            r.run();
+        }
+    }
+    
 
     /** Creates new dialog. */
     public Dialog createDialog (final DialogDescriptor d) {
@@ -90,8 +112,18 @@ public class DialogDisplayerImpl extends DialogDisplayer {
     
     /** Notifies user by a dialog.
      * @param descriptor description that contains needed informations
-     * @return the option that has been choosen in the notification. */
-    public Object notify (final NotifyDescriptor descriptor) {
+     * @return the option that has been choosen in the notification.
+     */
+    public Object notify (NotifyDescriptor descriptor) {
+        return notify(descriptor, false);
+    }
+
+    /** Notifies user by a dialog.
+     * @param descriptor description that contains needed informations
+     * @param noParent don't set any window as parent of dialog, if flag is true
+     * @return the option that has been choosen in the notification.
+     */
+    private Object notify (final NotifyDescriptor descriptor, final boolean noParent) {
         class AWTQuery implements Runnable {
             public Object result;
             public boolean running;
@@ -150,6 +182,10 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                             instanceof Frame ? 
                             (Frame) KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() 
                             : WindowManager.getDefault().getMainWindow();
+                        
+                        if (noParent) {
+                            f = null;
+                        }
                         presenter = new NbPresenter(descriptor, f, true);
                     }
                 }
@@ -204,4 +240,25 @@ public class DialogDisplayerImpl extends DialogDisplayer {
         }
     }
 
+    /* Schedules notification for specific later time if called before
+     * <code>runDelayed</code>, otherwise works as superclass method.
+     */  
+    public void notifyLater(final NotifyDescriptor descriptor) {
+        class R implements Runnable {
+            public boolean noParent;
+            
+            public void run() {
+                DialogDisplayerImpl.this.notify(descriptor, noParent);
+            }
+        }
+        R r = new R();
+        
+        List<Runnable> local = run;
+        if (local != null) {
+            r.noParent = true;
+            local.add(r);
+        } else {
+            EventQueue.invokeLater(r);
+        }
+    }
 }

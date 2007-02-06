@@ -23,6 +23,7 @@ package org.netbeans.core.windows;
 
 import org.netbeans.core.NbTopManager;
 import org.netbeans.core.windows.persistence.PersistenceManager;
+import org.netbeans.core.windows.services.DialogDisplayerImpl;
 
 
 /**
@@ -59,6 +60,7 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
     public void show() {
         WindowManagerImpl.assertEventDispatchThread();
         
+        DialogDisplayerImpl.runDelayed();
         ShortcutAndMenuKeyEventProcessor.install();
         WindowManagerImpl.getInstance().setVisible(true);
     }
