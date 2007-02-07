@@ -21,6 +21,7 @@ package org.netbeans.modules.xml.xdm.nodes;
 
 import java.lang.ref.SoftReference;
 import java.util.Map;
+import javax.xml.XMLConstants;
 import org.netbeans.modules.xml.xdm.visitor.FindNamespaceVisitor;
 import org.netbeans.modules.xml.xdm.visitor.XMLNodeVisitor;
 import org.w3c.dom.DOMException;
@@ -520,7 +521,7 @@ public class Document extends NodeImpl implements Node, org.w3c.dom.Document {
                 throw new DOMException(DOMException.NAMESPACE_ERR, null);
             }
             ret.appendAttribute(new Attribute("xmlns:"+prefix, namespaceURI)); //NOI18N
-        } else if (namespaceURI != null) {
+        } else if (namespaceURI != null && ! namespaceURI.equals(XMLConstants.NULL_NS_URI)) {
             ret.appendAttribute(new Attribute(XMLNS, namespaceURI)); 
         }
         return ret;
