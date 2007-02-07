@@ -1845,8 +1845,11 @@ public class WebForm implements Designer {
         return htmlDomProvider.getDefaultParentMarkupBeanElement();
     }
 
-    public boolean moveBean(DesignBean bean, Node parentNode, Node before) {
-        return htmlDomProvider.moveBean(bean, parentNode, before);
+//    public boolean moveBean(DesignBean bean, Node parentNode, Node before) {
+//        return htmlDomProvider.moveBean(bean, parentNode, before);
+//    }
+    public boolean moveComponent(Element componentRootElement, Node parentNode, Node before) {
+        return htmlDomProvider.moveComponent(componentRootElement, parentNode, before);
     }
 
     boolean setPrerenderedBean(MarkupDesignBean markupDesignBean, DocumentFragment documentFragment) {
