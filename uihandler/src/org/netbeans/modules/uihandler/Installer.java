@@ -610,8 +610,6 @@ public class Installer extends ModuleInstall {
                 recs.add(getUserData());
                 URL nextURL = null;
                 try {
-                    System.out.println("LOCAL");
-                    url[0] = new URL("http://localhost:8084/analytics/upload.jsp");
                     nextURL = uploadLogs(url[0], findIdentity(), Collections.<String,String>emptyMap(), recs);
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, null, ex);
