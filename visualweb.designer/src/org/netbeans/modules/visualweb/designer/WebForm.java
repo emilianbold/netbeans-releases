@@ -33,7 +33,6 @@ import com.sun.rave.designtime.DesignEvent;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.DisplayItem;
 import com.sun.rave.designtime.Position;
-import com.sun.rave.designtime.markup.MarkupMouseRegion;
 import com.sun.rave.designtime.markup.MarkupPosition;
 import org.netbeans.modules.visualweb.designer.DocumentCache;
 import org.netbeans.modules.visualweb.designer.ImageCache;
@@ -1658,9 +1657,9 @@ public class WebForm implements Designer {
         return htmlDomProvider.computeActions(droppee, transferable, searchUp, nodePos);
     }
 
-    DesignBean findParent(String className, DesignBean droppee, Node parentNode, boolean searchUp) {
-        return htmlDomProvider.findParent(className, droppee, parentNode, searchUp);
-    }
+//    DesignBean findParent(String className, DesignBean droppee, Node parentNode, boolean searchUp) {
+//        return htmlDomProvider.findParent(className, droppee, parentNode, searchUp);
+//    }
 
     int processLinks(Element origElement, Class[] classes, List beans, boolean selectFirst, boolean handleLinks, boolean showLinkTarget) {
         return htmlDomProvider.processLinks(origElement, classes, beans, selectFirst, handleLinks, showLinkTarget);
@@ -1668,8 +1667,12 @@ public class WebForm implements Designer {
     // <<< DnD
 
     // >>> DnD callbacks
-    public void showDropMatch(MarkupDesignBean markupDesignBean, MarkupMouseRegion markupMouseRegion, int dropType) {
-        getPane().getDndHandler().showDropMatchEx(markupDesignBean, markupMouseRegion, dropType);
+    private void showDropMatch(Element componentRootElement, Element regionElement, int dropType) {
+        getPane().getDndHandler().showDropMatch(componentRootElement, regionElement, dropType);
+    }
+    
+    private void clearDropMatch() {
+        getPane().getDndHandler().clearDropMatch();
     }
     
     public void select(final DesignBean designBean) {
@@ -1679,7 +1682,8 @@ public class WebForm implements Designer {
             // Scheduling later to by pass the issue (of retrieving the component root element).
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    getSelection().selectBean(SelectionManager.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean));
+                    getSelection().selectBean(
+                            WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean));
                 }
             });
         }
@@ -1861,9 +1865,9 @@ public class WebForm implements Designer {
         htmlDomProvider.deleteBean(designBean);
     }
 
-    boolean canCreateBean(String className, DesignBean parent, Position pos) {
-        return htmlDomProvider.canCreateBean(className, parent, pos);
-    }
+//    boolean canCreateBean(String className, DesignBean parent, Position pos) {
+//        return htmlDomProvider.canCreateBean(className, parent, pos);
+//    }
 
     DesignBean getDefaultParentBean() {
         return htmlDomProvider.getDefaultParentBean();
@@ -1936,9 +1940,9 @@ public class WebForm implements Designer {
         return htmlDomProvider.isWriteLocked();
     }
 
-    Class getBeanClass(String className) throws ClassNotFoundException {
-        return htmlDomProvider.getBeanClass(className);
-    }
+//    Class getBeanClass(String className) throws ClassNotFoundException {
+//        return htmlDomProvider.getBeanClass(className);
+//    }
 
     public boolean isPage() {
         return htmlDomProvider.isPage();
@@ -1948,9 +1952,9 @@ public class WebForm implements Designer {
         return htmlDomProvider.isAlive();
     }
 
-    String getImageComponentClassName() {
-        return htmlDomProvider.getImageComponentClassName();
-    }
+//    String getImageComponentClassName() {
+//        return htmlDomProvider.getImageComponentClassName();
+//    }
 
     void paintVirtualForms(Graphics2D g, HtmlDomProvider.RenderContext renderContext) {
         htmlDomProvider.paintVirtualForms(g, renderContext);
@@ -1958,6 +1962,22 @@ public class WebForm implements Designer {
 
     public boolean isFormComponent(Element componentRootElement) {
         return htmlDomProvider.isFormComponent(componentRootElement);
+    }
+
+    int getDropType(DesignBean origDroppee, Element droppeeElement, Transferable t, boolean linkOnly) {
+        return htmlDomProvider.getDropType(origDroppee, droppeeElement, t, linkOnly);
+    }
+
+    int getDropTypeForClassNames(DesignBean origDroppee, Element droppeeElement, String[] classNames, DesignBean[] beans, boolean linkOnly) {
+        return htmlDomProvider.getDropTypeForClassNames(origDroppee, droppeeElement, classNames, beans, linkOnly);
+    }
+
+    Element getComponentRootElementEquivalentTo(Element oldComponentRootElement) {
+        return htmlDomProvider.getComponentRootElementEquivalentTo(oldComponentRootElement);
+    }
+
+    boolean canHighlightComponentRootElement(Element componentRootElement) {
+        return htmlDomProvider.canHighlightComponentRootElmenet(componentRootElement);
     }
     
     
@@ -2000,8 +2020,12 @@ public class WebForm implements Designer {
             webForm.documentReplaced();
         }
 
-        public void showDropMatch(MarkupDesignBean markupDesignBean, MarkupMouseRegion markupMouseRegion, int dropType) {
-            webForm.showDropMatch(markupDesignBean, markupMouseRegion, dropType);
+        public void showDropMatch(Element componentRootElement, Element regionElement, int dropType) {
+            webForm.showDropMatch(componentRootElement, regionElement, dropType);
+        }
+        
+        public void clearDropMatch() {
+            webForm.clearDropMatch();
         }
 
         public void select(DesignBean designBean) {
@@ -2093,9 +2117,9 @@ public class WebForm implements Designer {
             return null;
         }
 
-        public MarkupMouseRegion getMarkupMouseRegionForElement(Element element) {
-            return null;
-        }
+//        public MarkupMouseRegion getMarkupMouseRegionForElement(Element element) {
+//            return null;
+//        }
 
         public int getExpandedOffset(String unexpanded, int unexpandedOffset) {
             // XXX
@@ -2178,9 +2202,9 @@ public class WebForm implements Designer {
             return false;
         }
 
-        public boolean isSpecialBean(DesignBean designBean) {
-            return false;
-        }
+//        public boolean isSpecialBean(DesignBean designBean) {
+//            return false;
+//        }
         
         public Element getElement(DesignBean designBean) {
             return null;
@@ -2190,9 +2214,9 @@ public class WebForm implements Designer {
             return null;
         }
 
-        public boolean isFacesBean(MarkupDesignBean bean) {
-            return false;
-        }
+//        public boolean isFacesBean(MarkupDesignBean bean) {
+//            return false;
+//        }
 
         public boolean setDesignProperty(MarkupDesignBean bean, String attribute, int value) {
             return false;
@@ -2206,13 +2230,13 @@ public class WebForm implements Designer {
             // XXX.
         }
 
-        public boolean isTrayBean(DesignBean designBean) {
-            return false;
-        }
+//        public boolean isTrayBean(DesignBean designBean) {
+//            return false;
+//        }
 
-        public boolean isCssPositionable(DesignBean designBean) {
-            return false;
-        }
+//        public boolean isCssPositionable(DesignBean designBean) {
+//            return false;
+//        }
 
         public long getContextGenearation(com.sun.rave.designtime.DesignContext context) {
             return 0L;
@@ -2246,15 +2270,55 @@ public class WebForm implements Designer {
             return renderBean;
         }
 
-        public boolean isFacesComponentBean(DesignBean bean) {
-            return false;
-        }
-
-        public boolean isEscapedDesignBean(DesignBean bean) {
-            return false;
-        }
+//        public boolean isFacesComponentBean(DesignBean bean) {
+//            return false;
+//        }
+//
+//        public boolean isEscapedDesignBean(DesignBean bean) {
+//            return false;
+//        }
 
         public boolean isFacesComponent(Element componentRootElement) {
+            return false;
+        }
+
+        public Element getRenderedElement(DesignBean designBean) {
+            return null;
+        }
+
+        public String getRegionDisplayName(Element regionElement) {
+            return regionElement == null ? null : regionElement.getLocalName();
+        }
+
+        public boolean isSameRegionOfElement(Element regionElement, Element element) {
+            return regionElement == element;
+        }
+
+        public Element getComponentRootElementForMarkupDesignBean(MarkupDesignBean markupDesignBean) {
+            return null;
+        }
+
+        public String getInstanceName(Element componentRootElement) {
+            return null;
+        }
+
+        public boolean isIncludeComponentBox(Element componentRootElement) {
+            return false;
+        }
+
+        public boolean isSpecialComponent(Element componentRootElement) {
+            return false;
+        }
+
+        public boolean isTrayComponent(Element componentRootElement) {
+            return false;
+        }
+
+        public boolean isCssPositionable(Element componentRootElement) {
+            return false;
+        }
+        
+        public boolean isEscapedComponent(Element componentRootElement) {
             return false;
         }
     } // End of DummyHtmlDomProviderService.

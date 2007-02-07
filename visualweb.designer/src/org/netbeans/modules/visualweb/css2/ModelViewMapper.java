@@ -42,7 +42,6 @@ import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
-import com.sun.rave.designtime.markup.MarkupMouseRegion;
 import com.sun.rave.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.text.Bias;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
@@ -1679,7 +1678,8 @@ public final class ModelViewMapper {
             }
 
 //            if ((box != null) && (box.getDesignBean() == null)) {
-            if ((box != null) && (CssBox.getMarkupDesignBeanForCssBox(box) == null)) {
+//            if ((box != null) && (CssBox.getMarkupDesignBeanForCssBox(box) == null)) {
+            if ((box != null) && (CssBox.getElementForComponentRootCssBox(box) == null)) {
                 // We have a generated box... go find the associated line box
                 LineBox lb = findLineBox(box, offset == 0);
 
@@ -2116,9 +2116,12 @@ public final class ModelViewMapper {
 ////                CssBox box = findBox(element.getDesignBean());
 //                CssBox box = findBox(webform.getPane().getPageBox(), element.getDesignBean());
 //            MarkupDesignBean markupDesignBean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-            MarkupDesignBean markupDesignBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
-            if (markupDesignBean != null) {
-                CssBox box = findBox(webform.getPane().getPageBox(), markupDesignBean);
+//            MarkupDesignBean markupDesignBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//            if (markupDesignBean != null) {
+//                CssBox box = findBox(webform.getPane().getPageBox(), markupDesignBean);
+            Element componentRootElement = MarkupService.getRenderedElementForElement(element);
+            if (componentRootElement != null) {
+                CssBox box = findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 
                 if (box != null) {
                     LineBox lb = findFirstLineBox(box);
@@ -2521,8 +2524,8 @@ public final class ModelViewMapper {
     }
 
     /** Locate a component in the visible view given the x,y coordinates
-     */
-    public static MarkupDesignBean findComponent(CssBox box) {
+     * XXX Get rid of it, replace with #findComponentRootElement. */
+    public static MarkupDesignBean findMarkupDesignBean(CssBox box) {
         for (; box != null; box = box.getParent()) {
             MarkupDesignBean boxMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(box);
 //            if (box.getDesignBean() != null) {
@@ -2532,7 +2535,8 @@ public final class ModelViewMapper {
 
 //                if (FacesSupport.isSpecialBean(/*webform, */lb)) {
 //                if (Util.isSpecialBean(lb)) {
-                if (WebForm.getHtmlDomProviderService().isSpecialBean(lb)) {
+                if (lb instanceof MarkupDesignBean && WebForm.getHtmlDomProviderService().isSpecialComponent(
+                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)lb))) {
                     continue;
                 }
 
@@ -2543,6 +2547,23 @@ public final class ModelViewMapper {
         return null;
     }
 
+    /** Locates a component root element in the visible view given the box.
+     * @return <code>Element</code> or <code>null</code> if there is not such */
+    public static Element findComponentRootElement(CssBox box) {
+        for (; box != null; box = box.getParent()) {
+            Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
+            if (componentRootElement != null) {
+                if (WebForm.getHtmlDomProviderService().isSpecialComponent(componentRootElement)) {
+                    continue;
+                }
+
+                return componentRootElement;
+            }
+        }
+
+        return null;
+    }
+    
     public static CssBox findBox(PageBox pageBox, int x, int y) {
 //        PageBox pageBox = webform.getPane().getPageBox();
 
@@ -2550,19 +2571,28 @@ public final class ModelViewMapper {
         return pageBox.findCssBox(x, y);
     }
 
-    public static MarkupDesignBean findComponent(PageBox pageBox, int x, int y) {
+    public static MarkupDesignBean findMarkupDesignBean(PageBox pageBox, int x, int y) {
 //        CssBox box = findBox(x, y);
         CssBox box = findBox(pageBox, x, y);
 
-        return findComponent(box);
+        return findMarkupDesignBean(box);
     }
 
-    public static Rectangle findShape(PageBox pageBox, DesignBean lbean) {
-        CssBox box = findBox(pageBox, lbean);
+//    public static Rectangle findShape(PageBox pageBox, DesignBean lbean) {
+    public static Rectangle findShape(PageBox pageBox, Element componentRootElement) {
+//        CssBox box = findBox(pageBox, lbean);
+//        if (!(lbean instanceof MarkupDesignBean)) {
+//            return null;
+//        }
+        if (componentRootElement == null) {
+            return null;
+        }
+        CssBox box = findBoxForComponentRootElement(pageBox, componentRootElement);
 
         if (box == null) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new NullPointerException("Null box for bean=" + lbean)); // NOI18N
+//                new NullPointerException("Null box for bean=" + lbean)); // NOI18N
+                    new NullPointerException("Null box for element=" + componentRootElement)); // NOI18N
 
             return null;
         }
@@ -2570,12 +2600,19 @@ public final class ModelViewMapper {
         return new Rectangle(box.getAbsoluteX(), box.getAbsoluteY(), box.getWidth(), box.getHeight());
     }
 
-    public static CssBox findBox(PageBox pageBox, DesignBean lbean) {
+//    // XXX Get rid of this. Replace with #findCssBoxForComponentRootElement.
+//    public static CssBox findBox(PageBox pageBox, DesignBean lbean) {
+////        PageBox pageBox = webform.getPane().getPageBox();
+////        return pageBox.find(lbean);
+//        return pageBox.findCssBox(lbean);
+//    }
+
+    public static CssBox findBoxForComponentRootElement(PageBox pageBox, Element componentRootElement) {
 //        PageBox pageBox = webform.getPane().getPageBox();
 //        return pageBox.find(lbean);
-        return pageBox.findCssBox(lbean);
+        return pageBox.findCssBoxForComponentRootElement(componentRootElement);
     }
-
+    
     public static List getComponentRectangles(PageBox pageBox, /*DesignBean lb*/Element componentRootElement) {
         List result = new ArrayList();
 //        PageBox pageBox = webform.getPane().getPageBox();

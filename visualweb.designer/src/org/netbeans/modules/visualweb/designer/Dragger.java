@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
+import java.util.List;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.awt.AlphaComposite;
@@ -80,10 +81,10 @@ public class Dragger extends Interaction implements KeyListener {
     /* Restore previous cursor after operation. */
     protected transient Cursor previousCursor;
     private WebForm webform;
-    private ArrayList boxes;
-    private ArrayList selections;
-    private ArrayList beans;
-    private ArrayList images;
+    private List<CssBox> boxes;
+    private List<Rectangle> selections;
+    private List<MarkupDesignBean> beans;
+    private List<Image> images;
     private Position pos;
     private int prevX = -500;
     private int prevY = -500;
@@ -129,7 +130,7 @@ public class Dragger extends Interaction implements KeyListener {
      *   <p>
      *   selections may not be null, and may not an empty list.
      */
-    public Dragger(WebForm webform, ArrayList boxes, ArrayList selections, ArrayList beans) {
+    public Dragger(WebForm webform, List<CssBox> boxes, List<Rectangle> selections, List<MarkupDesignBean> beans) {
         if(DesignerUtils.DEBUG) {
             DesignerUtils.debugLog(getClass().getName() + "()");
         }
@@ -250,7 +251,7 @@ public class Dragger extends Interaction implements KeyListener {
                     }
 
                     int dropType =
-                        handler.getDropType(p,
+                        handler.getDropTypeForClassNamesEx(p,
                             new String[] { candidate.getInstance().getClass().getName() },
                             new DesignBean[] { candidate }, true);
 
@@ -271,7 +272,7 @@ public class Dragger extends Interaction implements KeyListener {
 
                         if (candidate != null) {
                             dropType =
-                                handler.getDropType(new Point(startX, startY),
+                                handler.getDropTypeForClassNamesEx(new Point(startX, startY),
                                     new String[] { candidate.getInstance().getClass().getName() },
                                     new DesignBean[] { candidate }, true);
                         }
@@ -441,14 +442,14 @@ public class Dragger extends Interaction implements KeyListener {
                 yp = r.y + startY;
             }
 
-            ArrayList images = null;
+            List<Image> images = null;
 
             if (DISPLAY_IMAGES) {
                 images = getImages();
             }
 
             if ((images != null) && (images.get(i) != null)) {
-                Image image = (Image)images.get(i);
+                Image image = images.get(i);
 
                 if (image != null) {
                     transform.setToTranslation((float)xp, (float)yp);
@@ -555,7 +556,7 @@ public class Dragger extends Interaction implements KeyListener {
         return hasMoved(prevX, prevY);
     }
 
-    private ArrayList getImages() {
+    private List<Image> getImages() {
         if (images == null) {
             initializeImages();
         }
@@ -567,7 +568,7 @@ public class Dragger extends Interaction implements KeyListener {
         transform = new AffineTransform();
 
         int n = selections.size();
-        images = new ArrayList(n);
+        images = new ArrayList<Image>(n);
 
         for (int i = 0; i < n; i++) {
             Image image = null;
@@ -942,14 +943,14 @@ public class Dragger extends Interaction implements KeyListener {
                 DesignBean candidate = getLinkParticipant(startX, startY);
 
                 if ((candidate == null) ||
-                        (webform.getPane().getDndHandler().getDropType(new Point(px, py),
+                        (webform.getPane().getDndHandler().getDropTypeForClassNamesEx(new Point(px, py),
                             new String[] { candidate.getInstance().getClass().getName() },
                             new DesignBean[] { candidate }, true) != DndHandler.DROP_LINKED)) {
                     // Try reverse link
                     candidate = getLinkParticipant(px, py);
 
                     if ((candidate == null) ||
-                            (webform.getPane().getDndHandler().getDropType(new Point(startX, startY),
+                            (webform.getPane().getDndHandler().getDropTypeForClassNamesEx(new Point(startX, startY),
                                 new String[] { candidate.getInstance().getClass().getName() },
                                 new DesignBean[] { candidate }, true) != DndHandler.DROP_LINKED)) {
                         webform.getPane().getDndHandler().clearDropMatch();
@@ -1038,6 +1039,7 @@ public class Dragger extends Interaction implements KeyListener {
 //        }
 //
 //        return null;
-        return ModelViewMapper.findComponent(webform.getPane().getPageBox(), x, y);
+//        return ModelViewMapper.findComponent(webform.getPane().getPageBox(), x, y);
+        return ModelViewMapper.findMarkupDesignBean(webform.getPane().getPageBox(), x, y);
     }
 }

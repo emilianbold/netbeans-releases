@@ -85,9 +85,6 @@ class JsfForm {
 
     private final PropertyChangeListener dataObjectListener = new DataObjectPropertyChangeListener(this);
 
-    /** XXX TEMP solution. Listener on DnD changes. */
-    private PropertyChangeListener dndListener;
-
     private /*final*/ DesignContextListener designContextListener /*= new JsfDesignContextListener(this)*/;
 
     private final boolean isFragment;
@@ -98,6 +95,8 @@ class JsfForm {
     private final PaletteController paletteController;
 
     private final HtmlDomProvider htmlDomProvider = new HtmlDomProviderImpl(this);
+    
+    private final DndSupport dndSupport = new DndSupport(this);
 
     // XXX Bad (old style) error handling.
     private Exception renderFailureException;
@@ -361,9 +360,7 @@ class JsfForm {
 
     
     private void updateDnDListening() {
-        dndListener = new DnDListener(this);
-        // XXX Listening on dnd support, it should be on model.
-        getFacesModel().getDnDSupport().addPropertyChangeListener(WeakListeners.propertyChange(dndListener, facesModel.getDnDSupport()));
+        getDndSupport().updateDndListening();
     }
     
 //    public MultiViewElement getDesignerMultiViewElement() {
@@ -835,14 +832,21 @@ class JsfForm {
         }
     }
 
-    private void fireShowDropMatch(MarkupDesignBean markupDesignBean, MarkupMouseRegion markupMouseRegion, int dropType) {
+    void fireShowDropMatch(Element componentRootElement, Element regionElement, int dropType) {
         HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
         for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.showDropMatch(markupDesignBean, markupMouseRegion, dropType);
+            listener.showDropMatch(componentRootElement, regionElement, dropType);
+        }
+    }
+    
+    void fireClearDropMatch() {
+        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+            listener.clearDropMatch();
         }
     }
 
-    private void fireSelect(DesignBean designBean) {
+    void fireSelect(DesignBean designBean) {
         HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
         for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
             listener.select(designBean);
@@ -856,7 +860,7 @@ class JsfForm {
 //        }
 //    }
 
-    private void fireInlineEdit(DesignBean[] designBeans) {
+    void fireInlineEdit(DesignBean[] designBeans) {
         HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
         for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
             listener.inlineEdit(designBeans);
@@ -1041,6 +1045,9 @@ class JsfForm {
         return renderFailureComponent;
     }
 
+    DndSupport getDndSupport() {
+        return dndSupport;
+    }
     
 //    public boolean canDropDesignBeansAtNode(DesignBean[] designBeans, Node node) {
 //        DesignBean parent = null;
@@ -1167,34 +1174,6 @@ class JsfForm {
     } // End of DataObjectPropertyChangeListener.
     
 
-    // XXX Make FacesModel fire appropriate event changes and then this might be not needed.
-    private static class DnDListener implements PropertyChangeListener {
-        private final JsfForm jsfForm;
-        
-        public DnDListener(JsfForm jsfForm) {
-            this.jsfForm = jsfForm;
-        }
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (FacesDnDSupport.PROPERTY_DROP_TARGET.equals(evt.getPropertyName())) {
-                FacesDnDSupport.DropInfo dropInfo = (FacesDnDSupport.DropInfo)evt.getNewValue();
-//                jsfForm.designer.showDropMatch(dropInfo.getMarkupDesignBean(), dropInfo.getMarkupMouseRegion(), dropInfo.getDropType());
-                jsfForm.fireShowDropMatch(dropInfo.getMarkupDesignBean(), dropInfo.getMarkupMouseRegion(), dropInfo.getDropType());
-            } else if (FacesDnDSupport.PROPERTY_SELECTED_DESIGN_BEAN.equals(evt.getPropertyName())) {
-//                jsfForm.designer.select((DesignBean)evt.getNewValue());
-                jsfForm.fireSelect((DesignBean)evt.getNewValue());
-            } else if (FacesDnDSupport.PROPERTY_REFRESH.equals(evt.getPropertyName())) {
-//                jsfForm.designer.refreshForm(((Boolean)evt.getNewValue()).booleanValue());
-//                jsfForm.fireRefreshForm(((Boolean)evt.getNewValue()).booleanValue());
-                jsfForm.refreshModel(((Boolean)evt.getNewValue()).booleanValue());
-            } else if (FacesDnDSupport.PROPERTY_INLINE_EDIT.equals(evt.getPropertyName())) {
-//                jsfForm.designer.inlineEdit((DesignBean[])evt.getNewValue());
-                jsfForm.fireInlineEdit((DesignBean[])evt.getNewValue());
-            }
-        }
-    } // End of DnDListener.
-    
-    
     private static class JsfDesignContextListener implements DesignContextListener {
         
         private final JsfForm jsfForm;

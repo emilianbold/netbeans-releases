@@ -171,7 +171,8 @@ public class ImageBox extends CssBox {
         }
 
 //        if (((alt == null) || (alt.length() == 0)) && (imageBox.getDesignBean() != null)) {
-        if (((alt == null) || (alt.length() == 0)) && (CssBox.getMarkupDesignBeanForCssBox(imageBox) != null)) {
+//        if (((alt == null) || (alt.length() == 0)) && (CssBox.getMarkupDesignBeanForCssBox(imageBox) != null)) {
+        if (((alt == null) || (alt.length() == 0)) && (CssBox.getElementForComponentRootCssBox(imageBox) != null)) {
             alt = NbBundle.getMessage(ImageBox.class, "LBL_Image");
         }
 

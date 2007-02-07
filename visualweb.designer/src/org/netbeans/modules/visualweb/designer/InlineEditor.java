@@ -503,7 +503,9 @@ public abstract class InlineEditor {
     public boolean isEdited(CssBox box) {
         while (box != null) {
 //            if (box.getDesignBean() == bean) {
-            if (CssBox.getMarkupDesignBeanForCssBox(box) == bean) {
+//            if (CssBox.getMarkupDesignBeanForCssBox(box) == bean) {
+            Element componentRootElement = WebForm.getHtmlDomProviderService().getRenderedElement(bean);
+            if (componentRootElement != null && componentRootElement == CssBox.getElementForComponentRootCssBox(box)) {
                 return true;
             }
 
@@ -561,7 +563,7 @@ public abstract class InlineEditor {
 //        ArrayList rectangles = webform.getMapper().getComponentRectangles(bean);
 //        List rectangles = ModelViewMapper.getComponentRectangles(webform.getPane().getPageBox(), bean);
         List rectangles = ModelViewMapper.getComponentRectangles(webform.getPane().getPageBox(),
-                SelectionManager.getComponentRootElementForMarkupDesignBean(bean));
+                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean));
         int n = rectangles.size();
 
         if (n > 0) {

@@ -598,7 +598,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 //        }
 //
 //        return true;
-        return WebForm.getHtmlDomProviderService().isEscapedDesignBean(bean);
+        return bean instanceof MarkupDesignBean && WebForm.getHtmlDomProviderService().isEscapedComponent(
+                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean));
     }
 
     public boolean isMultiLine() {

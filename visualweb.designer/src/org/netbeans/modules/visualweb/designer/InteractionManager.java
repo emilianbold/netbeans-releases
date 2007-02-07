@@ -19,6 +19,7 @@
 package org.netbeans.modules.visualweb.designer;
 
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.ExternalDocumentBox;
 import com.sun.rave.designer.html.HtmlTag;
 import com.sun.rave.designtime.DesignContext;
@@ -70,7 +71,6 @@ import org.netbeans.modules.visualweb.css2.TextBox;
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
-import com.sun.rave.designtime.markup.MarkupMouseRegion;
 import org.netbeans.modules.visualweb.extension.openide.awt.MouseUtils_RAVE;
 import org.netbeans.modules.visualweb.text.Bias;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
@@ -101,8 +101,10 @@ public class InteractionManager {
     // XXX Should the insert mode box logic reside within the PageBox?
     private CssBox insertModeBox = null;
     private CssBox selectedBox = null;
-    private DesignBean highlighted = null;
-    private MarkupMouseRegion highlightedRegion = null;
+//    private DesignBean highlighted = null;
+    private Element highlightedComponentRootElement;
+//    private MarkupMouseRegion highlightedRegion = null;
+    private Element highlightedRegionElement;
 
     /** Mouse handler tracking mouse motion, clicks, dragging, etc. */
     private MouseHandler mouseHandler;
@@ -170,14 +172,20 @@ public class InteractionManager {
             // Those should not be inline editable.
             if (box != null) {
 //                DesignBean bean = box.getDesignBean();
-                DesignBean bean = CssBox.getMarkupDesignBeanForCssBox(box);
-                if ((bean != null) && bean.getInstance() instanceof org.netbeans.modules.visualweb.xhtml.Div) {
-                    if ((bean.getChildBeanCount() == 1) &&
-                            bean.getChildBean(0).getInstance() instanceof org.netbeans.modules.visualweb.xhtml.Jsp_Directive_Include) {
-                        insertModeBox = null;
-
-                        return;
-                    }
+//                DesignBean bean = CssBox.getMarkupDesignBeanForCssBox(box);
+//                if ((bean != null) && bean.getInstance() instanceof org.netbeans.modules.visualweb.xhtml.Div) {
+//                    if ((bean.getChildBeanCount() == 1) &&
+//                            bean.getChildBean(0).getInstance() instanceof org.netbeans.modules.visualweb.xhtml.Jsp_Directive_Include) {
+//                        insertModeBox = null;
+//
+//                        return;
+//                    }
+//                }
+                // XXX Doesn't allow to insert into include (fragment).
+                Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
+                if (WebForm.getHtmlDomProviderService().isIncludeComponentBox(componentRootElement)) {
+                    insertModeBox = null;
+                    return;
                 }
             }
 
@@ -205,9 +213,15 @@ public class InteractionManager {
 
 //                    if ((pos != Position.NONE) && (box.getDesignBean() != null)) {
 //                        pos = new Position(box.getDesignBean().getElement(), 0, Bias.FORWARD);
-                    MarkupDesignBean markupDesignBean = CssBox.getMarkupDesignBeanForCssBox(box);
-                    if ((pos != Position.NONE) && (markupDesignBean != null)) {
-                        pos = new Position(markupDesignBean.getElement(), 0, Bias.FORWARD);
+//                    MarkupDesignBean markupDesignBean = CssBox.getMarkupDesignBeanForCssBox(box);
+//                    if ((pos != Position.NONE) && (markupDesignBean != null)) {
+//                        pos = new Position(markupDesignBean.getElement(), 0, Bias.FORWARD);
+                    Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
+                    if ((pos != Position.NONE) && (componentRootElement != null)) {
+                        Element sourceElement = MarkupService.getSourceElementForElement(componentRootElement);
+                        if (sourceElement != null) {
+                            pos = new Position(sourceElement, 0, Bias.FORWARD);
+                        }
                     }
                 }
 
@@ -303,11 +317,13 @@ public class InteractionManager {
 
         while ((curr != null) && (curr != box)) {
 //            DesignBean b = curr.getDesignBean();
-            DesignBean b = CssBox.getMarkupDesignBeanForCssBox(curr);
+//            DesignBean b = CssBox.getMarkupDesignBeanForCssBox(curr);
+            Element componentRootElement = CssBox.getElementForComponentRootCssBox(curr);
 
 //            if ((b != null) && FacesSupport.isFacesComponent(b)) {
 //            if ((b != null) && isFacesComponent(b)) {
-            if (b != null && WebForm.getHtmlDomProviderService().isFacesComponentBean(b)) {
+//            if (b != null && WebForm.getHtmlDomProviderService().isFacesComponentBean(b)) {
+            if (componentRootElement != null && WebForm.getHtmlDomProviderService().isFacesComponent(componentRootElement)) {
                 return null;
             }
 
@@ -353,9 +369,10 @@ public class InteractionManager {
         boolean ensureSelected, boolean selectText, String initialEdit, boolean useDefault) {
         finishInlineEditing(false);
 
+        Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(lb);
         if (box == null) {
 //            box = webform.getMapper().findBox(lb);
-            box = ModelViewMapper.findBox(webform.getPane().getPageBox(), lb);
+            box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
         }
 
         inlineEditor = InlineEditor.getInlineEditor(webform, box, lb, property, useDefault);
@@ -365,7 +382,6 @@ public class InteractionManager {
 
 //            if (ensureSelected && (!sm.isSelected(lb) || (sm.getNumSelected() > 1))) {
 //                sm.setSelected(lb, true);
-            Element componentRootElement = SelectionManager.getComponentRootElementForMarkupDesignBean(lb);
             if (ensureSelected && (!sm.isSelected(componentRootElement) || (sm.getNumSelected() > 1))) {
                 sm.setSelected(componentRootElement, true);
             }
@@ -425,11 +441,11 @@ public class InteractionManager {
 //            while (it.hasNext()) {
 //                DesignBean bean = (DesignBean)it.next();
             for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
-                DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
-
-                if (bean != null) {
+//                DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//                if (bean != null) {
+                if (componentRootElement != null) {
 //                    box = webform.getMapper().findBox(bean);
-                    box = ModelViewMapper.findBox(webform.getPane().getPageBox(), bean);
+                    box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 
                     if (box != null) {
                         break;
@@ -513,7 +529,9 @@ public class InteractionManager {
 //            return false;
             component = null;
         } else {
-            component = getDefaultSelectionBean();
+//            component = getDefaultSelectionBean();
+            Element componentRootElement = getDefaultSelectionComponentRootElement();
+            component = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
         }
 
         return webform.editEventHandlerForDesignBean(component);
@@ -529,14 +547,15 @@ public class InteractionManager {
 //    }
 
     // XXX Copy from DesignerActions
-    private DesignBean getDefaultSelectionBean() {
+//    private DesignBean getDefaultSelectionBean() {
+    private Element getDefaultSelectionComponentRootElement() {
         // TODO - should this be a checkbox instead?
         SelectionManager sm = webform.getSelection();
 //        DesignBean bean = sm.getPrimary();
 //
 //        if ((bean == null) && !sm.isSelectionEmpty()) {
         Element primaryComponentRootElement = sm.getPrimary();
-        DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(primaryComponentRootElement);
+//        DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(primaryComponentRootElement);
         if (primaryComponentRootElement == null && !sm.isSelectionEmpty()) {
             // TODO - get the component under the mouse, not the
             // whole selection!
@@ -545,15 +564,17 @@ public class InteractionManager {
 //            while (it.hasNext()) {
 //                bean = (DesignBean)it.next();
             for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
-                bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
-
-                if (bean != null) {
+//                bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+                primaryComponentRootElement = componentRootElement;
+//                if (bean != null) {
+                if (primaryComponentRootElement != null) {
                     break;
                 }
             }
         }
 
-        return bean;
+//        return bean;
+        return primaryComponentRootElement;
     }
     
 //    // XXX Copied from MarkupUtilities.
@@ -688,24 +709,37 @@ public class InteractionManager {
             pane.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
 
-        // If we're doing a parent drop or a link, we should clear the
-        // caret if it's outside of the component!
-        MarkupDesignBean target = null;
-
-        // XXX Hack alert... getDropType sets the highlighted item so we can use
-        // that to infer the selected parent. We get DROP_DENIED a lot when
-        // using Dnd, so this is more reliable than just relying on
-        // DndHandler.getDropTarget(). I should debug this and clean it up.
-        if ((highlighted != null) && highlighted instanceof MarkupDesignBean) {
-            target = (MarkupDesignBean)highlighted;
-        } else if ((dropType == DndHandler.DROP_LINKED) || (dropType == DndHandler.DROP_PARENTED)) {
-            target = dndHandler.getDropTarget();
+//        // If we're doing a parent drop or a link, we should clear the
+//        // caret if it's outside of the component!
+//        MarkupDesignBean target = null;
+//
+//        // XXX Hack alert... getDropType sets the highlighted item so we can use
+//        // that to infer the selected parent. We get DROP_DENIED a lot when
+//        // using Dnd, so this is more reliable than just relying on
+//        // DndHandler.getDropTarget(). I should debug this and clean it up.
+////        if ((highlighted != null) && highlighted instanceof MarkupDesignBean) {
+////            target = (MarkupDesignBean)highlighted;
+//        target = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(highlightedComponentRootElement);
+//        if (target != null) {
+//            // XXX It was done already.
+//        } else if ((dropType == DndHandler.DROP_LINKED) || (dropType == DndHandler.DROP_PARENTED)) {
+////            target = dndHandler.getDropTarget();
+////            target = dndHandler.getRecentDropTarget();
+//            Element recentDropTargetComponnetRootElement = dndHandler.getRecentDropTargetComponentRootElement();
+//            target = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(recentDropTargetComponnetRootElement);
+//        }
+//
+//        if (target != null) {
+//            Element element = target.getElement();
+//            if (!pos.isInside(element)) { // XXX todo: check front/end positions!
+        // XXX Hacks, see above (the commented out) original code.
+        Element targetSourceElement = MarkupService.getSourceElementForElement(highlightedComponentRootElement);
+        if (targetSourceElement == null) {
+            targetSourceElement = MarkupService.getSourceElementForElement(dndHandler.getRecentDropTargetComponentRootElement());
         }
 
-        if (target != null) {
-            Element element = target.getElement();
-
-            if (!pos.isInside(element)) { // XXX todo: check front/end positions!
+        if (targetSourceElement != null) {
+            if (!pos.isInside(targetSourceElement)) { // XXX todo: check front/end positions!
 
                 // The position is outside of the targeted component
                 pos = Position.NONE;
@@ -752,18 +786,23 @@ public class InteractionManager {
     /** We have a separate "current"/"highlighted" item, unrelated to selection,
      * which is used to for example indicate which box is being dropped upon.
      */
-    public void highlight(DesignBean bean, MarkupMouseRegion region) {
-        if ((bean == highlighted) && (region == highlightedRegion)) {
+//    public void highlight(DesignBean bean, MarkupMouseRegion region) {
+    public void highlight(Element componentRootElement, Element regionElement) {
+//        if ((bean == highlighted) && (region == highlightedRegion)) {
+        if ((componentRootElement == highlightedComponentRootElement) && (regionElement == highlightedRegionElement)) {
             return;
         }
 
-        highlighted = bean;
-        highlightedRegion = region;
+//        highlighted = bean;
+        highlightedComponentRootElement = componentRootElement;
+//        highlightedRegion = region;
+        highlightedRegionElement = regionElement;
         webform.getPane().repaint();
     }
 
     public boolean isHighlighted() {
-        return highlighted != null;
+//        return highlighted != null;
+        return highlightedComponentRootElement != null;
     }
 
     /** Paint the selection on top of the given editor pane. */
@@ -789,32 +828,41 @@ public class InteractionManager {
             interaction.paint(g);
         }
 
-        if (highlighted != null) {
+//        if (highlighted != null) {
+        if (highlightedComponentRootElement != null) {
             Rectangle a = null;
 //            ModelViewMapper mapper = webform.getMapper();
 
-            if (highlightedRegion != null) {
-//                a = mapper.getRegionBounds(highlightedRegion);
-                a = webform.getPane().getPageBox().computeRegionBounds(highlightedRegion, null);
+//            if (highlightedRegion != null) {
+////                a = mapper.getRegionBounds(highlightedRegion);
+//                a = webform.getPane().getPageBox().computeRegionBounds(highlightedRegion, null);
+//
+//                // Somehow the region isn't visible
+//                highlightedRegion = null;
+//            }
+            if (highlightedRegionElement != null) {
+                a = webform.getPane().getPageBox().computeRegionBounds(highlightedRegionElement, null);
 
                 // Somehow the region isn't visible
-                highlightedRegion = null;
+                highlightedRegionElement = null;
             }
 
             if (a == null) {
 //                a = mapper.getComponentBounds(highlighted);
 //                a = ModelViewMapper.getComponentBounds(webform.getPane().getPageBox(), highlighted);
-                if (highlighted instanceof MarkupDesignBean) {
-                    a = ModelViewMapper.getComponentBounds(webform.getPane().getPageBox(),
-                            SelectionManager.getComponentRootElementForMarkupDesignBean((MarkupDesignBean) highlighted));
-                }
+//                if (highlighted instanceof MarkupDesignBean) {
+//                    a = ModelViewMapper.getComponentBounds(webform.getPane().getPageBox(),
+//                            WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean) highlighted));
+//                }
+                a = ModelViewMapper.getComponentBounds(webform.getPane().getPageBox(), highlightedComponentRootElement);
             }
 
             if (a == null) {
                 // Somehow the highlight rectangle hasn't been cleared
                 // when the component disappeared. Ignore this one and
                 // don't try again.
-                highlighted = null;
+//                highlighted = null;
+                highlightedComponentRootElement = null;
             } else {
                 g.setColor(webform.getColors().dropTargetColor);
                 g.drawRect(a.x, a.y, a.width, a.height);
@@ -1022,26 +1070,29 @@ public class InteractionManager {
      * <p>
      * @param box The box whose bean we're trying to reposition
      */
-    private static MarkupDesignBean findMovableParent(CssBox box) {
+//    private static MarkupDesignBean findMovableParent(CssBox box) {
+    private static Element findMovableParentComponentRootElement(CssBox box) {
         // I'm using absolutely positioned rather than simply BoxType.isPositioned()
         // here because relative boxes are typically anchors from grid positioning
         // (like divs containing fragments and such)
         if (box.getBoxType().isAbsolutelyPositioned() || box.getParent().isGrid()) {
 //            return box.getDesignBean();
-            return CssBox.getMarkupDesignBeanForCssBox(box);
+            return CssBox.getElementForComponentRootCssBox(box);
         }
 
         CssBox prev = box;
         ContainerBox parent = box.getParent();
 
         while (parent != null) {
-            MarkupDesignBean prevMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(prev);
+//            MarkupDesignBean prevMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(prev);
+            Element prevComponentRootElement = CssBox.getElementForComponentRootCssBox(prev);
             if (parent.isGrid()) {
 //                return prev.getDesignBean();
-                return prevMarkupDesignBean;
+                return prevComponentRootElement;
             }
 
-            MarkupDesignBean parentMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(parent);
+//            MarkupDesignBean parentMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(parent);
+            Element parentComponentRootElement = CssBox.getElementForComponentRootCssBox(parent);
 //            if ((parent.getDesignBean() != null) &&
 ////                    FacesSupport.isSpecialBean(/*webform, */parent.getDesignBean())) {
 //                    Util.isSpecialBean(parent.getDesignBean())) {
@@ -1049,13 +1100,13 @@ public class InteractionManager {
 //            if ((parentMarkupDesignBean != null) &&
 ////                    FacesSupport.isSpecialBean(/*webform, */parent.getDesignBean())) {
 //                    Util.isSpecialBean(parentMarkupDesignBean)) {
-            if (WebForm.getHtmlDomProviderService().isSpecialBean(parentMarkupDesignBean)) {
-                return prevMarkupDesignBean;
+            if (WebForm.getHtmlDomProviderService().isSpecialComponent(parentComponentRootElement)) {
+                return prevComponentRootElement;
             }
 
             if (parent.getBoxType().isPositioned()) {
 //                return parent.getDesignBean();
-                return parentMarkupDesignBean;
+                return parentComponentRootElement;
             }
 
             prev = parent;
@@ -1071,8 +1122,10 @@ public class InteractionManager {
      */
     public void syncSelection(boolean update) {
         finishInlineEditing(false);
-        highlighted = null;
-        highlightedRegion = null;
+//        highlighted = null;
+        highlightedComponentRootElement = null;
+//        highlightedRegion = null;
+        highlightedRegionElement = null;
     }
 
     // --------------------------------------------------------------------
@@ -1460,7 +1513,7 @@ public class InteractionManager {
                         if (box != null) {
 //                            sm.selectComponents(new DesignBean[] { parent }, true);
                             if (parent instanceof MarkupDesignBean) {
-                                sm.selectComponents(new Element[] { SelectionManager.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent) }, true);
+                                sm.selectComponents(new Element[] { WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent) }, true);
                                 found = true;
 
                                 break;
@@ -1592,11 +1645,12 @@ public class InteractionManager {
                 Element selComponentRootElement = sm.getSelectionHandleView(x, y, maxWidth, maxHeight);
                 sel = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(selComponentRootElement);
 //                selBox = mapper.findBox(sel);
-                selBox = ModelViewMapper.findBox(pageBox, sel);
+                selBox = ModelViewMapper.findBoxForComponentRootElement(pageBox, selComponentRootElement);
             } else {
 //                selBox = mapper.findBox(x, y);
                 selBox = ModelViewMapper.findBox(pageBox, x, y);
-                sel = ModelViewMapper.findComponent(selBox);
+//                sel = ModelViewMapper.findComponent(selBox);
+                sel = ModelViewMapper.findMarkupDesignBean(selBox);
             }
 
             if (inlineEditor != null) {
@@ -1722,7 +1776,7 @@ public class InteractionManager {
                 Element componentRootElement = sm.getSelectionHandleView(x, y, maxWidth, maxHeight);
                 MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 //                CssBox box = mapper.findBox(bean);
-                CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), bean);
+                CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 //                ArrayList bounds = mapper.getComponentRectangles(bean);
 //                List bounds = ModelViewMapper.getComponentRectangles(webform.getPane().getPageBox(), bean);
                 List bounds = ModelViewMapper.getComponentRectangles(webform.getPane().getPageBox(), componentRootElement);
@@ -1878,21 +1932,22 @@ public class InteractionManager {
                     dontCycleInClickHandler = ensurePointSelected(e);
 
                     int size = sm.getNumSelected() + 1;
-                    ArrayList selections = new ArrayList(size);
-                    ArrayList boxes = new ArrayList(size);
-                    ArrayList beans = new ArrayList(size);
+                    List<Rectangle> selections = new ArrayList<Rectangle>(size);
+                    List<CssBox> boxes = new ArrayList<CssBox>(size);
+                    List<MarkupDesignBean> beans = new ArrayList<MarkupDesignBean>(size);
 //                    Iterator it = sm.iterator();
 //
 //                    while (it.hasNext()) {
 //                        MarkupDesignBean bean = (MarkupDesignBean)it.next();
                     for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
-                        MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//                        MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
                         
 //                        CssBox box = mapper.findBox(bean);
-                        CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), bean);
+                        CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 
                         if (box == null) {
-                            ErrorManager.getDefault().log("No box found for element " + bean);
+//                            ErrorManager.getDefault().log("No box found for element " + bean);
+                            ErrorManager.getDefault().log("No box found for element=" + componentRootElement);
 
                             continue;
                         }
@@ -1911,14 +1966,15 @@ public class InteractionManager {
                     }
 
 //                    if (!sm.isSelected(sel)) {
-                    Element componentRootElement = SelectionManager.getComponentRootElementForMarkupDesignBean(sel);
+                    Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(sel);
                     if (!sm.isSelected(componentRootElement)) {
                         // The currently clicked item is not in the selection
                         // set yet
 //                        Rectangle a = mapper.findShape(sel);
 //                        CssBox box = mapper.findBox(sel);
-                        Rectangle a = ModelViewMapper.findShape(pageBox, sel);
-                        CssBox box = ModelViewMapper.findBox(pageBox, sel);
+                        Rectangle a = ModelViewMapper.findShape(pageBox, componentRootElement);
+//                        CssBox box = ModelViewMapper.findBox(pageBox, sel);
+                        CssBox box = ModelViewMapper.findBoxForComponentRootElement(pageBox, componentRootElement);
 
                         if (a != null) {
                             addDragItem(selections, boxes, beans, a, p, box);
@@ -1990,11 +2046,12 @@ public class InteractionManager {
             }
         }
 
-        private void addDragItem(ArrayList selections, ArrayList boxes, ArrayList beans,
+        private void addDragItem(List<Rectangle> selections, List<CssBox> boxes, List<MarkupDesignBean> beans,
             Rectangle r, Point p, CssBox box) {
 //            MarkupDesignBean bean = box.getDesignBean();
             MarkupDesignBean bean = CssBox.getMarkupDesignBeanForCssBox(box);
-            MarkupDesignBean pbean = findMovableParent(box);
+//            MarkupDesignBean pbean = findMovableParent(box);
+            MarkupDesignBean pbean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(findMovableParentComponentRootElement(box));
 
             if (pbean == null) {
                 pbean = bean;
@@ -2018,7 +2075,8 @@ public class InteractionManager {
 
                 // Change the view rectangle to reflect the parent instead
 //                box = webform.getMapper().findBox(pbean);
-                box = ModelViewMapper.findBox(webform.getPane().getPageBox(), pbean);
+                box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(),
+                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(pbean));
 
                 if (box == null) {
                     // This item not draggable for some reason
@@ -2119,10 +2177,11 @@ public class InteractionManager {
                 pane.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             } else {
 //                webform.getActions().selectParent();
-                DesignBean defaultSelectionBean = getDefaultSelectionBean();
-                if (defaultSelectionBean instanceof MarkupDesignBean) {
-                    SelectionManager.selectParent(SelectionManager.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)defaultSelectionBean));
-                }
+//                DesignBean defaultSelectionBean = getDefaultSelectionBean();
+//                if (defaultSelectionBean instanceof MarkupDesignBean) {
+//                    SelectionManager.selectParent(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)defaultSelectionBean));
+//                }
+                SelectionManager.selectParent(getDefaultSelectionComponentRootElement());
             }
         }
 
@@ -2318,15 +2377,17 @@ public class InteractionManager {
             CssBox bx = ModelViewMapper.findBox(webform.getPane().getPageBox(), x, y);
 
             if ((bx != null) && !(bx instanceof PageBox)) { // can't select body
-                component = ModelViewMapper.findComponent(bx);
+//                component = ModelViewMapper.findComponent(bx);
+                component = ModelViewMapper.findMarkupDesignBean(bx);
             }
 
             if (component != null) {
 //                sm.setPrimary(component);
-                sm.setPrimary(SelectionManager.getComponentRootElementForMarkupDesignBean(component));
+                sm.setPrimary(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component));
 
 //                CssBox sel = mapper.findBox(component);
-                CssBox sel = ModelViewMapper.findBox(webform.getPane().getPageBox(), component);
+                CssBox sel = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(),
+                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component));
                 CssBox insertBox = null;
                 CssBox ancestor;
 
@@ -2339,7 +2400,7 @@ public class InteractionManager {
                     }
                 } else {
 //                    ancestor = sm.isSelected(component) ? sel : null;
-                    Element componentRootElement = SelectionManager.getComponentRootElementForMarkupDesignBean(component);
+                    Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component);
                     ancestor = sm.isSelected(componentRootElement) ? sel : null;
                 }
 
@@ -2356,10 +2417,10 @@ public class InteractionManager {
                     // Toggle selected component
                     if (alreadySelected) {
 //                        sm.removeSelected(component, false);
-                        sm.removeSelected(SelectionManager.getComponentRootElementForMarkupDesignBean(component), false);
+                        sm.removeSelected(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component), false);
                     } else {
 //                        sm.addSelected(component, false);
-                        sm.addSelected(SelectionManager.getComponentRootElementForMarkupDesignBean(component), false);
+                        sm.addSelected(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component), false);
                     }
                 } else if (alreadySelected && (e.getButton() == 1) /* &&
                     (isInlineEditable(component))*/) {
@@ -2371,7 +2432,7 @@ public class InteractionManager {
                     if (!alreadySelected) {
                         sm.clearSelection(false);
 //                        sm.addSelected(component, false);
-                        sm.addSelected(SelectionManager.getComponentRootElementForMarkupDesignBean(component), false);
+                        sm.addSelected(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component), false);
                     }
                 }
 
@@ -2766,7 +2827,8 @@ public class InteractionManager {
 //            DesignBean sel = mapper.findComponent(x, y);
             CssBox selBox = ModelViewMapper.findBox(pageBox, x, y);
             MarkupDesignBean selMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(selBox);
-            DesignBean sel = ModelViewMapper.findComponent(pageBox, x, y);
+//            DesignBean sel = ModelViewMapper.findComponent(pageBox, x, y);
+            DesignBean sel = ModelViewMapper.findMarkupDesignBean(pageBox, x, y);
             int internalResize = selBox.getInternalResizeDirection(x, y);
             
             if (internalResize != Cursor.DEFAULT_CURSOR) {
@@ -2956,7 +3018,7 @@ public class InteractionManager {
         public Rectangle getBoundsForDesignBean(DesignBean designBean) {
             if (designBean instanceof MarkupDesignBean) {
                 return ModelViewMapper.getComponentBounds(webForm.getPane().getPageBox(),
-                        SelectionManager.getComponentRootElementForMarkupDesignBean((MarkupDesignBean) designBean));
+                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean) designBean));
             } else {
                 return null;
             }

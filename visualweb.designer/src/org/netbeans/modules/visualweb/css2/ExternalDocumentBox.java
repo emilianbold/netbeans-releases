@@ -43,7 +43,6 @@ import org.w3c.dom.NodeList;
 import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import com.sun.rave.designtime.DesignBean;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.designer.DocumentCache;
 
@@ -388,9 +387,25 @@ public abstract class ExternalDocumentBox extends DocumentBox {
         }
     }
 
-    protected CssBox findCssBox(DesignBean bean) {
-//        if (bean == getDesignBean()) {
-        if (bean == CssBox.getMarkupDesignBeanForCssBox(this)) {
+//    // XXX Get rid of this. Replace with #findCssBoxForComponentRootElement.
+//    protected CssBox findCssBox(DesignBean bean) {
+////        if (bean == getDesignBean()) {
+////        if (bean == CssBox.getMarkupDesignBeanForCssBox(this)) {
+////            return this;
+////        }
+//        Element componentRootElement = WebForm.getHtmlDomProviderService().getRenderedElement(bean);
+//        if (componentRootElement != null && componentRootElement == CssBox.getElementForComponentRootCssBox(this)) {
+//            return this;
+//        }
+//
+//        // XXX Why not?
+//        // Don't search among the children
+//        return null;
+//    }
+    
+    protected CssBox findCssBoxForComponentRootElement(Element componentRootElement) {
+        if (componentRootElement != null
+        && componentRootElement == CssBox.getElementForComponentRootCssBox(this)) {
             return this;
         }
 

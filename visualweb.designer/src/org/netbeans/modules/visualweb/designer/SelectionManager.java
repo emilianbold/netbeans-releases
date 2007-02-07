@@ -301,7 +301,7 @@ public class SelectionManager {
                 // one needs to get 'newer' beans from the 'old' ones.
                 // TODO find out better solution.
 //                fo.component = (MarkupDesignBean)unit.getBeanEquivalentTo(oldBean);
-                sc.componentRootElement = getComponentRootElementEquivalentTo(oldComponentRootElement);
+                sc.componentRootElement = webform.getComponentRootElementEquivalentTo(oldComponentRootElement);
 
                 if (sc.componentRootElement == null) {
                     remove.add(sc);
@@ -460,9 +460,10 @@ public class SelectionManager {
 
             // No. This is the new leaf.
 //            assert leaf == component;
-            if (leaf != getComponentRootElementForMarkupDesignBean(component)) {
+            if (leaf != WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component)) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                        new IllegalStateException("Leaf is different from expected, leaf=" + leaf + ", expected=" + getComponentRootElementForMarkupDesignBean(component))); // NOI18N
+                        new IllegalStateException("Leaf is different from expected, leaf=" + leaf
+                        + ", expected=" + WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component))); // NOI18N
             }
         }
     }
@@ -639,7 +640,7 @@ public class SelectionManager {
         return null;
     }
 
-    /** Returned the first positioned element in the selection */
+    /** Returned the first positioned element in the selection. Gets the component root element (rendered element). */
     Element getPositionElement() {
 //        Iterator it = selected.iterator();
 //
@@ -657,13 +658,13 @@ public class SelectionManager {
 //        }
         for (SelectedComponent sc : selectedComponents) {
 //            CssBox box = webform.getMapper().findBox(fo.component);
-            CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(),
-                    WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement));
+            CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), sc.componentRootElement);
 
             if ((box != null) && box.getBoxType().isPositioned()) {
 //                return box.getDesignBean().getElement();
                 // XXX Shouldn't be here the fo.component? See above.
-                return CssBox.getMarkupDesignBeanForCssBox(box).getElement();
+//                return CssBox.getMarkupDesignBeanForCssBox(box).getElement();
+                return CssBox.getElementForComponentRootCssBox(box);
             }
         }
 
@@ -691,7 +692,7 @@ public class SelectionManager {
 
             if (child instanceof MarkupDesignBean) {
 //                selectAll((MarkupDesignBean)child);
-                selectAll(getComponentRootElementForMarkupDesignBean((MarkupDesignBean)child));
+                selectAll(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)child));
             }
         }
 
@@ -703,7 +704,7 @@ public class SelectionManager {
             if ((root.getChildBeanCount() > 0) &&
                     ((MarkupDesignBean)root.getChildBean(0)).getElement().getTagName().equals(HtmlTag.BR.name)) {
 //                removeSelected((MarkupDesignBean)root.getChildBean(0), false);
-                removeSelected(getComponentRootElementForMarkupDesignBean((MarkupDesignBean)root.getChildBean(0)), false);
+                removeSelected(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)root.getChildBean(0)), false);
             }
 
             // Look for last bean in the default parent
@@ -723,7 +724,7 @@ public class SelectionManager {
                         ((MarkupDesignBean)defaultBean.getChildBean(n - 1)).getElement().getTagName()
                              .equals(HtmlTag.BR.name)) {
 //                    removeSelected((MarkupDesignBean)defaultBean.getChildBean(n - 1), false);
-                    removeSelected(getComponentRootElementForMarkupDesignBean((MarkupDesignBean)defaultBean.getChildBean(n - 1)), false);
+                    removeSelected(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)defaultBean.getChildBean(n - 1)), false);
                 }
             }
         }
@@ -742,7 +743,7 @@ public class SelectionManager {
 //        if (!FacesSupport.isSpecialBean(/*webform, */bean)) {
 //        if (!Util.isSpecialBean(bean)) {
         MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
-        if (!WebForm.getHtmlDomProviderService().isSpecialBean(bean)) {
+        if (!WebForm.getHtmlDomProviderService().isSpecialComponent(componentRootElement)) {
 //            addSelected(bean, false);
             addSelected(componentRootElement, false);
         }
@@ -752,7 +753,7 @@ public class SelectionManager {
 
             if (child instanceof MarkupDesignBean) {
 //                selectAll((MarkupDesignBean)child);
-                selectAll(getComponentRootElementForMarkupDesignBean((MarkupDesignBean)child));
+                selectAll(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)child));
             }
         }
     }
@@ -856,7 +857,7 @@ public class SelectionManager {
                 if (lb instanceof MarkupDesignBean) {
                     MarkupDesignBean bean = (MarkupDesignBean)lb;
 //                    CssBox box = mapper.findBox(bean);
-                    CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), bean);
+                    CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), sc.componentRootElement);
 
                     // TODO - pass in keystroke too
                     boolean inlineEdited =
@@ -1791,7 +1792,8 @@ public class SelectionManager {
         if (bean.getBeanParent() instanceof MarkupDesignBean &&
 //                !FacesSupport.isSpecialBean(/*webform, */bean)) {
 //                !Util.isSpecialBean(bean)) {
-                !WebForm.getHtmlDomProviderService().isSpecialBean(bean)) {
+                !WebForm.getHtmlDomProviderService().isSpecialComponent(
+                    WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean))) {
             x = paintOrSelectAncestor(g2d, metrics, boldMetrics,
                     (MarkupDesignBean)bean.getBeanParent(), x, ytop, y, selected, target);
 
@@ -1861,7 +1863,7 @@ public class SelectionManager {
             // interested in
             if (x > target) {
 //                setSelected(bean, true);
-                setSelected(getComponentRootElementForMarkupDesignBean(bean), true);
+                setSelected(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean), true);
 
                 return -1;
             }
@@ -2302,7 +2304,8 @@ public class SelectionManager {
             }
 
 //            if (Util.isSpecialBean(/*webform, */parent)) {
-            if (WebForm.getHtmlDomProviderService().isSpecialBean(/*webform, */parent)) {
+            if (parent instanceof MarkupDesignBean && WebForm.getHtmlDomProviderService().isSpecialComponent(
+                    WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent))) {
                 return false;
             }
 
@@ -2379,7 +2382,10 @@ public class SelectionManager {
                 if (box != null) {
 //                    selectComponents(new DesignBean[] { parent }, true);
                     if (parent instanceof MarkupDesignBean) {
-                        selectComponents(new Element[] { getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent) }, true);
+                        selectComponents(
+                                new Element[] {
+                                    WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent) },
+                                true);
                         break;
                     }
                 }
@@ -2389,19 +2395,4 @@ public class SelectionManager {
         }
     }
 
-    // XXX TEMP
-    private Element getComponentRootElementEquivalentTo(Element oldComponentRootElement) {
-        MarkupDesignBean oldMarkupDesignBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(oldComponentRootElement);
-        MarkupDesignBean newMarkupDesignBean = webform.getMarkupDesignBeanEquivalentTo(oldMarkupDesignBean);
-        return getComponentRootElementForMarkupDesignBean(newMarkupDesignBean);
-    }
-
-    // XXX TEMP
-    public static Element getComponentRootElementForMarkupDesignBean(MarkupDesignBean markupDesignBean) {
-        if (markupDesignBean == null) {
-            return null;
-        }
-        Element sourceElement = markupDesignBean.getElement();
-        return MarkupService.getRenderedElementForElement(sourceElement);
-    }
 }

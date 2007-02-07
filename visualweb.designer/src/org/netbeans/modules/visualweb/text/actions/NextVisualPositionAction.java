@@ -148,7 +148,7 @@ public class NextVisualPositionAction extends TextAction {
         for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
             DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 //            CssBox box = mapper.findBox(bean);
-            CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), bean);
+            CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 
             if (box == null) {
                 continue;

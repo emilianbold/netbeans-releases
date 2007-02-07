@@ -69,9 +69,7 @@ import org.netbeans.modules.visualweb.designer.DesignerPane;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.Interaction;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
-import com.sun.rave.designtime.markup.MarkupMouseRegion;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import com.sun.rave.designer.html.HtmlTag;
 
@@ -661,10 +659,12 @@ public class CssBox {
         return bounds;
     }
 
-    public /*protected*/ Rectangle computeRegionBounds(MarkupMouseRegion region, Rectangle bounds) {
+//    public /*protected*/ final Rectangle computeRegionBounds(MarkupMouseRegion region, Rectangle bounds) {
+    public /*protected*/ final Rectangle computeRegionBounds(Element regionElement, Rectangle bounds) {
 //        if ((element != null) && (((RaveElement)element).getMarkupMouseRegion() == region)) {
 //        if (element != null && (InSyncService.getProvider().getMarkupMouseRegionForElement(element) == region)) {
-        if (element != null && (WebForm.getHtmlDomProviderService().getMarkupMouseRegionForElement(element) == region)) {
+//        if (element != null && (WebForm.getHtmlDomProviderService().getMarkupMouseRegionForElement(element) == region)) {
+        if (element != null && WebForm.getHtmlDomProviderService().isSameRegionOfElement(regionElement, element)) {
             Rectangle r = new Rectangle(getAbsoluteX(), getAbsoluteY(), getWidth(), getHeight());
 
             if (bounds == null) {
@@ -690,7 +690,8 @@ public class CssBox {
 
 //                    if (xel.getMarkupMouseRegion() == region) {
 //                    if (InSyncService.getProvider().getMarkupMouseRegionForElement(xel) == region) {
-                    if (WebForm.getHtmlDomProviderService().getMarkupMouseRegionForElement(xel) == region) {
+//                    if (WebForm.getHtmlDomProviderService().getMarkupMouseRegionForElement(xel) == region) {
+                    if (WebForm.getHtmlDomProviderService().isSameRegionOfElement(regionElement, xel)) {
                         found = true;
                     }
 
@@ -716,7 +717,8 @@ public class CssBox {
                 }
             }
 
-            bounds = child.computeRegionBounds(region, bounds);
+//            bounds = child.computeRegionBounds(region, bounds);
+            bounds = child.computeRegionBounds(regionElement, bounds);
         }
 
         return bounds;
@@ -731,16 +733,23 @@ public class CssBox {
 //        this instanceof ContainerBox;
 //    }
 
-    /** Return the first box matching the given DesignBean. */
-    static CssBox findCssBoxInTree(DesignBean bean, CssBox cssBox) {
+//    /** Return the first box matching the given DesignBean. */
+//    private static CssBox findCssBoxInTree(DesignBean bean, CssBox cssBox) {
+    /** Returns the first box matching the given component root element (rendered element). */
+    private static CssBox findCssBoxInTree(Element componentRootElement, CssBox cssBox) {
+        if (componentRootElement == null) {
+            return null;
+        }
 //        if (bean == cssBox.getDesignBean()) {
-        if (bean == getMarkupDesignBeanForCssBox(cssBox)) {
+//        if (bean == getMarkupDesignBeanForCssBox(cssBox)) {
+        if (componentRootElement == getElementForComponentRootCssBox(cssBox)) {
             return cssBox;
         }
 
         for (int i = 0, n = cssBox.getBoxCount(); i < n; i++) {
             CssBox box = cssBox.getBox(i);
-            CssBox match = findCssBoxInTree(bean, box);
+//            CssBox match = findCssBoxInTree(bean, box);
+            CssBox match = findCssBoxInTree(componentRootElement, box);
 
             if (match != null) {
                 return match;
@@ -750,22 +759,41 @@ public class CssBox {
         return null;
     }
 
-    /** Return the first box matching the given DesignBean. */
-    protected CssBox findCssBox(DesignBean bean) {
-//        Element e = FacesSupport.getElement(bean);
-//        Element e = Util.getElement(bean);
-        Element e = WebForm.getHtmlDomProviderService().getElement(bean);
-
-        if (e != null) {
-//            CssBox box = CssBox.getBox(e);
-            CssBox box = getWebForm().findCssBoxForElement(e);
-
-            if (box != null) {
-                return box;
-            }
+//    /** Return the first box matching the given DesignBean.
+//     * XXX Get rid of this and replace with #findCssBoxForComponentRootElement. */
+//    protected CssBox findCssBox(DesignBean bean) {
+////        Element e = FacesSupport.getElement(bean);
+////        Element e = Util.getElement(bean);
+////        Element e = WebForm.getHtmlDomProviderService().getElement(bean);
+//        Element componentRootElement = WebForm.getHtmlDomProviderService().getRenderedElement(bean);
+//
+////        if (e != null) {
+//////            CssBox box = CssBox.getBox(e);
+////            CssBox box = getWebForm().findCssBoxForElement(e);
+//        if (componentRootElement != null) {
+//            CssBox box = getWebForm().findCssBoxForElement(componentRootElement);
+//
+//            if (box != null) {
+//                return box;
+//            }
+//        }
+//
+////        return findCssBoxInTree(bean, this);
+//        return findCssBoxInTree(componentRootElement, this);
+//    }
+    
+    /** Gets the first box matching the given component root element. */
+    protected CssBox findCssBoxForComponentRootElement(Element componentRootElement) {
+        if (componentRootElement == null) {
+            return null;
         }
 
-        return findCssBoxInTree(bean, this);
+        CssBox box = getWebForm().findCssBoxForElement(componentRootElement);
+        if (box != null) {
+            return box;
+        }
+
+        return findCssBoxInTree(componentRootElement, this);
     }
 
     /** Stash a reference to this box on the element
@@ -1040,7 +1068,8 @@ public class CssBox {
     protected String paramString() {
         return "pos=" + x + ":" + y + "," // NOI18N
                 + "element=" + element // NOI18N
-                + ", markupDesignBean=" + getMarkupDesignBeanForCssBox(this) // NOI18N
+//                + ", markupDesignBean=" + getMarkupDesignBeanForCssBox(this) // NOI18N
+                + ", componentRootElement=" + getElementForComponentRootCssBox(this) // NOI18N
                 + ", size=" + width + ":" + height // NOI18N
                 + ", contentWidth=" + contentWidth // NOI18N
                 + ", containingBlockWidth=" + containingBlockWidth; // NOI18N
@@ -1313,31 +1342,33 @@ public class CssBox {
      * Gets associated markup design bean for the css box. It is associated only
      * for the css box represents component top level elements except lines, texts and spaces. */
     public static MarkupDesignBean getMarkupDesignBeanForCssBox(CssBox cssBox) {
-        if (cssBox == null) {
-            return null;
-        }
-        
-        Element element = cssBox.getElement();
-        BoxType boxType = cssBox.getBoxType();
-        if (element == null
-        || boxType == BoxType.LINEBOX
-        || boxType == BoxType.TEXT
-        || boxType == BoxType.SPACE) {
-            // XXX As before no assigned MarkupDesignBean for the above cases.
-            return null;
-        }
-        return getMarkupDesignBeanForComponentRootCssBox(cssBox);
+//        if (cssBox == null) {
+//            return null;
+//        }
+//        
+//        Element element = cssBox.getElement();
+//        BoxType boxType = cssBox.getBoxType();
+//        if (element == null
+//        || boxType == BoxType.LINEBOX
+//        || boxType == BoxType.TEXT
+//        || boxType == BoxType.SPACE) {
+//            // XXX As before no assigned MarkupDesignBean for the above cases.
+//            return null;
+//        }
+//        return getMarkupDesignBeanForComponentRootCssBox(cssBox);
+        return WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(
+                getElementForComponentRootCssBox(cssBox));
     }
     
-    private static MarkupDesignBean getMarkupDesignBeanForComponentRootCssBox(CssBox cssBox) {
-        if (cssBox == null) {
-            return null;
-        }
-        Element element = cssBox.getElement();
-        ContainerBox parentBox = cssBox.getParent();
-        Element parentBoxElement = parentBox == null ? null : parentBox.getElement();
-        return WebForm.getHtmlDomProviderService().getMarkupDesignBeanForComponentRootElement(element, parentBoxElement);
-    }
+//    private static MarkupDesignBean getMarkupDesignBeanForComponentRootCssBox(CssBox cssBox) {
+//        if (cssBox == null) {
+//            return null;
+//        }
+//        Element element = cssBox.getElement();
+//        ContainerBox parentBox = cssBox.getParent();
+//        Element parentBoxElement = parentBox == null ? null : parentBox.getElement();
+//        return WebForm.getHtmlDomProviderService().getMarkupDesignBeanForComponentRootElement(element, parentBoxElement);
+//    }
 
     /** XXX This will replace the JSF specific above methods.
      * Gets associated element for the css box. It returns the element only if the specified box

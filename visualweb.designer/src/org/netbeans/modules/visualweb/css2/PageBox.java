@@ -56,7 +56,6 @@ import org.netbeans.modules.visualweb.designer.DesignerSettings;
 import org.netbeans.modules.visualweb.designer.DesignerUtils;
 import org.netbeans.modules.visualweb.designer.GridHandler;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
@@ -962,13 +961,15 @@ public class PageBox extends DocumentBox implements ChangeListener {
             return null;
         }
 
-        CssBox box = findCssBox(bean);
+//        CssBox box = findCssBox(bean);
+        CssBox box = findCssBoxForComponentRootElement(
+                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean));
 
         Rectangle bounds;
 
         if (box == null) {
 //            bounds = computeBounds(bean, null);
-            bounds = computeBounds(SelectionManager.getComponentRootElementForMarkupDesignBean(bean), null);
+            bounds = computeBounds(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean), null);
             // XXX #6389428 Possible NPE. Probably just a consequence of some other issue.
             if (bounds == null) {
                 // Log it?

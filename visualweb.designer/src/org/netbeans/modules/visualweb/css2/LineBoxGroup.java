@@ -1096,21 +1096,21 @@ public class LineBoxGroup extends ContainerBox {
         return bounds;
     }
 
-    // TODO JSF specific, this needs to be replaced by the latter method.
-    /** Return true iff the given leaf has a box as an ancestor (but below
-      * this LineBoxGroup) that corresponds to the given live bean */
-    private boolean hasComponentAncestor(CssBox leaf, DesignBean component) {
-        while ((leaf != null) && (leaf != this)) {
-//            if (leaf.getDesignBean() == component) {
-            if (getMarkupDesignBeanForCssBox(leaf) == component) {
-                return true;
-            }
-
-            leaf = leaf.getParent();
-        }
-
-        return false;
-    }
+//    // TODO JSF specific, this needs to be replaced by the latter method.
+//    /** Return true iff the given leaf has a box as an ancestor (but below
+//      * this LineBoxGroup) that corresponds to the given live bean */
+//    private boolean hasComponentAncestor(CssBox leaf, DesignBean component) {
+//        while ((leaf != null) && (leaf != this)) {
+////            if (leaf.getDesignBean() == component) {
+//            if (getMarkupDesignBeanForCssBox(leaf) == component) {
+//                return true;
+//            }
+//
+//            leaf = leaf.getParent();
+//        }
+//
+//        return false;
+//    }
     
     // TODO This will replace the above method.
     /** Return true iff the given leaf has a box as an ancestor (but below

@@ -20,7 +20,6 @@ package org.netbeans.modules.visualweb.designer;
 
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
-import org.netbeans.modules.visualweb.api.designerapi.DesignTimeTransferDataCreator;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -54,7 +53,6 @@ import org.netbeans.modules.visualweb.css2.CssBox;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DisplayItem;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
-import com.sun.rave.designtime.markup.MarkupMouseRegion;
 import com.sun.rave.designtime.markup.MarkupPosition;
 import org.netbeans.modules.visualweb.text.DesignerCaret;
 import org.netbeans.modules.visualweb.text.Document;
@@ -81,10 +79,10 @@ public class DndHandler /*extends TransferHandler*/ {
 
 
     /** State indicating that a drop is not allowed */
-    public static final int DROP_DENIED = 0;
+    public static final int DROP_DENIED = HtmlDomProvider.DROP_DENIED;
 
     /** State indicating that the drop is allowed and will cause a link */
-    public static final int DROP_PARENTED = 1;
+    public static final int DROP_PARENTED = HtmlDomProvider.DROP_PARENTED;
 
 //    /** Directory prefix under the project root to place the web folder */
 //    private static final String WEB = "web"; // NOI18N
@@ -94,7 +92,8 @@ public class DndHandler /*extends TransferHandler*/ {
 
     /** State indicating that the drop is allowed and the bean will be
      *  parented by one of the beans under the cursor */
-    public static final int DROP_LINKED = 2;
+    public static final int DROP_LINKED = HtmlDomProvider.DROP_LINKED;
+    
     private static final transient boolean DONT_SHOW_MATCHES =
         System.getProperty("designer.dontShowDropTarget") != null;
 
@@ -129,9 +128,12 @@ public class DndHandler /*extends TransferHandler*/ {
      * item should be selected.
      */
 //    private transient DesignBean select; // have we found a target to select?
-    private MarkupDesignBean recentDropTarget;
-    private transient DesignBean currentMatched;
-    private transient MarkupMouseRegion currentRegion;
+//    private MarkupDesignBean recentDropTarget;
+    private transient Element recentDropTargetComponentRootElement;
+//    private transient DesignBean currentMatched;
+    private transient Element currentMatchedComponentRootElement;
+//    private transient MarkupMouseRegion currentRegion;
+    private transient Element currentRegionElement;
     private transient String lastMessage;
     private transient Point dropPoint;
     private transient Dimension dropSize;
@@ -1165,7 +1167,8 @@ public class DndHandler /*extends TransferHandler*/ {
     }
 
     private DesignBean getDroppee(CssBox box) {
-        DesignBean origDroppee = ModelViewMapper.findComponent(box);
+//        DesignBean origDroppee = ModelViewMapper.findComponent(box);
+        DesignBean origDroppee = ModelViewMapper.findMarkupDesignBean(box);
 
 //        if (webform.isGridMode() && (origDroppee == null) &&
 //                (webform.getModel().getLiveUnit() != null)) {
@@ -1367,7 +1370,8 @@ public class DndHandler /*extends TransferHandler*/ {
         location.size = dropSize;
 
 //        if ((bean != null) && !LiveUnit.isCssPositionable(bean)) {
-        if ((bean != null) && !WebForm.getHtmlDomProviderService().isCssPositionable(bean)) {
+        if (bean instanceof MarkupDesignBean && !WebForm.getHtmlDomProviderService().isCssPositionable(
+                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean))) {
             location.coordinates = null;
         }
 
@@ -2183,90 +2187,90 @@ public class DndHandler /*extends TransferHandler*/ {
 //        return created;
 //    }
 
-    private DesignBean findParent(String className, DesignBean droppee, Node parentNode, boolean searchUp) {
-//        if (webform.isGridMode() && (droppee == null) &&
-//                (webform.getModel().getLiveUnit() != null)) {
-//            MarkupBean bean = webform.getModel().getFacesUnit().getDefaultParent();
-//
-//            if (bean != null) {
-//                droppee = webform.getModel().getLiveUnit().getDesignBean(bean);
-//            }
-//        }
-//
-//        DesignBean parent = droppee;
-//
-//        if (searchUp) {
-//            for (; (parent != null) && !parent.isContainer(); parent = parent.getBeanParent()) {
-//                ;
-//            }
-//        }
-//
-//        LiveUnit unit = webform.getModel().getLiveUnit();
-//
-//        if (searchUp) {
-//            boolean isHtmlBean =
-//                className.startsWith(HtmlBean.PACKAGE) &&
-//                // f:verbatim is explicitly allowed where jsf components can go
-//                // XXX Why not F_Verbatim.class.getName() ?
-//                !(HtmlBean.PACKAGE + "F_Verbatim").equals(className); // NOI18N
-//
-//            if (isHtmlBean) {
-//                // We can't drop anywhere below a "renders children" JSF
-//                // component
-//                parent = FacesSupport.findHtmlContainer(parent);
-//            }
-//        }
-//
-//        // Validate the parent: walk up the parent chain until you find
-//        // a parent which will accept the child.
-//        for (; parent != null; parent = parent.getBeanParent()) {
-//            if (unit.canCreateBean(className, parent, null)) {
-//                // Found it
-//                break;
-//            }
-//
-//            if (!searchUp) {
-//                return null;
-//            }
-//        }
-//
-//        if ((parent == null) && (parentNode != null)) {
-//            // Adjust hierarchy: we should pass in a parent
-//            // pointer based on where we are: locate the closest
-//            // jsf parent above
-//            Node n = parentNode;
-//            MarkupBean mb = null;
-//
-//            while (n != null) {
-//                if (n instanceof Element) {
-//                    Element e = (Element)n;
-////                    mb = FacesSupport.getMarkupBean(webform.getDocument(), e);
-//                    mb = getMarkupBean(webform.getModel(), e);
-//
-//                    if (mb != null) {
-//                        break;
-//                    }
-//                }
-//
-//                n = n.getParentNode();
-//            }
-//
-//            if (mb != null) {
-//                DesignBean lmb = webform.getModel().getLiveUnit().getDesignBean(mb);
-//
-//                if (lmb.isContainer()) {
-//                    parent = lmb;
-//                }
-//            }
-//
-//            if (parent == null) {
-//                parent = webform.getModel().getRootBean();
-//            }
-//        }
-//
-//        return parent;
-        return webform.findParent(className, droppee, parentNode, searchUp);
-    }
+//    private DesignBean findParent(String className, DesignBean droppee, Node parentNode, boolean searchUp) {
+////        if (webform.isGridMode() && (droppee == null) &&
+////                (webform.getModel().getLiveUnit() != null)) {
+////            MarkupBean bean = webform.getModel().getFacesUnit().getDefaultParent();
+////
+////            if (bean != null) {
+////                droppee = webform.getModel().getLiveUnit().getDesignBean(bean);
+////            }
+////        }
+////
+////        DesignBean parent = droppee;
+////
+////        if (searchUp) {
+////            for (; (parent != null) && !parent.isContainer(); parent = parent.getBeanParent()) {
+////                ;
+////            }
+////        }
+////
+////        LiveUnit unit = webform.getModel().getLiveUnit();
+////
+////        if (searchUp) {
+////            boolean isHtmlBean =
+////                className.startsWith(HtmlBean.PACKAGE) &&
+////                // f:verbatim is explicitly allowed where jsf components can go
+////                // XXX Why not F_Verbatim.class.getName() ?
+////                !(HtmlBean.PACKAGE + "F_Verbatim").equals(className); // NOI18N
+////
+////            if (isHtmlBean) {
+////                // We can't drop anywhere below a "renders children" JSF
+////                // component
+////                parent = FacesSupport.findHtmlContainer(parent);
+////            }
+////        }
+////
+////        // Validate the parent: walk up the parent chain until you find
+////        // a parent which will accept the child.
+////        for (; parent != null; parent = parent.getBeanParent()) {
+////            if (unit.canCreateBean(className, parent, null)) {
+////                // Found it
+////                break;
+////            }
+////
+////            if (!searchUp) {
+////                return null;
+////            }
+////        }
+////
+////        if ((parent == null) && (parentNode != null)) {
+////            // Adjust hierarchy: we should pass in a parent
+////            // pointer based on where we are: locate the closest
+////            // jsf parent above
+////            Node n = parentNode;
+////            MarkupBean mb = null;
+////
+////            while (n != null) {
+////                if (n instanceof Element) {
+////                    Element e = (Element)n;
+//////                    mb = FacesSupport.getMarkupBean(webform.getDocument(), e);
+////                    mb = getMarkupBean(webform.getModel(), e);
+////
+////                    if (mb != null) {
+////                        break;
+////                    }
+////                }
+////
+////                n = n.getParentNode();
+////            }
+////
+////            if (mb != null) {
+////                DesignBean lmb = webform.getModel().getLiveUnit().getDesignBean(mb);
+////
+////                if (lmb.isContainer()) {
+////                    parent = lmb;
+////                }
+////            }
+////
+////            if (parent == null) {
+////                parent = webform.getModel().getRootBean();
+////            }
+////        }
+////
+////        return parent;
+//        return webform.findParent(className, droppee, parentNode, searchUp);
+//    }
 
 //    /**
 //     * Given an element which possibly maps to a markup bean, return the corresponding bean.
@@ -3098,8 +3102,10 @@ public class DndHandler /*extends TransferHandler*/ {
      * and the result will be clobbered as soon as additional getDropType
      * requests come in (which they often do from the mouse motion listener!)
      */
-    MarkupDesignBean getDropTarget() {
-        return recentDropTarget;
+//    MarkupDesignBean getRecentDropTarget() {
+//        return recentDropTarget;
+    Element getRecentDropTargetComponentRootElement() {
+        return recentDropTargetComponentRootElement;
     }
 
     /** Compute the list of class names for beans identified by the given palette item transferable */
@@ -3107,189 +3113,205 @@ public class DndHandler /*extends TransferHandler*/ {
         if (t == null) {
             return DROP_DENIED;
         }
-
-        DataFlavor importFlavor = getImportFlavor(t.getTransferDataFlavors());
-
-        if (importFlavor == null) {
-            DataFlavor[] flavors = t.getTransferDataFlavors();
-            ErrorManager.getDefault().log("Unusable transfer, data flavors="
-                    + (flavors == null ? null : java.util.Arrays.asList(t.getTransferDataFlavors()))); // NOI18N
-
-            return DROP_DENIED;
-        }
-
-        Class rc = importFlavor.getRepresentationClass();
-
-        if (rc == DisplayItem.class) {
-            // Create a new type
-            try {
-                Object transferData = t.getTransferData(importFlavor);
-
-                if (!(transferData instanceof DisplayItem)) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                            new IllegalStateException("Invalid transferData=" + transferData // NOI18N
-                            + ", from transferable=" + t)); // NOI18N
-                    return DROP_DENIED;
-                }
-
-                DisplayItem item = (DisplayItem)transferData;
-
-                return getDropType(p, item, linkOnly);
-            } catch (UnsupportedFlavorException ex) {
-                ErrorManager.getDefault().notify(ex);
-
-                return DROP_DENIED;
-            } catch (java.io.IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-
-                return DROP_DENIED;
-            }
-        } else if (rc == DesignBean.class) {
-            try {
-                Object transferData = t.getTransferData(importFlavor);
-
-                if (!(transferData instanceof DesignBean[])) {
-                    ErrorManager.getDefault().log("Invalid DesignBean[] transfer data: " +
-                        transferData);
-
-                    return DROP_DENIED;
-                }
-
-                DesignBean[] beans = (DesignBean[])transferData;
-
-                String[] classNames = new String[beans.length];
-
-                for (int i = 0, n = beans.length; i < n; i++) {
-                    classNames[i] = beans[i].getInstance().getClass().getName();
-                }
-
-                return getDropType(p, classNames, null, linkOnly);
-            } catch (UnsupportedFlavorException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                return DROP_DENIED;
-            } catch (java.io.IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                return DROP_DENIED;
-            }
-        }
         
-        // XXX TEMP First give the chance to the provider.
-        // FIXME This shouldn't be here at all, the original transferable
-        // should contain all the needed flavors.
-        DesignTimeTransferDataCreator dataCreator = (DesignTimeTransferDataCreator)Lookup.getDefault().lookup(DesignTimeTransferDataCreator.class);
-        if (dataCreator != null) {
-            DisplayItem displayItem = dataCreator.getDisplayItem(t);
-            if (displayItem != null) {
-                return getDropType(p, displayItem, linkOnly);
-            }
-        }
+        CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), p.x, p.y);
+        DesignBean origDroppee = getDroppee(box);
+        Element droppeeElement = box == null ? null : box.getElement();
         
-        // XXX The other hacked transferables.
-        if (rc == String.class/*Linux*/ || rc == List.class/*Windows/Solaris*/) {
-            // XXX #6468896 To be able to drop files (images) from the outside world (desktop).
-           return DROP_PARENTED;
-        } else if (rc == org.openide.nodes.Node.class) {
-            // XXX #6482097 Reflecting the impl in FacesDnDSupport.
-            // FIXME Later the impl has to be improved and moved over there.
-            Object transferData;
-            try {
-                transferData = t.getTransferData(importFlavor);
-                if (transferData instanceof org.openide.nodes.Node) {
-                    org.openide.nodes.Node node = (org.openide.nodes.Node)transferData;
-                    DataObject dobj = (DataObject)node.getCookie(DataObject.class);
-
-                    if (dobj != null) {
-                        FileObject fo = dobj.getPrimaryFile();
-                        if (isImage(fo.getExt())) {
-//                            String className;
-//                            // XXX This should be decided by the parent bean.
-//                            // I.e. appropriate api is missing.
-//                            // XXX This shouldn't be here resolved, but in the parent bean.
-//                            if (webform.isBraveheartPage()) {
-//                                className = com.sun.rave.web.ui.component.ImageComponent.class.getName(); // NOI18N
-//                            } else if (webform.isWoodstockPage()) {
-//                                // Use woodstock ImageComponent component
-//                                className = com.sun.webui.jsf.component.ImageComponent.class.getName(); // NOI18N
-//                            } else {
-//                                className = javax.faces.component.html.HtmlGraphicImage.class.getName(); // NOI18N
-//                            }
-                            String className = webform.getImageComponentClassName();
-                            
-                            String[] classNames = new String[] {className};
-
-                            return getDropType(p, classNames, null, linkOnly);
-                        } else if (isStylesheet(fo.getExt())) {
-                            return DROP_PARENTED;
-                        }
-                    }
-                }
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            } catch (UnsupportedFlavorException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
-            return DROP_DENIED;
-        }
-
-        return DROP_DENIED;
+//        DataFlavor importFlavor = getImportFlavor(t.getTransferDataFlavors());
+//
+//        if (importFlavor == null) {
+//            DataFlavor[] flavors = t.getTransferDataFlavors();
+//            ErrorManager.getDefault().log("Unusable transfer, data flavors="
+//                    + (flavors == null ? null : java.util.Arrays.asList(t.getTransferDataFlavors()))); // NOI18N
+//
+//            return DROP_DENIED;
+//        }
+//
+//        Class rc = importFlavor.getRepresentationClass();
+//
+//        if (rc == DisplayItem.class) {
+//            // Create a new type
+//            try {
+//                Object transferData = t.getTransferData(importFlavor);
+//
+//                if (!(transferData instanceof DisplayItem)) {
+//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+//                            new IllegalStateException("Invalid transferData=" + transferData // NOI18N
+//                            + ", from transferable=" + t)); // NOI18N
+//                    return DROP_DENIED;
+//                }
+//
+//                DisplayItem item = (DisplayItem)transferData;
+//
+//                return getDropTypeForDisplayItem(origDroppee, droppeeElement, item, linkOnly);
+//            } catch (UnsupportedFlavorException ex) {
+//                ErrorManager.getDefault().notify(ex);
+//
+//                return DROP_DENIED;
+//            } catch (java.io.IOException ex) {
+//                ErrorManager.getDefault().notify(ex);
+//
+//                return DROP_DENIED;
+//            }
+//        } else if (rc == DesignBean.class) {
+//            try {
+//                Object transferData = t.getTransferData(importFlavor);
+//
+//                if (!(transferData instanceof DesignBean[])) {
+//                    ErrorManager.getDefault().log("Invalid DesignBean[] transfer data: " +
+//                        transferData);
+//
+//                    return DROP_DENIED;
+//                }
+//
+//                DesignBean[] beans = (DesignBean[])transferData;
+//
+//                String[] classNames = new String[beans.length];
+//
+//                for (int i = 0, n = beans.length; i < n; i++) {
+//                    classNames[i] = beans[i].getInstance().getClass().getName();
+//                }
+//
+//                return getDropTypeForClassNames(origDroppee, droppeeElement, classNames, null, linkOnly);
+//            } catch (UnsupportedFlavorException ex) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//                return DROP_DENIED;
+//            } catch (java.io.IOException ex) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//                return DROP_DENIED;
+//            }
+//        }
+//        
+//        // XXX TEMP First give the chance to the provider.
+//        // FIXME This shouldn't be here at all, the original transferable
+//        // should contain all the needed flavors.
+//        DesignTimeTransferDataCreator dataCreator = (DesignTimeTransferDataCreator)Lookup.getDefault().lookup(DesignTimeTransferDataCreator.class);
+//        if (dataCreator != null) {
+//            DisplayItem displayItem = dataCreator.getDisplayItem(t);
+//            if (displayItem != null) {
+//                return getDropTypeForDisplayItem(origDroppee, droppeeElement, displayItem, linkOnly);
+//            }
+//        }
+//        
+//        // XXX The other hacked transferables.
+//        if (rc == String.class/*Linux*/ || rc == List.class/*Windows/Solaris*/) {
+//            // XXX #6468896 To be able to drop files (images) from the outside world (desktop).
+//           return DROP_PARENTED;
+//        } else if (rc == org.openide.nodes.Node.class) {
+//            // XXX #6482097 Reflecting the impl in FacesDnDSupport.
+//            // FIXME Later the impl has to be improved and moved over there.
+//            Object transferData;
+//            try {
+//                transferData = t.getTransferData(importFlavor);
+//                if (transferData instanceof org.openide.nodes.Node) {
+//                    org.openide.nodes.Node node = (org.openide.nodes.Node)transferData;
+//                    DataObject dobj = (DataObject)node.getCookie(DataObject.class);
+//
+//                    if (dobj != null) {
+//                        FileObject fo = dobj.getPrimaryFile();
+//                        if (isImage(fo.getExt())) {
+////                            String className;
+////                            // XXX This should be decided by the parent bean.
+////                            // I.e. appropriate api is missing.
+////                            // XXX This shouldn't be here resolved, but in the parent bean.
+////                            if (webform.isBraveheartPage()) {
+////                                className = com.sun.rave.web.ui.component.ImageComponent.class.getName(); // NOI18N
+////                            } else if (webform.isWoodstockPage()) {
+////                                // Use woodstock ImageComponent component
+////                                className = com.sun.webui.jsf.component.ImageComponent.class.getName(); // NOI18N
+////                            } else {
+////                                className = javax.faces.component.html.HtmlGraphicImage.class.getName(); // NOI18N
+////                            }
+//                            String className = webform.getImageComponentClassName();
+//                            
+//                            String[] classNames = new String[] {className};
+//
+//                            return getDropTypeForClassNames(origDroppee, droppeeElement, classNames, null, linkOnly);
+//                        } else if (isStylesheet(fo.getExt())) {
+//                            return DROP_PARENTED;
+//                        }
+//                    }
+//                }
+//            } catch (IOException ex) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//            } catch (UnsupportedFlavorException ex) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//            }
+//            return DROP_DENIED;
+//        }
+//
+//        return DROP_DENIED;
+        return webform.getDropType(origDroppee, droppeeElement, t, linkOnly);
     }
 
-    // XXX Also in insync/FacesDnDSupport
-    /** Return true if the extension indicates that this is an image */
-    private static boolean isImage(String extension) {
-        return (extension.equalsIgnoreCase("jpg") || // NOI18N
-                extension.equalsIgnoreCase("gif") || // NOI18N
-                extension.equalsIgnoreCase("png") || // NOI18N
-                extension.equalsIgnoreCase("jpeg")); // NOI18N
-    }
+//    // XXX Also in insync/FacesDnDSupport
+//    /** Return true if the extension indicates that this is an image */
+//    private static boolean isImage(String extension) {
+//        return (extension.equalsIgnoreCase("jpg") || // NOI18N
+//                extension.equalsIgnoreCase("gif") || // NOI18N
+//                extension.equalsIgnoreCase("png") || // NOI18N
+//                extension.equalsIgnoreCase("jpeg")); // NOI18N
+//    }
     
-    // XXX Also in insync/FacesDnDSupport.
-    private static boolean isStylesheet(String extension) {
-        return extension.equalsIgnoreCase("css"); // NOI18N
-    }
+//    // XXX Also in insync/FacesDnDSupport.
+//    private static boolean isStylesheet(String extension) {
+//        return extension.equalsIgnoreCase("css"); // NOI18N
+//    }
 
 
-    /**
-     * Decide whether or not we can drop the given palette item
-     * at the given position.
-     */
-    public int getDropType(Point p, DisplayItem item, boolean linkOnly) {
-        if(item == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                    new NullPointerException("Item is null")); // NOI18N
-            return DROP_DENIED;
-        } 
-        
-//        String[] classNames = getClasses(new DisplayItem[] { item });
-        String[] classNames = webform.getClassNames(new DisplayItem[] {item});
-
-        return getDropType(p, classNames, null, linkOnly);
-    }
+//    /**
+//     * Decide whether or not we can drop the given palette item
+//     * at the given position.
+//     * XXX TODO get rid of this method from the designer, it is JSF specific..
+//     */
+////    private int getDropTypeForDisplayItem(Point p, DisplayItem item, boolean linkOnly) {
+//    private int getDropTypeForDisplayItem(DesignBean origDroppee, Element droppeeElement, DisplayItem item, boolean linkOnly) {
+//        if(item == null) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+//                    new NullPointerException("Item is null")); // NOI18N
+//            return DROP_DENIED;
+//        } 
+//        
+////        String[] classNames = getClasses(new DisplayItem[] { item });
+//        String[] classNames = webform.getClassNames(new DisplayItem[] {item});
+//
+//        return getDropTypeForClassNames(origDroppee, droppeeElement, classNames, null, linkOnly);
+//    }
 
     
-    public void showDropMatchEx(MarkupDesignBean bean, MarkupMouseRegion region, int dropType) {
-        recentDropTarget = bean;
-        showDropMatch(bean, region, dropType);
-    }
     /**
      * We have a potential drop match on the given bean - show it as selected.
      */
-    private void showDropMatch(MarkupDesignBean bean, MarkupMouseRegion region, int type) {
-        if (DONT_SHOW_MATCHES || ((currentMatched == bean) && (currentRegion == region))) {
+//    public void showDropMatch(MarkupDesignBean bean, MarkupMouseRegion region, int type) {
+    public void showDropMatch(Element componentRootElement, Element regionElement, int type) {
+//        recentDropTarget = bean;
+        recentDropTargetComponentRootElement = componentRootElement;
+        
+//        if (DONT_SHOW_MATCHES || ((currentMatched == bean) && (currentRegion == region))) {
+        if (DONT_SHOW_MATCHES || ((currentMatchedComponentRootElement == componentRootElement) && (currentRegionElement == regionElement))) {
             return;
         }
 
-        currentMatched = bean;
-        currentRegion = region;
+//        currentMatched = bean;
+        currentMatchedComponentRootElement = componentRootElement;
+//        currentRegion = region;
+        currentRegionElement = regionElement;
 
-        if (region != null) {
+//        if (region != null) {
+        if (regionElement != null) {
             // Regions only support linking, not parenting
             assert type == DROP_LINKED;
-            webform.getManager().highlight(bean, region);
-            lastMessage =
-                NbBundle.getMessage(DndHandler.class, "LinkTarget", region.getDisplayName());
+//            webform.getManager().highlight(bean, region);
+            webform.getManager().highlight(componentRootElement, regionElement);
+//            lastMessage =
+//                NbBundle.getMessage(DndHandler.class, "LinkTarget", region.getDisplayName());
+                        lastMessage =
+                NbBundle.getMessage(DndHandler.class, "LinkTarget", WebForm.getHtmlDomProviderService().getRegionDisplayName(regionElement));
+
             StatusDisplayer.getDefault().setStatusText(lastMessage);
-        } else if (bean != null) {
+//        } else if (bean != null) {
+        } else if (componentRootElement != null) {
 //            FacesPageUnit facesUnit = webform.getModel().getFacesUnit();
 //
 //            if ((facesUnit == null) ||
@@ -3298,19 +3320,23 @@ public class DndHandler /*extends TransferHandler*/ {
 //                    
 ////                    (bean.getElement() != webform.getBody().getSourceElement()))) {
 //                    (bean.getElement() != MarkupService.getSourceElementForElement(webform.getHtmlBody())))) {
-            if (webform.canHighlightMarkupDesignBean(bean)) {
-                webform.getManager().highlight(bean, null);
+//            if (webform.canHighlightMarkupDesignBean(bean)) {
+//                webform.getManager().highlight(bean, null);
+            if (webform.canHighlightComponentRootElement(componentRootElement)) {
+                webform.getManager().highlight(componentRootElement, null);
             } else {
                 webform.getManager().highlight(null, null);
             }
 
             if (type == DROP_LINKED) {
                 lastMessage =
-                    NbBundle.getMessage(DndHandler.class, "LinkTarget", bean.getInstanceName());
+//                    NbBundle.getMessage(DndHandler.class, "LinkTarget", bean.getInstanceName());
+                        NbBundle.getMessage(DndHandler.class, "LinkTarget", WebForm.getHtmlDomProviderService().getInstanceName(componentRootElement));
                 StatusDisplayer.getDefault().setStatusText(lastMessage);
             } else if (type == DROP_PARENTED) {
                 lastMessage =
-                    NbBundle.getMessage(DndHandler.class, "ParentTarget", bean.getInstanceName());
+//                    NbBundle.getMessage(DndHandler.class, "ParentTarget", bean.getInstanceName());
+                        NbBundle.getMessage(DndHandler.class, "ParentTarget", WebForm.getHtmlDomProviderService().getInstanceName(componentRootElement));
                 StatusDisplayer.getDefault().setStatusText(lastMessage);
             } else {
                 assert false : type;
@@ -3321,7 +3347,8 @@ public class DndHandler /*extends TransferHandler*/ {
     }
 
     public void clearDropMatch() {
-        currentMatched = null;
+//        currentMatched = null;
+        currentMatchedComponentRootElement = null;
         webform.getManager().highlight(null, null);
 
         if (StatusDisplayer.getDefault().getStatusText() == lastMessage) {
@@ -3331,158 +3358,173 @@ public class DndHandler /*extends TransferHandler*/ {
         lastMessage = null;
     }
 
-    /**
-     * Decide whether or not we can drop the given palette item at the given position.
-    * @todo implement using computeActions and computePosition instead of custom solution here... e.g.
-     <pre>
-    public int getDropType(Point p, String[] classNames, boolean linkOnly) {
-        int allowed = computeActions(dropNode, t, false, nodePos);
-        if (allowed == DnDConstants.ACTION_NONE) {
-            return;
-        }
-        if (dropAction == DnDConstants.ACTION_COPY) {
-        ... XXX call computeActions
-    }
-     </pre>
-    */
-    public int getDropType(Point p, String[] classNames, DesignBean[] beans, boolean linkOnly) {
-        if(DesignerUtils.DEBUG) {
-            DesignerUtils.debugLog(getClass().getName() + ".getDropType(Point, PaletteItem, boolean)");
-        }
+    /** Get rid of this method from designer. */
+    public int getDropTypeForClassNamesEx(Point p, String[] classNames, DesignBean[] beans, boolean linkOnly) {
         if(p == null) {
             throw(new IllegalArgumentException("Null drop point."));
         }
-        if(classNames == null) {
-            throw(new IllegalArgumentException("Null class names array."));
-        }
-
-        recentDropTarget = null;
-
         // No... call computePositions and use location.coordinates instead... see @todo above
 //        CssBox box = webform.getMapper().findBox(p.x, p.y);
         CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), p.x, p.y);
         DesignBean origDroppee = getDroppee(box);
-
-        if (origDroppee == null) {
-            if (linkOnly) {
-                return DROP_DENIED;
-            }
-
-            if (origDroppee instanceof MarkupDesignBean) {
-                recentDropTarget = (MarkupDesignBean)origDroppee;
-            }
-
-//            LiveUnit unit = webform.getModel().getLiveUnit();
-
-//            if (unit != null) {
-                for (int i = 0; i < classNames.length; i++) {
-                    // Do anything smart about facets here? E.g. what if you
-                    // point over a facet table header? A drop in the app outline
-                    // would offer to replace it. Should the interactive link feedback
-                    // allow this too?
-//                    if (unit.canCreateBean(classNames[i], null, null)) {
-                    if (webform.canCreateBean(classNames[i], null, null)) {
-                        showDropMatch(null, null, DROP_PARENTED);
-
-                        return DROP_PARENTED;
-                    }
-                }
-//            }
-
-            clearDropMatch();
-
-            return DROP_DENIED;
-        }
-
-        // None of the droppee ancestors accepted the drop items
-        // as a potential child - but perhaps they will accept
-        // a link?
-//        Class[] classes = new Class[classNames.length];
-//        ArrayList beanList = null;
-//
-//        if (beans != null) {
-//            beanList = new ArrayList(beans.length);
+        Element droppeeElement = box == null ? null : box.getElement();
+        return webform.getDropTypeForClassNames(origDroppee, droppeeElement, classNames, beans, linkOnly);
+    }
+    
+//    /**
+//     * Decide whether or not we can drop the given palette item at the given position.
+//    * @todo implement using computeActions and computePosition instead of custom solution here... e.g.
+//     <pre>
+//    public int getDropType(Point p, String[] classNames, boolean linkOnly) {
+//        int allowed = computeActions(dropNode, t, false, nodePos);
+//        if (allowed == DnDConstants.ACTION_NONE) {
+//            return;
+//        }
+//        if (dropAction == DnDConstants.ACTION_COPY) {
+//        ... XXX call computeActions
+//    }
+//     </pre>
+//     * XXX TODO get rid of this method from the designer, it is JSF specific.
+//    */
+//    private int getDropTypeForClassNames(DesignBean origDroppee, Element droppeeElement, String[] classNames, DesignBean[] beans, boolean linkOnly) {
+//        if(DesignerUtils.DEBUG) {
+//            DesignerUtils.debugLog(getClass().getName() + ".getDropType(Point, PaletteItem, boolean)");
+//        }
+////        if(p == null) {
+////            throw(new IllegalArgumentException("Null drop point."));
+////        }
+//        if(classNames == null) {
+//            throw(new IllegalArgumentException("Null class names array."));
 //        }
 //
+//        recentDropTarget = null;
+//
+////        // No... call computePositions and use location.coordinates instead... see @todo above
+//////        CssBox box = webform.getMapper().findBox(p.x, p.y);
+////        CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), p.x, p.y);
+////        DesignBean origDroppee = getDroppee(box);
+//
+//        if (origDroppee == null) {
+//            if (linkOnly) {
+//                return DROP_DENIED;
+//            }
+//
+////            if (origDroppee instanceof MarkupDesignBean) {
+////                recentDropTarget = (MarkupDesignBean)origDroppee;
+////            }
+//
+////            LiveUnit unit = webform.getModel().getLiveUnit();
+//
+////            if (unit != null) {
+//                for (int i = 0; i < classNames.length; i++) {
+//                    // Do anything smart about facets here? E.g. what if you
+//                    // point over a facet table header? A drop in the app outline
+//                    // would offer to replace it. Should the interactive link feedback
+//                    // allow this too?
+////                    if (unit.canCreateBean(classNames[i], null, null)) {
+//                    if (webform.canCreateBean(classNames[i], null, null)) {
+//                        showDropMatch(null, null, DROP_PARENTED);
+//
+//                        return DROP_PARENTED;
+//                    }
+//                }
+////            }
+//
+//            clearDropMatch();
+//
+//            return DROP_DENIED;
+//        }
+//
+//        // None of the droppee ancestors accepted the drop items
+//        // as a potential child - but perhaps they will accept
+//        // a link?
+////        Class[] classes = new Class[classNames.length];
+////        ArrayList beanList = null;
+////
+////        if (beans != null) {
+////            beanList = new ArrayList(beans.length);
+////        }
+////
+////        for (int i = 0; i < classNames.length; i++) {
+////            try {
+////                Class clz = webform.getModel().getFacesUnit().getBeanClass(classNames[i]);
+////
+////                if (clz != null) {
+////                    classes[i] = clz;
+////                }
+////
+////                if (beans != null) {
+////                    beanList.add(beans[i]);
+////                }
+////            } catch (Exception e) {
+////                ErrorManager.getDefault().notify(e);
+////            }
+////        }
+////        
+////        if (beans == null) {
+////            beanList = null;
+////        }
+//        List<Class> classList = new ArrayList<Class>();
+//        List<DesignBean> beanList = beans == null ? null : new ArrayList<DesignBean>();
 //        for (int i = 0; i < classNames.length; i++) {
 //            try {
-//                Class clz = webform.getModel().getFacesUnit().getBeanClass(classNames[i]);
-//
-//                if (clz != null) {
-//                    classes[i] = clz;
+////                Class clazz = webform.getModel().getFacesUnit().getBeanClass(classNames[i]);
+//                Class clazz = webform.getBeanClass(classNames[i]);
+//                if (clazz != null) {
+//                    classList.add(clazz);
 //                }
-//
 //                if (beans != null) {
 //                    beanList.add(beans[i]);
 //                }
-//            } catch (Exception e) {
-//                ErrorManager.getDefault().notify(e);
+//            } catch (ClassNotFoundException ex) {
+//                // XXX #6492649 It means the class can't be found so no drop should happen.
+//                // FIXME The API should be improved and not controlled via exceptions.
+//                continue;
+//            } catch (Exception ex) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//                continue;
 //            }
 //        }
+//        Class[] classes = classList.toArray(new Class[classList.size()]);
+//
+////        RaveElement droppeeElement = (RaveElement)box.getElement();
+////        Element droppeeElement = box.getElement();
 //        
-//        if (beans == null) {
-//            beanList = null;
+//        int dropType = processLinks(droppeeElement, classes, beanList, true, false, true);
+//
+//        if (dropType != DROP_DENIED) {
+//            return dropType;
 //        }
-        List<Class> classList = new ArrayList<Class>();
-        List<DesignBean> beanList = beans == null ? null : new ArrayList<DesignBean>();
-        for (int i = 0; i < classNames.length; i++) {
-            try {
-//                Class clazz = webform.getModel().getFacesUnit().getBeanClass(classNames[i]);
-                Class clazz = webform.getBeanClass(classNames[i]);
-                if (clazz != null) {
-                    classList.add(clazz);
-                }
-                if (beans != null) {
-                    beanList.add(beans[i]);
-                }
-            } catch (ClassNotFoundException ex) {
-                // XXX #6492649 It means the class can't be found so no drop should happen.
-                // FIXME The API should be improved and not controlled via exceptions.
-                continue;
-            } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                continue;
-            }
-        }
-        Class[] classes = classList.toArray(new Class[classList.size()]);
-
-//        RaveElement droppeeElement = (RaveElement)box.getElement();
-        Element droppeeElement = box.getElement();
-        
-        int dropType = processLinks(droppeeElement, classes, beanList, true, false, true);
-
-        if (dropType != DROP_DENIED) {
-            return dropType;
-        }
-
-        if (linkOnly) {
-            clearDropMatch();
-
-            return DROP_DENIED;
-        }
-
-        // See if any of the droppee parents accept the new item as a
-        // child
-        for (int i = 0; i < classNames.length; i++) {
-            Node parentNode = null; // XXX todo figure out better parent node
-            DesignBean parent = findParent(classNames[i], origDroppee, parentNode, true);
-
-            if (parent != null) {
-                if (parent instanceof MarkupDesignBean) {
-                    recentDropTarget = (MarkupDesignBean)parent;
-                    showDropMatch(recentDropTarget, null, DROP_PARENTED);
-                } else {
-                    clearDropMatch();
-                }
-
-                return DROP_PARENTED;
-            }
-        }
-
-        showDropMatch(null, null, DROP_DENIED);
-
-        return DROP_DENIED;
-    }
+//
+//        if (linkOnly) {
+//            clearDropMatch();
+//
+//            return DROP_DENIED;
+//        }
+//
+//        // See if any of the droppee parents accept the new item as a
+//        // child
+//        for (int i = 0; i < classNames.length; i++) {
+//            Node parentNode = null; // XXX todo figure out better parent node
+////            DesignBean parent = findParent(classNames[i], origDroppee, parentNode, true);
+//            DesignBean parent = webform.findParent(classNames[i], origDroppee, parentNode, true);
+//
+//            if (parent != null) {
+//                if (parent instanceof MarkupDesignBean) {
+//                    recentDropTarget = (MarkupDesignBean)parent;
+//                    showDropMatch(recentDropTarget, null, DROP_PARENTED);
+//                } else {
+//                    clearDropMatch();
+//                }
+//
+//                return DROP_PARENTED;
+//            }
+//        }
+//
+//        showDropMatch(null, null, DROP_DENIED);
+//
+//        return DROP_DENIED;
+//    }
 
     /**
      * Try to find a flavor that can be used to import a Transferable.
