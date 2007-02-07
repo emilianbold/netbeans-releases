@@ -13,12 +13,11 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.windows;
-
 
 import org.openide.nodes.Node;
 import org.openide.util.WeakSet;
@@ -31,7 +30,6 @@ import java.beans.PropertyChangeSupport;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 
 /** Implementstion of registry of top components. This implementation
  * receives information about top component changes from the window
@@ -168,6 +166,15 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
         openSet.remove(tc);
         doFirePropertyChange(PROP_TC_CLOSED, null, tc);
         doFirePropertyChange(PROP_OPENED, old, new HashSet<TopComponent>(openSet));
+
+        if (activatedNodes != null) {
+            Node[] closedNodes = tc.getActivatedNodes();
+            if (closedNodes != null && Arrays.equals(closedNodes, activatedNodes)) {
+                // The component whose nodes were activated has been closed; cancel the selection.
+                activatedNodes = null;
+                doFirePropertyChange(PROP_ACTIVATED_NODES, closedNodes, null);
+            }
+        }
     }
     
     /** Called when selected nodes changed. */
@@ -189,7 +196,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
             return;
         }
 
-        currentNodes = newNodes == null ? null : (Node[])newNodes.clone();
+        currentNodes = newNodes == null ? null : newNodes.clone();
         // fire immediatelly only if window manager in proper state
         tryFireChanges(oldNodes, currentNodes);
     }
