@@ -447,6 +447,15 @@ public class NBSLanguageReader {
                 throw new ParseException ("Syntax error.");
             if (!(feature instanceof Map))
                 throw new ParseException ("Syntax error.");
+            Map featureMap = (Map) feature;
+            if (featureMap.containsKey ("background_color"))
+                featureMap.put (
+                    "background_color", 
+                    readColor (
+                        (String) ((Evaluator) featureMap.get ("background_color")).
+                        evaluate ()
+                    )
+                );
             language.importLanguage (identifier.toString (), (Map) feature);
         } else
         if (Language.INDENT.equals (featureName)) {
@@ -609,15 +618,15 @@ public class NBSLanguageReader {
         if (defaultColor != null)
             coloring.addAttribute (EditorStyleConstants.Default, defaultColor);
         if (foreground != null)
-            coloring.addAttribute (StyleConstants.Foreground, convert (foreground));
+            coloring.addAttribute (StyleConstants.Foreground, readColor (foreground));
         if (background != null)
-            coloring.addAttribute (StyleConstants.Background, convert (background));
+            coloring.addAttribute (StyleConstants.Background, readColor (background));
         if (strikethrough != null)
-            coloring.addAttribute (StyleConstants.StrikeThrough, convert (strikethrough));
+            coloring.addAttribute (StyleConstants.StrikeThrough, readColor (strikethrough));
         if (underline != null)
-            coloring.addAttribute (StyleConstants.Underline, convert (underline));
+            coloring.addAttribute (StyleConstants.Underline, readColor (underline));
         if (waveunderline != null)
-            coloring.addAttribute (EditorStyleConstants.WaveUnderlineColor, convert (waveunderline));
+            coloring.addAttribute (EditorStyleConstants.WaveUnderlineColor, readColor (waveunderline));
         if (fontName != null)
             coloring.addAttribute (StyleConstants.FontFamily, fontName);
         if (fontType != null) {
@@ -649,7 +658,7 @@ public class NBSLanguageReader {
         colors.put ("yellow", Color.yellow);
     }
     
-    private static Color convert (String color) throws ParseException {
+    private static Color readColor (String color) throws ParseException {
         Color result = (Color) colors.get (color);
         if (result == null)
             try {

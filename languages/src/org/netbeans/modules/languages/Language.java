@@ -210,7 +210,7 @@ public class Language {
     private Map properties = new HashMap ();
     
     void addProperties (Map properties) {
-        properties.putAll (properties);
+        this.properties.putAll (properties);
     }
     
     void addProperty (String key, Object value) {
