@@ -225,9 +225,9 @@ public class Registry {
             saveProductRegistry(
                     localRegistryFile,
                     new ProductFilter(Status.INSTALLED),
-                    false,
-                    true,
-                    true);
+                    false,  // we don't need any includes in the local registry,
+                    true,   // but the registry's properties would be nice,
+                    false); // and the features list is not required either
         }
         
         // save the state file if it is required (i.e. --record command line option
@@ -638,13 +638,22 @@ public class Registry {
             
             if (featuresElement != null) {
                 for (Feature feature: XMLUtils.parseFeaturesList(featuresElement)) {
+                    boolean shouldAdd = true;
+                    
                     int i;
                     for (i = 0; i < features.size(); i++) {
+                        if (features.get(i).getId().equals(feature.getId())) {
+                            shouldAdd = false;
+                            break;
+                        }
                         if (features.get(i).getOffset() > feature.getOffset()) {
                             break;
                         }
                     }
-                    features.add(i, feature);
+                    
+                    if (shouldAdd) {
+                        features.add(i, feature);
+                    }
                 }
             }
             
