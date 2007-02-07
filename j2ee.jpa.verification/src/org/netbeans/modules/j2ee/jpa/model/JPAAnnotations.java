@@ -75,6 +75,8 @@ public class JPAAnnotations {
     
     //value attribute in annotations with single attribute
     public static final String VALUE_ATTR = "value"; //NOI18N
+
+    public static final String NAME_ATTR = "name"; //NOI18N
     
     // TODO: Add other constants here
 }

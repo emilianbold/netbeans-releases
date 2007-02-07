@@ -55,4 +55,24 @@ public class JPAHelper {
         }
         return false;
     }
+    
+    /**
+     * @return name of the primary table that will be mapped to given entity class
+     */
+    public static String getPrimaryTableName(TypeElement entityClass){
+        String name = null;
+        AnnotationMirror annTable = Utilities.findAnnotation(entityClass, JPAAnnotations.TABLE);
+        name = (String) Utilities.getAnnotationAttrValue(annTable, JPAAnnotations.NAME_ATTR);
+        
+        if (name == null){
+            AnnotationMirror annEntity = Utilities.findAnnotation(entityClass, JPAAnnotations.ENTITY);
+            name = (String)Utilities.getAnnotationAttrValue(annEntity, JPAAnnotations.NAME_ATTR);
+            
+            if (name == null){
+                name = entityClass.getSimpleName().toString();
+            }
+        }
+        
+        return name;
+    }
 }

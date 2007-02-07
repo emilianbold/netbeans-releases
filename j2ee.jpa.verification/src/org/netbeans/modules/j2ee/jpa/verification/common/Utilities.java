@@ -25,7 +25,9 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.Token;
@@ -46,9 +48,29 @@ public class Utilities {
         return null;
     }
     
+    /**
+     * A convenience method, returns true if findAnnotation(...) != null
+     */
     public static boolean hasAnnotation(Element element, String annClass){
         AnnotationMirror annEntity = findAnnotation(element, annClass);
         return annEntity != null;
+    }
+    
+    /**
+     * @return the value of annotation attribute, null if the attribute
+     * was not found or when ann was null
+     */
+    public static Object getAnnotationAttrValue(AnnotationMirror ann, String attrName){
+        if (ann != null){
+            for (ExecutableElement attr : ann.getElementValues().keySet()){
+                if (attrName.equals(attr.getSimpleName().toString())){
+                    AnnotationValue val = ann.getElementValues().get(attr);
+                    return val.getValue();
+                }
+            }
+        }
+        
+        return null;
     }
     
     /**
