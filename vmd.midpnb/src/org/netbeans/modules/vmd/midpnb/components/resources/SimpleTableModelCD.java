@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.midpnb.components.resources;
 
 import java.util.Arrays;
 import java.util.List;
-
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
@@ -39,7 +38,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractScreenCD;
-import org.netbeans.modules.vmd.midpnb.components.properteditors.PropertyEditorExecutableUserCode;
+import org.netbeans.modules.vmd.midpnb.components.properteditors.PropertyEditorTableModel;
 
 /**
  *
@@ -50,7 +49,9 @@ public class SimpleTableModelCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.SimpleTableModel"); // NOI18N
 
     private static final String PROP_TABLE_MODEL = "tableModel"; //NOI18N
-
+    //TODO Change name
+    public static final TypeID TABLE_MODEL_TYPEID = new TypeID(TypeID.Kind.PRIMITIVE,"#TableModel", 2);
+    
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ResourceCD.TYPEID, TYPEID, true, true);
     }
@@ -59,16 +60,19 @@ public class SimpleTableModelCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP;
     }
 
-     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
+    public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
+        //PropertyValue rows = PropertyValue.createArray(MidpTypes.TYPEID_JAVA_LANG_STRING, Arrays.asList(MidpTypes.createStringValue("row")));
+        //PropertyValue array = PropertyValue.createArray(TABLE_MODEL_TYPEID, Arrays.asList(rows));
+        
         return Arrays.asList(
-            new PropertyDescriptor (PROP_TABLE_MODEL, MidpTypes.TYPEID_JAVA_CODE, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_TABLE_MODEL, MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType().getArrayType(), PropertyValue.createEmptyArray(TABLE_MODEL_TYPEID), true, true, MidpVersionable.MIDP_2)
         );
     }
     
      private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                     .addProperty("Table Model", new PropertyEditorExecutableUserCode(), PROP_TABLE_MODEL);
+                     .addProperty("Table Model", new PropertyEditorTableModel(), PROP_TABLE_MODEL);
     }
 
     protected List<? extends Presenter> createPresenters() {

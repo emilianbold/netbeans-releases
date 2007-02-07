@@ -105,7 +105,7 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
     
     public boolean supportsCustomEditor() {
         Collection components = ActiveDocumentSupport.getDefault().getActiveComponents();
-        if (components != null && components.size() == 1)
+        if (components != null && components.size() == 1 && getCustomEditor() != null)
             return true;
         
         return false;
