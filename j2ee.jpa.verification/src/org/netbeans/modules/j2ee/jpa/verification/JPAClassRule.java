@@ -29,7 +29,7 @@ import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
  * @author Tomasz.Slota@Sun.COM
  */
 public abstract class JPAClassRule extends Rule<TypeElement> {
-    public enum ClassConstraints {ENTITY, EMBEDDABLE, IDCLASS}
+    public enum ClassConstraints {ENTITY, EMBEDDABLE, IDCLASS, MAPPED_SUPERCLASS}
     private Collection<ClassConstraints> classContraints;
     
     protected void setClassContraints(Collection<ClassConstraints> classContraints){
@@ -42,6 +42,7 @@ public abstract class JPAClassRule extends Rule<TypeElement> {
         if (classContraints != null && !(
                 jpaCtx.isEntity() && classContraints.contains(ClassConstraints.ENTITY)
                 || jpaCtx.isEmbeddable() && classContraints.contains(ClassConstraints.EMBEDDABLE)
+                || jpaCtx.isMappedSuperClass() && classContraints.contains(ClassConstraints.MAPPED_SUPERCLASS)
                 || jpaCtx.isIdClass() && classContraints.contains(ClassConstraints.IDCLASS))){
             return false;
         }

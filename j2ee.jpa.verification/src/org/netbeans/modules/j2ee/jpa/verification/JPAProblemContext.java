@@ -30,6 +30,7 @@ public class JPAProblemContext extends ProblemContext {
     private boolean entity;
     private boolean embeddable;
     private boolean idClass;
+    private boolean mappedSuperClass;
     
     public boolean isEntity(){
         return entity;
@@ -53,5 +54,13 @@ public class JPAProblemContext extends ProblemContext {
     
     public void setIdClass(boolean idClass){
         this.idClass = idClass;
+    }
+    
+    public boolean isMappedSuperClass(){
+        return mappedSuperClass;
+    }
+    
+    public void setMappedSuperClass(boolean mappedSuperClass){
+        this.mappedSuperClass = mappedSuperClass;
     }
 }

@@ -27,7 +27,9 @@ import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
 import org.netbeans.modules.j2ee.jpa.verification.common.RulesEngine;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.HasNoArgConstructor;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.IdDefinedInHierarchy;
+import org.netbeans.modules.j2ee.jpa.verification.rules.entity.NonFinalClass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.PersistenceUnitPresent;
+import org.netbeans.modules.j2ee.jpa.verification.rules.entity.PublicClass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.SerializableClass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.ValidPrimaryTableName;
 
@@ -44,6 +46,8 @@ public class JPARulesEngine extends RulesEngine {
         classRules.add(new HasNoArgConstructor());
         classRules.add(new ValidPrimaryTableName());
         classRules.add(new SerializableClass());
+        classRules.add(new PublicClass());
+        classRules.add(new NonFinalClass());
     }
     
     protected Collection<Rule<TypeElement>> getClassRules() {
