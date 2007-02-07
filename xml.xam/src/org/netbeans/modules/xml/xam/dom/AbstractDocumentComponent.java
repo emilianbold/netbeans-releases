@@ -539,10 +539,13 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         AbstractDocumentComponent child = (AbstractDocumentComponent) newComponent;
         Element e = child.getPeer();
         String childNS = child.getNamespaceURI();
+        if (childNS == null || childNS.equals(XMLConstants.NULL_NS_URI)) {
+            return;
+        }
        
-        if (childNS != null && childNS.equals(getNamespaceURI())) {
+        if (childNS.equals(getNamespaceURI())) {
             e.setPrefix(getPeer().getPrefix());
-        } else if (childNS != null && childNS.equals(lookupNamespaceURI(""))) {
+        } else if (childNS.equals(lookupNamespaceURI(""))) {
             e.setPrefix(null);
         } else {
             ensurePrefixDeclaredFor(e, childNS);

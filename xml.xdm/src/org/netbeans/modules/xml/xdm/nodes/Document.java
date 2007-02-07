@@ -23,6 +23,7 @@ import java.lang.ref.SoftReference;
 import java.util.Map;
 import org.netbeans.modules.xml.xdm.visitor.FindNamespaceVisitor;
 import org.netbeans.modules.xml.xdm.visitor.XMLNodeVisitor;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.NodeList;
 
 /**
@@ -515,8 +516,11 @@ public class Document extends NodeImpl implements Node, org.w3c.dom.Document {
         Element ret = new Element(qualifiedName);
         String prefix = ret.getPrefix();
         if (prefix != null) {
+            if (namespaceURI == null) {
+                throw new DOMException(DOMException.NAMESPACE_ERR, null);
+            }
             ret.appendAttribute(new Attribute("xmlns:"+prefix, namespaceURI)); //NOI18N
-        } else {
+        } else if (namespaceURI != null) {
             ret.appendAttribute(new Attribute(XMLNS, namespaceURI)); 
         }
         return ret;
