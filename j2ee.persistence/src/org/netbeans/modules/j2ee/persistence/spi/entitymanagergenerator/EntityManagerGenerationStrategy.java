@@ -22,7 +22,7 @@ import org.netbeans.modules.j2ee.persistence.action.*;
 import com.sun.source.tree.ClassTree;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+import org.netbeans.modules.j2ee.persistence.util.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 
 /**
