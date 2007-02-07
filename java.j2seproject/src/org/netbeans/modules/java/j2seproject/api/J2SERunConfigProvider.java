@@ -31,6 +31,7 @@ import org.netbeans.api.project.Project;
  * default lookup (e.g. META-INF/services).
  * 
  * @author Milan Kubec
+ * @since 1.10
  */
 public interface J2SERunConfigProvider {
     
