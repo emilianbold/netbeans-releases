@@ -759,58 +759,26 @@ public final class Product extends RegistryNode {
         element.setAttribute("status", currentStatus.toString());
         element.setAttribute("features", StringUtils.asString(features, " "));
         
-        final Element logicNode = document.createElement("configuration-logic");
-        for (ExtendedUri uri: logicUris) {
-            logicNode.appendChild(XMLUtils.saveExtendedUri(
-                    uri,
-                    document.createElement("file")));
-        }
-        element.appendChild(logicNode);
+        element.appendChild(XMLUtils.saveExtendedUrisList(
+                logicUris, 
+                document.createElement("configuration-logic")));
         
-        final Element dataNode = document.createElement("installation-data");
-        for (ExtendedUri uri: dataUris) {
-            dataNode.appendChild(XMLUtils.saveExtendedUri(
-                    uri,
-                    document.createElement("file")));
-        }
-        element.appendChild(dataNode);
+        element.appendChild(XMLUtils.saveExtendedUrisList(
+                dataUris, 
+                document.createElement("installation-data")));
         
-        final Element requirementsNode = document.createElement("system-requirements");
+        final Element systemRequirementsElement = 
+                document.createElement("system-requirements");
         
-        final Element diskSpaceNode = document.createElement("disk-space");
-        diskSpaceNode.setTextContent(Long.toString(requiredDiskSpace));
-        requirementsNode.appendChild(diskSpaceNode);
+        final Element diskSpaceElement = document.createElement("disk-space");
+        diskSpaceElement.setTextContent(Long.toString(requiredDiskSpace));
+        systemRequirementsElement.appendChild(diskSpaceElement);
         
-        element.appendChild(requirementsNode);
+        element.appendChild(systemRequirementsElement);
         
-        if (dependencies.size() > 0) {
-            final Element dependenciesNode = document.createElement("dependencies");
-            
-            for (Dependency dependency: getDependencies()) {
-                Element dependencyNode =
-                        document.createElement(dependency.getType().toString());
-                
-                dependencyNode.setAttribute("uid",
-                        dependency.getUid());
-                
-                if (dependency.getVersionLower() != null) {
-                    dependencyNode.setAttribute("version-lower",
-                            dependency.getVersionLower().toString());
-                }
-                if (dependency.getVersionUpper() != null) {
-                    dependencyNode.setAttribute("version-upper",
-                            dependency.getVersionUpper().toString());
-                }
-                if (dependency.getVersionResolved() != null) {
-                    dependencyNode.setAttribute("version-resolved",
-                            dependency.getVersionResolved().toString());
-                }
-                
-                dependenciesNode.appendChild(dependencyNode);
-            }
-            
-            element.appendChild(dependenciesNode);
-        }
+        element.appendChild(XMLUtils.saveDependencies(
+                dependencies, 
+                document.createElement("dependencies")));
         
         return element;
     }
@@ -833,27 +801,20 @@ public final class Product extends RegistryNode {
             
             features = StringUtils.asList(element.getAttribute("features"), " ");
             
-            nodes = XMLUtils.getChildList(element, "./configuration-logic/file");
-            for (Node node: nodes) {
-                logicUris.add(XMLUtils.parseExtendedUri((Element) node));
-            }
+            logicUris.addAll(XMLUtils.parseExtendedUrisList(
+                    XMLUtils.getChild(element, "configuration-logic")));
             
-            nodes = XMLUtils.getChildList(element, "./installation-data/file");
-            for (Node node: nodes) {
-                dataUris.add(XMLUtils.parseExtendedUri((Element) node));
-            }
+            dataUris.addAll(XMLUtils.parseExtendedUrisList(
+                    XMLUtils.getChild(element, "installation-data")));
             
             requiredDiskSpace = Long.parseLong(XMLUtils.getChildNodeTextContent(
                     element,
                     "./system-requirements/disk-space"));
             
-            nodes = XMLUtils.getChildList(
-                    element, "./dependencies/(" + DependencyType.REQUIREMENT + "," + DependencyType.CONFLICT + "," + DependencyType.INSTALL_AFTER + ")");
-            for (Node node: nodes) {
-                dependencies.add(XMLUtils.parseDependency((Element) node));
-            }
+            dependencies.addAll(XMLUtils.parseDependencies(
+                    XMLUtils.getChild(element, "dependencies")));
         } catch (ParseException e) {
-            throw new InitializationException("Could not load components", e);
+            throw new InitializationException("Could not load product", e);
         }
         
         return this;
@@ -866,6 +827,10 @@ public final class Product extends RegistryNode {
     
     public List<Platform> getPlatforms() {
         return supportedPlatforms;
+    }
+    
+    public List<String> getFeatures() {
+        return features;
     }
     
     public File getInstallationLocation() {

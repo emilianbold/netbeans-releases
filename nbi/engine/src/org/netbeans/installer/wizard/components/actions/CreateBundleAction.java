@@ -44,6 +44,7 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
+import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.ExtendedUri;
@@ -299,9 +300,8 @@ public class CreateBundleAction extends WizardAction {
             // serialize the registry: get the document and save it to the jar file
             output.putNextEntry(new JarEntry(
                     EngineResources.DATA_DIRECTORY + "/bundled-registry.xml"));
-            registry.saveRegistryDocument(
-                    registry.getRegistryDocument(filter), 
-                    output);
+            XMLUtils.saveXMLDocument(
+                    registry.getRegistryDocument(filter, false, true, true), output);
             
             // finally perform some minor cleanup to avoid errors later in the main 
             // registry finalization - we set the local uri to be null, to avoid

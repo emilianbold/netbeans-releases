@@ -31,7 +31,9 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
@@ -48,8 +50,8 @@ import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.XMLException;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExtendedUri;
+import org.netbeans.installer.utils.helper.Feature;
 import org.netbeans.installer.utils.helper.Version;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -80,8 +82,7 @@ public abstract class XMLUtils {
     public static void saveXMLDocument(Document document, File file) throws XMLException {
         FileOutputStream output = null;
         try {
-            output = new FileOutputStream(file);
-            saveXMLDocument(document, output);
+            saveXMLDocument(document, output = new FileOutputStream(file));
         } catch (IOException e) {
             throw new XMLException("Cannot save XML document", e);
         } finally {
@@ -89,34 +90,26 @@ public abstract class XMLUtils {
                 try {
                     output.close();
                 } catch (IOException e) {
-                    ErrorManager.notify(ErrorLevel.DEBUG, e);
+                    ErrorManager.notifyDebug("Could not close the stream", e);
                 }
             }
         }
     }
     
     public static void saveXMLDocument(Document document, OutputStream output) throws XMLException {
-        
-        Source domSource = new DOMSource(document);
-        Result streamResult = new StreamResult(output);
-        Source xsltSource = null;
         try {
-            File xslt = FileProxy.getInstance().getFile(XSLT_REFORMAT_URI);
-            xsltSource = new StreamSource(xslt);
-        } catch (DownloadException e) {
-            LogManager.log(ErrorLevel.MESSAGE,
-                    "Cannot load XSLT file, so save XML without formatting");
-            LogManager.log(ErrorLevel.MESSAGE, e);
-        }
-        
-        try {
-            
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = (xsltSource!=null) ?
-                transformerFactory.newTransformer(xsltSource) :
-                transformerFactory.newTransformer();
+            final Source domSource = new DOMSource(
+                    document);
+            final Result streamResult = new StreamResult(
+                    output);
+            final Source xsltSource = new StreamSource(
+                    FileProxy.getInstance().getFile(XSLT_REFORMAT_URI));
+            final Transformer transformer = TransformerFactory.
+                    newInstance().newTransformer(xsltSource);
             
             transformer.transform(domSource, streamResult);
+        } catch (DownloadException e) {
+            throw new XMLException("Cannot save XML document", e);
         } catch (TransformerConfigurationException e) {
             throw new XMLException("Cannot save XML document", e);
         } catch (TransformerException e) {
@@ -135,7 +128,7 @@ public abstract class XMLUtils {
                 try {
                     input.close();
                 } catch (IOException e) {
-                    ErrorManager.notify(ErrorLevel.DEBUG, e);
+                    ErrorManager.notifyDebug("Cannot close the stream", e);
                 }
             }
         }
@@ -176,17 +169,18 @@ public abstract class XMLUtils {
     }
     
     public static List<Element> getChildren(Element element) {
-        List<Element> chuldren = new LinkedList<Element>();
+        List<Element> children = new LinkedList<Element>();
         
-        NodeList list = element.getChildNodes();
+        final NodeList list = element.getChildNodes();
         for (int i = 0; i < list.getLength(); i++) {
-            Node node = list.item(i);
+            final Node node = list.item(i);
+            
             if (node instanceof Element) {
-                chuldren.add((Element) node);
+                children.add((Element) node);
             }
         }
         
-        return chuldren;
+        return children;
     }
     
     public static List<Element> getChildren(Element element, String... names) {
@@ -280,19 +274,6 @@ public abstract class XMLUtils {
         return result;
     }
     
-    public static Map<String, String> loadProperties(Element element) {
-        Map<String, String> properties = new HashMap<String, String>();
-        
-        for (Element child: XMLUtils.getChildren(element, "property")) {
-            String name  = XMLUtils.getAttribute(child, "name");
-            String value = XMLUtils.getTextContent(child);
-            
-            properties.put(name, value);
-        }
-        
-        return properties;
-    }
-    
     // object <-> dom ///////////////////////////////////////////////////////////////
     public static Dependency parseDependency(final Element element) throws ParseException {
         final DependencyType type =
@@ -307,6 +288,76 @@ public abstract class XMLUtils {
                 Version.getVersion(element.getAttribute("version-resolved"));
         
         return new Dependency(type, uid, lower, upper, resolved);
+    }
+    
+    public static Element saveDependency(final Dependency dependency, final Element element) {
+        element.setAttribute("uid",
+                dependency.getUid());
+        
+        if (dependency.getVersionLower() != null) {
+            element.setAttribute("version-lower",
+                    dependency.getVersionLower().toString());
+        }
+        if (dependency.getVersionUpper() != null) {
+            element.setAttribute("version-upper",
+                    dependency.getVersionUpper().toString());
+        }
+        if (dependency.getVersionResolved() != null) {
+            element.setAttribute("version-resolved",
+                    dependency.getVersionResolved().toString());
+        }
+        
+        return element;
+    }
+    
+    public static List<Dependency> parseDependencies(final Element element) throws ParseException {
+        final List<Dependency> dependencies = new LinkedList<Dependency>();
+        
+        for (Element child: getChildren(element)) {
+            dependencies.add(parseDependency(child));
+        }
+        
+        return dependencies;
+    }
+    
+    public static Element saveDependencies(final List<Dependency> dependencies, final Element element) {
+        final Document document = element.getOwnerDocument();
+        
+        for (Dependency dependency: dependencies) {
+            element.appendChild(saveDependency(
+                    dependency,
+                    document.createElement(dependency.getType().toString())));
+        }
+        
+        return element;
+    }
+    
+    public static Properties parseProperties(final Element element) throws ParseException {
+        final Properties properties = new Properties();
+        
+        for (Element child: XMLUtils.getChildren(element, "property")) {
+            String name  = XMLUtils.getAttribute(child, "name");
+            String value = XMLUtils.getTextContent(child);
+            
+            properties.setProperty(name, value);
+        }
+        
+        return properties;
+    }
+    
+    public static Element saveProperties(final Properties properties, final Element element) {
+        final Document document = element.getOwnerDocument();
+        
+        for (Object key: properties.keySet()) {
+            final Element propertyElement = document.createElement("property");
+            
+            propertyElement.setAttribute("name", key.toString());
+            propertyElement.setTextContent(properties.get(key).toString());
+            
+            element.appendChild(propertyElement);
+        }
+        
+        return element;
     }
     
     public static ExtendedUri parseExtendedUri(final Element element) throws ParseException {
@@ -368,6 +419,117 @@ public abstract class XMLUtils {
             
             alternateUriElement.setTextContent(alternateUri.toString());
             element.appendChild(alternateUriElement);
+        }
+        
+        return element;
+    }
+    
+    public static List<ExtendedUri> parseExtendedUrisList(final Element element) throws ParseException {
+        final List<ExtendedUri> uris = new LinkedList<ExtendedUri>();
+        
+        for (Element uriElement: getChildren(element)) {
+            uris.add(parseExtendedUri(uriElement));
+        }
+        
+        return uris;
+    }
+    
+    public static Element saveExtendedUrisList(final List<ExtendedUri> uris, final Element element) {
+        final Document document = element.getOwnerDocument();
+        
+        for (ExtendedUri uri: uris) {
+            element.appendChild(
+                    saveExtendedUri(uri, document.createElement("file")));
+        }
+        
+        return element;
+    }
+    
+    public static Map<Locale, String> parseLocalizedString(final Element element) throws ParseException {
+        final Map<Locale, String> map = new HashMap<Locale, String>();
+        
+        final Element defaultElement = getChild(element, "default");
+        map.put(Locale.getDefault(), defaultElement.getTextContent());
+        
+        for (Element localizedElement: getChildren(element, "localized")) {
+            final Locale locale = StringUtils.parseLocale(
+                    localizedElement.getAttribute("locale"));
+            final String localizedString = StringUtils.parseAscii(
+                    localizedElement.getTextContent());
+            
+            map.put(locale, localizedString);
+        }
+        
+        return map;
+    }
+    
+    public static Element saveLocalizedString(final Map<Locale, String> map, final Element element) {
+        final Document document = element.getOwnerDocument();
+        
+        final Element defaultElement = document.createElement("default");
+        defaultElement.setTextContent(map.get(Locale.getDefault()));
+        element.appendChild(defaultElement);
+        
+        for (Locale locale: map.keySet()) {
+            if (!map.get(locale).equals(map.get(Locale.getDefault()))) {
+                final Element localizedElement = document.createElement("localized");
+                
+                localizedElement.setAttribute("locale", locale.toString());
+                localizedElement.setTextContent(map.get(locale));
+                
+                element.appendChild(localizedElement);
+            }
+        }
+        
+        return element;
+    }
+    
+    public static Feature parseFeature(final Element element) throws ParseException {
+        final String id = element.getAttribute("id");
+        final long offset = Long.parseLong(element.getAttribute("offset"));
+        final ExtendedUri iconUri = parseExtendedUri(getChild(element, "icon"));
+        
+        final Map<Locale, String> displayNames =
+                parseLocalizedString(getChild(element, "display-name"));
+        final Map<Locale, String> descriptions =
+                parseLocalizedString(getChild(element, "description"));
+        
+        return new Feature(id, offset, iconUri, displayNames, descriptions);
+    }
+    
+    public static Element saveFeature(final Feature feature, final Element element) {
+        final Document document = element.getOwnerDocument();
+        
+        element.setAttribute("id", feature.getId());
+        element.setAttribute("offset", Long.toString(feature.getOffset()));
+        
+        element.appendChild(saveExtendedUri(
+                feature.getIconUri(), document.createElement("icon")));
+        element.appendChild(saveLocalizedString(
+                feature.getDisplayNames(), document.createElement("display-name")));
+        element.appendChild(saveLocalizedString(
+                feature.getDescriptions(), document.createElement("description")));
+        
+        return element;
+    }
+    
+    public static List<Feature> parseFeaturesList(final Element element) throws ParseException {
+        final List<Feature> features = new LinkedList<Feature>();
+        
+        for (Element featureElement: XMLUtils.getChildren(element)) {
+            features.add(XMLUtils.parseFeature(featureElement));
+        }
+        
+        return features;
+    }
+    
+    public static Element saveFeaturesList(
+            final List<Feature> features, final Element element) {
+        final Document document = element.getOwnerDocument();
+        
+        for (Feature feature: features) {
+            element.appendChild(
+                    saveFeature(feature, document.createElement("feature")));
         }
         
         return element;

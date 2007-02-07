@@ -267,7 +267,7 @@ public class ManagerBean implements Manager {
             string = URLEncoder.encode("components/" + string, "UTF-8");
             component.getIconUri().setLocal(new URI(uriPrefix + string));
             
-            registry.saveProductRegistry(registryXml, new IconCorrectingFilter());
+            registry.saveProductRegistry(registryXml, new IconCorrectingFilter(), true, true, true);
             
             archive.delete();
             descriptor.delete();
@@ -341,7 +341,7 @@ public class ManagerBean implements Manager {
                 }
             }
             
-            registry.saveProductRegistry(registryXml, new IconCorrectingFilter());
+            registry.saveProductRegistry(registryXml, new IconCorrectingFilter(), true, true, true);
         } catch (InitializationException e) {
             e.printStackTrace();
             throw new ManagerException("Could not remove component", e);
@@ -447,7 +447,7 @@ public class ManagerBean implements Manager {
             string = URLEncoder.encode("groups/" + string, "UTF-8");
             group.getIconUri().setLocal(new URI(uriPrefix + string));
             
-            registry.saveProductRegistry(registryXml, new IconCorrectingFilter());
+            registry.saveProductRegistry(registryXml, new IconCorrectingFilter(), true, true, true);
             
             archive.delete();
             descriptor.delete();
@@ -518,7 +518,7 @@ public class ManagerBean implements Manager {
                 }
             }
             
-            registry.saveProductRegistry(registryXml, new IconCorrectingFilter());
+            registry.saveProductRegistry(registryXml, new IconCorrectingFilter(), true, true, true);
         } catch (InitializationException e) {
             e.printStackTrace();
             throw new ManagerException("Could not remove component", e);

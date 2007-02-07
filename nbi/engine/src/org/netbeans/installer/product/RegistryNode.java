@@ -35,7 +35,6 @@ import javax.swing.tree.TreePath;
 import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.product.filters.TrueFilter;
 import org.netbeans.installer.utils.FileProxy;
-import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.FinalizationException;
@@ -196,13 +195,13 @@ public abstract class RegistryNode implements PropertyContainer {
     public void addChild(final RegistryNode child) {
         child.setParent(this);
         
-        for (int i = 0; i < children.size(); i++) {
+        int i;
+        for (i = 0; i < children.size(); i++) {
             if (children.get(i).getOffset() > child.getOffset()) {
-                children.add(i, child);
-                return;
+                break;
             }
         }
-        children.add(child);
+        children.add(i, child);
     }
     
     public void removeChild(final RegistryNode child) {
@@ -319,62 +318,21 @@ public abstract class RegistryNode implements PropertyContainer {
         
         element.setAttribute("built", Long.toString(built.getTime()));
         
-        Element displayNameNode = document.createElement("display-name");
+        element.appendChild(XMLUtils.saveLocalizedString(
+                displayNames,
+                document.createElement("display-name")));
         
-        Element defaultNameNode = document.createElement("default");
-        defaultNameNode.setTextContent(getDisplayName());
-        displayNameNode.appendChild(defaultNameNode);
-        
-        for (Locale locale: getDisplayNames().keySet()) {
-            String localized = getDisplayName(locale);
-            
-            if (!localized.equals(getDisplayName())) {
-                Element localeNode = document.createElement("localized");
-                localeNode.setAttribute("locale", locale.toString());
-                localeNode.setTextContent(StringUtils.convertToAscii(localized));
-                displayNameNode.appendChild(localeNode);
-            }
-        }
-        element.appendChild(displayNameNode);
-        
-        Element descriptionNode = document.createElement("description");
-        
-        Element defaultDescriptionNode = document.createElement("default");
-        defaultDescriptionNode.setTextContent(getDescription());
-        descriptionNode.appendChild(defaultDescriptionNode);
-        
-        for (Locale locale: getDescriptions().keySet()) {
-            String localized = getDescription(locale);
-            
-            if (!localized.equals(getDescription())) {
-                Element localeNode = document.createElement("localized");
-                localeNode.setAttribute("locale", locale.toString());
-                localeNode.setTextContent(StringUtils.convertToAscii(localized));
-                descriptionNode.appendChild(localeNode);
-            }
-        }
-        element.appendChild(descriptionNode);
+        element.appendChild(XMLUtils.saveLocalizedString(
+                descriptions,
+                document.createElement("description")));
         
         element.appendChild(XMLUtils.saveExtendedUri(
-                iconUri, 
+                iconUri,
                 document.createElement("icon")));
         
-        if (getProperties().size() > 0) {
-            Element propertiesNode = document.createElement("properties");
-            
-            for (Object key: getProperties().keySet()) {
-                String name = (String) key;
-                
-                Element propertyNode = document.createElement("property");
-                
-                propertyNode.setAttribute("name", name);
-                propertyNode.setTextContent(getProperty(name));
-                
-                propertiesNode.appendChild(propertyNode);
-            }
-            
-            element.appendChild(propertiesNode);
-        }
+        element.appendChild(XMLUtils.saveProperties(
+                properties,
+                document.createElement("properties")));
         
         return element;
     }
@@ -385,7 +343,8 @@ public abstract class RegistryNode implements PropertyContainer {
         try {
             uid = element.getAttribute("uid");
             
-            iconUri = XMLUtils.parseExtendedUri(XMLUtils.getChild(element, "icon"));
+            iconUri = XMLUtils.parseExtendedUri(
+                    XMLUtils.getChild(element, "icon"));
             
             if (!Boolean.getBoolean(Registry.LAZY_LOAD_ICONS_PROPERTY)) {
                 final File iconFile =
@@ -402,39 +361,14 @@ public abstract class RegistryNode implements PropertyContainer {
             
             built = new Date(Long.parseLong(element.getAttribute("built")));
             
-            String displayName = XMLUtils.getChildNodeTextContent(element, "./display-name/default");
-            displayNames.put(Locale.getDefault(), displayName);
+            displayNames = XMLUtils.parseLocalizedString(
+                    XMLUtils.getChild(element, "display-name"));
             
-            nodes = XMLUtils.getChildList(element, "./display-name/localized");
-            for (Node localized: nodes) {
-                Locale locale = StringUtils.parseLocale(
-                        XMLUtils.getAttribute(localized, "locale"));
-                String localizedName = StringUtils.parseAscii(
-                        XMLUtils.getTextContent(localized));
-                
-                displayNames.put(locale, localizedName);
-            }
+            descriptions = XMLUtils.parseLocalizedString(
+                    XMLUtils.getChild(element, "description"));
             
-            String description = XMLUtils.getChildNodeTextContent(element, "./description/default");
-            descriptions.put(Locale.getDefault(), description);
-            
-            nodes = XMLUtils.getChildList(element, "./description/localized");
-            for (Node localized: nodes) {
-                Locale locale = StringUtils.parseLocale(
-                        XMLUtils.getAttribute(localized, "locale"));
-                String localizedDescription = StringUtils.parseAscii(
-                        XMLUtils.getTextContent(localized));
-                
-                descriptions.put(locale, localizedDescription);
-            }
-            
-            nodes = XMLUtils.getChildList(element, "./properties/property");
-            for (Node node: nodes) {
-                String name = XMLUtils.getAttribute(node, "name");
-                String value = XMLUtils.getTextContent(node);
-                
-                properties.setProperty(name, value);
-            }
+            properties = XMLUtils.parseProperties(
+                    XMLUtils.getChild(element, "properties"));
         } catch (ParseException e) {
             throw new InitializationException("Cannot deserialize product tree node", e);
         } catch (DownloadException e) {

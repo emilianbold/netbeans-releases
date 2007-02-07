@@ -40,6 +40,7 @@ import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.helper.FinishHandler;
 import org.netbeans.installer.utils.helper.Context;
 import org.netbeans.installer.wizard.containers.WizardContainer;
@@ -180,8 +181,10 @@ public class Wizard {
             
             child = XMLUtils.getChild(element, "properties");
             if (child != null) {
-                component.getProperties().putAll(XMLUtils.loadProperties(child));
+                component.getProperties().putAll(XMLUtils.parseProperties(child));
             }
+        } catch (ParseException e) {
+            throw new InitializationException("Could not load component", e);
         } catch (ClassNotFoundException e) {
             throw new InitializationException("Could not load component", e);
         } catch (IllegalAccessException e) {

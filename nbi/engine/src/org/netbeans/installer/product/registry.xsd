@@ -24,11 +24,11 @@
     <xsd:element name="registry">
         <xsd:complexType>
             <xsd:sequence>
+                <xsd:element name="includes" 
+                             type="extended-uris-list-type" 
+                             minOccurs="0"/>
                 <xsd:element name="properties" 
                              type="properties-list-type" 
-                             minOccurs="0"/>
-                <xsd:element name="includes" 
-                             type="includes-list-type" 
                              minOccurs="0"/>
                 <xsd:element name="features" 
                              type="features-list-type" 
@@ -58,14 +58,6 @@
         </xsd:simpleContent>
     </xsd:complexType>
     
-    <xsd:complexType name="includes-list-type">
-        <xsd:sequence>
-            <xsd:element name="include" 
-                         type="extended-uri-type" 
-                         maxOccurs="unbounded"/>
-        </xsd:sequence>
-    </xsd:complexType>
-    
     <xsd:complexType name="features-list-type">
         <xsd:sequence>
             <xsd:element name="feature" 
@@ -76,13 +68,17 @@
     
     <xsd:complexType name="feature-type">
         <xsd:sequence>
-            <xsd:element name="name" 
+            <xsd:element name="icon"
+                         type="extended-uri-type"/>
+            <xsd:element name="display-name" 
                          type="localizable-string-type"/>
             <xsd:element name="description" 
                          type="localizable-string-type"/>
         </xsd:sequence>
         <xsd:attribute name="id" 
                        type="xsd:string"/>
+        <xsd:attribute name="offset" 
+                       type="xsd:integer"/>
     </xsd:complexType>
     
     <xsd:complexType name="components-list-type">
@@ -138,9 +134,9 @@
                          type="properties-list-type" 
                          minOccurs="0"/>
             <xsd:element name="configuration-logic" 
-                         type="files-list-type"/>
+                         type="extended-uris-list-type"/>
             <xsd:element name="installation-data" 
-                         type="files-list-type"/>
+                         type="extended-uris-list-type"/>
             <xsd:element name="system-requirements" 
                          type="system-requirements-type"/>
             <xsd:element name="dependencies" 
@@ -201,7 +197,7 @@
     <xsd:complexType name="system-requirements-type">
         <xsd:sequence>
             <xsd:element name="disk-space" 
-                         type="xsd:positiveInteger"/>
+                         type="xsd:nonNegativeInteger"/>
         </xsd:sequence>
     </xsd:complexType>
     
@@ -225,7 +221,7 @@
         </xsd:simpleContent>
     </xsd:complexType>
     
-    <xsd:complexType name="files-list-type">
+    <xsd:complexType name="extended-uris-list-type">
         <xsd:sequence>
             <xsd:element name="file" 
                          type="extended-uri-type" 
@@ -243,7 +239,7 @@
                          maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="size" 
-                       type="xsd:positiveInteger"/>
+                       type="xsd:nonNegativeInteger"/>
         <xsd:attribute name="md5" 
                        type="xsd:string"/>
     </xsd:complexType>

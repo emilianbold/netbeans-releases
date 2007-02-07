@@ -22,11 +22,13 @@ package org.netbeans.installer.product.filters;
 
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.RegistryNode;
-import org.netbeans.installer.utils.helper.DetailedStatus;
-import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.helper.DetailedStatus;
+import org.netbeans.installer.utils.helper.Feature;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.Version;
 
@@ -45,33 +47,16 @@ public class ProductFilter implements RegistryFilter {
     private Status status;
     private DetailedStatus detailedStatus;
     
-    public ProductFilter() {
-        platforms = new LinkedList<Platform>();
-    }
+    private Feature feature;
     
-    public ProductFilter(final Status status) {
-        this();
-        
-        this.status = status;
+    public ProductFilter() {
+        this.platforms = new LinkedList<Platform>();
     }
     
     public ProductFilter(final Platform platform) {
         this();
         
         this.platforms.add(platform);
-    }
-    
-    public ProductFilter(final Status status, final Platform platform) {
-        this();
-        
-        this.status = status;
-        this.platforms.add(platform);
-    }
-    
-    public ProductFilter(final DetailedStatus detailedStatus) {
-        this();
-        
-        this.detailedStatus = detailedStatus;
     }
     
     public ProductFilter(final String uid, final Platform platform) {
@@ -84,23 +69,16 @@ public class ProductFilter implements RegistryFilter {
     public ProductFilter(final String uid, final Version version, final Platform platform) {
         this();
         
-        this.uid          = uid;
+        this.uid = uid;
         this.versionLower = version;
         this.versionUpper = version;
         this.platforms.add(platform);
     }
     
-    public ProductFilter(final String uid, final List<Platform> platforms) {
-        this();
-        
-        this.uid          = uid;
-        this.platforms.addAll(platforms);
-    }
-    
     public ProductFilter(final String uid, final Version version, final List<Platform> platforms) {
         this();
         
-        this.uid          = uid;
+        this.uid = uid;
         this.versionLower = version;
         this.versionUpper = version;
         this.platforms.addAll(platforms);
@@ -112,6 +90,35 @@ public class ProductFilter implements RegistryFilter {
         this.uid          = uid;
         this.versionLower = versionLower;
         this.versionUpper = versionUpper;
+        this.platforms.add(platform);
+    }
+    
+    public ProductFilter(final Status status) {
+        this(status, Registry.getInstance().getTargetPlatform());
+    }
+    
+    public ProductFilter(final Status status, final Platform platform) {
+        this();
+        
+        this.status = status;
+        this.platforms.add(platform);
+    }
+    
+    public ProductFilter(final DetailedStatus detailedStatus) {
+        this(detailedStatus, Registry.getInstance().getTargetPlatform());
+    }
+    
+    public ProductFilter(final DetailedStatus detailedStatus, final Platform platform) {
+        this();
+        
+        this.detailedStatus = detailedStatus;
+        this.platforms.add(platform);
+    }
+    
+    public ProductFilter(final Feature feature, final Platform platform) {
+        this();
+        
+        this.feature = feature;
         this.platforms.add(platform);
     }
     
@@ -133,9 +140,7 @@ public class ProductFilter implements RegistryFilter {
             }
             
             if (platforms.size() > 0) {
-                if (!SystemUtils.intersects(
-                        product.getPlatforms(),
-                        platforms)) {
+                if (!SystemUtils.intersects(platforms, product.getPlatforms())) {
                     return false;
                 }
             }
@@ -149,6 +154,14 @@ public class ProductFilter implements RegistryFilter {
             if (detailedStatus != null) {
                 if (product.getDetailedStatus() != detailedStatus) {
                     return false;
+                }
+            }
+            
+            if (feature != null) {
+                for (String id: product.getFeatures()) {
+                    if (feature.getId().equals(id)) {
+                        return false;
+                    }
                 }
             }
             

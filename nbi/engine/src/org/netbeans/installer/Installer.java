@@ -46,6 +46,7 @@ import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.UiUtils;
+import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.EngineResources;
@@ -54,7 +55,6 @@ import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.FinishHandler;
 import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.wizard.Wizard;
-import org.w3c.dom.Document;
 
 /**
  * The main class of the NBI framework. It represents the installer and
@@ -631,8 +631,9 @@ public class Installer implements FinishHandler {
             jos.putNextEntry(new JarEntry(EngineResources.DATA_DIRECTORY + StringUtils.FORWARD_SLASH +
                     "bundled-registry.xml"));
             
-            Document doc = Registry.getInstance().getEmptyRegistryDocument();
-            Registry.getInstance().saveRegistryDocument(doc,jos);
+            XMLUtils.saveXMLDocument(
+                    Registry.getInstance().getEmptyRegistryDocument(), 
+                    jos);
             
             jos.putNextEntry(new JarEntry(EngineResources.ENGINE_CONTENTS_LIST));
             jos.write(StringUtils.asString(entries, SystemUtils.getLineSeparator()).getBytes());

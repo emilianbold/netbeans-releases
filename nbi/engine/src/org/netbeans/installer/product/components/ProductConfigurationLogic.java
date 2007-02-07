@@ -63,12 +63,14 @@ public abstract class ProductConfigurationLogic {
             final File installLocation = getProduct().getInstallationLocation();
             
             if (!installLocation.exists()) {
-                return getString(
+                return ResourceUtils.getString(
+                        ProductConfigurationLogic.class,
                         "PCL.validation.directory.missing",
                         installLocation);
             }
             if (!installLocation.isDirectory()) {
-                return getString(
+                return ResourceUtils.getString(
+                        ProductConfigurationLogic.class,
                         "PCL.validation.directory.file",
                         installLocation);
             }
