@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
  The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
 
 -->
@@ -59,7 +59,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 	</xsl:if>
 	<P>	
 		<UL>
-			<LI>This page was generated at: <xsl:value-of select="java:java.util.Date.new()"/></LI>
+			<LI>This page was generated at: <xsl:value-of select="string(java:java.util.Date.new())"/></LI>
 		</UL>
 	</P>
 	
