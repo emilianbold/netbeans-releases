@@ -99,8 +99,8 @@ public class ListServerInstances extends JPanel implements WizardConstants{
         serverListCB.getAccessibleContext().setAccessibleName(bundle.getString("LBL_select_server"));  //NOI18N
         serverListCB.getAccessibleContext().setAccessibleDescription(bundle.getString( "LBL_select_server"));  //NOI18N
         
-        JLabel selectLabel = new JLabel(bundle.getString("LBL_select_server"));  //NOI18N
-        selectLabel.setDisplayedMnemonic(bundle.getString("LBL_select_server_Mnemonic").charAt(0));  //NOI18N
+        JLabel selectLabel = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(selectLabel,bundle.getString("LBL_select_server"));  //NOI18N
         selectLabel.setLabelFor(serverListCB);
         
         msgArea = new JTextArea(4, 1);
@@ -109,8 +109,8 @@ public class ListServerInstances extends JPanel implements WizardConstants{
         msgArea.setEditable(false);
         msgArea.setBackground(p.getBackground());
         
-        applyButton = new JButton(bundle.getString("LBL_Register"));  //NOI18N
-        applyButton.setMnemonic(bundle.getString( "LBL_Register_Mnemonic").charAt(0));  //NOI18N
+        applyButton = new JButton();
+        org.openide.awt.Mnemonics.setLocalizedText(applyButton,bundle.getString("LBL_Register"));  //NOI18N
         applyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 applyButton.setEnabled(false);
@@ -119,8 +119,8 @@ public class ListServerInstances extends JPanel implements WizardConstants{
             }
         });
         
-        closeButton = new JButton(bundle.getString("LBL_Close"));  //NOI18N
-        closeButton.setMnemonic(bundle.getString( "LBL_Close_Mnemonic").charAt(0));  //NOI18N
+        closeButton = new JButton();
+        org.openide.awt.Mnemonics.setLocalizedText(closeButton,bundle.getString("LBL_Close"));  //NOI18N
         
         p.setLayout(new GridBagLayout());
         
