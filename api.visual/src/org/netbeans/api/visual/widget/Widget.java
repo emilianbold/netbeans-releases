@@ -1058,22 +1058,15 @@ public class Widget {
         }
 
         if (! checkClipping  ||  bounds.intersects (gr.getClipBounds ())) {
-            Border border = getBorder ();
-            Insets insets = border.getInsets ();
-
-            if (isOpaque ()) {
-                gr.setPaint (getBackground ());
-                if (border.isOpaque ()) {
-                    gr.fillRect (bounds.x, bounds.y, bounds.width, bounds.height);
-                } else {
-                    gr.fillRect (bounds.x + insets.left, bounds.y + insets.top, bounds.width - insets.left - insets.right, bounds.height - insets.top - insets.bottom);
-                }
-            }
+            if (opaque)
+                paintBackground ();
 
             border.paint (gr, new Rectangle (bounds));
 
-            if (checkClipping)
+            if (checkClipping) {
+                Insets insets = border.getInsets ();
                 gr.clipRect (bounds.x + insets.left, bounds.y + insets.top, bounds.width - insets.left - insets.right, bounds.height - insets.top - insets.bottom);
+            }
 
             paintWidget ();
             paintChildren ();
@@ -1083,6 +1076,20 @@ public class Widget {
             gr.setClip (tempClip);
 
         gr.setTransform(previousTransform);
+    }
+
+    /**
+     * Called to paint the widget background itself only using the Graphics2D instance acquired from Scene.getGraphics method.
+     */
+    protected void paintBackground () {
+        Graphics2D gr = scene.getGraphics();
+        Insets insets = border.getInsets ();
+
+        gr.setPaint (background);
+        if (border.isOpaque ())
+            gr.fillRect (bounds.x, bounds.y, bounds.width, bounds.height);
+        else
+            gr.fillRect (bounds.x + insets.left, bounds.y + insets.top, bounds.width - insets.left - insets.right, bounds.height - insets.top - insets.bottom);
     }
 
     /**
