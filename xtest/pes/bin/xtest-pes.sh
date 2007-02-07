@@ -127,12 +127,16 @@ pes_server_reconfigure() {
 pes_server_cmd() {
 	pes_cmd=${1:-run}	
 	# create PES' classpath
+        SEP=:
+        case "`uname`" in
+            CYGWIN*) SEP=";";;
+        esac
    	pes_classpath=""
    	for i in ${PES_HOME}/lib/*.jar ; do
                 if [ -z "${pes_classpath}" ]; then
            		pes_classpath=$i
                 else 
-                        pes_classpath=${pes_classpath}';'$i
+                        pes_classpath=${pes_classpath}${SEP}$i
                 fi
    	done
 	debug_parameters=""
