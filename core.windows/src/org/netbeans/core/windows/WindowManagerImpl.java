@@ -807,7 +807,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     
     private static final boolean NAME_HACK = Boolean.getBoolean("nb.tabnames.html"); //NOI18N
     
-    /** Helper method to retrieve soem form of display name of TopComponent.
+    /** Helper method to retrieve some form of display name of TopComponent.
      * First tries TopComponent's getHtmlDisplayName, if is it null then continues
      * with getDisplayName and getName in this order.
      *
