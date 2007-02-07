@@ -1343,9 +1343,13 @@ public class WebForm implements Designer {
     // XXX
     //////
 
-    /** XXX Temporary only until all modification stuff is moved from designer to designer/jsf. */
-    public void setUpdatesSuspended(MarkupDesignBean markupDesignBean, boolean suspend) {
-        htmlDomProvider.setUpdatesSuspended(markupDesignBean, suspend);
+//    /** XXX Temporary only until all modification stuff is moved from designer to designer/jsf. */
+//    public void setUpdatesSuspended(MarkupDesignBean markupDesignBean, boolean suspend) {
+//        htmlDomProvider.setUpdatesSuspended(markupDesignBean, suspend);
+//    }
+    
+    public void setUpdatesSuspended(Element componentRootElement, boolean suspend) {
+        htmlDomProvider.setUpdatesSuspended(componentRootElement, suspend);
     }
 
     public boolean isRefreshPending() {
