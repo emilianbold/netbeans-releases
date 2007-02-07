@@ -55,6 +55,8 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Petr Kuzel
  */
 public class CommitAction extends ContextAction {
+    
+    static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
 
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Commit";    // NOI18N
@@ -171,6 +173,7 @@ public class CommitAction extends ContextAction {
             
             final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final String message = panel.messageTextArea.getText();
+            org.netbeans.modules.versioning.util.Utils.insert(SvnModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message, 20);
 
             SVNUrl repository = getSvnUrl(ctx);
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);

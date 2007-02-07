@@ -22,11 +22,18 @@ package org.netbeans.modules.subversion.ui.commit;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.util.StringSelector;
+import org.openide.util.NbBundle;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import java.util.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.Cursor;
 
 /**
  *
@@ -56,6 +63,18 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+
+        recentLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        recentLink.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                onBrowseRecentMessages();
+            }
+        });
+        
+        List<String> messages = Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
+        if (messages.size() > 0) {
+            messageTextArea.setText(messages.get(0));
+        }
         messageTextArea.selectAll();
     }
 
@@ -63,6 +82,15 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
         commitTable.getTableModel().removeTableModelListener(this);
         SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         super.removeNotify();
+    }
+    
+    private void onBrowseRecentMessages() {
+        String message = StringSelector.select(NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_RecentTitle"), 
+                                               NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_RecentPrompt"), 
+            Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
+        if (message != null) {
+            messageTextArea.setText(message);
+        }
     }
     
     public void preferenceChange(PreferenceChangeEvent evt) {
@@ -105,12 +133,14 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
         filesPanel.setLayout(filesPanelLayout);
         filesPanelLayout.setHorizontalGroup(
             filesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 626, Short.MAX_VALUE)
+            .add(0, 630, Short.MAX_VALUE)
         );
         filesPanelLayout.setVerticalGroup(
             filesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 205, Short.MAX_VALUE)
+            .add(0, 189, Short.MAX_VALUE)
         );
+
+        org.openide.awt.Mnemonics.setLocalizedText(recentLink, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_RecentLink")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -119,9 +149,12 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 462, Short.MAX_VALUE)
+                        .add(recentLink))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, filesLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2))
                 .addContainerGap())
@@ -130,13 +163,15 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(recentLink))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(15, 15, 15)
                 .add(filesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
+                .add(filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel2)
                 .addContainerGap())
@@ -159,6 +194,7 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
     final javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
     final javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
     final javax.swing.JTextArea messageTextArea = new javax.swing.JTextArea();
+    final javax.swing.JLabel recentLink = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
     
 }
