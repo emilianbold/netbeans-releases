@@ -108,8 +108,11 @@ final class UINode extends AbstractNode implements VisualData {
             setDisplayName(NbBundle.getMessage(UINode.class, "MSG_DisabledModules"));
             setIconBaseWithExtension("org/netbeans/modules/uihandler/module.gif");
             htmlKey = null;
+        } else if (Installer.USER_CONFIGURATION.equals(r.getMessage())){// NOI18N
+            setDisplayName(NbBundle.getMessage(UINode.class, "MSG_USER_CONFIGURATION"));
+            htmlKey = null;
         }
-            
+
         
         Sheet.Set s = Sheet.createPropertiesSet();
         s.put(createPropertyDate(this));
