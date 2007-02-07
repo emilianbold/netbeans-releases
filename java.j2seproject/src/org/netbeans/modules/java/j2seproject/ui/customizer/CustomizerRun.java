@@ -29,13 +29,13 @@ import java.io.File;
 import java.text.Collator;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -45,14 +45,17 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
+import org.netbeans.modules.java.j2seproject.api.J2SERunConfigProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -66,11 +69,16 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
     J2SEProjectProperties uiProperties;
     
+    private J2SERunConfigProvider compProvider;
+    
     public CustomizerRun( J2SEProjectProperties uiProperties ) {
         this.uiProperties = uiProperties;
         initComponents();
-
+        
         this.project = uiProperties.getProject();
+        
+        compProvider = Lookup.getDefault().lookup(J2SERunConfigProvider.class);
+        initExtPanel(project);
         
         configs = uiProperties.RUN_CONFIGS;
         
@@ -192,9 +200,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelVMOptions = new javax.swing.JLabel();
         jTextVMOptions = new javax.swing.JTextField();
         jLabelVMOptionsExample = new javax.swing.JLabel();
+        extPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -218,7 +226,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 configComboActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -232,7 +239,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 configNewActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 0);
@@ -244,7 +250,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 configDelActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 0);
@@ -264,7 +269,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(jLabelMainClass, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -286,7 +290,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         mainPanel.add(jLabelArgs, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -302,7 +305,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(jLabelWorkingDirectory, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -319,7 +321,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 jButtonWorkingDirectoryBrowseActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -334,7 +335,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(jLabelVMOptions, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -347,8 +347,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
@@ -361,12 +359,43 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         add(mainPanel, gridBagConstraints);
 
+        extPanel.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(extPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void initExtPanel(Project p) {
+        if (compProvider != null) {
+            J2SERunConfigProvider.ConfigChangeListener ccl = new J2SERunConfigProvider.ConfigChangeListener() {
+                public void propertiesChanged(Map<String, String> updates) {
+                    // update active configuration
+                    Map<String,String> m = configs.get(uiProperties.activeConfig);
+                    m.putAll(updates);
+                }
+            };
+            JComponent comp = compProvider.createComponent(p, ccl);
+            if (comp != null) {
+                java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
+                constraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+                constraints.gridx = 0;
+                constraints.gridy = 0;
+                constraints.weightx = 1.0;
+                constraints.weighty = 1.0;
+                extPanel.add(comp, constraints);
+            }
+        }
+    }
+    
     private void configDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configDelActionPerformed
         String config = (String) configCombo.getSelectedItem();
         assert config != null;
@@ -454,6 +483,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         Map<String,String> m = configs.get(activeConfig);
         Map<String,String> def = configs.get(null);
         if (m != null) {
+            if (compProvider != null) {
+                compProvider.configUpdated(m);
+            }
             for (int i = 0; i < data.length; i++) {
                 String v = m.get(keys[i]);
                 if (v == null) {
@@ -474,6 +506,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JButton configNew;
     private javax.swing.JPanel configPanel;
     private javax.swing.JSeparator configSep;
+    private javax.swing.JPanel extPanel;
     private javax.swing.JButton jButtonMainClass;
     private javax.swing.JButton jButtonWorkingDirectoryBrowse;
     private javax.swing.JLabel jLabelArgs;
