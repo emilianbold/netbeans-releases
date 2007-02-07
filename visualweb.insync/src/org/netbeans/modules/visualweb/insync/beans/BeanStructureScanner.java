@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.insync.beans;
 
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.java.JavaClassAdapter;
 import org.netbeans.modules.visualweb.insync.java.JavaUnit;
@@ -130,10 +131,9 @@ public class BeanStructureScanner {
      * @param requiredImports An array of classes to be imported, or null to import nothing
      * @return The existing or newly created method.
      */
-    public  Object/*ExecutableElement*/ ensureEventMethod(MethodDescriptor md, String name, 
+    public  ElementHandle ensureEventMethod(MethodDescriptor md, String name, 
                                     String defaultBody, String[] parameterNames,
                                     String[] requiredImports) {
-/*// NB6.0
         Class retType = md.getMethod().getReturnType();
         String body = defaultBody;
         if(defaultBody == null) {
@@ -155,31 +155,25 @@ public class BeanStructureScanner {
             String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureEventMethod"); //NOI18N
             event = beansUnit.getModel().writeLock(eventName);
             boolean rollback = true;
-            try {
-                JMIUtils.beginTrans(true);
+                /*
                 if (requiredImports != null) {
                     for (int i = 0; i < requiredImports.length; i++) {
                         JMIUtils.addImport(javaUnit.getJavaClass(), requiredImports[i]);
                     }
                 }
+                 * */
                 
                 org.netbeans.modules.visualweb.insync.java.MethodInfo info =
                         new org.netbeans.modules.visualweb.insync.java.MethodInfo(name, retType, Modifier.PUBLIC,
                         pns, pts, body, null);
                 
-                Method m = (Method)beansUnit.getThisClass().addMethod(info);
-                rollback = false;
-                return m;
-            }finally {
-                JMIUtils.endTrans(rollback);
-            }
+                return beansUnit.getThisClass().addMethod(info);
+
         }finally {
             if(event != null) {
                 beansUnit.getModel().writeUnlock(event);
             }
         }
- //*/
-        return null;
     }
 
     /**

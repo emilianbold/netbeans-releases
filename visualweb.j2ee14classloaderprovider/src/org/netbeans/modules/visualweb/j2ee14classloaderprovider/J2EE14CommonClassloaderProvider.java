@@ -51,9 +51,9 @@ public class J2EE14CommonClassloaderProvider implements CommonClassloaderProvide
         // discovered and loaded by the JSF1.2 RI. Ideally thin jars containing
         // the META-INF/faces-config.xml should be used. The classes should be loded
         // from the modules themselves.
-        "jar:nbinst:///modules/com-sun-rave-jsfsupport-designtime.jar!/", // NOI18N
-        "jar:nbinst:///modules/com-sun-rave-jsfsupport-designtime_1_1.jar!/", // NOI18N
-        "jar:nbinst:///modules/com-sun-rave-webui-designtime.jar!/", // NOI18N
+        "jar:nbinst:///modules/org-netbeans-modules-visualweb-jsfsupport-designtime.jar!/", // NOI18N
+        "jar:nbinst:///modules/org-netbeans-modules-visualweb-jsfsupport-designtime_1_1.jar!/", // NOI18N
+        "jar:nbinst:///modules/org-netbeans-modules-visualweb-webui-designtime.jar!/", // NOI18N
         // The following two jars are here for special handling of JSF1.1 Standard components
         // and renderkits
         "jar:nbinst:///modules/ext/jsf-api.jar!/", // NOI18N

@@ -19,7 +19,7 @@
 package org.netbeans.modules.visualweb.insync.beans;
 
 import org.netbeans.modules.visualweb.insync.java.JMIUtils;
-import org.netbeans.modules.visualweb.insync.java.JavaClassAdapter;
+import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
@@ -63,7 +63,7 @@ public class BeansUnit implements Unit {
 
     protected String packageName;  // package this unit resides in. Same as junit.getPackage().getName()
 
-    protected JavaClassAdapter javaClass;
+    protected JavaClass javaClass;
 
     protected ParserAnnotation error;
 
@@ -223,7 +223,7 @@ public class BeansUnit implements Unit {
         // If the JavaUnit does not have a class defined in it, then I will re-use the same scanner
         // so that a similar class is re-created.
         if (getJavaUnit().getJavaClass() != null) {
-            javaClass = new JavaClassAdapter(junit, getJavaUnit().getJavaClass());
+            javaClass = getJavaUnit().getJavaClass();//new JavaClassAdapter(junit, getJavaUnit().getJavaClass());
             for(int i=0; i<FacesModel.managedBeanNames.length; i++) {
                 if(getThisClass().isSubTypeOf(FacesModel.managedBeanNames[i])) {
                     isPageBean = FacesModel.managedBeanIsPage[i];
@@ -255,15 +255,15 @@ public class BeansUnit implements Unit {
      * Bind beans & their properties, events and parents
      */
     protected void bind() {
-/*//NB6.0
         bindBeans();
+/*//NB6.0
         StatementBlock[] blocks = getInitBlocks();
         for(int i = 0; i < blocks.length; i++) {
             bindProperties(blocks[i]);
             bindEventSets(blocks[i]);
         }
+ //*/
         bindBeanParents();
-//*/
     }
 
     //---------------------------------------------------------------------------------- Unit Output
@@ -458,126 +458,39 @@ public class BeansUnit implements Unit {
      * Run a second parent-child wiring pass
      */
     protected void bindBeans() {
-/*//NB6.0
         beans.clear();
-        try {
-            JMIUtils.beginTrans(false);
-            // scan methods for possible getters, & attempt to bind to the associated bean
-            Method[] methods = javaClass.getMethods();
-            for (int i = 0; i < methods.length; i++) {
-                Bean b = bindBean(methods[i]);
-                if (b != null)
-                    beans.add(b);
+        HashMap<String, String> props = javaClass.getPropertiesNamesAndTypes();
+        for(String key : props.keySet()) {
+            Bean bean = bindBean(key, props.get(key));
+            if(bean != null) {
+                beans.add(bean);
             }
-        }finally {
-            JMIUtils.endTrans();
         }
- //*/
-   }
-
-   /**
-    * Run a pass over the beans to see if they need to do parent-child wiring
-    */
-   protected void bindBeanParents() {
-       for (Iterator i = beans.iterator(); i.hasNext(); ) {
-           Bean b = (Bean)i.next();
-           Bean parent = b.bindParent();
-           if (parent != null)
-               parent.addChild(b, null);
-       }
    }
 
     /**
-     * Create a bean bound to a given accessor, but only if it truly represents a bean.
-     *
-     * @param field
-     * @return the new bound bean if bindable, else null
+     * Run a pass over the beans to see if they need to do parent-child wiring
      */
-    protected Bean bindBean(Object/*ExecutableElement*/ getter) {
-/*//NB6.0
-        // can't be abstract or static, and must be public
-        long modifiers = getter.getModifiers();
-        if ((modifiers & (Modifier.ABSTRACT | Modifier.STATIC)) != 0
-                || (modifiers & Modifier.PUBLIC) == 0)
-            return null;
-
-        // must have zero parameters & some form of result (not a ctor)
-        if (getter.getParameters().size() != 0 || getter.getType() == null)
-            return null;
-
-        Type type = getter.getType();
-        if(type.getName().equals("void"))
-            return null;
-        /*
-        // can't have void result type, or no type which represents an <init> method
-        if (getter.getResultType() == null || getter.getResultType().getSymbol() == null)
-            return null;
-        String type = getter.getResultType().getSymbol().getFullNameWithDims();
-        if (type == null || type.equals("void"))  //NOI18N
-            return null;
-         ** /
-
-        // must have a getXxx style name (or isXxx for boolean)
-        String name = Naming.propertyName(getter.getName(), type.getName().equals("boolean"));
-        if (name == null)
-            return null;
-        
-        // HACK During startup JMI/MDR does not correctly return the FQN for Classes from
-        // java.lang. This probably happen because there is no explicit import required for
-        // classes from java.lang.
-        String typeName = type.getName();
-        
-        Type componentType = type;
-        
-        // if array find the component type
-        while (componentType instanceof org.netbeans.jmi.javamodel.Array) {
-            componentType = ((org.netbeans.jmi.javamodel.Array) componentType).getType();
+    protected void bindBeanParents() {
+        for (Iterator i = beans.iterator(); i.hasNext(); ) {
+            Bean b = (Bean)i.next();
+            Bean parent = b.bindParent();
+            if (parent != null)
+                parent.addChild(b, null);
         }
-        
+    }
+    
+    protected Bean bindBean(String name, String typeName) {
         // Scan all type/name pairs for later name generation
         scanName(typeName, name);
-
-        // Get matching field, but ignore fields that cannot be beans
-        Field field = javaClass.getField(name);
-        if (field != null) {
-            long fm = field.getModifiers();
-            if ((fm & Modifier.STATIC) != 0)
-                field = null;
-        }
-
         // make sure we can obtain the bean's beaninfo
         BeanInfo bi = getBeanInfo(typeName);
         if (bi == null) {
-            //If the project is open along with IDE open, MDR doesn't resolve the types
-            //Example - we get the type name as String for java.lang.String
-            //Therefore using a utility method to get the type
-            if (componentType instanceof JavaClass) {
-                Class clazz = JMIUtils.getType(typeName, getJavaUnit().getPackageName());
-                if(clazz != null) {
-                    bi = getBeanInfo(clazz, getClassLoader());
-                }
-            }
-            if(bi == null) {
-                return null;
-            }
+            return null;
         }
-
-        String sname = Naming.setterName(name);
-        
-        Method setter = javaClass.getMethod(
-                sname, new Class[]{bi.getBeanDescriptor().getBeanClass()});
-        assert Trace.trace("insync.beans", "BU.bindBean name:" + name + " getter:" + getter);  //NOI18N
-
-        // getter is required, but field and setter are optional
-        if (getter != null) {
-            return newBoundBean(bi, name, field, getter, setter);
-        }
-
-        return null;
- //*/
-        return null;
+        return newBoundBean(bi, name, null, null, null);
     }
-
+    
     /**
      * @param s
      * @return
@@ -682,7 +595,7 @@ public class BeansUnit implements Unit {
     /**
      * @return
      */
-    public JavaClassAdapter getThisClass() {
+    public JavaClass getThisClass() {
         return javaClass;
     }
 

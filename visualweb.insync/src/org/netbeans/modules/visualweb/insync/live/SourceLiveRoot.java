@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.visualweb.insync.live;
 
-import org.netbeans.modules.visualweb.insync.java.JavaClassAdapter;
+import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 
@@ -49,7 +49,7 @@ public class SourceLiveRoot extends SourceDesignBean {
      */
     public String getInstanceName() {
         if(unit.sourceUnit != null) {
-            JavaClassAdapter adapterClass = unit.sourceUnit.getThisClass();
+            JavaClass adapterClass = unit.sourceUnit.getThisClass();
             if( adapterClass != null)
                 return adapterClass.getShortName();
         }

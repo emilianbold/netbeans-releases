@@ -20,7 +20,7 @@ package org.netbeans.modules.visualweb.insync.live;
 
 import org.netbeans.modules.visualweb.insync.java.ClassUtil;
 import org.netbeans.modules.visualweb.insync.java.JMIUtils;
-import org.netbeans.modules.visualweb.insync.java.JavaClassAdapter;
+import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -270,7 +270,7 @@ public class ContextMethodHelper {
         if(method == null || method.getDesignContext() != lu)
             return null;
 
-        JavaClassAdapter javaClass = lu.getSourceUnit().getThisClass();
+        JavaClass javaClass = lu.getSourceUnit().getThisClass();
 /*//NB6.0
         JMIUtils.beginTrans(true);
         boolean rollback = true;

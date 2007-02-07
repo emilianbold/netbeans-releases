@@ -120,7 +120,7 @@ public class FacesBean extends MarkupBean {
             if (parent instanceof UIComponent) {
                 String facetName = this.getFacetName();
                 if (facetName != null) {
-                    ((UIComponent)parent).getFacets().put(facetName, instance);
+                    ((UIComponent)parent).getFacets().put(facetName, (UIComponent)instance);
                 }
                 else {
                     int index = pos != null ? pos.getIndex() : -1;

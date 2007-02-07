@@ -78,7 +78,7 @@ public class BeansDesignBean extends SourceDesignBean {
             if (cmn != null) {
                 try {
                     Method cm = instance.getClass().getMethod(cmn, new Class[] {});
-                    cm.invoke(instance, null);
+                    cm.invoke(instance);
                 }
                 catch (Exception e) {
                     //e.printStackTrace();

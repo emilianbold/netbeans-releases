@@ -24,7 +24,7 @@ import com.sun.rave.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.insync.FacesDnDSupport;
 import org.netbeans.modules.visualweb.insync.InSyncServiceProvider;
 import org.netbeans.modules.visualweb.insync.java.JMIUtils;
-import org.netbeans.modules.visualweb.insync.java.JavaClassAdapter;
+import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import org.netbeans.modules.visualweb.insync.java.JavaUnit;
 
 import java.beans.BeanInfo;
@@ -426,8 +426,6 @@ public class FacesModel extends Model {
      * @param cl The new classloader.
      */
     void updateClassLoader(ClassLoader cl) {
-        if (javaUnit != null)
-            javaUnit.setClassLoader((URLClassLoader)cl);
         if (beansUnit != null)
             beansUnit.setClassLoader(cl);
     }
@@ -764,7 +762,7 @@ public class FacesModel extends Model {
 
         //In case we are reacting to .java file creation but before the file is
         //well formed, we may not be able to get the public class
-        Object/*TypeElement or ClassType*/ javaClass = javaUnit.getJavaClass();
+        JavaClass javaClass = javaUnit.getJavaClass();
         if(javaClass == null) {
             javaUnit.setBusted();
             return;
@@ -774,7 +772,7 @@ public class FacesModel extends Model {
         //Check if we are working with our known managed beans
         boolean isModelledManagedBean = false;
         for(int i=0; i<managedBeanNames.length; i++) {
-            if(JMIUtils.isSubTypeOf(javaClass, managedBeanNames[i])) {
+            if(javaClass.isSubTypeOf(managedBeanNames[i])) {
                 isModelledManagedBean = true;
                 break;
             }
@@ -792,7 +790,6 @@ public class FacesModel extends Model {
             return;
         }
         
-        javaUnit.setSourcepath(sourceFolderFile.getAbsolutePath());
         javaUnit.sync();
         if (javaUnit.getState() != Unit.State.CLEAN) {
             return;
@@ -877,7 +874,7 @@ public class FacesModel extends Model {
         // update the missing MB entry in the MBM, getting scope based on the superclass of the bean
         //!CQ consider fixing broken entry settings in some cases
         if (mb == null) {
-            JavaClassAdapter javaClass = beansUnit.getThisClass();
+            JavaClass javaClass = beansUnit.getThisClass();
             for(int i=0; i<managedBeanNames.length; i++) {
                 if(javaClass.isSubTypeOf(managedBeanNames[i])) {
                     UndoEvent event = null;
@@ -913,7 +910,7 @@ public class FacesModel extends Model {
         return getScope(getBeansUnit().getThisClass());
     }
 
-    public ManagedBean.Scope getScope(JavaClassAdapter type) {
+    public ManagedBean.Scope getScope(JavaClass type) {
         if (type == null)
             return null;
         for(int i=0; i<managedBeanNames.length; i++) {

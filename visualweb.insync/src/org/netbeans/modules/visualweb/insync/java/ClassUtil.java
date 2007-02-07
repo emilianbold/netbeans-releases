@@ -69,7 +69,6 @@ public class ClassUtil {
         return Class.forName(type, true, cl);
     }
 
-
     /**
      * Get the actual class given its type. The type may be a primitive and/or it
      * may be an array.
@@ -81,72 +80,5 @@ public class ClassUtil {
     public static Class getClass(String type) throws ClassNotFoundException {
         //Use the project classloader to load the class
         return getClass(type, FacesContainer.getCurrentLoader(ClassUtil.class));
-    }
-
-    static HashMap arrayTypeKeyHash = new HashMap();
-    static {
-        arrayTypeKeyHash.put("B", "byte");   //NOI18N
-        arrayTypeKeyHash.put("C", "char");   //NOI18N
-        arrayTypeKeyHash.put("D", "double");   //NOI18N
-        arrayTypeKeyHash.put("F", "float");   //NOI18N
-        arrayTypeKeyHash.put("I", "int");   //NOI18N
-        arrayTypeKeyHash.put("J", "long");   //NOI18N
-        arrayTypeKeyHash.put("S", "short");   //NOI18N
-        arrayTypeKeyHash.put("Z", "boolean");   //NOI18N
-        arrayTypeKeyHash.put("V", "void");   //NOI18N
-    }
-
-    /*
-     * Returns the simple name of the underlying class as given
-     * in the source code.
-     */
-    public static String getSimpleName(String tn) {
-        if (isArray(tn)) {
-            String retStr = getArrayType(tn);
-            for (int i = 0; i < getArrayDimension(tn); i++) {
-                retStr += "[]";   //NOI18N
-            }
-            return retStr;
-        }
-        return tn;
-    }
-
-    /*
-     * Returns array dimension given its internal form of the name
-     */
-    public static int getArrayDimension(String tn) {
-        int dim = 0;
-        while (tn.startsWith("[")) {   //NOI18N
-            tn = tn.substring(1);
-            dim++;
-        }
-        return dim;
-    }
-
-    /*
-     * Checks if the given string in internal form represents an array
-     */
-    public static boolean isArray(String tn) {
-        return tn.startsWith("[") ? true: false;
-    }
-
-    /*
-     * Returns array element type given its internal form of the name
-     */    
-    public static String getArrayType(String tn) {
-        if (isArray(tn)) {   
-            while (tn.startsWith("[")) {   //NOI18N
-                tn = tn.substring(1);
-            }
-            if (tn.startsWith("L")) {   //NOI18N
-                tn = tn.substring(1);
-                tn = tn.substring(0, tn.length() - 1);
-            }
-            else {
-                char typeKey = tn.charAt(0);
-                tn = (String)arrayTypeKeyHash.get("" + typeKey);   //NOI18N
-            }
-        }
-        return tn;
     }
 }

@@ -22,13 +22,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.lang.reflect.Modifier;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.Locale;
 
 import javax.swing.event.DocumentEvent;
+import javax.tools.Diagnostic;
+import org.netbeans.api.java.source.CompilationInfo;
 
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -37,6 +38,7 @@ import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.netbeans.modules.visualweb.insync.ParserAnnotation;
 import org.netbeans.modules.visualweb.insync.SourceUnit;
 import org.netbeans.modules.visualweb.insync.UndoManager;
+import org.netbeans.modules.visualweb.insync.Unit.State;
 import org.netbeans.modules.visualweb.insync.Util;
 
 /**
@@ -46,11 +48,9 @@ import org.netbeans.modules.visualweb.insync.Util;
  */
 public class JavaUnit extends SourceUnit {
 
-    // project state needed for javac parser
     URLClassLoader classLoader;
-    String sourcepath;
     private boolean markSourceDirty = true;
-    ParserAnnotation[] errors;
+    ParserAnnotation[] errors = ParserAnnotation.EMPTY_ARRAY;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -59,7 +59,6 @@ public class JavaUnit extends SourceUnit {
      */
     public JavaUnit(FileObject fobj, URLClassLoader cl, UndoManager undoManager) {
         super(fobj, undoManager);
-        setClassLoader(cl);
         //Trace.enableTraceCategory("insync.java");
     }
 
@@ -74,66 +73,28 @@ public class JavaUnit extends SourceUnit {
 
     //---------------------------------------------------------------------------------------- Input
 
-    /**
-     *
-     */
-    public void setClassLoader(URLClassLoader cl) {
-        classLoader = cl != null
-                ? cl
-                : (URLClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-       //!CQ TODO: could build Paths here based on classLoader's class paths...
+    protected void read(char[] cbuf, int len) {
+        
     }
-
-    /**
-     *
-     */
-    public void setSourcepath(String sp) {
-        sourcepath = sp;
-    }
-
-   protected void read(char[] cbuf, int len) {
-
-   }
-
+    
     /**
      * Read the errors in source
      */
     protected void readErrors() {
-/*//NB6.0
-        JMIUtils.beginTrans(true);
-        try {
-            Resource res = JavaModel.getResource(fobj);
-            List errorsList = res.getErrors();
-            int size = errorsList.size();
- 
-            if (size == 0) {
-                errors = ParserAnnotation.EMPTY_ARRAY;
-                return;
-            }
- 
-            List parserAnnotationsList = new ArrayList();
-            for (int i = 0; i < size; i++) {
-                ErrorInfo info = (ErrorInfo)errorsList.get(i);
-                // Only show errors
-                if (ErrorTypeEnum.ERROR.equals(info.getSeverity())) {
-                    ParserAnnotation annotation = new ParserAnnotation(info.getDescription(),
-                            fobj, info.getLineNumber(), info.getColumn());
-                    parserAnnotationsList.add(annotation);
+        ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+            public Object run(CompilationInfo cinfo) {
+                List<ParserAnnotation> parserAnnotationsList = new ArrayList<ParserAnnotation>();
+                for(Diagnostic diagnostic : cinfo.getDiagnostics()) {
+                    if(diagnostic.getKind() == Diagnostic.Kind.ERROR) {
+                        ParserAnnotation annotation = new ParserAnnotation(diagnostic.getMessage(Locale.getDefault()),
+                                fobj, (int)diagnostic.getLineNumber(), (int)diagnostic.getColumnNumber());
+                        parserAnnotationsList.add(annotation);
+                    }
                 }
+                errors = parserAnnotationsList.toArray(ParserAnnotation.EMPTY_ARRAY);
+                return null;
             }
- 
-            // no errors found
-            if (parserAnnotationsList.size() == 0) {
-                errors = ParserAnnotation.EMPTY_ARRAY;
-                return;
-            }
- 
-            errors = new ParserAnnotation[parserAnnotationsList.size()];
-            parserAnnotationsList.toArray(errors);
-        }finally {
-            JMIUtils.endTrans();
-        }
-//*/
+        }, fobj);
     }
 
     /**
@@ -187,48 +148,17 @@ public class JavaUnit extends SourceUnit {
     /*
      * Returns the public class in the file JavaUnit represents
      */
-    public Object/*TypeElement or ClassType*/ getJavaClass() {
-/*//NB6.0
-        // get the resource corresponding to a given file
-        JMIUtils.beginTrans(false);
-        try {
-            Resource res = JavaModel.getResource(fobj);
- 
-            // get the public class from the resource
-            ListIterator iter = res.getClassifiers().listIterator();
-            while(iter.hasNext()) {
-                JavaClass jCls = (JavaClass)iter.next();
-                if((jCls.getModifiers() & Modifier.PUBLIC) > 0)
-                    return jCls;
-            }
-        }finally {
-            JMIUtils.endTrans();
-        }
- 
-        return null;
-//*/
-        return null;
+    public JavaClass getJavaClass() {
+        return JavaClass.getJavaClass(fobj);
     }
 
 
     public String getPackageName() {
-/*//NB6.0
-        JMIUtils.beginTrans(false);
-        try {
-            Resource resource = getJavaClass().getResource();
-            String result = null;
-            if (resource != null) {
-                result = resource.getPackageName();
+       return (String)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+            public Object run(CompilationInfo cinfo) {
+                return cinfo.getCompilationUnit().getPackageName().toString();
             }
-            if (result == null) {
-                result = "";
-            }
-            return result;
-        }finally {
-            JMIUtils.endTrans();
-        }
-//*/
-        return null;
+        }, fobj);
     }
 
 
@@ -264,7 +194,7 @@ public class JavaUnit extends SourceUnit {
     /**
      *
      */
-    public JavaClassAdapter addClass(String name) {
+    public JavaClass addClass(String name) {
         return null;
     }
 
@@ -277,7 +207,7 @@ public class JavaUnit extends SourceUnit {
     /**
      *
      */
-    public void removeClass(JavaClassAdapter cls) {
+    public void removeClass(JavaClass cls) {
     }
 
     //-------------------------------------------------------------------------------------- Helpers
@@ -323,11 +253,9 @@ public class JavaUnit extends SourceUnit {
     
     protected synchronized void firstWriteLock() {
         markSourceDirty = false;
-        //JMIUtils.beginTrans(false);
     }
 
     protected synchronized void lastWriteUnlock() {
-        //JMIUtils.endTrans();
         markSourceDirty = true;
     }
     

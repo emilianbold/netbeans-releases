@@ -220,7 +220,8 @@ final class DesignBeanNodeLookup extends AbstractLookup {
     }
 
     private static Pair cookieSetExitQueryMode(Object prev) {
-        return (Pair)invokeOnCookieSet("exitQueryMode", new Class[] {Object.class}, new Object[] {prev});
+        Collection col = (Collection)invokeOnCookieSet("exitQueryMode", new Class[] {Object.class}, new Object[] {prev});
+        return col != null ? (Pair)col.iterator().next() : null;
     }
 
     private Object cookieSetEntryAllClassesMode() {

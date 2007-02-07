@@ -19,6 +19,7 @@
  */
 package org.netbeans.modules.visualweb.insync.beans;
 
+import com.sun.org.apache.bcel.internal.classfile.JavaClass;
 import com.sun.rave.designtime.Position;
 import org.netbeans.modules.visualweb.insync.java.JMIUtils;
 import org.netbeans.modules.visualweb.insync.java.JMIMethodUtils;
@@ -105,21 +106,9 @@ public class Bean extends BeansNode {
      * @param after existing bean that this bean's entries will be added after
      */
     public void insertEntry(Bean after) {
-/*//NB6.0
-        Class typec = beanInfo.getBeanDescriptor().getBeanClass();
-        JMIUtils.beginTrans(true);
-        boolean rollback = true;
-        try {
-            field = unit.getThisClass().addField(name, typec);
-
-            if (CREATE_GETTER) {
-                getter = unit.getThisClass().addGetter(name, typec);
-            }
-
-            if (CREATE_SETTER) {
-                setter = unit.getThisClass().addSetter(name, typec);
-            }
-
+        Class type = beanInfo.getBeanDescriptor().getBeanClass();
+        unit.getThisClass().addProperty(name, type, CREATE_GETTER, CREATE_SETTER);
+        /*
             String cmn = getCleanupMethod();
             if (cmn != null) {
                 Method method = unit.getCleanupMethod();
@@ -128,11 +117,7 @@ public class Bean extends BeansNode {
                             method, getName(), cmn, new ArrayList());
                 }
             }
-            rollback = false;
-        }finally {
-            JMIUtils.endTrans(rollback);
-        }
- //*/
+         */
     }
 
     /**
@@ -142,7 +127,6 @@ public class Bean extends BeansNode {
      * @return true iff the source entry for this bean was actually removed.
      */
     protected boolean removeEntry() {
-/*//NB6.0
         assert Trace.trace("insync.beans", "B.removeEntry: " + this);
         boolean removed = false;
         for (Iterator i = properties.iterator(); i.hasNext(); ) {
@@ -155,31 +139,19 @@ public class Bean extends BeansNode {
             removed |= es.removeEntry();
             i.remove();
         }
-        
-        JMIUtils.beginTrans(true);
-        boolean rollback = true;
-        try {
-            String cmn = getCleanupMethod();  // the name of this bean's cleanup method, if any
-            if (cmn != null && unit.getCleanupBlock() != null) {
-                Statement cleanupCall = JMIMethodUtils.findStatement(unit.getCleanupBlock(), cmn, name);
-                if (cleanupCall != null) {
-                    JMIMethodUtils.removeStatement(unit.getCleanupBlock(), cleanupCall);
-                }
+        /*
+        String cmn = getCleanupMethod();  // the name of this bean's cleanup method, if any
+        if (cmn != null && unit.getCleanupBlock() != null) {
+            Statement cleanupCall = JMIMethodUtils.findStatement(unit.getCleanupBlock(), cmn, name);
+            if (cleanupCall != null) {
+                JMIMethodUtils.removeStatement(unit.getCleanupBlock(), cleanupCall);
             }
-            unit.getThisClass().removeField(field);
-            unit.getThisClass().removeMethod(getter);
-            unit.getThisClass().removeMethod(setter);
-            rollback = false;
-        }finally {
-            JMIUtils.endTrans(rollback);
-        }
-        removed |= true; //!CQ don't really know since clazz didn't tell us...
-        field = null;
-        getter = setter = null;
+        }*/
+        unit.getThisClass().removeProperty(name);
 
+        removed |= true; //!CQ don't really know since clazz didn't tell us...
+        field = getter = setter = null;
         return removed;
- //*/
-        return false;
     }
 
     /**
