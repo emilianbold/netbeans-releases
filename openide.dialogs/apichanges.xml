@@ -68,7 +68,6 @@ Microsystems, Inc. All Rights Reserved.
            <class package="org.openide" name="WizardDescriptor"/>
            <issue number="92762"/>
     </change>
->>>>>>> 1.9
     <change id="WizardDescriptor.ProgressInstantiatingIterator">
            <api name="dialogs"/>
            <summary>Interface <code>ProgressInstantiatingIterator</code> added</summary>
