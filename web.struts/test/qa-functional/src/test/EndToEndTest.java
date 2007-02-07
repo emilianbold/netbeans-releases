@@ -348,7 +348,7 @@ public class EndToEndTest extends JellyTestCase {
             // "Run Project"
             String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
             new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME));
-            waitText(PROJECT_NAME, 240000, "Login Page");
+            waitText(PROJECT_NAME, 240000, "Login page");
         } finally {
             // log messages from output
             getLog("RunOutput").print(new OutputTabOperator(PROJECT_NAME).getText());
