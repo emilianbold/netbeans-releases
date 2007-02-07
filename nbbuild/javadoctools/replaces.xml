@@ -119,3 +119,4 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-netbeans-modules-j2ee-metadata@" value="${javadoc.docs.org-netbeans-modules-j2ee-metadata}"/>
 <replacefilter token="@org-netbeans-modules-editor-lib2@" value="${javadoc.docs.org-netbeans-modules-editor-lib2}"/>
 <replacefilter token="@org-netbeans-modules-java-j2seproject@" value="${javadoc.docs.org-netbeans-modules-java-j2seproject}"/>
+<replacefilter token="@org-netbeans-modules-java-source@" value="${javadoc.docs.org-netbeans-modules-java-source}"/>
