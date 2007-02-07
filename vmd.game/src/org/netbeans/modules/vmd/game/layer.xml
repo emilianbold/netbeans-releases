@@ -31,7 +31,7 @@
 <!--
     <folder name="Templates">        
         <folder name="MIDP">
-            <file name="EmptyGame.java" url="integration/res/emptygame_java.template">
+            <file name="GameDesign.java" url="integration/res/emptygame_java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.game.integration.res.Bundle"/>
                 <attr name="SystemFileSystem.icon" stringvalue="nbresloc:org/netbeans/modules/vmd/game/integration/res/canvas_16.png"/>
                 <attr name="template" boolvalue="true"/>
@@ -40,7 +40,7 @@
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
             </file>
-            <file name="EmptyGame.vmd" url="integration/res/emptygame_vmd.template">
+            <file name="GameDesign.vmd" url="integration/res/emptygame_vmd.template">
                 <attr name="template" boolvalue="true"/>
             </file>
         </folder>

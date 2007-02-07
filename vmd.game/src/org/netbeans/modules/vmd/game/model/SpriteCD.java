@@ -19,6 +19,8 @@
 package org.netbeans.modules.vmd.game.model;
 
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.game.integration.GameCodeSupport;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -42,7 +44,10 @@ public class SpriteCD extends ComponentDescriptor {
 	}
 	
 	protected List<? extends Presenter> createPresenters() {
-		return null;
+		return Arrays.asList (
+            // code
+            GameCodeSupport.createSpriteCodePresenter ()
+        );
 	}
 	
 	//this would be the ideal set of properties for a sprite - however the current sprite editor

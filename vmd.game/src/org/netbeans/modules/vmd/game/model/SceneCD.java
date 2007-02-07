@@ -18,12 +18,13 @@
  */
 package org.netbeans.modules.vmd.game.model;
 
-import java.util.Arrays;
 import org.netbeans.modules.vmd.api.model.*;
-
-import java.util.List;
 import org.netbeans.modules.vmd.api.model.common.ValidatorPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.game.integration.GameCodeSupport;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Karel Herink
@@ -55,7 +56,10 @@ public class SceneCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters() {
 		return Arrays.asList(
-            new ValidatorPresenter().addValidChildrenTypeID(SceneItemCD.TYPEID)
+            // validation
+            new ValidatorPresenter().addValidChildrenTypeID(SceneItemCD.TYPEID),
+            // code
+            GameCodeSupport.createSceneCodePresenter ()
         );
     }
 

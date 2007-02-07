@@ -54,6 +54,7 @@ public class SequenceCD extends ComponentDescriptor {
 	
 	protected List<? extends Presenter> createPresenters() {
 		return Arrays.asList (
+            // code
             GameCodeSupport.createSequenceCodePresenter ()
         );
 	}

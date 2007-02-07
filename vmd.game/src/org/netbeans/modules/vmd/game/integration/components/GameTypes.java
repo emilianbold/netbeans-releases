@@ -55,5 +55,12 @@ public class GameTypes {
 		return (int[]) value.getPrimitiveValue();
 	}
 
+    public static Point getPoint (PropertyValue value) {
+        return new Point ((Point) value.getPrimitiveValue ());
+    }
+
+    public static PropertyValue createPointValue (Point point) {
+        return PropertyValue.createValue (GamePrimitiveDescriptor.PRIMITIVE_DESCRIPTOR_POINT, TYPEID_POINT, new Point (point));
+    }
 
 }

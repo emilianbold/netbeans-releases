@@ -2,11 +2,13 @@ package Templates.Classes;
 
 import javax.microedition.midlet.*;
 import javax.microedition.lcdui.*;
+import javax.microedition.lcdui.game.*;
+import java.io.IOException;
 
 /**
  * @author __USER__
  */
-public class EmptyGame {
+public class GameDesign {
 
     //GEN-LINE:|fields|0|
 
