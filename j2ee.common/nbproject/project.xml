@@ -270,7 +270,6 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.j2ee.ejbcore</friend>
                 <friend>org.netbeans.modules.j2ee.ejbfreeform</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
-                <friend>org.netbeans.modules.j2ee.persistence</friend>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
                 <friend>org.netbeans.modules.web.core</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
