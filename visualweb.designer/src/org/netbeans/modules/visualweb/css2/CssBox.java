@@ -159,8 +159,8 @@ public class CssBox {
     /** Rendered element. */
     private final Element element;
     
-    /** Source element. */
-    private Element sourceElement;
+//    /** Source element. */
+//    private Element sourceElement;
     
     Color bg;
     HtmlTag tag;
@@ -267,18 +267,18 @@ public class CssBox {
 //            if (bean != null) {
 //                sourceElement = bean.getElement();
             // XXX Strange check, just keeping it the same like it was before.
-            Element renderedElement = getElementForPrincipalCssBox(this);
-            if (renderedElement == element) {
-                sourceElement = MarkupService.getSourceElementForElement(renderedElement);
-
-                if (sourceElement != null) {
-                    //assert bean == ((XhtmlElement)sourceElement).getDesignBean() : "sourceElement " +
-                    //sourceElement + " has a designbean (" +
-                    //((XhtmlElement)sourceElement).getDesignBean() + ") different from bean " +
-                    //bean;
-                    putBoxReference(sourceElement, this);
-                }
+//            Element renderedElement = getElementForPrincipalCssBox(this);
+//            if (renderedElement == element) {
+//                Element sourceElement = MarkupService.getSourceElementForElement(renderedElement);
+            Element sourceElement = findSourceElement();
+            if (sourceElement != null) {
+                //assert bean == ((XhtmlElement)sourceElement).getDesignBean() : "sourceElement " +
+                //sourceElement + " has a designbean (" +
+                //((XhtmlElement)sourceElement).getDesignBean() + ") different from bean " +
+                //bean;
+                putBoxReference(sourceElement, this);
             }
+//            }
         }
     }
     
@@ -550,11 +550,24 @@ public class CssBox {
         return element;
     }
 
+    // XXX TEMP
+    private Element findSourceElement() {
+        // XXX Strange check, just keeping it the same like it was before.
+        Element renderedElement = getElementForPrincipalCssBox(this);
+        if (renderedElement == element) {
+            return MarkupService.getSourceElementForElement(renderedElement);
+        }
+        return null;
+    }
+    
     /** Return the element representing this box in the source; for jsf
      * this will be the actual jsf element, not an html rendered element
      * for it.
+     * XXX Heavy hack!! This method cheats, if there is not corresponding source element,
+     * it returns its rendered element (#getElement). Get rid of this.
      */
     public final Element getSourceElement() {
+        Element sourceElement = findSourceElement();
         if (sourceElement != null) {
             return sourceElement;
         } else {
