@@ -164,7 +164,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 	<HR width="90%"/>
 
 	<xsl:if test="$pesWebDataFile">
-		<xsl:if test="count(document($pesWebDataFile,/*)/ManagedWeb/ManagedGroup) &gt; 1">
+		<xsl:if test="count(document(translate($pesWebDataFile, '\','/'),/*)/ManagedWeb/ManagedGroup) &gt; 1">
 		<BR/>
 		<H2>Results from other projects:</H2>    				
 		<UL>
@@ -172,7 +172,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 			<!--
 			<LI>current name = <xsl:value-of select="$currentName"/></LI>
 			-->
-    		<xsl:for-each select="document($pesWebDataFile,/*)/ManagedWeb/ManagedGroup"> 
+    		<xsl:for-each select="document(translate($pesWebDataFile, '\','/'),/*)/ManagedWeb/ManagedGroup"> 
     			<xsl:if test="string(@name)!=string($currentName)">
     				<xsl:choose>
     				<xsl:when test="./@main != 'true'"> 
