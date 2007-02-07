@@ -135,7 +135,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
     
     public synchronized void fileChange(File file, long ts) {
-        if(lastModified(file) == ts) {
+        long lastModified = lastModified(file);
+        if(lastModified == ts) {
             return; 
         }        
         if(file.isFile()) { 
@@ -151,6 +152,14 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
             }            
+            
+            if(lastModified < 0) {
+                // XXX this is a hack while the beforechange event comes befre after create
+                File parent = file.getParentFile();
+                if(parent != null) {
+                    writeHistory(parent, new HistoryEntry[] {new HistoryEntry(ts, null, file.getAbsolutePath(), TOUCHED)});                        
+                }   
+            }
         } 
         fireChanged(null, file);        
     }
@@ -1189,5 +1198,3 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }     
     
 }
-    
-

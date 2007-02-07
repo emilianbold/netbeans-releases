@@ -21,7 +21,9 @@ package org.netbeans.modules.localhistory;
 import java.util.HashMap;
 import java.io.File;  
 import java.io.IOException;       
+import java.util.HashSet;
 import java.util.Map;        
+import java.util.Set;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 
@@ -68,12 +70,12 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // ==================================================================================================
     // DELETE
     // ==================================================================================================
-    
+    Set<File> toBeDeleted = new HashSet<File>(5); // XXX
     public boolean beforeDelete(File file) {
         if(!accept(file)) {
             return false;
         }
-        
+        toBeDeleted.add(file);
         storeFile(file); // will be stored in the history if there is no actuall entry yet        
         return false;
     }
@@ -83,10 +85,10 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     public void afterDelete(File file) {      
-        if(!accept(file)) {
+        if(!toBeDeleted.remove(file)) {
             return;
-        }
-                
+        }               
+        
         String key = file.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
@@ -187,7 +189,8 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     public void beforeChange(File file) {    
-        if(!accept(file)) {
+        // XXX file.exists() is a hack
+        if(file.exists() && !accept(file)) {
             return;
         }        
         storeFile(file);

@@ -22,8 +22,6 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport; 
 import java.util.ArrayList;
 import javax.swing.Action;
-import org.netbeans.modules.localhistory.ui.actions.DeleteAction;
-import org.netbeans.modules.localhistory.ui.actions.RollbackAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import java.lang.reflect.InvocationTargetException;
@@ -107,8 +105,8 @@ public class StoreEntryNode extends AbstractNode implements Comparable {
     
     public Action[] getActions(boolean context) {
         return new Action[] {
-            SystemAction.get(RollbackAction.class),
-            SystemAction.get(DeleteAction.class)     
+            SystemAction.get(RevertFileAction.class),
+            SystemAction.get(DeleteAction.class)    
         };            
     }
 
@@ -161,7 +159,7 @@ public class StoreEntryNode extends AbstractNode implements Comparable {
             List<StoreEntry> entries = new ArrayList<StoreEntry>(1);
             entries.add(entry);
             return new Action[] {
-                SystemAction.get(RollbackAction.class),
+                SystemAction.get(RevertFileAction.class),
                 SystemAction.get(DeleteAction.class)
             };            
         }

@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.localhistory.ui.actions;
 
+import org.netbeans.modules.localhistory.ui.view.ShowLocalHistoryAction;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

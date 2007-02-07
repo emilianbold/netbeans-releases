@@ -21,11 +21,18 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
+    <!-- XXX add actions -->
     <folder name="Actions">
         <folder name="LocalHistory">
-            <file name="org-netbeans-modules-localhistory-ui-actions-ShowLocalHistoryAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.localhistory.ui.actions.ShowLocalHistoryAction"/>
+            <file name="org-netbeans-modules-localhistory-ui-view-ShowLocalHistoryAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.localhistory.ui.view.ShowLocalHistoryAction"/>
             </file>
+            <file name="org-netbeans-modules-localhistory-ui-actions-RevertDeletedAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.localhistory.ui.actions.RevertDeletedAction"/>
+            </file>            
+            <file name="org-netbeans-modules-localhistory-ui-revert-RevertToAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.localhistory.ui.revert.RevertToAction"/>
+            </file>            
         </folder>
     </folder>
     
