@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -89,10 +89,12 @@ public class Hacks {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         // depends on exported keys in core/windows
-                        String key = pname != null? "CTL_MainWindow_Title": "CTL_MainWindow_Title_No_Project"; // NOI18N
+                        String format = NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle").
+                                getString(pname != null ? "CTL_MainWindow_Title" : "CTL_MainWindow_Title_No_Project");
                         String title = pname != null?
-                            MessageFormat.format(NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle").getString(key), BUILD_NUMBER, pname, mname):
-                            MessageFormat.format(NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle").getString(key), BUILD_NUMBER, mname);
+                            // Note that currently mname is ignored.
+                            MessageFormat.format(format, BUILD_NUMBER, pname, mname) :
+                            MessageFormat.format(format, BUILD_NUMBER, mname);
                         WindowManager.getDefault().getMainWindow().setTitle(title);
                     }
                 });
