@@ -269,7 +269,7 @@ public class CssBox {
             // XXX Strange check, just keeping it the same like it was before.
             Element renderedElement = getElementForPrincipalCssBox(this);
             if (renderedElement == element) {
-                Element sourceElement = MarkupService.getSourceElementForElement(renderedElement);
+                sourceElement = MarkupService.getSourceElementForElement(renderedElement);
 
                 if (sourceElement != null) {
                     //assert bean == ((XhtmlElement)sourceElement).getDesignBean() : "sourceElement " +
