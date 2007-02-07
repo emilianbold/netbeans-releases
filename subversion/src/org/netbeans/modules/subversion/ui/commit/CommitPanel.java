@@ -89,7 +89,7 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
                                                NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_RecentPrompt"), 
             Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {
-            messageTextArea.setText(message);
+            messageTextArea.replaceSelection(message);
         }
     }
     

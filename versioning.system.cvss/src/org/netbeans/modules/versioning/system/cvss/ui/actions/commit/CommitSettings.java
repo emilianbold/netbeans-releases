@@ -21,6 +21,8 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.commit;
 
 import java.util.prefs.PreferenceChangeEvent;
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
+
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -223,7 +225,7 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         String message = StringSelector.select("Select A Commit Message", "Recent Commit Messages:", 
             Utils.getStringList(CvsModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {
-            taMessage.setText(message);
+            taMessage.replaceSelection(message);
         }
     }
 
