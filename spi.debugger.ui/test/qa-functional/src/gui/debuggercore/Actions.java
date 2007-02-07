@@ -32,7 +32,6 @@ import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
-import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.RunToCursorAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOutAction;
@@ -81,12 +80,7 @@ public class Actions extends JellyTestCase {
     
     public void tearDown() {
         if (getName().equals("testPause")) {
-            String finishPath = Utilities.runMenu+"|"+Utilities.finishSessionsItem;
-            while (MainWindowOperator.getDefault().menuBar().showMenuItem(finishPath).isEnabled()) {
-                new FinishDebuggerAction().performShortcut();
-                new EventTool().waitNoEvent(500);
-            }
-            Utilities.waitDebuggerToolbarVisible();
+            Utilities.endAllSessions();
             Utilities.deleteAllBreakpoints();
         }
     }
@@ -251,7 +245,7 @@ public class Actions extends JellyTestCase {
         //remove breakpoint
         Utilities.toggleBreakpoint(eo, 104, false);
         //finish debugging
-        Utilities.endSession();
+        Utilities.endAllSessions();
         //close sources
         eo.close();
     }
@@ -366,8 +360,8 @@ public class Actions extends JellyTestCase {
             new EventTool().waitNoEvent(500);
         }
         Utilities.waitStatusTextPrefix("Thread main stopped at ");
-        new EditorOperator("Thread.java").close();
         eo = new EditorOperator("MemoryView.java");
         assertTrue(Utilities.checkAnnotation(eo, 82, "CallSite"));
+        eo.closeAllDocuments();
     }
 }

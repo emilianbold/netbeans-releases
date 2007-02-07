@@ -24,7 +24,6 @@ package gui.debuggercore;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.RunToCursorAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -34,8 +33,9 @@ import org.netbeans.junit.NbTestSuite;
 
 public class LocalVariables extends JellyTestCase {
     
+    static int consoleLineNumber = 0;
+    
     String projectPropertiesTitle;
-    MainWindowOperator.StatusTextTracer stt = null;
     
     public LocalVariables(String name) {
         super(name);
@@ -47,7 +47,6 @@ public class LocalVariables extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new LocalVariables("testLocalVariablesExpand"));
         suite.addTest(new LocalVariables("testLocalVariablesThisNode"));
         suite.addTest(new LocalVariables("testLocalVariablesStaticNode"));
         suite.addTest(new LocalVariables("testLocalVariablesStaticInherited"));
@@ -59,34 +58,36 @@ public class LocalVariables extends JellyTestCase {
     
     public void setUp() {
         System.out.println("########  " + getName() + "  #######");
-        stt = MainWindowOperator.getDefault().getStatusTextTracer();
-        stt.start();
+        if (getName().equals("testLocalVariablesThisNode")) {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.setCaret(eo, 52);
+            new RunToCursorAction().perform();
+            Utilities.getDebugToolbar().waitComponentVisible(true);
+            consoleLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:52.", 0);
+            new EventTool().waitNoEvent(1000);
+        }
+        expandNodes();
     }
     
     public void tearDown() {
-        if (getName().equals("testLocalVariablesValues")) //last
-            new FinishDebuggerAction().perform();
+        if (getName().equals("testLocalVariablesValues")) {//last
+            Utilities.endAllSessions();
+        }
     }
     
-    public void testLocalVariablesExpand() {
-        //open source
-        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-        new OpenAction().performAPI(beanNode);
-        EditorOperator eo = new EditorOperator("MemoryView.java");
-        Utilities.setCaret(eo, 52);
-        new RunToCursorAction().perform();
-        stt.waitText("Thread main stopped at MemoryView.java:52.");
-        new EventTool().waitNoEvent(1000);
-        
-        Utilities.showLocalVariablesView();
+    private void expandNodes() {
+        Utilities.showDebuggerView(Utilities.localVarsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
         TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
         new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this").expand();
-        Utilities.sleep(500);
+        //Utilities.sleep(500);
         new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Static").expand();
-        Utilities.sleep(500);
+        //Utilities.sleep(500);
         new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Inherited").expand();
-        Utilities.sleep(500);
+        //Utilities.sleep(500);
     }
     
     public void testLocalVariablesThisNode() {
@@ -127,10 +128,10 @@ public class LocalVariables extends JellyTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.setCaret(eo, 76);
         new RunToCursorAction().perform();
-        stt.waitText("Thread main stopped at MemoryView.java:76.");
+        consoleLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:76.", consoleLineNumber);
         new EventTool().waitNoEvent(1000);
         
-        Utilities.showLocalVariablesView();
+        Utilities.showDebuggerView(Utilities.localVarsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
         TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
         int count = 0;
@@ -195,10 +196,10 @@ public class LocalVariables extends JellyTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.setCaret(eo, 104);
         new RunToCursorAction().perform();
-        stt.waitText("Thread main stopped at MemoryView.java:104.");
+        consoleLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104.", consoleLineNumber);
         new EventTool().waitNoEvent(1000);
         
-        Utilities.showLocalVariablesView();
+        Utilities.showDebuggerView(Utilities.localVarsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
         try {
             org.openide.nodes.Node.Property property;

@@ -182,15 +182,14 @@ public class Utilities {
     }
     
     public static void deleteAllBreakpoints() {
-        showBreakpointsView();
+        showDebuggerView(breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(breakpointsViewTitle));
         if (jTableOperator.getRowCount() > 0)
             new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenu("Delete All");
     }
     
     public static void deleteAllWatches() {
-        showWatchesView();
-        sleep(500);
+        showDebuggerView(watchesViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(watchesViewTitle));
         if (jTableOperator.getRowCount() > 0)
             new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenu("Delete All");
@@ -198,15 +197,14 @@ public class Utilities {
     
     public static void closeZombieSessions() {
         MainWindowOperator mwo = MainWindowOperator.getDefault();
-        showSessionsView();
-        sleep(500);
+        showDebuggerView(sessionsViewTitle);
         TopComponentOperator sessionsOper = new TopComponentOperator(sessionsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(sessionsOper);
         
         for (int i = 0; i < jTableOperator.getRowCount(); i++) {
             //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
             new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-            Utilities.sleep(1000);
+            //Utilities.sleep(1000);
         }
         
         jTableOperator = new JTableOperator(sessionsOper);
@@ -223,54 +221,9 @@ public class Utilities {
     
     public static void showDebuggerView(String viewName) {
         new Action(windowMenu + "|" + debugMenu + "|" + viewName, null).perform();
+        new TopComponentOperator(viewName);
     }
-    
-    public static void showLocalVariablesView() {
-        //new Action(windowMenu + "|" + debugMenu + "|" + localVarsItem, null).perform();
-        new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_1, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
-    }
-    
-    public static void showWatchesView() {
-        //new Action(windowMenu + "|" + debugMenu + "|" + watchesItem, null).perform();
-        new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_2, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
-    }
-    
-    public static void showCallStackView() {
-        //new Action(windowMenu + "|" + debugMenu + "|" + callStackItem, null).perform();
-        new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_3, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
-    }
-    
-    public static void showClassesView() {
-        //new Action(windowMenu + "|" + debugMenu + "|" + classesItem, null).perform();
-        new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_4, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
-    }
-    
-    public static void showBreakpointsView() {
-        new Action(windowMenu + "|" + debugMenu + "|" + breakpointsItem, null).perform();
-        //new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_5, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
-    }
-    
-    public static void showSessionsView() {
-        //new Action(windowMenu + "|" + debugMenu + "|" + sessionsItem, null).perform();
-        new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_6, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
-    }
-    
-    public static void showThreadsView() {
-        //new Action(windowMenu + "|" + debugMenu + "|" + threadsItem, null).perform();
-        new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_7, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
-    }
-    
-    public static void showSourcesView() {
-        //new Action(windowMenu + "|" + debugMenu + "|" + sourcesItem, null).perform();
-        new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_8, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
-    }
-    
-    public static void sleep(long ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (Exception ex) {};
-    }
-    
+        
     public static String removeTags(String in) {
         String out = "";
         in = in.trim();
@@ -289,14 +242,13 @@ public class Utilities {
         return out;
     }
     
-    public static void endSession() {
-        ContainerOperator debugToolbarOper = getDebugToolbar();
-        new FinishDebuggerAction().perform();
-        // wait until Debug toolbar dismiss
-        debugToolbarOper.waitComponentVisible(false);
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        //new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        //MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
+    public static void endAllSessions() {
+        String finishPath = runMenu+"|"+finishSessionsItem;
+        while (MainWindowOperator.getDefault().menuBar().showMenuItem(finishPath).isEnabled()) {
+            new FinishDebuggerAction().performShortcut();
+            new EventTool().waitNoEvent(500);
+        }
+        MainWindowOperator.getDefault().menuBar().closeSubmenus();
     }
     
     public static void startDebugger() {
@@ -309,14 +261,6 @@ public class Utilities {
     
     public static ContainerOperator getDebugToolbar() {
         return MainWindowOperator.getDefault().getToolbar(debugToolbarLabel);
-    }
-    
-    public static void waitDebuggerToolbarVisible() {
-        for (int i =0;i< MainWindowOperator.getDefault().getToolbarCount();i++) {
-            if (MainWindowOperator.getDefault().getToolbar(i).getName().equals(debugToolbarLabel)) {
-                MainWindowOperator.getDefault().getToolbar(i).waitComponentVisible(true);
-            }
-        }
     }
     
     public static void setCaret(EditorOperator eo, final int line) {
@@ -452,7 +396,7 @@ public class Utilities {
     public static int waitDebuggerConsole(final String text, final int status) {
         OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
         ConsoleChooser cch = new ConsoleChooser(op, text, status);
-        JemmyProperties.getCurrentOutput().printLine("Waiting on text in debugger console "+text+" from line "+status);
+        JemmyProperties.getCurrentOutput().printLine("Waiting on text in debugger console '"+text+"' from line "+status);
         try {
             op.waitState(cch);
         } catch (TimeoutExpiredException ex) {
@@ -460,7 +404,7 @@ public class Utilities {
             JemmyProperties.getCurrentOutput().printLine(op.getText());
             throw ex;
         }
-        JemmyProperties.getCurrentOutput().printLine("Found text in debugger console "+text+" at line "+cch.getLastIndex());
+        JemmyProperties.getCurrentOutput().printLine("Found text in debugger console '"+text+"' at line "+cch.getLastIndex());
         return cch.getLastIndex();
     }
     

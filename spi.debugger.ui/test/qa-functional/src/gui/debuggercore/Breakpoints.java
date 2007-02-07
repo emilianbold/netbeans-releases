@@ -24,13 +24,11 @@ package gui.debuggercore;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
-import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -95,22 +93,15 @@ public class Breakpoints extends JellyTestCase {
         return suite;
     }
     
-    /** setUp method  */
     public void setUp() {
         System.out.print("########  " + getName() + "  ####### ");
         //stt = MainWindowOperator.getDefault().getStatusTextTracer();
         //stt.start();
     }
     
-    /** tearDown method */
     public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\n\n");
-        String finishPath = Utilities.runMenu+"|"+Utilities.finishSessionsItem;
-        while (MainWindowOperator.getDefault().menuBar().showMenuItem(finishPath).isEnabled()) {
-            new FinishDebuggerAction().performShortcut();
-            new EventTool().waitNoEvent(500);
-        }
-        Utilities.waitDebuggerToolbarVisible();
+        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
+        Utilities.endAllSessions();
         Utilities.deleteAllBreakpoints();
     }
     
@@ -121,7 +112,7 @@ public class Breakpoints extends JellyTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         //toggle breakpoints
         Utilities.toggleBreakpoint(eo, 73);
-        Utilities.showBreakpointsView();
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         assertEquals("Line MemoryView.java:73", jTableOperator.getValueAt(0, 0).toString());
         eo = new EditorOperator("MemoryView.java");
@@ -197,7 +188,7 @@ public class Breakpoints extends JellyTestCase {
         Utilities.toggleBreakpoint(eo, 63);
         Utilities.toggleBreakpoint(eo, 64);
         
-        Utilities.showBreakpointsView();
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         assertEquals("Line MemoryView.java:64", jTableOperator.getValueAt(1, 0).toString());
         new JPopupMenuOperator(jTableOperator.callPopupOnCell(1, 0)).pushMenuNoBlock("Customize");
@@ -244,7 +235,7 @@ public class Breakpoints extends JellyTestCase {
         NbDialogOperator dialog = Utilities.newBreakpoint(92);
         new JComboBoxOperator(dialog, 0).selectItem("Method");
         dialog.ok();
-        Utilities.showBreakpointsView();
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         assertEquals("Method MemoryView.updateStatus", jTableOperator.getValueAt(0, 0).toString());
     }
@@ -334,7 +325,7 @@ public class Breakpoints extends JellyTestCase {
         NbDialogOperator dialog = Utilities.newBreakpoint(73);
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         dialog.ok();
-        Utilities.showBreakpointsView();
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         assertEquals("Class breakpoint was not created.", "Class MemoryView prepare / unload", jTableOperator.getValueAt(0, 0).toString());
     }
@@ -393,7 +384,7 @@ public class Breakpoints extends JellyTestCase {
         new JComboBoxOperator(dialog, 0).selectItem("Variable");
         new JComboBoxOperator(dialog, 1).selectItem("Variable Access");
         dialog.ok();
-        Utilities.showBreakpointsView();
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         assertEquals("Variable breakpoint was not created.", "Variable MemoryView.msgMemory access", jTableOperator.getValueAt(0, 0).toString());
     }
@@ -421,7 +412,7 @@ public class Breakpoints extends JellyTestCase {
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         new JComboBoxOperator(dialog, 0).selectItem("Thread");
         dialog.ok();
-        Utilities.showBreakpointsView();
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         assertEquals("Thread breakpoint was not created.", "Thread started", jTableOperator.getValueAt(0, 0).toString());
     }
@@ -433,9 +424,9 @@ public class Breakpoints extends JellyTestCase {
         dialog.ok();
         
         Utilities.startDebugger();
-        int lines = Utilities.waitDebuggerConsole("Thread main stopped", 0);
+        int lines = Utilities.waitDebuggerConsole("Thread breakpoint hit by thread ", 0);
         new ContinueAction().perform();
-        lines = Utilities.waitDebuggerConsole("Thread Thread-0 stopped", lines);
+        lines = Utilities.waitDebuggerConsole("Thread breakpoint hit by thread ", lines);
         new ContinueAction().perform();
         Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines);
     }
@@ -449,7 +440,7 @@ public class Breakpoints extends JellyTestCase {
         new JComboBoxOperator(dialog, 2).typeText("NullPointerException");
         new JComboBoxOperator(dialog, 1).selectItem("Caught or Uncaught");
         dialog.ok();
-        Utilities.showBreakpointsView();
+        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         assertEquals("Thread breakpoint was not created.", "Exception NullPointerException", jTableOperator.getValueAt(0, 0).toString());
     }

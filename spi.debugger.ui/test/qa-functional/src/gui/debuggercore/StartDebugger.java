@@ -24,94 +24,81 @@ package gui.debuggercore;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.nodes.JavaNode;
+import org.netbeans.jellytools.actions.DebugProjectAction;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbTestSuite;
 
 public class StartDebugger extends JellyTestCase {
-   
+    
     public StartDebugger(String name) {
         super(name);
     }
     
+    public static void main(String[] args) {
+        TestRunner.run(suite());
+    }
+    
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new StartDebugger("setupStartTests"));
-        suite.addTest(new StartDebugger("testRunInDebugger"));
+        //suite.addTest(new StartDebugger("testExp"));
+        suite.addTest(new StartDebugger("testDebugMainProject"));
+        suite.addTest(new StartDebugger("testDebugProject"));
         suite.addTest(new StartDebugger("testDebugFile"));
         suite.addTest(new StartDebugger("testRunDebuggerStepInto"));
         suite.addTest(new StartDebugger("testRunDebuggerRunToCursor"));
         return suite;
     }
     
-    /** setUp method  */
     public void setUp() {
-        Utilities.sleep(1000);
         System.out.println("########  " + getName() + "  #######");
     }
     
-    /** tearDown method */
     public void tearDown() {
-        try {
-            PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screenBeforeTearDown.png");
-        } catch (java.io.IOException ex) {}
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
+        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
+        Utilities.endAllSessions();
     }
     
-    public void setupStartTests() {
-        Utilities.sleep(1000);
-        Node projectNode = new Node(new JTreeOperator(new ProjectsTabOperator()), Utilities.testProjectName);
-        projectNode.select();
-        projectNode.performPopupAction(Utilities.setMainProjectAction);
-        
-        JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
-        javaNode.select();
-        javaNode.performPopupAction(Utilities.openSourceAction);
-        Utilities.sleep(2000);
-        
-        new Action(null, null, Utilities.buildProjectShortcut).performShortcut();
-        Utilities.sleep(5000);
-        MainWindowOperator.getDefault().waitStatusText(Utilities.buildCompleteStatusBarText);
+    public void testExp() {
     }
     
-    public void testRunInDebugger() {
-        //Utilities.startDebugger(Utilities.runningStatusBarText);
+    public void testDebugMainProject() {
+        new Action(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, null).perform();
+        Utilities.getDebugToolbar().waitComponentVisible(true);
+        Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
+    }
+    
+    public void testDebugProject() {
+        Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+        new DebugProjectAction().perform(projectNode);
+        Utilities.getDebugToolbar().waitComponentVisible(true);
+        Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
     }
     
     public void testDebugFile() {
-        new EditorOperator("MemoryView.java").grabFocus();
+        //open source
+        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+        new OpenAction().performAPI(beanNode); // NOI18N
+        EditorOperator eo = new EditorOperator("MemoryView.java");
         new Action(null, null, Utilities.debugFileShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.runningStatusBarText);
-
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
+        Utilities.getDebugToolbar().waitComponentVisible(true);
+        Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
     }
     
     public void testRunDebuggerStepInto() {
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.stepIntoItem).toString(), null).perform();
+        EditorOperator eo = new EditorOperator("MemoryView.java");
         new Action(null, null, Utilities.stepIntoShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:33.");
-        
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
+        Utilities.getDebugToolbar().waitComponentVisible(true);
+        Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:", 0);
     }
     
     public void testRunDebuggerRunToCursor() {
-        EditorOperator editorOperator = new EditorOperator("MemoryView.java");
-        editorOperator.setCaretPosition(86, 1);
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
+        EditorOperator eo = new EditorOperator("MemoryView.java");
+        Utilities.setCaret(eo, 75);
         new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:86.");
-        
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
+        Utilities.getDebugToolbar().waitComponentVisible(true);
+        Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:75", 0);
     }
 }

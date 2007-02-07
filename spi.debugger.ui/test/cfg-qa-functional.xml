@@ -26,10 +26,9 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="gui/debuggercore/Actions.class"/>
                 <include name="gui/debuggercore/Breakpoints.class"/>
                 <include name="gui/debuggercore/LocalVariables.class"/>
-                
-                <!--<include name="gui/debuggercore/StartDebugger.class"/>
-                <include name="gui/debuggercore/Watches.class"/>-->
-                <!--<include name="gui/debuggercore/Views.class"/>-->
+                <include name="gui/debuggercore/StartDebugger.class"/>
+                <!--<include name="gui/debuggercore/Watches.class"/>-->
+                <include name="gui/debuggercore/Views.class"/>
             </patternset>
         </testset>
     </testbag>
