@@ -68,13 +68,11 @@ public class EjbJarJPASupport implements JPADataSourcePopulator, JPADataSourcePr
         }
         return result;
     }
-    
-}
 
 /**
  * Provides <code>JPADataSource</code> interface for <code>Datasource</code>s.
  */ 
-class DatasourceWrapper implements Datasource, JPADataSource{
+private static class DatasourceWrapper implements Datasource, JPADataSource{
     
     private Datasource delegate;
     
@@ -109,4 +107,6 @@ class DatasourceWrapper implements Datasource, JPADataSource{
     public String toString(){
         return delegate.toString();
     }
+}
+    
 }
