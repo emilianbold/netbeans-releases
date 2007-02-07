@@ -14,7 +14,7 @@
 # "Portions Copyrighted [year] [name of copyright owner]"
 #
 # The Original Software is NetBeans. The Initial Developer of the Original
-# Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+# Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 # Microsystems, Inc. All Rights Reserved.
 
 #
@@ -44,7 +44,7 @@
 
 
 # set the JAVA_HOME to your JDK 1.4 or greater installation path
-# JAVA_HOME=${your_jdk1.4_installation_path}
+# JAVA_HOME=${your_jdk_installation_path}
 
 
 
@@ -129,11 +129,15 @@ pes_server_cmd() {
 	# create PES' classpath
    	pes_classpath=""
    	for i in ${PES_HOME}/lib/*.jar ; do
-   		pes_classpath=${pes_classpath}:$i
+                if [ -z "${pes_classpath}" ]; then
+           		pes_classpath=$i
+                else 
+                        pes_classpath=${pes_classpath}';'$i
+                fi
    	done
 	debug_parameters=""
 #	debug_parameters="-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8765"
-   	cmd="$JAVA_HOME/bin/java -cp $pes_classpath $debug_parameters -Dxtest.home=$PES_HOME -Dpes.config=$PES_CONFIG -Dpes.command=$pes_cmd org.netbeans.xtest.pes.PEServer"
+   	cmd="$JAVA_HOME/bin/java -cp '$pes_classpath' $debug_parameters -Dxtest.home=$PES_HOME -Dpes.config=$PES_CONFIG -Dpes.command=$pes_cmd org.netbeans.xtest.pes.PEServer"
 #	echo running : $cmd
 #	echo `date`: Running PES
 	eval $cmd
