@@ -22,6 +22,7 @@ package org.openide.loaders;
 
 import java.beans.*;
 import java.io.*;
+import java.text.DateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -704,19 +705,31 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     public final DataObject createFromTemplate (
         final DataFolder f, final String name
     ) throws IOException {
-        final DataObject[] result = new DataObject[1];
-
-        invokeAtomicAction (f.getPrimaryFile (), new FileSystem.AtomicAction () {
-                                public void run () throws IOException {
-                                    result[0] = handleCreateFromTemplate (f, name);
-                                }
-                            }, null);
-
+        return createFromTemplate(f, name, Collections.<String,Object>emptyMap());
+    }
+    
+    /** More generic way how to instantiate a {@link DataObject}. One can
+    * not only specify its name, but also pass a map of parameters that
+    * can influence the copying of the stream.
+    *
+    * @param f folder to create object in
+    * @param name name of object that should be created, or <CODE>null</CODE> if the
+    *    name should be same as that of the template (or otherwise mechanically generated)
+    * @param parameters map of named objects that are going to be used when
+    *    creating the new object
+    * @return the new data object
+    * @exception IOException if an error occured
+    * @since 6.1
+    */
+    public final DataObject createFromTemplate(
+        final DataFolder f, final String name, final Map<String,? extends Object> parameters
+    ) throws IOException {
+        CreateAction create = new CreateAction(this, f, name, parameters);
+        invokeAtomicAction (f.getPrimaryFile (), create, null);
         fireOperationEvent (
-            new OperationEvent.Copy (result[0], this), OperationEvent.TEMPL
+            new OperationEvent.Copy (create.result, this), OperationEvent.TEMPL
         );
-
-        return result[0];
+        return create.result;
     }
 
     /** Create a new data object from template (implemented in subclasses).
@@ -1137,4 +1150,68 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
             }
         }
     }
+    static final class CreateAction implements FileSystem.AtomicAction {
+        public DataObject result;
+        private String name;
+        private DataFolder f;
+        private DataObject orig;
+        private Map<String, ? extends Object> param;
+        
+        private static ThreadLocal<CreateAction> CURRENT = new ThreadLocal<CreateAction>();
+        
+        public CreateAction(DataObject orig, DataFolder f, String name, Map<String, ? extends Object> param) {
+            this.orig = orig;
+            this.f = f;
+            this.name = name;
+            this.param = param;
+        }
+        
+        public void run () throws IOException {
+            CreateAction prev = CURRENT.get();
+            try {
+                CURRENT.set(this);
+                result = orig.handleCreateFromTemplate(f, name);
+            } finally {
+                CURRENT.set(prev);
+            }
+        }
+        
+        public static Map<String,Object> findParameters(String name) {
+            CreateAction c  = CURRENT.get();
+            if (c == null) {
+                return Collections.emptyMap();
+            }
+            HashMap<String,Object> all = new HashMap<String,Object>();
+            for (CreateFromTemplateAttributesProvider provider : Lookup.getDefault().lookupAll(CreateFromTemplateAttributesProvider.class)) {
+                Map<String,? extends Object> map = provider.attributesFor(c.orig, c.f, c.name);
+                if (map != null) {
+                    for (Map.Entry<String,? extends Object> e : map.entrySet()) {
+                        all.put(e.getKey(), e.getValue());
+                    }
+                }
+            }
+            if (c.param != null) {
+                for (Map.Entry<String,? extends Object> e : c.param.entrySet()) {
+                    all.put(e.getKey(), e.getValue());
+                }
+            }
+            
+            if (!all.containsKey("name") && name != null) { // NOI18N
+                all.put("name", name); // NOI18N
+            }
+            if (!all.containsKey("user")) { // NOI18N
+                all.put("user", System.getProperty("user.name")); // NOI18N
+            }
+            Date d = new Date();
+            if (!all.containsKey("date")) { // NOI18N
+                all.put("date", DateFormat.getDateInstance().format(d)); // NOI18N
+            }
+            if (!all.containsKey("time")) { // NOI18N
+                all.put("time", DateFormat.getTimeInstance().format(d)); // NOI18N
+            }
+            
+            return Collections.unmodifiableMap(all);
+        }
+        
+    } // end of CreateAction
 }

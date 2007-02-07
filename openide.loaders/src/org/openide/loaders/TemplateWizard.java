@@ -863,10 +863,7 @@ public class TemplateWizard extends WizardDescriptor {
             String n = wiz.getTargetName ();
             DataFolder folder = wiz.getTargetFolder ();
             DataObject template = wiz.getTemplate ();
-            DataObject obj = n == null ?
-                             template.createFromTemplate (folder)
-                             :
-                             template.createFromTemplate (folder, n);
+            DataObject obj = template.createFromTemplate (folder, n, wiz.getProperties());
 
             // run default action (hopefully should be here)
             final Node node = obj.getNodeDelegate ();

@@ -345,8 +345,8 @@ public class WizardDescriptor extends DialogDescriptor {
 
         baseListener = new Listener();
 
-        weakNextButtonListener = WeakListeners.create(ActionListener.class, 
-                baseListener, nextButton
+        weakNextButtonListener = WeakListeners.create(
+                ActionListener.class, baseListener, nextButton
             ); // NOI18N
         weakPreviousButtonListener = WeakListeners.create(
                 ActionListener.class, baseListener, previousButton
@@ -627,6 +627,14 @@ public class WizardDescriptor extends DialogDescriptor {
     */
     public synchronized Object getProperty(String name) {
         return (properties == null) ? null : properties.get(name);
+    }
+    
+    /** Read only map with stored properties.
+     * @return read only map of properties stored using {@link #putProperty} method
+     * @since 7.2
+     */
+    public synchronized Map<String,Object> getProperties() {
+        return properties == null ? Collections.<String,Object>emptyMap() : new HashMap<String,Object>(properties);
     }
 
     public void setHelpCtx(final HelpCtx helpCtx) {

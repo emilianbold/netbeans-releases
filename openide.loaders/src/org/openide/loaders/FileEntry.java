@@ -20,8 +20,8 @@
 package org.openide.loaders;
 
 import java.io.*;
-
 import org.openide.filesystems.*;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /** Entry that works with plain files. Copies, moves,
@@ -122,7 +122,22 @@ public class FileEntry extends MultiDataObject.Entry {
                        getFile ().getName (), getFile ().getExt ()
                    );
         }
-        FileObject fo = getFile().copy (f, name, getFile().getExt ());
+        
+        
+        FileObject fo = null;
+        for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
+            if (h.accept(getFile())) {
+                fo = h.createFromTemplate(getFile(), f, name, DataObject.CreateAction.findParameters(name));
+                assert fo != null;
+                break;
+            }
+        }
+        
+        if (fo == null) {
+            fo = getFile().copy (f, name, getFile().getExt ());
+        }
+        
+        
         // unmark template state
         DataObject.setTemplate (fo, false);
 
@@ -161,7 +176,24 @@ public class FileEntry extends MultiDataObject.Entry {
                            getFile ().getName (), ext
                        );
             }
-            FileObject fo = f.createData (name, ext);
+            
+            
+            FileObject fo = null;
+            for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
+                if (h.accept(getFile())) {
+                    fo = h.createFromTemplate(getFile(), f, name, DataObject.CreateAction.findParameters(name));
+                    assert fo != null;
+                    break;
+                }
+            }
+
+            if (fo == null) {
+                // unmark template state
+                DataObject.setTemplate (fo, false);
+                return fo;
+            }
+            
+            fo = f.createData (name, ext);
 
             java.text.Format frm = createFormat (f, name, ext);
 

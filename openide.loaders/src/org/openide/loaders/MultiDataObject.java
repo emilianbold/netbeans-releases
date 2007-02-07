@@ -659,18 +659,44 @@ public class MultiDataObject extends DataObject {
     protected DataObject handleCreateFromTemplate (
         DataFolder df, String name
     ) throws IOException {
-        FileObject fo;
-
-
         if (name == null) {
             name = FileUtil.findFreeFileName(
                        df.getPrimaryFile (), getPrimaryFile ().getName (), getPrimaryFile ().getExt ()
                    );
         }
 
-        fo = getPrimaryEntry().createFromTemplate (df.getPrimaryFile (), name);
+        FileObject fo = null;
+        Map<String,Object> params = null;
+        for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
+            FileObject current = getPrimaryEntry().getFile();
+            if (h.accept(current)) {
+                if (params == null) {
+                    params = DataObject.CreateAction.findParameters(name);
+                }
+                fo = h.createFromTemplate(current, df.getPrimaryFile(), name, params);
+                assert fo != null;
+                break;
+            }
+        }
+        if (params == null) {
+            // do the regular creation
+            fo = getPrimaryEntry().createFromTemplate (df.getPrimaryFile (), name);
+        }
+        
+        
         Iterator it = secondaryEntries().iterator();
-        while (it.hasNext ()) {
+        NEXT_ENTRY: while (it.hasNext ()) {
+            for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
+                FileObject current = getPrimaryEntry().getFile();
+                if (h.accept(current)) {
+                    if (params == null) {
+                        params = DataObject.CreateAction.findParameters(name);
+                    }
+                    fo = h.createFromTemplate(current, df.getPrimaryFile(), name, params);
+                    assert fo != null;
+                    continue NEXT_ENTRY;
+                }
+            }
             ((Entry)it.next()).createFromTemplate (df.getPrimaryFile (), name);
         }
         

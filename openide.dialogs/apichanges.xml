@@ -39,6 +39,19 @@ Microsystems, Inc. All Rights Reserved.
            <class package="org.openide" name="DialogDisplayer"/>
            <issue number="92570"/>
     </change>
+    <change id="WizardDescriptor.getProperties">
+           <api name="dialogs"/>
+           <summary>New method <code>getProperties</code> added to <code>WizardDescriptor</code></summary>
+           <version major="7" minor="3"/>
+           <date day="8" month="2" year="2007"/>
+           <author login="jtulach"/>
+           <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
+           <description>
+               New method to get list of all properties of the <code>WizardDescriptor</code>
+               added to the class.
+           </description>
+           <class package="org.openide" name="WizardDescriptor"/>
+    </change>
     <change id="generified.wizarddescriptor.panel">
            <api name="dialogs"/>
            <summary>Generified <code>WizardDescriptor.Panel</code></summary>
@@ -55,6 +68,7 @@ Microsystems, Inc. All Rights Reserved.
            <class package="org.openide" name="WizardDescriptor"/>
            <issue number="92762"/>
     </change>
+>>>>>>> 1.9
     <change id="WizardDescriptor.ProgressInstantiatingIterator">
            <api name="dialogs"/>
            <summary>Interface <code>ProgressInstantiatingIterator</code> added</summary>
