@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.ElementKindVisitor6;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
@@ -35,7 +36,12 @@ public abstract class RulesEngine extends ElementKindVisitor6<Void, ProblemConte
     private List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
 
     @Override public Void visitTypeAsClass(TypeElement javaClass, ProblemContext ctx){
+        // visit all enclosed classes recursively
+        for (TypeElement enclosedClass : ElementFilter.typesIn(javaClass.getEnclosedElements())){
+            visitTypeAsClass(enclosedClass, ctx);
+        }
         
+        // apply class-level rules
         for (Rule<TypeElement> rule : getClassRules()){
             if (ctx.isCancelled()){
                 break;

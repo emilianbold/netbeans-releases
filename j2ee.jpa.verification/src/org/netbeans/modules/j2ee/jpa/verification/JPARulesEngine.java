@@ -31,6 +31,7 @@ import org.netbeans.modules.j2ee.jpa.verification.rules.entity.NonFinalClass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.PersistenceUnitPresent;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.PublicClass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.SerializableClass;
+import org.netbeans.modules.j2ee.jpa.verification.rules.entity.TopLevelClass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.ValidPrimaryTableName;
 
 /**
@@ -48,6 +49,7 @@ public class JPARulesEngine extends RulesEngine {
         classRules.add(new SerializableClass());
         classRules.add(new PublicClass());
         classRules.add(new NonFinalClass());
+        classRules.add(new TopLevelClass());
     }
     
     protected Collection<Rule<TypeElement>> getClassRules() {
