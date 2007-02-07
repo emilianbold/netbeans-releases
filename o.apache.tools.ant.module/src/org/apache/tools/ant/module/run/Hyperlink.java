@@ -178,7 +178,9 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                     }
                 }
             }
-            assert liveLine != null : "this=" + this + " ran=" + ran + " encounteredThis=" + encounteredThis + " modifiedThis=" + modifiedThis;
+            assert liveLine != null : "this=" + this + " ran=" + ran +
+                    " encounteredThis=" + encounteredThis + " modifiedThis=" + modifiedThis +
+                    " hyperlinks=" + hyperlinks + " hyperlinks.contains(this)=" + hyperlinks.contains(this);
             return liveLine;
         }
     }
