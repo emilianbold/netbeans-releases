@@ -16,7 +16,7 @@
     The Original Software is NetBeans. The Initial Developer of the Original
     Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     Microsystems, Inc. All Rights Reserved.
-    -->
+-->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="vmd-midp">
@@ -40,21 +40,28 @@
             
             <file name="org-netbeans-modules-vmd-midpnb-components-commands-WaitScreenFailureCommandCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-commands-WaitScreenSuccessCommandCD.instance"/>
-
+            <file name="org-netbeans-modules-vmd-midpnb-components-commands-SVGWaitScreenFailureCommandCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-commands-SVGWaitScreenSuccessCommandCD.instance"/>
+            
             <file name="org-netbeans-modules-vmd-midpnb-components-commands-SplashScreenDismissCommandCD.instance"/>
-
+            <file name="org-netbeans-modules-vmd-midpnb-components-commands-SVGSplashScreenDismissCommandCD.instance"/>
+            
             <file name="org-netbeans-modules-vmd-midpnb-components-sources-WaitScreenFailureCommandEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-sources-WaitScreenSuccessCommandEventSourceCD.instance"/>
-
+            <file name="org-netbeans-modules-vmd-midpnb-components-sources-SVGWaitScreenFailureCommandEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-sources-SVGWaitScreenSuccessCommandEventSourceCD.instance"/>
+            
             <file name="org-netbeans-modules-vmd-midpnb-components-sources-SplashScreenDismissCommandEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-sources-SVGSplashScreenDismissCommandEventSourceCD.instance"/>
         </folder>
         
         <folder name="producers">
             <file name="org-netbeans-modules-vmd-midpnb-producers-WaitScreenProducer.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-producers-SplashScreenProducer.instance"/>
             
-            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGSplashScreen.instance"/>
-            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGWaitScreen.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-SVGWaitScreenProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-SVGSplashScreenProducer.instance"/>
+            
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGAnimatorWrapper.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGImage.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGMenu.instance"/>
@@ -64,8 +71,8 @@
             
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SimpleCancellableTask.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SimpleTableModel.instance"/>
-           
+            
         </folder>
-    
+        
     </folder>
 </filesystem>
