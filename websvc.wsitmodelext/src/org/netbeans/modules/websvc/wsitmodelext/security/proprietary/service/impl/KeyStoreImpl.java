@@ -58,7 +58,7 @@ public class KeyStoreImpl extends ProprietarySecurityPolicyComponentImpl impleme
     }
 
     public void setLocation(String location) {
-        setAttribute(LOCATION, ProprietarySecurityPolicyAttribute.LOCATION, location);        
+        setAttribute(LOCATION, ProprietarySecurityPolicyAttribute.LOCATION, location);
     }
 
     public String getLocation() {

@@ -17,7 +17,8 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service;
+
+package org.netbeans.modules.websvc.wsitmodelext.addressing;
 
 import javax.xml.namespace.QName;
 import java.util.HashSet;
@@ -27,24 +28,17 @@ import java.util.Set;
  *
  * @author Martin Grebac
  */
-public enum ProprietarySecurityPolicyServiceQName {
-    KEYSTORE(createSecurityPolicyQName("KeyStore")),  //NOI18N
-    TRUSTSTORE(createSecurityPolicyQName("TrustStore")),  //NOI18N
-    CALLBACKHANDLERCONFIGURATION(createSecurityPolicyQName("CallbackHandlerConfiguration")),  //NOI18N
-    CALLBACKHANDLER(createSecurityPolicyQName("CallbackHandler")), //NOI18N
-    VALIDATORCONFIGURATION(createSecurityPolicyQName("ValidatorConfiguration")),  //NOI18N
-    VALIDATOR(createSecurityPolicyQName("Validator")), //NOI18N
-    TIMESTAMP(createSecurityPolicyQName("Timestamp")); //NOI18N
+public enum Addressing10WsdlQName {
+    USINGADDRESSING(createAddressingWsdlQName("UsingAddressing"));                  //NOI18N
 
-    public static final String PROPRIETARY_SERVICE_SECPOLICY_UTILITY = 
-            "http://schemas.sun.com/2006/03/wss/server"; //NOI18N
-    public static final String PROPRIETARY_SECPOLICY_UTILITY_NS_PREFIX = "sc"; //NOI18N
-            
-    public static QName createSecurityPolicyQName(String localName){
-        return new QName(PROPRIETARY_SERVICE_SECPOLICY_UTILITY, localName, PROPRIETARY_SECPOLICY_UTILITY_NS_PREFIX);
+    public static final String ADDRESSING10_WSDL_NS_URI = "http://www.w3.org/2006/05/addressing/wsdl";  //NOI18N
+    public static final String ADDRESSING10_WSDL_NS_PREFIX = "wsaws";                 //NOI18N
+    
+    public static QName createAddressingWsdlQName(String localName){
+        return new QName(ADDRESSING10_WSDL_NS_URI, localName, ADDRESSING10_WSDL_NS_PREFIX);
     }
     
-    ProprietarySecurityPolicyServiceQName(QName name) {
+    Addressing10WsdlQName(QName name) {
         qName = name;
     }
     
@@ -55,7 +49,7 @@ public enum ProprietarySecurityPolicyServiceQName {
     public static Set<QName> getQNames() {
         if (qnames == null) {
             qnames = new HashSet<QName>();
-            for (ProprietarySecurityPolicyServiceQName wq : values()) {
+            for (Addressing10WsdlQName wq : values()) {
                 qnames.add(wq.getQName());
             }
         }

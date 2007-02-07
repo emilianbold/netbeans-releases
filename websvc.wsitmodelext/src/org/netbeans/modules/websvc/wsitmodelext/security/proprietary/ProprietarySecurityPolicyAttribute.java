@@ -30,7 +30,7 @@ public enum ProprietarySecurityPolicyAttribute implements Attribute {
         DEFAULT("default"),       //NOI18N
         ENCRYPTISSUEDKEY("encryptIssuedKey"),       //NOI18N
         ENCRYPTISSUEDTOKEN("encryptIssuedToken"),   //NOI18N
-        ENDPOINT("endpoint"),                       //NOI18N
+        ENDPOINT("endPoint"),                       //NOI18N
         METADATA("metadata"),                       //NOI18N
         WSDLLOCATION("wsdlLocation"),               //NOI18N
         SERVICENAME("serviceName"),                 //NOI18N

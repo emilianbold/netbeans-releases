@@ -20,16 +20,14 @@
 package org.netbeans.modules.websvc.wsitmodelext;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.xml.namespace.QName;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10QName;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10WsdlQName;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.AddressingQName;
 import org.netbeans.modules.websvc.wsitmodelext.mtom.MtomQName;
-import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.rm.RMMSQName;
 import org.netbeans.modules.websvc.wsitmodelext.rm.RMQName;
@@ -93,6 +91,7 @@ public class PolicyTest extends NbTestCase {
         qnames.addAll(TCPQName.getQNames());
         qnames.addAll(AddressingQName.getQNames());
         qnames.addAll(Addressing10QName.getQNames());
+        qnames.addAll(Addressing10WsdlQName.getQNames());
         qnames.addAll(RMQName.getQNames());
         qnames.addAll(RMSunQName.getQNames());
         qnames.addAll(RMSunClientQName.getQNames());

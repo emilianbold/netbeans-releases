@@ -31,6 +31,8 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.imp
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl.CallbackHandlerImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl.KeyStoreImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl.TrustStoreImpl;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl.ValidatorConfigurationImpl;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl.ValidatorImpl;
 
 public class ProprietarySecurityPolicyFactories {
 
@@ -45,6 +47,34 @@ public class ProprietarySecurityPolicyFactories {
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new KeyStoreImpl(context.getModel(), element);
+        }
+    }
+
+    public static class ValidatorConfigurationServiceFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(ProprietarySecurityPolicyServiceQName.VALIDATORCONFIGURATION.getQName());
+        }
+        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
+            return type.cast(new ValidatorConfigurationImpl(context.getModel()));
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new ValidatorConfigurationImpl(context.getModel(), element);
+        }
+    }
+
+    public static class ValidatorServiceFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(ProprietarySecurityPolicyServiceQName.VALIDATOR.getQName());
+        }
+        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
+            return type.cast(new ValidatorImpl(context.getModel()));
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new ValidatorImpl(context.getModel(), element);
         }
     }
 

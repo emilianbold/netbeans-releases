@@ -19,28 +19,28 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.proprietary;
 
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.Validator;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *
  * @author Martin Grebac
  */
-public interface CallbackHandler extends ExtensibilityElement{
-    public static final String NAME = "name";               //NOI18N
-    public static final String CLASSNAME = "classname";     //NOI18N
-    public static final String DEFAULT = "default";         //NOI18N
-    
-    public static final String USERNAME_CBHANDLER = "usernameHandler";         //NOI18N
-    public static final String KERBEROS_CBHANDLER = "kerberosHandler";         //NOI18N
-    public static final String SAML_CBHANDLER = "samlHandler";         //NOI18N
-    public static final String PASSWORD_CBHANDLER = "passwordHandler";         //NOI18N
+public interface ValidatorConfiguration extends ExtensibilityElement{
 
-    void setDefault(String def);
-    String getDefault();
-    
-    void setName(String name);
-    String getName();
+//    public static final String TIMESTAMPFRESHNESS = "TimestampFreshnessLimit";  //NOI18N
+//    public static final String MAXNONCEAGE = "MaxNonceAge";         //NOI18N
+//    public static final String MAXCLOCKSKEW = "MaxClockSkew";       //NOI18N
 
-    void setClassname(String classname);
-    String getClassname();
+    void setVisibility(String vis);
+    String getVisibility();
+    
+//    void setMaxClockSkew(String maxClockSkew);
+//    String getMaxClockSkew();
+//
+//    void setTimestampFreshnessLimit(String limit);
+//    String getTimestampFreshnessLimit();
+//
+//    void setMaxNonceAge(String maxNonceAge);
+//    String getMaxNonceAge();
 }

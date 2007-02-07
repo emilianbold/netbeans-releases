@@ -20,8 +20,8 @@
 package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyAttribute;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ProprietaryTrustServiceQName;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ServiceProvider;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.Validator;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ProprietarySecurityPolicyServiceQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
@@ -30,30 +30,36 @@ import org.w3c.dom.Element;
  *
  * @author Martin Grebac
  */
-public class ServiceProviderImpl extends ProprietaryTrustComponentServiceImpl implements ServiceProvider {
+public class ValidatorImpl extends ProprietarySecurityPolicyComponentImpl implements Validator {
     
     /**
-     * Creates a new instance of ServiceProviderImpl
+     * Creates a new instance of ValidatorImpl
      */
-    public ServiceProviderImpl(WSDLModel model, Element e) {
+    public ValidatorImpl(WSDLModel model, Element e) {
         super(model, e);
     }
     
-    public ServiceProviderImpl(WSDLModel model){
-        this(model, createPrefixedElement(ProprietaryTrustServiceQName.SERVICEPROVIDER.getQName(), model));
+    public ValidatorImpl(WSDLModel model){
+        this(model, createPrefixedElement(ProprietarySecurityPolicyServiceQName.VALIDATOR.getQName(), model));
     }
 
-    @Override
     public void accept(WSDLVisitor visitor) {
         visitor.visit(this);
     }
 
-    public void setEndpoint(String url) {
-        setAttribute(ENDPOINT, ProprietarySecurityPolicyAttribute.ENDPOINT, url);
+    public void setName(String name) {
+        setAttribute(NAME, ProprietarySecurityPolicyAttribute.NAME, name);        
     }
 
-    public String getEndpoint() {
-        return getAttribute(ProprietarySecurityPolicyAttribute.ENDPOINT);
+    public String getName() {
+        return getAttribute(ProprietarySecurityPolicyAttribute.NAME);
     }
 
+    public void setClassname(String classname) {
+        setAttribute(CLASSNAME, ProprietarySecurityPolicyAttribute.CLASSNAME, classname);        
+    }
+
+    public String getClassname() {
+        return getAttribute(ProprietarySecurityPolicyAttribute.CLASSNAME);
+    }
 }

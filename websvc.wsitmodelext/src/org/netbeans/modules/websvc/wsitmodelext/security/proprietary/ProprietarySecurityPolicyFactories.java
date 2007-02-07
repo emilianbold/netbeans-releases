@@ -31,6 +31,8 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.Callba
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.CallbackHandlerImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.KeyStoreImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.TrustStoreImpl;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.ValidatorConfigurationImpl;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.ValidatorImpl;
 
 public class ProprietarySecurityPolicyFactories {
 
@@ -48,6 +50,34 @@ public class ProprietarySecurityPolicyFactories {
         }
     }
 
+    public static class ValidatorConfigurationFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(ProprietarySecurityPolicyQName.VALIDATORCONFIGURATION.getQName());
+        }
+        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
+            return type.cast(new ValidatorConfigurationImpl(context.getModel()));
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new ValidatorConfigurationImpl(context.getModel(), element);
+        }
+    }
+
+    public static class ValidatorFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(ProprietarySecurityPolicyQName.VALIDATOR.getQName());
+        }
+        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
+            return type.cast(new ValidatorImpl(context.getModel()));
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new ValidatorImpl(context.getModel(), element);
+        }
+    }
+    
     public static class TimestampFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

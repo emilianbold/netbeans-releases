@@ -31,7 +31,7 @@ import javax.xml.namespace.QName;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.impl.Addressing10AnonymousImpl;
-import org.netbeans.modules.websvc.wsitmodelext.addressing.impl.Addressing10UsingAddressingImpl;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.impl.Addressing10WsdlUsingAddressingImpl;
 
 
 public class Addressing10Factories {
@@ -48,21 +48,6 @@ public class Addressing10Factories {
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new Addressing10EndpointReferenceImpl(context.getModel(), element);
-        }
-    }
-
-    public static class UsingAddressingFactory extends ElementFactory {
-        @Override
-        public Set<QName> getElementQNames() {
-            return Collections.singleton(Addressing10QName.USINGADDRESSING.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new Addressing10UsingAddressingImpl(context.getModel()));
-        }
-
-        @Override
-        public WSDLComponent create(WSDLComponent context, Element element) {
-            return new Addressing10UsingAddressingImpl(context.getModel(), element);
         }
     }
 

@@ -30,7 +30,6 @@ import java.util.Set;
  */
 public enum Addressing10QName {
     ENDPOINTREFERENCE(createAddressingQName("EndpointReference")),              //NOI18N
-    USINGADDRESSING(createAddressingQName("UsingAddressing")),                  //NOI18N
     ANONYMOUS(createAddressingQName("Anonymous")),                              //NOI18N
     ADDRESS(createAddressingQName("Address")),                                  //NOI18N
     ADDRESSINGMETADATA(createAddressingQName("Metadata")),                      //NOI18N

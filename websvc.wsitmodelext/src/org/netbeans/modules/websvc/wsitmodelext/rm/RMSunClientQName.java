@@ -29,6 +29,7 @@ import java.util.Set;
  */
 public enum RMSunClientQName {
     ACKREQUESTINTERVAL(createRMSunClientQName("AckRequestInterval")),           //NOI18N
+    CLOSETIMEOUT(createRMSunClientQName("CloseTimeout")),           //NOI18N
     RESENDINTERVAL(createRMSunClientQName("ResendInterval"));           //NOI18N
 
     public static final String RMSUNCLIENT_NS_URI = "http://sun.com/2006/03/rm/client";  //NOI18N

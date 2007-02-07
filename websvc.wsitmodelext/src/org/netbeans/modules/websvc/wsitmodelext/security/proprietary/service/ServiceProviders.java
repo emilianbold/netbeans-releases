@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.security.proprietary;
+package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service;
 
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
@@ -25,22 +25,5 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
  *
  * @author Martin Grebac
  */
-public interface CallbackHandler extends ExtensibilityElement{
-    public static final String NAME = "name";               //NOI18N
-    public static final String CLASSNAME = "classname";     //NOI18N
-    public static final String DEFAULT = "default";         //NOI18N
-    
-    public static final String USERNAME_CBHANDLER = "usernameHandler";         //NOI18N
-    public static final String KERBEROS_CBHANDLER = "kerberosHandler";         //NOI18N
-    public static final String SAML_CBHANDLER = "samlHandler";         //NOI18N
-    public static final String PASSWORD_CBHANDLER = "passwordHandler";         //NOI18N
-
-    void setDefault(String def);
-    String getDefault();
-    
-    void setName(String name);
-    String getName();
-
-    void setClassname(String classname);
-    String getClassname();
+public interface ServiceProviders extends ExtensibilityElement{
 }

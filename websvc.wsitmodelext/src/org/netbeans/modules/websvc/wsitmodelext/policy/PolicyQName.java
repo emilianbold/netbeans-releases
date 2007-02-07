@@ -32,7 +32,7 @@ public enum PolicyQName {
     ALL(createPolicyQName("All")),                              //NOI18N
     EXACTLYONE(createPolicyQName("ExactlyOne")),                //NOI18N
     POLICYREFERENCE(createPolicyQName("PolicyReference")),      //NOI18N
-    OPTIONAL(createPolicyQName("optional")),      //NOI18N
+    OPTIONAL(createPolicyQName("Optional")),      //NOI18N
     POLICY(createPolicyQName("Policy"));                        //NOI18N
 
     public static final String POLICY_NS_URI = 

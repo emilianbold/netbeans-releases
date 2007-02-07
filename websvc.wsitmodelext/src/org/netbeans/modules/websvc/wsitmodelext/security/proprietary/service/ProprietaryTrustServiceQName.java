@@ -31,6 +31,7 @@ public enum ProprietaryTrustServiceQName {
     STSCONFIGURATION(createTrustServiceQName("STSConfiguration")), //NOI18N
     CONTRACT(createTrustServiceQName("Contract")), //NOI18N
     SERVICEPROVIDER(createTrustServiceQName("ServiceProvider")), //NOI18N
+    SERVICEPROVIDERS(createTrustServiceQName("ServiceProviders")), //NOI18N
     CERTALIAS(createTrustServiceQName("CertAlias")), //NOI18N
     TOKENTYPE(createTrustServiceQName("TokenType")), //NOI18N
     KEYTYPE(createTrustServiceQName("KeyType")), //NOI18N

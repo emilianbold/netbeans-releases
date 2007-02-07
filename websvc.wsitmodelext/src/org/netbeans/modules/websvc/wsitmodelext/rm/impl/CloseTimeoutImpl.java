@@ -17,11 +17,10 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl;
+package org.netbeans.modules.websvc.wsitmodelext.rm.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyAttribute;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ProprietaryTrustServiceQName;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ServiceProvider;
+import org.netbeans.modules.websvc.wsitmodelext.rm.CloseTimeout;
+import org.netbeans.modules.websvc.wsitmodelext.rm.RMSunClientQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
@@ -30,17 +29,17 @@ import org.w3c.dom.Element;
  *
  * @author Martin Grebac
  */
-public class ServiceProviderImpl extends ProprietaryTrustComponentServiceImpl implements ServiceProvider {
+public class CloseTimeoutImpl extends RMSunClientComponentImpl implements CloseTimeout {
     
     /**
-     * Creates a new instance of ServiceProviderImpl
+     * Creates a new instance of CloseTimeoutImpl
      */
-    public ServiceProviderImpl(WSDLModel model, Element e) {
+    public CloseTimeoutImpl(WSDLModel model, Element e) {
         super(model, e);
     }
     
-    public ServiceProviderImpl(WSDLModel model){
-        this(model, createPrefixedElement(ProprietaryTrustServiceQName.SERVICEPROVIDER.getQName(), model));
+    public CloseTimeoutImpl(WSDLModel model){
+        this(model, createPrefixedElement(RMSunClientQName.CLOSETIMEOUT.getQName(), model));
     }
 
     @Override
@@ -48,12 +47,11 @@ public class ServiceProviderImpl extends ProprietaryTrustComponentServiceImpl im
         visitor.visit(this);
     }
 
-    public void setEndpoint(String url) {
-        setAttribute(ENDPOINT, ProprietarySecurityPolicyAttribute.ENDPOINT, url);
+    public void setCloseTimeout(String milliseconds) {
+        setText(CLOSETIMEOUT_CONTENT_PROPERTY, milliseconds);
     }
 
-    public String getEndpoint() {
-        return getAttribute(ProprietarySecurityPolicyAttribute.ENDPOINT);
+    public String getCloseTimeout() {
+        return getText();
     }
-
 }

@@ -27,6 +27,7 @@ import javax.xml.namespace.QName;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.websvc.wsitmodelext.rm.impl.AckRequestIntervalImpl;
+import org.netbeans.modules.websvc.wsitmodelext.rm.impl.CloseTimeoutImpl;
 import org.netbeans.modules.websvc.wsitmodelext.rm.impl.ResendIntervalImpl;
 
 public class RMSunClientFactories {
@@ -58,4 +59,19 @@ public class RMSunClientFactories {
             return new ResendIntervalImpl(context.getModel(), element);
         }
     }
+
+    public static class CloseTimeoutFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(RMSunClientQName.CLOSETIMEOUT.getQName());
+        }
+        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
+            return type.cast(new CloseTimeoutImpl(context.getModel()));
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new CloseTimeoutImpl(context.getModel(), element);
+        }
+    }
+    
 }
