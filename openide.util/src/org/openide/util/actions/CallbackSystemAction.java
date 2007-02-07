@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,7 +28,8 @@ import java.beans.PropertyChangeSupport;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -125,7 +126,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
     /** Updates the enabled state by checking performer and ActionMap
      */
     private void updateEnabled() {
-        javax.swing.Action action = GlobalManager.getDefault().findGlobalAction(
+        Action action = GlobalManager.getDefault().findGlobalAction(
                 getActionMapKey(), getSurviveFocusChange()
             );
 
@@ -436,7 +437,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
      * and updates the state of the action according to it.
      */
     private static final class ActionDelegateListener extends WeakReference<CallbackSystemAction> implements PropertyChangeListener {
-        private WeakReference delegate;
+        private Reference<Action> delegate;
 
         public ActionDelegateListener(CallbackSystemAction c, Action delegate) {
             super(c);
@@ -445,10 +446,10 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         }
 
         public void clear() {
-            javax.swing.Action a;
+            Action a;
 
-            WeakReference d = delegate;
-            a = (d == null) ? null : (javax.swing.Action) d.get();
+            Reference<Action> d = delegate;
+            a = d == null ? null : d.get();
 
             if (a == null) {
                 return;
@@ -459,14 +460,14 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
             a.removePropertyChangeListener(this);
         }
 
-        public void attach(javax.swing.Action action) {
-            WeakReference d = delegate;
+        public void attach(Action action) {
+            Reference<Action> d = delegate;
 
             if ((d != null) && (d.get() == action)) {
                 return;
             }
 
-            Action prev = (Action) d.get();
+            Action prev = d.get();
 
             // reattaches to different action
             if (prev != null) {
@@ -479,7 +480,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
 
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
             synchronized (LISTENER) {
-                WeakReference d = delegate;
+                Reference<Action> d = delegate;
 
                 if ((d == null) || (d.get() == null)) {
                     return;
@@ -516,7 +517,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         private PropertyChangeListener weakL;
 
         /** last action we were listening to */
-        private WeakReference lastRef;
+        private Reference<Action> lastRef;
 
         public DelegateAction(CallbackSystemAction a, Lookup actionContext) {
             this.delegate = a;
@@ -536,7 +537,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         /** Invoked when an action occurs.
          */
         public void actionPerformed(final java.awt.event.ActionEvent e) {
-            final javax.swing.Action a = findAction();
+            final Action a = findAction();
 
             if (a != null) {
                 org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable run;
@@ -570,14 +571,14 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         }
 
         public boolean isEnabled() {
-            javax.swing.Action a = findAction();
+            Action a = findAction();
 
             if (a == null) {
                 a = delegate;
             }
 
             // 40915 - hold last action weakly
-            javax.swing.Action last = (lastRef == null) ? null : (javax.swing.Action) lastRef.get();
+            Action last = lastRef == null ? null : lastRef.get();
 
             if (a != last) {
                 if (last != null) {
@@ -625,16 +626,13 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         /*** Finds an action that we should delegate to
          * @return the action or null
          */
-        private javax.swing.Action findAction() {
-            java.util.Collection c = (result != null) ? result.allInstances() : java.util.Collections.EMPTY_LIST;
+        private Action findAction() {
+            Collection<? extends ActionMap> c = result != null ? result.allInstances() : Collections.<ActionMap>emptySet();
 
             if (!c.isEmpty()) {
                 Object key = delegate.getActionMapKey();
-
-                for (Iterator it = c.iterator(); it.hasNext();) {
-                    javax.swing.ActionMap map = (javax.swing.ActionMap) it.next();
-                    javax.swing.Action action = map.get(key);
-
+                for (ActionMap map : c) {
+                    Action action = map.get(key);
                     if (action != null) {
                         return action;
                     }
@@ -683,7 +681,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         }
 
         protected void finalize() {
-            javax.swing.Action last = (lastRef == null) ? null : (javax.swing.Action) lastRef.get();
+            Action last = lastRef == null ? null : lastRef.get();
 
             if (last != null) {
                 last.removePropertyChangeListener(weakL);
