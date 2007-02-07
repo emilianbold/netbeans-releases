@@ -26,6 +26,7 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,7 @@ public final class WaitScreenSuccessCommandCD extends ComponentDescriptor {
         component.writeProperty(CommandCD.PROP_TYPE, MidpTypes.createIntegerValue(CommandCD.VALUE_OK));
         component.writeProperty(CommandCD.PROP_PRIORITY, MidpTypes.createIntegerValue(0));
         component.writeProperty(CommandCD.PROP_ORDINARY, MidpTypes.createBooleanValue(false));
+        component.writeProperty(ClassCD.PROP_INSTANCE_NAME, MidpTypes.createStringValue("WaitScreen.SUCCESS_COMMAND")); //NOI18N
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {

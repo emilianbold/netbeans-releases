@@ -31,6 +31,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 
 /**
  * @author Karol Harezlak
@@ -53,6 +54,7 @@ public final class SplashScreenDismissCommandCD extends ComponentDescriptor {
         component.writeProperty(CommandCD.PROP_TYPE, MidpTypes.createIntegerValue(CommandCD.VALUE_OK));
         component.writeProperty(CommandCD.PROP_PRIORITY, MidpTypes.createIntegerValue(0));
         component.writeProperty(CommandCD.PROP_ORDINARY, MidpTypes.createBooleanValue(false));
+        component.writeProperty(ClassCD.PROP_INSTANCE_NAME, MidpTypes.createStringValue("W.DISMISS_COMMAND")); //NOI18N
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {

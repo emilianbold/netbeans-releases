@@ -76,10 +76,10 @@ public final class MidpDocumentSupport {
         else if (list.size() == 0) {   
             newComponent = document.createComponent(typeID);
             categoryComponent.addComponent(newComponent);
-         
             return newComponent;
         }
-        throw new IllegalStateException("Component "+ typeID + " should be singelton per decument"); //NOI18N;
+        
+        throw new IllegalStateException("Component "+ typeID + " should be singelton per document"); //NOI18N;
     }
     
     public static DesignComponent attachCommandToDisplayable(DesignComponent displayable, DesignComponent command) {
