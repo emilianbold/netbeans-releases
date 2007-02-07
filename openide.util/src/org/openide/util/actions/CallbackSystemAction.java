@@ -645,7 +645,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         }
 
         public javax.swing.JMenuItem getMenuPresenter() {
-            if (isMethodOverriden(delegate, "getMenuPresenter")) { // NOI18N
+            if (isMethodOverridden(delegate, "getMenuPresenter")) { // NOI18N
 
                 return delegate.getMenuPresenter();
             } else {
@@ -654,7 +654,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         }
 
         public javax.swing.JMenuItem getPopupPresenter() {
-            if (isMethodOverriden(delegate, "getPopupPresenter")) { // NOI18N
+            if (isMethodOverridden(delegate, "getPopupPresenter")) { // NOI18N
 
                 return delegate.getPopupPresenter();
             } else {
@@ -663,7 +663,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         }
 
         public java.awt.Component getToolbarPresenter() {
-            if (isMethodOverriden(delegate, "getToolbarPresenter")) { // NOI18N
+            if (isMethodOverridden(delegate, "getToolbarPresenter")) { // NOI18N
 
                 return delegate.getToolbarPresenter();
             } else {
@@ -671,7 +671,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
             }
         }
 
-        private boolean isMethodOverriden(CallableSystemAction d, String name) {
+        private boolean isMethodOverridden(CallableSystemAction d, String name) {
             try {
                 java.lang.reflect.Method m = d.getClass().getMethod(name, new Class[0]);
 
