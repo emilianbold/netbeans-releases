@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -29,6 +30,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -80,7 +83,7 @@ implements ActionListener, Runnable, Callable<JButton> {
     }
     
     public void run() {
-        Installer.displaySummary("ERROR_URL", false); // NOI18N
+        Installer.displaySummary("ERROR_URL", true); // NOI18N
     }
 
     private JButton button;
@@ -94,6 +97,11 @@ implements ActionListener, Runnable, Callable<JButton> {
     }
 
     public void actionPerformed(ActionEvent ev) {
+        JComponent c = (JComponent)ev.getSource();
+        Window w = SwingUtilities.windowForComponent(c);
+        if (w != null) {
+            w.dispose();
+        }
         run();
     }
 }
