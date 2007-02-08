@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.vmd.midp.components.sources;
 
-import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
@@ -31,6 +30,7 @@ import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.flow.FlowDisplayableCommandPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -112,7 +112,10 @@ public final class CommandEventSourceCD extends ComponentDescriptor {
 
         protected boolean canRename () {
             DesignComponent command = getCommandComponent (getComponent ());
-            return command != null;
+            if (command == null)
+                return false;
+            InfoPresenter presenter = command.getPresenter (InfoPresenter.class);
+            return presenter.isEditable ();
         }
 
         protected String getRenameName () {
