@@ -19,22 +19,18 @@
 
 package org.netbeans.modules.vmd.midpnb.components.commands;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -57,6 +53,7 @@ public class SVGSplashScreenDismissCommandCD extends ComponentDescriptor {
         component.writeProperty(CommandCD.PROP_TYPE, MidpTypes.createIntegerValue(CommandCD.VALUE_OK));
         component.writeProperty(CommandCD.PROP_PRIORITY, MidpTypes.createIntegerValue(0));
         component.writeProperty(CommandCD.PROP_ORDINARY, MidpTypes.createBooleanValue(false));
+        component.writeProperty (ClassCD.PROP_INSTANCE_NAME, PropertyValue.createNull ());
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {

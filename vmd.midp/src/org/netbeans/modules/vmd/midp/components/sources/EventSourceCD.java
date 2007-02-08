@@ -68,7 +68,7 @@ public final class EventSourceCD extends ComponentDescriptor {
 
     public DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter()
-            .addPropertiesCategory (PropertiesCategories.CATEGORY_COMMAND_PROPERTIES)
+            .addPropertiesCategory (PropertiesCategories.CATEGORY_ACTION_PROPERTIES)
                 .addProperty("Action", PropertyEditorEventHandler.createInstance(), PROP_EVENT_HANDLER)
             .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
             .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES);

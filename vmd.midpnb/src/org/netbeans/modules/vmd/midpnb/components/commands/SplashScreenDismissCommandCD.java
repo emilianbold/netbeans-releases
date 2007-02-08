@@ -20,18 +20,18 @@
 
 package org.netbeans.modules.vmd.midpnb.components.commands;
 
+import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
-import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
-import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import java.util.List;
 
 /**
  * @author Karol Harezlak
@@ -54,7 +54,7 @@ public final class SplashScreenDismissCommandCD extends ComponentDescriptor {
         component.writeProperty(CommandCD.PROP_TYPE, MidpTypes.createIntegerValue(CommandCD.VALUE_OK));
         component.writeProperty(CommandCD.PROP_PRIORITY, MidpTypes.createIntegerValue(0));
         component.writeProperty(CommandCD.PROP_ORDINARY, MidpTypes.createBooleanValue(false));
-        component.writeProperty(ClassCD.PROP_INSTANCE_NAME, MidpTypes.createStringValue("W.DISMISS_COMMAND")); //NOI18N
+        component.writeProperty(ClassCD.PROP_INSTANCE_NAME, PropertyValue.createNull ());
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {

@@ -19,6 +19,7 @@
 package org.netbeans.modules.vmd.midpnb.components.sources;
 
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
@@ -28,6 +29,7 @@ import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author Karo Harezlak
@@ -50,10 +52,15 @@ public final class WaitScreenSuccessCommandEventSourceCD extends ComponentDescri
         return null;
     }
 
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass (presenters, InfoPresenter.class);
+        super.gatherPresenters (presenters);
+    }
+
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.createStatic ("WaitScreen.SUCCESS", "Command", CommandCD.ICON_PATH), //NOI18N
+            InfoPresenter.createStatic ("WaitScreen.SUCCESS_COMMAND", "Command", CommandCD.ICON_PATH), //NOI18N
             // delete
             DeleteDependencyPresenter.createDependentOnParentComponentPresenter (),
             DeletePresenter.createUserIndeliblePresenter ()
