@@ -23,6 +23,7 @@ Cloneable
 Comparable
 Compiler
 Constructor
+Deprecated
 Double
 Enum
 EnumConstantNotPresentException
@@ -71,6 +72,7 @@ Number
 NumberFormatException
 Object
 OutOfMemoryError
+Override
 Package
 ParameterizedType
 Process
@@ -93,6 +95,7 @@ String x
 StringBuffer
 StringBuilder
 StringIndexOutOfBoundsException
+SuppressWarnings
 System
 TestFile
 Thread
