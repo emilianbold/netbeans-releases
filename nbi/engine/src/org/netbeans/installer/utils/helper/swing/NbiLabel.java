@@ -20,6 +20,7 @@
  */
 package org.netbeans.installer.utils.helper.swing;
 
+import java.awt.Graphics;
 import javax.swing.JLabel;
 import org.netbeans.installer.utils.StringUtils;
 
@@ -28,20 +29,49 @@ import org.netbeans.installer.utils.StringUtils;
  * @author Kirill Sorokin
  */
 public class NbiLabel extends JLabel {
-    public static final String DEFAULT_TEXT = " "; // NOI18N
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    private boolean collapsePaths;
+    
+    private String text;
     
     public NbiLabel() {
         super();
         
         setText(null);
+        collapsePaths = false;
     }
     
-    public void setText(String text) {
+    public NbiLabel(final boolean collapsePaths) {
+        this();
+        
+        this.collapsePaths = collapsePaths;
+    }
+    
+    public void setText(final String text) {
         if ((text == null) || text.equals("")) {
+            this.text = DEFAULT_TEXT;
+            
             super.setText(DEFAULT_TEXT);
+            super.setDisplayedMnemonic(DEFAULT_MNEMONIC_CHAR);
         } else {
+            this.text = StringUtils.stripMnemonic(text);
+            
             super.setText(StringUtils.stripMnemonic(text));
             super.setDisplayedMnemonic(StringUtils.fetchMnemonic(text));
         }
     }
+    
+    public String getText() {
+        return text;
+    }
+    
+    protected void paintComponent(Graphics graphics) {
+        super.paintComponent(graphics);
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String DEFAULT_TEXT = " "; // NOI18N
+    public static final char DEFAULT_MNEMONIC_CHAR = '\u0000';
 }
