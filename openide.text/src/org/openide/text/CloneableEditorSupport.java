@@ -305,6 +305,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * @return the manager
      */
     protected final synchronized UndoRedo.Manager getUndoRedo() {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            return redirect.getUndoRedo();
+        }
+        
         if (undoRedo == null) {
             undoRedo = createUndoRedoManager();
         }
@@ -381,6 +386,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** Overrides superclass method, first processes document preparation.
      * @see #prepareDocument */
     public void open() {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            redirect.open();
+            return;
+        }
+        
         try {
             if (getListener().loadExc instanceof UserQuestionException) {
                 getListener().loadExc = null;
@@ -460,6 +471,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @return task for control over loading
     */
     public Task prepareDocument() {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            return redirect.prepareDocument();
+        }
         synchronized (getLock()) {
             switch (documentStatus) {
             case DOCUMENT_NO:
@@ -633,6 +648,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @exception IOException if the document could not be loaded
     */
     public StyledDocument openDocument() throws IOException {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            return redirect.openDocument();
+        }
         synchronized (getLock()) {
             return openDocumentCheckIOE();
         }
@@ -695,6 +714,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * @return document or <code>null</code> if it is not yet loaded
      */
     public StyledDocument getDocument() {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            return redirect.getDocument();
+        }
         synchronized (getLock()) {
             while (true) {
                 switch (documentStatus) {
@@ -722,6 +745,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     *   otherwise <code>false</code>
     */
     public boolean isModified() {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            return redirect.isModified();
+        }
         return cesEnv().isModified();
     }
 
@@ -730,6 +757,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @exception IOException on I/O error
     */
     public void saveDocument() throws IOException {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            redirect.saveDocument();
+            return;
+        }
         // #17714: Don't try to save unmodified doc.
         if (!cesEnv().isModified()) {
             return;
@@ -834,6 +866,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     public JEditorPane[] getOpenedPanes() {
         // expected in AWT only
         assert SwingUtilities.isEventDispatchThread(); // NOI18N
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            return redirect.getOpenedPanes();
+        }
 
         LinkedList<JEditorPane> ll = new LinkedList<JEditorPane>();
         Enumeration en = allEditors.getComponents();
@@ -888,6 +924,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @return positions of all paragraphs on last save
     */
     public Line.Set getLineSet() {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            return redirect.getLineSet();
+        }
         return updateLineSet(false);
     }
 
@@ -913,6 +953,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     /** A printing implementation suitable for {@link org.openide.cookies.PrintCookie}. */
     public void print() {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            redirect.print();
+            return;
+        }
         // XXX should this run synch? can be slow for an enormous doc
         synchronized (LOCK_PRINTING) {
             if (printing) {
@@ -1125,6 +1170,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @return <code>true</code> if document is loaded
     */
     public boolean isDocumentLoaded() {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            return redirect.isDocumentLoaded();
+        }
         return documentStatus != DOCUMENT_NO;
     }
 
@@ -1133,6 +1182,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @param s the new MIME type
     */
     public void setMIMEType(String s) {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            redirect.setMIMEType(s);
+            return;
+        }
         mimeType = s;
     }
 
@@ -1227,6 +1281,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * @since 4.7
      */
     public InputStream getInputStream() throws IOException {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            return redirect.getInputStream();
+        }
         // Implementation note
         // Piped stream will not work, as we are in the same thread
         // Doing this in a different thread would need to lock the document for
@@ -1780,6 +1838,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @return <code>false</code> if the operation is cancelled
     */
     protected boolean close(boolean ask) {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            return redirect.close(ask);
+        }
+        
         if (!super.close(ask)) {
             // if not all editors has been closed
             return false;
@@ -2054,6 +2117,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @since 5.2
     */
     protected final Pane openAt(final PositionRef pos, final int column) {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            return redirect.openAt(pos, column);
+        }
         final Pane e = openPane();
         final Task t = prepareDocument();
         e.ensureVisible();

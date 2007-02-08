@@ -23,6 +23,25 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="CloneableEditorSupportRedirector">
+        <api name="text"/>
+        <summary>CloneableEditorSupportRedirector</summary>
+        <version major="6" minor="13"/>
+        <date day="7" month="2" year="2007"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            <p>The <a href="@TOP@/org/openide/text/CloneableEditorSupportRedirector.html">CloneableEditorSupportRedirector</a> 
+            class allows a redirection of operations on a <code>CloneableEditorSupport</code>
+            object to another one. This can be useful if there are two logical
+            files representing one physical and one wants to have just a single
+            editor for both files. In such case just implement the 
+            <a href="@TOP@/org/openide/text/CloneableEditorSupportRedirector.html">CloneableEditorSupportRedirector</a>.
+            </p>
+        </description>
+        <class package="org.openide.text" name="CloneableEditorSupportRedirector"/>
+        <issue number="51690"/>
+    </change>
 
     <change id="CloneableEditorSupport.getEditorKit">
         <api name="text"/>
