@@ -30,6 +30,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComb
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodeSupport;
 import org.openide.util.NbBundle;
 
 import java.util.Arrays;
@@ -86,7 +87,8 @@ public final class WaitScreenCD extends ComponentDescriptor {
             //properties
             createPropertiesPresenter(),
             // code
-            createSetterPresenter ()
+            createSetterPresenter (),
+            MidpCustomCodeSupport.createAddImportPresenter ()
         );
     }
 

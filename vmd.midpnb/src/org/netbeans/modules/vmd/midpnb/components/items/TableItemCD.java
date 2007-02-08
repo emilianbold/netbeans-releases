@@ -19,24 +19,25 @@
 
 package org.netbeans.modules.vmd.midpnb.components.items;
 
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.api.properties.common.TextFieldBC;
-import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
-import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
-import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodeSupport;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCode;
+import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.openide.util.NbBundle;
 
@@ -70,6 +71,10 @@ public class TableItemCD extends ComponentDescriptor {
 
     public VersionDescriptor getVersionDescriptor() {
         return MidpVersionDescriptor.MIDP_2;
+    }
+
+    public void postInitialize (DesignComponent component) {
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
@@ -112,12 +117,9 @@ public class TableItemCD extends ComponentDescriptor {
             // properties
             createPropertiesPresenter(),
             // code
-            createSetterPresenter ()
+            createSetterPresenter (),
+            MidpCustomCodeSupport.createAddImportPresenter ()
         );
-    }
-    
-    public void postInitialize (DesignComponent component) {
-        MidpProjectSupport.addLibraryToProject(component.getDocument(), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
     }
     
 }

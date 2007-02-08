@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodeSupport;
 
 import java.util.Arrays;
 import java.util.List;
@@ -89,7 +90,8 @@ public class SplashScreenCD extends ComponentDescriptor {
             // properties
             createPropertiesPresenter(),
             // code
-            createSetterPresenter ()
+            createSetterPresenter (),
+            MidpCustomCodeSupport.createAddImportPresenter ()
         );
     }
 
