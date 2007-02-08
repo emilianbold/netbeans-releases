@@ -123,8 +123,6 @@ public class LocalVariables extends JellyTestCase {
     }
     
     public void testLocalVariablesExtended() {
-        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-        new OpenAction().performAPI(beanNode);
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.setCaret(eo, 76);
         new RunToCursorAction().perform();
@@ -221,6 +219,7 @@ public class LocalVariables extends JellyTestCase {
     // check values in TreeTable line
     public void checkTreeTableLine(JTableOperator table, int lineNumber, String name, String type, String value) {
         try {
+            table.scrollToCell(lineNumber, 0);
             org.openide.nodes.Node.Property property;
             String string = null;
             assertTrue("Node " + name + " not displayed in Local Variables view", name.equals(table.getValueAt(lineNumber, 0).toString()));

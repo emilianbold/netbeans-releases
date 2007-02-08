@@ -288,11 +288,11 @@ public class Utilities {
     }
     
     public static NbDialogOperator newBreakpoint(int line, int column) {
-        Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(testProjectName);
         EditorOperator eo = new EditorOperator("MemoryView.java");
         eo.setCaretPosition(line, column);
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
+        new EventTool().waitNoEvent(1000l);
         return dialog;
     }
     
@@ -302,6 +302,7 @@ public class Utilities {
         setCaret(eo, line);
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
+        new EventTool().waitNoEvent(1000l);
         return dialog;
     }
     
@@ -397,6 +398,7 @@ public class Utilities {
         OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
         ConsoleChooser cch = new ConsoleChooser(op, text, status);
         JemmyProperties.getCurrentOutput().printLine("Waiting on text in debugger console '"+text+"' from line "+status);
+        JemmyProperties.setCurrentTimeout("OutputTabOperator.WaitStateTimeout", 30000l);
         try {
             op.waitState(cch);
         } catch (TimeoutExpiredException ex) {

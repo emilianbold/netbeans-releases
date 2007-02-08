@@ -39,6 +39,7 @@ import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -79,6 +80,7 @@ public class Actions extends JellyTestCase {
     }
     
     public void tearDown() {
+        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
         if (getName().equals("testPause")) {
             Utilities.endAllSessions();
             Utilities.deleteAllBreakpoints();
@@ -361,7 +363,8 @@ public class Actions extends JellyTestCase {
         }
         Utilities.waitStatusTextPrefix("Thread main stopped at ");
         eo = new EditorOperator("MemoryView.java");
-        assertTrue(Utilities.checkAnnotation(eo, 82, "CallSite"));
+        assertTrue("There is not annotation on line 82", Utilities.checkAnnotation(eo, 82, "CallSite"));
+        //there should not be any other opened classes - issue 83704
         eo.closeAllDocuments();
     }
 }
