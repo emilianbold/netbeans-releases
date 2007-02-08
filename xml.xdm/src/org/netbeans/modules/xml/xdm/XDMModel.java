@@ -403,6 +403,14 @@ public class XDMModel {
                 consolidateNamespace(root, parentAndAncestors, newNode, attr);
             }
         }
+        
+        // use parent node prefix
+        String parentNS = parent.getNamespaceURI();
+        String parentPrefix = parent.getPrefix();
+        if (parentNS != null && ! parentNS.equals(XMLConstants.NULL_NS_URI)) {
+            new NamespaceRefactorVisitor(this).refactor(
+                        newNode, parentNS, parentPrefix, parentAndAncestors);
+        }
     }
     
     private void consolidateAttributePrefix(List<Node> parentAndAncestors, Element newNode) {
@@ -436,6 +444,9 @@ public class XDMModel {
             String namespace = attr.getValue();
             assert (namespace != null);
             
+            Node parent = parentAndAncestors.get(0);
+            String parentNS = parent.getNamespaceURI();
+            
             String existingNS = NodeImpl.lookupNamespace(prefix, parentAndAncestors);
             String existingPrefix = NodeImpl.lookupPrefix(namespace, parentAndAncestors);
             
@@ -451,8 +462,12 @@ public class XDMModel {
                 assert prefix.equals(existingPrefix) : "prefix='"+prefix+"' existingPrefix='"+existingPrefix+"'";
                 newNode.removeAttributeNode(attr);
             } else if (existingPrefix != null) { // case 3.
-                new NamespaceRefactorVisitor(this).refactor(
+                // skip attribute redeclaring namespace of parent element
+                // we will refactor to parent prefix after processing all xmlns-attributes
+                if (! namespace.equals(parentNS)) {
+                    new NamespaceRefactorVisitor(this).refactor(
                         newNode, namespace, existingPrefix, parentAndAncestors);
+                }
             } else { // existingNS != null && existingPrefix == null
                 // case 4 just leave prefix as overriding with different namespace
             }
