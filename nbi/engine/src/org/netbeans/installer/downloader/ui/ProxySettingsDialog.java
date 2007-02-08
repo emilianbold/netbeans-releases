@@ -96,6 +96,7 @@ public class ProxySettingsDialog extends NbiDialog {
                 "caused by proxies misconfiguration. Please check the " +
                 "HTTP proxy settings below and click Apply to change " +
                 "them. Click Close to exit the installer.");
+        messagePane.setOpaque(false);
         
         useProxyCheckBox = new NbiCheckBox();
         useProxyCheckBox.setText("Use proxy");
