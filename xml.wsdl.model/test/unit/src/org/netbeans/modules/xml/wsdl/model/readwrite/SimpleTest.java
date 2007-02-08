@@ -1,11 +1,13 @@
 package org.netbeans.modules.xml.wsdl.model.readwrite;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import junit.framework.*;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
@@ -43,7 +45,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
  *
  * @author Nam Nguyen
  */
-public class SimpleTest extends TestCase implements TestReadWrite {
+public class SimpleTest extends NbTestCase {
     
     public SimpleTest(String testName) {
         super(testName);
@@ -256,4 +258,14 @@ public class SimpleTest extends TestCase implements TestReadWrite {
         return "resources/HelloService.wsdl";
     }
     
+    public void testPrefixPreference() throws Exception {
+        WSDLModel model = Util.loadWSDLModel("resources/empty.wsdl");
+        model.startTransaction();
+        model.getDefinitions().setTypes(model.getFactory().createTypes());
+        model.endTransaction();
+        assertNull(model.getDefinitions().getTypes().getPeer().getPrefix());
+        assertNull(model.getDefinitions().getTypes().getPeer().getAttribute("xmlns:wsdl"));
+        assertNull(model.getDefinitions().getTypes().getPeer().getAttribute("xmlns"));
+        //Util.dumpToFile(model.getBaseDocument(), new File(getWorkDir(), "test.wsdl"));
+    }
 }
