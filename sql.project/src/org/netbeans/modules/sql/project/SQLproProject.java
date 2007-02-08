@@ -325,6 +325,9 @@ public final class SQLproProject implements Project, AntProjectListener {
                         helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX),
                         IcanproProjectProperties.SE_DEPLOYMENT_JAR,
                         helper.getStandardPropertyEvaluator(), "dist_se", "clean"), // NOI18N
+				helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR,
+                         IcanproProjectProperties.SE_DEPLOYMENT_JAR,
+                         helper.getStandardPropertyEvaluator(), "dist_se", "clean"), // NOI18N
             };
         }
 
