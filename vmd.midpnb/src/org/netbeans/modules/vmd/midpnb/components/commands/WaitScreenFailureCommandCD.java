@@ -77,7 +77,7 @@ public final class WaitScreenFailureCommandCD extends ComponentDescriptor {
                 protected String generateTypeCode() { return null; }
             },
             // delete
-            DeletePresenter.createIndeliblePresenter(),
+            DeletePresenter.createIndeliblePresenter()
         );
     }
 

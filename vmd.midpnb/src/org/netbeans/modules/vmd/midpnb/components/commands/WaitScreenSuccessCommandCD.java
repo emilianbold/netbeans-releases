@@ -77,7 +77,7 @@ public final class WaitScreenSuccessCommandCD extends ComponentDescriptor {
                 protected String generateTypeCode() { return null; }
             },
             // delete
-            DeletePresenter.createIndeliblePresenter(),
+            DeletePresenter.createIndeliblePresenter()
         );
     }
 
