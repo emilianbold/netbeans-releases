@@ -155,8 +155,8 @@ public class ReportPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 private void registerClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_registerClicked
     try {
-        HtmlBrowser.URLDisplayer.getDefault().showURL(new java.net.URL("http://www.netbeans.org/servlets/Join"));   // NOI18N
-    } catch (MalformedURLException ex) {
+        HtmlBrowser.URLDisplayer.getDefault().showURL(new java.net.URL("http://www.netbeans.org/servlets/Join?fromide=1"));   // NOI18N
+    } catch (MalformedURLException ex) {                                
         java.util.logging.Logger.getLogger(ReportPanel.class.getName()).log(java.util.logging.Level.INFO, ex.getMessage(), ex);
     }//GEN-LAST:event_registerClicked
 }                                
