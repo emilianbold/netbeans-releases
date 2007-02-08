@@ -26,7 +26,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyEditor;
 import java.io.IOException;
 import java.util.*;
-
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -37,11 +36,15 @@ import org.openide.cookies.EditorCookie;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.api.java.classpath.ClassPath;
-
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.properties.*;
 import org.netbeans.modules.i18n.*;
 import org.netbeans.modules.i18n.java.JavaResourceHolder;
-
 import org.netbeans.modules.form.I18nService;
 import org.netbeans.modules.form.I18nValue;
 
@@ -461,18 +464,30 @@ public class I18nServiceImpl implements I18nService {
             return null;
 
         FileObject folder;
-        String fileName;
         ClassPath cp = ClassPath.getClassPath(srcDataObject.getPrimaryFile(), ClassPath.SOURCE);
+        FileObject root = cp.getRoots()[0];
+        String fileName;
         int idx = filePath.lastIndexOf('/');
+        boolean hasCustomRes = false;
+        Project owner = FileOwnerQuery.getOwner(srcDataObject.getPrimaryFile());
+        if (owner != null) {
+            // this is for projects that have split sources/resources folder structures.
+            Sources srcs = ProjectUtils.getSources(owner);
+            SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+            if (grps != null && grps.length > 0) {
+                hasCustomRes = true;
+                root = grps[0].getRootFolder();
+            }
+        }
         if (idx < 0) { // default package
-            folder = cp.getRoots()[0];
+            folder = root;
             fileName = filePath;
         }
         else {
             String folderPath = filePath.substring(0, idx);
             folder = cp.findResource(folderPath);
-            if (folder == null) {
-                folder = FileUtil.createFolder(cp.getRoots()[0], folderPath);
+            if (folder == null || hasCustomRes) {
+                folder = FileUtil.createFolder(root, folderPath);
             }
             fileName = filePath.substring(idx + 1);
         }

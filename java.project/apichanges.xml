@@ -83,6 +83,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+    <change id="JavaProjectConstants.SOURCES_TYPE_RESOURCES">
+        <api name="general"/>
+        <summary>Add SourceGroup type for resources that are separate from sources</summary>
+        <version major="1" minor="11"/>
+        <date day="30" month="1" year="2007"/>
+        <author login="mkleint"/>
+        <compatibility addition="yes"/>
+        <description>
+            Add a new Sourcegroup type for resources, if these are not put together with Java sources. (For example
+            Maven based projects put resource files like images, or properties files in different source structures)
+            Useful for creating new resource files in a project from a 3rd party module.
+        </description>
+        <class package="org.netbeans.api.java.project" name="JavaProjectConstants"/>
+        <issue number="89204"/>
+    </change>
     <change id="ProjectClassPathModifier">
         <api name="classpath"/>
         <summary>New ProjectClassPathModifier API/SPI for modification of project's classpath</summary>

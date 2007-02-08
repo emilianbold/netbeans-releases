@@ -34,6 +34,13 @@ public class JavaProjectConstants {
     public static final String SOURCES_TYPE_JAVA = "java"; // NOI18N
 
     /**
+     * Package root sources type for resources, if these are not put together with Java sources.
+     * @see org.netbeans.api.project.Sources
+     * @since org.netbeans.modules.java.project/1 1.11
+     */
+    public static final String SOURCES_TYPE_RESOURCES = "resources"; // NOI18N
+
+    /**
      * Standard artifact type representing a JAR file, presumably
      * used as a Java library of some kind.
      * @see org.netbeans.api.project.ant.AntArtifact
