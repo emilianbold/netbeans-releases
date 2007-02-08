@@ -29,6 +29,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -42,11 +43,18 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes;
 import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -90,7 +98,7 @@ public class InstantRenameAction extends BaseAction {
                 if (changePoints[0] != null) {
                     doInstantRename(changePoints[0], target, caret, ident);
                 } else {
-                    doFullRename();
+                    doFullRename(od.getCookie(EditorCookie.class), od.getNodeDelegate());
                 }
             } else {
                 Utilities.setStatusBoldText(target, "Cannot perform instant rename here.");
@@ -111,14 +119,15 @@ public class InstantRenameAction extends BaseAction {
         InstantRenamePerformer.performInstantRename(target, changePoints, caret);
     }
     
-    private void doFullRename() {
-        final NotifyDescriptor nd = new NotifyDescriptor.Message("Placeholder: Cannot perform instant rename, starting full rename instead");
+    private void doFullRename(EditorCookie ec, Node n) {
         
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                DialogDisplayer.getDefault().notify(nd);
-            }
-        });
+        InstanceContent ic = new InstanceContent();
+        ic.add(ec);
+        ic.add(n);
+        Lookup actionContext = new AbstractLookup(ic);
+        
+        Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(actionContext);
+        a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
     }
     
     static Set<Highlight> computeChangePoints(CompilationInfo info, final int caret, final boolean[] wasResolved) throws IOException {
