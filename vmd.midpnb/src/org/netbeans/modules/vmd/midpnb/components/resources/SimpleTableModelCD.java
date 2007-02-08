@@ -19,26 +19,23 @@
 
 package org.netbeans.modules.vmd.midpnb.components.resources;
 
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.properteditors.PropertyEditorTableModel;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -48,41 +45,52 @@ public class SimpleTableModelCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.SimpleTableModel"); // NOI18N
 
-    private static final String PROP_TABLE_MODEL = "tableModel"; //NOI18N
-    //TODO Change name
-    public static final TypeID TABLE_MODEL_TYPEID = new TypeID(TypeID.Kind.PRIMITIVE,"#TableModel", 2);
-    
+    public static final TypeID TYPEID_VALUES = MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType ().getArrayType ();
+    public static final TypeID TYPEID_COLUMN_NAMES = MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType ();
+
+    public static final String PROP_VALUES = "values"; // NOI18N
+    public static final String PROP_COLUMN_NAMES = "columnNames"; // NOI18N
+
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(ResourceCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
     }
 
     public VersionDescriptor getVersionDescriptor() {
         return MidpVersionDescriptor.MIDP;
     }
 
+    public void postInitialize (DesignComponent component) {
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
+    }
+
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
-        //PropertyValue rows = PropertyValue.createArray(MidpTypes.TYPEID_JAVA_LANG_STRING, Arrays.asList(MidpTypes.createStringValue("row")));
-        //PropertyValue array = PropertyValue.createArray(TABLE_MODEL_TYPEID, Arrays.asList(rows));
-        
         return Arrays.asList(
-            new PropertyDescriptor(PROP_TABLE_MODEL, MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType().getArrayType(), PropertyValue.createEmptyArray(TABLE_MODEL_TYPEID), true, true, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_VALUES, TYPEID_VALUES, PropertyValue.createNull (), true, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor (PROP_COLUMN_NAMES, TYPEID_COLUMN_NAMES, PropertyValue.createNull (), true, true, MidpVersionable.MIDP_2)
         );
     }
     
-     private static DefaultPropertiesPresenter createPropertiesPresenter() {
+    private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
-                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                     .addProperty("Table Model", new PropertyEditorTableModel(), PROP_TABLE_MODEL);
+            .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+                 .addProperty("Values", new PropertyEditorTableModel(), PROP_VALUES); // TODO - Column Names
+    }
+
+    private Presenter createSetterPresenter () {
+        return new CodeSetterPresenter ()
+            .addParameters (MidpParameter.create (PROP_VALUES, PROP_COLUMN_NAMES))
+            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (PROP_VALUES, PROP_COLUMN_NAMES))
+            .addSetters (MidpSetter.createSetter ("setValues", MidpVersionable.MIDP_2).addParameters (PROP_VALUES))
+            .addSetters (MidpSetter.createSetter ("setColumnNames", MidpVersionable.MIDP_2).addParameters (PROP_COLUMN_NAMES));
     }
 
     protected List<? extends Presenter> createPresenters() {
-        return Arrays.asList(
-            createPropertiesPresenter()
+        return Arrays.asList (
+            // properties
+            createPropertiesPresenter (),
+            // code
+            createSetterPresenter ()
         );
     }
     
-    public void postInitialize (DesignComponent component) {
-        MidpProjectSupport.addLibraryToProject(component.getDocument(), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
-    }
-
 }

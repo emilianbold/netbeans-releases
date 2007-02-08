@@ -19,19 +19,11 @@
 
 package org.netbeans.modules.vmd.midpnb.components.items;
 
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.api.properties.common.TextFieldBC;
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
@@ -41,9 +33,15 @@ import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
+import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCode;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.openide.util.NbBundle;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -56,8 +54,8 @@ public class TableItemCD extends ComponentDescriptor {
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/table_16.png"; // NOI18N
 
     private static final String PROP_TITLE = "title"; //NOI18N
-    private static final String PROP_MODEL = "tableModel"; //NOI18N
-    private static final String PROP_SHOW_BORDERS  = "showBoarders"; //NOI18N
+    private static final String PROP_MODEL = "model"; //NOI18N
+    private static final String PROP_BORDERS  = "borders"; //NOI18N
     private static final String PROP_HEADERS_FONT = "headersFont"; //NOI18N
     private static final String PROP_VALUES_FONT = "valuesFont"; //NOI18N
     private static final String PROP_TITLE_FONT = "titleFont"; //NOI18N
@@ -78,7 +76,7 @@ public class TableItemCD extends ComponentDescriptor {
         return Arrays.asList(
             new PropertyDescriptor(PROP_TITLE, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_MODEL, SimpleTableModelCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
-            new PropertyDescriptor(PROP_SHOW_BORDERS, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(Boolean.TRUE), false, false, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_BORDERS, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(Boolean.TRUE), false, false, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_TITLE_FONT, FontCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_HEADERS_FONT, FontCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_VALUES_FONT, FontCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
@@ -90,15 +88,31 @@ public class TableItemCD extends ComponentDescriptor {
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty("Title", PropertyEditorString.createInstance(), new TextFieldBC(), PROP_TITLE)
                     .addProperty("Table Model", PropertyEditorResourcesComboBox.creater(TableItemCD.TYPEID, NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NEW"), NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NONE")), PROP_MODEL)
-                    .addProperty("Show Borders", Boolean.class, PROP_SHOW_BORDERS)
+                    .addProperty("Show Borders", Boolean.class, PROP_BORDERS)
                     .addProperty("Title Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_TITLE_FONT)
                     .addProperty("Headers Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_HEADERS_FONT)
                     .addProperty("Values Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_VALUES_FONT);
     }
-    
+
+    private Presenter createSetterPresenter () {
+        return new CodeSetterPresenter ()
+            .addParameters (AbstractInfoScreenCode.createDisplayParameter ())
+            .addParameters (MidpParameter.create (PROP_TITLE, PROP_MODEL, PROP_BORDERS, PROP_TITLE_FONT, PROP_HEADERS_FONT, PROP_VALUES_FONT))
+            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (AbstractInfoScreenCode.PARAM_DISPLAY, ItemCD.PROP_LABEL))
+            .addSetters (MidpSetter.createSetter ("setTitle", MidpVersionable.MIDP_2).addParameters (PROP_TITLE))
+            .addSetters (MidpSetter.createSetter ("setModel", MidpVersionable.MIDP_2).addParameters (PROP_MODEL))
+            .addSetters (MidpSetter.createSetter ("setBorders", MidpVersionable.MIDP_2).addParameters (PROP_BORDERS))
+            .addSetters (MidpSetter.createSetter ("setTitleFont", MidpVersionable.MIDP_2).addParameters (PROP_TITLE_FONT))
+            .addSetters (MidpSetter.createSetter ("setHeadersFont", MidpVersionable.MIDP_2).addParameters (PROP_HEADERS_FONT))
+            .addSetters (MidpSetter.createSetter ("setValuesFont", MidpVersionable.MIDP_2).addParameters (PROP_VALUES_FONT));
+    }
+
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
-                createPropertiesPresenter()
+            // properties
+            createPropertiesPresenter(),
+            // code
+            createSetterPresenter ()
         );
     }
     
