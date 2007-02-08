@@ -3104,7 +3104,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (types.isSubtype(type, base))
                     return true;
             }
-            if (e.getKind().isClass() || e.getKind().isInterface()) {
+            if ((e.getKind().isClass() || e.getKind().isInterface()) && 
+                (kinds.contains(ANNOTATION_TYPE) || kinds.contains(CLASS) || kinds.contains(ENUM) || kinds.contains(INTERFACE))) {
                 DeclaredType dt = (DeclaredType)e.asType();
                 for (Element ee : e.getEnclosedElements())
                     if (trees.isAccessible(scope, ee, dt) && isOfKindAndType(ee.asType(), ee, kinds, base, scope, trees, types))
