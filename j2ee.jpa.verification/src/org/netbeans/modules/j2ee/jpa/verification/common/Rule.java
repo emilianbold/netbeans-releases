@@ -103,7 +103,11 @@ public abstract class Rule<E> {
     
     protected ErrorDescription createProblem(Element subject, ProblemContext ctx, List<Fix> fixes){
         List<Fix> fixList = fixes == null ? Collections.EMPTY_LIST : fixes;
-        Tree elementTree = ctx.getCompilationInfo().getTrees().getTree(subject);
+        
+        // by default place error annotation on the element being checked
+        Tree elementTree = ctx.getElementToAnnotate() == null ? 
+            ctx.getCompilationInfo().getTrees().getTree(subject) : ctx.getElementToAnnotate();
+        
         SourcePositions srcPositions = ctx.getCompilationInfo().getTrees().getSourcePositions();
         
         Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(

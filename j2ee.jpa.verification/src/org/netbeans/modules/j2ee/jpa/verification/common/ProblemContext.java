@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.jpa.verification.common;
 
+import com.sun.source.tree.Tree;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.openide.filesystems.FileObject;
 
@@ -32,6 +33,7 @@ public class ProblemContext {
     private FileObject fileObject;
     private CompilationInfo info;
     private boolean cancelled = false;
+    private Tree elementToAnnotate;
     
     public FileObject getFileObject(){
         return fileObject;
@@ -58,5 +60,22 @@ public class ProblemContext {
      */
     public boolean isCancelled(){
         return cancelled;
+    }
+    
+    public Tree getElementToAnnotate(){
+        return elementToAnnotate;
+    }
+    
+    public void setElementToAnnotate(Tree elementToAnnotate){
+        this.elementToAnnotate = elementToAnnotate;
+    }
+    
+    public void setElementToAnnotateOrNullIfExists(Tree elementToAnnotate){
+        if (getElementToAnnotate() == null){
+            setElementToAnnotate(elementToAnnotate);
+        }
+        else{
+            setElementToAnnotate(null);
+        }
     }
 }

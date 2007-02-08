@@ -60,12 +60,11 @@ public class Utilities {
      * @return the value of annotation attribute, null if the attribute
      * was not found or when ann was null
      */
-    public static Object getAnnotationAttrValue(AnnotationMirror ann, String attrName){
+    public static AnnotationValue getAnnotationAttrValue(AnnotationMirror ann, String attrName){
         if (ann != null){
             for (ExecutableElement attr : ann.getElementValues().keySet()){
                 if (attrName.equals(attr.getSimpleName().toString())){
-                    AnnotationValue val = ann.getElementValues().get(attr);
-                    return val.getValue();
+                    return ann.getElementValues().get(attr);
                 }
             }
         }

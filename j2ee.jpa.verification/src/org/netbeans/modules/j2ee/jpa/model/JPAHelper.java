@@ -21,6 +21,7 @@
 package org.netbeans.modules.j2ee.jpa.model;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
@@ -62,14 +63,16 @@ public class JPAHelper {
     public static String getPrimaryTableName(TypeElement entityClass){
         String name = null;
         AnnotationMirror annTable = Utilities.findAnnotation(entityClass, JPAAnnotations.TABLE);
-        name = (String) Utilities.getAnnotationAttrValue(annTable, JPAAnnotations.NAME_ATTR);
+        AnnotationValue nameAttrValue = Utilities.getAnnotationAttrValue(annTable, JPAAnnotations.NAME_ATTR);
         
-        if (name == null){
+        if (nameAttrValue == null){
             AnnotationMirror annEntity = Utilities.findAnnotation(entityClass, JPAAnnotations.ENTITY);
-            name = (String)Utilities.getAnnotationAttrValue(annEntity, JPAAnnotations.NAME_ATTR);
+            nameAttrValue = Utilities.getAnnotationAttrValue(annEntity, JPAAnnotations.NAME_ATTR);
             
-            if (name == null){
+            if (nameAttrValue == null){
                 name = entityClass.getSimpleName().toString();
+            } else{
+                name = nameAttrValue.getValue().toString();
             }
         }
         

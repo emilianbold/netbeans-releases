@@ -25,9 +25,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
@@ -37,7 +40,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
-import org.netbeans.modules.j2ee.jpa.model.JPAHelper;
 import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
@@ -80,12 +82,13 @@ public abstract class JPAProblemFinder {
             if (tree.getKind() == Tree.Kind.CLASS){
                 TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
                 TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
-                LOG.fine("processing class" + javaClass.getSimpleName());
+                LOG.fine("processing class " + javaClass.getSimpleName());
                 context = findProblemContext(info, javaClass);
                 JPARulesEngine rulesEngine = new JPARulesEngine();
                 javaClass.accept(rulesEngine, context);
                 problemsFound.addAll(rulesEngine.getProblemsFound());
-                info.equals(tree);
+                
+                problemsFound.addAll(processIdClassAnnotation(info, javaClass));
                 
                 synchronized(cancellationLock){
                     context = null;
@@ -98,11 +101,64 @@ public abstract class JPAProblemFinder {
         HintsController.setErrors(file, "JPA Verification", problemsFound); //NOI18N
     }
     
+    /**
+     * If there is IdClassAnotation present run the rules on the pointed class and show
+     * found errors locally
+     */
+    private List<ErrorDescription> processIdClassAnnotation(CompilationInfo info, TypeElement javaClass){
+        AnnotationMirror annIdClass = Utilities.findAnnotation(javaClass, JPAAnnotations.ID_CLASS);
+        
+        if (annIdClass != null){
+            AnnotationValue annValue = Utilities.getAnnotationAttrValue(annIdClass, JPAAnnotations.VALUE_ATTR);
+            
+            if (annValue != null){
+                Object rawIdClass = annValue.getValue();
+                TypeElement idClass = info.getElements().getTypeElement(rawIdClass.toString());
+                
+                if (idClass != null){
+                    JPAProblemContext context = findProblemContext(info, idClass);
+                    context.setIdClass(true);
+                    
+                    // just to avoid troubles...
+                    context.setEntity(false);
+                    context.setEmbeddable(false);
+                    context.setMappedSuperClass(false);
+                    context.setElementToAnnotate(info.getTrees().getTree(javaClass, annIdClass, annValue));
+                    
+                    JPARulesEngine rulesEngine = new JPARulesEngine();
+                    idClass.accept(rulesEngine, context);
+                    return rulesEngine.getProblemsFound();
+                }
+            }
+        }
+        
+        return Collections.EMPTY_LIST;
+    }
+    
     private JPAProblemContext findProblemContext(CompilationInfo info, TypeElement javaClass){
         JPAProblemContext context = new JPAProblemContext();
-        context.setEntity(Utilities.hasAnnotation(javaClass, JPAAnnotations.ENTITY));
-        context.setEmbeddable(Utilities.hasAnnotation(javaClass, JPAAnnotations.EMBEDDABLE));
-        context.setIdClass(Utilities.hasAnnotation(javaClass, JPAAnnotations.ID_CLASS));
+        
+        AnnotationMirror annEntity = Utilities.findAnnotation(javaClass, JPAAnnotations.ENTITY);
+        
+        if (annEntity != null){
+            context.setEntity(true);
+            context.setElementToAnnotate(info.getTrees().getTree(javaClass, annEntity));
+        }
+        
+        AnnotationMirror annEmbeddable = Utilities.findAnnotation(javaClass, JPAAnnotations.EMBEDDABLE);
+        
+        if (annEmbeddable != null){
+            context.setEmbeddable(true);
+            context.setElementToAnnotateOrNullIfExists(info.getTrees().getTree(javaClass, annEmbeddable));
+        }
+        
+        AnnotationMirror annMappedSuperClass = Utilities.findAnnotation(javaClass, JPAAnnotations.MAPPED_SUPERCLASS);
+        
+        if (annMappedSuperClass != null){
+            context.setMappedSuperClass(true);
+            context.setElementToAnnotateOrNullIfExists(info.getTrees().getTree(javaClass, annMappedSuperClass));
+        }
+        
         context.setFileObject(file);
         context.setCompilationInfo(info);
         return context;
