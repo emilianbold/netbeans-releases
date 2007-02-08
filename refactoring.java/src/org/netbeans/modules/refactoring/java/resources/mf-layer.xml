@@ -19,6 +19,16 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <filesystem>
+    <!--
+    <folder name="Menu">
+        <folder name="Refactoring">
+            <file name="ExtractInterfaceAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.java.ui.ExtractInterfaceAction"/>
+            </file>
+        </folder>    
+     </folder>   
+     -->
+    
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
@@ -79,4 +89,14 @@ Microsystems, Inc. All Rights Reserved.
           <file name="options"/>
       </folder>
   </folder>
+  <!--
+  <folder name="Actions">
+     <folder name="Refactoring">
+          <file name="org-netbeans-modules-refactoring-java-api-ui-ExtractInterfaceAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.extractInterfaceAction"/>
+          </file>
+    </folder>
+  </folder>  
+  -->
+  
 </filesystem>

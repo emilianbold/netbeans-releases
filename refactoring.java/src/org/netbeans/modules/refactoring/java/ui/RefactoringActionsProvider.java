@@ -307,7 +307,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         return pt[1];
     }
     
-    private String getName(Dictionary dict) {
+    static String getName(Dictionary dict) {
         if (dict==null) 
             return null;
         return (String) dict.get("name"); //NOI18N
@@ -421,7 +421,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }    
 
     
-    public abstract class TextComponentRunnable implements Runnable {
+    public static abstract class TextComponentRunnable implements Runnable {
         private JTextComponent textC;
         private int caret;
         private int start;
@@ -475,7 +475,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         protected abstract RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info);
     }
     
-    public abstract class NodeToElement implements Runnable {
+    public static abstract class NodeToElement implements Runnable {
         private Node node;
         private RefactoringUI ui;
         
@@ -511,7 +511,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         protected abstract RefactoringUI createRefactoringUI(TreePathHandle selectedElement, CompilationInfo info);
     }
     
-    public abstract class NodeToFileObject implements Runnable {
+    public static abstract class NodeToFileObject implements Runnable {
         private Collection<? extends Node> nodes;
         private RefactoringUI ui;
         public NonRecursiveFolder pkg[];
@@ -537,7 +537,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement);
     }    
     
-    private boolean isFromEditor(EditorCookie ec) {
+    static boolean isFromEditor(EditorCookie ec) {
         if (ec != null && ec.getOpenedPanes() != null) {
             TopComponent activetc = TopComponent.getRegistry().getActivated();
             if (activetc instanceof CloneableEditorSupport.Pane) {
