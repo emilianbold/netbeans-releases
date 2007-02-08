@@ -30,8 +30,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -41,7 +41,7 @@ import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.ejbcore.EjbInjectionTargetQueryImplementation;
-import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.test.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbcore.test.EjbJarProviderImpl;
 import org.netbeans.modules.j2ee.ejbcore.test.FileOwnerQueryImpl;
@@ -98,7 +98,7 @@ public class UseDatabaseGeneratorTest extends TestBase {
         classPathProvider.setClassPath(sources);
         fileOwnerQuery.setProject(new ProjectImpl("2.1"));
         Node node = new AbstractNode(Children.LEAF, Lookups.singleton(beanClass));
-        final ElementHandle<TypeElement> elementHandle = Utils.getJavaClassFromNode(node);
+        final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(node);
         Datasource datasource = new DatasourceImpl();
         generator.generate(beanClass, elementHandle, datasource, false, null);
         
@@ -126,7 +126,7 @@ public class UseDatabaseGeneratorTest extends TestBase {
         classPathProvider.setClassPath(sources);
         fileOwnerQuery.setProject(new ProjectImpl("3.0"));
         node = new AbstractNode(Children.LEAF, Lookups.singleton(beanClass));
-        final ElementHandle<TypeElement> elementHandle2 = Utils.getJavaClassFromNode(node);
+        final ElementHandle<TypeElement> elementHandle2 = _RetoucheUtil.getJavaClassFromNode(node);
         datasource = new DatasourceImpl();
         generator.generate(beanClass, elementHandle2, datasource, false, null);
         
@@ -136,10 +136,12 @@ public class UseDatabaseGeneratorTest extends TestBase {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = elementHandle2.resolve(workingCopy);
                 //TODO: RETOUCHE not working because of missing annotation based model
-//                assertTrue(containsDatasourceField(workingCopy, typeElement, "testJniName", "testJndiName"));
+//                checkDatasourceField(workingCopy, typeElement, "testJndiName", "testJndiName");
             }
         });
     }
+    
+    // private helpers =========================================================
     
     private static boolean containsMethod(WorkingCopy workingCopy, MethodModel methodModel, TypeElement typeElement) {
         for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
@@ -150,34 +152,24 @@ public class UseDatabaseGeneratorTest extends TestBase {
         return false;
     }
     
-    private static boolean containsDatasourceField(WorkingCopy workingCopy, TypeElement typeElement, String name, String jndiName) {
-        for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
-            TypeElement dataSourceType = workingCopy.getElements().getTypeElement("javax.sql.DataSource");
-            if (variableElement.getSimpleName().contentEquals(name) && 
-                    workingCopy.getTypes().isSameType(variableElement.asType(), dataSourceType.asType())) {
-                AnnotationMirror annotationMirror = findAnnotation(workingCopy, variableElement.getAnnotationMirrors(), "javax.annotation.Resource");
-                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> namedQueryAnnElement : annotationMirror.getElementValues().entrySet()) {
-                    String attributeName = namedQueryAnnElement.getKey().getSimpleName().toString();
-                    String attributeValue = (String)namedQueryAnnElement.getValue().getValue();
-                    assertEquals("name", attributeName);
-                    assertEquals(jndiName, attributeValue);
-                }
-            }
-        }
-        return false;
+    private static void checkDatasourceField(WorkingCopy workingCopy, TypeElement typeElement, String name, String jndiName) {
+        List<VariableElement> elements = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
+        VariableElement variableElement = (VariableElement) elements.get(0);
+        assertTrue(variableElement.getSimpleName().contentEquals(name)); // field name
+        DeclaredType declaredType = (DeclaredType) variableElement.asType();
+        TypeElement returnTypeElement = (TypeElement) declaredType.asElement();
+        assertTrue(returnTypeElement.getQualifiedName().contentEquals("javax.sql.DataSource")); // field type
+        AnnotationMirror annotationMirror = variableElement.getAnnotationMirrors().get(0);
+        DeclaredType annotationDeclaredType = annotationMirror.getAnnotationType();
+        TypeElement annotationTypeElement = (TypeElement) annotationDeclaredType.asElement();
+        assertTrue(annotationTypeElement.getQualifiedName().contentEquals("javax.annotation.Resource")); // annotation type
+        Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry = annotationMirror.getElementValues().entrySet().iterator().next();
+        String attributeName = entry.getKey().getSimpleName().toString();
+        String attributeValue = (String) entry.getValue().getValue();
+        assertEquals("name", attributeName); // attributes
+        assertEquals(jndiName, attributeValue);
     }
 
-    private static AnnotationMirror findAnnotation(WorkingCopy workingCopy, List<? extends AnnotationMirror> list, String className) {
-        Types types = workingCopy.getTypes();
-        for (AnnotationMirror annotationMirror : list) {
-            TypeElement resourceType = workingCopy.getElements().getTypeElement(className);
-            if (types.isSameType(annotationMirror.getAnnotationType(), resourceType.asType())) {
-                return annotationMirror;
-            }
-        }
-        return null;
-    }
-    
     private static class DatasourceImpl implements Datasource {
         
         public DatasourceImpl() {}

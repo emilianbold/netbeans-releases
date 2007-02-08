@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
+import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.swing.AbstractAction;

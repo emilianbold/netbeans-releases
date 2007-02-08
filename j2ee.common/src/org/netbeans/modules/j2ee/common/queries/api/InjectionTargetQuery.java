@@ -19,11 +19,15 @@
 
 package org.netbeans.modules.j2ee.common.queries.api;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -60,6 +64,18 @@ public class InjectionTargetQuery {
         return false;
     }
     
+    public static boolean isInjectionTarget(FileObject fileObject, final String className) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        final boolean[] result = new boolean[1];
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                TypeElement typeElement = controller.getElements().getTypeElement(className);
+                result[0] = isInjectionTarget(controller, typeElement);
+            }
+        }, true);
+        return result[0];
+    }
+    
     /**
      * Decide if injected reference must be static in given class. 
      * For example, in application client injection can be used only in class with main method and all
@@ -80,6 +96,18 @@ public class InjectionTargetQuery {
             }
         }
         return false;
+    }
+    
+    public static boolean isStaticReferenceRequired(FileObject fileObject, final String className) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        final boolean[] result = new boolean[1];
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                TypeElement typeElement = controller.getElements().getTypeElement(className);
+                result[0] = isStaticReferenceRequired(controller, typeElement);
+            }
+        }, true);
+        return result[0];
     }
     
     private static synchronized List<InjectionTargetQueryImplementation> getInstances() {

@@ -34,7 +34,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.action.UseDatabaseGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -60,7 +60,7 @@ public class UseDatabaseAction extends NodeAction {
         }
         FileObject fileObject = nodes[0].getLookup().lookup(FileObject.class);
         try {
-            ElementHandle<TypeElement> elementHandle = Utils.getJavaClassFromNode(nodes[0]);
+            ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
             generate(fileObject, elementHandle);
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
@@ -122,7 +122,7 @@ public class UseDatabaseAction extends NodeAction {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] isInterface = new boolean[1];
         try {
-            final ElementHandle<TypeElement> elementHandle = Utils.getJavaClassFromNode(nodes[0]);
+            final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);

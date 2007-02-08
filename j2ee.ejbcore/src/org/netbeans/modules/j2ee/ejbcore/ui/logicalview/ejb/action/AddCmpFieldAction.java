@@ -24,7 +24,7 @@ import java.io.IOException;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
-import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -57,7 +57,7 @@ public class AddCmpFieldAction extends NodeAction {
         }
         EjbMethodController ejbMethodController;
         try {
-            ElementHandle<TypeElement> elementHandle = Utils.getJavaClassFromNode(activatedNodes[0]);
+            ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(activatedNodes[0]);
             if (elementHandle == null) {
                 return false;
             }

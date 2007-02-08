@@ -19,10 +19,13 @@
 
 package org.netbeans.modules.j2ee.ejbcore.test;
 
+import java.net.URL;
+import javax.ejb.Stateless;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -35,6 +38,9 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     public ClassPath findClassPath(FileObject file, String type) {
         if (type == ClassPath.SOURCE) {
             return classPath;
+        } else if (type == ClassPath.COMPILE) {
+            URL statelessAnnotationURL = Stateless.class.getProtectionDomain().getCodeSource().getLocation();
+            return ClassPathSupport.createClassPath(new URL[] { FileUtil.getArchiveRoot(statelessAnnotationURL) });
         }
         return null;
     }

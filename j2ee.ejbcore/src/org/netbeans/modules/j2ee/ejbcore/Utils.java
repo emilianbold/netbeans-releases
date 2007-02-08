@@ -54,12 +54,10 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
 
 public class Utils {
     
@@ -437,39 +435,6 @@ public class Utils {
         return true;
     }
 
-    /**
-     * @return true if the given <code>javaClass</code> contains a feature
-     * whose name is identical with the given <code>feature</code>'s name.
-     */
-    public static boolean containsFeature(TypeElement javaClass, Element searchedElement) {
-        for (Element element : javaClass.getEnclosedElements()) {
-            if (searchedElement.getSimpleName().equals(element.getSimpleName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static ElementHandle<TypeElement> getJavaClassFromNode(Node node) throws IOException {
-        //TODO: RETOUCHE TypeElement from Node, this one just takes main TypeElement
-        FileObject fileObject = node.getLookup().lookup(FileObject.class);
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        final List<ElementHandle<TypeElement>> result = new ArrayList<ElementHandle<TypeElement>>();
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
-                result.add(ElementHandle.create(typeElement));
-            }
-        }, true);
-        return result.get(0);
-    }
-
-    public static ExecutableElement getMethodFromNode(Node node) {
-        //TODO: RETOUCHE ExecutableElement from Node
-        return null;
-    }
-    
 //    public static ExecutableElement[] getMethods(EjbMethodController c, boolean checkLocal, boolean checkRemote) {
 //        List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
 //        List features;

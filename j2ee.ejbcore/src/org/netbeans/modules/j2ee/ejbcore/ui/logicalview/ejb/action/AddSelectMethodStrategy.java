@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
+import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
