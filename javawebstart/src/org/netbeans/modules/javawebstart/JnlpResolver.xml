@@ -17,6 +17,10 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project basedir="." default="netbeans" name="javawebstart">
-    <import file="../nbbuild/templates/projectized.xml"/>
-</project>
+<!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
+<MIME-resolver>
+    <file>
+        <ext name="jnlp"/>
+        <resolver mime="text/x-jnlp+xml"/>
+    </file>
+</MIME-resolver>

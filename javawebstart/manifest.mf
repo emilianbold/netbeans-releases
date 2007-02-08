@@ -1,11 +1,10 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.jnlp
-OpenIDE-Module-Specification-Version: 0.8
-OpenIDE-Module-Layer: org/netbeans/modules/java/jnlp/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/java/jnlp/Bundle.properties
+OpenIDE-Module: org.netbeans.modules.javawebstart
+OpenIDE-Module-Layer: org/netbeans/modules/javawebstart/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javawebstart/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
 
-
-Name: org/netbeans/modules/java/jnlp/core/JNLPDataLoader.class
+Name: org/netbeans/modules/javawebstart/JnlpDataLoader.class
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
 OpenIDE-Module-Class: Loader
-
 

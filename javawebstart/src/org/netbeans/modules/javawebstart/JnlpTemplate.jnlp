@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="" href="">
+    <information>
+        <title><!-- Application Title --></title>
+        <vendor><!-- Application Vendor --></vendor>
+    </information>
+    <resources>
+        <!-- Application Resources -->
+    </resources>
+    <application-desc main-class="">
+        <!-- Application Arguments -->
+    </application-desc>
+</jnlp>
