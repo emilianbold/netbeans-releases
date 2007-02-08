@@ -43,6 +43,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
@@ -119,7 +120,13 @@ public class J2SEProjectProperties {
     public static final String JAVADOC_WINDOW_TITLE="javadoc.windowtitle"; // NOI18N
     public static final String JAVADOC_ENCODING="javadoc.encoding"; // NOI18N
     public static final String JAVADOC_ADDITIONALPARAM="javadoc.additionalparam"; // NOI18N
-                
+    
+    public static final String APPLICATION_TITLE ="application.title"; // NOI18N
+    public static final String APPLICATION_VENDOR ="application.vendor"; // NOI18N
+    public static final String APPLICATION_DESC ="application.desc"; // NOI18N
+    public static final String APPLICATION_HOMEPAGE ="application.homepage"; // NOI18N
+    public static final String APPLICATION_SPLASH ="application.splash"; // NOI18N
+    
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
@@ -194,7 +201,14 @@ public class J2SEProjectProperties {
     // CustomizerRun
     Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
     String activeConfig;
-
+    
+    // CustomizerApplication
+    Document APPLICATION_TITLE_DOC;
+    Document APPLICATION_VENDOR_DOC;
+    Document APPLICATION_DESC_DOC;
+    Document APPLICATION_HOMEPAGE_DOC;
+    Document APPLICATION_SPLASH_DOC;
+    
     // CustomizerRunTest
 
     // Private fields ----------------------------------------------------------    
@@ -286,6 +300,30 @@ public class J2SEProjectProperties {
         javadocPreviewBooleanKind = kind[0];
         
         JAVADOC_ADDITIONALPARAM_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_ADDITIONALPARAM );
+        
+        // CustomizerApplication
+        APPLICATION_TITLE_DOC = projectGroup.createStringDocument(evaluator, APPLICATION_TITLE);
+        String title = evaluator.getProperty("application.title");
+        if (title == null) {
+            try {
+                APPLICATION_TITLE_DOC.insertString(0, ProjectUtils.getInformation(project).getDisplayName(), null);
+            } catch (BadLocationException ex) {
+                // just do not set anything
+            }
+        }
+        APPLICATION_VENDOR_DOC = projectGroup.createStringDocument(evaluator, APPLICATION_VENDOR);
+        String vendor = evaluator.getProperty("application.vendor");
+        if (vendor == null) {
+            try {
+                APPLICATION_VENDOR_DOC.insertString(0, System.getProperty("user.name", "User Name"), null);
+            } catch (BadLocationException ex) {
+                // just do not set anything
+            }
+        }
+        APPLICATION_DESC_DOC = projectGroup.createStringDocument(evaluator, APPLICATION_DESC);
+        APPLICATION_HOMEPAGE_DOC = projectGroup.createStringDocument(evaluator, APPLICATION_HOMEPAGE);
+        APPLICATION_SPLASH_DOC = projectGroup.createStringDocument(evaluator, APPLICATION_SPLASH);
+        
         // CustomizerRun
         RUN_CONFIGS = readRunConfigs();
         activeConfig = evaluator.getProperty("config");

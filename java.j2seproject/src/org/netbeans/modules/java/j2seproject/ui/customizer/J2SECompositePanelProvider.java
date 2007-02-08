@@ -24,6 +24,7 @@ import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHost;
 import org.netbeans.modules.java.j2seproject.wsclient.NoWebServiceClientsPanel;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
@@ -46,6 +47,7 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
     private static final String JAVADOC = "Javadoc";
     public static final String RUN = "Run";
 //    private static final String RUN_TESTS = "RunTests";
+    private static final String APPLICATION = "Application";
     
     private static final String WEBSERVICECLIENTS = "WebServiceClients";
     private static final String WEBSERVICE_CATEGORY = "WebServiceCategory";
@@ -102,6 +104,12 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
                     bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
                     null,
                     null);
+        } else if (APPLICATION.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    APPLICATION,
+                    bundle.getString( "LBL_Config_Application" ), // NOI18N,
+                    null,
+                    null);
         }
         assert toReturn != null : "No category for name:" + name;
         return toReturn;
@@ -137,6 +145,8 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
             } else {
                 return new NoWebServiceClientsPanel();
             }
+        } else if (APPLICATION.equals(nm)) {
+            return new CustomizerApplication(uiProps);
         }
         return new JPanel();
 
@@ -168,5 +178,9 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
 
     public static J2SECompositePanelProvider createWebServiceClients() {
         return new J2SECompositePanelProvider(WEBSERVICECLIENTS);
+    }
+    
+    public static J2SECompositePanelProvider createApplication() {
+        return new J2SECompositePanelProvider(APPLICATION);
     }
 }
