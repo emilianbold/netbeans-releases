@@ -28,7 +28,6 @@ Microsystems, Inc. All Rights Reserved.
         <copy todir="${cluster}/modules/ext">
             <fileset dir="../external">
                 <include name="xerces-2.8.0.jar"/>
-                <include name="xml-commons-dom-ranges-1.0.b2.jar"/>
             </fileset>
         </copy>
     </target>
