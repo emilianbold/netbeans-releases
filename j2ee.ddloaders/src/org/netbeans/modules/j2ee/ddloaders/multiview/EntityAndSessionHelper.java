@@ -19,17 +19,12 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import java.util.ArrayList;
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
-import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityAndSessionGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
 import org.openide.filesystems.FileObject;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -142,7 +137,7 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
 //    }
     
     public void addInterfaces(boolean local) {
-        EntityAndSessionGenerator generator = getGenerator();
+//        EntityAndSessionGenerator generator = getGenerator();
         String packageName = Utils.getPackage(ejb.getEjbClass());
 //        FileObject packageFile = Utils.getPackageFile(sourceClassPath, packageName);
 //        String ejbName = ejb.getEjbName();
@@ -284,7 +279,7 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
 //        return result;
 //    }
     
-    protected abstract EntityAndSessionGenerator getGenerator();
+//    protected abstract EntityAndSessionGenerator getGenerator();
     
 //    public JavaClass getLocalHomeInterfaceClass() {
 //        return abstractMethodController.getBeanInterface(true, false);

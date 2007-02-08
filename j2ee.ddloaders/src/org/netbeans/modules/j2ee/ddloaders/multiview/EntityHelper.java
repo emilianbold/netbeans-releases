@@ -24,7 +24,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.ejbcore.api.ui.CallEjb;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
-import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityAndSessionGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityGenerator;
 
 import java.beans.PropertyChangeEvent;
@@ -188,12 +187,13 @@ public class EntityHelper extends EntityAndSessionHelper {
 //            Utils.changeParameterType(method, newType);
 //        }
 //    }
-    
-    protected EntityAndSessionGenerator getGenerator() {
-        EntityGenerator generator = new EntityGenerator(entity.getPrimKeyClass());
-        generator.setCMP(Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType()));
-        return generator;
-    }
+
+    //TODO: RETOUCHE
+//    protected EntityAndSessionGenerator getGenerator() {
+//        EntityGenerator generator = new EntityGenerator(entity.getPrimKeyClass());
+//        generator.setCMP(Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType()));
+//        return generator;
+//    }
     
     public void propertyChange(PropertyChangeEvent evt) {
         super.propertyChange(evt);

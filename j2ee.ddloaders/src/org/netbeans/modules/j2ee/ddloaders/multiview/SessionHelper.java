@@ -19,9 +19,6 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.SessionMethodController;
-import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityAndSessionGenerator;
-import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.SessionGenerator;
 
 /**
  * @author pfiala
@@ -33,7 +30,7 @@ public class SessionHelper extends EntityAndSessionHelper {
 //        abstractMethodController = new SessionMethodController(session, sourceClassPath);
     }
 
-    protected EntityAndSessionGenerator getGenerator() {
-        return new SessionGenerator();
-    }
+//    protected EntityAndSessionGenerator getGenerator() {
+//        return new SessionGenerator();
+//    }
 }
