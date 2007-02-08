@@ -33,8 +33,6 @@ import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTas
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGAnimatorWrapperCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuItemCD;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 
 /**
@@ -64,18 +62,6 @@ public abstract class CustomComponentProducer extends ComponentProducer {
     public static final class SVGImage extends CustomComponentProducer {
         public SVGImage() {
             super(SVGImageCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVGImage", "SVGImage", ResourceCD.ICON_PATH, null)); // NOI18N
-        }
-    }
-    
-    public static final class SVGMenu extends CustomComponentProducer {
-        public SVGMenu() {
-            super(SVGMenuCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVGMenu", "SVGMenu", SVGMenuCD.ICON_PATH, SVGMenuCD.ICON_LARGE_PATH)); // NOI18N
-        }
-    }
-    
-    public static final class SVGMenuItem extends CustomComponentProducer {
-        public SVGMenuItem() {
-            super(SVGMenuItemCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVGMenuItem", "SVGMenuItem", SVGMenuItemCD.ICON_PATH, null)); // NOI18N
         }
     }
     

@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.midpnb.components.svg;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
@@ -29,6 +30,7 @@ import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.api.model.Versionable;
+import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -36,8 +38,11 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
+import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorListSingelton;
+import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuItemEventSourceCD;
+import org.netbeans.modules.vmd.midpnb.flow.FlowSVGMenuItemPinOrderPresenter;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorSVGMenuSelectCommand;
 
 /**
  *
@@ -68,7 +73,7 @@ public class SVGMenuCD extends ComponentDescriptor {
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-            new PropertyDescriptor(PROP_ELEMENTS, ListElementEventSourceCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(ListElementEventSourceCD.TYPEID), false, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_ELEMENTS, SVGMenuItemEventSourceCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(SVGMenuItemEventSourceCD.TYPEID), false, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_SELECT_COMMAND, CommandEventSourceCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_INDEX_BASED_SWITCH, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue (false), false, false, Versionable.FOREVER)
         );
@@ -76,15 +81,30 @@ public class SVGMenuCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
-            .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Select Command", PropertyEditorListSingelton.createInstanceListSelect(), PROP_SELECT_COMMAND) //NOI18N
+//            .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+//                .addProperty("Select Command", PropertyEditorSVGMenuSelectCommand.createInstanceMenuSelect(), PROP_SELECT_COMMAND) //NOI18N
             .addPropertiesCategory(PropertiesCategories.CATEGORY_CODE_PROPERTIES)
                 .addProperty("Index Based Switch", Boolean.class, PROP_INDEX_BASED_SWITCH); //NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
-            createPropertiesPresenter()
+                // accept
+                new AcceptTypePresenter(SVGMenuItemEventSourceCD.TYPEID) {
+                    protected void notifyCreated (DesignComponent component) {
+                        super.notifyCreated (component);
+                        ArraySupport.append (getComponent (), SVGMenuCD.PROP_ELEMENTS, component);
+                        if (component.isDefaultValue(ListElementEventSourceCD.PROP_STRING)) {
+                            PropertyValue value = getComponent ().readProperty(SVGMenuCD.PROP_ELEMENTS);
+                            List<PropertyValue> list = value.getArray ();
+                            component.writeProperty (SVGMenuItemEventSourceCD.PROP_STRING, MidpTypes.createStringValue ("SVG Menu Item " + list.size()));
+                        }
+                    }
+                },
+                // properties
+                createPropertiesPresenter(),
+                // flow
+                new FlowSVGMenuItemPinOrderPresenter()
         );
     }
     

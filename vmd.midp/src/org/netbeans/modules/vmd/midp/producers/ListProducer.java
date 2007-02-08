@@ -51,7 +51,6 @@ public class ListProducer extends MidpComponentProducer {
 
         DesignComponent listEventHandler = document.createComponent (ListEventHandlerCD.TYPEID);
         MidpDocumentSupport.updateEventHandlerWithNew (listSelectCommandEventSource, listEventHandler);
-
         list.writeProperty(ListCD.PROP_SELECT_COMMAND, PropertyValue.createComponentReference (listSelectCommandEventSource));
         
         return new Result (list, listSelectCommandEventSource, listEventHandler);

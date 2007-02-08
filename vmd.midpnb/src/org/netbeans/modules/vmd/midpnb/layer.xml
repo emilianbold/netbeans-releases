@@ -31,7 +31,7 @@
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-SVGAnimatorWrapperCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-SVGImageCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-SVGMenuCD.instance"/>
-            <file name="org-netbeans-modules-vmd-midpnb-components-svg-SVGMenuItemCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-svg-SVGMenuSelectCommandCD.instance"/>
             
             <file name="org-netbeans-modules-vmd-midpnb-components-items-TableItemCD.instance"/>
             
@@ -42,7 +42,7 @@
             <file name="org-netbeans-modules-vmd-midpnb-components-commands-WaitScreenSuccessCommandCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-commands-SVGWaitScreenFailureCommandCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-commands-SVGWaitScreenSuccessCommandCD.instance"/>
-            
+            <file name="org-netbeans-modules-vmd-midpnb-components-commands-SVGMenuSelectCommandCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-commands-SplashScreenDismissCommandCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-commands-SVGSplashScreenDismissCommandCD.instance"/>
             
@@ -50,9 +50,13 @@
             <file name="org-netbeans-modules-vmd-midpnb-components-sources-WaitScreenSuccessCommandEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-sources-SVGWaitScreenFailureCommandEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-sources-SVGWaitScreenSuccessCommandEventSourceCD.instance"/>
-            
+            <file name="org-netbeans-modules-vmd-midpnb-components-sources-SVGMenuSelectCommandEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-sources-SplashScreenDismissCommandEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-sources-SVGSplashScreenDismissCommandEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-sources-SVGMenuSelectCommandEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-sources-SVGMenuItemEventSourceCD.instance"/>
+            
+            <file name="org-netbeans-modules-vmd-midpnb-components-handlers-SVGMenuEventHandlerCD.instance"/>
         </folder>
         
         <folder name="producers">
@@ -61,17 +65,16 @@
             
             <file name="org-netbeans-modules-vmd-midpnb-producers-SVGWaitScreenProducer.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-producers-SVGSplashScreenProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-SVGMenuProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-SVGMenuItemEventSourceProducer.instance"/>
             
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGAnimatorWrapper.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGImage.instance"/>
-            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGMenu.instance"/>
-            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SVGMenuItem.instance"/>
             
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$TableItem.instance"/>
             
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SimpleCancellableTask.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SimpleTableModel.instance"/>
-            
         </folder>
         
     </folder>

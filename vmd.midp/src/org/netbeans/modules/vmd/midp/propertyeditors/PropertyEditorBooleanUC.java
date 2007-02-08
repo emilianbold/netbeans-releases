@@ -33,6 +33,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
 import org.openide.awt.Mnemonics;
+import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.util.NbBundle;
 
 /**
@@ -49,6 +50,8 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     private String[] tags = {TRUE_TEXT, FALSE_TEXT};
     private CustomEditor customEditor;
     private JRadioButton radioButton;
+    
+    private InplaceEditor inplaceEditor;
     
     private PropertyEditorBooleanUC() {
         super();
@@ -80,7 +83,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     public boolean isVerticallyResizable() {
         return true;
     }
-
+    
     public boolean isInitiallySelected() {
         return false;
     }
@@ -129,6 +132,13 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         return true;
     }
     
+    public InplaceEditor getInplaceEditor() {
+        if (inplaceEditor == null) {
+            inplaceEditor = new CheckboxInplaceEditor();
+        }
+        return inplaceEditor;
+    }
+    
     private class CustomEditor extends JPanel implements ActionListener {
         private JComboBox combobox;
         
@@ -144,7 +154,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         }
         
         public void setValue(PropertyValue value) {
-            if (value == null || value.getPrimitiveValue () == null || !MidpTypes.getBoolean(value)) {
+            if (value == null || value.getPrimitiveValue() == null || !MidpTypes.getBoolean(value)) {
                 combobox.setSelectedItem(FALSE_TEXT);
             } else {
                 combobox.setSelectedItem(TRUE_TEXT);
