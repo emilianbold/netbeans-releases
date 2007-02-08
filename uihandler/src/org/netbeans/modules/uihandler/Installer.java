@@ -42,9 +42,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicReference;
@@ -227,10 +227,10 @@ public class Installer extends ModuleInstall {
     
     private static Throwable getThrown(){
         List<LogRecord> list = getLogs();
-        Iterator<LogRecord> it = list.listIterator(list.size());
-        while (it.hasNext()){
-            Throwable t = it.next().getThrown();
-            // find last exception
+        ListIterator<LogRecord> it = list.listIterator(list.size());
+        while (it.hasPrevious()){
+            Throwable t = it.previous().getThrown();
+            // find first exception from end
             if (t != null) return t;
         }
         return null;// no throwable found
