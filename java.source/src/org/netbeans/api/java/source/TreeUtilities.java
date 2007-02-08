@@ -134,14 +134,13 @@ public final class TreeUtilities {
             
             public Void scan(Tree tree, Void p) {
                 if (tree != null) {
-                    switch(tree.getKind()) {
-                        case ERRONEOUS:
-                            return tree.accept(this, p);
-                        default:
-                            if (sourcePositions.getStartPosition(getCurrentPath().getCompilationUnit(), tree) < pos && sourcePositions.getEndPosition(getCurrentPath().getCompilationUnit(), tree) >= pos) {
-                                super.scan(tree, p);
-                                throw new Result(new TreePath(getCurrentPath(), tree));
-                            }
+                    if (sourcePositions.getStartPosition(getCurrentPath().getCompilationUnit(), tree) < pos && sourcePositions.getEndPosition(getCurrentPath().getCompilationUnit(), tree) >= pos) {
+                        if (tree.getKind() == Tree.Kind.ERRONEOUS) {
+                            tree.accept(this, p);
+                            throw new Result(getCurrentPath());
+                        }
+                        super.scan(tree, p);
+                        throw new Result(new TreePath(getCurrentPath(), tree));
                     }
                 }
                 return null;
