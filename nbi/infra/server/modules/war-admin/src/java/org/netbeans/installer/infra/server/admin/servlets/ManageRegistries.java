@@ -81,10 +81,12 @@ public class ManageRegistries extends HttpServlet {
                 out.println("            <a href=\"javascript: remove_registry();\">Remove Registry</a> |");
                 out.println("            <a href=\"javascript: delete_bundles();\">Delete Bundles</a> | ");
                 out.println("            <a href=\"javascript: generate_bundles();\">Generate Bundles</a> | ");
+                out.println("            <a href=\"javascript: export_registry();\">Export Registry</a> | ");
             } else {
                 out.println("            Remove Registry |");
                 out.println("            Delete Bundles | ");
                 out.println("            Generate Bundles | ");
+                out.println("            Export Registry | ");
             }
             out.println("            <a href=\"javascript: update_engine();\">Update Engine</a>");
             out.println("        </div>");
@@ -134,6 +136,20 @@ public class ManageRegistries extends HttpServlet {
             out.println("                    </tr>");
             out.println("                    <tr>");
             out.println("                        <td colspan=\"2\"><a href=\"javascript: close_form_registry()\">close window</a></td>");
+            out.println("                    </tr>");
+            out.println("                </table>");
+            out.println("            </div>");
+            out.println("            <div class=\"pop-up\" id=\"form-codebase\">");
+            out.println("                <table>");
+            out.println("                    <tr>");
+            out.println("                        <td colspan=\"2\">Please define the URL prefix for the export.</td>");
+            out.println("                    </tr>");
+            out.println("                    <tr>");
+            out.println("                        <td style=\"width: 100%\"><input type=\"text\" name=\"codebase\" style=\"width: 100%\"/></td>");
+            out.println("                        <td><input type=\"submit\"/></td>");
+            out.println("                    </tr>");
+            out.println("                    <tr>");
+            out.println("                        <td colspan=\"2\"><a href=\"javascript: close_form_codebase()\">close window</a></td>");
             out.println("                    </tr>");
             out.println("                </table>");
             out.println("            </div>");

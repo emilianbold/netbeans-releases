@@ -9,6 +9,15 @@ function close_form_registry() {
     update_current_registry();
 }
 
+function show_form_codebase() {
+    document.forms["Form"].codebase.value = "";
+    document.getElementById("form-codebase").style.display = "block";
+}
+
+function close_form_registry() {
+    document.getElementById("form-codebase").style.display = "none";
+}
+
 function show_form_archive() {
     document.getElementById("form-archive").style.display = "block";
 }
@@ -120,6 +129,16 @@ function generate_bundles() {
     document.forms["Form"].registry.value = registry;
     document.forms["Form"].action = "generate-bundles";
     document.forms["Form"].submit();
+}
+
+function export_registry() {
+    var select = document.getElementById("registries-select");
+    var registry = select.options[select.selectedIndex].value;
+    
+    document.forms["Form"].registry.value = registry;
+    document.forms["Form"].action = "export-registry";
+    
+    show_form_codebase();
 }
 
 function _expand(id) {

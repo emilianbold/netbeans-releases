@@ -83,6 +83,10 @@ public class ExtendedUri {
         return remote;
     }
     
+    public void setRemote(final URI remote) {
+        this.remote = remote;
+    }
+    
     public List<URI> getAlternates() {
         return new LinkedList<URI>(alternates);
     }

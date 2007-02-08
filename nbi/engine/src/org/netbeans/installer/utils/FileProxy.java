@@ -38,6 +38,7 @@ import org.netbeans.installer.downloader.DownloadProgress;
 import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.downloader.ui.ProxySettingsDialog;
+import org.netbeans.installer.utils.helper.ExtendedUri;
 
 /**
  *
@@ -71,6 +72,7 @@ public class FileProxy {
     public void deleteFile(URI uri) throws IOException {
         deleteFile(uri.toString());
     }
+    
     public void deleteFile(URL url) throws IOException {
         deleteFile(url.toString());
     }
@@ -78,12 +80,17 @@ public class FileProxy {
     public File getFile(URL url) throws DownloadException {
         return getFile(url, null, false);
     }
+    
     public File getFile(String uri) throws DownloadException {
         return getFile(uri, null, null);
     }
     
     public File getFile(String uri, boolean deleteOnExit) throws DownloadException {
         return getFile(uri, null, null, deleteOnExit);
+    }
+    
+    public File getFile(ExtendedUri uri, Progress progress) throws DownloadException {
+        return getFile(uri.getRemote(), progress, null, false);
     }
     
     public File getFile(String uri, ClassLoader loader) throws DownloadException {

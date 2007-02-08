@@ -125,6 +125,8 @@ public class Registry {
         
         features = new LinkedList<Feature>();
         
+        includes = new LinkedList<ExtendedUri>();
+        
         registryRoot = new Group();
         registryRoot.setRegistryType(RegistryType.LOCAL);
         
@@ -606,7 +608,8 @@ public class Registry {
                     XMLUtils.getChild(registryElement, "includes");
             
             if (includesElement != null) {
-                includes = XMLUtils.parseExtendedUrisList(includesElement);
+                includes.addAll(
+                        XMLUtils.parseExtendedUrisList(includesElement));
                 
                 if (loadIncludes) {
                     for (ExtendedUri includeUri: includes) {

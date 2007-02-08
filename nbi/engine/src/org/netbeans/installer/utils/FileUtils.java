@@ -48,6 +48,7 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -878,13 +879,13 @@ public final class FileUtils {
         
         if (corrected.endsWith(SLASH + CURRENT)) {
             corrected = corrected.substring(
-                    0, 
+                    0,
                     corrected.length() - SLASH.length() - CURRENT.length());
         }
         
         if (corrected.endsWith(SLASH + PARENT)) {
             int index = corrected.lastIndexOf(
-                    SLASH, 
+                    SLASH,
                     corrected.length() - SLASH.length() - PARENT.length() - 1);
             if (index != -1) {
                 corrected = corrected.substring(0, index);
@@ -894,7 +895,7 @@ public final class FileUtils {
         return new File(corrected);
     }
     
-    public static File find(File directory, String filename) {
+    public static File findFile(File directory, String filename) {
         if (directory.getName().equals(filename)) {
             return directory;
         }
@@ -902,7 +903,7 @@ public final class FileUtils {
         final File[] children = directory.listFiles();
         if (children != null) {
             for (File child: children) {
-                final File match = find(child, filename);
+                final File match = findFile(child, filename);
                 
                 if (match != null) {
                     return match;
@@ -911,6 +912,29 @@ public final class FileUtils {
         }
         
         return null;
+    }
+    
+    public static void zip(File file, ZipOutputStream output, File root, List<File> excludes) throws IOException {
+        if (excludes.contains(file)) {
+            return;
+        }
+        
+        final String entryName = file.getAbsolutePath().substring(
+                root.getAbsolutePath().length() + 1);
+        
+        if (file.isDirectory()) {
+            output.putNextEntry(new ZipEntry(entryName + SLASH));
+            
+            final File[] children = file.listFiles();
+            if (children != null) {
+                for (File child: children) {
+                    zip(child, output, root, excludes);
+                }
+            }
+        } else {
+            output.putNextEntry(new ZipEntry(entryName));
+            StreamUtils.transferFile(file, output);
+        }
     }
     
     // private //////////////////////////////////////////////////////////////////////
@@ -1024,9 +1048,9 @@ public final class FileUtils {
     }
     
     private static FilesList extract(
-            final File file, 
-            final File target, 
-            final String excludes, 
+            final File file,
+            final File target,
+            final String excludes,
             final Progress progress) throws IOException {
         final FilesList list = new FilesList();
         
@@ -1058,7 +1082,7 @@ public final class FileUtils {
                     extractedWithList = true;
                 } catch (XMLException e) {
                     ErrorManager.notifyDebug(
-                            "Could not load xml files list for extraction", 
+                            "Could not load xml files list for extraction",
                             e);
                 }
             }

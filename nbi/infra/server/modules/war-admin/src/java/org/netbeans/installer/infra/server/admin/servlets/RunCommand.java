@@ -46,6 +46,8 @@ public class RunCommand extends HttpServlet {
         String platforms = null;
         File   archive   = null;
         
+        String codebase  = null;
+        
         String fallback  = null;
         
         try {
@@ -60,6 +62,8 @@ public class RunCommand extends HttpServlet {
                 
                 archive   = (File) parameters.get("archive");
                 
+                codebase  = (String) parameters.get("codebase");
+                
                 fallback  = (String) parameters.get("fallback");
             } else {
                 registry  = request.getParameter("registry");
@@ -67,6 +71,8 @@ public class RunCommand extends HttpServlet {
                 uid       = request.getParameter("uid");
                 version   = request.getParameter("version");
                 platforms = request.getParameter("platforms");
+                
+                codebase = request.getParameter("codebase");
                 
                 fallback  = request.getParameter("fallback");
             }
@@ -111,6 +117,10 @@ public class RunCommand extends HttpServlet {
             
             if (command.equals("delete-bundles")) {
                 manager.deleteBundles(new String[]{registry});
+            }
+            
+            if (command.equals("export-registry")) {
+                manager.exportRegistries(new String[]{registry}, codebase);
             }
             
             response.getWriter().write(

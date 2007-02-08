@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -19,6 +20,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.jar.JarOutputStream;
+import java.util.zip.ZipEntry;
 import javax.ejb.Stateless;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.downloader.DownloadManager;
@@ -26,8 +29,10 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
+import org.netbeans.installer.product.filters.TrueFilter;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.XMLUtils;
@@ -252,22 +257,25 @@ public class ManagerBean implements Manager {
                 string = uri.getRemote().getSchemeSpecificPart();
                 string = string.substring(componentsDir.toURI().getSchemeSpecificPart().length());
                 string = URLEncoder.encode("components/" + string, "UTF-8");
-                uri.setLocal(new URI(uriPrefix + string));
+                uri.setRemote(new URI(uriPrefix + string));
+                uri.setLocal(null);
             }
             
             for (ExtendedUri uri: component.getDataUris()) {
                 string = uri.getRemote().getSchemeSpecificPart();
                 string = string.substring(componentsDir.toURI().getSchemeSpecificPart().length());
                 string = URLEncoder.encode("components/" + string, "UTF-8");
-                uri.setLocal(new URI(uriPrefix + string));
+                uri.setRemote(new URI(uriPrefix + string));
+                uri.setLocal(null);
             }
             
             string = component.getIconUri().getRemote().getSchemeSpecificPart();
             string = string.substring(componentsDir.toURI().getSchemeSpecificPart().length());
             string = URLEncoder.encode("components/" + string, "UTF-8");
-            component.getIconUri().setLocal(new URI(uriPrefix + string));
+            component.getIconUri().setRemote(new URI(uriPrefix + string));
+            component.getIconUri().setLocal(null);
             
-            registry.saveProductRegistry(registryXml, new IconCorrectingFilter(), true, true, true);
+            registry.saveProductRegistry(registryXml, TrueFilter.INSTANCE, true, true, true);
             
             archive.delete();
             descriptor.delete();
@@ -341,7 +349,7 @@ public class ManagerBean implements Manager {
                 }
             }
             
-            registry.saveProductRegistry(registryXml, new IconCorrectingFilter(), true, true, true);
+            registry.saveProductRegistry(registryXml, TrueFilter.INSTANCE, true, true, true);
         } catch (InitializationException e) {
             e.printStackTrace();
             throw new ManagerException("Could not remove component", e);
@@ -445,9 +453,10 @@ public class ManagerBean implements Manager {
             string = group.getIconUri().getRemote().getSchemeSpecificPart();
             string = string.substring(groupsDir.toURI().getSchemeSpecificPart().length());
             string = URLEncoder.encode("groups/" + string, "UTF-8");
-            group.getIconUri().setLocal(new URI(uriPrefix + string));
+            group.getIconUri().setRemote(new URI(uriPrefix + string));
+            group.getIconUri().setLocal(null);
             
-            registry.saveProductRegistry(registryXml, new IconCorrectingFilter(), true, true, true);
+            registry.saveProductRegistry(registryXml, TrueFilter.INSTANCE, true, true, true);
             
             archive.delete();
             descriptor.delete();
@@ -518,7 +527,7 @@ public class ManagerBean implements Manager {
                 }
             }
             
-            registry.saveProductRegistry(registryXml, new IconCorrectingFilter(), true, true, true);
+            registry.saveProductRegistry(registryXml, TrueFilter.INSTANCE, true, true, true);
         } catch (InitializationException e) {
             e.printStackTrace();
             throw new ManagerException("Could not remove component", e);
@@ -532,6 +541,118 @@ public class ManagerBean implements Manager {
     }
     
     // miscellanea //////////////////////////////////////////////////////////////////
+    public File exportRegistries(String[] registryNames, String codebase) throws ManagerException {
+        try {
+            final File userDir = FileUtils.createTempFile(TEMP, false);
+            final File registryFile = FileUtils.createTempFile(TEMP, false);
+            
+            final File target = new File(
+                    EXPORTED,
+                    StringUtils.asString(registryNames, ", ") + ".jar");
+            
+            FileUtils.mkdirs(target.getParentFile());
+            
+            final Registry registry = new Registry();
+            
+            registry.setLocalDirectory(userDir);
+            registry.setFinishHandler(new DummyFinishHandler());
+            
+            for (String registryName: registryNames) {
+                registry.loadProductRegistry(
+                        new File(registries.get(registryName), REGISTRY_XML));
+            }
+            
+            registry.saveProductRegistry(
+                    registryFile,
+                    TrueFilter.INSTANCE,
+                    false,
+                    true,
+                    true);
+            
+            final JarOutputStream out =
+                    new JarOutputStream(new FileOutputStream(target));
+            
+            for (String registryName: registryNames) {
+                final List<File> excludes = new LinkedList<File>();
+                
+                excludes.add(new File(registries.get(registryName), REGISTRY_XML));
+                
+                FileUtils.zip(
+                        registries.get(registryName),
+                        out,
+                        registries.get(registryName).getParentFile(),
+                        excludes);
+                
+            }
+            
+            FileUtils.modifyFile(
+                    registryFile,
+                    ">.*?registry=(.+?)&amp;file=",
+                    ">" + codebase + "/$1/",
+                    true);
+            FileUtils.modifyFile(
+                    registryFile,
+                    "%2F",
+                    "/");
+            FileUtils.modifyFile(
+                    registryFile,
+                    "+",
+                    "%20");
+            
+            out.putNextEntry(new ZipEntry("registry.xml"));
+            StreamUtils.transferFile(registryFile, out);
+            
+            out.putNextEntry(new ZipEntry("nbi-engine.jar"));
+            StreamUtils.transferFile(getEngine(), out);
+            
+            out.putNextEntry(new ZipEntry("nbi.jnlp"));
+            StreamUtils.writeChars(out, StringUtils.format(
+                    JNLP_STUB,
+                    codebase,
+                    "nbi.jnlp",
+                    codebase + "/nbi-engine.jar",
+                    codebase + "/registry.xml"));
+            
+            FileUtils.deleteFile(userDir);
+            FileUtils.deleteFile(registryFile);
+            
+            out.close();
+            
+            return target;
+        } catch (IOException e) {
+            throw new ManagerException("Cannot export", e);
+        } catch (InitializationException e) {
+            throw new ManagerException("Cannot export", e);
+        } catch (FinalizationException e) {
+            throw new ManagerException("Cannot export", e);
+        }
+    }
+    
+    public String getJnlp(String[] registryNames, String codebase) throws ManagerException {
+        try {
+            String jnlp = "install?true=true";
+            for (String registryName: registryNames) {
+                jnlp += "&registry=" + URLEncoder.encode(registryName, "UTF-8");
+            }
+            
+            String engine = codebase + "/nbi-engine.jar";
+            
+            String registry = "";
+            for (String registryName: registryNames) {
+                registry +=
+                        codebase +
+                        "/get-registry?registry=" +
+                        URLEncoder.encode(registryName, "UTF-8") +
+                        "\n";
+            }
+            registry = registry.trim();
+            
+            return StringUtils.format(JNLP_STUB, codebase, jnlp, engine, registry);
+        } catch (UnsupportedEncodingException e) {
+            throw new ManagerException("Whoah..", e);
+        }
+    }
+    
     public File getFile(String registry, String file) throws ManagerException {
         if (registries.get(registry) == null) {
             addRegistry(registry);

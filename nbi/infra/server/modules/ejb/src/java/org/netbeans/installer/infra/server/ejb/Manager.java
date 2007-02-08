@@ -20,6 +20,7 @@ public interface Manager {
     public static final File   REGISTRIES      = new File(ROOT, "registries");
     public static final File   UPLOADS         = new File(TEMP, "uploads");
     public static final File   BUNDLES         = new File(TEMP, "bundles");
+    public static final File   EXPORTED        = new File(TEMP, "exported");
     public static final File   NBI             = new File(TEMP, ".nbi");
     
     public static final File   REGISTRIES_LIST = new File(ROOT, "registries.list");
@@ -28,6 +29,31 @@ public interface Manager {
     public static final String COMPONENTS      = "components";
     public static final String GROUPS          = "groups";
     public static final String REGISTRY_XML    = "registry.xml";
+    
+    public static final String JNLP_STUB =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + 
+            "<jnlp spec=\"1.0+\" codebase=\"{0}\" href=\"{1}\">\n" + 
+            "    <information>\n" + 
+            "        <title>NetBeans Installer</title>\n" + 
+            "        <vendor>Sun Microsystems, Inc.</vendor>\n" + 
+            "        <description>NetBeans Installer Engine</description>\n" + 
+            "        <description kind=\"short\">NetBeans Installer Engine</description>\n" + 
+            "    </information>\n" + 
+            "    <security>\n" + 
+            "        <all-permissions/>\n" + 
+            "    </security>\n" + 
+            "    <resources>\n" + 
+            "        <j2se version=\"1.5+\"/>\n" + 
+            "        <j2se version=\"1.6+\"/>\n" + 
+            "        <j2se version=\"1.6.0-rc\"/>\n" + 
+            "        <j2se version=\"1.6.0-ea\"/>\n" + 
+            "        <j2se version=\"1.6.0-beta\"/>\n" + 
+            "        <j2se version=\"1.6.0-beta2\"/>\n" + 
+            "        <jar href=\"{2}\"/>\n" + 
+            "        <property name=\"nbi.product.remote.registries\" value=\"{3}\"/>\n" + 
+            "    </resources>\n" + 
+            "    <application-desc main-class=\"org.netbeans.installer.Installer\"/>\n" + 
+            "</jnlp>";
     
     // registry operations //////////////////////////////////////////////////////////
     void addRegistry(String registry) throws ManagerException;
@@ -54,6 +80,10 @@ public interface Manager {
     void removeGroup(String name, String uid) throws ManagerException;
     
     // miscellanea //////////////////////////////////////////////////////////////////
+    File exportRegistries(String[] registryNames, String codebase) throws ManagerException;
+    
+    String getJnlp(String[] registryNames, String codebase) throws ManagerException;
+    
     File getFile(String name, String file) throws ManagerException;
     
     RegistryNode getRoot(Platform platform, String... names) throws ManagerException;
