@@ -78,7 +78,6 @@ public final class WaitScreenSuccessCommandCD extends ComponentDescriptor {
             },
             // delete
             DeletePresenter.createIndeliblePresenter(),
-            MidpCustomCodeSupport.createAddImportPresenter ()
         );
     }
 

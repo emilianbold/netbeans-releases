@@ -79,7 +79,6 @@ public final class SplashScreenDismissCommandCD extends ComponentDescriptor {
             },
             // delete
             DeletePresenter.createIndeliblePresenter(),
-            MidpCustomCodeSupport.createAddImportPresenter ()
         );
     }
 
