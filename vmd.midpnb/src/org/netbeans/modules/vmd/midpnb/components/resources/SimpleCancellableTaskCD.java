@@ -19,71 +19,116 @@
 
 package org.netbeans.modules.vmd.midpnb.components.resources;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
+import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
+import org.netbeans.modules.vmd.api.codegen.Parameter;
+import org.netbeans.modules.vmd.api.codegen.CodeWriter;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractScreenCD;
+import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.properteditors.PropertyEditorExecutableUserCode;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
  * @author Karol Harezlak
  */
 public class SimpleCancellableTaskCD extends ComponentDescriptor {
-    
+
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.util.SimpleCancellableTask"); // NOI18N
 
-    private static final String PROP_EXECUTABLE_METHOD_BODY = "executableMethodBody"; //NOI18N
-    
+    private static final String PROP_CODE = "executableMethodBody"; //NOI18N
+
     public SimpleCancellableTaskCD() {
-        
+
     }
-    
+
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(ResourceCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
     }
 
     public VersionDescriptor getVersionDescriptor() {
         return MidpVersionDescriptor.MIDP;
     }
 
+    public void postInitialize (DesignComponent component) {
+        component.writeProperty (PROP_CODE, MidpTypes.createJavaCodeValue ("")); // NOI18N
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
+    }
+
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-            new PropertyDescriptor (PROP_EXECUTABLE_METHOD_BODY, MidpTypes.TYPEID_JAVA_CODE, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
+            new PropertyDescriptor (PROP_CODE, MidpTypes.TYPEID_JAVA_CODE, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2)
         );
     }
-    
+
      private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                     .addProperty("Executable Method Body", new PropertyEditorExecutableUserCode(), PROP_EXECUTABLE_METHOD_BODY);
+                     .addProperty("Executable Code", new PropertyEditorExecutableUserCode(), PROP_CODE);
     }
-    
-    
+
+    private static Presenter createSetterPresenter () {
+        return new CodeSetterPresenter ()
+            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2))
+            .addSetters (MidpSetter.createSetter ("setExecutable", MidpVersionable.MIDP_2).addParameters (ExecutableParameter.PARAM_EXECUTABLE));
+    }
+
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
-            createPropertiesPresenter()
+            // properties
+            createPropertiesPresenter(),
+            // setter
+            createSetterPresenter ()
         );
     }
-    
-    public void postInitialize (DesignComponent component) {
-        MidpProjectSupport.addLibraryToProject(component.getDocument(), AbstractScreenCD.MIDP_NB_LIBRARY); 
+
+    private static class ExecutableParameter implements Parameter {
+
+        public static final String PARAM_EXECUTABLE = "executable"; // NOI18N
+
+        public String getParameterName () {
+            return PARAM_EXECUTABLE;
+        }
+
+        public int getParameterPriority () {
+            return 0;
+        }
+
+        public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
+            CodeWriter writer = section.getWriter ();
+            writer.write ("new Executable() {\n"); // NOI18N
+            writer.write ("public void execute () throws Exception {\n"); // NOI18N
+            String code = MidpTypes.getJavaCode (component.readProperty (PROP_CODE));
+            writer.write (code);
+            if (! code.endsWith ("\n")) // NOI18N
+                writer.write ("\n"); // NOI18N
+            writer.write ("}\n"); // NOI18N
+            writer.write ("}"); // NOI18N
+        }
+
+        public boolean isRequiredToBeSet (DesignComponent component) {
+            return true;
+        }
+
+        public int getCount (DesignComponent component) {
+            return -1;
+        }
+
+        public boolean isRequiredToBeSet (DesignComponent component, int index) {
+            return false;
+        }
+
     }
 
 }

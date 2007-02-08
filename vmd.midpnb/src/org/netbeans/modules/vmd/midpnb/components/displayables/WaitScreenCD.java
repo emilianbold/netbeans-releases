@@ -22,10 +22,13 @@ package org.netbeans.modules.vmd.midpnb.components.displayables;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.openide.util.NbBundle;
 
@@ -50,7 +53,7 @@ public final class WaitScreenCD extends ComponentDescriptor {
     }
     
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(AbstractScreenCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(AbstractInfoScreenCD.TYPEID, TYPEID, true, true);
     }
     
     public VersionDescriptor getVersionDescriptor() {
@@ -68,15 +71,23 @@ public final class WaitScreenCD extends ComponentDescriptor {
                .addPropertiesCategory("Task Properties") // TODO
                    .addProperty("Task", PropertyEditorResourcesComboBox.creater(SimpleCancellableTaskCD.TYPEID, NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK);
     }
-    
-    
+
+    private Presenter createSetterPresenter () {
+        return new CodeSetterPresenter ()
+            .addParameters (AbstractInfoScreenCode.createDisplayParameter ())
+            .addParameters (MidpParameter.create (PROP_TASK))
+            .addParameters (AbstractInfoScreenCode.createWaitScreenCommandParameter ())
+            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (AbstractInfoScreenCode.PARAM_DISPLAY))
+            .addSetters (MidpSetter.createSetter ("setTask", MidpVersionable.MIDP_2).addParameters (PROP_TASK));
+    }
+
     protected List<? extends Presenter> createPresenters() {
-        return Arrays.asList(
+        return Arrays.asList (
             //properties
-            createPropertiesPresenter()
-         );
-    } 
-    
-    
-    
+            createPropertiesPresenter(),
+            // code
+            createSetterPresenter ()
+        );
+    }
+
 }

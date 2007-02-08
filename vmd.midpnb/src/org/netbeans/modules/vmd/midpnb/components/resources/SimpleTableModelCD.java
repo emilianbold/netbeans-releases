@@ -37,7 +37,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractScreenCD;
+import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.properteditors.PropertyEditorTableModel;
 
 /**
@@ -82,7 +82,7 @@ public class SimpleTableModelCD extends ComponentDescriptor {
     }
     
     public void postInitialize (DesignComponent component) {
-        MidpProjectSupport.addLibraryToProject(component.getDocument(), AbstractScreenCD.MIDP_NB_LIBRARY); 
+        MidpProjectSupport.addLibraryToProject(component.getDocument(), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
     }
 
 }

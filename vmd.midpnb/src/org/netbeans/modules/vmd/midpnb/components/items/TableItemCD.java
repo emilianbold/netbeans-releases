@@ -41,7 +41,7 @@ import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractScreenCD;
+import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.openide.util.NbBundle;
 
@@ -103,7 +103,7 @@ public class TableItemCD extends ComponentDescriptor {
     }
     
     public void postInitialize (DesignComponent component) {
-        MidpProjectSupport.addLibraryToProject(component.getDocument(), AbstractScreenCD.MIDP_NB_LIBRARY); 
+        MidpProjectSupport.addLibraryToProject(component.getDocument(), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
     }
     
 }
