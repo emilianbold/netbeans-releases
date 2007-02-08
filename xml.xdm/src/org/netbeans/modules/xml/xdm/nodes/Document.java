@@ -521,8 +521,11 @@ public class Document extends NodeImpl implements Node, org.w3c.dom.Document {
                 throw new DOMException(DOMException.NAMESPACE_ERR, null);
             }
             ret.appendAttribute(new Attribute("xmlns:"+prefix, namespaceURI)); //NOI18N
-        } else if (namespaceURI != null && ! namespaceURI.equals(XMLConstants.NULL_NS_URI)) {
-            ret.appendAttribute(new Attribute(XMLNS, namespaceURI)); 
+        } else {
+            ret = new Element(ret.getLocalName());
+            if (namespaceURI != null && ! namespaceURI.equals(XMLConstants.NULL_NS_URI)) {
+                ret.appendAttribute(new Attribute(XMLNS, namespaceURI)); 
+            }
         }
         return ret;
     }
