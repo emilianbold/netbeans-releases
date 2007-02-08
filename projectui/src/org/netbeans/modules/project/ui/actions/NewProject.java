@@ -176,7 +176,9 @@ public class NewProject extends BasicAction {
                         }
                         
                         // Show the project tab to show the user we did something
-                        ProjectUtilities.makeProjectTabVisible( true );
+                        if (! Boolean.getBoolean("project.tab.no.selection")) { //NOI18N
+                            ProjectUtilities.makeProjectTabVisible( true );
+                        }
                         
                         // Second open the files
                         if (filesToOpen.isEmpty() && lastProject != null) {

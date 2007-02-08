@@ -28,6 +28,26 @@ Microsystems, Inc. All Rights Reserved.
     </apidefs>
 
     <changes>
+        <change id="project.tab.no.selection">
+            <api name="recent"/>
+            <summary>Don't open project view component in bluej edition.</summary>
+            <version major="1" minor="12"/>
+            <date day="1" month="2" year="2007"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+         Use system property "project.tab.no.selection" for influencing the behaviour on creation or opening of projects.
+         When this property is set, the opening/creating of projects doesn't trigger 
+         opening and focusing of the projects logical view  top component.
+         Allows the BlueJ Edition to focus it's own component instead.
+                </p>
+            </description>
+            <!--class package="org.netbeans.modules.project.ui.actions" name="NewProject"/>
+            <class package="org.netbeans.modules.project.ui.actions" name="OpenProject"/-->
+            <issue number="78746"/>
+        </change>
+        
         <change id="RecentProjects">
             <api name="recent"/>
             <summary>Provide a way to get list of information about recent projects.</summary>

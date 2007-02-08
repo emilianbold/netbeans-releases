@@ -648,6 +648,15 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="exec-property">
   <ul>
    <li>
+    <api group="property" name="project.tab.no.selection" type="export" category="private">
+     <p>
+         When this property is set, the opening of projects doesn't trigger 
+         opening and focusing of the projects logical view  top component.
+         Allows the BlueJ Edition to focus it's own component instead.
+     </p>
+    </api>
+    </li>
+   <li>
     <api group="property" name="org.netbeans.modules.project.ui.OpenProjectList" type="export" category="private">
      <p>
       Error manager logging category for things affecting project list.

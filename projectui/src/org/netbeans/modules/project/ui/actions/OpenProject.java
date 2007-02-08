@@ -137,8 +137,10 @@ public class OpenProject extends BasicAction {
                                 Node[] nodesArray = new Node[ nodes.size() ];
                                 nodes.toArray( nodesArray );
                                 ptLogial.getExplorerManager ().setSelectedNodes (nodesArray);
-                                ptLogial.open ();
-                                ptLogial.requestActive ();
+                                if (!Boolean.getBoolean("project.tab.no.selection")) { //NOI18N
+                                    ptLogial.open ();
+                                    ptLogial.requestActive ();
+                                }
                             } catch (Exception ignore) {
                                 // may ignore it
                             }
