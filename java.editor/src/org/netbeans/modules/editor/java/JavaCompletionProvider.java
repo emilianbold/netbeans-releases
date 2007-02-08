@@ -2031,7 +2031,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             addPrimitiveTypeKeywords(env);
         }
         
-        private void addLocalConstantsAndTypes(Env env) throws IOException {
+        private void addLocalConstantsAndTypes(final Env env) throws IOException {
             int offset = env.getOffset();
             final String prefix = env.getPrefix();
             final CompilationController controller = env.getController();
@@ -2099,7 +2099,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
                                     (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     tu.isAccessible(scope, e, t) &&
-                                    isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types);
+                                    isOfSmartType(env, asMemberOf(e, t, types), finalSmartTypes);
                     }
                     return false;
                 }
@@ -2112,7 +2112,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null, null);
         }
         
-        private void addLocalMembersAndVars(Env env) throws IOException {
+        private void addLocalMembersAndVars(final Env env) throws IOException {
             int offset = env.getOffset();
             final String prefix = env.getPrefix();
             final CompilationController controller = env.getController();
@@ -2174,22 +2174,21 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT ||
                                     e.getEnclosingElement().getKind() == STATIC_INIT))) &&
                                     !illegalForwardRefs.contains(e) &&
-                                    isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types);
+                                    isOfSmartType(env, asMemberOf(e, t, types), finalSmartTypes);
                         case FIELD:
                             if (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD))
-                                return !isStatic && isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types) && 
-                                        Utilities.startsWith(e.getSimpleName().toString(), prefix);
+                                return Utilities.startsWith(e.getSimpleName().toString(), prefix) && !isStatic && isOfSmartType(env, asMemberOf(e, t, types), finalSmartTypes);
                         case ENUM_CONSTANT:
                             return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
                                     !illegalForwardRefs.contains(e) &&
                                     (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     tu.isAccessible(scope, e, t) &&
-                                    isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types);
+                                    isOfSmartType(env, asMemberOf(e, t, types), finalSmartTypes);
                         case METHOD:
                             return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
                                     (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     tu.isAccessible(scope, e, t) &&
-                                    isOfSmartType(((ExecutableType)asMemberOf(e, t, types)).getReturnType(), finalSmartTypes, types);
+                                    isOfSmartType(env, ((ExecutableType)asMemberOf(e, t, types)).getReturnType(), finalSmartTypes);
                     }
                     return false;
                 }
@@ -2216,7 +2215,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
 
-        private void addLocalFieldsAndVars(Env env) throws IOException {
+        private void addLocalFieldsAndVars(final Env env) throws IOException {
             int offset = env.getOffset();
             final String prefix = env.getPrefix();
             final CompilationController controller = env.getController();
@@ -2247,10 +2246,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT ||
                                     e.getEnclosingElement().getKind() == STATIC_INIT))) &&
                                     !illegalForwardRefs.contains(e) &&
-                                    isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types);
+                                    isOfSmartType(env, asMemberOf(e, t, types), finalSmartTypes);
                         case FIELD:
                             return !e.getSimpleName().contentEquals(THIS_KEYWORD) && !e.getSimpleName().contentEquals(SUPER_KEYWORD) &&
-                                    !isStatic && isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types) && Utilities.startsWith(e.getSimpleName().toString(), prefix);
+                                    !isStatic && Utilities.startsWith(e.getSimpleName().toString(), prefix) && isOfSmartType(env, asMemberOf(e, t, types), finalSmartTypes);
                     }
                     return false;
                 }
@@ -2270,7 +2269,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
-        private void addMemberConstantsAndTypes(Env env, final TypeMirror type, final Element elem) throws IOException {
+        private void addMemberConstantsAndTypes(final Env env, final TypeMirror type, final Element elem) throws IOException {
             Set<? extends TypeMirror> smartTypes = null;
             if (queryType == COMPLETION_SMART_QUERY_TYPE) {
                 smartTypes = getSmartTypes(env);
@@ -2301,7 +2300,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 return false;
                         case ENUM_CONSTANT:
                             return tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t) &&
-                                    isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types);
+                                    isOfSmartType(env, asMemberOf(e, t, types), finalSmartTypes);
                         case CLASS:
                         case ENUM:
                         case INTERFACE:
@@ -2326,7 +2325,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
-        private void addMembers(Env env, final TypeMirror type, final Element elem, final EnumSet<ElementKind> kinds, final DeclaredType baseType, final boolean inImport) throws IOException {
+        private void addMembers(final Env env, final TypeMirror type, final Element elem, final EnumSet<ElementKind> kinds, final DeclaredType baseType, final boolean inImport) throws IOException {
             Set<? extends TypeMirror> smartTypes = null;
             if (queryType == COMPLETION_SMART_QUERY_TYPE) {
                 smartTypes = getSmartTypes(env);
@@ -2368,14 +2367,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     !isOfKindAndType(tm, e, kinds, baseType, scope, trees, types) ||
                                     !tu.isAccessible(scope, e, t))
                                 return false;
-                            return isOfSmartType(tm, finalSmartTypes, types);
+                            return isOfSmartType(env, tm, finalSmartTypes);
                         case METHOD:
                             tm = ((ExecutableType)asMemberOf(e, t, types)).getReturnType();
                             if (!Utilities.startsWith(e.getSimpleName().toString(), prefix) ||
                                     !isOfKindAndType(tm, e, kinds, baseType, scope, trees, types) ||
                                     !tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t))
                                 return false;
-                            return (!isStatic || e.getModifiers().contains(STATIC)) && isOfSmartType(tm, finalSmartTypes, types);
+                            return (!isStatic || e.getModifiers().contains(STATIC)) && isOfSmartType(env, tm, finalSmartTypes);
                         case CLASS:
                         case ENUM:
                         case INTERFACE:
@@ -2438,7 +2437,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
-        private void addPackageContent(Env env, PackageElement pe, EnumSet<ElementKind> kinds, DeclaredType baseType) throws IOException {
+        private void addPackageContent(final Env env, PackageElement pe, EnumSet<ElementKind> kinds, DeclaredType baseType) throws IOException {
             Set<? extends TypeMirror> smartTypes = null;
             if (queryType == COMPLETION_SMART_QUERY_TYPE) {
                 smartTypes = getSmartTypes(env);
@@ -2455,7 +2454,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             for(Element e : pe.getEnclosedElements()) {
                 if (e.getKind().isClass() || e.getKind().isInterface()) {
                     String name = e.getSimpleName().toString();
-                        if (Utilities.startsWith(name, prefix) && trees.isAccessible(scope, (TypeElement)e) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) && isOfSmartType(e.asType(), smartTypes, types)) {
+                        if (Utilities.startsWith(name, prefix) && trees.isAccessible(scope, (TypeElement)e) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) && isOfSmartType(env, e.asType(), smartTypes)) {
                             results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), offset, false, elements.isDeprecated(e)));
                     }
                 }
@@ -3060,12 +3059,13 @@ public class JavaCompletionProvider implements CompletionProvider {
             return null;
         }
         
-        private boolean isOfSmartType(TypeMirror type, Set<? extends TypeMirror> smartTypes, Types types) {
+        private boolean isOfSmartType(Env env, TypeMirror type, Set<? extends TypeMirror> smartTypes) {
             if (smartTypes == null || smartTypes.isEmpty())
                 return true;
-            for (TypeMirror smartType : smartTypes)
-                if (types.isAssignable(type, types.erasure(smartType)))
+            for (TypeMirror smartType : smartTypes) {
+                if (SourceUtils.checkTypesAssignable(env.getController(), type, smartType))
                     return true;
+            }
             return false;
         }
         

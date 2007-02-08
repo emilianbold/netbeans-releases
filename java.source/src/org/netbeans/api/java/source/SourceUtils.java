@@ -45,6 +45,8 @@ import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.comp.Check;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
@@ -102,6 +104,21 @@ public class SourceUtils {
     public static Element getImplementationOf(CompilationInfo info, ExecutableElement method, TypeElement origin) {
         Context c = ((JavacTaskImpl) info.getJavacTask()).getContext();
         return ((MethodSymbol)method).implementation((TypeSymbol)origin, com.sun.tools.javac.code.Types.instance(c), true);
+    }
+
+    public static boolean checkTypesAssignable(CompilationInfo info, TypeMirror from, TypeMirror to) {
+        Context c = ((JavacTaskImpl) info.getJavacTask()).getContext();
+        Check check = Check.instance(c);
+        if (from.getKind() == TypeKind.DECLARED) {
+            com.sun.tools.javac.util.List<Type> typeVars = com.sun.tools.javac.util.List.nil();
+            for (TypeMirror tm : ((DeclaredType)from).getTypeArguments()) {
+                if (tm.getKind() == TypeKind.TYPEVAR)
+                    typeVars = typeVars.append((Type)tm);
+            }
+            if (!typeVars.isEmpty())
+                from = new Type.ForAll(typeVars, (Type)from);
+        }
+        return check.checkType(null, (Type)from, (Type)to).getKind() != TypeKind.ERROR;
     }
 
     /**
