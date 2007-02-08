@@ -19,14 +19,13 @@
 
 package org.netbeans.swing.plaf.gtk;
 
-import org.netbeans.swing.plaf.LFCustoms;
-import org.netbeans.swing.plaf.metal.MetalLFCustoms;
-
-import javax.swing.*;
-import javax.swing.border.Border;
+import java.awt.Color;
+import java.awt.Font;
+import javax.swing.BorderFactory;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.plaf.FontUIResource;
-import java.awt.*;
-import org.netbeans.swing.plaf.util.UIBootstrapValue;
+import org.netbeans.swing.plaf.LFCustoms;
 import org.netbeans.swing.plaf.util.UIUtils;
 
 /** UI customizations for GTK look and feel
@@ -43,7 +42,6 @@ public class GtkLFCustoms extends LFCustoms {
 
 
     public Object[] createApplicationSpecificKeysAndValues () {
-        Border lowerBorder = new AdaptiveMatteBorder (false, true, true, true, 3);
         //Avoid using ThemeValue if it can't work - mainly due to testing issues when trying to run GTK UI customizations
         //on the Mac, which doesn't have a GTKLookAndFeel
 
@@ -62,6 +60,11 @@ public class GtkLFCustoms extends LFCustoms {
             controlFont = new Font ("Dialog", Font.PLAIN, sz); //NOI18N
         }
 
+        Color borderColor = (Color) UIManager.get("InternalFrame.borderShadow");
+        if (borderColor == null) {
+            borderColor = new Color(144,150,162);
+        }
+                
         Object[] result = {
             PROPSHEET_SELECTION_BACKGROUND, selBg,
             PROPSHEET_SELECTION_FOREGROUND, selFg,
@@ -77,10 +80,10 @@ public class GtkLFCustoms extends LFCustoms {
             "window", light,
             
             VIEW_TAB_OUTER_BORDER, BorderFactory.createEmptyBorder(),
-            VIEW_TAB_TABS_BORDER, new PartialEdgeBorder(4),
-            VIEW_TAB_CONTENT_BORDER, lowerBorder,
+            VIEW_TAB_TABS_BORDER, BorderFactory.createEmptyBorder(),
+            VIEW_TAB_CONTENT_BORDER, BorderFactory.createMatteBorder(0,1,1,1,borderColor),
             EDITOR_TAB_OUTER_BORDER, BorderFactory.createEmptyBorder(),
-            EDITOR_TAB_CONTENT_BORDER, lowerBorder,
+            EDITOR_TAB_CONTENT_BORDER, BorderFactory.createMatteBorder(0,1,1,1,borderColor),
             EDITOR_TAB_TABS_BORDER, BorderFactory.createEmptyBorder(),
             
             EDITOR_STATUS_LEFT_BORDER, new InsetBorder (false, true),
