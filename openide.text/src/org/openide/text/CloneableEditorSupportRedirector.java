@@ -25,7 +25,8 @@ import org.openide.util.Lookup;
  * for redirecting operation on <a href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html">
  * FileObject</a> to another one in cases when two <code>FileObject</code>s
  * represent the same physical file.
- * 
+ * <p>
+ * Instances should be registered to default lookup.
  * @author Jaroslav Tulach
  * @since 6.13
  */
