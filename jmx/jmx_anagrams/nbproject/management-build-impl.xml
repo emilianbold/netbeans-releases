@@ -10,7 +10,7 @@ is divided into following sections:
   - management
 
 -->
-<project name="anagrams-management-impl" default="run-management" basedir=".." xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/2" xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1">
+<project name="anagrams-management-impl" default="run-management" basedir=".." xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/3" xmlns:j2seproject2="http://www.netbeans.org/ns/j2se-project/3" xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1">
     <target name="default" depends="run-management" description="Build the project and enable management."/>
     <!-- 
     ======================
@@ -95,12 +95,20 @@ is divided into following sections:
     MANAGEMENT SECTION
     ==================
     -->
+    <target name="-mgt-init-platform">
+        <condition property="platform.home" value="${jdk.home}">
+            <isfalse value="${platform.home}"/>
+        </condition>
+        <condition property="platform.java" value="${jdk.home}/bin/java">
+            <isfalse value="${platform.java}"/>
+        </condition>
+    </target>
     <target name="-init-macrodef-management">
         <macrodef name="management">
             <attribute name="classname" default="${main.class}"/>
             <element name="customize" optional="true"/>
             <sequential>
-                <java fork="true" classname="@{classname}" dir="${work.dir}">
+                <java fork="true" classname="@{classname}" dir="${work.dir}" jvm="${platform.java}">
                     <jvmarg line="${management.jvmargs} ${run.jvmargs}"/>
                     <classpath>
                         <path path="${run.classpath}"/>
@@ -114,17 +122,17 @@ is divided into following sections:
             </sequential>
         </macrodef>
     </target>
-    <target name="-connect-jconsole" depends="init">
+    <target name="-connect-jconsole" depends="init,-mgt-init-platform">
         <echo message="jconsole ${jconsole.settings.vmoptions} -interval=${jconsole.settings.polling} ${jconsole.settings.notile} ${jconsole.managed.process.url}"/>
-        <java fork="true" classname="sun.tools.jconsole.JConsole">
+        <java fork="true" classname="sun.tools.jconsole.JConsole" jvm="${platform.java}">
             <jvmarg line="${jconsole.settings.vmoptions}"/>
             <arg line="-interval=${jconsole.settings.polling} ${jconsole.settings.notile} ${jconsole.managed.process.url}"/>
             <classpath>
-                <path path="${run.classpath}:${jdk.home}/lib/jconsole.jar:${jdk.home}/lib/tools.jar"/>
+                <path path="${run.classpath}:${platform.home}/lib/jconsole.jar:${platform.home}/lib/tools.jar"/>
             </classpath>
         </java>
     </target>
-    <target name="run-management" if="netbeans.home" depends="init,compile,-init-macrodef-management" description="Enable local mgt for a project in the IDE.">
+    <target name="run-management" if="netbeans.home" depends="init,compile,-mgt-init-platform,-init-macrodef-management" description="Enable local mgt for a project in the IDE.">
         <echo message="${connecting.jconsole.msg} ${jconsole.managed.process.url}"/>
         <management>
             <customize>
@@ -149,7 +157,7 @@ is divided into following sections:
             <attribute name="classpath" default="${debug.classpath}"/>
             <attribute name="args" default="${application.args}"/>
             <sequential>
-                <java fork="true" classname="@{classname}" dir="${work.dir}">
+                <java fork="true" classname="@{classname}" dir="${work.dir}" jvm="${platform.java}">
                     <jvmarg value="-Xdebug"/>
                     <jvmarg value="-Xnoagent"/>
                     <jvmarg value="-Djava.compiler=none"/>
@@ -170,7 +178,7 @@ is divided into following sections:
     <target name="-debug-start-debugger" if="netbeans.home" depends="init">
         <j2seproject1:nbjpdastart name="${debug.class}"/>
     </target>
-    <target name="-debug-start-managed-debuggee" depends="init,compile,-init-macrodef-management-debug">
+    <target name="-debug-start-managed-debuggee" depends="init,compile,-mgt-init-platform,-init-macrodef-management-debug">
         <debug-management/>
     </target>
     <target name="debug-management" if="netbeans.home" depends="init,compile,-debug-start-debugger,-debug-start-managed-debuggee" description="Debug project in IDE with Local mgt enabled."/>
