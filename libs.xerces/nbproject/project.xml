@@ -30,10 +30,6 @@ Microsystems, Inc. All Rights Reserved.
                 <runtime-relative-path>ext/xerces-2.8.0.jar</runtime-relative-path>
                 <binary-origin>../external/xerces-2.8.0.jar</binary-origin>
             </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/xml-commons-dom-ranges-1.0.b2.jar</runtime-relative-path>
-                <binary-origin>../external/xml-commons-dom-ranges-1.0.b2.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>

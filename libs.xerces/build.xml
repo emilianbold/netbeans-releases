@@ -50,8 +50,6 @@ Microsystems, Inc. All Rights Reserved.
                 <file location="${license.file}"/>
                 <text>For the Xerces library:</text>
                 <file location="../external/xerces-2.8.0-license.txt"/>
-                <text>For the DOM Ranges API:</text>
-                <file location="../external/xml-commons-dom-ranges-1.0.b2-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
