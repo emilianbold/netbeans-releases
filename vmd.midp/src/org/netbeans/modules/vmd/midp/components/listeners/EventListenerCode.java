@@ -84,8 +84,11 @@ class EventListenerCode {
                                     workingCopy.rewrite (oldClassTree, newClassTree);
                                 }
                             } else {
-                                if (expressionTree != null)
-                                    treeMaker.removeClassImplementsClause ((ClassTree) classTreePath.getLeaf (), expressionTree);
+                                if (expressionTree != null) {
+                                    ClassTree oldClassTree = (ClassTree) classTreePath.getLeaf ();
+                                    ClassTree newClassTree = treeMaker.removeClassImplementsClause (oldClassTree, expressionTree);
+                                    workingCopy.rewrite (oldClassTree, newClassTree);
+                                }
                             }
                         }
                     }
