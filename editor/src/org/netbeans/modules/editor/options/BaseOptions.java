@@ -22,7 +22,6 @@ package org.netbeans.modules.editor.options;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
-import java.awt.event.InputEvent;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.lang.reflect.Field;
@@ -43,7 +42,6 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
-
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsDefaults;
@@ -53,12 +51,10 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.ext.ExtSettingsNames;
-
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.FormatterIndentEngine;
 import org.netbeans.modules.editor.IndentEngineFormatter;
 import org.netbeans.modules.editor.SimpleIndentEngine;
-
 import org.openide.text.IndentEngine;
 import java.beans.IntrospectionException;
 import org.openide.loaders.DataObject;
@@ -76,6 +72,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import java.util.Set;
 import java.util.HashSet;
 import java.awt.RenderingHints;
+import java.util.logging.Level;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.openide.filesystems.Repository;
@@ -240,6 +237,7 @@ public class BaseOptions extends OptionSupport {
     
     private transient boolean coloringsInitialized = false;
     private transient boolean keybindingsInitialized = false;
+    private transient boolean loaded = false;
     
     /** Map of Kit to Options */
     private static final HashMap kitClass2Options = new HashMap();
@@ -259,11 +257,7 @@ public class BaseOptions extends OptionSupport {
     public BaseOptions(Class kitClass, String typeName) {
         super(kitClass, typeName);
         kitClass2Options.put(kitClass, this);
-
-        // Hook up the settings initializer
-        Settings.Initializer si = getSettingsInitializer();
-        Settings.removeInitializer(si.getName());
-        Settings.addInitializer(si, Settings.OPTION_LEVEL);
+//        new Throwable("BaseOptions: " + getClass() + "; kitClass=" + kitClass + "; typeName=" + typeName).printStackTrace();
     }
     
     public boolean usesNewOptionsDialog() {
@@ -413,6 +407,8 @@ public class BaseOptions extends OptionSupport {
     }
     
     protected void updateSettingsMap(Class kitClass, Map settingsMap) {
+        loadXMLSettings();
+
         super.updateSettingsMap(kitClass, settingsMap);
 
         if (kitClass == getKitClass()) {
@@ -1819,12 +1815,27 @@ public class BaseOptions extends OptionSupport {
     }
     
     /** Load all available settings from XML files and initialize them */
-    protected void loadXMLSettings(){
-        getKeyBindingList();
-        getAbbrevMap();
-        getMacroMap();
-        getColoringMap();
-        loadSettings(PropertiesMIMEProcessor.class);
+    protected void loadXMLSettings() {
+        if (!loaded) {
+            loaded = true;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Loading " + getClass() + "; mimeType='" + getContentType() + "'"); //NOI18N
+            }
+
+            getKeyBindingList();
+            getAbbrevMap();
+            getMacroMap();
+            getColoringMap();
+            loadSettings(PropertiesMIMEProcessor.class);
+
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Loaded! " + getClass() + "; mimeType='" + getContentType() + "'"); //NOI18N
+            }
+        } else {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Already loaded! " + getClass() + "; mimeType='" + getContentType() + "'"); //NOI18N
+            }
+        }
     }
 
     /** Overriden writeExternal method. BaseOptions are no longer serialized. */

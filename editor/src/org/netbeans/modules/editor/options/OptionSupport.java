@@ -19,22 +19,13 @@
 
 package org.netbeans.modules.editor.options;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.netbeans.editor.Settings;
-import org.netbeans.editor.Coloring;
 import org.netbeans.modules.editor.NbEditorUtilities;
-
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
-import java.io.IOException;
-import java.io.ObjectOutput;
-import org.netbeans.editor.SettingsNames;
-import java.util.List;
-import org.netbeans.modules.editor.EditorModule;
+import org.netbeans.modules.editor.NbEditorSettingsInitializer;
 
 /**
 * Options for the base editor kit
@@ -72,6 +63,13 @@ public class OptionSupport extends SystemOption {
         this.typeName = typeName;
         initializerValuesMap = new HashMap();
         kitClass2Type.put(kitClass, typeName);
+        
+        // Hook up the settings initializer
+        synchronized (Settings.class) {
+            Settings.Initializer si = getSettingsInitializer();
+            Settings.removeInitializer(si.getName());
+            Settings.addInitializer(si, Settings.OPTION_LEVEL);
+        }
     }
 
     public Class getKitClass() {
@@ -98,7 +96,7 @@ public class OptionSupport extends SystemOption {
      * @param settingName name of the setting to get.
      */
     public Object getSettingValue(String settingName) {
-        EditorModule.init();
+        NbEditorSettingsInitializer.init();
         return Settings.getValue(kitClass, settingName);
     }
 
@@ -221,6 +219,7 @@ public class OptionSupport extends SystemOption {
     class SettingsInitializer implements Settings.Initializer {
         
         String name;
+        private volatile boolean updating = false;
         
         public String getName() {
             if (name == null) {
@@ -231,7 +230,14 @@ public class OptionSupport extends SystemOption {
         }
         
         public void updateSettingsMap(Class kitClass, Map settingsMap) {
-            OptionSupport.this.updateSettingsMap(kitClass, settingsMap);
+            if (!updating) {
+                updating = true;
+                try {
+                    OptionSupport.this.updateSettingsMap(kitClass, settingsMap);
+                } finally {
+                    updating = false;
+                }
+            }
         }
         
     }

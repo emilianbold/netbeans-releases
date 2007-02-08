@@ -110,12 +110,10 @@ public class NbEditorKit extends ExtKit {
     
     public NbEditorKit(){
         super();
+//        new Throwable("NbEditorKit: " + getClass()).printStackTrace();
+        
         // lazy init of MIME options
-        EditorModule.init();
-        AllOptionsFolder aof = AllOptionsFolder.getDefault();
-        if (aof != null) {
-            aof.loadMIMEOption(this.getClass());
-        }
+        NbEditorSettingsInitializer.init(getContentType());
     }
 
     public Document createDefaultDocument() {
@@ -838,7 +836,4 @@ public class NbEditorKit extends ExtKit {
             }
         }        
     }
-    
-    
-
 }

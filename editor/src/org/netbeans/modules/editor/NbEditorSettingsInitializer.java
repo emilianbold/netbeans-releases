@@ -21,6 +21,9 @@ package org.netbeans.modules.editor;
 
 import java.awt.event.InputEvent;
 import java.util.Map;
+import java.util.logging.Logger;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseSettingsInitializer;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsDefaults;
@@ -31,6 +34,7 @@ import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.modules.editor.options.BasePrintOptions;
 import org.openide.util.Utilities;
 
 /**
@@ -42,21 +46,40 @@ import org.openide.util.Utilities;
 
 public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
 
+    private static final Logger LOG = Logger.getLogger(NbEditorSettingsInitializer.class.getName());
+    
     public static final String NAME = "nb-editor-settings-initializer"; // NOI18N
 
-    private static boolean inited;
+    private static boolean mainInitDone;
 
     public static void init() {
-        if (!inited) {
-            inited = true;
+        if (!mainInitDone) {
+            mainInitDone = true;
             Settings.addInitializer(new BaseSettingsInitializer(), Settings.CORE_LEVEL);
             Settings.addInitializer(new ExtSettingsInitializer(), Settings.CORE_LEVEL);
             Settings.addInitializer(new NbEditorSettingsInitializer());
 
             Settings.reset();
+            
+            // Start listening on addition/removal of print options
+            BasePrintOptions bpo = (BasePrintOptions) BasePrintOptions.findObject(BasePrintOptions.class, true);
+            bpo.init();
         }
     }
 
+    public static void init(String mimeType) {
+        // Make sure the main initialization is done.
+        init();
+
+        // Lookup BaseOptions for the given mime type so that it can hook up its
+        // own settings initializer.
+        MimePath mimePath = MimePath.parse(mimeType);
+        BaseOptions bo = (BaseOptions) MimeLookup.getLookup(mimePath).lookup(BaseOptions.class);
+        if (bo == null) {
+            LOG.info("Top level mime type '" + mimeType + "' with no BaseOptions."); //NOI18N
+        }
+    }
+    
     public NbEditorSettingsInitializer() {
         super(NAME);
     }

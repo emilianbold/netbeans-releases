@@ -212,6 +212,14 @@ Microsystems, Inc. All Rights Reserved.
                         <code-name-base>org.netbeans.modules.settings</code-name-base>
                         <recursive/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.oldlibbridge</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.lib2</code-name-base>
+                        <recursive/>
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>

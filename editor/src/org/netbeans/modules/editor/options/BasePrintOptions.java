@@ -20,18 +20,13 @@
 package org.netbeans.modules.editor.options;
 
 import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.modules.editor.EditorModule;
-
+import org.netbeans.modules.editor.NbEditorSettingsInitializer;
 import org.openide.text.PrintSettings;
 import org.openide.util.HelpCtx;
-//import org.openide.util.HelpCtx;
 
 /**
 * Options for the plain editor kit
@@ -111,13 +106,13 @@ public class BasePrintOptions extends OptionSupport {
     }
 
     public Map getPrintColoringMap() {
-        EditorModule.init();
+        NbEditorSettingsInitializer.init();
         Map cm = SettingsUtil.getColoringMap(getKitClass(), true, true);
         cm.put(null, getKitClass().getName() ); // add kit class
         return cm;
     }
     public void setPrintColoringMap(Map coloringMap) {
-        EditorModule.init();
+        NbEditorSettingsInitializer.init();
         if (coloringMap != null) {
             coloringMap.remove(null); // remove kit class
             SettingsUtil.setColoringMap( getKitClass(), coloringMap, true );

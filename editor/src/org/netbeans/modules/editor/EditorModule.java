@@ -39,17 +39,14 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.DialogSupport;
 import org.netbeans.editor.FindSupport;
 import org.netbeans.editor.FindSupport.SearchPatternWrapper;
-import org.netbeans.editor.ImplementationProvider;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.Settings;
 import org.netbeans.modules.editor.options.AllOptions;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.netbeans.modules.editor.options.BaseOptions;
-import org.netbeans.modules.editor.options.BasePrintOptions;
 import org.openide.cookies.EditorCookie;
 import org.openide.modules.ModuleInstall;
 import org.openide.nodes.Node;
@@ -70,22 +67,9 @@ public class EditorModule extends ModuleInstall {
     
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.kits");
 
-    static boolean inited = false;
     private PropertyChangeListener searchSelectedPatternListener;
     private PropertyChangeListener editorHistoryChangeListener;
 
-    
-    public static void init(){
-        if (inited) return;
-
-        inited = true; // moved here to fix #27418
-        
-        NbEditorSettingsInitializer.init();
-        // Start listening on addition/removal of print options
-        BasePrintOptions bpo = (BasePrintOptions) BasePrintOptions.findObject(BasePrintOptions.class, true);
-        bpo.init();
-    }
-    
     /** Module installed again. */
     public void restored () {
         LocaleSupport.addLocalizer(new NbLocalizer(AllOptions.class));
@@ -309,8 +293,6 @@ public class EditorModule extends ModuleInstall {
 
             }
         });
-        
-        inited = false; // moved here as part of fix of #27418
     }
 
     
