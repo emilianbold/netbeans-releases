@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.common.method;
 import java.util.Collection;
 import org.netbeans.modules.j2ee.common.method.impl.MethodCustomizerPanel;
 import org.netbeans.modules.j2ee.common.method.impl.ValidatingPropertyChangeListener;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -55,10 +56,11 @@ public final class MethodCustomizer {
      * nothing should be written to source files.
      */
     public boolean customizeMethod() {
-        NotifyDescriptor notifyDescriptor = new NotifyDescriptor(panel, title,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.PLAIN_MESSAGE,
-                null, null
+        DialogDescriptor notifyDescriptor = new DialogDescriptor(
+                panel, title, true,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.PLAIN_MESSAGE,
+                null
                 );
         panel.addPropertyChangeListener(new ValidatingPropertyChangeListener(panel, notifyDescriptor));
         return DialogDisplayer.getDefault().notify(notifyDescriptor) == NotifyDescriptor.OK_OPTION;

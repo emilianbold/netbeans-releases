@@ -19,7 +19,15 @@
 
 package org.netbeans.modules.j2ee.common.method.impl;
 
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.openide.util.NbBundle;
@@ -45,6 +53,22 @@ public final class ParametersPanel extends javax.swing.JPanel {
         initComponents();
         tableModel = new ParamsTableModel(parameters);
         table.setModel(tableModel);
+        table.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                updateButtons();
+            }
+        });
+        table.addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent e) {
+                updateButtons();
+            }
+        });
+//        tableModel.addTableModelListener(new TableModelListener() {
+//            public void tableChanged(TableModelEvent tableModelEvent) {
+//                System.out.println("### tableModelEvent " + tableModelEvent.getType());
+//                updateButtons();
+//            }
+//        });
     }
     
     public List<MethodModel.Variable> getParameters() {
@@ -77,10 +101,18 @@ public final class ParametersPanel extends javax.swing.JPanel {
         jScrollPane1.setViewportView(table);
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.addButton.text")); // NOI18N
-        addButton.setEnabled(false);
+        addButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addButtonActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.removeButton.text")); // NOI18N
-        removeButton.setEnabled(false);
+        removeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeButtonActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(upButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.upButton.text")); // NOI18N
         upButton.setEnabled(false);
@@ -94,14 +126,14 @@ public final class ParametersPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 241, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(addButton)
                     .add(removeButton)
                     .add(upButton)
                     .add(downButton))
-                .addContainerGap(58, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {addButton, downButton, removeButton, upButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -123,6 +155,25 @@ public final class ParametersPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
+    int selectedRow = table.getSelectedRow();
+    if (selectedRow > -1) {
+        tableModel.removeParameter(selectedRow);
+    }
+    if (selectedRow == table.getRowCount()) {
+        selectedRow--;
+    }
+    table.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
+    updateButtons();
+}//GEN-LAST:event_removeButtonActionPerformed
+
+private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+    int index = tableModel.addParameter();
+//    System.out.println("### INDEX: " + index + " from " + table.getRowCount());
+    table.getSelectionModel().setSelectionInterval(index, index);
+    updateButtons();
+}//GEN-LAST:event_addButtonActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -134,17 +185,38 @@ public final class ParametersPanel extends javax.swing.JPanel {
     private javax.swing.JButton upButton;
     // End of variables declaration//GEN-END:variables
     
+    private void updateButtons() {
+        int selectedRowsCount = table.getSelectedRowCount();
+        removeButton.setEnabled(selectedRowsCount != 0);
+        upButton.setEnabled(selectedRowsCount == 1);
+        downButton.setEnabled(selectedRowsCount == 1);
+    }
+    
     // accessible for test
     static class ParamsTableModel extends AbstractTableModel {
         
         private final List<MethodModel.Variable> parameters;
         
         public ParamsTableModel(List<MethodModel.Variable> parameters) {
-            this.parameters = parameters;
+            this.parameters = new ArrayList<MethodModel.Variable>(parameters);
         }
         
         public List<MethodModel.Variable> getParameters() {
             return parameters;
+        }
+        
+        public int addParameter() {
+            String name = generateUniqueName("parameter");
+            MethodModel.Variable parameter = MethodModel.Variable.create("java.lang.String", name, false);
+            int index = parameters.size();
+            parameters.add(parameter);
+            fireTableRowsInserted(index, index);
+            return index;
+        }
+        
+        public void removeParameter(int index) {
+            parameters.remove(index);
+            fireTableRowsDeleted(index, index);
         }
         
         public int getRowCount() {
@@ -193,6 +265,36 @@ public final class ParametersPanel extends javax.swing.JPanel {
         // text ("true"/"false"), rather than a check box.
         public Class getColumnClass(int c) {
             return getValueAt(0, c).getClass();
+        }
+        
+        private String generateUniqueName(String name) {
+            List<Integer> numberSuffixes = new ArrayList<Integer>();
+            for (MethodModel.Variable variable : parameters) {
+                if (!name.equals(variable.getName()) && variable.getName().startsWith(name)) {
+                    String suffix = variable.getName().substring(name.length());
+                    if (isNumber(suffix)) {
+                        numberSuffixes.add(Integer.parseInt(suffix));
+                    }
+                }
+            }
+            Collections.sort(numberSuffixes);
+            String result = name;
+            if (numberSuffixes.size() > 0) {
+                int newSuffix = numberSuffixes.get(numberSuffixes.size() - 1) + 1;
+                result = name + newSuffix;
+            } else if (parameters.size() > 0) {
+                result = name + 1;
+            }
+            return result;
+        }
+        
+        private boolean isNumber(String value) {
+            for (char character : value.toCharArray()) {
+                if (!Character.isDigit(character)) {
+                  return false;
+                }
+            }
+          return true;//!value.trim().equals("");
         }
         
     }
