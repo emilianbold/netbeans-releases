@@ -75,8 +75,9 @@ public class CompletionTestPerformer extends NbTestCase {
             BufferedReader br = null;
             FileWriter fw = null;
             try {
-                String newGoldenName = "qa-functional/data/goldenfiles/"+this.getClass().getName().replace('.', '/')+ "/" + goldenName;
+                String newGoldenName = "data/goldenfiles/"+this.getClass().getName().replace('.', '/')+ "/" + goldenName;
                 File newGolden = new File(getDataDir().getParentFile().getParentFile().getParentFile(),newGoldenName);
+                newGolden.getParentFile().mkdirs();
                 br = new BufferedReader(new FileReader(ref));
                 fw = new FileWriter(newGolden);
                 getLog().println("Creating golden file "+newGolden.getName()+" in "+newGolden.getAbsolutePath());
