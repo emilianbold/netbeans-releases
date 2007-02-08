@@ -19,15 +19,15 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="Javadoc QA functional test config">
-
-    <testbag testattribs="ide,stable,validation,full" executor="ide" name="Generating">
+    
+    <testbag testattribs="generating" executor="ide" name="Generating">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/gui/javadoc/TestGenerateJavadoc.class"/>
             </patternset>
         </testset>
     </testbag>
-
+    
     <!-- ====================================== -->
     <!-- COMPILERS, EXECUTORS, RESULTPROCESSORS -->
     <!-- ====================================== -->
