@@ -90,8 +90,7 @@ public class SplashScreenCD extends ComponentDescriptor {
             // properties
             createPropertiesPresenter(),
             // code
-            createSetterPresenter (),
-            MidpCustomCodeSupport.createAddImportPresenter ()
+            createSetterPresenter ()
         );
     }
 

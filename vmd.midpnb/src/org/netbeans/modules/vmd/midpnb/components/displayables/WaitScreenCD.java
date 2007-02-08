@@ -19,18 +19,17 @@
 
 package org.netbeans.modules.vmd.midpnb.components.displayables;
 
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
-import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
-import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
-import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
-import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodeSupport;
 import org.openide.util.NbBundle;
 
 import java.util.Arrays;
@@ -87,8 +86,7 @@ public final class WaitScreenCD extends ComponentDescriptor {
             //properties
             createPropertiesPresenter(),
             // code
-            createSetterPresenter (),
-            MidpCustomCodeSupport.createAddImportPresenter ()
+            createSetterPresenter ()
         );
     }
 
