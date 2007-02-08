@@ -60,7 +60,7 @@ public class MultiPartHandler {
   private static final int DEFAULT_MAX_UPLOAD_SIZE = 1024 * 1024;  // 1Mb
 
   protected Hashtable<String,Vector<String>> formFields = new Hashtable<String,Vector<String>>();
-  protected Hashtable<String,MultipartHandler> uploadFiles = new Hashtable<String,MultipartHandler>();
+  protected Hashtable<String,OneUpload> uploadFiles = new Hashtable<String,OneUpload>();
 
   /** servlet request */
   private RequestFacade req;
@@ -82,7 +82,7 @@ public class MultiPartHandler {
 
   // i18n StringManager
   /*private static StringManager localStrings =
-	StringManager.getManager( MultipartHandler.class );*/
+	StringManager.getManager( OneUpload.class );*/
 
   /** 
    * Instantiate a new multipart handler with default
@@ -99,7 +99,7 @@ public class MultiPartHandler {
   }
 
   /**
-   * Instantiate a new MultipartHandler to handle the given request,
+   * Instantiate a new OneUpload to handle the given request,
    * saving any uploaded files to the given directory and limiting the 
    * upload size to maxUploadSize. 
    *
@@ -189,7 +189,7 @@ public class MultiPartHandler {
                 fileName = saveUploadFile(fileName, content);
 
                 uploadFiles.put(fieldName, 
-                    new MultipartHandler( 
+                    new OneUpload( 
                        uploadDir.toString(), 
                        fileName, 
                        content
@@ -198,7 +198,7 @@ public class MultiPartHandler {
             }
             else {
 		// FIXME: This does not call saveUploadFile(name);
-                uploadFiles.put(fieldName, new MultipartHandler(null, null, null));
+                uploadFiles.put(fieldName, new OneUpload(null, null, null));
             }
         }
         else {
@@ -588,7 +588,7 @@ public class MultiPartHandler {
    */
   public String getFileName(String name) {
     try {
-      MultipartHandler file = (MultipartHandler)uploadFiles.get(name);
+      OneUpload file = uploadFiles.get(name);
       return file.getFileName();  // may be null
     }
     catch (Exception e) {
@@ -603,7 +603,7 @@ public class MultiPartHandler {
    */
   public String getFileType(String name) {
     try {
-      MultipartHandler file = (MultipartHandler)uploadFiles.get(name);
+      OneUpload file = uploadFiles.get(name);
       return file.getFileType();  // may be null
     }
     catch (Exception e) {
@@ -618,7 +618,7 @@ public class MultiPartHandler {
    */
   public File getFile(String name) {
     try {
-      MultipartHandler file = (MultipartHandler)uploadFiles.get(name);
+      OneUpload file = uploadFiles.get(name);
       return file.getFile();  // may be null
     }
     catch (Exception e) {
@@ -636,235 +636,237 @@ public class MultiPartHandler {
     buf = null;
     uploadDir = null;
   }
-}
+  
+
+  /** A class to hold information about an uploaded file. */
+  private static class OneUpload {
+      
+      private String dir;
+      private String filename;
+      private String type;
+      
+      OneUpload(String dir, String filename, String type) {
+          this.dir = dir;
+          this.filename = filename;
+          this.type = type;
+      }
+      
+      public String getFileType() {
+          return type;
+      }
+      
+      public String getFileName() {
+          return filename;
+      }
+      
+      public File getFile() {
+          if (dir == null || filename == null) {
+              return null;
+          } else {
+              return new File(dir + File.separator + filename);
+          }
+      }
+  }
 
 /*
- * providing access to a single MIME part contained with in which ends with 
+ * providing access to a single MIME part contained with in which ends with
  * the boundary specified.  It uses buffering to provide maximum performance.
  *
  */
-class MultipartInputStream extends FilterInputStream {
-  /** boundary which "ends" the stream */
-  private String boundary;
-  
-  /** our buffer */
-  private byte [] buf = new byte[64*1024];  // 64k
-  
-  /** number of bytes we've read into the buffer */
-  private int count; 
-  
-  /** current position in the buffer */
-  private int pos;
-  
-  /** flag that indicates if we have encountered the boundary */
-  private boolean eof;
-  
-  /** associated facade */
-  private MultiPartHandler.InputFacade facade;
-
-  // i18n StringManager
-  /*private static StringManager localStrings =
-	StringManager.getManager( MultipartInputStream.class );*/
-    
-  /**
-   * Instantiate a MultipartInputStream which stops at the specified
-   * boundary from an underlying ServletInputStream.
-   * 
-   */
-  MultipartInputStream(MultiPartHandler.InputFacade in, 
-                  String boundary) throws IOException {
-    super(in.getInputStream());
-    this.boundary = boundary;
-    this.facade = in;
-  }
-
-  /**
-   * Fill up our buffer from the underlying input stream, and check for the 
-   * boundary that signifies end-of-file. Users of this method must ensure 
-   * that they leave exactly 2 characters in the buffer before calling this 
-   * method (except the first time), so that we may only use these characters
-   * if a boundary is not found in the first line read.
-   * 
-   * @exception  IOException  if an I/O error occurs.
-   */
-  private void fill() throws IOException
-  {
-    if (eof)
-      return;
-    
-    // as long as we are not just starting up
-    if (count > 0)
-    {
-      // if the caller left the requisite amount spare in the buffer
-      if (count - pos == 2) {
-        // copy it back to the start of the buffer
-        System.arraycopy(buf, pos, buf, 0, count - pos);
-        count -= pos;
-        pos = 0;
-      } else {
-        // should never happen, but just in case
-		//String msg = localStrings.getString( "admin.server.gui.servlet.fill_detected_illegal_buffer_state" );
-        throw new IllegalStateException( "should never happen" );
-      }
-    }
-    
-    // try and fill the entire buffer, starting at count, line by line
-    // but never read so close to the end that we might split a boundary
-    int read = 0;
-    int maxRead = buf.length - boundary.length();
-    while (count < maxRead) {
-      // read a line
-      read = facade.readLine(buf, count, buf.length - count);
-      // check for eof and boundary
-      if (read == -1) {
-		//String msg = localStrings.getString( "admin.server.gui.servlet.unexpected_end_part" );
-        throw new IOException( "read is -1" );
-      } else {
-        if (read >= boundary.length()) {
-          eof = true;
-          for (int i=0; i < boundary.length(); i++) {
-            if (boundary.charAt(i) != buf[count + i]) {
-              // Not the boundary!
-              eof = false;
-              break;
-            }
-          }
-          if (eof) {
-            break;
-          }
-        }
-      }
-      // success
-      count += read;
-    }
-  }
-  
-  /**
-   * See the general contract of the read method of InputStream.
-   * Returns -1 (end of file) when the MIME boundary of this part is encountered.
-   *
-   * throws IOException  if an I/O error occurs.
-   */
-  public int read() throws IOException {
-    if (count - pos <= 2) {
-      fill();
-      if (count - pos <= 2) {
-        return -1;
-      }
-    }
-    return buf[pos++] & 0xff;
-  }
-
-  /**
-   * See the general contract of the read method of InputStream.
-   *
-   * Returns -1 (end of file) when the MIME boundary of this part 
-   * is encountered.
-   *
-   * throws IOException  if an I/O error occurs.
-   */
-  public int read(byte b[]) throws IOException {
-    return read(b, 0, b.length);
-  }
-
-  /**
-   * See the general contract of the read method of InputStream.
-   * 
-   * Returns -1 (end of file) when the MIME boundary of this part is encountered.
-   *
-   * throws IOException  if an I/O error occurs.
-   */
-  public int read(byte b[], int off, int len) throws IOException
-  {
-    int total = 0;
-    if (len == 0) {
-      return 0;
-    }
-
-    int avail = count - pos - 2;
-    if (avail <= 0) {
-      fill();
-      avail = count - pos - 2;
-      if(avail <= 0) {
-        return -1;
-      }
-    }
-    int copy = Math.min(len, avail);
-    System.arraycopy(buf, pos, b, off, copy);
-    pos += copy;
-    total += copy;
+  private static class MultipartInputStream extends FilterInputStream {
+      /** boundary which "ends" the stream */
+      private String boundary;
       
-    while (total < len) {
-      fill();
-      avail = count - pos - 2;
-      if(avail <= 0) {
-        return total;
+      /** our buffer */
+      private byte [] buf = new byte[64*1024];  // 64k
+      
+      /** number of bytes we've read into the buffer */
+      private int count;
+      
+      /** current position in the buffer */
+      private int pos;
+      
+      /** flag that indicates if we have encountered the boundary */
+      private boolean eof;
+      
+      /** associated facade */
+      private MultiPartHandler.InputFacade facade;
+      
+      // i18n StringManager
+  /*private static StringManager localStrings =
+        StringManager.getManager( MultipartInputStream.class );*/
+      
+      /**
+       * Instantiate a MultipartInputStream which stops at the specified
+       * boundary from an underlying ServletInputStream.
+       *
+       */
+      MultipartInputStream(MultiPartHandler.InputFacade in,
+          String boundary) throws IOException {
+          super(in.getInputStream());
+          this.boundary = boundary;
+          this.facade = in;
       }
-      copy = Math.min(len - total, avail);
-      System.arraycopy(buf, pos, b, off + total, copy);
-      pos += copy;
-      total += copy;
-    }
-    return total;
+      
+      /**
+       * Fill up our buffer from the underlying input stream, and check for the
+       * boundary that signifies end-of-file. Users of this method must ensure
+       * that they leave exactly 2 characters in the buffer before calling this
+       * method (except the first time), so that we may only use these characters
+       * if a boundary is not found in the first line read.
+       *
+       * @exception  IOException  if an I/O error occurs.
+       */
+      private void fill() throws IOException
+{
+          if (eof)
+              return;
+          
+          // as long as we are not just starting up
+          if (count > 0)
+{
+              // if the caller left the requisite amount spare in the buffer
+              if (count - pos == 2) {
+                  // copy it back to the start of the buffer
+                  System.arraycopy(buf, pos, buf, 0, count - pos);
+                  count -= pos;
+                  pos = 0;
+              } else {
+                  // should never happen, but just in case
+                  //String msg = localStrings.getString( "admin.server.gui.servlet.fill_detected_illegal_buffer_state" );
+                  throw new IllegalStateException( "should never happen" );
+              }
+          }
+          
+          // try and fill the entire buffer, starting at count, line by line
+          // but never read so close to the end that we might split a boundary
+          int read = 0;
+          int maxRead = buf.length - boundary.length();
+          while (count < maxRead) {
+              // read a line
+              read = facade.readLine(buf, count, buf.length - count);
+              // check for eof and boundary
+              if (read == -1) {
+                  //String msg = localStrings.getString( "admin.server.gui.servlet.unexpected_end_part" );
+                  throw new IOException( "read is -1" );
+              } else {
+                  if (read >= boundary.length()) {
+                      eof = true;
+                      for (int i=0; i < boundary.length(); i++) {
+                          if (boundary.charAt(i) != buf[count + i]) {
+                              // Not the boundary!
+                              eof = false;
+                              break;
+                          }
+                      }
+                      if (eof) {
+                          break;
+                      }
+                  }
+              }
+              // success
+              count += read;
+          }
+      }
+      
+      /**
+       * See the general contract of the read method of InputStream.
+       * Returns -1 (end of file) when the MIME boundary of this part is encountered.
+       *
+       * throws IOException  if an I/O error occurs.
+       */
+      public int read() throws IOException {
+          if (count - pos <= 2) {
+              fill();
+              if (count - pos <= 2) {
+                  return -1;
+              }
+          }
+          return buf[pos++] & 0xff;
+      }
+      
+      /**
+       * See the general contract of the read method of InputStream.
+       *
+       * Returns -1 (end of file) when the MIME boundary of this part
+       * is encountered.
+       *
+       * throws IOException  if an I/O error occurs.
+       */
+      public int read(byte b[]) throws IOException {
+          return read(b, 0, b.length);
+      }
+      
+      /**
+       * See the general contract of the read method of InputStream.
+       *
+       * Returns -1 (end of file) when the MIME boundary of this part is encountered.
+       *
+       * throws IOException  if an I/O error occurs.
+       */
+      public int read(byte b[], int off, int len) throws IOException
+{
+          int total = 0;
+          if (len == 0) {
+              return 0;
+          }
+          
+          int avail = count - pos - 2;
+          if (avail <= 0) {
+              fill();
+              avail = count - pos - 2;
+              if(avail <= 0) {
+                  return -1;
+              }
+          }
+          int copy = Math.min(len, avail);
+          System.arraycopy(buf, pos, b, off, copy);
+          pos += copy;
+          total += copy;
+          
+          while (total < len) {
+              fill();
+              avail = count - pos - 2;
+              if(avail <= 0) {
+                  return total;
+              }
+              copy = Math.min(len - total, avail);
+              System.arraycopy(buf, pos, b, off + total, copy);
+              pos += copy;
+              total += copy;
+          }
+          return total;
+      }
+      
+      /**
+       * Returns the number of bytes that can be read from this input stream
+       * without blocking.  This is a standard InputStream idiom
+       * to deal with buffering gracefully, and is not same as the length of the
+       * part arriving in this stream.
+       *
+       * throws IOException  if an I/O error occurs.
+       */
+      public int available() throws IOException {
+          int avail = (count - pos - 2) + in.available();
+          // Never return a negative value
+          return (avail < 0 ? 0 : avail);
+      }
+      
+      /**
+       * Closes this input stream and releases any system resources
+       * associated with the stream. This method will read any unread data
+       * in the MIME part so that the next part starts an an expected place in
+       * the parent InputStream.
+       *
+       * throws IOException  if an I/O error occurs.
+       */
+      public void close() throws IOException {
+          if (!eof) {
+              while (read(buf, 0, buf.length) != -1)
+                  ; // do nothing
+          }
+      }
   }
-
-  /**
-   * Returns the number of bytes that can be read from this input stream
-   * without blocking.  This is a standard InputStream idiom
-   * to deal with buffering gracefully, and is not same as the length of the
-   * part arriving in this stream.
-   *
-   * throws IOException  if an I/O error occurs.
-   */
-  public int available() throws IOException {
-    int avail = (count - pos - 2) + in.available();
-    // Never return a negative value
-    return (avail < 0 ? 0 : avail);
-  }
-
-  /**
-   * Closes this input stream and releases any system resources 
-   * associated with the stream. This method will read any unread data 
-   * in the MIME part so that the next part starts an an expected place in 
-   * the parent InputStream.
-   *
-   * throws IOException  if an I/O error occurs.
-   */
-  public void close() throws IOException {
-    if (!eof) {
-      while (read(buf, 0, buf.length) != -1)
-        ; // do nothing
-    }
-  }
+  
 }
 
-/** A class to hold information about an uploaded file. */
-class MultipartHandler {
-
-  private String dir;
-  private String filename;
-  private String type;
-
-  MultipartHandler(String dir, String filename, String type) {
-    this.dir = dir;
-    this.filename = filename;
-    this.type = type;
-  }
-
-  public String getFileType() {
-    return type;
-  }
-
-  public String getFileName() {
-    return filename;
-  }
-
-  public File getFile() {
-    if (dir == null || filename == null) {
-      return null;
-    }
-    else {
-      return new File(dir + File.separator + filename);
-    }
-  }
-}
