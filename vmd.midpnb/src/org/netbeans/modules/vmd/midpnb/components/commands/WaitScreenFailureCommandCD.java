@@ -27,7 +27,6 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
-import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodeSupport;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -30,6 +30,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.openide.util.NbBundle;
 
 import java.util.Arrays;
@@ -74,10 +75,10 @@ public final class WaitScreenCD extends ComponentDescriptor {
 
     private Presenter createSetterPresenter () {
         return new CodeSetterPresenter ()
-            .addParameters (AbstractInfoScreenCode.createDisplayParameter ())
+            .addParameters (MidpCustomCodePresenterSupport.createDisplayParameter ())
             .addParameters (MidpParameter.create (PROP_TASK))
-            .addParameters (AbstractInfoScreenCode.createWaitScreenCommandParameter ())
-            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (AbstractInfoScreenCode.PARAM_DISPLAY))
+            .addParameters (MidpCustomCodePresenterSupport.createWaitScreenCommandParameter ())
+            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY))
             .addSetters (MidpSetter.createSetter ("setTask", MidpVersionable.MIDP_2).addParameters (PROP_TASK));
     }
 

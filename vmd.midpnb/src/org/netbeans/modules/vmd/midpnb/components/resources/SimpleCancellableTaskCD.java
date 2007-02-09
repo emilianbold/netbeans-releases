@@ -35,7 +35,6 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.properteditors.PropertyEditorExecutableUserCode;
-import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodeSupport;
 
 import java.util.Arrays;
 import java.util.List;
@@ -91,7 +90,7 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
             createPropertiesPresenter(),
             // setter
             createSetterPresenter (),
-            MidpCustomCodeSupport.createAddImportPresenter ()
+            MidpCustomCodePresenterSupport.createAddImportPresenter ()
         );
     }
 

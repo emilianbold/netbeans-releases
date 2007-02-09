@@ -35,8 +35,7 @@ import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodeSupport;
-import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCode;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.openide.util.NbBundle;
@@ -101,9 +100,9 @@ public class TableItemCD extends ComponentDescriptor {
 
     private Presenter createSetterPresenter () {
         return new CodeSetterPresenter ()
-            .addParameters (AbstractInfoScreenCode.createDisplayParameter ())
+            .addParameters (MidpCustomCodePresenterSupport.createDisplayParameter ())
             .addParameters (MidpParameter.create (PROP_TITLE, PROP_MODEL, PROP_BORDERS, PROP_TITLE_FONT, PROP_HEADERS_FONT, PROP_VALUES_FONT))
-            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (AbstractInfoScreenCode.PARAM_DISPLAY, ItemCD.PROP_LABEL))
+            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY, ItemCD.PROP_LABEL))
             .addSetters (MidpSetter.createSetter ("setTitle", MidpVersionable.MIDP_2).addParameters (PROP_TITLE))
             .addSetters (MidpSetter.createSetter ("setModel", MidpVersionable.MIDP_2).addParameters (PROP_MODEL))
             .addSetters (MidpSetter.createSetter ("setBorders", MidpVersionable.MIDP_2).addParameters (PROP_BORDERS))
@@ -118,7 +117,7 @@ public class TableItemCD extends ComponentDescriptor {
             createPropertiesPresenter(),
             // code
             createSetterPresenter (),
-            MidpCustomCodeSupport.createAddImportPresenter ()
+            MidpCustomCodePresenterSupport.createAddImportPresenter ()
         );
     }
     

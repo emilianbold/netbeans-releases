@@ -19,17 +19,17 @@
 
 package org.netbeans.modules.vmd.midpnb.components.displayables;
 
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
-import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
-import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
-import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodeSupport;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 
 import java.util.Arrays;
 import java.util.List;
@@ -63,19 +63,8 @@ public class SplashScreenCD extends ComponentDescriptor {
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
             new PropertyDescriptor(PROP_TIMEOUT, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (5000), false, true, MidpVersionable.MIDP_2),
-            new PropertyDescriptor(PROP_ALLOW_TIMEOUT_INTERRUPT, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(Boolean.FALSE), false, false, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_ALLOW_TIMEOUT_INTERRUPT, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(true), false, true, MidpVersionable.MIDP_2)
         );
-    }
-
-    private Presenter createSetterPresenter () {
-        return new CodeSetterPresenter ()
-            .addParameters (AbstractInfoScreenCode.createDisplayParameter ())
-            .addParameters (AbstractInfoScreenCode.createTimeoutParameter ())
-            .addParameters (MidpParameter.create (PROP_ALLOW_TIMEOUT_INTERRUPT))
-            .addParameters (AbstractInfoScreenCode.createSplashScreenCommandParameter ())
-            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (AbstractInfoScreenCode.PARAM_DISPLAY))
-            .addSetters (MidpSetter.createSetter ("setTimeout", MidpVersionable.MIDP_2).addParameters (AbstractInfoScreenCode.PARAM_TIMEOUT))
-            .addSetters (MidpSetter.createSetter ("setAllowTimeoutInterrupt", MidpVersionable.MIDP_2).addParameters (PROP_ALLOW_TIMEOUT_INTERRUPT));
     }
 
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
@@ -84,7 +73,18 @@ public class SplashScreenCD extends ComponentDescriptor {
                    .addProperty("Timeout", Integer.class, PROP_TIMEOUT)
                    .addProperty("Allow Timeout Interrupt", Boolean.class, PROP_ALLOW_TIMEOUT_INTERRUPT);
     }
-    
+
+    private Presenter createSetterPresenter () {
+        return new CodeSetterPresenter ()
+            .addParameters (MidpCustomCodePresenterSupport.createDisplayParameter ())
+            .addParameters (MidpCustomCodePresenterSupport.createTimeoutParameter ())
+            .addParameters (MidpParameter.create (PROP_ALLOW_TIMEOUT_INTERRUPT))
+            .addParameters (MidpCustomCodePresenterSupport.createSplashScreenCommandParameter ())
+            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY))
+            .addSetters (MidpSetter.createSetter ("setTimeout", MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_TIMEOUT))
+            .addSetters (MidpSetter.createSetter ("setAllowTimeoutInterrupt", MidpVersionable.MIDP_2).addParameters (PROP_ALLOW_TIMEOUT_INTERRUPT));
+    }
+
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // properties

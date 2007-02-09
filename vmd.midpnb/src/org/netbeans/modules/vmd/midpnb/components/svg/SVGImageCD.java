@@ -19,17 +19,12 @@
 
 package org.netbeans.modules.vmd.midpnb.components.svg;
 
+import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+
 import java.util.Arrays;
 import java.util.List;
-
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 
 /**
  *
@@ -40,7 +35,7 @@ public class SVGImageCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.m2g.SVGImage"); // NOI18N
 
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(ImageCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
     }
 
     public VersionDescriptor getVersionDescriptor() {

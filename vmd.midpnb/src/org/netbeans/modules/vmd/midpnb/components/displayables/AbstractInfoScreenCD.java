@@ -36,7 +36,7 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodeSupport;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 
 import java.util.Arrays;
 import java.util.List;
@@ -100,7 +100,7 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
             createPropertiesPresenter(),
             // code
             createSetterPresenter (),
-            MidpCustomCodeSupport.createAddImportPresenter ()
+            MidpCustomCodePresenterSupport.createAddImportPresenter ()
         );
     }
 
