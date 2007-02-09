@@ -20,9 +20,7 @@
 package org.netbeans.modules.html.editor.options;
 
 import java.beans.*;
-import java.awt.Image;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import org.netbeans.modules.editor.options.BaseOptionsBeanInfo;
 import org.openide.util.NbBundle;
 
@@ -32,11 +30,6 @@ import org.openide.util.NbBundle;
 * @version 1.00
 */
 public class HTMLOptionsBeanInfo extends BaseOptionsBeanInfo {
-
-    /** Propertydescriptors */
-    private static PropertyDescriptor[] descriptors;
-    /** Additional beaninfo */
-    private static BeanInfo[] additional;
 
     private static final String[] EXPERT_PROP_NAMES = new String[] {
         HTMLOptions.COMPLETION_INSTANT_SUBSTITUTION_PROP,

@@ -20,9 +20,7 @@
 package org.netbeans.modules.java.editor.options;
 
 import java.beans.*;
-import java.awt.Image;
 import java.util.MissingResourceException;
-import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.BaseOptionsBeanInfo;
 import org.openide.util.NbBundle;
@@ -35,11 +33,6 @@ import org.openide.util.NbBundle;
 * @version 1.00
 */
 public class JavaOptionsBeanInfo extends BaseOptionsBeanInfo {
-
-    /** Propertydescriptors */
-    private static PropertyDescriptor[] descriptors;
-    /** Additional beaninfo */
-    private static BeanInfo[] additional;
 
     private static final String[] EXPERT_PROP_NAMES = new String[] {
         JavaOptions.JAVADOC_BGCOLOR,
