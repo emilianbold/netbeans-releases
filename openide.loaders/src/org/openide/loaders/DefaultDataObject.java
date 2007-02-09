@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.CloseCookie;
@@ -36,7 +37,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 
 /** An implementation of a data object which consumes file objects not recognized by any other loaders.
 */
@@ -208,7 +208,7 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
                 getCookieSet().add(support);
                 return getCookieSet ().getCookie(c);
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.INFO, "Cannot read " + getPrimaryEntry(), ex); // NOI18N
             }
         }
         return null;
