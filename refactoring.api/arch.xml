@@ -296,13 +296,32 @@ public class MyProvider extends ActionsImplementationProvider {
 And of course your own RefactoringPlugin and RefactoringPluginFactory see 
 <i><b>Refactoring SPI Example 1</b></i> and
 <i><b>Refactoring SPI Example 2</b></i>
+<br></br>
+<i><b>Refactoring SPI Example 3</b></i>
+Module wants to implement it's own refactoring preview tree:
+
+Register your own TreeElementFactoryImplementation into META-INF/services
+if you want to build your own RefactoringPreview tree.
+ 
+For instance Java Refactoring understand Java - specific objects e.g. 
+Projects, Groups, Methods etc.
+
+<pre>
+public TreeElement getTreeElement(Object o) {
+.
+.
+if (o instanceof SourceGroup) {
+  return new SourceGroupTreeElement((SourceGroup)o);
+} else if (o instanceof SomethingFromJava) {
+   return new SomethingFromJavaTreeElement((SomethingFromJava) o);
+}
+</pre>
+TreeElement is then displayed in refactoring preview panel.
 
 <br></br>
-Other usecases are docummented in javadoc.
+<br></br>
+<br></br>Other usecases are docummented in javadoc.
 <ul>
-    <li>Module wants to implement it's own refactoring preview tree. <br></br>
-        See <a href="org/netbeans/modules/refactoring/spi/ui/TreeElementFactoryImplementation.html">TreeElementFactoryImplementation</a>
-    </li>
     <li>Module wants to add common Refactoring Action into popup. <br></br>
         See <a href="org/netbeans/modules/refactoring/api/ui/RefactoringActionsFactory.html">RefactoringActionsFactory</a>
     </li>
