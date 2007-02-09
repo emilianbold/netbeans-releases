@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -75,6 +76,8 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                 return Collections.emptySet();
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
+            if (typeElement.getKind() != ElementKind.CLASS)
+                return Collections.emptySet();
             List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
             for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements()))
                 descriptions.add(ElementNode.Description.create(variableElement, null));

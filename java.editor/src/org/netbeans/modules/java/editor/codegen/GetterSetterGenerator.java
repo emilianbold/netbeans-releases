@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -68,6 +69,8 @@ public class GetterSetterGenerator implements CodeGenerator {
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             Elements elements = controller.getElements();
             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
+            if (typeElement.getKind() != ElementKind.CLASS)
+                return ret;
             Map<String, List<ExecutableElement>> methods = new HashMap<String, List<ExecutableElement>>();
             for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(typeElement))) {
                 List<ExecutableElement> l = methods.get(method.getSimpleName().toString());

@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -81,8 +82,11 @@ public class DelegateMethodGenerator implements CodeGenerator {
             if (Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) == null)
                 return Collections.emptySet();
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-            Trees trees = controller.getTrees();
             Elements elements = controller.getElements();
+            TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
+            if (typeElement.getKind() != ElementKind.CLASS)
+                return Collections.emptySet();
+            Trees trees = controller.getTrees();
             Scope scope = trees.getScope(path);
             Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<Element, List<ElementNode.Description>>();
             TypeElement cls;
