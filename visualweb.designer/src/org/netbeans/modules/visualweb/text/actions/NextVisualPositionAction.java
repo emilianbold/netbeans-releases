@@ -24,12 +24,12 @@
  */
 package org.netbeans.modules.visualweb.text.actions;
 
+import java.util.List;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.designer.GridHandler;
 import org.netbeans.modules.visualweb.designer.SelectionManager;
 import org.netbeans.modules.visualweb.designer.WebForm;
-import com.sun.rave.designtime.DesignBean;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -137,16 +137,16 @@ public class NextVisualPositionAction extends TextAction {
         }
 
         int numSelected = sm.getNumSelected();
-        ArrayList beans = new ArrayList(numSelected);
-        ArrayList rectangles = new ArrayList(numSelected);
-        ArrayList boxes = new ArrayList(numSelected);
+//        ArrayList beans = new ArrayList(numSelected);
+        List<Rectangle> rectangles = new ArrayList<Rectangle>(numSelected);
+        List<CssBox> boxes = new ArrayList<CssBox>(numSelected);
 //        Iterator it = sm.iterator();
 ////        ModelViewMapper mapper = webform.getMapper();
 //
 //        while (it.hasNext()) {
 //            DesignBean bean = (DesignBean)it.next();
         for (Element componentRootElement : sm.getSelectedComponentRootElements()) {
-            DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//            DesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 //            CssBox box = mapper.findBox(bean);
             CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 
@@ -158,7 +158,7 @@ public class NextVisualPositionAction extends TextAction {
                 continue;
             }
 
-            beans.add(bean);
+//            beans.add(bean);
 
             //elements.add(box.getElement());
             boxes.add(box);
@@ -217,7 +217,7 @@ public class NextVisualPositionAction extends TextAction {
             break;
         }
 
-        gm.move(webform.getPane(), beans, rectangles, boxes, Position.NONE, offsetX, offsetY,
+        gm.move(webform.getPane(), /*beans,*/ rectangles, boxes, Position.NONE, offsetX, offsetY,
             snapDisabled);
     }
 }

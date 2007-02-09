@@ -327,7 +327,7 @@ public class Dragger extends Interaction implements KeyListener {
                     }
 
                     if ((pos != Position.NONE) || (grid && hasMoved(prevX, prevY))) {
-                        gm.move(pane, beans, selections, boxes, pos, prevX, prevY,
+                        gm.move(pane, /*beans,*/ selections, boxes, pos, prevX, prevY,
                             action == DRAG_FREE);
                     } // else: didn't really move ...
                 }
