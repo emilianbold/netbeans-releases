@@ -278,11 +278,11 @@ public abstract class ContextAction extends NodeAction {
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
-
+    
     protected boolean asynchronous() {
         return false;
     }
-
+    
     protected RequestProcessor createRequestProcessor(Node[] nodes) {
         SVNUrl repository = getSvnUrl(nodes);
         return Subversion.getInstance().getRequestProcessor(repository);

@@ -23,6 +23,7 @@ import java.io.*;
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -41,9 +42,11 @@ public class ResolveConflictsAction extends ContextAction {
         return "ResolveConflicts";  // NOI18N
     }
 
-    protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_VERSIONED_CONFLICT;
-    }
+    
+    protected boolean enable(Node[] nodes) {
+        Context ctx = SvnUtils.getCurrentContext(nodes);
+        return SvnUtils.getModifiedFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT).length > 0; 
+    }        
 
     protected void performContextAction(Node[] nodes) {
         Context ctx = getContext(nodes);

@@ -115,7 +115,7 @@ public class ExportDiffAction extends ContextAction {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
         } else {
             Context context = getContext(nodes);
-            File [] files = DiffAction.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+            File [] files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
             noop = files.length == 0;
         }
         if (noop) {
@@ -216,7 +216,7 @@ public class ExportDiffAction extends ContextAction {
                 root = getCommonParent(setupFiles.toArray(new File[setupFiles.size()]));
             } else {
                 Context context = getContext(nodes);
-                File [] files = DiffAction.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+                File [] files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
                 root = getCommonParent(context.getRootFiles());
                 setups = new ArrayList<Setup>(files.length);
                 for (int i = 0; i < files.length; i++) {

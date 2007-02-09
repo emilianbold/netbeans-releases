@@ -635,6 +635,38 @@ public class SvnUtils {
     }
     
     /**
+     * Utility method that returns all non-excluded modified files that are
+     * under given roots (folders) and have one of specified statuses.
+     *
+     * @param context context to search
+     * @param includeStatus bit mask of file statuses to include in result
+     * @return File [] array of Files having specified status
+     */
+    public static File [] getModifiedFiles(Context context, int includeStatus) {
+        File[] all = Subversion.getInstance().getStatusCache().listFiles(context, includeStatus);
+        List<File> files = new ArrayList<File>();
+        for (int i = 0; i < all.length; i++) {
+            File file = all[i];
+            String path = file.getAbsolutePath();
+            if (SvnModuleConfig.getDefault().isExcludedFromCommit(path) == false) {
+                files.add(file);
+            }
+        }
+        
+        // ensure that command roots (files that were explicitly selected by user) are included in Diff
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        File [] rootFiles = context.getRootFiles();
+        for (int i = 0; i < rootFiles.length; i++) {
+            File file = rootFiles[i];
+            if (file.isFile() && (cache.getStatus(file).getStatus() & includeStatus) != 0 && !files.contains(file)) {
+                files.add(file);
+            }
+        }
+        return files.toArray(new File[files.size()]);
+    }
+    
+    
+    /**
      * Checks file location.
      *
      * @param file file to check
