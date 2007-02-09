@@ -18,9 +18,11 @@
  */
 package org.netbeans.modules.localhistory.ui.view;
 
+import org.netbeans.modules.localhistory.ui.view.LocalHistoryDiffView;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.Serializable;
+import javax.swing.JPanel;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -31,7 +33,7 @@ import org.openide.windows.TopComponent;
  */
 final public class LocalHistoryTopComponent extends TopComponent {
 
-    private LocalHistoryView lhv;
+    private LocalHistoryDiffView lhv;
     private static LocalHistoryTopComponent instance;
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
@@ -52,20 +54,24 @@ final public class LocalHistoryTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        splitPane = new javax.swing.JSplitPane();
+
         setLayout(new java.awt.BorderLayout());
+
+        splitPane.setDividerLocation(150);
+        splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        splitPane.setOneTouchExpandable(true);
+        add(splitPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JSplitPane splitPane;
     // End of variables declaration//GEN-END:variables
 
-    public void init(File[] files) {
-        if(lhv != null) {
-            remove(lhv.getPanel());
-            lhv.close();
-        }
-        lhv = new LocalHistoryView(files, this);
-        add(lhv.getPanel(), BorderLayout.CENTER);
+    public void init(JPanel diffPanel, JPanel tablePanel) {                
+        splitPane.setTopComponent(tablePanel);   
+        splitPane.setBottomComponent(diffPanel);                   
     }
     
     /**
@@ -90,7 +96,7 @@ final public class LocalHistoryTopComponent extends TopComponent {
 
     public void componentClosed() {
         super.componentClosed();
-        lhv.close();
+        //lhv.close();
     }
 
     /** replaces this in object stream */

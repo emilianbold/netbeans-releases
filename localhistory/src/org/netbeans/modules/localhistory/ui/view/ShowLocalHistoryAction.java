@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.localhistory.ui.view;
 
+import org.netbeans.modules.localhistory.ui.view.LocalHistoryDiffView;
 import java.io.File;
 import java.util.Set;
 import javax.swing.SwingUtilities;
@@ -51,8 +52,28 @@ public class ShowLocalHistoryAction extends NodeAction {
                 LocalHistoryTopComponent tc = new LocalHistoryTopComponent();
                 tc.setName(NbBundle.getMessage(this.getClass(), "CTL_LocalHistoryTopComponent", activatedNodes[0].getDisplayName()));
                 tc.open();
-                tc.requestActive();
-                tc.init(rootSet.toArray(new File[rootSet.size()]));
+                tc.requestActive();                                
+        
+//                if(lhv != null) {
+//                    remove(lhv.getPanel());
+//                    lhv.close();
+//                }
+//                lhv = new LocalHistoryDiffView(files, this);
+                
+                File[] files = rootSet.toArray(new File[rootSet.size()]);
+                if(files[0].isFile()) {
+                    LocalHistoryFileView fileView = new LocalHistoryFileView(files, tc);                
+                    LocalHistoryDiffView diffView = new LocalHistoryDiffView(); 
+                    fileView.getExplorerManager().addPropertyChangeListener(diffView); // XXX hm                        
+                    tc.init(diffView.getPanel(), fileView.getPanel());
+                    // lhv.close(); XXX
+                } else {
+                    LocalHistoryFolderView folderView = new LocalHistoryFolderView(files, tc);                
+                    LocalHistoryDiffView diffView = new LocalHistoryDiffView(); 
+                    folderView.getExplorerManager().addPropertyChangeListener(diffView); // XXX hm                        
+                    tc.init(diffView.getPanel(), folderView.getPanel());                    
+                    // lhv.close(); XXX                    
+                }
             }
         });
         
@@ -67,12 +88,23 @@ public class ShowLocalHistoryAction extends NodeAction {
         if(rootSet == null) { 
             return false;
         }                        
+        boolean files = false;
+        boolean folders = false;
         for (File file : rootSet) {            
-            if(file != null && !file.isFile()) {
-                return false;
+            if(file.isFile()) {
+                if(folders) {
+                    return false;
+                }
+                files = true;
             }
+            if(!file.isFile()) {
+                if(files) {
+                    return false;
+                }
+                folders = true;
+            }                        
         }        
-        return true;                
+        return files && !folders || !files && folders;                
     }
     
     public String getName() {
