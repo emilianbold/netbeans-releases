@@ -23,6 +23,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -68,6 +69,8 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
@@ -97,6 +100,7 @@ public final class OpenProjectList {
     
     /** List which holds the open projects */
     private List<Project> openProjects;
+    private HashMap<ModuleInfo, List<Project>> openProjectsModuleInfos;
     
     /** Main project */
     private Project mainProject;
@@ -112,9 +116,18 @@ public final class OpenProjectList {
     
     private ProjectDeletionListener deleteListener = new ProjectDeletionListener();
     
+    private PropertyChangeListener infoListener;
     
     OpenProjectList() {
         openProjects = new ArrayList<Project>();
+        openProjectsModuleInfos = new HashMap<ModuleInfo, List<Project>>();
+        infoListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evn) {
+                if (ModuleInfo.PROP_ENABLED.equals(evn.getPropertyName())) {
+                    checkModuleInfo((ModuleInfo)evn.getSource());
+                }
+            }
+        };
         pchSupport = new PropertyChangeSupport( this );
         recentProjects = new RecentProjectList(10); // #47134
     }
@@ -136,6 +149,7 @@ public final class OpenProjectList {
                 INSTANCE.recentProjects.load();
                 for( Iterator it = INSTANCE.openProjects.iterator(); it.hasNext(); ) {
                     Project p = (Project)it.next();
+                    INSTANCE.addModuleInfo(p);
                     // Set main project
                     try {
                         if ( mainProjectURL != null && 
@@ -356,6 +370,8 @@ public final class OpenProjectList {
                     mainClosed = isMainProject( projects[i] );
                 }
                 openProjects.remove( projects[i] );
+                removeModuleInfo(projects[i]);
+                
                 projects[i].getProjectDirectory().removeFileChangeListener(deleteListener);
                 
                 recentProjects.add( projects[i] );
@@ -599,9 +615,11 @@ public final class OpenProjectList {
                 ErrorManager.getDefault().notify(e);
                 // Do not try to call its close hook if its open hook already failed:
                 INSTANCE.openProjects.remove(p);
+                INSTANCE.removeModuleInfo(p);
             } catch (Error e) {
                 ErrorManager.getDefault().notify(e);
                 INSTANCE.openProjects.remove(p);
+                INSTANCE.removeModuleInfo(p);
             }
         }
     }
@@ -628,6 +646,8 @@ public final class OpenProjectList {
                 return false;
             }
             openProjects.add(p);
+            addModuleInfo(p);
+            
             p.getProjectDirectory().addFileChangeListener(deleteListener);
             recentProjectsChanged = recentProjects.remove(p);
         }
@@ -1078,4 +1098,60 @@ public final class OpenProjectList {
     }
     
     
-}
+    private static ModuleInfo findModuleForProject(Project prj) {
+        Collection<? extends ModuleInfo> instances = Lookup.getDefault().lookupAll(ModuleInfo.class);
+        ModuleInfo info = null;
+        for (ModuleInfo cur : instances) {
+            if (!cur.isEnabled()) {
+                continue;
+            }
+            if (cur.getClassLoader() == prj.getClass().getClassLoader()) {
+                info = cur;
+                break;
+            }
+        }
+        return info;
+    }
+    
+    private void addModuleInfo(Project prj) {
+        ModuleInfo info = findModuleForProject(prj);
+        if (info != null) {
+            // is null in tests..
+            if (!openProjectsModuleInfos.containsKey(info)) {
+                openProjectsModuleInfos.put(info, new ArrayList<Project>());
+                info.addPropertyChangeListener(infoListener);
+            }
+            openProjectsModuleInfos.get(info).add(prj);
+        }
+    }
+    
+    private void removeModuleInfo(Project prj) {
+        ModuleInfo info = findModuleForProject(prj);
+        removeModuleInfo(prj, info);
+    }
+    
+    private void removeModuleInfo(Project prj, ModuleInfo info) {
+        // info can be null in case we are closing a project from disabled module
+        if (info != null) {
+            openProjectsModuleInfos.get(info).remove(prj);
+            if (openProjectsModuleInfos.get(info).size() == 0) {
+                info.removePropertyChangeListener(infoListener);
+                openProjectsModuleInfos.remove(info);
+            }
+        }
+    }
+
+    private void checkModuleInfo(ModuleInfo info) {
+        if (info.isEnabled())  {
+            return;
+        }
+        Collection<Project> toRemove = new ArrayList<Project>(openProjectsModuleInfos.get(info));
+        if (toRemove != null && toRemove.size() > 0) {
+            for (Project prj : toRemove) {
+                removeModuleInfo(prj, info);
+            }
+            close(toRemove.toArray(new Project[toRemove.size()]), false);
+        }
+    }
+    
+}    

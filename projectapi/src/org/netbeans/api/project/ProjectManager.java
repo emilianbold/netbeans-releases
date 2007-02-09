@@ -42,6 +42,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.Union2;
+import org.openide.util.WeakSet;
 
 /**
  * Manages loaded projects.
@@ -132,6 +133,8 @@ public final class ProjectManager {
      * Set of modified projects (subset of loaded projects).
      */
     private final Set<Project> modifiedProjects = new HashSet<Project>();
+    
+    private final Set<Project> removedProjects = new WeakSet<Project>();
     
     /**
      * Mapping from projects to the factories that created them.
@@ -493,6 +496,7 @@ public final class ProjectManager {
                     dir2Proj.remove(p.getProjectDirectory());
                     proj2Factory.remove(p);
                     modifiedProjects.remove(p);
+                    removedProjects.add(p);
                     return null;
                 }
             });
@@ -552,6 +556,10 @@ public final class ProjectManager {
         try {
             mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
+                    //removed projects are the ones that cannot be mapped to an existing project type anymore.
+                    if (removedProjects.contains(p)) {
+                        return null;
+                    }
                     if (!proj2Factory.containsKey(p)) {
                         throw new IllegalArgumentException("Project " + p + " not created by " + ProjectManager.this + " or was already deleted"); // NOI18N
                     }
