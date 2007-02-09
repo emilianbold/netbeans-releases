@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,45 +22,34 @@ package org.netbeans.modules.db.explorer;
 import java.beans.*;
 import java.awt.*;
 import java.util.ResourceBundle;
-
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** A BeanInfo for DatabaseOption
 */
 public class DatabaseOptionBeanInfo extends SimpleBeanInfo {
-    /** Array of property descriptors. */
-    private static PropertyDescriptor[] desc;
 
-    private static Image image = null;
-    private static Image image32 = null;
-
-    static {
+    public PropertyDescriptor[] getPropertyDescriptors ()
+    {
+        PropertyDescriptor[] desc = new PropertyDescriptor[1];
         try {
-            desc = new PropertyDescriptor[] {
-                new PropertyDescriptor("debugMode", DatabaseOption.class), //NOI18N
-            };
-
+            desc[0] = new PropertyDescriptor("debugMode", DatabaseOption.class); //NOI18N
             ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
             desc[0].setDisplayName(bundle.getString("PROP_DEBUG_MODE")); //NOI18N
             desc[0].setShortDescription(bundle.getString ("HINT_DEBUG_MODE")); //NOI18N
         } catch (Exception e) {
-            e.printStackTrace();
+            Exceptions.printStackTrace(e);
         }
-    }
-
-    public PropertyDescriptor[] getPropertyDescriptors ()
-    {
         return desc;
     }
 
     public Image getIcon(int type)
     {
         if (type == BeanInfo.ICON_COLOR_16x16) {
-            if (image == null) image = Toolkit.getDefaultToolkit().getImage(DatabaseOptionBeanInfo.class.getResource ("/org/netbeans/modules/db/resources/optionIcon.gif")); //NOI18N
-            return image;
+            return Utilities.loadImage("/org/netbeans/modules/db/resources/optionIcon.gif"); //NOI18N
         } else if (type == BeanInfo.ICON_COLOR_32x32) {
-            if (image32 == null) image32 = Toolkit.getDefaultToolkit().getImage(DatabaseOptionBeanInfo.class.getResource ("/org/netbeans/modules/db/resources/optionIcon32.gif")); //NOI18N
-            return image32;
+            return Utilities.loadImage("/org/netbeans/modules/db/resources/optionIcon32.gif"); //NOI18N
         }
 
         return super.getIcon(type);
