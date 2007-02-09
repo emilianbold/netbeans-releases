@@ -20,6 +20,7 @@
  */
 package org.netbeans.installer.utils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Locale;
@@ -34,6 +35,8 @@ public abstract class ResourceUtils {
     ////////////////////////////////////////////////////////////////////////////
     // Static
     private static Map<String, ResourceBundle> loadedBundles = new HashMap<String, ResourceBundle>();
+    
+    private static final int BUF_SIZE=102400;
     
     private static ResourceBundle loadBundle(String baseName, Locale locale, ClassLoader loader) {
         String bundleId = loader.toString() + baseName;
@@ -82,5 +85,39 @@ public abstract class ResourceUtils {
     
     public static InputStream getResource(String path, ClassLoader loader) {
         return loader.getResourceAsStream(path);
+    }
+    /**
+     * Returns the size of the resource file.
+     * @param resource Resource name
+     * @return size of the resource or 
+     *      <i>-1</i> if the resource was not found or any other error occured
+     */
+    public static long getResourceSize(String resource) {
+        InputStream is = null;
+        long size = 0;
+        try {
+            is = getResource(resource);
+            if(is==null) { // resource was not found
+                return -1;
+            }
+            byte [] buf = new byte [BUF_SIZE];
+            while(is.available()>0) {
+                size += is.read(buf);
+            }
+        } catch (IOException ex) {
+            size = -1;
+        } finally {
+            try {
+                if(is!=null) {
+                    is.close();
+                }
+            } catch (IOException e){
+            }
+        }
+        return size;
+    }
+    
+    public static String getResourceFileName(String resource) {
+        return resource.substring(resource.lastIndexOf("/")+1);
     }
 }
