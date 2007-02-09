@@ -288,8 +288,9 @@ class HeapView extends JComponent {
      * Updates the look and feel for this component.
      */
     public void updateUI() {
-        // Set the font to correspond to that of a JLabel.
-        setFont(new JLabel().getFont());
+        Font f = new JLabel().getFont();
+        f = new Font(f.getName(), Font.BOLD, f.getSize());
+        setFont(f);
         revalidate();
         repaint();
     }
