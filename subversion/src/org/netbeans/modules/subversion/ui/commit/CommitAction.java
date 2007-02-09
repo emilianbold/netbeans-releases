@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
+import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
@@ -118,15 +119,9 @@ public class CommitAction extends ContextAction {
             return; 
         }
         
-        // show commit dialog
-        final CommitPanel panel = new CommitPanel();
-        final CommitTable data;
-        //TableSorter sorter = SvnModuleConfig.getDefault().getCommitTableSorter();
-        //if(sorter==null) {
-            data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });
-        //} else {
-        //    data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, sorter);
-        //}                                                           
+        // show commit dialog        
+        final CommitPanel panel = new CommitPanel();   
+        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });                                 
         panel.setCommitTable(data);
         SvnFileNode[] nodes;
         ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(fileList.size());
@@ -163,8 +158,9 @@ public class CommitAction extends ContextAction {
                 
         panel.putClientProperty("contentTitle", contentTitle);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.pack();
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);        
+        dialog.addWindowListener(new DialogBoundsPreserver(SvnModuleConfig.getDefault().getPreferences(), "svn.commit.dialog")); // NOI18N       
+        dialog.pack();        
         dialog.setVisible(true);
 
         if (dd.getValue() == commitButton) {
@@ -183,11 +179,10 @@ public class CommitAction extends ContextAction {
                 }
             };
             support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
-        }
-
+        }             
         // if OK setup sequence of add, remove and commit calls
         
-    }
+    }    
     
     private static boolean containsCommitable(CommitTable data) {
         Map<SvnFileNode, CommitOptions> map = data.getCommitFiles();

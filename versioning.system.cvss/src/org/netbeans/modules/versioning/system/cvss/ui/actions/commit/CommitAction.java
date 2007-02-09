@@ -37,12 +37,12 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemActi
 import org.netbeans.modules.versioning.system.cvss.ui.actions.add.AddExecutor;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
-
 import javax.swing.*;
 import java.awt.Dialog;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.*;
+import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 
 /**
  * Represents the "Commit" main/popup action and provides programmatic Commit action upon any context.
@@ -106,6 +106,7 @@ public class CommitAction extends AbstractSystemAction {
         settings.putClientProperty("contentTitle", contentTitle);  // NOI18N
         settings.putClientProperty("DialogDescriptor", descriptor); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.addWindowListener(new DialogBoundsPreserver(CvsModuleConfig.getDefault().getPreferences(), "svn.commit.dialog"));
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitAction.class, "ACSD_CommitDialog"));
         dialog.setVisible(true);
         if (descriptor.getValue() != commit) return;
