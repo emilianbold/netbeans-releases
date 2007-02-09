@@ -123,11 +123,19 @@ public class Progress {
     
     /**
      * Creates a new {@link Progress} instance and registers the supplied listener.
+     * 
+     * <p>
+     * It's important to remember that listeners in progress are not implemented via
+     * weak references and hence should be handled with care. The most common case 
+     * would be to dump the complete progresses tree together with all listeners. 
+     * However if it's not the case, be sure to remove the listener with the 
+     * {@link #removeProgressListener(ProgressListener)} method.
      *
      * @param initialListener A progress listener to register upon progress
      *      creation.
      * 
      * @see #Progress()
+     * @see #removeProgressListener(ProgressListener)
      */
     public Progress(final ProgressListener initialListener) {
         this();
