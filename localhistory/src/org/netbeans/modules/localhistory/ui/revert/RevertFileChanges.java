@@ -16,67 +16,55 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.localhistory.ui.view;
-import org.netbeans.modules.localhistory.ui.actions.*;
-import org.netbeans.modules.localhistory.ui.revert.*;
+package org.netbeans.modules.localhistory.ui.revert;
+
+import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import org.netbeans.modules.localhistory.store.StoreEntry;
+import org.netbeans.modules.localhistory.ui.view.LocalHistoryFileView;
 import org.netbeans.modules.localhistory.utils.Utils;
-import org.openide.LifecycleManager;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class RevertFileAction extends NodeAction {
-
-    public RevertFileAction() {
-        setIcon(null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }   
-    
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(getClass());
-    }  
-    
-    protected void performAction(Node[] activatedNodes) {      
-        RevertFileChanges.revert(activatedNodes);
+public class RevertFileChanges extends RevertChanges implements PropertyChangeListener {
+           
+    void show(File[] roots) {
+        LocalHistoryFileView view = new LocalHistoryFileView (roots);        
+        view.getPanel().setPreferredSize(new Dimension(400, 250));
+        if(show(view.getPanel())) {
+            Node[] nodes = view.getExplorerManager().getSelectedNodes();
+            revert(nodes); // XXX get selected nodes            
+        }        
     }
     
     public static void revert(final Node[] nodes) {
-        // XXX try to save files in invocation context only
-        // list somehow modified file in the context and save
-        // just them.
-        // The same (global save) logic is in CVS, no complaint
-        LifecycleManager.getDefault().saveAll();  
-        
-        // XXX progress support ???
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {                 
                 Utils.revert(nodes);
             }
         });
-        // XXX refresh view        
-    }
+    }        
+
+    public void propertyChange(PropertyChangeEvent evt) {        
+        setValid(isEnabled((Node[])evt.getNewValue()));        
+    }   
     
-    protected boolean enable(Node[] activatedNodes) {
-        if(activatedNodes == null || activatedNodes.length != 1) {
+    private boolean isEnabled(Node[] nodes) {
+        if(nodes == null || nodes.length != 1) {
             return false;
         }        
-        for(Node node : activatedNodes) {
+        for(Node node : nodes) {
             StoreEntry se =  node.getLookup().lookup(StoreEntry.class);
             if(se == null) {
                 return false;
             }            
         }
         return true; 
-    }
-
-    public String getName() {
-        return NbBundle.getMessage(RevertFileAction.class, "LBL_RevertFileAction");
-    }      
+    }    
 }

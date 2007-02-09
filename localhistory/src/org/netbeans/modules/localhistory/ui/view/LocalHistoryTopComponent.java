@@ -18,9 +18,6 @@
  */
 package org.netbeans.modules.localhistory.ui.view;
 
-import org.netbeans.modules.localhistory.ui.view.LocalHistoryDiffView;
-import java.awt.BorderLayout;
-import java.io.File;
 import java.io.Serializable;
 import javax.swing.JPanel;
 import org.openide.util.NbBundle;
@@ -33,11 +30,8 @@ import org.openide.windows.TopComponent;
  */
 final public class LocalHistoryTopComponent extends TopComponent {
 
-    private LocalHistoryDiffView lhv;
     private static LocalHistoryTopComponent instance;
-    /** path to the icon used by the component and its open action */
-//    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
-
+    private LocalHistoryFileView masterView;
     private static final String PREFERRED_ID = "LocalHistoryTopComponent";
 
     public LocalHistoryTopComponent() {
@@ -69,8 +63,10 @@ final public class LocalHistoryTopComponent extends TopComponent {
     private javax.swing.JSplitPane splitPane;
     // End of variables declaration//GEN-END:variables
 
-    public void init(JPanel diffPanel, JPanel tablePanel) {                
-        splitPane.setTopComponent(tablePanel);   
+    public void init(JPanel diffPanel, LocalHistoryFileView masterView) {                
+        // XXX should be solved in a more genarel way - not ony for LocalHistoryFileView 
+        this.masterView = masterView; 
+        splitPane.setTopComponent(masterView.getPanel());   
         splitPane.setBottomComponent(diffPanel);                   
     }
     
@@ -95,8 +91,10 @@ final public class LocalHistoryTopComponent extends TopComponent {
     }
 
     public void componentClosed() {
+        if(masterView != null) {
+            masterView.close();
+        }
         super.componentClosed();
-        //lhv.close();
     }
 
     /** replaces this in object stream */

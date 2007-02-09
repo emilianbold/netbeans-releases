@@ -19,7 +19,6 @@
 package org.netbeans.modules.localhistory.ui.view;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.beans.PropertyChangeEvent;
@@ -38,7 +37,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import org.netbeans.api.diff.DiffView;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.openide.explorer.ExplorerManager;
@@ -47,7 +45,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
 
 /**
  *
@@ -55,26 +52,19 @@ import org.openide.windows.TopComponent;
  */
 public class LocalHistoryFileView implements PropertyChangeListener {
        
-    private TopComponent tc;     
     private FileTablePanel tablePanel;             
     private File[] files;
     
     /** Creates a new instance of LocalHistoryView */
-    public LocalHistoryFileView(File[] files, TopComponent tc) {        
-        this.tc = tc;
-        
-        tablePanel = new FileTablePanel();
-        tablePanel.getExplorerManager().addPropertyChangeListener(this);
+    public LocalHistoryFileView(File[] files) {                       
+        tablePanel = new FileTablePanel();        
         LocalHistory.getInstance().getLocalHistoryStore().addPropertyChangeListener(this); // XXX remove listener
-        
         this.files = files;
         refreshTablePanel(true);                                           
     }    
         
     public void propertyChange(PropertyChangeEvent evt) {
-        if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-            selectionChanged(evt);
-        } else if(LocalHistoryStore.PROPERTY_CHANGED.equals(evt.getPropertyName())) {
+        if(LocalHistoryStore.PROPERTY_CHANGED.equals(evt.getPropertyName())) {
             storeChanged(evt);
         }
     }
@@ -89,19 +79,7 @@ public class LocalHistoryFileView implements PropertyChangeListener {
     
     public void close() {
         LocalHistory.getInstance().getLocalHistoryStore().removePropertyChangeListener(this);
-    }
-    
-    private void selectionChanged(PropertyChangeEvent evt) {
-        Node[] newSelection = ((Node[]) evt.getNewValue());
-        if(!acceptSelection(newSelection)) { // XXX get selection
-            return;
-        }
-        tc.setActivatedNodes(newSelection);       
-    }
-    
-    private boolean acceptSelection(Node[] newSelection) {
-        return  newSelection != null && newSelection.length == 0;
-    }
+    }    
     
     private void storeChanged(PropertyChangeEvent evt) {
         Object newValue = evt.getNewValue();
@@ -279,7 +257,7 @@ public class LocalHistoryFileView implements PropertyChangeListener {
                 columns[0] = new ColumnDescriptor<String>(
                                 StoreEntryNode.PROPERTY_NAME_LABEL, 
                                 String.class, 
-                                loc.getString("LBL_LocalHistory_Column_Label"),              // NOI18N            
+                                loc.getString("LBL_LocalHistory_Column_Label"),            // NOI18N            
                                 loc.getString("LBL_LocalHistory_Column_Label_Desc"));      // NOI18N            
                 setProperties(columns);
             }    

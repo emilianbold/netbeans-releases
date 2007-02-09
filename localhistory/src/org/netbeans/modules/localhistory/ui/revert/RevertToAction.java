@@ -18,85 +18,52 @@
  */
 package org.netbeans.modules.localhistory.ui.revert;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.util.Set;
-import org.netbeans.modules.localhistory.LocalHistory;
-import org.netbeans.modules.localhistory.store.StoreEntry;
-import org.netbeans.modules.localhistory.ui.actions.AbstractRevertAction;
 import org.netbeans.modules.localhistory.ui.revert.RevertChanges;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.FlatFolder;
 import org.openide.LifecycleManager;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class RevertToAction extends AbstractRevertAction {
+public class RevertToAction extends NodeAction {
         
+    public RevertToAction() {
+        setIcon(null);
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    }                
+        
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(getClass());
+    }   
+    
     protected void performAction(final Node[] activatedNodes) {
         // XXX try to save files in invocation context only
         // list somehow modified file in the context and save
         // just them.
-        // The same (global save) logic is in CVS, no complaint
+        // The same (global save) logic is in CVS, no complaint        
         LifecycleManager.getDefault().saveAll();
-        
-        // XXX progress support ???
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {                 
-                VCSContext ctx = VCSContext.forNodes(activatedNodes);
-                final Set<File> rootSet = ctx.getRootFiles();        
-                RevertChanges revertChanges = new RevertChanges(rootSet);
-                if(revertChanges.show())  {
-                    long ts = revertChanges.getTimeStamp();
-                    for(File root : rootSet) {    
-                        if(root.isFile()) {
-                            revertFile(root, ts);    
-                        } else {
-                            revertFolder(root, ts);
-                        }
-                    }
-                }
-            }
-        });
-        // XXX refresh view
-    }
+               
+        VCSContext ctx = VCSContext.forNodes(activatedNodes);
+        final Set<File> rootSet = ctx.getRootFiles();        
+        File[] roots = rootSet.toArray(new File[rootSet.size()]);
 
-    private void revertFile(File file, long ts) {
-        StoreEntry entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(file, ts);
-        revert(entry);        
+        RevertChanges revertChanges;
+        if(roots[0].isFile())  {
+            revertChanges = new RevertFileChanges();
+        } else {
+            revertChanges = new RevertFolderChanges();
+        }        
+        revertChanges.show(roots);        
     }
-    
-    private void revertFolder(File root, long ts) {        
-        // revert all files in the folder
-        File[] files = root.listFiles();                    
-        StoreEntry[] entries = LocalHistory.getInstance().getLocalHistoryStore().getFolderState(root, files, ts);                    
-        for(StoreEntry entry : entries) {
-            revert(entry);                       
-        }     
-        
-        if(root instanceof FlatFolder) {            
-            return; // only one level revert
-        }
-        
-        // get the root folders actuall children and 
-        // revert also the directories between them
-        File[] revertedFolders = root.listFiles(new FileFilter() {
-            public boolean accept(File file) {
-                return file.isDirectory();
-            }
-        });                                                                               
-        for(File revertedFolder : revertedFolders) {
-            revertFile(revertedFolder, ts);
-        }                    
-    }
-    
+       
     protected boolean enable(Node[] activatedNodes) {
-        // XXX multi- or single node 
+        // XXX multi- or single node?
         if(activatedNodes == null || activatedNodes.length != 1) {
             return false;
         }        

@@ -119,8 +119,8 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
                         } else {
                             refreshNavigationButtons();
                         }
-//                            panel.revalidate();
-//                            panel.repaint();
+                        panel.revalidate();
+                        panel.repaint();
 
                     } catch (IOException ioe)  {
                         ErrorManager.getDefault().notify(ioe);

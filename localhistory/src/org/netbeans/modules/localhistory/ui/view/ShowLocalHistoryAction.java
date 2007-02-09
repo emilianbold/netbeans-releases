@@ -18,12 +18,15 @@
  */
 package org.netbeans.modules.localhistory.ui.view;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.localhistory.ui.view.LocalHistoryDiffView;
 import java.io.File;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.localhistory.ui.view.LocalHistoryTopComponent;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -42,35 +45,35 @@ public class ShowLocalHistoryAction extends NodeAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
-    protected void performAction(final Node[] activatedNodes) {
-                        
+    protected void performAction(final Node[] activatedNodes) {                        
         VCSContext ctx = VCSContext.forNodes(activatedNodes);
-        final Set<File> rootSet = ctx.getRootFiles();        
-            
+        final Set<File> rootSet = ctx.getRootFiles();                    
+
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                LocalHistoryTopComponent tc = new LocalHistoryTopComponent();
+                final LocalHistoryTopComponent tc = new LocalHistoryTopComponent();
                 tc.setName(NbBundle.getMessage(this.getClass(), "CTL_LocalHistoryTopComponent", activatedNodes[0].getDisplayName()));
                 tc.open();
                 tc.requestActive();                                
-                        
+
                 File[] files = rootSet.toArray(new File[rootSet.size()]);
                 if(files[0].isFile()) {
-                    LocalHistoryFileView fileView = new LocalHistoryFileView(files, tc);                
+                    // XXX hm 
+                    LocalHistoryFileView fileView = new LocalHistoryFileView(files);                
                     LocalHistoryDiffView diffView = new LocalHistoryDiffView(); 
-                    fileView.getExplorerManager().addPropertyChangeListener(diffView); // XXX hm                        
-                    tc.init(diffView.getPanel(), fileView.getPanel());
-                    // lhv.close(); XXX
-                } /*else {
-                    LocalHistoryFolderView folderView = new LocalHistoryFolderView(files, tc);                
-                    LocalHistoryDiffView diffView = new LocalHistoryDiffView(); 
-                    folderView.getExplorerManager().addPropertyChangeListener(diffView); // XXX hm                        
-                    tc.init(diffView.getPanel(), folderView.getPanel());                    
-                    // lhv.close(); XXX                    
-                }*/
+                    fileView.getExplorerManager().addPropertyChangeListener(diffView); 
+                    fileView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {                            
+                                tc.setActivatedNodes((Node[]) evt.getNewValue());  
+                            }
+                        } 
+                    });
+                    tc.init(diffView.getPanel(), fileView);
+                } 
             }
         });
-        
+
     }
     
     protected boolean enable(Node[] activatedNodes) {     
