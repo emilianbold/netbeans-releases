@@ -44,10 +44,9 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.swing.NbiDialog;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
-import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeColumnCellRenderer;
-import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeTable;
-import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeTableModel;
-import org.netbeans.installer.wizard.containers.SwingFrameContainer;
+import org.netbeans.installer.utils.helper.swing.NbiTreeTableColumnCellRenderer;
+import org.netbeans.installer.utils.helper.swing.NbiTreeTable;
+import org.netbeans.installer.utils.helper.swing.NbiTreeTableModel;
 
 public class InstallationDetailsDialog extends NbiDialog {
     private NbiTreeTable   detailsTreeTable;
@@ -254,7 +253,7 @@ public class InstallationDetailsDialog extends NbiDialog {
         }
     }
     
-    public static class InstallationDetailsTreeColumnCellRenderer extends NbiTreeColumnCellRenderer {
+    public static class InstallationDetailsTreeColumnCellRenderer extends NbiTreeTableColumnCellRenderer {
         private static final EmptyBorder EMPTY_BORDER = new EmptyBorder(0, 0, 0, 0);
         private static final EmptyBorder PADDED_BORDER = new EmptyBorder(0, 0, 0, 5);
         
