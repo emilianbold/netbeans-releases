@@ -237,77 +237,80 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     
     private VariableElement instanceOf(String typeName, String name) {
         try {
-            initParsing();
-            TypeMirror type = cInfo.getTreeUtilities().parseType(typeName, enclClass);
-            VariableElement closest = null;
-            int distance = Integer.MAX_VALUE;
-            if (type != null) {
-                Types types = cInfo.getTypes();
-                for (Element e : locals) {
-                    if (e instanceof VariableElement && types.isAssignable(e.asType(), type)) {
-                        if (name == null)
-                            return (VariableElement)e;
-                        int d = UiUtils.getDistance(e.getSimpleName().toString(), name);
-                        if (d < distance) {
-                            distance = d;
-                            closest = (VariableElement)e;
+            if (initParsing()) {
+                TypeMirror type = cInfo.getTreeUtilities().parseType(typeName, enclClass);
+                VariableElement closest = null;
+                int distance = Integer.MAX_VALUE;
+                if (type != null) {
+                    Types types = cInfo.getTypes();
+                    for (Element e : locals) {
+                        if (e instanceof VariableElement && types.isAssignable(e.asType(), type)) {
+                            if (name == null)
+                                return (VariableElement)e;
+                            int d = UiUtils.getDistance(e.getSimpleName().toString(), name);
+                            if (d < distance) {
+                                distance = d;
+                                closest = (VariableElement)e;
+                            }
                         }
                     }
                 }
+                return closest;
             }
-            return closest;
         } catch (Exception e) {
-            return null;
         }
+        return null;
     }
     
     private VariableElement staticInstanceOf(String typeName, String name) {
         try {
-            initParsing();
-            final TreeUtilities tu = cInfo.getTreeUtilities();
-            TypeMirror type = tu.parseType(typeName, enclClass);
-            VariableElement closest = null;
-            int distance = Integer.MAX_VALUE;
-            if (type != null) {
-                final Types types = cInfo.getTypes();
-                if (type.getKind() == TypeKind.DECLARED) {
-                    final DeclaredType dType = (DeclaredType)type;
-                    final TypeElement element = (TypeElement)dType.asElement();
-                    final boolean isStatic = element.getKind().isClass() || element.getKind().isInterface();
-                    ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
-                        public boolean accept(Element e, TypeMirror t) {
-                            return e.getKind().isField() &&
-                                    (!isStatic || e.getModifiers().contains(Modifier.STATIC)) &&
-                                    tu.isAccessible(scope, e, t) &&
-                                    (e.getKind().isField() && types.isAssignable(((VariableElement)e).asType(), dType) || e.getKind() == ElementKind.METHOD && types.isAssignable(((ExecutableElement)e).getReturnType(), dType));
-                        }
-                    };
-                    for (Element ee : cInfo.getElementUtilities().getMembers(dType, acceptor)) {
-                        if (name == null)
-                            return (VariableElement)ee;
-                        int d = UiUtils.getDistance(ee.getSimpleName().toString(), name);
-                        if (d < distance) {
-                            distance = d;
-                            closest = (VariableElement)ee;
+            if (initParsing()) {
+                final TreeUtilities tu = cInfo.getTreeUtilities();
+                TypeMirror type = tu.parseType(typeName, enclClass);
+                VariableElement closest = null;
+                int distance = Integer.MAX_VALUE;
+                if (type != null) {
+                    final Types types = cInfo.getTypes();
+                    if (type.getKind() == TypeKind.DECLARED) {
+                        final DeclaredType dType = (DeclaredType)type;
+                        final TypeElement element = (TypeElement)dType.asElement();
+                        final boolean isStatic = element.getKind().isClass() || element.getKind().isInterface();
+                        ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                            public boolean accept(Element e, TypeMirror t) {
+                                return e.getKind().isField() &&
+                                        (!isStatic || e.getModifiers().contains(Modifier.STATIC)) &&
+                                        tu.isAccessible(scope, e, t) &&
+                                        (e.getKind().isField() && types.isAssignable(((VariableElement)e).asType(), dType) || e.getKind() == ElementKind.METHOD && types.isAssignable(((ExecutableElement)e).getReturnType(), dType));
+                            }
+                        };
+                        for (Element ee : cInfo.getElementUtilities().getMembers(dType, acceptor)) {
+                            if (name == null)
+                                return (VariableElement)ee;
+                            int d = UiUtils.getDistance(ee.getSimpleName().toString(), name);
+                            if (d < distance) {
+                                distance = d;
+                                closest = (VariableElement)ee;
+                            }
                         }
                     }
                 }
+                return closest;
             }
-            return closest;
         } catch (Exception e) {
-            return null;
         }
+        return null;
     }
     
     private String valueOf(String typeName) {
         try {
-            initParsing();
-            TypeMirror type = cInfo.getTreeUtilities().parseType(typeName, enclClass);
-            if (type != null) {
-                if (type.getKind() == TypeKind.DECLARED)
-                    return NULL;
-                else if (type.getKind() == TypeKind.BOOLEAN)
-                    return FALSE;
+            if (initParsing()) {
+                TypeMirror type = cInfo.getTreeUtilities().parseType(typeName, enclClass);
+                if (type != null) {
+                    if (type.getKind() == TypeKind.DECLARED)
+                        return NULL;
+                    else if (type.getKind() == TypeKind.BOOLEAN)
+                        return FALSE;
+                }
             }
         } catch (Exception e) {
         }
@@ -315,51 +318,53 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     }
     
     private VariableElement array() {
-        initParsing();
-        for (Element e : locals) {
-            if (e instanceof VariableElement && e.asType().getKind() == TypeKind.ARRAY)
-                return (VariableElement)e;
+        if (initParsing()) {
+            for (Element e : locals) {
+                if (e instanceof VariableElement && e.asType().getKind() == TypeKind.ARRAY)
+                    return (VariableElement)e;
+            }
         }
         return null;
     }
 
     private VariableElement iterable() {
-        initParsing();
-        TypeMirror iterableType = cInfo.getTypes().getDeclaredType(cInfo.getElements().getTypeElement("java.lang.Iterable")); //NOI18N
-        for (Element e : locals) {
-            if (e instanceof VariableElement && (e.asType().getKind() == TypeKind.ARRAY || cInfo.getTypes().isAssignable(e.asType(), iterableType)))
-                return (VariableElement)e;
+        if (initParsing()) {
+            TypeMirror iterableType = cInfo.getTypes().getDeclaredType(cInfo.getElements().getTypeElement("java.lang.Iterable")); //NOI18N
+            for (Element e : locals) {
+                if (e instanceof VariableElement && (e.asType().getKind() == TypeKind.ARRAY || cInfo.getTypes().isAssignable(e.asType(), iterableType)))
+                    return (VariableElement)e;
+            }
         }
         return null;
     }
 
     private TypeMirror type(String typeName) {
-        initParsing();
-        return cInfo.getTreeUtilities().parseType(typeName, enclClass);
+        return initParsing() ? cInfo.getTreeUtilities().parseType(typeName, enclClass) : null;
     }
     
     private TypeMirror iterableElementType(int caretOffset) {
         try {
-            initParsing();
-            SourcePositions[] sourcePositions = new SourcePositions[1];
-            TreeUtilities tu = cInfo.getTreeUtilities();
-            StatementTree stmt = tu.parseStatement(request.getInsertText(), sourcePositions);
-            if (errChecker.containsErrors(stmt))
-                return null;
-            TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset, sourcePositions[0]);
-            TreePath loop = Utilities.getPathElementOfKind(Tree.Kind.ENHANCED_FOR_LOOP, path);
-            if (loop != null) {
-                tu.attributeTree(stmt, scope);
-                TypeMirror type = cInfo.getTrees().getTypeMirror(new TreePath(loop, ((EnhancedForLoopTree)loop.getLeaf()).getExpression()));
-                switch (type.getKind()) {
-                    case ARRAY:
-                        type = ((ArrayType)type).getComponentType();
-                        return type;
-                    case DECLARED:
-                        Iterator<? extends TypeMirror> types = ((DeclaredType)type).getTypeArguments().iterator();
-                        if (types.hasNext())
-                            return types.next();
-                        return cInfo.getElements().getTypeElement("java.lang.Object").asType(); //NOI18N
+            if (initParsing()) {
+                SourcePositions[] sourcePositions = new SourcePositions[1];
+                TreeUtilities tu = cInfo.getTreeUtilities();
+                StatementTree stmt = tu.parseStatement(request.getInsertText(), sourcePositions);
+                if (errChecker.containsErrors(stmt))
+                    return null;
+                TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset, sourcePositions[0]);
+                TreePath loop = Utilities.getPathElementOfKind(Tree.Kind.ENHANCED_FOR_LOOP, path);
+                if (loop != null) {
+                    tu.attributeTree(stmt, scope);
+                    TypeMirror type = cInfo.getTrees().getTypeMirror(new TreePath(loop, ((EnhancedForLoopTree)loop.getLeaf()).getExpression()));
+                    switch (type.getKind()) {
+                        case ARRAY:
+                            type = ((ArrayType)type).getComponentType();
+                            return type;
+                        case DECLARED:
+                            Iterator<? extends TypeMirror> types = ((DeclaredType)type).getTypeArguments().iterator();
+                            if (types.hasNext())
+                                return types.next();
+                            return cInfo.getElements().getTypeElement("java.lang.Object").asType(); //NOI18N
+                    }
                 }
             }
         } catch (Exception e) {
@@ -369,25 +374,26 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     
     private TypeMirror assignmentSideType(int caretOffset, boolean left) {
         try {
-            initParsing();
-            SourcePositions[] sourcePositions = new SourcePositions[1];
-            TreeUtilities tu = cInfo.getTreeUtilities();
-            StatementTree stmt = tu.parseStatement(request.getInsertText(), sourcePositions);
-            if (errChecker.containsErrors(stmt))
-                return null;
-            TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset, sourcePositions[0]);
-            TreePath tree = Utilities.getPathElementOfKind(EnumSet.of(Tree.Kind.ASSIGNMENT, Tree.Kind.VARIABLE), path);
-            if (tree == null)
-                return null;
-            tu.attributeTree(stmt, scope);
-            if (tree.getLeaf().getKind() == Tree.Kind.ASSIGNMENT) {
-                AssignmentTree as = (AssignmentTree)tree.getLeaf();
-                TreePath type = new TreePath(tree, left ? as.getVariable() : as.getExpression());
+            if (initParsing()) {
+                SourcePositions[] sourcePositions = new SourcePositions[1];
+                TreeUtilities tu = cInfo.getTreeUtilities();
+                StatementTree stmt = tu.parseStatement(request.getInsertText(), sourcePositions);
+                if (errChecker.containsErrors(stmt))
+                    return null;
+                TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset, sourcePositions[0]);
+                TreePath tree = Utilities.getPathElementOfKind(EnumSet.of(Tree.Kind.ASSIGNMENT, Tree.Kind.VARIABLE), path);
+                if (tree == null)
+                    return null;
+                tu.attributeTree(stmt, scope);
+                if (tree.getLeaf().getKind() == Tree.Kind.ASSIGNMENT) {
+                    AssignmentTree as = (AssignmentTree)tree.getLeaf();
+                    TreePath type = new TreePath(tree, left ? as.getVariable() : as.getExpression());
+                    return cInfo.getTrees().getTypeMirror(type);
+                }
+                VariableTree vd = (VariableTree)tree.getLeaf();
+                TreePath type = new TreePath(tree, left ? vd.getType() : vd.getInitializer());
                 return cInfo.getTrees().getTypeMirror(type);
             }
-            VariableTree vd = (VariableTree)tree.getLeaf();
-            TreePath type = new TreePath(tree, left ? vd.getType() : vd.getInitializer());
-            return cInfo.getTrees().getTypeMirror(type);
         } catch (Exception e) {
         }
         return null;
@@ -395,43 +401,44 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     
     private TypeMirror cast(int caretOffset) {
         try {
-            initParsing();
-            SourcePositions[] sourcePositions = new SourcePositions[1];
-            TreeUtilities tu = cInfo.getTreeUtilities();
-            StatementTree stmt = tu.parseStatement(request.getInsertText(), sourcePositions);
-            if (errChecker.containsErrors(stmt))
-                return null;
-            TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset, sourcePositions[0]);
-            TreePath tree = Utilities.getPathElementOfKind(EnumSet.of(Tree.Kind.ASSIGNMENT, Tree.Kind.VARIABLE), path);
-            if (tree == null)
-                return null;
-            tu.attributeTree(stmt, scope);
-            if (tree.getLeaf().getKind() == Tree.Kind.ASSIGNMENT) {
-                AssignmentTree as = (AssignmentTree)tree.getLeaf();
-                TypeMirror left = cInfo.getTrees().getTypeMirror(new TreePath(tree, as.getVariable()));
-                TreePath exp = new TreePath(tree, as.getExpression());
+            if (initParsing()) {
+                SourcePositions[] sourcePositions = new SourcePositions[1];
+                TreeUtilities tu = cInfo.getTreeUtilities();
+                StatementTree stmt = tu.parseStatement(request.getInsertText(), sourcePositions);
+                if (errChecker.containsErrors(stmt))
+                    return null;
+                TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset, sourcePositions[0]);
+                TreePath tree = Utilities.getPathElementOfKind(EnumSet.of(Tree.Kind.ASSIGNMENT, Tree.Kind.VARIABLE), path);
+                if (tree == null)
+                    return null;
+                tu.attributeTree(stmt, scope);
+                if (tree.getLeaf().getKind() == Tree.Kind.ASSIGNMENT) {
+                    AssignmentTree as = (AssignmentTree)tree.getLeaf();
+                    TypeMirror left = cInfo.getTrees().getTypeMirror(new TreePath(tree, as.getVariable()));
+                    TreePath exp = new TreePath(tree, as.getExpression());
+                    if (exp.getLeaf() instanceof TypeCastTree)
+                        exp = new TreePath(exp, ((TypeCastTree)exp.getLeaf()).getExpression());
+                    TypeMirror right = cInfo.getTrees().getTypeMirror(exp);
+                    if (right == null || left == null)
+                        return null;
+                    if (cInfo.getTypes().isAssignable(right, left))
+                        return null;
+                    return left;
+                }
+                VariableTree vd = (VariableTree)tree.getLeaf();
+                TypeMirror left = cInfo.getTrees().getTypeMirror(new TreePath(tree, vd.getType()));
+                TreePath exp = new TreePath(tree, vd.getInitializer());
                 if (exp.getLeaf() instanceof TypeCastTree)
                     exp = new TreePath(exp, ((TypeCastTree)exp.getLeaf()).getExpression());
                 TypeMirror right = cInfo.getTrees().getTypeMirror(exp);
-                if (right == null || left == null)
+                if (right == null)
                     return null;
-                if (cInfo.getTypes().isAssignable(right, left))
+                if (left == null)
+                    return null;
+                if (right.getKind() != TypeKind.ERROR && cInfo.getTypes().isAssignable(right, left))
                     return null;
                 return left;
             }
-            VariableTree vd = (VariableTree)tree.getLeaf();
-            TypeMirror left = cInfo.getTrees().getTypeMirror(new TreePath(tree, vd.getType()));
-            TreePath exp = new TreePath(tree, vd.getInitializer());
-            if (exp.getLeaf() instanceof TypeCastTree)
-                exp = new TreePath(exp, ((TypeCastTree)exp.getLeaf()).getExpression());
-            TypeMirror right = cInfo.getTrees().getTypeMirror(exp);
-            if (right == null)
-                return null;
-            if (left == null)
-                return null;
-            if (right.getKind() != TypeKind.ERROR && cInfo.getTypes().isAssignable(right, left))
-                return null;
-            return left;
         } catch (Exception e) {
         }
         return null;
@@ -439,41 +446,42 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     
     private String newVarName(int caretOffset) {
         try {
-            initParsing();
-            SourcePositions[] sourcePositions = new SourcePositions[1];
-            TreeUtilities tu = cInfo.getTreeUtilities();
-            StatementTree stmt = tu.parseStatement(request.getInsertText(), sourcePositions);
-            if (errChecker.containsErrors(stmt))
-                return null;
-            TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset, sourcePositions[0]);
-            TreePath decl = Utilities.getPathElementOfKind(Tree.Kind.VARIABLE, path);
-            if (decl != null) {
-                Scope s = tu.attributeTreeTo(stmt, scope, decl.getLeaf());
-                TypeMirror type = cInfo.getTrees().getTypeMirror(decl);
-                boolean isConst = ((VariableTree)decl.getLeaf()).getModifiers().getFlags().containsAll(EnumSet.of(Modifier.FINAL, Modifier.STATIC));
-                final Name varName = ((VariableTree)decl.getLeaf()).getName();
-                ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
-                    public boolean accept(Element e, TypeMirror t) {
-                        switch(e.getKind()) {
-                            case EXCEPTION_PARAMETER:
-                            case LOCAL_VARIABLE:
-                            case PARAMETER:
-                                return varName != e.getSimpleName();
-                            default:
-                                return false;
+            if (initParsing()) {
+                SourcePositions[] sourcePositions = new SourcePositions[1];
+                TreeUtilities tu = cInfo.getTreeUtilities();
+                StatementTree stmt = tu.parseStatement(request.getInsertText(), sourcePositions);
+                if (errChecker.containsErrors(stmt))
+                    return null;
+                TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset, sourcePositions[0]);
+                TreePath decl = Utilities.getPathElementOfKind(Tree.Kind.VARIABLE, path);
+                if (decl != null) {
+                    Scope s = tu.attributeTreeTo(stmt, scope, decl.getLeaf());
+                    TypeMirror type = cInfo.getTrees().getTypeMirror(decl);
+                    boolean isConst = ((VariableTree)decl.getLeaf()).getModifiers().getFlags().containsAll(EnumSet.of(Modifier.FINAL, Modifier.STATIC));
+                    final Name varName = ((VariableTree)decl.getLeaf()).getName();
+                    ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                        public boolean accept(Element e, TypeMirror t) {
+                            switch(e.getKind()) {
+                                case EXCEPTION_PARAMETER:
+                                case LOCAL_VARIABLE:
+                                case PARAMETER:
+                                    return varName != e.getSimpleName();
+                                default:
+                                    return false;
+                            }
                         }
-                    }
-                };
-                Iterator<String> names = Utilities.varNamesSuggestions(type, null, cInfo.getTypes(), cInfo.getElements(), cInfo.getElementUtilities().getLocalVars(s, acceptor), isConst).iterator();
-                if (names.hasNext())
-                    return names.next();
+                    };
+                    Iterator<String> names = Utilities.varNamesSuggestions(type, null, cInfo.getTypes(), cInfo.getElements(), cInfo.getElementUtilities().getLocalVars(s, acceptor), isConst).iterator();
+                    if (names.hasNext())
+                        return names.next();
+                }
             }
         } catch (Exception e) {
         }
         return null;
     }
     
-    private void initParsing() {
+    private boolean initParsing() {
         if (cInfo == null) {
             JTextComponent c = request.getComponent();
             final int caretOffset = c.getCaret().getDot();
@@ -528,6 +536,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 }
             }
         }
+        return cInfo != null;
     }
 
     public static final class Factory implements CodeTemplateProcessorFactory {
