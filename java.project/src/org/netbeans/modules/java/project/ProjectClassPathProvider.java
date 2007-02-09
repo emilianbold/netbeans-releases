@@ -19,13 +19,11 @@
 
 package org.netbeans.modules.java.project;
 
-import java.util.Iterator;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 
 /**
  * Supplies classpath information according to project file owner.
