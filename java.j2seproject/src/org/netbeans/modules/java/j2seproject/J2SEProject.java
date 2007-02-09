@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -49,6 +49,7 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImp
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesClientSupport;
 import org.netbeans.modules.java.j2seproject.jaxws.J2SEProjectJAXWSClientSupport;
+import org.netbeans.modules.java.j2seproject.queries.BinaryForSourceQueryImpl;
 import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesSupportProvider;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
@@ -254,7 +255,8 @@ public final class J2SEProject implements Project, AntProjectListener {
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
-            new J2SEPropertyEvaluatorImpl(evaluator())
+            new J2SEPropertyEvaluatorImpl(evaluator()),
+            new BinaryForSourceQueryImpl(this.sourceRoots, this.testRoots, this.helper, this.eval) //Does not use APH to get/put properties/cfgdata
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
     }
