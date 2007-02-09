@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.editor.options;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.awt.Image;
 import java.beans.SimpleBeanInfo;
 import java.beans.BeanInfo;
@@ -40,23 +38,19 @@ public class ColoringBeanBeanInfo extends SimpleBeanInfo {
     private Image icon;
     private Image icon32;
 
-    /** Propertydescriptors */
-    private static PropertyDescriptor[] descriptors;
-
     /*
     * @return Returns an array of PropertyDescriptors
     * describing the editable properties supported by this bean.
     */
     public PropertyDescriptor[] getPropertyDescriptors () {
-        if (descriptors == null) {
-            try {
-                descriptors = new PropertyDescriptor[] {
-                                  new PropertyDescriptor("coloring", ColoringBean.class) // NOI18N
-                              };
-                descriptors[0].setPropertyEditorClass(ColoringEditor.class);
-            } catch (Exception e) {
-                descriptors = new PropertyDescriptor[0];
-            }
+        PropertyDescriptor[] descriptors;
+        try {
+            descriptors = new PropertyDescriptor[] {
+                              new PropertyDescriptor("coloring", ColoringBean.class) // NOI18N
+                          };
+            descriptors[0].setPropertyEditorClass(ColoringEditor.class);
+        } catch (Exception e) {
+            descriptors = new PropertyDescriptor[0];
         }
         return descriptors;
     }

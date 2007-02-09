@@ -21,27 +21,13 @@ package org.netbeans.modules.editor.options;
 
 import java.beans.*;
 import java.awt.Image;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.Iterator;
-
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.text.JTextComponent.KeyBinding;
 
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
-import org.openide.util.Utilities;
 
 import org.netbeans.editor.BaseCaret;
-import org.netbeans.editor.Coloring;
-import org.netbeans.editor.MultiKeyBinding;
 
 /** BeanInfo for base options
 *

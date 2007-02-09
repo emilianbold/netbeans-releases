@@ -36,9 +36,6 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
     private Image icon;
     private Image icon32;
 
-    /** Propertydescriptors */
-    private static PropertyDescriptor[] descriptors;
-
     public BasePrintOptionsBeanInfo() {
         this("/org/netbeans/modules/editor/resources/baseOptions"); // NOI18N
     }
@@ -52,22 +49,21 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
     * describing the editable properties supported by this bean.
     */
     public PropertyDescriptor[] getPropertyDescriptors () {
-        if (descriptors == null) {
-            String[] propNames = getPropNames();
-            try {
-                descriptors = new PropertyDescriptor[propNames.length];
+        PropertyDescriptor[] descriptors;
+        String[] propNames = getPropNames();
+        try {
+            descriptors = new PropertyDescriptor[propNames.length];
 
-                for (int i = 0; i < propNames.length; i++) {
-                    descriptors[i] = new PropertyDescriptor(propNames[i], getBeanClass());
-                    descriptors[i].setDisplayName(getString("PROP_" + propNames[i])); // NOI18N
-                    descriptors[i].setShortDescription(getString("HINT_" + propNames[i])); // NOI18N
+            for (int i = 0; i < propNames.length; i++) {
+                descriptors[i] = new PropertyDescriptor(propNames[i], getBeanClass());
+                descriptors[i].setDisplayName(getString("PROP_" + propNames[i])); // NOI18N
+                descriptors[i].setShortDescription(getString("HINT_" + propNames[i])); // NOI18N
+                if (BasePrintOptions.PRINT_COLORING_MAP_PROP.equals(propNames[i])) {
+                    descriptors[i].setPropertyEditorClass(ColoringArrayEditor.class);
                 }
-
-                getPD(BasePrintOptions.PRINT_COLORING_MAP_PROP).setPropertyEditorClass(ColoringArrayEditor.class);
-
-            } catch (IntrospectionException e) {
-                descriptors = new PropertyDescriptor[0];
             }
+        } catch (IntrospectionException e) {
+            descriptors = new PropertyDescriptor[0];
         }
         return descriptors;
     }
@@ -82,16 +78,6 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
 
     protected String[] getPropNames() {
         return BasePrintOptions.BASE_PROP_NAMES;
-    }
-
-    protected PropertyDescriptor getPD(String prop) {
-        String[] propNames = getPropNames();
-        for (int i = 0; i < descriptors.length; i++) {
-            if (prop.equals(propNames[i])) {
-                return descriptors[i];
-            }
-        }
-        return null;
     }
 
     /* @param type Desired type of the icon
