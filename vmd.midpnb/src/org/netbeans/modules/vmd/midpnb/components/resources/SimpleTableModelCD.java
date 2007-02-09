@@ -33,6 +33,7 @@ import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.properteditors.PropertyEditorTableModel;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 
 import java.util.Arrays;
 import java.util.List;

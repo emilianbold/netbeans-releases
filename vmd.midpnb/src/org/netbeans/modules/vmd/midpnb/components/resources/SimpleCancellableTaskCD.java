@@ -35,6 +35,7 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.properteditors.PropertyEditorExecutableUserCode;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 
 import java.util.Arrays;
 import java.util.List;
