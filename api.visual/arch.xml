@@ -47,10 +47,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-      The API provides a set of reusable pieces. By composing them you are creating a visualization.
-      There are built-in Widgets and also they can be extended.
-      All pluggable pieces are declared as interfaces or abstract classes -
-      WidgetAction, Anchor, AnchorShape, PointShape, Animator, Border,
+      The API provides a set of reusable pieces - widgets. By composing them you are creating a visualization.
+      Each widget has various properties including layout, border, assigned actions, ... The library contains a set of pre-defined widgets that can be extended.
+      All pluggable pieces are declared as interfaces or abstract classes - WidgetAction, Anchor, AnchorShape, PointShape, Animator, Border,
       GraphLayout, LookFeel, Layout, SceneLayout, Router, CollisionsCollector.
       Also they all have their built-in implementation.
   </p>
@@ -116,7 +115,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-usecases">
   <p>
-      Documentation at <a href="http://graph.netbeans.org/documentation.html">http://graph.netbeans.org/documentation.html</a>
+      See <a href="http://graph.netbeans.org/documentation.html">http://graph.netbeans.org/documentation.html</a>
       for complete documentation of all use cases.
   </p>
  </answer>
@@ -137,8 +136,7 @@ Microsystems, Inc. All Rights Reserved.
   <p>
       The Visual Library 2.0 is the next generation of the original Graph Library 1.0.
       It is designed for a general visualization with a support for graph-oriented modeling.
-      Its focus is to become a part of the NetBeans platform
-      and unify the visualization (UI and API) used in NetBeans-Platform-based applications.
+      Its focus is to become a part of the NetBeans platform and unify the visualization (UI and API) used in NetBeans-Platform-based applications.
       See <a href="http://graph.netbeans.org">http://graph.netbeans.org</a> for details.
       Documentation is available at <a href="http://graph.netbeans.org/documentation.html">http://graph.netbeans.org/documentation.html</a>.
   </p>
@@ -175,7 +173,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-deprecation">
   <p>
-   Previous Graph Library 1.0 API is going to be deprecated. The library is a full replacement of previous version.
+   Previous Graph Library 1.0 API is deprecated now and is going to be unsupported. The Visual Library 2.0 API is a full replacement of the previous version.
   </p>
  </answer>
 
@@ -193,7 +191,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-i18n">
   <p>
-   Yes. There is not i18n-able string.
+   Yes. There is no i18n-able string.
   </p>
  </answer>
 
@@ -365,7 +363,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-dependencies">
   <p>
-   No. Just set a normal project dependency on org.netbeans.api.visual/2 module.
+   No. Just set a normal project dependency on org.netbeans.api.visual (spec no.: 2.0) module.
   </p>
  </answer>
 
@@ -652,7 +650,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-threading">
   <p>
-   All methods in the API has to be called AWT-thread only.
+   All methods in the API has to be called in AWT-thread only.
    Widget.Dependency and Scene.SceneListener is notified asynchronously at the moment when a scene is validation or painting.
    Other listeners are notified synchronously.
   </p>
@@ -924,8 +922,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="perf-scale">
   <p>
    The only critical problem is the OrthogonalSearchRouter implementation
-   which significantly slow-down performance in a scene with +-50 objects and
-   +-50 connections.
+   which significantly slow-down performance in a scene with +-50 objects and +-50 connections.
   </p>
  </answer>
 
@@ -970,7 +967,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-wakeup">
   <p>
-   No. Only when an animation is started. It should last in 500ms unless it invoked again.
+   No. Only when an animation is started. It should last in 500ms unless it is invoked again.
   </p>
  </answer>
 
