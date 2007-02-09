@@ -54,6 +54,7 @@ import org.openide.filesystems.FileUtil;
  *      BackupFacility.getDefault().restore(id);
  *    }
  * }
+ * </pre>
  * @see Transaction
  * @see RefactoringElementImplementation#performChange
  * @see RefactoringElementImplementation#undoChange
