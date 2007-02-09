@@ -279,20 +279,24 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     private javax.swing.JTextField projectName;
     // End of variables declaration//GEN-END:variables
     
+    private String lastComputedName;
+    
     private String computeValidProjectName(String projectLocation, String projectNamePrefix) {
         File location = new File(projectLocation);
         
         if (!location.exists()) {
+            lastComputedName = projectNamePrefix;
             return projectNamePrefix;
         }
         
         int num = 1;
-        String projectName;
-        
-        while (new File(location, projectName = projectNamePrefix + "_" + num).exists()) {
-            num++;
+        String projectName = projectNamePrefix;
+        if (new File(location, projectName).exists()) {
+            while (new File(location, projectName = projectNamePrefix + "_" + num).exists()) {
+                num++;
+            }
         }
-        
+        lastComputedName = projectName;
         return projectName;
     }
     
@@ -343,17 +347,29 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     }
     
     public void insertUpdate(DocumentEvent e) {
+        if (e.getDocument().equals(projectLocation.getDocument())) {
+            if (lastComputedName != null && lastComputedName.equals(projectName.getText())) {
+                projectName.setText(computeValidProjectName(new File(projectLocation.getText()).getAbsolutePath(), 
+                        ProjectUtils.getInformation(project).getName()));
+            }            
+        }
         updateProjectFolder();
         validateDialog();
     }
     
     public void removeUpdate(DocumentEvent e) {
+        if (e.getDocument().equals(projectLocation.getDocument())) {
+            if (lastComputedName != null && lastComputedName.equals(projectName.getText())) {
+                projectName.setText(computeValidProjectName(new File(projectLocation.getText()).getAbsolutePath(), 
+                        ProjectUtils.getInformation(project).getName()));
+            }            
+        }
         updateProjectFolder();
         validateDialog();
     }
     
     private void updateProjectFolder() {
-        File location = new File(projectLocation.getText());
+        final File location = new File(projectLocation.getText());
         File projectFolderFile = location;
         if (isMove) {
             projectFolderFile = new File(location, project.getProjectDirectory().getNameExt());
