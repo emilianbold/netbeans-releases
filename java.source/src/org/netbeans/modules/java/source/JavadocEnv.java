@@ -42,11 +42,10 @@ import com.sun.tools.javadoc.FieldDocImpl;
 import com.sun.tools.javadoc.MethodDocImpl;
 import com.sun.tools.javadoc.ModifierFilter;
 import com.sun.tools.javadoc.PackageDocImpl;
-
 import java.io.IOException;
 import java.util.StringTokenizer;
 import javax.lang.model.element.Element;
-
+import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -86,6 +85,8 @@ public class JavadocEnv extends DocEnv {
     public ClassDocImpl getClassDoc(ClassSymbol clazz) {
         ClassDocImpl result = classMap.get(clazz);
         if (result != null) return result;
+        if (clazz.asType().getKind() == TypeKind.ERROR)
+            return null;
         if (isAnnotationType(clazz)) {
             result = new JavadocAnnotation(this, clazz);
         } else {

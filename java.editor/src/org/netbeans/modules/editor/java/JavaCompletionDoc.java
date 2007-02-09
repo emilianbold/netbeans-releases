@@ -378,21 +378,24 @@ public class JavaCompletionDoc implements CompletionDocumentation {
     private CharSequence getAnnotations(ElementUtilities eu, ProgramElementDoc peDoc) {
         StringBuilder sb = new StringBuilder();
         for (AnnotationDesc annotationDesc : peDoc.annotations()) {
-            appendType(eu, sb, annotationDesc.annotationType(), false, false);
-            ElementValuePair[] pairs = annotationDesc.elementValues();
-            if (pairs.length > 0) {
-                sb.append('('); //NOI18N
-                for (int i = 0; i < pairs.length; i++) {
-                    AnnotationTypeElementDoc ated = pairs[i].element();
-                    createLink(sb, eu.elementFor(ated), ated.name());
-                    sb.append('='); //NOI18N
-                    appendAnnotationValue(eu, sb, pairs[i].value());
-                    if (i < pairs.length - 1)
-                        sb.append(","); //NOI18N
+            AnnotationTypeDoc annotationType = annotationDesc.annotationType();
+            if (annotationType != null) {
+                appendType(eu, sb, annotationType, false, false);
+                ElementValuePair[] pairs = annotationDesc.elementValues();
+                if (pairs.length > 0) {
+                    sb.append('('); //NOI18N
+                    for (int i = 0; i < pairs.length; i++) {
+                        AnnotationTypeElementDoc ated = pairs[i].element();
+                        createLink(sb, eu.elementFor(ated), ated.name());
+                        sb.append('='); //NOI18N
+                        appendAnnotationValue(eu, sb, pairs[i].value());
+                        if (i < pairs.length - 1)
+                            sb.append(","); //NOI18N
+                    }
+                    sb.append(')'); //NOI18N
                 }
-                sb.append(')'); //NOI18N
+                sb.append('\n'); //NOI18N
             }
-            sb.append('\n'); //NOI18N
         }
         return sb;
     }
