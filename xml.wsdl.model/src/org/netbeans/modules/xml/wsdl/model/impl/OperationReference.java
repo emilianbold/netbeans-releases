@@ -65,7 +65,7 @@ public class OperationReference extends AbstractReference<Operation> implements 
         }
         
         Binding p = (Binding) getParent().getParent();
-        if (p == null) {
+        if (p == null || p.getType() == null) {
             return null;
         }
         
