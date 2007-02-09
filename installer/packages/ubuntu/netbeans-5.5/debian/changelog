@@ -1,3 +1,10 @@
+netbeans5.5 (5.5-0.42) java-test; urgency=low
+
+  * Add file nb5.5/config/productid with 'NBUBU' to identify Ubuntu package installation
+    in autoupdate
+
+ -- Marek Slama <mslama@netbeans.org>  Fri, 9 Feb 2007 12:00:00 +0100
+
 netbeans5.5 (5.5-0.41) java-test; urgency=low
 
   * removed netbeans5.5-platform.postinst which is no longer necessary

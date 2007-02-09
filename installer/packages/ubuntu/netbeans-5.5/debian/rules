@@ -115,6 +115,9 @@ install: build update-copyright
 	mv $(CURDIR)/debian/netbeans5.5$(NBROOT)/*.html $(CURDIR)/debian/netbeans5.5/usr/share/doc/netbeans5.5/
 	mv $(CURDIR)/debian/netbeans5.5$(NBROOT)/*.css $(CURDIR)/debian/netbeans5.5/usr/share/doc/netbeans5.5/
 
+	#Copy productid
+	cp $(CURDIR)/debian/extra/productid $(CURDIR)/debian/netbeans5.5/usr/share/netbeans/5.5/nb5.5/config
+
 	mkdir -p $(CURDIR)/debian/netbeans5.5/usr/share/applications
 	cp $(CURDIR)/debian/extra/netbeans.desktop $(CURDIR)/debian/netbeans5.5/usr/share/netbeans/5.5/nb5.5/netbeans.desktop
 
