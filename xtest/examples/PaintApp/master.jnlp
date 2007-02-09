@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="$$codebase">
+  <information>
+      <title>${app.title}</title>
+      <vendor>${app.title} vendor</vendor>
+      <description>${app.name} application</description>
+      <icon href="${app.icon}"/>
+  </information>
+  <security><all-permissions/></security>
+  <resources>
+${jnlp.resources}
+  </resources>
+  <resources os="Mac OS X"> 
+      <property name="netbeans.user" value="${user.home}/Library/Application Support/${app.name}"/>
+  </resources>
+  <application-desc>
+    <argument>--branding</argument>
+    <argument>${branding.token}</argument>
+  </application-desc>
+</jnlp>  
