@@ -21,11 +21,15 @@ package org.netbeans.modules.vmd.midpnb.components.svg;
 
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
-
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.imagechooser.PropertyEditorImageChooser;
 
 /**
  *
@@ -35,21 +39,33 @@ public class SVGImageCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.m2g.SVGImage"); // NOI18N
 
+    public static final String PROP_RESOURCE_PATH = "resourcePath";  // NOI18N
+
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(ResourceCD.TYPEID, TYPEID, true, true);
     }
 
     public VersionDescriptor getVersionDescriptor() {
-        return MidpVersionDescriptor.MIDP;
+        return MidpVersionDescriptor.MIDP_2;
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
-        return Arrays.asList(
-               );
+        return Arrays.asList (
+            new PropertyDescriptor(PROP_RESOURCE_PATH, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2)
+        );
+    }
+
+    private static DefaultPropertiesPresenter createPropertiesPresenter() {
+        return new DefaultPropertiesPresenter()
+            .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+                .addProperty("Resource Path", PropertyEditorImageChooser.create(), PROP_RESOURCE_PATH);
     }
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
+            // properties
+            createPropertiesPresenter(),
+            // code
             MidpCustomCodePresenterSupport.createAddImportPresenter ()
         );
     }

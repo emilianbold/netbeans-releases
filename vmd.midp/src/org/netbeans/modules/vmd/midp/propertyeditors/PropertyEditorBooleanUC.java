@@ -132,12 +132,12 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         return true;
     }
     
-    public InplaceEditor getInplaceEditor() {
-        if (inplaceEditor == null) {
-            inplaceEditor = new CheckboxInplaceEditor();
-        }
-        return inplaceEditor;
-    }
+//    public InplaceEditor getInplaceEditor() {
+//        if (inplaceEditor == null) {
+//            inplaceEditor = new CheckboxInplaceEditor();
+//        }
+//        return inplaceEditor;
+//    }
     
     private class CustomEditor extends JPanel implements ActionListener {
         private JComboBox combobox;
