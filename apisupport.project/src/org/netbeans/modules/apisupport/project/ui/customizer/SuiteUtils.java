@@ -82,28 +82,24 @@ public final class SuiteUtils {
     public static NbModuleProject[] getDependentModules(final NbModuleProject suiteComponent) throws IOException {
         final String cnb = suiteComponent.getCodeNameBase();
         try {
-            return (NbModuleProject[]) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction(){
-                public Object run() throws Exception {
-                    Set/*NbModuleProject*/ result = new HashSet();
+            return ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<NbModuleProject[]>(){
+                public NbModuleProject[] run() throws Exception {
+                    Set<NbModuleProject> result = new HashSet<NbModuleProject>();
                     SuiteProject suite = SuiteUtils.findSuite(suiteComponent);
                     if (suite == null) { // #88303
                         Util.err.log(ErrorManager.WARNING,
                                 "Cannot find suite for the given suitecomponent (" + suiteComponent + ')'); // NOI18N
                     } else {
-                        Set<NbModuleProject> subProjects = SuiteUtils.getSubProjects(suite);
-                        PROJECTS: for (Iterator it = subProjects.iterator(); it.hasNext();) {
-                            NbModuleProject p = (NbModuleProject) it.next();
-                            ProjectXMLManager pxm = new ProjectXMLManager(p);
-                            for (Iterator depsIt = pxm.getDirectDependencies().iterator(); depsIt.hasNext();) {
-                                ModuleDependency dep = (ModuleDependency) depsIt.next();
+                        for (NbModuleProject p : SuiteUtils.getSubProjects(suite)) {
+                            for (ModuleDependency dep : new ProjectXMLManager(p).getDirectDependencies()) {
                                 if (dep.getModuleEntry().getCodeNameBase().equals(cnb)) {
                                     result.add(p);
-                                    continue PROJECTS;
+                                    break;
                                 }
                             }
                         }
                     }
-                    return (NbModuleProject[]) result.toArray(new NbModuleProject[result.size()]);
+                    return result.toArray(new NbModuleProject[result.size()]);
                 }
             });
         } catch (MutexException e) {
@@ -118,24 +114,22 @@ public final class SuiteUtils {
      */
     public static void replaceSubModules(final SuiteProperties suiteProps) throws IOException {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     SuiteUtils utils = new SuiteUtils(suiteProps);
                     Set<NbModuleProject> currentModules = suiteProps.getSubModules();
                     Set<NbModuleProject> origSubModules = suiteProps.getOrigSubModules();
                     
                     // remove removed modules
-                    for (Iterator it = origSubModules.iterator(); it.hasNext(); ) {
-                        NbModuleProject origModule = (NbModuleProject) it.next();
+                    for (NbModuleProject origModule : origSubModules) {
                         if (!currentModules.contains(origModule)) {
                             Util.err.log("Removing module: " + origModule); // NOI18N
-                            utils.removeModule(origModule);
+                            removeModule(origModule, suiteProps);
                         }
                     }
                     
                     // add new modules
-                    for (Iterator it = currentModules.iterator(); it.hasNext(); ) {
-                        NbModuleProject currentModule = (NbModuleProject) it.next();
+                    for (NbModuleProject currentModule : currentModules) {
                         if (SuiteUtils.contains(suiteProps.getProject(), currentModule)) {
                             Util.err.log("Module \"" + currentModule + "\" or a module with the same CNB is already contained in the suite."); // NOI18N
                             continue;
@@ -159,8 +153,8 @@ public final class SuiteUtils {
      */
     public static void addModule(final SuiteProject suite, final NbModuleProject project) throws IOException {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     final SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
                             suite.getEvaluator(), getSubProjects(suite));
                     if (!SuiteUtils.contains(suite, project)) {
@@ -187,8 +181,8 @@ public final class SuiteUtils {
      */
     public static void removeModuleFromSuiteWithDependencies(final NbModuleProject suiteComponent) throws IOException {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     NbModuleProject[] modules = SuiteUtils.getDependentModules(suiteComponent);
                     // remove all dependencies on the being removed suite component
                     String cnb = suiteComponent.getCodeNameBase();
@@ -214,17 +208,19 @@ public final class SuiteUtils {
      */
     public static void removeModuleFromSuite(final NbModuleProject suiteComponent) throws IOException {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     SuiteProject suite = SuiteUtils.findSuite(suiteComponent);
                     if (suite != null) {
                         // detach module from its current suite
                         SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
                                 suite.getEvaluator(), getSubProjects(suite));
                         SuiteUtils utils = new SuiteUtils(suiteProps);
-                        utils.removeModule(suiteComponent);
+                        removeModule(suiteComponent, suiteProps);
                         suiteProps.storeProperties();
                         ProjectManager.getDefault().saveProject(suite);
+                    } else if (Util.getModuleType(suiteComponent) == NbModuleTypeProvider.SUITE_COMPONENT) {
+                        removeModule(suiteComponent, null);
                     }
                     return null;
                 }
@@ -252,9 +248,9 @@ public final class SuiteUtils {
      * Also saves <code>subModule</code> using {@link ProjectManager#saveProject}.
      * </p>
      */
-    private void removeModule(final NbModuleProject subModule) {
+    private static void removeModule(final NbModuleProject subModule, final SuiteProperties/*or null*/ suiteProps) {
         NbModuleTypeProvider.NbModuleType type = Util.getModuleType(subModule);
-        assert type == NbModuleTypeProvider.SUITE_COMPONENT : "Not a suite component";
+        assert type == NbModuleTypeProvider.SUITE_COMPONENT : "Not a suite component: " + subModule;
         try {
             subModule.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
@@ -276,12 +272,14 @@ public final class SuiteUtils {
                             fo.delete();
                         }
                         
-                        // copy suite's platform.properties to the module (needed by standalone module)
-                        FileObject plafPropsFO = suiteProps.getProject().getProjectDirectory().
-                                getFileObject("nbproject/platform.properties"); // NOI18N
-                        FileObject subModuleNbProject = subModuleDir.getFileObject("nbproject"); // NOI18N
-                        if (subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
-                            FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
+                        if (suiteProps != null) {
+                            // copy suite's platform.properties to the module (needed by standalone module)
+                            FileObject plafPropsFO = suiteProps.getProject().getProjectDirectory().
+                                    getFileObject("nbproject/platform.properties"); // NOI18N
+                            FileObject subModuleNbProject = subModuleDir.getFileObject("nbproject"); // NOI18N
+                            if (subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
+                                FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
+                            }
                         }
                         EditableProperties props = subModule.getHelper().getProperties(PRIVATE_PLATFORM_PROPERTIES);
                         if (props.getProperty("user.properties.file") == null) { // NOI18N
@@ -304,7 +302,9 @@ public final class SuiteUtils {
             });
             
             // now clean up the suite
-            removeFromProperties(subModule);
+            if (suiteProps != null) {
+                removeFromProperties(subModule, suiteProps);
+            }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
@@ -317,13 +317,13 @@ public final class SuiteUtils {
      *
      * @return wheter something has changed or not
      */
-    private boolean removeFromProperties(NbModuleProject moduleToRemove) {
+    private static boolean removeFromProperties(NbModuleProject moduleToRemove, SuiteProperties suiteProps) {
         String modulesProp = suiteProps.getProperty(MODULES_PROPERTY);
         boolean removed = false;
         if (modulesProp != null) {
-            List pieces = new ArrayList(Arrays.asList(PropertyUtils.tokenizePath(modulesProp)));
-            for (Iterator piecesIt = pieces.iterator(); piecesIt.hasNext(); ) {
-                String unevaluated = (String) piecesIt.next();
+            List<String> pieces = new ArrayList<String>(Arrays.asList(PropertyUtils.tokenizePath(modulesProp)));
+            for (Iterator<String> piecesIt = pieces.iterator(); piecesIt.hasNext(); ) {
+                String unevaluated = piecesIt.next();
                 String evaluated = suiteProps.getEvaluator().evaluate(unevaluated);
                 if (evaluated == null) {
                     Util.err.log("Cannot evaluate " + unevaluated + " property."); // NOI18N
@@ -394,14 +394,13 @@ public final class SuiteUtils {
         pxm.setModuleType(type);
     }
     
-    private String[] getAntProperty(final Collection pieces) {
-        List l = new ArrayList();
-        for (Iterator it = pieces.iterator(); it.hasNext();) {
-            String piece = (String) it.next() + (it.hasNext() ? ":" : ""); // NOI18N
+    private static String[] getAntProperty(final Collection<String> pieces) {
+        List<String> l = new ArrayList<String>();
+        for (Iterator<String> it = pieces.iterator(); it.hasNext();) {
+            String piece = it.next() + (it.hasNext() ? ":" : ""); // NOI18N
             l.add(piece);
         }
-        String [] newPieces = new String[l.size()];
-        return (String[]) l.toArray(newPieces);
+        return l.toArray(new String[l.size()]);
     }
     
     /**
@@ -434,8 +433,8 @@ public final class SuiteUtils {
      */
     public static SuiteProject findSuite(final Project suiteComponent) throws IOException {
         try {
-            return (SuiteProject) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction(){
-                public Object run() throws Exception {
+            return ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<SuiteProject>(){
+                public SuiteProject run() throws Exception {
                     Project suite = null;
                     File suiteDir = SuiteUtils.getSuiteDirectory(suiteComponent);
                     if (suiteDir != null) {
@@ -449,7 +448,7 @@ public final class SuiteUtils {
                             suite = ProjectManager.getDefault().findProject(fo);
                         }
                     }
-                    return suite instanceof SuiteProject ? suite : /* #80786 */null;
+                    return suite instanceof SuiteProject ? (SuiteProject) suite : /* #80786 */null;
                 }
             });
         } catch (MutexException e) {
@@ -481,7 +480,7 @@ public final class SuiteUtils {
      */
     public static Set<NbModuleProject> getSubProjects(final Project suite) {
         assert suite != null;
-        SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
+        SubprojectProvider spp = suite.getLookup().lookup(SubprojectProvider.class);
         return NbCollections.checkedSetByFilter(spp.getSubprojects(), NbModuleProject.class, true);
     }
     
@@ -492,7 +491,7 @@ public final class SuiteUtils {
      */
     public static File getSuiteDirectory(final Project project) {
         File suiteDir = null;
-        SuiteProvider sp = (SuiteProvider) project.getLookup().lookup(SuiteProvider.class);
+        SuiteProvider sp = project.getLookup().lookup(SuiteProvider.class);
         if (sp != null) {
             suiteDir = sp.getSuiteDirectory();
         }

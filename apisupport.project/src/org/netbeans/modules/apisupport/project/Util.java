@@ -256,12 +256,17 @@ public final class Util {
      * FileUtil#getFileDisplayName} otherwise.
      */
     public static String getDisplayName(FileObject projectDir) {
-        try {
-            Project p = ProjectManager.getDefault().findProject(projectDir);
-            return ProjectUtils.getInformation(p).getDisplayName();
-        } catch (IOException e) {
-            return FileUtil.getFileDisplayName(projectDir);
+        if (projectDir.isFolder()) {
+            try {
+                Project p = ProjectManager.getDefault().findProject(projectDir);
+                if (p != null) {
+                    return ProjectUtils.getInformation(p).getDisplayName();
+                }
+            } catch (IOException e) {
+                // ignore
+            }
         }
+        return FileUtil.getFileDisplayName(projectDir);
     }
     
     /**

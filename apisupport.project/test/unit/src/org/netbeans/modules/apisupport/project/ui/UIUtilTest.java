@@ -51,9 +51,9 @@ public class UIUtilTest extends LayerTestBase {
      */
     public void testCreateLayerPresenterComboModel() throws Exception {
         Project project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
-        Map excludes = new HashMap();
-        excludes.put("template", Boolean.TRUE);
-        excludes.put("simple", Boolean.FALSE);
+        Map<String,Object> excludes = new HashMap<String,Object>();
+        excludes.put("template", true);
+        excludes.put("simple", false);
         String sfsRoot = "Templates";
         ComboBoxModel allModel = UIUtil.createLayerPresenterComboModel(project, sfsRoot);
         ComboBoxModel excludedModel = UIUtil.createLayerPresenterComboModel(project, sfsRoot, excludes);

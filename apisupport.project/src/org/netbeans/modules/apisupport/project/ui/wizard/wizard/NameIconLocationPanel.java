@@ -45,15 +45,15 @@ import org.openide.util.Utilities;
  */
 final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
-    private static final Map PURE_TEMPLATES_FILTER = new HashMap(2);
+    private static final Map<String,Object> PURE_TEMPLATES_FILTER = new HashMap<String,Object>(2);
     
     private static final String TEMPLATES_DIR = "Templates"; // NOI18N
     private static final String DEFAULT_CATEGORY_PATH = TEMPLATES_DIR + "/Other"; // NOI18N
     
     
     static {
-        PURE_TEMPLATES_FILTER.put("template", Boolean.TRUE); // NOI18N
-        PURE_TEMPLATES_FILTER.put("simple", Boolean.FALSE); // NOI18N
+        PURE_TEMPLATES_FILTER.put("template", true); // NOI18N
+        PURE_TEMPLATES_FILTER.put("simple", false); // NOI18N
     }
     
     private boolean categoriesLoaded;

@@ -23,14 +23,13 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.text.Collator;
@@ -38,9 +37,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -94,6 +91,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
 
 /**
@@ -182,7 +180,7 @@ public final class UIUtil {
             return new KeyStroke [0];
         }
         StringTokenizer st = new StringTokenizer(keyStrokes, delim);
-        List result = new ArrayList();
+        List<KeyStroke> result = new ArrayList<KeyStroke>();
         while (st.hasMoreTokens()) {
             String ks = st.nextToken().trim();
             KeyStroke keyStroke = stringToKeyStroke(ks);
@@ -191,7 +189,7 @@ public final class UIUtil {
             }
             result.add(keyStroke);
         }
-        return (KeyStroke[]) result.toArray(new KeyStroke [result.size()]);
+        return result.toArray(new KeyStroke[result.size()]);
     }
     
     public static String keyStrokesToString(final KeyStroke[] keyStrokes) {
@@ -260,7 +258,7 @@ public final class UIUtil {
         public void changedUpdate(DocumentEvent e) { insertUpdate(null); }
     }
     
-    private static WeakReference iconChooser;
+    private static Reference<JFileChooser> iconChooser;
     
     /**
      * @param icon file representing icon
@@ -274,10 +272,10 @@ public final class UIUtil {
             return "";
         }
         return NbBundle.getMessage(UIUtil.class, "MSG_WrongIconSize",new Object[]  {
-            Integer.toString(real.width), 
-            Integer.toString(real.height), 
-            Integer.toString(expectedWidth), 
-            Integer.toString(expectedHeight)
+            real.width,
+            real.height,
+            expectedWidth,
+            expectedHeight
         });
     }
 
@@ -287,10 +285,7 @@ public final class UIUtil {
      * @return warning 
      */
     public static String getNoIconSelectedWarning(int expectedWidth, int expectedHeight) {
-        return NbBundle.getMessage(UIUtil.class, "MSG_NoIconSelected",new Object[]  {
-            Integer.toString(expectedWidth), 
-            Integer.toString(expectedHeight)
-        });        
+        return NbBundle.getMessage(UIUtil.class, "MSG_NoIconSelected", expectedWidth, expectedHeight);
     }
     
     /**
@@ -325,13 +320,13 @@ public final class UIUtil {
      */
     public static JFileChooser getIconFileChooser() {        
         if (iconChooser != null) {
-            JFileChooser choose = (JFileChooser)iconChooser.get();
+            JFileChooser choose = iconChooser.get();
             if (choose != null) {
                 return choose;
             }
         }
         final JFileChooser chooser = new IconFileChooser();        
-        iconChooser = new WeakReference(chooser);
+        iconChooser = new WeakReference<JFileChooser>(chooser);
         return chooser;
     }
 
@@ -408,7 +403,7 @@ public final class UIUtil {
      */
     public static ComboBoxModel createLayerPresenterComboModel(
             final Project project, final String sfsRoot) {
-        return createLayerPresenterComboModel(project, sfsRoot, Collections.EMPTY_MAP);
+        return createLayerPresenterComboModel(project, sfsRoot, Collections.<String,Object>emptyMap());
     }
     
     /**
@@ -420,19 +415,18 @@ public final class UIUtil {
      *                     with a corresponding value.
      */
     public static ComboBoxModel createLayerPresenterComboModel(
-            final Project project, final String sfsRoot, final Map<Object, String> excludeAttrs) {
+            final Project project, final String sfsRoot, final Map<String,Object> excludeAttrs) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         try {
             FileSystem sfs = LayerUtils.getEffectiveSystemFilesystem(project);
             FileObject root = sfs.getRoot().getFileObject(sfsRoot);
             if (root != null) {
-                Collection<FileObject> subFolders = getFolders(root, excludeAttrs);
-                SortedSet<LayerItemPresenter> presenters = new TreeSet();
-                for (Iterator it = subFolders.iterator(); it.hasNext();) {
-                    presenters.add(new LayerItemPresenter((FileObject) it.next(), root));
+                SortedSet<LayerItemPresenter> presenters = new TreeSet<LayerItemPresenter>();
+                for (FileObject subFolder : getFolders(root, excludeAttrs)) {
+                    presenters.add(new LayerItemPresenter(subFolder, root));
                 }
-                for (Iterator it = presenters.iterator(); it.hasNext();) {
-                    model.addElement(it.next());
+                for (LayerItemPresenter presenter : presenters) {
+                    model.addElement(presenter);
                 }
             }
         } catch (IOException exc) {
@@ -441,7 +435,7 @@ public final class UIUtil {
         return model;
     }
     
-    public static class LayerItemPresenter implements Comparable {
+    public static class LayerItemPresenter implements Comparable<LayerItemPresenter> {
         
         private String displayName;
         private final FileObject item;
@@ -479,13 +473,12 @@ public final class UIUtil {
             return getDisplayName();
         }
         
-        public int compareTo(Object o) {
-            int res = Collator.getInstance().compare(getDisplayName(),
-                    ((LayerItemPresenter) o).getDisplayName());
+        public int compareTo(LayerItemPresenter o) {
+            int res = Collator.getInstance().compare(getDisplayName(), o.getDisplayName());
             if (res != 0) {
                 return res;
             } else {
-                return getFullPath().compareTo(((LayerItemPresenter) o).getFullPath());
+                return getFullPath().compareTo(o.getFullPath());
             }
         }
         
@@ -503,7 +496,7 @@ public final class UIUtil {
         private String computeDisplayName() {
             FileObject displayItem = contentType ? item.getParent() : item;
             String displaySeparator = contentType ? "/" : " | "; // NOI18N
-            Stack s = new Stack();
+            Stack<String> s = new Stack<String>();
             s.push(getFileObjectName(displayItem));
             FileObject parent = displayItem.getParent();
             while (!root.getPath().equals(parent.getPath())) {
@@ -555,8 +548,7 @@ public final class UIUtil {
                         ProjectUtils.getInformation(project).getDisplayName())));
                 return null;
             }
-            NbModuleTypeProvider nmtp = (NbModuleTypeProvider) project.
-                    getLookup().lookup(NbModuleTypeProvider.class);
+            NbModuleTypeProvider nmtp = project.getLookup().lookup(NbModuleTypeProvider.class);
             if (nmtp == null) { // not netbeans module
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddNonNBModule",
@@ -615,7 +607,7 @@ public final class UIUtil {
         Image base = null;
         Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
         if (baseIcon != null) {
-            base = /* XXX replace later with: Utilities.icon2Image(baseIcon)*/convertToImage(baseIcon);
+            base = Utilities.icon2Image(baseIcon);
         } else {
             base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
             if (base == null) { // fallback to our owns
@@ -624,24 +616,6 @@ public final class UIUtil {
         }
         assert base != null;
         return base;
-    }
-    
-    /**
-     * Converts given icon to a {@link java.awt.Image}.
-     *
-     * @param icon {@link javax.swing.Icon} to be converted.
-     * @deprecated Should be replaced by {@link Utilities#icon2Image} when possible (cf. #52562).
-     */
-    public static Image convertToImage(final Icon icon) {
-        if (icon instanceof ImageIcon) {
-            return ((ImageIcon) icon).getImage();
-        } else {
-            BufferedImage bImage = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
-            Graphics g = bImage.getGraphics();
-            icon.paintIcon(new JLabel(), g, 0, 0);
-            g.dispose();
-            return bImage;
-        }
     }
     
     public static NbModuleProject runLibraryWrapperWizard(final Project suiteProvider) {
@@ -722,16 +696,19 @@ public final class UIUtil {
     }
     
     private static String getSuiteProjectName(Project suiteComp) {
-        return Util.getDisplayName(FileUtil.toFileObject(getSuiteDirectory(suiteComp)));
+        FileObject suiteDir = FileUtil.toFileObject(getSuiteDirectory(suiteComp));
+        if (suiteDir == null) {
+            // #94915
+            return "???"; // NOI18N
+        }
+        return Util.getDisplayName(suiteDir);
     }
     
-    private static Collection<FileObject> getFolders(final FileObject root, final Map excludeAttrs) {
-        Collection<FileObject> folders = new HashSet();
-        SUBFOLDERS: for (Enumeration subFolders = root.getFolders(false); subFolders.hasMoreElements(); ) {
-            FileObject subFolder = (FileObject) subFolders.nextElement();
-            for (Iterator it = excludeAttrs.entrySet().iterator(); it.hasNext();) {
-                Map.Entry me = (Map.Entry) it.next();
-                if (me.getValue().equals(subFolder.getAttribute((String) me.getKey()))) {
+    private static Collection<FileObject> getFolders(final FileObject root, final Map<String,Object> excludeAttrs) {
+        Collection<FileObject> folders = new HashSet<FileObject>();
+        SUBFOLDERS: for (FileObject subFolder : NbCollections.iterable(root.getFolders(false))) {
+            for (Map.Entry<String,Object> entry : excludeAttrs.entrySet()) {
+                if (entry.getValue().equals(subFolder.getAttribute(entry.getKey()))) {
                     continue SUBFOLDERS;
                 }
             }
