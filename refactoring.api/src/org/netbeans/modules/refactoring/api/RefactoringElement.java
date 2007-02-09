@@ -78,6 +78,9 @@ public final class RefactoringElement {
     
     /** 
      * Returns element associated with this refactoring element.
+     * For instance Java Implementation returns internal representation of method
+     * from getComposite() of RefectoringElement representing reference inside 
+     * of method body.
      * @see org.netbeans.modules.refactoring.spi.ui.TreeElement
      * @see org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation 
      * @return element.
