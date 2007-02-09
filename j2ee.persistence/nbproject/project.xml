@@ -196,12 +196,6 @@ Microsystems, Inc. All Rights Reserved.
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.junit</code-name-base>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.project.ant</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
