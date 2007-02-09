@@ -144,7 +144,7 @@ public class GeneratorUtils {
             @Override
             public Void visitVariable(VariableTree node, Boolean p) {
                 Element el = trees.getElement(getCurrentPath());
-                if (el != null && el.getKind() == ElementKind.FIELD && node.getInitializer() == null && !initializedFields.remove(el))
+                if (el != null && el.getKind() == ElementKind.FIELD && !el.getModifiers().contains(Modifier.STATIC) && node.getInitializer() == null && !initializedFields.remove(el))
                     uninitializedFields.add((VariableElement)el);
                 return null;
             }
