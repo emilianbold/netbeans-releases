@@ -133,7 +133,22 @@ $Id$
             mask="(?!^data/).*"/>                                
     </target>
     
-    <target name="copy-launchers" >
+    <target name="copy-unix-launcher">
+        <mkdir dir="${build.classes.dir}/${native.launcher.unix.stub.dst.dir}"/>
+        
+        <!-- copy windows launcher stub -->
+        <copy file="${native.launcher.unix.stub.src}" 
+              todir="${build.classes.dir}/${native.launcher.unix.stub.dst.dir}"/>
+        
+        <!-- copy windows launcher i18n messages -->
+        <copy todir="${build.classes.dir}/${native.launcher.unix.i18n.dir}">
+            <fileset dir="${native.launcher.unix.i18n.dir}">
+                <include name="*"/>
+            </fileset>
+        </copy>
+    </target>
+
+   <target name="copy-windows-launcher">
         <mkdir dir="${build.classes.dir}/${native.launcher.windows.stub.dst.dir}"/>
         
         <!-- copy windows launcher stub -->
@@ -146,7 +161,11 @@ $Id$
                 <include name="*"/>
             </fileset>
         </copy>
-        
+    </target>
+
+    <target name="copy-launchers" >
+	<antcall target="copy-windows-launcher"/>
+        <antcall target="copy-unix-launcher"/>
     </target>
     
 </project>

@@ -64,11 +64,14 @@ public class CreateNativeLauncherAction extends WizardAction {
         getWizardUi().setProgress(progress);
         try {
             NativeLauncher nl = new NativeLauncher();
+            
             nl.setJavaVersionMin("1.5.0_01");            
             nl.setJar(new File(targetPath));
             nl.setJvmArguments(new String [] {"-Xmx256m", "-Xms64m"});
             Platform platform = Registry.getInstance().getTargetPlatform();
-            File f = nl.createLauncher(platform, progress);
+            
+            File f = nl.create(platform, progress);
+            
             if ( !targetFile.equals(f)) {
                 FileUtils.deleteFile(targetFile);
                 System.setProperty(Registry.CREATE_BUNDLE_PATH_PROPERTY, f.getPath());

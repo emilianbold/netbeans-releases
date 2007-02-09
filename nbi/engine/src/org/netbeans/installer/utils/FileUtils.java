@@ -72,6 +72,7 @@ public final class FileUtils {
     public static final String METAINF_MASK = "META-INF.*";
     
     public static final String JAR_EXTENSION = ".jar";
+    public static final String PROPERTIES_EXTENSION = ".properties";
     
     public static final String SUN_MICR_RSA = "META-INF/SUN_MICR.RSA";
     public static final String SUN_MICR_SF = "META-INF/SUN_MICR.SF";
@@ -824,8 +825,9 @@ public final class FileUtils {
     }
     
     public static File createLauncher(NativeLauncher nl, Platform platform, Progress progress) throws IOException {
-        return nl.createLauncher(platform,
-                (progress==null) ? new Progress() : progress);
+        Progress prg = (progress==null) ? new Progress() : progress;
+        return nl.create(platform, progress);
+                
     }
     
     public static boolean exists(File file) {
