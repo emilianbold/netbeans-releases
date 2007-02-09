@@ -2164,6 +2164,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected void substituteText(final JTextComponent c, final int offset, final int len, String toAdd) {
+            final List<ElementHandle<VariableElement>> fieldHandles = new ArrayList<ElementHandle<VariableElement>>();
+            for (VariableElement variableElement : fields)
+                fieldHandles.add(ElementHandle.create(variableElement));
             BaseDocument doc = (BaseDocument)c.getDocument();
             if (len > 0) {
                 doc.atomicLock();
@@ -2191,7 +2194,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 else
                                     break;
                             }
-                            GeneratorUtils.generateConstructor(copy, tp, fields, null, idx);
+                            ArrayList<VariableElement> fieldElements = new ArrayList<VariableElement>();
+                            if (fieldHandles != null) {
+                                for (ElementHandle<? extends Element> handle : fieldHandles)
+                                    fieldElements.add((VariableElement)handle.resolve(copy));
+                            }
+                            GeneratorUtils.generateConstructor(copy, tp, fieldElements, null, idx);
                         }
                     }
                 }).commit();
