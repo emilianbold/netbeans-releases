@@ -53,13 +53,7 @@ public class ShowLocalHistoryAction extends NodeAction {
                 tc.setName(NbBundle.getMessage(this.getClass(), "CTL_LocalHistoryTopComponent", activatedNodes[0].getDisplayName()));
                 tc.open();
                 tc.requestActive();                                
-        
-//                if(lhv != null) {
-//                    remove(lhv.getPanel());
-//                    lhv.close();
-//                }
-//                lhv = new LocalHistoryDiffView(files, this);
-                
+                        
                 File[] files = rootSet.toArray(new File[rootSet.size()]);
                 if(files[0].isFile()) {
                     LocalHistoryFileView fileView = new LocalHistoryFileView(files, tc);                
@@ -67,13 +61,13 @@ public class ShowLocalHistoryAction extends NodeAction {
                     fileView.getExplorerManager().addPropertyChangeListener(diffView); // XXX hm                        
                     tc.init(diffView.getPanel(), fileView.getPanel());
                     // lhv.close(); XXX
-                } else {
+                } /*else {
                     LocalHistoryFolderView folderView = new LocalHistoryFolderView(files, tc);                
                     LocalHistoryDiffView diffView = new LocalHistoryDiffView(); 
                     folderView.getExplorerManager().addPropertyChangeListener(diffView); // XXX hm                        
                     tc.init(diffView.getPanel(), folderView.getPanel());                    
                     // lhv.close(); XXX                    
-                }
+                }*/
             }
         });
         
@@ -88,23 +82,32 @@ public class ShowLocalHistoryAction extends NodeAction {
         if(rootSet == null) { 
             return false;
         }                        
-        boolean files = false;
-        boolean folders = false;
         for (File file : rootSet) {            
-            if(file.isFile()) {
-                if(folders) {
-                    return false;
-                }
-                files = true;
+            if(file != null && !file.isFile()) {
+
+                return false;
             }
-            if(!file.isFile()) {
-                if(files) {
-                    return false;
-                }
-                folders = true;
-            }                        
+
         }        
-        return files && !folders || !files && folders;                
+        return true;   
+        
+//        boolean files = false;
+//        boolean folders = false;
+//        for (File file : rootSet) {            
+//            if(file.isFile()) {
+//                if(folders) {
+//                    return false;
+//                }
+//                files = true;
+//            }
+//            if(!file.isFile()) {
+//                if(files) {
+//                    return false;
+//                }
+//                folders = true;
+//            }                        
+//        }        
+//        return files && !folders || !files && folders;                
     }
     
     public String getName() {
