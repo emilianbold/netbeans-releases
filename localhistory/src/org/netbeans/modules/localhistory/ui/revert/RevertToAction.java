@@ -37,8 +37,7 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Stupka
  */
 public class RevertToAction extends AbstractRevertAction {
-
-
+        
     protected void performAction(final Node[] activatedNodes) {
         // XXX try to save files in invocation context only
         // list somehow modified file in the context and save
@@ -52,13 +51,14 @@ public class RevertToAction extends AbstractRevertAction {
                 VCSContext ctx = VCSContext.forNodes(activatedNodes);
                 final Set<File> rootSet = ctx.getRootFiles();        
                 RevertChanges revertChanges = new RevertChanges(rootSet);
-                revertChanges.show();
-                long ts = revertChanges.getTimeStamp();
-                for(File root : rootSet) {    
-                    if(root.isFile()) {
-                        revertFile(root, ts);    
-                    } else {
-                        revertFolder(root, ts);
+                if(revertChanges.show())  {
+                    long ts = revertChanges.getTimeStamp();
+                    for(File root : rootSet) {    
+                        if(root.isFile()) {
+                            revertFile(root, ts);    
+                        } else {
+                            revertFolder(root, ts);
+                        }
                     }
                 }
             }
