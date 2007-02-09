@@ -21,18 +21,11 @@ package org.netbeans.modules.j2ee.sun.share.configbean;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-
-import javax.enterprise.deploy.spi.DConfigBean;
 import javax.enterprise.deploy.model.DDBean;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
-import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.FlushAtEndOfMethod;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Cmp;
@@ -41,12 +34,6 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.Method;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.OneOneFinders;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.PrefetchDisabled;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.QueryMethod;
-
-import com.sun.jdo.api.persistence.mapping.ejb.beans.SunCmpMappings;
-import com.sun.jdo.api.persistence.mapping.ejb.beans.SunCmpMapping;
-import com.sun.jdo.api.persistence.mapping.ejb.beans.EntityMapping;
-import com.sun.jdo.api.persistence.mapping.ejb.beans.CmpFieldMapping;
-import com.sun.jdo.api.persistence.mapping.ejb.beans.Consistency;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.ConfigQuery;
 
