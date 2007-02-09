@@ -41,8 +41,7 @@ public class ProjectSharabilityQuery implements SharabilityQueryImplementation {
         if (fo != null) {
             Project p = FileOwnerQuery.getOwner(fo);
             if (p != null) {
-                SharabilityQueryImplementation sqi = (SharabilityQueryImplementation)
-                    p.getLookup().lookup(SharabilityQueryImplementation.class);
+                SharabilityQueryImplementation sqi = p.getLookup().lookup(SharabilityQueryImplementation.class);
                 if (sqi != null) {
                     return sqi.getSharability(file);
                 }

@@ -37,8 +37,7 @@ public class ProjectFileBuiltQuery implements FileBuiltQueryImplementation {
     public FileBuiltQuery.Status getStatus(FileObject file) {
         Project p = FileOwnerQuery.getOwner(file);
         if (p != null) {
-            FileBuiltQueryImplementation fbqi = (FileBuiltQueryImplementation)
-                p.getLookup().lookup(FileBuiltQueryImplementation.class);
+            FileBuiltQueryImplementation fbqi = p.getLookup().lookup(FileBuiltQueryImplementation.class);
             if (fbqi != null) {
                 return fbqi.getStatus(file);
             }

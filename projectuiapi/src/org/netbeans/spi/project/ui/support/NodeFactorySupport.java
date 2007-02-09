@@ -125,7 +125,7 @@ public class NodeFactorySupport {
                     toRet.add(nd);
                 }
             }
-            return (Node[])toRet.toArray(new Node[toRet.size()]);
+            return toRet.toArray(new Node[toRet.size()]);
         }
         
         protected void addNotify() {
@@ -181,7 +181,7 @@ public class NodeFactorySupport {
                 } else {
                     while (!factory.equals(factories.get(index))) {
                         factories.remove(index);
-                        NodeList lst = (NodeList)nodeLists.remove(index);
+                        NodeList lst = nodeLists.remove(index);
                         lst.removeNotify();
                         lst.removeChangeListener(this);                            
                     }
