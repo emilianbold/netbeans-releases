@@ -19,9 +19,9 @@
 package org.netbeans.modules.xml.tax.beans.beaninfo;
 
 import java.beans.*;
-
 import org.netbeans.tax.TreeProcessingInstruction;
 import org.netbeans.modules.xml.tax.beans.customizer.TreeProcessingInstructionCustomizer;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -29,67 +29,6 @@ import org.netbeans.modules.xml.tax.beans.customizer.TreeProcessingInstructionCu
  * @version 0.1
  */
 public class TreeProcessingInstructionBeanInfo extends SimpleBeanInfo {
-
-    // Bean descriptor //GEN-FIRST:BeanDescriptor
-    private static BeanDescriptor beanDescriptor = new BeanDescriptor  ( TreeProcessingInstruction.class , TreeProcessingInstructionCustomizer.class );
-
-    static {//GEN-HEADEREND:BeanDescriptor
-
-	// Here you can add code for customizing the BeanDescriptor.
-
-    }//GEN-LAST:BeanDescriptor
-
-    // Property identifiers //GEN-FIRST:Properties
-    private static final int PROPERTY_target = 0;
-    private static final int PROPERTY_data = 1;
-
-    // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
-
-    static {
-        try {
-            properties[PROPERTY_target] = new PropertyDescriptor ( "target", TreeProcessingInstruction.class, "getTarget", "setTarget" ); // NOI18N
-            properties[PROPERTY_target].setDisplayName ( Util.THIS.getString ( "PROP_TreeProcessingInstructionBeanInfo_target" ) );
-            properties[PROPERTY_target].setShortDescription ( Util.THIS.getString ( "HINT_TreeProcessingInstructionBeanInfo_target" ) );
-
-            properties[PROPERTY_data] = new PropertyDescriptor ( "data", TreeProcessingInstruction.class, "getData", "setData" ); // NOI18N
-            properties[PROPERTY_data].setDisplayName ( Util.THIS.getString ( "PROP_TreeProcessingInstructionBeanInfo_data" ) );
-            properties[PROPERTY_data].setShortDescription ( Util.THIS.getString ( "HINT_TreeProcessingInstructionBeanInfo_data" ) );
-        } catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
-
-	// Here you can add code for customizing the properties array.
-
-    }//GEN-LAST:Properties
-
-    // EventSet identifiers//GEN-FIRST:Events
-    private static final int EVENT_propertyChangeListener = 0;
-
-    // EventSet array
-    private static EventSetDescriptor[] eventSets = new EventSetDescriptor[1];
-
-    static {
-        try {
-            eventSets[EVENT_propertyChangeListener] = new EventSetDescriptor ( org.netbeans.tax.TreeProcessingInstruction.class, "propertyChangeListener", java.beans.PropertyChangeListener.class, new String[] {"propertyChange"}, "addPropertyChangeListener", "removePropertyChangeListener" ); // NOI18N
-        }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Events
-
-        // Here you can add code for customizing the event sets array.
-
-    }//GEN-LAST:Events
-
-    // Method identifiers //GEN-FIRST:Methods
-
-    // Method array 
-    private static MethodDescriptor[] methods = new MethodDescriptor[0];
-    //GEN-HEADEREND:Methods
-
-    // Here you can add code for customizing the methods array.
-    
-    //GEN-LAST:Methods
-
-    private static final int defaultPropertyIndex = -1;//GEN-BEGIN:Idx
-    private static final int defaultEventIndex = -1;//GEN-END:Idx
-
 
     /**
      * Gets the bean's <code>BeanDescriptor</code>s.
@@ -99,7 +38,7 @@ public class TreeProcessingInstructionBeanInfo extends SimpleBeanInfo {
      * information should be obtained by automatic analysis.
      */
     public BeanDescriptor getBeanDescriptor() {
-	return beanDescriptor;
+	return new BeanDescriptor  ( TreeProcessingInstruction.class , TreeProcessingInstructionCustomizer.class );
     }
 
     /**
@@ -115,6 +54,21 @@ public class TreeProcessingInstructionBeanInfo extends SimpleBeanInfo {
      * if a given PropertyDescriptor is an IndexedPropertyDescriptor.
      */
     public PropertyDescriptor[] getPropertyDescriptors() {
+        int PROPERTY_target = 0;
+        int PROPERTY_data = 1;
+        PropertyDescriptor[] properties = new PropertyDescriptor[2];
+
+        try {
+            properties[PROPERTY_target] = new PropertyDescriptor ( "target", TreeProcessingInstruction.class, "getTarget", "setTarget" ); // NOI18N
+            properties[PROPERTY_target].setDisplayName ( Util.THIS.getString ( "PROP_TreeProcessingInstructionBeanInfo_target" ) );
+            properties[PROPERTY_target].setShortDescription ( Util.THIS.getString ( "HINT_TreeProcessingInstructionBeanInfo_target" ) );
+
+            properties[PROPERTY_data] = new PropertyDescriptor ( "data", TreeProcessingInstruction.class, "getData", "setData" ); // NOI18N
+            properties[PROPERTY_data].setDisplayName ( Util.THIS.getString ( "PROP_TreeProcessingInstructionBeanInfo_data" ) );
+            properties[PROPERTY_data].setShortDescription ( Util.THIS.getString ( "HINT_TreeProcessingInstructionBeanInfo_data" ) );
+        } catch( IntrospectionException e) {
+            Exceptions.printStackTrace(e);
+        }
         return properties;
     }
 
@@ -126,7 +80,14 @@ public class TreeProcessingInstructionBeanInfo extends SimpleBeanInfo {
      * should be obtained by automatic analysis.
      */
     public EventSetDescriptor[] getEventSetDescriptors() {
-        return eventSets;
+        EventSetDescriptor[] eventSets = new EventSetDescriptor[1];
+
+        try {
+            eventSets[0] = new EventSetDescriptor ( org.netbeans.tax.TreeProcessingInstruction.class, "propertyChangeListener", java.beans.PropertyChangeListener.class, new String[] {"propertyChange"}, "addPropertyChangeListener", "removePropertyChangeListener" ); // NOI18N
+        } catch( IntrospectionException e) {
+            Exceptions.printStackTrace(e);
+        }
+	return eventSets;
     }
 
     /**
@@ -137,30 +98,7 @@ public class TreeProcessingInstructionBeanInfo extends SimpleBeanInfo {
      * should be obtained by automatic analysis.
      */
     public MethodDescriptor[] getMethodDescriptors() {
-        return methods;
-    }
-
-    /**
-     * A bean may have a "default" property that is the property that will
-     * mostly commonly be initially chosen for update by human's who are 
-     * customizing the bean.
-     * @return  Index of default property in the PropertyDescriptor array
-     * 		returned by getPropertyDescriptors.
-     * <P>	Returns -1 if there is no default property.
-     */
-    public int getDefaultPropertyIndex() {
-        return defaultPropertyIndex;
-    }
-
-    /**
-     * A bean may have a "default" event that is the event that will
-     * mostly commonly be used by human's when using the bean. 
-     * @return Index of default event in the EventSetDescriptor array
-     *		returned by getEventSetDescriptors.
-     * <P>	Returns -1 if there is no default event.
-     */
-    public int getDefaultEventIndex() {
-        return defaultEventIndex;
+	return new MethodDescriptor[0];
     }
 
 }

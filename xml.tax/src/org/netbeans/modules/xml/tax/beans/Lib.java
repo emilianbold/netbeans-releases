@@ -235,7 +235,7 @@ public class Lib {
             }
         }
         
-	DialogDisplayer.getDefault ().createDialog (dd).show();
+	DialogDisplayer.getDefault ().createDialog (dd).setVisible(true);
 
 	if (dd.getValue() != DialogDescriptor.OK_OPTION) {
 	    return null;
