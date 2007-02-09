@@ -25,6 +25,7 @@ import java.util.List;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
 import org.netbeans.modules.j2ee.jpa.verification.common.RulesEngine;
+import org.netbeans.modules.j2ee.jpa.verification.rules.entity.ConsistentAccessType;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.HasNoArgConstructor;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.IdClassOverridesEqualsAndHashCode;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.IdDefinedInHierarchy;
@@ -54,6 +55,7 @@ public class JPARulesEngine extends RulesEngine {
         classRules.add(new TopLevelClass());
         classRules.add(new IdClassOverridesEqualsAndHashCode());
         classRules.add(new NoIdClassOnEntitySubclass());
+        classRules.add(new ConsistentAccessType());
     }
     
     protected Collection<Rule<TypeElement>> getClassRules() {

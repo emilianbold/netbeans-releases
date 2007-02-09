@@ -34,7 +34,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 public abstract class RulesEngine extends ElementKindVisitor6<Void, ProblemContext> {
     private ProblemContext ctx;
     private List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
-
+    
     @Override public Void visitTypeAsClass(TypeElement javaClass, ProblemContext ctx){
         // visit all enclosed classes recursively
         for (TypeElement enclosedClass : ElementFilter.typesIn(javaClass.getEnclosedElements())){
@@ -51,7 +51,9 @@ public abstract class RulesEngine extends ElementKindVisitor6<Void, ProblemConte
             
             if (problems != null){
                 for (ErrorDescription problem : problems){
-                    problemsFound.add(problem);
+                    if (problem != null){
+                        problemsFound.add(problem);
+                    }
                 }
             }
         }

@@ -24,6 +24,7 @@ import com.sun.source.util.SourcePositions;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
+import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -102,20 +103,27 @@ public abstract class Rule<E> {
     }
     
     protected ErrorDescription createProblem(Element subject, ProblemContext ctx, List<Fix> fixes){
+        ErrorDescription err = null;
         List<Fix> fixList = fixes == null ? Collections.EMPTY_LIST : fixes;
         
         // by default place error annotation on the element being checked
-        Tree elementTree = ctx.getElementToAnnotate() == null ? 
+        Tree elementTree = ctx.getElementToAnnotate() == null ?
             ctx.getCompilationInfo().getTrees().getTree(subject) : ctx.getElementToAnnotate();
         
-        SourcePositions srcPositions = ctx.getCompilationInfo().getTrees().getSourcePositions();
-        
-        Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
-                ctx.getCompilationInfo(), elementTree);
-        
-        ErrorDescription err = ErrorDescriptionFactory.createErrorDescription(
-                getSeverity(), getDescription(), fixList, ctx.getFileObject(),
-                underlineSpan.getStartOffset(), underlineSpan.getEndOffset());
+        if (elementTree != null){
+            SourcePositions srcPositions = ctx.getCompilationInfo().getTrees().getSourcePositions();
+            
+            Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
+                    ctx.getCompilationInfo(), elementTree);
+            
+            err = ErrorDescriptionFactory.createErrorDescription(
+                    getSeverity(), getDescription(), fixList, ctx.getFileObject(),
+                    underlineSpan.getStartOffset(), underlineSpan.getEndOffset());
+        }
+        else{
+            JPAProblemFinder.LOG.severe(getClass().getName() + " could not create ErrorDescription: " +
+                    "failed to find tree for " + subject);
+        }
         
         return err;
     }

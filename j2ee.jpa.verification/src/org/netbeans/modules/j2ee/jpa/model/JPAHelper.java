@@ -20,10 +20,13 @@
 
 package org.netbeans.modules.j2ee.jpa.model;
 
+import java.util.Collection;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 
 /**
@@ -77,5 +80,63 @@ public class JPAHelper {
         }
         
         return name;
+    }
+    
+    public static AnnotationMirror getFirstAnnotationFromGivenSet(Element element,
+            Collection<String> searchedAnnotations){
+        
+        for (AnnotationMirror ann : element.getAnnotationMirrors()){
+            String annType = ann.getAnnotationType().toString();
+            
+            if (searchedAnnotations.contains(annType)){
+                return ann;
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     *
+     */
+    public static AccessType findAccessType(TypeElement entityClass){
+        AccessType accessType = AccessType.INDETERMINED;
+        
+        // look for the first element annotated with a JPA field annotation
+        for (Element element : entityClass.getEnclosedElements()){
+            if (element.getKind() == ElementKind.FIELD || element.getKind() == ElementKind.METHOD){
+                AnnotationMirror ann = getFirstAnnotationFromGivenSet(element, JPAAnnotations.MEMBER_LEVEL);
+                
+                if (ann != null){
+                    accessType = element.getKind() == ElementKind.FIELD ?
+                        AccessType.FIELD : AccessType.PROPERTY;
+                    
+                    break;
+                }
+            }
+        }
+        
+        if (accessType.isDetermined()){
+            // check if access type is consistent
+            Collection<? extends Element> otherElems = null;
+            
+            if (accessType == AccessType.FIELD){
+                otherElems = ElementFilter.methodsIn(entityClass.getEnclosedElements());
+            }
+            else{
+                otherElems = ElementFilter.fieldsIn(entityClass.getEnclosedElements());
+            }
+            
+            for (Element element : otherElems){
+                AnnotationMirror ann = getFirstAnnotationFromGivenSet(element, JPAAnnotations.MEMBER_LEVEL);
+                
+                if (ann != null){
+                    accessType = AccessType.INCONSISTENT;
+                    break;
+                }
+            }
+        }
+        
+        return accessType;
     }
 }

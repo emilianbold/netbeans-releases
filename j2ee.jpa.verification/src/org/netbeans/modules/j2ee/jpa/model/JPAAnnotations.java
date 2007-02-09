@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -19,9 +19,13 @@
 
 package org.netbeans.modules.j2ee.jpa.model;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.TreeSet;
+
 /**
  * Constants for annotation classes defined by the Java Persistestence API
- * 
+ *
  * @author Tomasz Slota
  */
 public class JPAAnnotations {
@@ -69,14 +73,20 @@ public class JPAAnnotations {
     public static final String JOIN_COLUMNS = "javax.persistence.JoinColumns"; // NOI18N
     public static final String JOIN_TABLE = "javax.persistence.JoinTable"; //NOI18N
     
+    public static final Set<String> MEMBER_LEVEL = new TreeSet<String>(Arrays.asList(
+            ID, EMBEDDED_ID, EMBEDDED, TRANSIENT, VERSION, BASIC, ENUMERATED,
+            GENERATED_VALUE,ONE_TO_ONE, ONE_TO_MANY, MANY_TO_ONE, MANY_TO_MANY,
+            MAP_KEY, LOB, TEMPORAL, COLUMN, JOIN_COLUMN, JOIN_COLUMNS,JOIN_TABLE));
+    
     // annotation methods...
     //nullable attribute in annotations like Column, JoinColumn etc.
     public static final String NULLABLE_ATTR = "nullable"; // NOI18N
     
     //value attribute in annotations with single attribute
     public static final String VALUE_ATTR = "value"; //NOI18N
-
+    
     public static final String NAME_ATTR = "name"; //NOI18N
+    
     
     // TODO: Add other constants here
 }

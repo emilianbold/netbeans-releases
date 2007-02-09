@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.jpa.verification;
 
+import org.netbeans.modules.j2ee.jpa.model.AccessType;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
 
 /**
@@ -31,6 +32,7 @@ public class JPAProblemContext extends ProblemContext {
     private boolean embeddable;
     private boolean idClass;
     private boolean mappedSuperClass;
+    private AccessType accessType;
     
     public boolean isEntity(){
         return entity;
@@ -62,5 +64,17 @@ public class JPAProblemContext extends ProblemContext {
     
     public void setMappedSuperClass(boolean mappedSuperClass){
         this.mappedSuperClass = mappedSuperClass;
+    }
+    
+    public AccessType getAccessType(){
+        return accessType;
+    }
+    
+    public void setAccessType(AccessType accessType){
+        this.accessType = accessType;
+    }
+    
+    public boolean isJPAClass(){
+        return entity || embeddable || idClass || mappedSuperClass;
     }
 }
