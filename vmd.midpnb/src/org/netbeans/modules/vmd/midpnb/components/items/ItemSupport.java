@@ -41,10 +41,10 @@ import java.awt.*;
  */
 public class ItemSupport {
 
-    private static final Resolver SVG_MENU_ITEM_RESOLVER = new ElementResolver(SVGMenuElementEventSourceCD.PROP_STRING, SVGMenuElementEventSourceCD.ICON_PATH);
+    private static final Resolver SVG_MENU_ELEMENT_RESOLVER = new ElementResolver(SVGMenuElementEventSourceCD.PROP_STRING, SVGMenuElementEventSourceCD.ICON_PATH);
 
-    public static Resolver createSVGMenuItemInfoResolver() {
-        return SVG_MENU_ITEM_RESOLVER;
+    public static Resolver createSVGMenuElementInfoResolver () {
+        return SVG_MENU_ELEMENT_RESOLVER;
     }
 
     private static class ElementResolver implements InfoPresenter.Resolver {

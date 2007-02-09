@@ -50,7 +50,7 @@ import java.util.List;
  */
 public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
 
-    public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#SVGMenuItemEventSource"); // NOI18N
+    public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#SVGMenuElementEventSource"); // NOI18N
 
     public static final String PROP_STRING = "string"; // NOI18N
 
@@ -92,7 +92,7 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.create (ItemSupport.createSVGMenuItemInfoResolver()),
+            InfoPresenter.create (ItemSupport.createSVGMenuElementInfoResolver ()),
             // properties
             createPropertiesPresenter (),
             // inspector

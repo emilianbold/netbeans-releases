@@ -67,7 +67,7 @@ public final class MidpCustomCodePresenterSupport {
     private static final Parameter PARAMETER_SPLASHSCREEN_COMMAND = new SplashScreenCommandParameter ();
     private static final Parameter PARAMETER_SVG_WAITSCREEN_COMMAND = new SVGWaitScreenCommandParameter ();
     private static final Parameter PARAMETER_SVG_SPLASHSCREEN_COMMAND = new SVGSplashScreenCommandParameter ();
-    private static final Parameter PARAMETER_SVG_MENU_ITEM = new SVGMenuElementParameter ();
+    private static final Parameter PARAMETER_SVG_MENU_ELEMENT = new SVGMenuElementParameter ();
 
     private MidpCustomCodePresenterSupport () {
     }
@@ -100,8 +100,8 @@ public final class MidpCustomCodePresenterSupport {
         return PARAMETER_SVG_SPLASHSCREEN_COMMAND;
     }
 
-    public static Parameter createSVGMenuItemParameter () {
-        return PARAMETER_SVG_MENU_ITEM;
+    public static Parameter createSVGMenuElementParameter () {
+        return PARAMETER_SVG_MENU_ELEMENT;
     }
 
     public static Presenter createAddImportPresenter () {
