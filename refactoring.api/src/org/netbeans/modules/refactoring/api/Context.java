@@ -37,6 +37,12 @@ public final class Context extends AbstractLookup {
         this.instanceContent = instanceContent;
     }
 
+    /**
+     * Adds value instance into this context
+     * for instance Java impl. puts instance of ClasspathInfo here.
+     * If there is an instance already set for this context, old
+     * value is replaced by new one.
+     */
     public void add(Object value) {
         Object old = lookup(value.getClass());
         if (old!=null) {
