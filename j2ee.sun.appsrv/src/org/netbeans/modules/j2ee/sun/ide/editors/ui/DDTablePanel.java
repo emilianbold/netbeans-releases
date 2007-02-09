@@ -456,7 +456,7 @@ public class DDTablePanel extends JPanel
                               NotifyDescriptor.OK_OPTION,
                               cancel});
         editDialog = DialogDisplayer.getDefault().createDialog(dd);
-        editDialog.show();
+        editDialog.setVisible(true);
     }
     			    
 

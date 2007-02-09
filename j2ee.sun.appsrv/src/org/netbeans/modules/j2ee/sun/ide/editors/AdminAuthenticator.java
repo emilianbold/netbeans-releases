@@ -87,7 +87,7 @@ public class AdminAuthenticator extends java.net.Authenticator {
         DialogDescriptor dd = new DialogDescriptor( passwordPanel, host );
         passwordPanel.setPrompt(title  );
         java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog( dd );
-        dialog.show();
+        dialog.setVisible(true);
         
         if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ){
             
