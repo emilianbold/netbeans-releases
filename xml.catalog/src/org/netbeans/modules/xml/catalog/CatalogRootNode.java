@@ -64,7 +64,7 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
         super(new RootChildren());
         setName("XML-CATALOG");                                                 // NOI18N
         setDisplayName (Util.THIS.getString("TEXT_catalog_root"));              // NOI18N
-        setIconBase("org/netbeans/modules/xml/catalog/resources/catalog-root"); // NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/xml/catalog/resources/catalog-root.gif"); // NOI18N
         setShortDescription(Util.THIS.getString("PROP_catalog_root_desc"));
         getCookieSet().add(this);
     }
@@ -118,7 +118,7 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
             Dimension fullDimension = new Dimension(widthInsets, heightInsets);
             myDialog.setSize(fullDimension);  //^ packing never creates bigger window :-(
             
-            myDialog.show();
+            myDialog.setVisible(true);
         }
 
         public void actionPerformed(ActionEvent ae) {

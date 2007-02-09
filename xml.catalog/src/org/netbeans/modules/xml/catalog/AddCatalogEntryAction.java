@@ -46,7 +46,7 @@ public class AddCatalogEntryAction extends NodeAction {
         panel.setEnclosingDesc(dd);
         java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dd.setValid(false);
-        dialog.show();
+        dialog.setVisible(true);
         if (dd.getValue().equals(DialogDescriptor.OK_OPTION)) {
             if (panel.isPublic())
                 catalog.registerCatalogEntry("PUBLIC:"+panel.getPublicId(), panel.getUri()); //NOI18N

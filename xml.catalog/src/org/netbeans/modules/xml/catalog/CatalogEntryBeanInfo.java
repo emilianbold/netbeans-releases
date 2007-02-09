@@ -20,7 +20,7 @@ package org.netbeans.modules.xml.catalog;
 
 import java.beans.*;
 import java.awt.Image;
-
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 public class CatalogEntryBeanInfo extends SimpleBeanInfo {
@@ -34,57 +34,6 @@ public class CatalogEntryBeanInfo extends SimpleBeanInfo {
     private static final String URI_D = Util.THIS.getString("PROP_uri_desc");
     private static final String URI_N = Util.THIS.getString("PROP_uri");
     
-    // Property identifiers
-    private static final int PROPERTY_publicID = 0;
-    private static final int PROPERTY_systemID = 1;
-    private static final int PROPERTY_URI = 2;
-
-    // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[3];
-
-    static {
-        try {
-            properties[PROPERTY_publicID] = new PropertyDescriptor ( "publicID", CatalogEntry.class, "getPublicIDValue", null ); // NOI18N
-            properties[PROPERTY_publicID].setDisplayName ( PUBLICID_N );
-            properties[PROPERTY_publicID].setShortDescription ( PUBLICID_D );
-            properties[PROPERTY_systemID] = new PropertyDescriptor ( "systemID", CatalogEntry.class, "getSystemIDValue", null ); // NOI18N
-            properties[PROPERTY_systemID].setDisplayName ( SYSTEMID_N );
-            properties[PROPERTY_systemID].setShortDescription ( SYSTEMID_D );
-            properties[PROPERTY_URI] = new PropertyDescriptor ( "uri", CatalogEntry.class, "getUriValue", null ); // NOI18N
-            properties[PROPERTY_URI].setDisplayName ( URI_N );
-            properties[PROPERTY_URI].setShortDescription ( URI_D );
-        }
-        catch( IntrospectionException e) {}                          
-
-        // Here you can add code for customizing the properties array.
-
-    }
-
-    // EventSet identifiers//GEN-FIRST:Events
-
-    // EventSet array
-    private static EventSetDescriptor[] eventSets = new EventSetDescriptor[0];
-//GEN-HEADEREND:Events
-
-    // Here you can add code for customizing the event sets array.
-
-//GEN-LAST:Events
-
-    // Method identifiers//GEN-FIRST:Methods
-
-    // Method array 
-    private static MethodDescriptor[] methods = new MethodDescriptor[0];
-//GEN-HEADEREND:Methods
-
-    // Here you can add code for customizing the methods array.
-    
-//GEN-LAST:Methods
-
-
-    private static int defaultPropertyIndex = -1;//GEN-BEGIN:Idx
-    private static int defaultEventIndex = -1;//GEN-END:Idx
-
-
     /**
      * Gets the bean's <code>PropertyDescriptor</code>s.
      * 
@@ -98,6 +47,25 @@ public class CatalogEntryBeanInfo extends SimpleBeanInfo {
      * if a given PropertyDescriptor is an IndexedPropertyDescriptor.
      */
     public PropertyDescriptor[] getPropertyDescriptors() {
+        int PROPERTY_publicID = 0;
+        int PROPERTY_systemID = 1;
+        int PROPERTY_URI = 2;
+        PropertyDescriptor[] properties = new PropertyDescriptor[3];
+
+        try {
+            properties[PROPERTY_publicID] = new PropertyDescriptor ( "publicID", CatalogEntry.class, "getPublicIDValue", null ); // NOI18N
+            properties[PROPERTY_publicID].setDisplayName ( PUBLICID_N );
+            properties[PROPERTY_publicID].setShortDescription ( PUBLICID_D );
+            properties[PROPERTY_systemID] = new PropertyDescriptor ( "systemID", CatalogEntry.class, "getSystemIDValue", null ); // NOI18N
+            properties[PROPERTY_systemID].setDisplayName ( SYSTEMID_N );
+            properties[PROPERTY_systemID].setShortDescription ( SYSTEMID_D );
+            properties[PROPERTY_URI] = new PropertyDescriptor ( "uri", CatalogEntry.class, "getUriValue", null ); // NOI18N
+            properties[PROPERTY_URI].setDisplayName ( URI_N );
+            properties[PROPERTY_URI].setShortDescription ( URI_D );
+        }
+        catch( IntrospectionException e) {
+            Exceptions.printStackTrace(e);
+        }
         return properties;
     }
 
@@ -109,7 +77,7 @@ public class CatalogEntryBeanInfo extends SimpleBeanInfo {
      * should be obtained by automatic analysis.
      */
     public EventSetDescriptor[] getEventSetDescriptors() {
-        return eventSets;
+        return new EventSetDescriptor[0];
     }
 
     /**
@@ -120,30 +88,7 @@ public class CatalogEntryBeanInfo extends SimpleBeanInfo {
      * should be obtained by automatic analysis.
      */
     public MethodDescriptor[] getMethodDescriptors() {
-        return methods;
-    }
-
-    /**
-     * A bean may have a "default" property that is the property that will
-     * mostly commonly be initially chosen for update by human's who are 
-     * customizing the bean.
-     * @return  Index of default property in the PropertyDescriptor array
-     * 		returned by getPropertyDescriptors.
-     * <P>	Returns -1 if there is no default property.
-     */
-    public int getDefaultPropertyIndex() {
-        return defaultPropertyIndex;
-    }
-
-    /**
-     * A bean may have a "default" event that is the event that will
-     * mostly commonly be used by human's when using the bean. 
-     * @return Index of default event in the EventSetDescriptor array
-     *		returned by getEventSetDescriptors.
-     * <P>	Returns -1 if there is no default event.
-     */
-    public int getDefaultEventIndex() {
-        return defaultPropertyIndex;
+        return new MethodDescriptor[0];
     }
 
     /**
