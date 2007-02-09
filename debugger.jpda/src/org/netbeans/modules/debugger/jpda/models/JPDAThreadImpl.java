@@ -30,6 +30,7 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 
 import java.util.List;
 
@@ -38,6 +39,8 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 
@@ -54,6 +57,9 @@ public final class JPDAThreadImpl implements JPDAThread {
     private ThreadReference     threadReference;
     private JPDADebuggerImpl    debugger;
     private boolean             suspended;
+    private Operation           currentOperation;
+    private List<Operation>     lastOperations;
+    private boolean             doKeepLastOperations;
     private ReturnVariableImpl  returnVariable;
     private PropertyChangeSupport pch = new PropertyChangeSupport(this);
     private CallStackFrame[]    cachedFrames;
@@ -122,6 +128,34 @@ public final class JPDAThreadImpl implements JPDAThread {
         }
         return -1;
     }
+    
+    public synchronized Operation getCurrentOperation() {
+        return currentOperation;
+    }
+    
+    public synchronized void setCurrentOperation(Operation operation) { // Set the current operation for the default stratum.
+        this.currentOperation = operation;
+    }
+
+    public synchronized List<Operation> getLastOperations() {
+        return lastOperations;
+    }
+    
+    public synchronized void addLastOperation(Operation operation) {
+        if (lastOperations == null) {
+            lastOperations = new ArrayList<Operation>();
+        }
+        lastOperations.add(operation);
+    }
+    
+    public synchronized void clearLastOperations() {
+        lastOperations = null;
+    }
+    
+    public synchronized void keepLastOperationsUponResume() {
+        doKeepLastOperations = true;
+    }
+
 
     /**
      * Returns current state of this thread.
@@ -268,6 +302,9 @@ public final class JPDAThreadImpl implements JPDAThread {
             CallStackFrame[] frames = new CallStackFrame[n];
             for (int i = 0; i < n; i++) {
                 frames[i] = new CallStackFrameImpl((StackFrame) l.get(i), from + i, debugger);
+                if (from == 0 && i == 0 && currentOperation != null) {
+                    ((CallStackFrameImpl) frames[i]).setCurrentOperation(currentOperation);
+                }
             }
             if (to - from > 1) {
                 synchronized (cachedFramesLock) {
@@ -348,6 +385,12 @@ public final class JPDAThreadImpl implements JPDAThread {
         Boolean suspendedToFire = null;
         synchronized (this) {
             setReturnVariable(null); // Clear the return var on resume
+            setCurrentOperation(null);
+            if (doKeepLastOperations) {
+                doKeepLastOperations = false;
+            } else {
+                clearLastOperations();
+            }
             try {
                 if (isSuspended ()) {
                     int count = threadReference.suspendCount ();
@@ -370,9 +413,21 @@ public final class JPDAThreadImpl implements JPDAThread {
     }
     
     public void notifyToBeRunning() {
+        notifyToBeRunning(true);
+    }
+    
+    private void notifyToBeRunning(boolean clearVars) {
         Boolean suspendedToFire = null;
         synchronized (this) {
-            setReturnVariable(null); // Clear the return var on resume
+            if (clearVars) {
+                setCurrentOperation(null);
+                setReturnVariable(null); // Clear the return var on resume
+                if (doKeepLastOperations) {
+                    doKeepLastOperations = false;
+                } else {
+                    clearLastOperations();
+                }
+            }
             if (suspended) {
                 suspended = false;
                 suspendedToFire = Boolean.FALSE;
@@ -399,6 +454,14 @@ public final class JPDAThreadImpl implements JPDAThread {
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
                     suspendedToFire);
         }
+    }
+    
+    public void notifyMethodInvoking() {
+        notifyToBeRunning(false);
+    }
+    
+    public void notifyMethodInvokeDone() {
+        notifySuspended();
     }
     
     public void interrupt() {
@@ -484,4 +547,5 @@ public final class JPDAThreadImpl implements JPDAThread {
         pch.firePropertyChange(PROP_SUSPENDED,
                 Boolean.valueOf(!suspended), Boolean.valueOf(suspended));
     }
+
 }

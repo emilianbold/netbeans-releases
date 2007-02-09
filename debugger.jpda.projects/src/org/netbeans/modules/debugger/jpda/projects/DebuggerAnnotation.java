@@ -13,13 +13,22 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.projects;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import org.netbeans.modules.editor.highlights.spi.Highlight;
+import org.netbeans.modules.editor.highlights.spi.Highlighter;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.openide.filesystems.FileObject;
+import org.openide.text.Annotatable;
 
 import org.openide.text.Annotation;
 import org.openide.text.Line;
@@ -42,7 +51,18 @@ public class DebuggerAnnotation extends Annotation {
         this.line = line;
         attach (line);
     }
-
+    
+    DebuggerAnnotation (String type, Line.Part linePart) {
+        this.type = type;
+        this.line = linePart.getLine();
+        attach (linePart);
+    }
+    
+    DebuggerAnnotation (String type, Highlight highlight, FileObject fo) {
+        this.type = type;
+        attach (new HighlightAnnotatable(highlight, fo));
+    }
+    
     public String getAnnotationType () {
         return type;
     }
@@ -78,4 +98,53 @@ public class DebuggerAnnotation extends Annotation {
         return NbBundle.getBundle (DebuggerAnnotation.class).getString 
             ("TOOLTIP_ANNOTATION"); // NOI18N
     }
+    
+    private static final class HighlightAnnotatable extends Annotatable {
+        
+        private static Map highlightsByFiles = new HashMap();
+        
+        private Highlight highlight;
+        private FileObject fo;
+        
+        public HighlightAnnotatable(Highlight highlight, FileObject fo) {
+            this.highlight = highlight;
+            this.fo = fo;
+        }
+        
+        public String getText() {
+            return null;
+        }
+
+        protected void addAnnotation(Annotation anno) {
+            Collection highlights;
+            synchronized (highlightsByFiles) {
+                highlights = (Collection) highlightsByFiles.get(fo);
+                if (highlights == null) {
+                    highlights = new HashSet();
+                    highlightsByFiles.put(fo, highlights);
+                }
+                highlights.add(highlight);
+            }
+            Highlighter.getDefault().setHighlights(fo, getClass().getName(), highlights);
+        }
+
+        protected void removeAnnotation(Annotation anno) {
+            Collection highlights;
+            synchronized (highlightsByFiles) {
+                highlights = (Collection) highlightsByFiles.get(fo);
+                if (highlights == null) {
+                    highlights = Collections.EMPTY_SET;
+                } else {
+                    highlights.remove(highlight);
+                    if (highlights.isEmpty()) {
+                        highlightsByFiles.remove(fo);
+                    }
+                }
+            }
+            Highlighter.getDefault().setHighlights(fo, getClass().getName(), highlights);
+        }
+        
+
+    }
+    
 }

@@ -114,6 +114,26 @@ public class EditorContextBridge {
     }
 
     /**
+     * Adds annotation to given url on given character range.
+     *
+     * @param url a url of source annotation should be set into
+     * @param startPosition the starting position of the annotation
+     * @param endPosition the ending position of the annotation
+     * @param annotationType a type of annotation to be set
+     *
+     * @return annotation
+     */
+    public static Object annotate (
+        String url,
+        int startPosition,
+        int endPosition,
+        String annotationType,
+        Object timeStamp
+    ) {
+        return getContext ().annotate (url, startPosition, endPosition, annotationType, timeStamp);
+    }
+
+    /**
      * Removes given annotation.
      */
     public static void removeAnnotation (

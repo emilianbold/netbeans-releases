@@ -19,6 +19,7 @@
 package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.Location;
 import com.sun.jdi.StackFrame;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -127,6 +128,25 @@ public class SourcePath {
             return getURL (
                 convertClassNameToRelativePath (
                     sf.location ().declaringType ().name ()
+                ),
+                true
+            );
+        }
+    }
+    
+    public String getURL (
+        Location loc,
+        String stratumn
+    ) {
+        try {
+            return getURL (
+                convertSlash(loc.sourcePath(stratumn)),
+                true
+            );
+        } catch (AbsentInformationException e) {
+            return getURL (
+                convertClassNameToRelativePath (
+                    loc.declaringType().name()
                 ),
                 true
             );

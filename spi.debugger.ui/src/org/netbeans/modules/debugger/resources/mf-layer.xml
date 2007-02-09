@@ -100,6 +100,11 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createStepOverAction"/>
                 <attr name="instanceOf" stringvalue="javax.swing.Action"/>
             </file>
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOperationAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createStepOperationAction"/>
+                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+            </file>    
 
             <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.instance" />
             <file name="org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance" />
@@ -131,6 +136,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>
+    
     <folder name="Menu">
         <folder name="Window">
             <attr name="ProgressListAction.shadow/Debug" boolvalue="true" />
@@ -190,7 +196,6 @@ Microsystems, Inc. All Rights Reserved.
         <file name="SO-5.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance"/>
         </file>
-        
         <file name="DS-F8.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
         </file>
@@ -226,6 +231,9 @@ Microsystems, Inc. All Rights Reserved.
         </file>
         <file name="S-F7.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
+        </file>
+        <file name="S-F8.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOperationAction.instance"/>
         </file>
     </folder>
 
@@ -279,6 +287,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="DisabledCondBreakpoint.xml" url="DisabledCondBreakpoint.xml"/>
             <file name="CurrentPC.xml" url="CurrentPC.xml"/>
             <file name="CallSite.xml" url="CallSite.xml"/>
+            <file name="CurrentExpressionLine.xml" url="CurrentExpressionLine.xml"/>
+            <file name="CurrentExpression.xml" url="CurrentExpression.xml"/>
             <file name="BreakpointableLine.xml" url="BreakpointableLine.xml"/>
             <file name="PC_BP.xml" url="PC_BP.xml"/>
             <file name="PC_CBP.xml" url="PC_CBP.xml"/>

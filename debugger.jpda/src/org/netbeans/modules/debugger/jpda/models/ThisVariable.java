@@ -41,6 +41,7 @@ class ThisVariable extends AbstractVariable implements This {
         );
     }
 
+
     // This impl................................................................
 
     public ThisVariable clone() {

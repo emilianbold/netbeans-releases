@@ -422,6 +422,49 @@ Microsystems, Inc. All Rights Reserved.
         <class package="org.netbeans.api.debugger.jpda" name="LineBreakpoint" />
         <issue number="83188"/>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Support for stepping over operations.</summary>
+        <version major="2" minor="9"/>
+        <date day="1" month="2" year="2007"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <p>
+                In order to be able to provide stepping over operations,
+                we need a representation of an operation and some way how to
+                retrieve the operation(s) from a Thread and a CallStackFrame.
+            </p>
+            <p>
+                Added fields:<br/>
+                <code>JPDAStep.STEP_OPERATION</code>,
+                <code>EditorContext.CURRENT_LAST_OPERATION_ANNOTATION_TYPE</code>,
+                <code>EditorContext.CURRENT_EXPRESSION_SECONDARY_LINE_ANNOTATION_TYPE</code>,
+                <code>EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE</code>
+            </p>
+            <p>
+                Added methods:<br/>
+                <code>CallStackFrame.getCurrentOperation()</code>,
+                <code>JPDAThread.getCurrentOperation()</code>,
+                <code>JPDAThread.getLastOperations()</code>,
+                <code>EditorContext.createMethodOperation()</code>,
+                <code>EditorContext.addNextOperationTo()</code>,
+                <code>EditorContext.createPosition()</code>,
+                <code>EditorContext.getOperations()</code>
+            </p>
+            <p>
+                Added classes:<br/>
+                <code>EditorContext.BytecodeProvider</code>,
+                <code>EditorContext.Operation</code>,
+                <code>EditorContext.Position</code>
+            </p>
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="JPDAStep" />
+        <class package="org.netbeans.api.debugger.jpda" name="CallStackFrame" />
+        <class package="org.netbeans.api.debugger.jpda" name="JPDAThread" />
+        <class package="org.netbeans.spi.debugger.jpda" name="EditorContext" />
+        <issue number="93842"/>
+    </change>
 
 </changes>
 

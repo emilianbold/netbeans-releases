@@ -72,6 +72,9 @@ public class VariablesTableModel implements TableModel, Constants {
             else
             if (row instanceof Variable)
                 return ((Variable) row).getValue ();
+            if (row == "lastOperations") { // NOI18N
+                return ""; // NOI18N
+            }
         } else
         if ( LOCALS_TYPE_COLUMN_ID.equals (columnID) ||
              WATCH_TYPE_COLUMN_ID.equals (columnID)
@@ -105,6 +108,9 @@ public class VariablesTableModel implements TableModel, Constants {
             return ""; // NOI18N
         }
         if (row.toString().startsWith("SubArray")) { // NOI18N
+            return ""; // NOI18N
+        }
+        if (row == "lastOperations") { // NOI18N
             return ""; // NOI18N
         }
         throw new UnknownTypeException (row);

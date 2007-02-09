@@ -259,6 +259,19 @@ public class DebuggerAction extends AbstractAction {
         return action;
     }
     
+    public static DebuggerAction createStepOperationAction () {
+        DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_STEP_OPERATION);
+        action.putValue (Action.NAME, "CTL_Step_operation_action_name");
+        action.putValue (Action.SMALL_ICON, 
+                "org/netbeans/modules/debugger/resources/actions/StepOverOperation" // NOI18N
+        );
+        action.putValue (
+            "iconBase", // NOI18N
+            "org/netbeans/modules/debugger/resources/actions/StepOverOperation.gif" // NOI18N
+        );
+        return action;
+    }
+    
     public static DebuggerAction createToggleBreakpointAction () {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
         action.putValue (Action.NAME, "CTL_Toggle_breakpoint");

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -61,6 +61,8 @@ import javax.lang.model.element.VariableElement;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.editor.Coloring;
+import org.netbeans.modules.editor.highlights.spi.Highlight;
 
 import org.openide.ErrorManager;
 
@@ -236,7 +238,6 @@ public class EditorContextImpl extends EditorContext {
         return annotation;
     }
 
-    /*
     public Object annotate (
         String url,
         int startPosition,
@@ -267,7 +268,8 @@ public class EditorContextImpl extends EditorContext {
     private static Color getColor(String annotationType) {
         if (EditorContext.BREAKPOINT_ANNOTATION_TYPE.equals(annotationType)) {
             return new Color(0xFC9D9F);
-        } else if (EditorContext.CURRENT_LINE_ANNOTATION_TYPE.equals(annotationType)) {
+        } else if (EditorContext.CURRENT_LINE_ANNOTATION_TYPE.equals(annotationType) ||
+                   EditorContext.CURRENT_OUT_OPERATION_ANNOTATION_TYPE.equals(annotationType)) {
             return new Color(0xBDE6AA);
         } else if (EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE.equals(annotationType)) {
             return new Color(0xE9FFE6); // 0xE3FFD2// 0xD1FFBC
@@ -277,7 +279,6 @@ public class EditorContextImpl extends EditorContext {
             return new Color(0x0000FF);
         }
     }
-     */
 
     /**
      * Removes given annotation.
@@ -731,10 +732,8 @@ public class EditorContextImpl extends EditorContext {
     }
         
     
-    /*
     public Operation[] getOperations(String url, final int lineNumber,
-                                     final BytecodeProvider bytecodeProvider,
-                                     int locationInExpression) {
+                                     final BytecodeProvider bytecodeProvider) {
         DataObject dataObject = getDataObject (url);
         if (dataObject == null) return null;
         JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
@@ -762,67 +761,39 @@ public class EditorContextImpl extends EditorContext {
                     Tree methodTree = SourceUtils.treeFor(ci, method);
                     CompilationUnitTree cu = ci.getCompilationUnit();
                     ExpressionScanner scanner = new ExpressionScanner(lineNumber, cu, ci.getTrees().getSourcePositions());
-                    Set<ExpressionTree> expTreeSet = methodTree.accept(scanner, null);
+                    ExpressionScanner.ExpressionsInfo info = new ExpressionScanner.ExpressionsInfo();
+                    List<Tree> expTrees = methodTree.accept(scanner, info);
                     
                     //com.sun.source.tree.ExpressionTree expTree = scanner.getExpressionTree();
-                    if (expTreeSet == null || expTreeSet.size() == 0) {
+                    if (expTrees == null || expTrees.size() == 0) {
                         ops[0] = new Operation[] {};
                         return ;
                     }
-                    ExpressionTree[] expTrees = expTreeSet.toArray(new ExpressionTree[0]);
+                    //Tree[] expTrees = expTreeSet.toArray(new Tree[0]);
                     SourcePositions sp = ci.getTrees().getSourcePositions();
                     int treeStartLine = 
                             (int) cu.getLineMap().getLineNumber(
-                                sp.getStartPosition(cu, expTrees[0]));
+                                sp.getStartPosition(cu, expTrees.get(0)));
                     int treeEndLine =
                             (int) cu.getLineMap().getLineNumber(
-                                sp.getEndPosition(cu, expTrees[expTrees.length - 1]));
+                                sp.getEndPosition(cu, expTrees.get(expTrees.size() - 1)));
                     
                     int[] indexes = bytecodeProvider.indexAtLines(treeStartLine, treeEndLine);
+                    if (indexes == null) {
+                        return ;
+                    }
+                    Map<Tree, Operation> nodeOperations = new HashMap<Tree, Operation>();
                     ops[0] = AST2Bytecode.matchSourceTree2Bytecode(
                             cu,
                             ci,
-                            expTrees, bytecodeProvider.byteCodes(),
-                            indexes[0],
-                            indexes[1],
+                            expTrees, info, bytecodeProvider.byteCodes(),
+                            indexes,
                             bytecodeProvider.constantPool(),
-                            new AST2Bytecode.OperationCreationDelegate() {
-                                 public Operation createOperation(
-                                         Position startPosition,
-                                         Position endPosition,
-                                         int bytecodeIndex) {
-                                     return EditorContextImpl.this.createOperation(
-                                             startPosition,
-                                             endPosition,
-                                             bytecodeIndex);
-                                 }
-                                 public Operation createMethodOperation(
-                                         Position startPosition,
-                                         Position endPosition,
-                                         Position methodStartPosition,
-                                         Position methodEndPosition,
-                                         String methodName,
-                                         String methodClassType,
-                                         int bytecodeIndex) {
-                                     return EditorContextImpl.this.createMethodOperation(
-                                             startPosition,
-                                             endPosition,
-                                             methodStartPosition,
-                                             methodEndPosition,
-                                             methodName,
-                                             methodClassType,
-                                             bytecodeIndex);
-                                 }
-                                 public Position createPosition(
-                                         int offset,
-                                         int line,
-                                         int column) {
-                                     return EditorContextImpl.this.createPosition(
-                                             offset,
-                                             line,
-                                             column);
-                                 }
-                            });
+                            new OperationCreationDelegateImpl(),
+                            nodeOperations);
+                    if (ops[0] != null) {
+                        assignNextOperations(methodTree, cu, ci, bytecodeProvider, expTrees, info, nodeOperations);
+                    }
                 }
             },true);
         } catch (IOException ioex) {
@@ -832,9 +803,72 @@ public class EditorContextImpl extends EditorContext {
         return ops[0];
     }
     
+    private void assignNextOperations(Tree methodTree,
+                                      CompilationUnitTree cu,
+                                      CompilationController ci,
+                                      BytecodeProvider bytecodeProvider,
+                                      List<Tree> treeNodes,
+                                      ExpressionScanner.ExpressionsInfo info,
+                                      Map<Tree, Operation> nodeOperations) {
+        int length = treeNodes.size();
+        for (int treeIndex = 0; treeIndex < length; treeIndex++) {
+            Tree node = treeNodes.get(treeIndex);
+            Set<Tree> nextNodes = info.getNextExpressions(node);
+            if (nextNodes != null) {
+                EditorContext.Operation op = nodeOperations.get(node);
+                if (op == null) {
+                    for (int backIndex = treeIndex - 1; backIndex >= 0; backIndex--) {
+                        node = treeNodes.get(backIndex);
+                        op = nodeOperations.get(node);
+                        if (op != null) break;
+                    }
+                }
+                if (op != null) {
+                    for (Tree t : nextNodes) {
+                        EditorContext.Operation nextOp = nodeOperations.get(t);
+                        if (nextOp == null) {
+                            SourcePositions sp = ci.getTrees().getSourcePositions();
+                            int treeStartLine = 
+                                    (int) cu.getLineMap().getLineNumber(
+                                        sp.getStartPosition(cu, t));
+                            ExpressionScanner scanner = new ExpressionScanner(treeStartLine, cu, ci.getTrees().getSourcePositions());
+                            ExpressionScanner.ExpressionsInfo newInfo = new ExpressionScanner.ExpressionsInfo();
+                            List<Tree> newExpTrees = methodTree.accept(scanner, newInfo);
+                            treeStartLine = 
+                                    (int) cu.getLineMap().getLineNumber(
+                                        sp.getStartPosition(cu, newExpTrees.get(0)));
+                            int treeEndLine =
+                                    (int) cu.getLineMap().getLineNumber(
+                                        sp.getEndPosition(cu, newExpTrees.get(newExpTrees.size() - 1)));
+
+                            int[] indexes = bytecodeProvider.indexAtLines(treeStartLine, treeEndLine);
+                            Map<Tree, Operation> newNodeOperations = new HashMap<Tree, Operation>();
+                            Operation[] newOps = AST2Bytecode.matchSourceTree2Bytecode(
+                                    cu,
+                                    ci,
+                                    newExpTrees, newInfo, bytecodeProvider.byteCodes(),
+                                    indexes,
+                                    bytecodeProvider.constantPool(),
+                                    new OperationCreationDelegateImpl(),
+                                    newNodeOperations);
+                            nextOp = newNodeOperations.get(t);
+                            if (nextOp == null) {
+                                // Next operation not found
+                                System.err.println("Next operation not found!");
+                                continue;
+                            }
+                        }
+                        addNextOperationTo(op, nextOp);
+                    }
+                }
+            }
+        }
+        
+    }
+    
     /** return the offset of the first non-whitespace character on the line,
                or -1 when the line does not exist
-     *
+     */
     private static int findLineOffset(StyledDocument doc, int lineNumber) {
         int offset;
         try {
@@ -856,7 +890,6 @@ public class EditorContextImpl extends EditorContext {
         }
         return offset;
     }
-     */
     
     /**
      * Returns list of imports for given source url.
@@ -1039,22 +1072,6 @@ public class EditorContextImpl extends EditorContext {
         }
     }
     
-    /*
-    private static String getClassName (ClassElement e) {
-        String f = e.getName ().getFullName ();
-        if (!e.isInner ()) return f;
-        SourceElement sourceEl = e.getSource ();
-        if (sourceEl == null) return f;            
-        Identifier ident = sourceEl.getPackage ();
-        String c;
-        if (ident == null) c = ""; // NOI18N
-        else c = ident.getFullName ();
-        if (c.length () > 0)
-            return c + '.' + f.substring (c.length () + 1).replace ('.', '$');
-        return f.replace ('.', '$');
-    }
-     */
-
     private Line.Set getLineSet (String url, Object timeStamp) {
         DataObject dataObject = getDataObject (url);
         if (dataObject == null) return null;
@@ -1186,14 +1203,13 @@ public class EditorContextImpl extends EditorContext {
         
     }
     
-    /*
     private static final class OperationHighlight implements Highlight {
     
         private Coloring coloring;
         private int start;
         private int end;
 
-        /** Creates a new instance of DefaultHighlight *
+        /** Creates a new instance of OperationHighlight */
         public OperationHighlight(Coloring coloring, int start, int end) {
             this.coloring = coloring;
             this.start = start;
@@ -1213,6 +1229,48 @@ public class EditorContextImpl extends EditorContext {
         }
 
     }
-     */
+    
+    private class OperationCreationDelegateImpl implements AST2Bytecode.OperationCreationDelegate {
+        /*
+         public Operation createOperation(
+                 Position startPosition,
+                 Position endPosition,
+                 int bytecodeIndex) {
+             return EditorContextImpl.this.createOperation(
+                     startPosition,
+                     endPosition,
+                     bytecodeIndex);
+         }
+         */
+         public Operation createMethodOperation(
+                 Position startPosition,
+                 Position endPosition,
+                 Position methodStartPosition,
+                 Position methodEndPosition,
+                 String methodName,
+                 String methodClassType,
+                 int bytecodeIndex) {
+             return EditorContextImpl.this.createMethodOperation(
+                     startPosition,
+                     endPosition,
+                     methodStartPosition,
+                     methodEndPosition,
+                     methodName,
+                     methodClassType,
+                     bytecodeIndex);
+         }
+         public Position createPosition(
+                 int offset,
+                 int line,
+                 int column) {
+             return EditorContextImpl.this.createPosition(
+                     offset,
+                     line,
+                     column);
+         }
+         public void addNextOperationTo(Operation operation, Operation next) {
+             EditorContextImpl.this.addNextOperationTo(operation, next);
+         }
+    }
     
 }

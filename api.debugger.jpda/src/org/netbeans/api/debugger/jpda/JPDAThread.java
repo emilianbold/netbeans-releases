@@ -22,6 +22,9 @@ package org.netbeans.api.debugger.jpda;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ThreadReference;
 import java.beans.PropertyChangeListener;
+import java.util.List;
+import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 
 /**
@@ -82,6 +85,25 @@ public interface JPDAThread {
      * @see CallStackFrame
      */
     public abstract int getLineNumber (String stratum);
+
+    /**
+     * Returns the operation that is being currently executed on this thread.
+     * @return The current operation, or <CODE>null</CODE>.
+     * @see {@link CallStackFrame#getCurrentOperation}
+     */
+    public abstract Operation getCurrentOperation();
+    
+    /**
+     * Returns the list of the last operations, that were performed on this thread.
+     * Typically just operations from the current expression are stored.
+     * The thread should be suspended at the moment this method is called.
+     *
+     * @return  The list of last operations if available, the thread is suspended,
+     *          contains at least one frame and the topmost frame does not
+     *          represent a native method invocation; <CODE>null</CODE> otherwise
+     * @see CallStackFrame
+     */
+    public abstract List<Operation> getLastOperations();
 
     /**
      * Returns current state of this thread.

@@ -64,6 +64,25 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         set ();
     }
     
+    public static boolean canGetMethodReturnValues(VirtualMachine vm) {
+        if (!IS_JDK_16) return false;
+        boolean canGetMethodReturnValues = false;
+        java.lang.reflect.Method m = null;
+        try {
+            m = vm.getClass().getMethod("canGetMethodReturnValues", new Class[] {});
+        } catch (Exception ex) {
+        }
+        if (m != null) {
+            try {
+                m.setAccessible(true);
+                Object ret = m.invoke(vm, new Object[] {});
+                canGetMethodReturnValues = Boolean.TRUE.equals(ret);
+            } catch (Exception ex) {
+            }
+        }
+        return canGetMethodReturnValues;
+    }
+    
     protected void setRequests () {
         setClassRequests (
             breakpoint.getClassFilters (), 
@@ -110,22 +129,9 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                 if (IS_JDK_16) { // Retrieval of the return value
                     VirtualMachine vm = event.virtualMachine();
                     // vm.canGetMethodReturnValues();
-                    boolean canGetMethodReturnValues = false;
-                    java.lang.reflect.Method m = null;
-                    try {
-                        m = vm.getClass().getMethod("canGetMethodReturnValues", new Class[] {});
-                    } catch (Exception ex) {
-                    }
-                    if (m != null) {
-                        try {
-                            m.setAccessible(true);
-                            Object ret = m.invoke(vm, new Object[] {});
-                            canGetMethodReturnValues = Boolean.TRUE.equals(ret);
-                        } catch (Exception ex) {
-                        }
-                    }
-                    if (canGetMethodReturnValues) {
+                    if (canGetMethodReturnValues(vm)) {
                         //Value returnValue = ((MethodExitEvent) event).returnValue();
+                        java.lang.reflect.Method m = null;
                         try {
                             m = event.getClass().getDeclaredMethod("returnValue", new Class[] {});
                         } catch (Exception ex) {

@@ -449,7 +449,7 @@ Nothing.
 -->
 <answer id="lookup-lookup">
     No. But we use our own private implementation of lookup pattern.
-    We are searching for instances of various servies defined in *.spi.* packages.
+    We are searching for instances of various services defined in *.spi.* packages.
     The contract is described in JavaDoc.
 </answer>
 
@@ -483,7 +483,7 @@ Nothing.
         </question>
 -->
 <answer id="lookup-remove">
-    No.
+    
 </answer>
 
 

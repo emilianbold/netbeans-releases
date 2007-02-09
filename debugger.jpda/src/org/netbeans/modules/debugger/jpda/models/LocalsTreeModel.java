@@ -44,6 +44,7 @@ import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -139,6 +140,22 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 System.arraycopy(staticFields.toArray(), 0, fields, 1, staticFields.size());
                 return fields;
             } else
+            if ("lastOperations" == o) {
+                CallStackFrameImpl frame = (CallStackFrameImpl) debugger.
+                    getCurrentCallStackFrame ();
+                if (frame == null) {
+                    return new Object[] {};
+                }
+                List<Operation> operations = frame.getThread().getLastOperations();
+                List<Variable> lastOperationValues = new ArrayList<Variable>(operations.size());
+                for (int i = 0; i < operations.size(); i++) {
+                    Variable ret = operations.get(i).getReturnValue();
+                    if (ret != null) {
+                        lastOperationValues.add(ret);
+                    }
+                }
+                return lastOperationValues.toArray();
+            } else
             throw new UnknownTypeException (o);
         } catch (VMDisconnectedException ex) {
             return new Object [0];
@@ -169,7 +186,17 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     return 1;
                 try {
                     int i = 0;
-                    if (((JPDAThreadImpl) frame.getThread()).getReturnVariable() != null) {
+                    List<Operation> operations = frame.getThread().getLastOperations();
+                    ReturnVariableImpl returnVariable;
+                    boolean haveLastOperations;
+                    if (operations != null && operations.size() > 0 && operations.get(0).getReturnValue() != null) {
+                        haveLastOperations = true;
+                        returnVariable = null;
+                    } else {
+                        returnVariable = ((JPDAThreadImpl) frame.getThread()).getReturnVariable();
+                        haveLastOperations = false;
+                    }
+                    if (haveLastOperations || returnVariable != null) {
                         i++;
                     }
                     try {
@@ -215,6 +242,19 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 //JPDAClassType clazz = (JPDAClassType) node;
                 //return 1 + clazz.staticFields().size();
             } else
+            if (node instanceof JPDAClassType) {
+                JPDAClassType clazz = (JPDAClassType) node;
+                return 1 + clazz.staticFields().size();
+            } else
+            if ("lastOperations" == node) { // NOI18N
+                CallStackFrameImpl frame = (CallStackFrameImpl) debugger.
+                    getCurrentCallStackFrame ();
+                if (frame == null) {
+                    return 0;
+                }
+                List<Operation> operations = frame.getThread().getLastOperations();
+                return operations.size();
+            } else
             throw new UnknownTypeException (node);
         } catch (VMDisconnectedException ex) {
         }
@@ -232,6 +272,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         if (o.equals ("NoInfo")) // NOI18N
             return true;
         if (o instanceof JPDAClassType) return false;
+        if (o == "lastOperations") return false;
         throw new UnknownTypeException (o);
     }
 
@@ -295,8 +336,17 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 return new String [] {"No current thread"};
             try {
                 ObjectReference thisR = stackFrame.thisObject ();
-                ReturnVariableImpl returnVariable = ((JPDAThreadImpl) callStackFrame.getThread()).getReturnVariable();
-                int retValShift = (returnVariable == null) ? 0 : 1;
+                List<Operation> operations = callStackFrame.getThread().getLastOperations();
+                ReturnVariableImpl returnVariable;
+                boolean haveLastOperations;
+                if (operations != null && operations.size() > 0 && operations.get(0).getReturnValue() != null) {
+                    haveLastOperations = true;
+                    returnVariable = null;
+                } else {
+                    returnVariable = ((JPDAThreadImpl) callStackFrame.getThread()).getReturnVariable();
+                    haveLastOperations = false;
+                }
+                int retValShift = (haveLastOperations || returnVariable != null) ? 1 : 0;
                 if (thisR == null) {
                     ReferenceType classType = stackFrame.location().declaringType();
                     Object[] avs = null;
@@ -311,8 +361,12 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                         avs = new String [] {"NoInfo"};
                     }
                     Object[] result = new Object [avs.length + retValShift + 1];
-                    if (from < 1) {
-                        result[0] = returnVariable;
+                    if (from < 1 && retValShift > 0) {
+                        if (returnVariable != null) {
+                            result[0] = returnVariable;
+                        } else {
+                            result[0] = "lastOperations"; // NOI18N
+                        }
                     }
                     if (from < 1 + retValShift) {
                         //result [0] = new ThisVariable (debugger, classType.classObject(), "");
@@ -333,8 +387,12 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                         avs = new Object[] {"NoInfo"};
                     }
                     Object[] result = new Object [avs.length + retValShift + 1];
-                    if (from < 1) {
-                        result[0] = returnVariable;
+                    if (from < 1 && retValShift > 0) {
+                        if (returnVariable != null) {
+                            result[0] = returnVariable;
+                        } else {
+                            result[0] = "lastOperations"; // NOI18N
+                        }
                     }
                     if (from < 1 + retValShift) {
                         result[retValShift] = new ThisVariable (debugger, thisR, "");

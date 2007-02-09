@@ -22,6 +22,7 @@ package org.netbeans.api.debugger.jpda;
 import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 
 /**
@@ -43,6 +44,15 @@ public interface CallStackFrame {
      * @return line number associated with this this stack frame
      */
     public abstract int getLineNumber (String struts);
+
+    /**
+     * Returns the current operation (if any) at the location of this call stack frame.
+     *
+     * @param struts a language name or null for default language
+     * @return  The operation at the frame location if available and this frame does not
+     *          represent a native method invocation; <CODE>null</CODE> otherwise
+     */
+    public abstract Operation getCurrentOperation(String struts);
 
     /**
      * Returns method name associated with this stack frame.

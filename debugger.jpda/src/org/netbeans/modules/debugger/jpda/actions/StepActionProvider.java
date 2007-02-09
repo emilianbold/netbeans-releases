@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.debugger.jpda.actions;
 
+import com.sun.jdi.Location;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.IncompatibleThreadStateException;
@@ -35,6 +36,13 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.ExpressionPool;
+import org.netbeans.modules.debugger.jpda.JPDAStepImpl.MethodExitBreakpointListener;
+import org.netbeans.modules.debugger.jpda.SourcePath;
+import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
 
 
 import org.netbeans.spi.debugger.ContextProvider;
@@ -46,6 +54,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
+import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -62,6 +71,7 @@ implements Executor {
     
     private StepRequest             stepRequest;
     private ContextProvider         lookupProvider;
+    private MethodExitBreakpointListener lastMethodExitBreakpointListener;
 
     
     private static boolean ssverbose = 
@@ -137,6 +147,9 @@ implements Executor {
                 stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
                 stepRequest.enable ();
                 logger.fine("JDI Request (action "+action+"): " + stepRequest);
+                if (action == ActionsManager.ACTION_STEP_OUT) {
+                    addMethodExitBP(tr);
+                }
 
                 // 3) resume JVM
                 getDebuggerImpl ().resume ();
@@ -148,6 +161,29 @@ implements Executor {
             }   
             //S ystem.out.println("/nStepAction.doAction end");
         }
+    }
+    
+    private void addMethodExitBP(ThreadReference tr) {
+        if (!MethodBreakpointImpl.canGetMethodReturnValues(tr.virtualMachine())) {
+            return ;
+        }
+        Location loc;
+        try {
+            loc = tr.frame(0).location();
+        } catch (IncompatibleThreadStateException ex) {
+            logger.fine("Incompatible Thread State: "+ex.getLocalizedMessage());
+            return ;
+        }
+        String classType = loc.declaringType().name();
+        String methodName = loc.method().name();
+        MethodBreakpoint mb = MethodBreakpoint.create(classType, methodName);
+        //mb.setMethodName(methodName);
+        mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
+        mb.setHidden(true);
+        mb.setSuspend(JPDABreakpoint.SUSPEND_NONE);
+        lastMethodExitBreakpointListener = new MethodExitBreakpointListener(mb);
+        mb.addJPDABreakpointListener(lastMethodExitBreakpointListener);
+        DebuggerManager.getDebuggerManager().addBreakpoint(mb);
     }
     
     protected void checkEnabled (int debuggerState) {
@@ -169,16 +205,17 @@ implements Executor {
      */
     public boolean exec (Event ev) {
         // TODO: fetch current engine from the Event
+        // 1) init info about current state
+        LocatableEvent event = (LocatableEvent) ev;
+        String className = event.location ().declaringType ().name ();
+        ThreadReference tr = event.thread ();
+        setLastOperation(tr);
         synchronized (getDebuggerImpl ().LOCK) {
             //S ystem.out.println("/nStepAction.exec");
 
-            // 1) remove step request
+            // 2) remove step request
             //removeStepRequests (((LocatableEvent) ev).thread ());
             
-            // 2) init info about current state
-            LocatableEvent event = (LocatableEvent) ev;
-            String className = event.location ().declaringType ().name ();
-            ThreadReference tr = event.thread ();
             
             // 3) ignore step events in not current threads
             JPDAThreadImpl ct = (JPDAThreadImpl) getDebuggerImpl ().
@@ -250,6 +287,49 @@ implements Executor {
             //S ystem.out.println("/nStepAction.exec end - resume");
             return true; // resume
         }
+    }
+    
+    private void setLastOperation(ThreadReference tr) {
+        Location loc;
+        try {
+            loc = tr.frame(0).location();
+        } catch (IncompatibleThreadStateException itsex) {
+            logger.fine("Incompatible Thread State: "+itsex.getLocalizedMessage());
+            return ;
+        }
+        Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
+        String language = currentSession == null ? null : currentSession.getCurrentLanguage();
+        SourcePath sourcePath = getDebuggerImpl().getEngineContext();
+        String url = sourcePath.getURL(loc, language);
+        ExpressionPool exprPool = getDebuggerImpl().getExpressionPool();
+        ExpressionPool.Expression expr = exprPool.getExpressionAt(loc, url);
+        if (expr == null) {
+            return ;
+        }
+        Operation[] ops = expr.getOperations();
+        // code index right after the method call (step out)
+        int codeIndex = (int) loc.codeIndex();
+        byte[] bytecodes = loc.method().bytecodes();
+        if (codeIndex >= 5 && (bytecodes[codeIndex - 5] & 0xFF) == 185) { // invokeinterface
+            codeIndex -= 5;
+        } else {
+            codeIndex -= 3; // invokevirtual, invokespecial, invokestatic
+        }
+        int opIndex = expr.findNextOperationIndex(codeIndex - 1);
+        Operation lastOperation;
+        if (opIndex >= 0 && ops[opIndex].getBytecodeIndex() == codeIndex) {
+            lastOperation = ops[opIndex];
+        } else {
+            return ;
+        }
+        if (lastMethodExitBreakpointListener != null) {
+            Variable returnValue = lastMethodExitBreakpointListener.getReturnValue();
+            lastMethodExitBreakpointListener.destroy();
+            lastMethodExitBreakpointListener = null;
+            lastOperation.setReturnValue(returnValue);
+        }
+        JPDAThreadImpl jtr = (JPDAThreadImpl) getDebuggerImpl().getThread(tr);
+        jtr.addLastOperation(lastOperation);
     }
     
     private StepIntoActionProvider stepIntoActionProvider;

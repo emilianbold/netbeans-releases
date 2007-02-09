@@ -230,6 +230,26 @@ public class EditorContextBridge {
         return getContext ().getClassName (url, lineNumber);
     }
     
+    /*
+    public static EditorContext.ExpressionTree[] getExpressionTrees(String url, long lineNumber) {
+        return getContext().getExpressionTrees(url, lineNumber);
+    }
+    
+    public static EditorContext.ExpressionTree getExpressionTree(
+            String url, long lineNumber,
+            EditorContext.BytecodeProvider bytecodeProvider,
+            long locationInExpression) {
+        return getContext().getExpressionTree(url, lineNumber, bytecodeProvider,
+                                              locationInExpression);
+    }
+     */
+    
+    public static EditorContext.Operation[] getOperations(
+            String url, int lineNumber,
+            EditorContext.BytecodeProvider bytecodeProvider) {
+        return getContext().getOperations(url, lineNumber, bytecodeProvider);
+    }
+    
     /**
      * Returns list of imports for given source url.
      *

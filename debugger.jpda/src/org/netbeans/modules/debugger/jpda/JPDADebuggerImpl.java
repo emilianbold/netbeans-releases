@@ -63,6 +63,7 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.modules.debugger.jpda.actions.CompoundSmartSteppingListener;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationException;
 import org.netbeans.modules.debugger.jpda.models.ObjectTranslation;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
@@ -126,8 +127,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private ContextProvider             lookupProvider;
     private ObjectTranslation           threadsTranslation;
     private ObjectTranslation           localsTranslation;
+    private ExpressionPool              expressionPool;
 
     private StackFrame      altCSF = null;  //PATCH 48174
+
+    private boolean                     doContinue = true; // Whether resume() will actually resume
 
     // init ....................................................................
 
@@ -146,6 +150,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         languages.add ("Java");
         threadsTranslation = ObjectTranslation.createThreadTranslation(this);
         localsTranslation = ObjectTranslation.createLocalsTranslation(this);
+        this.expressionPool = new ExpressionPool();
     }
 
 
@@ -404,6 +409,23 @@ public class JPDADebuggerImpl extends JPDADebugger {
         return smartSteppingFilter;
     }
 
+    CompoundSmartSteppingListener compoundSmartSteppingListener;
+    
+    private CompoundSmartSteppingListener getCompoundSmartSteppingListener () {
+        if (compoundSmartSteppingListener == null)
+            compoundSmartSteppingListener = (CompoundSmartSteppingListener) lookupProvider.
+                lookupFirst (null, CompoundSmartSteppingListener.class);
+        return compoundSmartSteppingListener;
+    }
+    
+    /**
+     * Test whether we should stop here according to the smart-stepping rules.
+     */
+    boolean stopHere(JPDAThread t) {
+        return getCompoundSmartSteppingListener ().stopHere 
+                     (lookupProvider, t, getSmartSteppingFilter());
+    }
+    
     /**
      * Helper method that fires JPDABreakpointEvent on JPDABreakpoints.
      *
@@ -621,7 +643,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                     if (disabledBreakpoints[0] == null) {
                                         disabledBreakpoints[0] = disableAllBreakpoints ();
                                         resumedThread[0] = (JPDAThreadImpl) getThread(tr);
-                                        resumedThread[0].notifyToBeRunning();
+                                        resumedThread[0].notifyMethodInvoking();
                                     }
                                 }
                             },
@@ -639,7 +661,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         enableAllBreakpoints (disabledBreakpoints[0]);
                     }
                     if (resumedThread[0] != null) {
-                        resumedThread[0].notifySuspended();
+                        resumedThread[0].notifyMethodInvokeDone();
                     }
                 }
             } catch (EvaluationException e) {
@@ -682,7 +704,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     frameThread = csf.getThread();
                 } catch (InvalidStackFrameException isfex) {}
             }
-            thread.notifyToBeRunning();
+            thread.notifyMethodInvoking();
             try {
                 return org.netbeans.modules.debugger.jpda.expr.Evaluator.
                     invokeVirtual (
@@ -698,7 +720,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 throw ieex;
             } finally {
                 if (threadSuspended) {
-                    thread.notifySuspended();
+                    thread.notifyMethodInvokeDone();
                 }
                 enableAllBreakpoints (l);
                 if (frameThread != null) {
@@ -831,6 +853,23 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
     
+    /**
+    * Performs stop action and disable a next call to resume()
+    */
+    public void setStoppedStateNoContinue (ThreadReference thread) {
+        synchronized (LOCK) {
+            // this method can be called in stopped state to switch 
+            // the current thread only
+            setState (STATE_RUNNING);
+            JPDAThread t = getThread (thread);
+            checkJSR45Languages (t);
+            setCurrentThread (t);
+            setState (STATE_STOPPED);
+            doContinue = false;
+        }
+    }
+    
+    
     private boolean finishing;
 
     /**
@@ -923,6 +962,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * Used by ContinueActionProvider & StepActionProvider.
      */
     public void resume () {
+        synchronized (LOCK) {
+            if (!doContinue) {
+                doContinue = true;
+                // Continue the next time and do nothing now.
+                return ;
+            }
+        }
         if (operator.flushStaledEvents()) {
             return ;
         }
@@ -983,6 +1029,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     public Variable getVariable (Value value) {
         return getLocalsTreeModel ().getVariable (value);
+    }
+    
+    public ExpressionPool getExpressionPool() {
+        return expressionPool;
     }
 
 

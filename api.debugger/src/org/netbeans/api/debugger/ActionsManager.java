@@ -49,6 +49,9 @@ public final class ActionsManager {
     /** Action constant for Step Out Action. */
     public static final Object              ACTION_STEP_OUT = "stepOut";
     
+    /** Action constant for Step Operation Action. */
+    public static final Object              ACTION_STEP_OPERATION = "stepOperation";
+    
     /** Action constant for Continue Action. */
     public static final Object              ACTION_CONTINUE = "continue";
     

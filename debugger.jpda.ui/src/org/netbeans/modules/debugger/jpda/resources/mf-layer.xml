@@ -103,7 +103,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow/org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow/org-netbeans-modules-debugger-ui-actions-StepOperationAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOperationAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOperationAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepOperationAction.shadow/org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
             </file>
@@ -228,13 +232,17 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow/org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow/org-netbeans-modules-debugger-ui-actions-StepOperationAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow/org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepOperationAction.shadow/org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow/org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOperationAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOperationAction.instance"/>
             </file>
             <attr name="org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow">

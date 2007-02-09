@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,7 @@ package org.netbeans.modules.debugger.jpda.projects;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -45,6 +46,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
@@ -89,10 +91,11 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         }                    
         JEditorPane ep = getCurrentEditor ();
         if (ep == null) return ;
+        int offset;
         String expression = getIdentifier (
             doc, 
             ep,
-            NbDocument.findLineOffset (
+            offset = NbDocument.findLineOffset (
                 doc,
                 lp.getLine ().getLineNumber ()
             ) + lp.getColumn ()
@@ -108,7 +111,22 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         if (t == null || !t.isSuspended()) return ;
         String toolTipText = null;
         try {
-            Variable v = d.evaluate (expression);
+            Variable v = null;
+            List<Operation> operations = t.getLastOperations();
+            if (operations != null) {
+                for (Operation operation: operations) {
+                    if (!expression.endsWith(operation.getMethodName())) {
+                        continue;
+                    }
+                    if (operation.getMethodStartPosition().getOffset() <= offset &&
+                        offset <= operation.getMethodEndPosition().getOffset()) {
+                        v = operation.getReturnValue();
+                    }
+                }
+            }
+            if (v == null) {
+                v = d.evaluate (expression);
+            }
             String type = v.getType ();
             String value = v.getValue ();
             if (v instanceof ObjectVariable)

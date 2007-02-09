@@ -44,6 +44,8 @@ public abstract class JPDAStep {
     public static final int STEP_OUT    =   StepRequest.STEP_OUT;
     /** Step to the next location on a different line */
     public static final int STEP_LINE   =   StepRequest.STEP_LINE;
+    /** Step to the next available operation */
+    public static final int STEP_OPERATION = 10;
     /** Step to the next available location */
     public static final int STEP_MIN    =   StepRequest.STEP_MIN;
     /** Property fired when the step is executed */

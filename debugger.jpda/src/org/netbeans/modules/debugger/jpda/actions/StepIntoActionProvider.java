@@ -299,13 +299,13 @@ implements Executor, PropertyChangeListener {
         stepRequest.enable ();
     }
 
-    private SmartSteppingFilterImpl smartSteppingFilterImpl;
+    private SmartSteppingFilter smartSteppingFilter;
     
-    private SmartSteppingFilterImpl getSmartSteppingFilterImpl () {
-        if (smartSteppingFilterImpl == null)
-            smartSteppingFilterImpl = (SmartSteppingFilterImpl) contextProvider.
+    private SmartSteppingFilter getSmartSteppingFilterImpl () {
+        if (smartSteppingFilter == null)
+            smartSteppingFilter = (SmartSteppingFilter) contextProvider.
                 lookupFirst (null, SmartSteppingFilter.class);
-        return smartSteppingFilterImpl;
+        return smartSteppingFilter;
     }
 
     private CompoundSmartSteppingListener compoundSmartSteppingListener;

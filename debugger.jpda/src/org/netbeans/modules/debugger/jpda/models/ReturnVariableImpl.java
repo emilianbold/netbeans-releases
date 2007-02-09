@@ -19,7 +19,10 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
+import com.sun.jdi.VoidValue;
 
 import org.netbeans.api.debugger.jpda.ReturnVariable;
 
@@ -43,9 +46,16 @@ public class ReturnVariableImpl extends AbstractVariable implements ReturnVariab
         super (
             debugger,
             returnValue,
-            parentID + ".return"
+            parentID + ".return " + methodName + "=" + getStringValue(returnValue) // To have good equals()
         );
         this.methodName = methodName;
+    }
+    
+    private static String getStringValue(Value v) {
+        if (v == null) return "null";
+        if (v instanceof VoidValue) return "void";
+        if (v instanceof PrimitiveValue) return v.toString ();
+        else return "#" + ((ObjectReference) v).uniqueID ();
     }
     
     public String methodName() {

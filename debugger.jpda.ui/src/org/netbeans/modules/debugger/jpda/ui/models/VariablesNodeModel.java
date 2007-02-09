@@ -105,6 +105,9 @@ public class VariablesNodeModel implements NodeModel {
         if (o instanceof ReturnVariable) {
             return "return "+((ReturnVariable) o).methodName()+"()";
         }
+        if (o == "lastOperations") { // NOI18N
+            return NbBundle.getMessage(VariablesNodeModel.class, "lastOperationsNode");
+        }
         String str = o.toString();
         if (str.startsWith("SubArray")) { // NOI18N
             int index = str.indexOf('-');
@@ -222,6 +225,9 @@ public class VariablesNodeModel implements NodeModel {
         if (o instanceof ReturnVariable) {
             return NbBundle.getMessage(VariablesNodeModel.class, "MSG_VariablesFilter_Return_descr", ((ReturnVariable) o).methodName()+"()");    // NOI18N
         }
+        if (o == "lastOperations") { // NOI18N
+            return NbBundle.getMessage(VariablesNodeModel.class, "MSG_LastOperations_descr");
+        }
         return null;
         //throw new UnknownTypeException (o);
     }
@@ -236,6 +242,7 @@ public class VariablesNodeModel implements NodeModel {
         if (str.startsWith("SubArray")) return ; // NOI18N
         if (o == "NoInfo") return ; // NOI18N
         if (o == "No current thread") return ; // NOI18N
+        if (o == "lastOperations") return ; // NOI18N
         if (o instanceof JPDAClassType) return ;
         if (o instanceof ClassVariable) return ;
         if (o instanceof ReturnVariable) return ;
@@ -263,7 +270,7 @@ public class VariablesNodeModel implements NodeModel {
         if (o instanceof ClassVariable) {
             return STATIC;
         }
-        if (o instanceof ReturnVariable) {
+        if (o instanceof ReturnVariable || o == "lastOperations") {
             return RETURN;
         }
         if (o.toString().startsWith("SubArray")) // NOI18N

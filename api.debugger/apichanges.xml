@@ -181,6 +181,25 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
+    <change>
+        <api name="DebuggerCoreAPI"/>
+        <summary>Support for stepping over operations.</summary>
+        <version major="1" minor="9"/>
+        <date day="1" month="2" year="2007"/>
+        <author login="mentlicher"/>
+        <compatibility>
+            <p>
+                Compatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Added fields:
+                <code>ActionsManager.ACTION_STEP_OPERATION</code>, 
+                This constant is used in action performer which implements an operation step.
+            </p>
+        </description>
+    </change>
 
 </changes>
 

@@ -38,6 +38,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 
 /**
@@ -48,6 +49,8 @@ public class CallStackFrameImpl implements CallStackFrame {
     private StackFrame          sf;
     private int                 depth;
     private JPDADebuggerImpl    debugger;
+    //private AST                 ast;
+    private Operation           currentOperation;
     private boolean             valid;
     
     public CallStackFrameImpl (
@@ -79,6 +82,14 @@ public class CallStackFrameImpl implements CallStackFrame {
         } catch (VMDisconnectedException ex) {
             return 0;
         }
+    }
+    
+    public synchronized Operation getCurrentOperation(String struts) {
+        return currentOperation;
+    }
+    
+    public synchronized void setCurrentOperation(Operation operation) {
+        this.currentOperation = operation;
     }
 
     /**

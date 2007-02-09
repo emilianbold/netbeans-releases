@@ -22,6 +22,7 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.StackFrame;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -41,8 +42,9 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.ErrorManager;
 
 /**
@@ -346,23 +348,35 @@ public class SourcePath {
     ) {
         int lineNumber = t.getLineNumber (stratumn);
         if (lineNumber < 1) return null;
+        //AST ast = t.getAST(stratumn);
+        Operation operation = t.getCurrentOperation();
+        String url;
         try {
-            return EditorContextBridge.annotate (
-                getURL (convertSlash (t.getSourcePath (stratumn)), true),
-                lineNumber,
-                EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
-                debugger
-            );
+            url = getURL (convertSlash (t.getSourcePath (stratumn)), true);
         } catch (AbsentInformationException e) {
-            return EditorContextBridge.annotate (
-                getURL (
-                    convertClassNameToRelativePath (t.getClassName ()), true
-                ),
-                lineNumber,
-                EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
-                debugger
-            );
+            url = getURL (convertClassNameToRelativePath (t.getClassName ()), true);
         }
+        List operationsAnn = annotateOperations(debugger, url, operation, t.getLastOperations());
+        if (operation == null) {
+            if (operationsAnn.size() == 0) {
+                return EditorContextBridge.annotate (
+                    url,
+                    lineNumber,
+                    EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
+                    debugger
+                );
+            } else {
+                /*
+                operationsAnn.add(EditorContextBridge.annotate (
+                    url,
+                    lineNumber,
+                    EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
+                    debugger
+                ));
+                 */
+            }
+        }
+        return operationsAnn;
     }
 
     public Object annotate (
@@ -371,13 +385,33 @@ public class SourcePath {
     ) {
         int lineNumber = csf.getLineNumber (stratumn);
         if (lineNumber < 1) return null;
+        Operation operation = csf.getCurrentOperation(stratumn);
         try {
-            return EditorContextBridge.annotate (
-                getURL (convertSlash (csf.getSourcePath (stratumn)), true),
-                lineNumber,
-                EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE,
-                debugger
-            );
+            if (operation != null) {
+                int startOffset;
+                int endOffset;
+                if (operation.getMethodName() != null) {
+                    startOffset = operation.getMethodStartPosition().getOffset();
+                    endOffset = operation.getMethodEndPosition().getOffset();
+                } else {
+                    startOffset = operation.getStartPosition().getOffset();
+                    endOffset = operation.getEndPosition().getOffset();
+                }
+                return EditorContextBridge.annotate (
+                    getURL (convertSlash (csf.getSourcePath (stratumn)), true),
+                    startOffset,
+                    endOffset,
+                    EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE,
+                    debugger
+                );
+            } else {
+                return EditorContextBridge.annotate (
+                    getURL (convertSlash (csf.getSourcePath (stratumn)), true),
+                    lineNumber,
+                    EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE,
+                    debugger
+                );
+            }
         } catch (AbsentInformationException e) {
             return EditorContextBridge.annotate (
                 getURL (
@@ -388,6 +422,80 @@ public class SourcePath {
                 debugger
             );
         }
+    }
+    
+    private static List annotateOperations(JPDADebugger debugger, String url,
+                                           Operation currentOperation, List lastOperations) {
+        List annotations = null;
+        if (currentOperation != null) {
+            annotations = new ArrayList();
+            annotations.add(createAnnotation(debugger, url, currentOperation,
+                                             EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
+                                             true));
+            int lineNumber;
+            if (currentOperation.getMethodName() != null) {
+                lineNumber = currentOperation.getMethodStartPosition().getLine();
+            } else {
+                lineNumber = currentOperation.getStartPosition().getLine();
+            }
+            annotations.add(EditorContextBridge.annotate (
+                url,
+                lineNumber,
+                EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE,
+                debugger
+            ));
+        }
+        if (lastOperations != null && lastOperations.size() > 0) {
+            if (annotations == null) {
+                annotations = new ArrayList();
+            }
+            for (int i = 0; i < lastOperations.size(); i++) {
+                if (currentOperation == null && i == lastOperations.size() - 1) {
+                    annotations.add(createAnnotation(debugger, url,
+                                                     (Operation) lastOperations.get(i),
+                                                     EditorContext.CURRENT_OUT_OPERATION_ANNOTATION_TYPE,
+                                                     false));
+                    int lineNumber = ((Operation) lastOperations.get(i)).getEndPosition().getLine();
+                    annotations.add(EditorContextBridge.annotate (
+                        url,
+                        lineNumber,
+                        EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE,
+                        debugger
+                    ));
+                } else {
+                    annotations.add(createAnnotation(debugger, url,
+                                                     (Operation) lastOperations.get(i),
+                                                     EditorContext.CURRENT_LAST_OPERATION_ANNOTATION_TYPE,
+                                                     true));
+                }
+            }
+        }
+        if (annotations != null) {
+            return annotations;
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
+    
+    private static Object createAnnotation(JPDADebugger debugger, String url,
+                                           Operation operation, String type,
+                                           boolean method) {
+        int startOffset;
+        int endOffset;
+        if (method && operation.getMethodName() != null) {
+            startOffset = operation.getMethodStartPosition().getOffset();
+            endOffset = operation.getMethodEndPosition().getOffset();
+        } else {
+            startOffset = operation.getStartPosition().getOffset();
+            endOffset = operation.getEndPosition().getOffset();
+        }
+        return EditorContextBridge.annotate (
+            url,
+            startOffset,
+            endOffset,
+            type,
+            debugger
+        );
     }
 
     
