@@ -13,13 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
  */
 
 package org.netbeans.modules.vmd.midpnb.components.items;
 
-import java.awt.Image;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEventFilter;
@@ -30,8 +30,10 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.NameType;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.Resolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
-import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuItemEventSourceCD;
+import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
 import org.openide.util.Utilities;
+
+import java.awt.*;
 
 /**
  *
@@ -39,7 +41,7 @@ import org.openide.util.Utilities;
  */
 public class ItemSupport {
 
-    private static final Resolver SVG_MENU_ITEM_RESOLVER = new ElementResolver(SVGMenuItemEventSourceCD.PROP_STRING, SVGMenuItemEventSourceCD.ICON_PATH);
+    private static final Resolver SVG_MENU_ITEM_RESOLVER = new ElementResolver(SVGMenuElementEventSourceCD.PROP_STRING, SVGMenuElementEventSourceCD.ICON_PATH);
 
     public static Resolver createSVGMenuItemInfoResolver() {
         return SVG_MENU_ITEM_RESOLVER;

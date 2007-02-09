@@ -13,13 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
  */
 
 package org.netbeans.modules.vmd.midpnb.producers;
 
-import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
@@ -55,7 +55,6 @@ public class SVGMenuProducer extends MidpComponentProducer {
 
         DesignComponent menuEventHandler = document.createComponent(SVGMenuEventHandlerCD.TYPEID);
         MidpDocumentSupport.updateEventHandlerWithNew(selectEventSource, menuEventHandler);
-        menu.writeProperty(SVGMenuCD.PROP_SELECT_COMMAND, PropertyValue.createComponentReference(selectEventSource));
 
         return new Result(menu, selectCommand, selectEventSource);
     }

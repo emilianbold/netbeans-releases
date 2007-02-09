@@ -33,6 +33,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodeSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCode;
@@ -40,6 +41,8 @@ import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.commands.*;
 import org.netbeans.modules.vmd.midpnb.components.displayables.SplashScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGSplashScreenCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
+import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
 import org.openide.util.Exceptions;
 
 import javax.swing.text.StyledDocument;
@@ -55,6 +58,7 @@ public final class MidpCustomCodePresenterSupport {
     public static final String PARAM_DISPLAY = "display"; // NOI18N
     public static final String PARAM_TIMEOUT = "timeout"; // NOI18N
     public static final String PARAM_SVG_TIMEOUT = "timeout"; // NOI18N
+    public static final String PARAM_SVG_MENU_ELEMENT = "menuElement"; // NOI18N
 
     private static final Parameter PARAMETER_DISPLAY = new DisplayParameter ();
     private static final Parameter PARAMETER_TIMEOUT = new TimeoutParameter ();
@@ -63,6 +67,7 @@ public final class MidpCustomCodePresenterSupport {
     private static final Parameter PARAMETER_SPLASHSCREEN_COMMAND = new SplashScreenCommandParameter ();
     private static final Parameter PARAMETER_SVG_WAITSCREEN_COMMAND = new SVGWaitScreenCommandParameter ();
     private static final Parameter PARAMETER_SVG_SPLASHSCREEN_COMMAND = new SVGSplashScreenCommandParameter ();
+    private static final Parameter PARAMETER_SVG_MENU_ITEM = new SVGMenuElementParameter ();
 
     private MidpCustomCodePresenterSupport () {
     }
@@ -93,6 +98,10 @@ public final class MidpCustomCodePresenterSupport {
 
     public static Parameter createSVGSplashScreenCommandParameter () {
         return PARAMETER_SVG_SPLASHSCREEN_COMMAND;
+    }
+
+    public static Parameter createSVGMenuItemParameter () {
+        return PARAMETER_SVG_MENU_ITEM;
     }
 
     public static Presenter createAddImportPresenter () {
@@ -253,6 +262,41 @@ public final class MidpCustomCodePresenterSupport {
             if (command != null && descriptorRegistry.isInHierarchy (SVGSplashScreenDismissCommandCD.TYPEID, command.getType ()))
                 return false;
             return super.isRequiredToBeSet (command, index);
+        }
+
+    }
+
+    private static final class SVGMenuElementParameter implements Parameter {
+
+        public String getParameterName () {
+            return PARAM_SVG_MENU_ELEMENT;
+        }
+
+        public int getParameterPriority () {
+            return 0;
+        }
+
+        public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
+            List<PropertyValue> elements = component.readProperty (SVGMenuCD.PROP_ELEMENTS).getArray ();
+            for (PropertyValue value : elements) {
+                DesignComponent element = value.getComponent ();
+                PropertyValue string = element.readProperty (SVGMenuElementEventSourceCD.PROP_STRING);
+                MidpCodeSupport.generateCodeForPropertyValue (section.getWriter (), string);
+            }
+        }
+
+        public boolean isRequiredToBeSet (DesignComponent component) {
+            List<PropertyValue> array = component.readProperty (SVGMenuCD.PROP_ELEMENTS).getArray ();
+            return array != null  &&  array.size () != 0;
+        }
+
+        public int getCount (DesignComponent component) {
+            List<PropertyValue> array = component.readProperty (SVGMenuCD.PROP_ELEMENTS).getArray ();
+            return array != null ? array.size () : 0;
+        }
+
+        public boolean isRequiredToBeSet (DesignComponent component, int index) {
+            return true;
         }
 
     }

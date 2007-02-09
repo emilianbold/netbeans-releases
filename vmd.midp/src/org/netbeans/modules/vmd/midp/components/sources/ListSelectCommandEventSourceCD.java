@@ -28,10 +28,11 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 
 /**
  * @author David Kaspar
@@ -60,7 +61,7 @@ public final class ListSelectCommandEventSourceCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
             .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
-            .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES)
+            .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES) // TODO - its is not a code property
                 .addProperty ("Show Select Command", PropertyEditorBooleanUC.createInstance(), PROP_SHOW_SELECT_COMMAND);
     }
 

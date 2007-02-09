@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.midpnb.components.svg;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,6 +50,7 @@ public class SVGImageCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
+            MidpCustomCodePresenterSupport.createAddImportPresenter ()
         );
     }
 

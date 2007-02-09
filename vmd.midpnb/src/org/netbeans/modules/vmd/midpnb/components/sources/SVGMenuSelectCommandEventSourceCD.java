@@ -13,22 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
  */
 
 package org.netbeans.modules.vmd.midpnb.components.sources;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
@@ -41,6 +33,10 @@ import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  *
  * @author Anton Chechel
@@ -52,11 +48,11 @@ public class SVGMenuSelectCommandEventSourceCD extends ComponentDescriptor {
     public static final String PROP_SHOW_SELECT_COMMAND = "showSelectCommand"; // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
-        return new TypeDescriptor (CommandEventSourceCD.TYPEID, SVGMenuSelectCommandEventSourceCD.TYPEID, true, false);
+        return new TypeDescriptor (CommandEventSourceCD.TYPEID, TYPEID, true, false);
     }
 
     public VersionDescriptor getVersionDescriptor () {
-        return MidpVersionDescriptor.MIDP;
+        return MidpVersionDescriptor.MIDP_2;
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
@@ -68,7 +64,7 @@ public class SVGMenuSelectCommandEventSourceCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
             .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
-            .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES)
+            .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES) // TODO - its is not a code property
                 .addProperty ("Show Select Command", PropertyEditorBooleanUC.createInstance(), PROP_SHOW_SELECT_COMMAND);
     }
 
@@ -81,7 +77,7 @@ public class SVGMenuSelectCommandEventSourceCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.createStatic ("SVGMenu.SELECT", "Command", CommandCD.ICON_PATH),
+            InfoPresenter.createStatic ("SVGMenu.SELECT_COMMAND", "Command", CommandCD.ICON_PATH),
             // flow
             new CommandEventSourceCD.CommandEventSourceFlowPinPresenter () {
                 protected DesignComponent getComponentForAttachingPin () {
