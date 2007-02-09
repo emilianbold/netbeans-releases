@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -102,6 +102,10 @@ Microsystems, Inc. All Rights Reserved.
 
      <buildinfo idePlatformDir="${openide/util.dir}" buildNumberProperty="xtest.ide.build.name"
                 buildProjectNameProperty="xtest.tested.project" buildTimestampProperty="ide.timestamp"/>
+     <!-- Fallback when xtest.ide.build.name is not set (e.g. for application based on platform. -->
+     <tstamp>
+       <format property="xtest.ide.build.name" pattern="yyyyMMdd-HHmm"/>
+     </tstamp>
      <property name="ide.timestamp" value=""/>
 
      <antcall target="checkout-system"/>
@@ -125,7 +129,6 @@ Microsystems, Inc. All Rights Reserved.
             testingGroup="${xtest.testing.group}" testedType="${xtest.tested.type}"
             host="${xtest.machine}"/>
      
-     
      <for list="${xtest.instance.postfixes}" delimiters="," property="xtest.instance.postfix">
        <antcall target="test-one-repository">
            <param name="xtest.no.mail.results" value="true"/>
@@ -143,7 +146,7 @@ Microsystems, Inc. All Rights Reserved.
          <buildinfo idePlatformDir="${openide/util.dir}" buildNumberProperty="ide.build"
                 buildProjectNameProperty="xtest.tested.project" />
          <echo message="Shipping results for build ${ide.build}"/>
-         <property name="ide.build" value="unknown"/>
+         <property name="ide.build" value="${xtest.ide.build.name}"/>
          <property name="xtest.machine" value="unknown"/>
          <property name="xtest.tested.project" value="unknown"/>
          <property name="xtest.testing.group" value="unknown"/>
@@ -302,7 +305,11 @@ Microsystems, Inc. All Rights Reserved.
      <!-- Read moduleCluster.properties from netbeans.dest.dir -->
      <property name="netbeans.dest.dir" location="${ide.install.path}/netbeans"/>
      <property file="${ide.install.path}/netbeans/moduleCluster.properties"/>
-     <available file="${core/bootstrap.dir}/lib/boot.jar" type="file" property="ide.home" value="${ide.install.path}"/>
+     <dirset dir="${ide.installto}" id="ide.brand.dir.id" >
+         <include name="*"/>
+     </dirset>
+     <property name="ide.brand.dir" refid="ide.brand.dir.id"/>
+     <available file="${ide.installto}/${ide.brand.dir}/bin" type="dir" property="ide.home" value="${ide.installto}"/>
      <antcall target="find-existing-ide"/>
   </target>   
   
@@ -314,11 +321,15 @@ Microsystems, Inc. All Rights Reserved.
      <!-- Read moduleCluster.properties from netbeans.dest.dir -->
      <property name="netbeans.dest.dir" location="${ide.installto}/netbeans"/>
      <property file="${ide.installto}/netbeans/moduleCluster.properties"/>
-     <available file="${core/bootstrap.dir}/lib/boot.jar" type="file" property="ide.home" value="${ide.installto}"/>
+     <dirset dir="${ide.installto}" id="ide.brand.dir.id" >
+         <include name="*"/>
+     </dirset>
+     <property name="ide.brand.dir" refid="ide.brand.dir.id"/>
+     <available file="${ide.installto}/${ide.brand.dir}/bin" type="dir" property="ide.home" value="${ide.installto}"/>
   </target>
   
   <target name="check-installed-ide" depends="find-installed-ide,actionlist" unless="ide.home" if="xtest.execute_actions.install-ide">
-     <fail message="IDE wasn't properly installed. Can't find ${core/bootstrap.dir}/lib/boot.jar."/>
+     <fail message="IDE wasn't properly installed. Can't find ${ide.installto}/${ide.brand.dir}/bin."/>
   </target>
 
   <target name="install-type-fail" unless="ide.install.type.ok">
