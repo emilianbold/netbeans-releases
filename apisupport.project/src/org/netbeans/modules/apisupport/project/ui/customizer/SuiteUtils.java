@@ -265,6 +265,9 @@ public final class SuiteUtils {
                         FileObject fo = subModuleDir.getFileObject(
                                 "nbproject/suite.properties"); // NOI18N
                         if (fo != null) {
+                            // XXX this is a bit dangerous. Surely would be better to delete just the relevant
+                            // property from it, then delete it iff it is empty. (Would require that
+                            // NbModuleProjectGenerator.createSuiteProperties accept an existing file.)
                             fo.delete();
                         }
                         fo = subModuleDir.getFileObject(
