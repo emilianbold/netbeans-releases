@@ -74,7 +74,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
         ProjectCustomizer.Category category = null;
         if (CAT_WEBSTART.equals(catName)) {
             category = ProjectCustomizer.Category.create(CAT_WEBSTART,
-                    bundle.getString("LBL_Category_WebStart"), null, null);
+                    bundle.getString("LBL_Category_WebStart"), null, (ProjectCustomizer.Category) null);
         }
         return category;
     }
