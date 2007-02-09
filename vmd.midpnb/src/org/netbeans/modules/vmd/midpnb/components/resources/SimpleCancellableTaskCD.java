@@ -31,7 +31,6 @@ import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.properteditors.PropertyEditorExecutableUserCode;
@@ -39,6 +38,12 @@ import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
+import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
+import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.inspector.controllers.CategoryPC;
+import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
 
 /**
  *
@@ -47,15 +52,21 @@ import java.util.List;
 public class SimpleCancellableTaskCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.util.SimpleCancellableTask"); // NOI18N
-
+    
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_16.png"; // NOI18N
+    
     private static final String PROP_CODE = "executableMethodBody"; //NOI18N
-
+    
+    static {
+        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
+    }
+    
     public SimpleCancellableTaskCD() {
-
     }
 
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
+        //return new TypeDescriptor(ResourceCD.TYPEID, TYPEID, true, true);
     }
 
     public VersionDescriptor getVersionDescriptor() {
@@ -91,7 +102,12 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
             createPropertiesPresenter(),
             // setter
             createSetterPresenter (),
-            MidpCustomCodePresenterSupport.createAddImportPresenter ()
+            MidpCustomCodePresenterSupport.createAddImportPresenter (),
+             // inspector
+            InspectorFolderPresenter.create(true),
+            InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical()),
+            InspectorPositionPresenter.create(new CategoryPC())
+                
         );
     }
 

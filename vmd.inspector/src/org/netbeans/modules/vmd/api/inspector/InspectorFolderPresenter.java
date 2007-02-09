@@ -63,6 +63,7 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
                 for (String propertyName : propertyNames) {
                     filters.add(new DesignEventFilter().addDescentFilter(super.getComponent(), propertyName));
                 }
+                
                 return  new DesignEventFilter(filters.toArray(new DesignEventFilter[filters.size()]));
             }
             

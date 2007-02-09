@@ -73,13 +73,13 @@ public abstract class CustomComponentProducer extends ComponentProducer {
     
     public static final class SimpleCancellableTask extends CustomComponentProducer {
         public SimpleCancellableTask() {
-            super(SimpleCancellableTaskCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "SimpleCancellableTask", "SimpleCancellableTask", ResourceCD.ICON_PATH, null)); // NOI18N
+            super(SimpleCancellableTaskCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "SimpleCancellableTask", "SimpleCancellableTask", SimpleTableModelCD.ICON_PATH, null)); // NOI18N
         }
     }
     
      public static final class SimpleTableModel extends CustomComponentProducer {
         public SimpleTableModel() {
-            super(SimpleTableModelCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "SimpleTableModel", "SimpleTableModel", ResourceCD.ICON_PATH, null)); // NOI18N
+            super(SimpleTableModelCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "SimpleTableModel", "SimpleTableModel", SimpleCancellableTaskCD.ICON_PATH, null)); // NOI18N
         }
     }
 }
