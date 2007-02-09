@@ -41,7 +41,7 @@ import org.openide.xml.*;
 public final class EntityCatalogImpl extends EntityCatalog {
 
     /** map between publicId and privateId (String, String); must be synchronized */
-    private Map<String, String> id2uri;  
+    private Map<String, String> id2uri;  // accessed from SystemCatalogReader in xml/catalog by reflection
 
     private static final RequestProcessor catalogRP = new RequestProcessor("EntityCatalog/parser"); // NOI18N
 
