@@ -25,6 +25,7 @@ import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.wsdl.model.Import;
+import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.impl.ImportImpl;
 import org.netbeans.modules.xml.wsdl.model.spi.WSDLComponentBase;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -63,10 +64,13 @@ public class SchemaReferenceImpl<T extends ReferenceableSchemaComponent>
                 SchemaModel primitiveModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
                 target = primitiveModel.resolve(namespace, localName, getType());
             } else {
-                for (Schema s : getParent().getModel().getDefinitions().getTypes().getSchemas()) {
-                    target = s.getModel().resolve(namespace, localName, getType());
-                    if (target != null) {
-                        break;
+                Types types = getParent().getModel().getDefinitions().getTypes();
+                if (types != null) {
+                    for (Schema s : types.getSchemas()) {
+                        target = s.getModel().resolve(namespace, localName, getType());
+                        if (target != null) {
+                            break;
+                        }
                     }
                 }
                 if (target == null) {

@@ -5,8 +5,6 @@ targetNamespace="test/operations">
     
   <import namespace="http://www.example.com/PO1" location="PurchaseOrder.xsd"/>
   
-  <types>
-  </types>    
   <message name="message1">
     <part name="m1-part1" type="po:PurchaseOrderType"/>
   </message>
