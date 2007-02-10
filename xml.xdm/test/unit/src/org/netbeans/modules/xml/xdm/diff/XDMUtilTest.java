@@ -46,7 +46,15 @@ public class XDMUtilTest extends TestCase {
         String changed = util.prettyPrintXML(xml, indent);
         assertEquals("pretty print", expected, changed);
     }    
-    
+
+    public void testPrettyPrintAddNamespace() throws Exception {
+        XDMUtil util = new XDMUtil();
+        String xml1 = readXMLString("diff/xdu/pp-add-ns-decl-1.xml");
+        String xml1_pretty = util.prettyPrintXML(xml1, "    ");
+        String xml2 = readXMLString("diff/xdu/pp-add-ns-decl-2.xml");
+        assertEquals(xml2, xml1_pretty);
+    }
+
     public void testPrettyPrintXMLNegative() throws Exception {
         XDMUtil util = new XDMUtil();
         String indent = "    ";

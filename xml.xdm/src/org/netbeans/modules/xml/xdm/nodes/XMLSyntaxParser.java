@@ -181,7 +181,7 @@ public class XMLSyntaxParser {
                         String combinedString = combineString(currentTokens);
                         Comment comment = new Comment(combinedString);
                         if (parent instanceof Element) {
-                            ((Element)parent).appendChild(comment, true);
+                            ((Element)parent).appendChild(comment, false);
                         } else {//parent is Document
                             if(numericId != XMLTokenIDs.BLOCK_COMMENT_ID &&
                                     token.getImage().trim().length() > 0) {
@@ -213,7 +213,7 @@ public class XMLSyntaxParser {
                     currentNode.setTokens(new ArrayList<Token>(currentTokens));
                     Node parent = stack.peek();
                     if (parent instanceof Element) {
-                        ((Element)parent).appendChild(currentNode, true);
+                        ((Element)parent).appendChild(currentNode, false);
                     } else {//parent is Document
                         if(numericId != XMLTokenIDs.BLOCK_COMMENT_ID &&
                                 token.getImage().trim().length() > 0) {
@@ -268,7 +268,7 @@ public class XMLSyntaxParser {
                     Node parent = stack.peek();
                     CData cdata = new CData(image);
                     if (parent instanceof Element) {
-                        ((Element)parent).appendChild(cdata, true);
+                        ((Element)parent).appendChild(cdata, false);
                     } else {//parent is Document
                         throw new IOException("CDATA is not valid as direct child of document" +
                                 "Please use the text editor to resolve the issues...");

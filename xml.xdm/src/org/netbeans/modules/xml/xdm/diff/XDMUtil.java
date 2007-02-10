@@ -239,17 +239,17 @@ public class XDMUtil {
         int count = 0;
         for(int i=0;i<childs1.getLength();i++) {
             n1 = (NodeImpl) childs1.item(i);
-            newNode = ((NodeImpl)n1).copy();           
+            newNode = ((NodeImpl)n1).cloneNode(true, false);           
             List<Node> ancestors = m2.add(n2, newNode, count++);
             n2 = ancestors.get(0);
         }
         List<Node> ancestors = new ArrayList<Node>();
-        fixPrettyText(m2, n2, ancestors);
+        fixPrettyText(m2, n2, ancestors, "");
         n2 = ancestors.get(0);
         return n2;
     }    
     
-    private void fixPrettyText(XDMModel m, final Node n, List<Node> ancestors) {
+    private void fixPrettyText(XDMModel m, final Node n, List<Node> ancestors, String indent) {
         Node parent = n;
         int index = m.getIndentation().length();
         NodeList childs = parent.getChildNodes();
@@ -258,8 +258,14 @@ public class XDMUtil {
             Node child = (Node) childs.item(i);
             if(checkPrettyText(child)) {
                 Text txt = (Text) ((NodeImpl)child).cloneNode(true);
-                if(txt.getText().length() >= (index+1))
-                    txt.setText("\n"+txt.getText().substring(index+1));
+                if(i < childs.getLength()-1 || ancestors.size() == 0)
+                    txt.setText("\n"+indent);
+                else {
+                    String lastTextIndent = "\n";
+                    if(m.getIndentation().length() < indent.length() )
+                        lastTextIndent += indent.substring(m.getIndentation().length());
+                    txt.setText(lastTextIndent);
+                }
                 List<Node> ancestors2 = m.modify(child, txt);
                 parent = ancestors2.get(0);
             }
@@ -268,7 +274,7 @@ public class XDMUtil {
         }
         ancestors.add(parent);
         for(int i=0;i<visitList.size();i++) {
-            fixPrettyText(m, (Node)visitList.get((i)), ancestors);
+            fixPrettyText(m, (Node)visitList.get((i)), ancestors, indent+m.getIndentation());
         }
         visitList.clear(); //no need to keep it beyond here
     }    
