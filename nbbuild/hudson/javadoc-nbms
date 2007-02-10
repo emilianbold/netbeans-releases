@@ -1,0 +1,13 @@
+#!/bin/sh
+if [ `ant -f nbbuild/build.xml -Dmoduleconfig=daily-alpha-nbms print-cvs-modules | perl -ne 'print sort split /[, ]/, $1 if /cvsmodules=\[(.+)\]/'` \!= `perl -e 'opendir D, "."; print sort grep {!/\.\.?/ && -d} readdir D; closedir D'` ]
+then
+    echo "Set of modules changed, getting fresh checkout..."
+    rm -rf `ls | fgrep -v nbbuild`
+    ant -f nbbuild/build.xml -Dmoduleconfig=daily-alpha-nbms checkout
+fi
+mydir=`dirname $0`
+keystore=$mydir/NBstore
+storepass=`cat $mydir/storepass`
+ant -emacs -Dbuildnum=$BUILD_TAG -Dmoduleconfig=daily-alpha-nbms -Dkeystore=$keystore -Dstorepass=$storepass -f nbbuild/build.xml cvs-clean merge build-nbms
+ant -f $mydir/build-update-descriptor.xml
+ant -f nbbuild/build.xml -Djnlp.codebase=http://deadlock.nbextras.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/ -Djnlp.signjar.keystore=$keystore -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$storepass build-jnlp

@@ -1,0 +1,9 @@
+#!/bin/sh
+rm -f nbbuild/NetBeans-*.zip
+if [ `ant -f nbbuild/build.xml print-cvs-modules | perl -ne 'print sort qw(jemmy jellytools xtest), split /[, ]/, $1 if /cvsmodules=\[(.+)\]/'` \!= `perl -e 'opendir D, "."; print sort grep {!/\.\.?/ && -d} readdir D; closedir D'` ]
+then
+    echo "Set of modules changed, getting fresh checkout..."
+    rm -rf `ls | fgrep -v nbbuild`
+    ant -f nbbuild/build.xml checkout cvs-clean
+fi
+ant -emacs -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml all || ant -emacs -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml cvs-clean all

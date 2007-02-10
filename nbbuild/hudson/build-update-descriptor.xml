@@ -1,0 +1,17 @@
+<project name="build-update-descriptor" basedir="../jobs/javadoc-nbms" default="descriptor">
+    <target name="descriptor">
+        <taskdef classpath="workspace/nbbuild/netbeans/harness/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
+        <makeupdatedesc desc="workspace/nbbuild/nbms/updates.xml" distbase="." automaticgrouping="true">
+            <fileset dir="workspace/nbbuild/nbms">
+                <include name="*.nbm"/>
+            </fileset>
+        </makeupdatedesc>
+	<taskdef name="vuc" classname="org.netbeans.nbbuild.VerifyUpdateCenter" classpath="workspace/nbbuild/nbantext.jar"/>
+	<echo>Checking synchronic and diachronic consistency of NBMs; see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency</echo>
+	<vuc updates="workspace/nbbuild/nbms/updates.xml" oldupdates="lastSuccessful/archive/nbbuild/nbms/updates.xml">
+	    <classpath>
+	        <fileset dir="workspace/nbbuild/netbeans" includes="platform*/lib/*.jar"/>
+	    </classpath>
+	</vuc>
+    </target>
+</project>
