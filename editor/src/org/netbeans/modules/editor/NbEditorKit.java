@@ -108,12 +108,10 @@ public class NbEditorKit extends ExtKit {
         contentTypeTable.put("org.netbeans.modules.corba.idl.editor.coloring.IDLKit", "text/x-idl"); // NOI18N
     }
     
-    public NbEditorKit(){
+    public NbEditorKit() {
         super();
 //        new Throwable("NbEditorKit: " + getClass()).printStackTrace();
-        
-        // lazy init of MIME options
-        NbEditorSettingsInitializer.init(getContentType());
+        NbEditorSettingsInitializer.init();
     }
 
     public Document createDefaultDocument() {
