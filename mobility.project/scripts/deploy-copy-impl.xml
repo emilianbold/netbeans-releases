@@ -19,8 +19,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project default="deploy-copy">
     <target name="deploy-copy">
-        <fail unless="deployment.jad">Property deployment.jad is not set.</fail>
-        <fail unless="deployment.jar">Property deployment.jar is not set.</fail>
+        <fail unless="deployment.dir">Property deployment.dir is not set.</fail>
         <fail unless="deployment.copy.target">Property deployment.copy.target is not set.</fail>
         <condition property="deployment.copy.empty.target">
             <equals arg1="${deployment.copy.target}" arg2="" trim="true"/>
@@ -28,8 +27,9 @@ Microsystems, Inc. All Rights Reserved.
         <fail if="deployment.copy.empty.target">Property deployment.copy.target is not set.</fail>
         <mkdir dir="${deployment.copy.target}"/>
         <copy todir="${deployment.copy.target}" overwrite="true" verbose="true">
-             <fileset file="${deployment.jad}"/>
-             <fileset file="${deployment.jar}"/>
+             <fileset dir="${deployment.dir}">
+                <patternset refid="deployment.patternset"/>
+             </fileset>
          </copy>
     </target>
 </project>

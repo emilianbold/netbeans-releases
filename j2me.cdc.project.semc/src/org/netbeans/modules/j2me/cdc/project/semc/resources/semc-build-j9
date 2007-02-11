@@ -1,0 +1,14 @@
+<xsl:comment>semc-build-j9</xsl:comment>
+
+    <target name="semc-build-j9" if="semc-platform.trigger">
+        <epocpathsetter home="${{platform.home}}"/>
+        <property name="semc.application.caps" value=""/>
+        <mkdir dir="${{platform.home}}/epoc32/winscw/c/private/${{semc.application.uid}}"/>
+        <mkdir dir="${{build.dir}}/j9"/>
+        <fail message="Main class is not set!">
+            <condition>
+                <equals arg1="${{main.class}}" arg2="" trim="true"/>
+            </condition>
+        </fail>
+        <j9builder jvmargs="${{run.jvmargs}}" mainclass="${{main.class}}" args="${{application.args}}" home="${{platform.home}}" dist="${{j9.dist}}" id="${{semc.application.uid}}" platform="${{platform.type}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}" jarname="${{dist.jar}}"/>
+    </target>

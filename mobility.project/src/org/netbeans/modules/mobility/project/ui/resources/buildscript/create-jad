@@ -6,16 +6,13 @@
         <nb-output file="${{manifest.build.file}}" encoding="UTF-8" append="true">MicroEdition-Configuration: ${platform.configuration}
 </nb-output>
     </target>
-
     <target name="add-profile" unless="contains.manifest.profile">
         <nb-output file="${{dist.dir}}/${{dist.jad}}" encoding="UTF-8" append="true">MicroEdition-Profile: ${platform.profile}
 </nb-output>
         <nb-output file="${{manifest.build.file}}" encoding="UTF-8" append="true">MicroEdition-Profile: ${platform.profile}
 </nb-output>
     </target>
-
-    <target name="create-jad" depends="__DEPENDS__" if="cldc-platform.trigger">
-        <property name="manifest.build.file" location="${{build.dir}}/manifest.mf"/>
+    <target name="create-jad" if="cldc-platform.trigger">
         <fail unless="dist.jad">Must set dist.jad</fail>
         <mkdir dir="${{build.dir}}"/>
         <dirname file="${{dist.dir}}/${{dist.jad}}" property="dist.jad.dir"/>
@@ -45,10 +42,5 @@
         <antcall target="add-configuration" inheritall="true" inheritrefs="true"/>
         <antcall target="add-profile" inheritall="true" inheritrefs="true"/>
         <property name="manifest.available" value="true"/>
-        <property name="deployment.dir" location="${{dist.dir}}"/>
-        <patternset id="deployment.patternset">
-            <include name="${{dist.jad}}"/>
-            <include name="${{dist.jar}}"/>
-        </patternset>
     </target>
     

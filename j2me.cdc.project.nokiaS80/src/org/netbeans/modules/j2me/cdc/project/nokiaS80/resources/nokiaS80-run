@@ -1,20 +1,8 @@
 <xsl:comment>nokiaS80-run</xsl:comment>
 
     <target name="nokiaS80-run" if="nokiaS80-platform.trigger">
-        <fail message="Main class is not set!">
-            <condition>
-                <equals arg1="${{main.class}}" arg2="" trim="true"/>
-            </condition>
-        </fail>
-        <mkdir dir="${{platform.home}}\epoc32\wins\c\PP_Applications"/>
-        <mkdir dir="${{build.dir}}\j9"/>
-        <taskdef name="j9builder" classname="org.netbeans.modules.j2me.cdc.project.J9Builder" classpath="${{libs.cdc-ant-utils.classpath}}"/>
-        <j9builder jvmargs="${{run.jvmargs}}" mainclass="${{main.class}}" args="${{application.args}}" home="${{platform.home}}" dist="${{j9.dist}}" id="NOKIA" platform="${{platform.type}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}">
-            <fileset dir="${{dist.dir}}">
-                <exclude name="javadoc/**"/>
-            </fileset>
-        </j9builder>
-        <mkdir dir="${{platform.home}}\epoc32\wins\c\logs\j9vm"/>
+        <mkdir dir="${{platform.home}}/epoc32/wins/c/PP_Applications"/>
+        <mkdir dir="${{platform.home}}/epoc32/wins/c/logs/j9vm"/>
         <taskdef name="nokiaexec" classname="org.netbeans.modules.j2me.cdc.project.nokiaS80.NokiaEmulatorExecTask" classpath="${{libs.nokiaS80-ant-utils.classpath}}"/>
         <nokiaexec jvmargs="${{run.jvmargs}}" mainclass="${{main.class}}" args="${{application.args}}" home="${{platform.home}}" device="${{platform.device}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}">
             <fileset dir="${{dist.dir}}">

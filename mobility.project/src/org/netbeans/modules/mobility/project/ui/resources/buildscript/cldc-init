@@ -1,6 +1,12 @@
 <xsl:comment>cldc-init</xsl:comment>
 
-    <target name="cldc-init">
+    <target name="cldc-pre-init">
+        <condition property="cldc-platform.trigger">
+            <equals arg1="CLDC" arg2="${{platform.trigger}}" casesensitive="false"/>
+        </condition>
+    </target>
+    <target name="cldc-init" if="cldc-platform.trigger">
+        <property name="manifest.build.file" location="${{build.dir}}/manifest.mf"/>
         <property name="platform.device" value=""/>
         <property name="dist.jad.url" value="file://"/>
         <property name="run.cmd.options" value=""/>
@@ -8,9 +14,6 @@
             <isfalse value="${{run.use.security.domain}}"/>
         </condition>
         <property name="evaluated.run.security.domain" value="${{run.security.domain}}"/>
-        <condition property="cldc-platform.trigger">
-            <equals arg1="CLDC" arg2="${{platform.trigger}}" casesensitive="false"/>
-        </condition>
         <condition property="override.jarurl.trigger">
             <and>
                 <istrue value="${{cldc-platform.trigger}}"/>
@@ -19,5 +22,10 @@
         </condition>
         <property name="deployment.jad" location="${{dist.dir}}/${{dist.jad}}"/>
         <property name="deployment.jar" location="${{dist.dir}}/${{dist.jar}}"/>
+        <property name="deployment.dir" location="${{dist.dir}}"/>
+        <patternset id="deployment.patternset">
+            <include name="${{dist.jad}}"/>
+            <include name="${{dist.jar}}"/>
+        </patternset>
     </target>
     

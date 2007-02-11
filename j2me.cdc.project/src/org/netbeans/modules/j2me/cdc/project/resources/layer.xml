@@ -30,8 +30,8 @@
                         <file name="cdc-init" url="cdc-init"/>
                     </folder>
                     <folder name="clean-subtargets">
-                        <attr name="clean-javadoc/clean-target" boolvalue="true"/>
-                        <file name="clean-target" url="clean-target"/>
+                        <attr name="clean-javadoc/clean-j9" boolvalue="true"/>
+                        <file name="clean-j9" url="clean-j9"/>
                     </folder>
                 </folder>
             </folder>

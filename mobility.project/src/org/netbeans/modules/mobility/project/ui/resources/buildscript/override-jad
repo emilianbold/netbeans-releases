@@ -1,4 +1,4 @@
-<xsl:comment>deploy</xsl:comment>    
+<xsl:comment>override-jad</xsl:comment>    
     
     <target name="override-jad" if="override.jarurl.trigger">
         <property name="deployment.jarurl" value="${{dist.jar}}"/>

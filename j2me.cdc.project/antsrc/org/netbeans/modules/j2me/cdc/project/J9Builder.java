@@ -54,6 +54,7 @@ public class J9Builder extends Task {
     private String platform;    
     private boolean xlet;
     private boolean applet;
+    private String jarName;
     
     private List<FileSet> filesets = new LinkedList<FileSet>(); 
     
@@ -131,19 +132,26 @@ public class J9Builder extends Task {
 
     private String createPath(){
         StringBuffer sb = new StringBuffer();
+        if (jarName != null) {
+            if ( platform.startsWith("semc")){
+                sb.append("C:\\private\\" + id + "\\" + jarName + ";D:\\private\\" + id + "\\" + jarName);
+            } else if (platform.startsWith("nokia")){
+                sb.append(jarName);
+            } else {
+                throw new BuildException("Unknown target platform " + platform);
+            }
+        }
         for (FileSet fs : filesets) {
             DirectoryScanner ds = fs.getDirectoryScanner(getProject());
             String[] files = ds.getIncludedFiles();
             for (int i = 0; i < files.length; i++){
+                if (sb.length() > 0) sb.append(";");
                 if ( platform.startsWith("semc")){
                     sb.append("C:\\private\\" + id + "\\" + files[i] + ";D:\\private\\" + id + "\\" + files[i]);
                 } else if (platform.startsWith("nokia")){
                     sb.append(files[i]);
                 } else {
                     throw new BuildException("Unknown target platform " + platform);
-                }
-                if (i+1 < files.length){
-                    sb.append(";");
                 }
             }
         }        
@@ -185,6 +193,10 @@ public class J9Builder extends Task {
 
     public void setMainclass(String mainclass) {
         this.mainclass = mainclass;
+    }
+    
+    public void setJarName(String jarName) {
+    	this.jarName = jarName;
     }
 
     public String getArgs() {

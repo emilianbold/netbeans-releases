@@ -9,6 +9,16 @@
                         <attr name="ricoh-init/semc-init" boolvalue="true"/>
                         <file name="semc-init" url="semc-init"/>
                     </folder>
+                    <folder name="jar-subtargets">
+                        <attr name="nokiaS80-create-manifest/semc-build-j9" boolvalue="true"/>
+                        <file name="semc-build-j9" url="semc-build-j9"/>
+                        <attr name="semc-build-j9/do-jar" boolvalue="true"/>
+                    </folder>
+                   <folder name="build-subtargets">
+                        <attr name="override-jad/semc-sis" boolvalue="true"/>
+                        <file name="semc-sis" url="semc-sis"/>
+                        <attr name="semc-sis/increment-app-version" boolvalue="true"/>
+                    </folder>
                     <folder name="run-subtargets">
                         <attr name="ricoh-run/semc-run" boolvalue="true"/>
                         <file name="semc-run" url="semc-run"/>

@@ -9,6 +9,11 @@
                         <attr name="savaje-init/nokiaS80-init" boolvalue="true"/>
                         <file name="nokiaS80-init" url="nokiaS80-init"/>
                     </folder>
+                    <folder name="jar-subtargets">
+                        <attr name="create-jad/nokiaS80-create-manifest" boolvalue="true"/>
+                        <file name="nokiaS80-create-manifest" url="nokiaS80-create-manifest"/>
+                        <attr name="nokiaS80-create-manifest/do-jar" boolvalue="true"/>
+                    </folder>
                     <folder name="run-subtargets">
                         <attr name="savaje-run/nokiaS80-run" boolvalue="true"/>
                         <file name="nokiaS80-run" url="nokiaS80-run"/>

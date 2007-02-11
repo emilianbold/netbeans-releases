@@ -1,13 +1,16 @@
     <target name="clean-semc" if="semc-platform.trigger">
-        <delete dir="${{platform.home}}\epoc32\tools\ppro-custom-launcher\output\win32\PProLauncher${{semc.application.uid}}"/>
-        <delete dir="${{platform.home}}\epoc32\tools\ppro-custom-launcher\output\arm\PProLauncher${{semc.application.uid}}"/>
-        <delete file="${{platform.home}}\epoc32\release\winscw\udeb\PProLauncher${{semc.application.uid}}.exe"/>
-        <delete file="${{platform.home}}\epoc32\release\winscw\udeb\z\Resource\Apps\PProLauncher${{semc.application.uid}}.rsc"/>
-        <delete file="${{platform.home}}\epoc32\release\winscw\udeb\z\private\10003a3f\apps\PProLauncher${{semc.application.uid}}_reg.rsc"/>
-        <delete file="${{platform.home}}\epoc32\release\winscw\udeb\z\Resource\Apps\PProLauncher${{semc.application.uid}}_loc.R01"/>
-        <delete file="${{platform.home}}\epoc32\release\winscw\udeb\z\Resource\Apps\${{semc.application.uid}}.mbm"/>
-        <delete file="${{platform.home}}\epoc32\data\Z\private\10003a3f\apps\PProLauncher${{semc.application.uid}}_reg.rsc"/>
-        <delete file="${{platform.home}}\epoc32\data\Z\Resource\Apps\PProLauncher${{semc.application.uid}}.rsc"/>
-        <delete file="${{platform.home}}\epoc32\data\Z\Resource\Apps\PProLauncher${{semc.application.uid}}_loc.R01"/>
-        <delete dir="${{platform.home}}\epoc32\winscw\C\private\${{semc.application.uid}}"/>
+        <delete>
+            <fileset dir="${{dist.dir}}" includes="*.sis,*.SIS"/>
+        </delete>
+        <delete dir="${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/win32/PProLauncher${{semc.application.uid}}"/>
+        <delete dir="${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/arm/PProLauncher${{semc.application.uid}}"/>
+        <delete file="${{platform.home}}/epoc32/release/winscw/udeb/PProLauncher${{semc.application.uid}}.exe"/>
+        <delete file="${{platform.home}}/epoc32/release/winscw/udeb/z/Resource/Apps/PProLauncher${{semc.application.uid}}.rsc"/>
+        <delete file="${{platform.home}}/epoc32/release/winscw/udeb/z/private/10003a3f/apps/PProLauncher${{semc.application.uid}}_reg.rsc"/>
+        <delete file="${{platform.home}}/epoc32/release/winscw/udeb/z/Resource/Apps/PProLauncher${{semc.application.uid}}_loc.R01"/>
+        <delete file="${{platform.home}}/epoc32/release/winscw/udeb/z/Resource/Apps/${{semc.application.uid}}.mbm"/>
+        <delete file="${{platform.home}}/epoc32/data/Z/private/10003a3f/apps/PProLauncher${{semc.application.uid}}_reg.rsc"/>
+        <delete file="${{platform.home}}/epoc32/data/Z/Resource/Apps/PProLauncher${{semc.application.uid}}.rsc"/>
+        <delete file="${{platform.home}}/epoc32/data/Z/Resource/Apps/PProLauncher${{semc.application.uid}}_loc.R01"/>
+        <delete dir="${{platform.home}}/epoc32/winscw/C/private/${{semc.application.uid}}"/>
     </target>

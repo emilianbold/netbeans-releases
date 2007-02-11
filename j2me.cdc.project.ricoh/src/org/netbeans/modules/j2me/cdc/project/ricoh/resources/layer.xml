@@ -22,7 +22,7 @@
                         <file name="ricoh-debug" url="ricoh-debug"/>
                     </folder>
                     <folder name="clean-subtargets">
-                        <attr name="clean-target/clean-ricoh" boolvalue="true"/>
+                        <attr name="clean-j9/clean-ricoh" boolvalue="true"/>
                         <file name="clean-ricoh" url="clean-ricoh"/>
                     </folder>
                 </folder>

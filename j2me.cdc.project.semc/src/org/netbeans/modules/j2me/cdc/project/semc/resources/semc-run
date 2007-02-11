@@ -1,83 +1,35 @@
-    <xsl:comment>semc-run-and-debug-prepare-targets</xsl:comment>    
-    <xsl:comment>semc-prepare-j9</xsl:comment>
-    <target name="semc-prepare-j9" if="semc-platform.trigger">
-        <fail if="application.vendor.invalid" message="Property application.vendor must contain valid vendor name!"/>
-        <condition property="icon.invalid" value="true">
-            <or>
-                <contains string="${{application.icon}}" substring="$${{"/>
-                <equals arg1="${{application.icon}}" arg2="" trim="true"/>
-            </or>
-        </condition>
-        <condition property="no.certificateorkey" value="true">
-            <or>
-                <isset property="no.application.uid"/>
-                <equals arg1="${{semc.certificate.path}}" arg2="" trim="true"/>
-                <contains string="${{semc.certificate.path}}" substring="$${{semc.certificate.path"/>
-                <equals arg1="${{semc.private.key.path}}" arg2="" trim="true"/>
-                <contains string="${{semc.private.key.path}}" substring="$${{semc.private.key.path"/>
-            </or>
-        </condition>
-        <property name="j9.dist" value="${{build.dir}}\j9\${{semc.application.uid}}.j9"/>
-        <taskdef resource="org/netbeans/modules/j2me/cdc/project/defs.properties">
-            <classpath>
-                <pathelement path="${{libs.cdc-ant-utils.classpath}}"/>
-            </classpath>
-        </taskdef>
-        <taskdef resource="org/netbeans/modules/j2me/cdc/project/semc/defs.properties">
-            <classpath>
-                <pathelement path="${{libs.semc-ant-utils.classpath}}"/>
-            </classpath>
-        </taskdef>
-        <epocpathsetter home="${{platform.home}}"/>
-        <property name="semc.application.caps" value=""/>
-        <mkdir dir="${{platform.home}}\epoc32\winscw\c\private\${{semc.application.uid}}"/>
-        <mkdir dir="${{build.dir}}\j9"/>
+<xsl:comment>semc-run-and-debug-prepare-targets</xsl:comment>    
+
+    <target name="semc-icon-assembly" if="semc-platform.trigger" unless="semc.icon.invalid">
+       <copy file="${{semc.application.icon}}" tofile="${{platform.home}}/epoc32/release/winscw/udeb/z/Resource/Apps/${{semc.application.uid}}.mbm" failonerror="false"/>
+       <iconassembly home="${{platform.home}}" uid="${{semc.application.uid}}" count="${{application.icon.count}}"/>
     </target>
-    <xsl:comment>semc-build-j9</xsl:comment>
-    <target name="semc-build-j9" if="semc-platform.trigger">
-        <fail message="Main class is not set!">
-            <condition>
-                <equals arg1="${{main.class}}" arg2="" trim="true"/>
-            </condition>
-        </fail>
-        <j9builder jvmargs="${{run.jvmargs}}" mainclass="${{main.class}}" args="${{application.args}}" home="${{platform.home}}" dist="${{j9.dist}}" id="${{semc.application.uid}}" platform="${{platform.type}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}">
-            <fileset dir="${{dist.dir}}">
-                <exclude name="javadoc/**"/>
-            </fileset>
-        </j9builder>
-    </target>
-    <target name="semc-icon-assembly" if="semc-platform.trigger" unless="icon.invalid">
-        <iconassembly home="${{platform.home}}" uid="${{semc.application.uid}}" count="${{application.icon.count}}"/>
-    </target>
-    <target name="semc-ppro-emulator"  if="semc-platform.trigger" description="Builds neccessary files for semc emulator">
-        <exec executable="${{platform.home}}\epoc32\tools\create-ppro-app.bat" dir="${{platform.home}}\epoc32\tools\">
+    <target name="semc-ppro-emulator" if="semc-platform.trigger" description="Builds neccessary files for semc emulator">
+        <exec executable="${{platform.home}}/epoc32/tools/create-ppro-app.bat" dir="${{platform.home}}/epoc32/tools/">
             <arg value="win32"/>
             <arg value="${{application.name}}"/>
             <arg value="${{semc.application.uid}}"/>
-            <arg value="${{basedir}}\${{j9.dist}}"/>
+            <arg value="${{j9.dist}}"/>
             <arg value="${{semc.application.caps}}"/>
             <env key="SDKDRIVE" value="${{sdkdrive}}"/>
             <env key="EPOCROOT" value="${{epocroot}}"/>
             <env key="Path" value="${{epocpath}}"/>
         </exec>
     </target>
-    <target name="semc-run-prepare-icon" if="semc-platform.trigger" unless="icon.invalid">
-        <copy file="${{application.icon}}" tofile="${{platform.home}}\epoc32\release\winscw\udeb\z\Resource\Apps\${{semc.application.uid}}.mbm" failonerror="false"/>
-    </target>
     <target name="semc-do-run" if="semc-platform.trigger" description="Prepare log folders, copy necessary files">
-        <copy todir="${{platform.home}}\epoc32\winscw\C\private\${{semc.application.uid}}">
+        <copy todir="${{platform.home}}/epoc32/winscw/C/private/${{semc.application.uid}}">
             <fileset dir="${{dist.dir}}">
                 <exclude name="javadoc/**"/>
             </fileset>
         </copy>
-        <mkdir dir="${{platform.home}}\epoc32\winscw\c\logs\j9vm"/>
-        <epocinipath file="${{platform.home}}\epoc32\data\epoc.ini"/>
-        <exec executable="${{platform.home}}\epoc32\release\winscw\udeb\epoc.exe">
+        <mkdir dir="${{platform.home}}/epoc32/winscw/c/logs/j9vm"/>
+        <epocinipath file="${{platform.home}}/epoc32/data/epoc.ini"/>
+        <exec executable="${{platform.home}}/epoc32/release/winscw/udeb/epoc.exe">
             <env key="SDKDRIVE" value="${{sdkdrive}}"/>
             <env key="EPOCROOT" value="${{epocroot}}"/>
             <env key="Path" value="${{epocpath}}"/>
         </exec>
     </target>
-    
-    <xsl:comment>semc-run</xsl:comment>
-    <target name="semc-run" depends="semc-prepare-j9,semc-build-j9,semc-icon-assembly,semc-ppro-emulator,semc-run-prepare-icon,semc-do-run" if="semc-platform.trigger"/>
+
+<xsl:comment>semc-run</xsl:comment>
+    <target name="semc-run" depends="semc-icon-assembly,semc-ppro-emulator,semc-do-run" if="semc-platform.trigger"/>

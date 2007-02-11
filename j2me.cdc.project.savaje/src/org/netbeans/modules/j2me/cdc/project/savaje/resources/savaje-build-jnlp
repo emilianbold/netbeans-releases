@@ -27,7 +27,7 @@
                 <exclude name="javadoc/**"/>
             </fileset>
         </copy>
-        <copy tofile="${{target.dir}}\lib\classes.jar" file="${{dist.dir}}/${{dist.jar}}" overwrite="true"/>
+        <copy tofile="${{target.dir}}/lib/classes.jar" file="${{dist.dir}}/${{dist.jar}}" overwrite="true"/>
         <copy todir="${{target.dir}}" file="${{build.dir}}/jnlp/bundle.jnlp" overwrite="true"/>
         <copy tofile="${{target.dir}}/bundle.policy" file="${{build.dir}}/jnlp/bundle.policy" overwrite="true"/>
         <copy todir="${{target.dir}}/lib" overwrite="true" failonerror="false">

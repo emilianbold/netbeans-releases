@@ -1,8 +1,22 @@
 <xsl:comment>nokiaS80-init</xsl:comment>
 
-    <target name="nokiaS80-init" if="cdc-platform.trigger">
+    <target name="nokiaS80-pre-init" if="cdc-platform.trigger">
         <condition property="nokiaS80-platform.trigger">
             <equals arg1="nokiaS80" arg2="${{platform.type}}" casesensitive="false"/>
         </condition>
+    </target>
+    <target name="nokiaS80-init" depends="nokiaS80-pre-init" if="nokiaS80-platform.trigger">
+        <property name="j9.dist" location="${{build.dir}}/j9/NOKIA.j9"/>
+        <property name="manifest.build.file" location="${{build.dir}}/manifest.mf"/>
+        <condition property="nokia.icon.invalid">
+            <or>
+                <contains string="${{nokiaS80.application.icon}}" substring="$${{"/>
+                <equals arg1="${{nokiaS80.application.icon}}" arg2="" trim="true"/>
+            </or>
+        </condition>
+        <property name="deployment.dir" location="${{dist.dir}}"/>
+        <patternset id="deployment.patternset">
+            <include name="${{dist.jar}}"/>
+        </patternset>
     </target>
     

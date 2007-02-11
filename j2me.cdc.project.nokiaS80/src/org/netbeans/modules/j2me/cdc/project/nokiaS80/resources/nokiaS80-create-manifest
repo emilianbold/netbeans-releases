@@ -1,0 +1,43 @@
+<xsl:comment>nokiaS80-manifest</xsl:comment>
+
+    <target name="nokiaS80-prepare-j9" if="nokiaS80-platform.trigger">
+        <fail message="Main class is not set!">
+            <condition>
+                <equals arg1="${{main.class}}" arg2="" trim="true"/>
+            </condition>
+        </fail>
+        <mkdir dir="${{build.dir}}/j9"/>
+        <taskdef name="j9builder" classname="org.netbeans.modules.j2me.cdc.project.J9Builder" classpath="${{libs.cdc-ant-utils.classpath}}"/>
+        <j9builder jvmargs="${{run.jvmargs}}" mainclass="${{main.class}}" args="${{application.args}}" home="${{platform.home}}" dist="${{j9.dist}}" id="NOKIA" platform="${{platform.type}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}" jarname="${{dist.jar}}"/>
+        <copy file="${{manifest.file}}" tofile="${{manifest.build.file}}" failonerror="false"/>
+        <property name="manifest.available" value="true"/>
+        <loadfile property="nokia.manifest.j9" srcFile="${{j9.dist}}"/>
+    </target>
+    <target name="nokiaS80-prepare-manifest" depends="nokiaS80-prepare-j9" if="nokiaS80-platform.trigger" unless="nokia.icon.invalid">
+        <pathconvert property="logo.icon.name" pathsep=" ">
+            <path path="${{nokiaS80.application.icon}}"/>
+            <chainedmapper>
+                <flattenmapper/>
+                <globmapper from="*" to="*"/>
+            </chainedmapper>
+        </pathconvert>
+        <copy file="${{nokiaS80.application.icon}}" todir="${{buildsystem.baton}}"/>
+        <manifest file="${{manifest.build.file}}" mode="update">
+            <attribute name="Main-Class" value="${{main.class}}"/>
+            <attribute name="PproApp-Name" value="${{application.name}}"/>
+            <attribute name="PproApp-Vendor" value="${{application.vendor}}"/>
+            <attribute name="PproApp-Version" value="${{deployment.number}}"/>
+            <attribute name="PproApp-Icon" value="${{logo.icon.name}}"/>
+            <attribute name="x-ibm-pp-j9" value="${{nokia.manifest.j9}}"/>
+        </manifest>
+    </target>
+    <target name="nokiaS80-prepare-manifest-no-icon" depends="nokiaS80-prepare-j9" if="nokia.icon.invalid">
+        <manifest file="${{manifest.build.file}}" mode="update">
+            <attribute name="Main-Class" value="${{main.class}}"/>
+            <attribute name="PproApp-Name" value="${{application.name}}"/>
+            <attribute name="PproApp-Vendor" value="${{application.vendor}}"/>
+            <attribute name="PproApp-Version" value="${{deployment.number}}"/>
+            <attribute name="x-ibm-pp-j9" value="${{nokia.manifest.j9}}"/>
+        </manifest>
+    </target>    
+    <target name="nokiaS80-create-manifest" depends="nokiaS80-prepare-j9,nokiaS80-prepare-manifest,nokiaS80-prepare-manifest-no-icon" if="nokiaS80-platform.trigger"/>

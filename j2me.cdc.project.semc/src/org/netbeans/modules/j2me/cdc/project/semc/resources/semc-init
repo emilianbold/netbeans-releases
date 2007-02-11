@@ -1,8 +1,41 @@
 <xsl:comment>semc-init</xsl:comment>
 
-    <target name="semc-init" if="cdc-platform.trigger">
+    <target name="semc-pre-init" if="cdc-platform.trigger">
         <condition property="semc-platform.trigger">
             <equals arg1="semc" arg2="${{platform.type}}" casesensitive="false"/>
         </condition>
+    </target>
+    <target name="semc-init" depends="semc-pre-init" if="semc-platform.trigger">
+        <condition property="semc.icon.invalid" value="true">
+            <or>
+                <contains string="${{semc.application.icon}}" substring="$${{"/>
+                <equals arg1="${{semc.application.icon}}" arg2="" trim="true"/>
+            </or>
+        </condition>
+        <condition property="no.certificateorkey" value="true">
+            <or>
+                <isset property="no.application.uid"/>
+                <equals arg1="${{semc.certificate.path}}" arg2="" trim="true"/>
+                <contains string="${{semc.certificate.path}}" substring="$${{semc.certificate.path"/>
+                <equals arg1="${{semc.private.key.path}}" arg2="" trim="true"/>
+                <contains string="${{semc.private.key.path}}" substring="$${{semc.private.key.path"/>
+            </or>
+        </condition>
+        <property name="j9.dist" location="${{build.dir}}/j9/${{semc.application.uid}}.j9"/>
+        <taskdef resource="org/netbeans/modules/j2me/cdc/project/defs.properties">
+            <classpath>
+                <pathelement path="${{libs.cdc-ant-utils.classpath}}"/>
+            </classpath>
+        </taskdef>
+        <taskdef resource="org/netbeans/modules/j2me/cdc/project/semc/defs.properties">
+            <classpath>
+                <pathelement path="${{libs.semc-ant-utils.classpath}}"/>
+            </classpath>
+        </taskdef>
+        <property name="deployment.dir" location="${{dist.dir}}"/>
+        <patternset id="deployment.patternset">
+            <include name="*.sis"/>
+            <include name="*.SIS"/>
+        </patternset>
     </target>
     

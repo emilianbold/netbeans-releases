@@ -180,9 +180,7 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="preprocess" url="buildscript/preprocess"/>
                     <attr name="preprocess/compile" boolvalue="true"/>
                     <file name="compile" url="buildscript/compile"/>
-                    <attr name="compile/create-jad" boolvalue="true"/>
-                    <file name="create-jad" url="buildscript/create-jad"/>
-                    <attr name="create-jad/obfuscate-subtargets" boolvalue="true"/>
+                    <attr name="compile/obfuscate-subtargets" boolvalue="true"/>
                     <folder name="obfuscate-subtargets">
                         <file name="pre-obfuscate"/>
                         <attr name="pre-obfuscate/proguard" boolvalue="true"/>
@@ -197,7 +195,9 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="pre-jar"/>
                         <attr name="pre-jar/set-password" boolvalue="true"/>
                         <file name="set-password" url="buildscript/set-password"/>
-                        <attr name="set-password/do-jar" boolvalue="true"/>
+                        <attr name="set-password/create-jad" boolvalue="true"/>
+                        <file name="create-jad" url="buildscript/create-jad"/>
+                        <attr name="create-jad/do-jar" boolvalue="true"/>
                         <file name="do-jar" url="buildscript/do-jar"/>
                         <attr name="do-jar/do-jar-no-manifest" boolvalue="true"/>
                         <file name="do-jar-no-manifest" url="buildscript/do-jar-no-manifest"/>

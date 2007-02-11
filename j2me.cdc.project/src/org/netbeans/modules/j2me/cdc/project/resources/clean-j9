@@ -1,0 +1,3 @@
+    <target name="clean-j9" if="j9.dist">
+        <delete file="${{j9.dist}}"/>
+    </target>
