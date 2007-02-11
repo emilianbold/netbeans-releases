@@ -1,9 +1,77 @@
+netbeans5.5 (5.5-0.49) java-test; urgency=low
+
+  [ Marek Slama ]
+
+  * Add file nb5.5/config/productid with 'NBUBU' to identify Ubuntu package 
+    installation in autoupdate
+
+  [ Tom Marble ]
+
+  * Merged previous changes back into CVS
+  * Updated rules to copy the productid
+
+ -- Tom Marble <tom.marble@sun.com>  Sat, 10 Feb 2007 18:10:09 -0600
+
+netbeans5.5 (5.5-0.48) java-test; urgency=low
+
+  * Removed some debugging information from rules
+  * Changed target distribution to feisty for REVU
+
+  [ as yet unresolved TODO items ]
+
+  * registering/unpacking the documentation (/usr/share/doc)
+  * move/symlink certain configuration information to /etc
+  * refactoring redundant components insomuch as possible
+
+ -- Tom Marble <tom.marble@sun.com>  Thu,  8 Feb 2007 00:32:32 -0600
+
+netbeans5.5 (5.5-0.47) java-test; urgency=low
+
+  * Added rsync to Build-Depends:
+  * Fixed IDE localization packages (missing many files)
+  * Add overrides for localization packages
+
+ -- Tom Marble <tom.marble@sun.com>  Thu,  8 Feb 2007 00:15:14 -0600
+
+netbeans5.5 (5.5-0.46) java-test; urgency=low
+
+  * Insure platform script harness/launchers/app.sh is executable
+  * Corrected placement of DISTRIBUTION.txt for the platform package
+  * Removed unnecesary netbeans5.5-platform.postrm
+
+ -- Tom Marble <tom.marble@sun.com>  Wed,  7 Feb 2007 23:52:32 -0600
+
+netbeans5.5 (5.5-0.45) java-test; urgency=low
+
+  * Created lists of files to move (instead of copying/deleting)
+  * Began separation of localized files
+
+ -- Tom Marble <tom.marble@sun.com>  Wed,  7 Feb 2007 23:13:27 -0600
+
+netbeans5.5 (5.5-0.44) java-test; urgency=low
+
+  * Included tarball.mk to unpack the upstream tarballs
+  * Included simple-patchsys.mk to fix spelling error as a patch
+  * Added variables to handle package names and directories
+  * Leveraged DEB_INSTALL_DIRS_pkg to create installation directories
+  * Moved one time confiration work to common-build-indep::
+  * Broke installation into two package specific install/% targets
+  * No longer need extra/ directory as netbeans.desktop moved to debian/
+
+ -- Tom Marble <tom.marble@sun.com>  Wed,  7 Feb 2007 16:31:41 -0600
+
+netbeans5.5 (5.5-0.43) java-test; urgency=low
+
+  * Concentrated debian/copyright work in debian/copyright-files
+  * Migrate to cdbs
+  
+ -- Tom Marble <tom.marble@sun.com>  Wed,  7 Feb 2007 06:33:52 -0600
+
 netbeans5.5 (5.5-0.42) java-test; urgency=low
 
-  * Add file nb5.5/config/productid with 'NBUBU' to identify Ubuntu package installation
-    in autoupdate
+  * Included upstream tarballs in orig file
 
- -- Marek Slama <mslama@netbeans.org>  Fri, 9 Feb 2007 12:00:00 +0100
+ -- Tom Marble <tom.marble@sun.com>  Tue,  6 Feb 2007 15:35:59 -0600
 
 netbeans5.5 (5.5-0.41) java-test; urgency=low
 
