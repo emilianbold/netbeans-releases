@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <library version="1.0">
     <name>J2MEUnit</name>
-    <type>j2me</type>
+    <type>j2se</type>
     <localizing-bundle>org.netbeans.modules.mobility.j2meunit.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>

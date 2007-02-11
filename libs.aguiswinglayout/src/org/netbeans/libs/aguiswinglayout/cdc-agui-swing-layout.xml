@@ -22,7 +22,7 @@
 
 <library version="1.0">
     <name>cdc-agui-swing-layout</name>
-    <type>cdc</type>
+    <type>j2se</type>
     <localizing-bundle>org.netbeans.libs.aguiswinglayout.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
