@@ -297,4 +297,31 @@ public class PurchaseOrderTest extends TestCase implements TestSchemaReadWrite {
     
     boolean seenRef = false;
     int countShipToVisit = 0;
+
+    public void testPrefixConsolidation() throws Exception {
+        SchemaModelImpl model = (SchemaModelImpl) Util.createEmptySchemaModel();
+        Schema s = model.getSchema();
+        SchemaComponentFactory factory = model.getFactory();
+        
+        GlobalElement ge1 = factory.createGlobalElement();
+        ge1.setName("auto-loan-application");
+        LocalComplexType lct = factory.createLocalComplexType();
+        assertNotNull(lct.getPeer().getAttribute("xmlns:xsd"));
+        ge1.setInlineType(lct);
+        assertNull(lct.getPeer().getAttribute("xmlns:xsd"));
+        ComplexContent cc = factory.createComplexContent();
+        assertNotNull(cc.getPeer().getAttribute("xmlns:xsd"));
+        lct.setDefinition(cc);
+        assertNull(cc.getPeer().getAttribute("xmlns:xsd"));
+        Sequence seq = factory.createSequence();
+        assertNotNull(seq.getPeer().getAttribute("xmlns:xsd"));
+        //cc.setLocalDefinition(seq);
+        
+        model.startTransaction();
+        //model.getSchema().addElement(ge1);
+        model.getSchema().setVersion("Foo");
+        model.endTransaction();
+        
+        Util.dumpToFile(model.getBaseDocument(), new File("c:/temp/test.xsd"));
+    }
 }
