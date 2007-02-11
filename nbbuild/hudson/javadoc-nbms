@@ -5,7 +5,7 @@ then
     rm -rf `ls | fgrep -v nbbuild`
     ant -f nbbuild/build.xml -Dmoduleconfig=daily-alpha-nbms checkout
 fi
-mydir=`dirname $0`
+mydir=`cd $(dirname $0); pwd`
 keystore=$mydir/NBstore
 storepass=`cat $mydir/storepass`
 ant -emacs -Dbuildnum=$BUILD_TAG -Dmoduleconfig=daily-alpha-nbms -Dkeystore=$keystore -Dstorepass=$storepass -f nbbuild/build.xml cvs-clean merge build-nbms
