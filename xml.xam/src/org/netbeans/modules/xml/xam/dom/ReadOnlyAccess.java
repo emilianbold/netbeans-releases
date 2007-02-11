@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.xam.dom;
@@ -41,16 +41,20 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.spi.DocumentModelAccessProvider;
 import org.w3c.dom.Attr;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
- *
+ * Default document model access with limited support for read-only operations.
+ * 
  * @author Nam Nguyen
  */
 public class ReadOnlyAccess extends DocumentModelAccess {
@@ -60,6 +64,10 @@ public class ReadOnlyAccess extends DocumentModelAccess {
     /** Creates a new instance of PlainDOMAccess */
     public ReadOnlyAccess(AbstractDocumentModel model) {
         this.model = model;
+    }
+    
+    public AbstractDocumentModel getModel() {
+        return model;
     }
     
     public void setPrefix(Element node, String prefix) {
@@ -99,12 +107,14 @@ public class ReadOnlyAccess extends DocumentModelAccess {
     }
     
     public String getXmlFragment(Element element) {
-        StringBuilder sb = new StringBuilder();
-        NodeList children = element.getChildNodes();
-        for (int i=0; i < children.getLength(); i++) {
-            sb.append(element.getTextContent());
+        String fragment = getXmlFragmentInclusive(element);
+        if (fragment.endsWith("/>")) {
+            return null;
         }
-        return sb.toString();
+        int start = fragment.indexOf(">");
+        start++;
+        int end = fragment.lastIndexOf("<");
+        return fragment.substring(start, end);
     }
     
     public void setXmlFragment(Element element, String text, DocumentModelAccess.NodeUpdater updater) throws IOException {
@@ -129,7 +139,9 @@ public class ReadOnlyAccess extends DocumentModelAccess {
         try {
             String buf = doc.getText(0, doc.getLength());
             if (node instanceof Element) {
-                return findPosition((Element)node, buf, root, getRootElementPosition(buf, root));
+                int pos = getRootElementPosition(buf, root);
+                StringScanner scanner = new StringScanner(buf, pos);
+                return findPosition((Element)node, root, scanner);
             }
         } catch(BadLocationException e) {
             // just return -1
@@ -144,23 +156,44 @@ public class ReadOnlyAccess extends DocumentModelAccess {
             Node n = children.item(i);
             if (n != root) {
                 String s = n.getNodeValue();
-                if (s != null) {
-                    pos += s.length();
-                }
+                assert (s != null) : "Invalid document";
+                pos += s.length();
             } else {
                 break;
             }
         }
-        pos = buf.indexOf(root.getTagName(), pos);
+        pos = buf.indexOf(root.getTagName(), pos)-1;
         assert pos > 0 : "Root element position should be greater than 0";
         return pos;
     }
     
-    protected int findPosition(Element target, String buf, Element base, Integer fromPos) {
-        if (target == base) {
-            return fromPos;
+    private static class StringScanner {
+        String buf;
+        int pos = -1;
+        public StringScanner(String buf, int pos) {
+            this.buf = buf;
+            this.pos = pos;
         }
-        
+        public void scanTo(String token) {
+            pos = buf.indexOf(token, pos);
+            if (pos == -1) {
+                throw new IllegalArgumentException("Scan failed: position -1");
+            }
+        }
+        public void skip(String token) {
+            scanTo(token);
+            skip(token.length());
+        }
+        public void skip(int count) {
+            pos += count;
+        }
+    }
+    
+    private int findPosition(Element target, Element base, StringScanner scanner) {
+        if (target == base) {
+            return scanner.pos;
+        }
+        scanner.skip(">");
         NodeList children = base.getChildNodes();
         for (int i=0; i<children.getLength(); i++) {
             Node node = children.item(i);
@@ -172,22 +205,24 @@ public class ReadOnlyAccess extends DocumentModelAccess {
                     s = node.getTextContent();
                 }
                 if (s != null) {
-                    fromPos += s.length();
+                    scanner.skip(s.length());
                 }
-                //TODO handle leading or trailing whitespaces for Attr
                 continue;
             }
             Element current = (Element)children.item(i);
-            String tag = "<" + current.getTagName(); //TODO use pattern to deal with space in-between
-            fromPos = buf.indexOf(tag, fromPos);
+            String tag = "<" + current.getTagName(); 
+            scanner.scanTo(tag);
             if (current == target) {
-                return fromPos;
+                return scanner.pos;
             }
             
-            int found = findPosition(target, buf, current, fromPos);
+            int found = findPosition(target, current, scanner);
             if (found > -1) {
                 return found;
             }
+        }
+        if (children.getLength() > 0) {
+            scanner.skip(">");
         }
         return -1;
     }

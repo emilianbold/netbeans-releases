@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,11 +25,15 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import javax.swing.text.BadLocationException;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xam.ModelAccess;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.ProcessingInstruction;
 
 /**
  * Access to the underlying structure of the model.
@@ -45,6 +49,14 @@ public abstract class DocumentModelAccess extends ModelAccess {
     }
     
     public abstract Document getDocumentRoot();
+    
+    /**
+     *  Returns the associated document model.
+     *  Subclass should override.
+     */
+    public AbstractDocumentModel getModel() {
+        return null;
+    }
     
     public abstract boolean areSameNodes(Node n1, Node n2);
     
@@ -79,6 +91,65 @@ public abstract class DocumentModelAccess extends ModelAccess {
     
     public abstract Element duplicate(Element element);
 
+    public String getXmlFragmentInclusive(Element element) {
+        if (getModel() == null) {
+            throw new UnsupportedOperationException("Unavailable because access does not support getModel()");
+        }
+        DocumentComponent component = getModel().findComponent(element);
+        if (component == null) {
+            throw new IllegalArgumentException("Know nothing about '"+element.getTagName()+"'");
+        }
+        Node parent = component.getParent() == null ? 
+            getModel().getDocument() : ((DocumentComponent)component.getParent()).getPeer();
+        
+        int end = -1;
+        int start = findPosition(element);
+        assert start > -1 : "Negative start position";
+        Node next = element.getNextSibling();
+        try {
+            javax.swing.text.Document doc = getModel().getBaseDocument();
+            StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()-1));
+            if (parent instanceof Document) {
+                assert ((Document)parent).getDocumentElement() == element;
+                end = sb.lastIndexOf(">") + 1;
+            } else if (next == null) { // use parent end tag
+                end = sb.indexOf(parent.getNodeName(), start)-2;
+            } else if (next instanceof Element) {
+                end = findPosition(next);
+            } else {
+                while (next != null && 
+                        ! (next instanceof Element) &&
+                        ! (next instanceof CDATASection) &&
+                        ! (next instanceof ProcessingInstruction) &&
+                        ! (next instanceof Comment)) 
+                {
+                    next = next.getNextSibling();
+                }
+                if (next instanceof Element) {
+                    end = findPosition(next);
+                } else if (next instanceof CDATASection || next instanceof Comment || 
+                           next instanceof ProcessingInstruction) 
+                {
+                    end = sb.indexOf(next.getNodeValue(), start);
+                } else {
+                    end = sb.indexOf("</"+parent.getNodeName(), start);
+                }
+            } 
+
+            String result = sb.substring(start, end);
+            end = result.lastIndexOf("</"+element.getNodeName());
+            if (end < 0) { // self-closing
+                end = result.indexOf(">") + 1;
+            } else {
+                end = result.indexOf(">", end) + 1;
+            }
+            return result.substring(0, end);
+        } catch(BadLocationException ble) {
+            assert false : "start="+start+" end="+end;
+            return "";
+        }
+    }
+    
     /**
      * @return XML fragment text of the given element content.
      */

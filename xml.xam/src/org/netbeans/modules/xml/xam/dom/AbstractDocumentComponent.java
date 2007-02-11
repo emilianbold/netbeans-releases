@@ -326,6 +326,13 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
     }
     
     /**
+     * Get the XML fragment text that make up the peer node.
+     */
+    public String getXmlFragmentInclusive() {
+        return getModel().getAccess().getXmlFragmentInclusive(getPeer());
+    }
+    
+    /**
      * Set text as XML fragment children the component peer node.  
      * The children of peer node will be replaced with nodes resulted from
      * parsing given text.  This method will not fire child component added
