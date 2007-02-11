@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -46,7 +46,7 @@ public class ReadOnlyAccessTest extends TestCase {
 
     public void testFindPosition() throws Exception {
         TestModel2 model = Util.loadModel("resources/test1.xml");
-        assertEquals(41, model.getRootComponent().findPosition());
+        assertEquals(40, model.getRootComponent().findPosition());
         assertEquals(4, model.getRootComponent().getChildren().size());
         TestComponent2 component = model.getRootComponent().getChildren().get(0);
         assertEquals("a", component.getPeer().getLocalName());
@@ -99,4 +99,14 @@ public class ReadOnlyAccessTest extends TestCase {
         assertEquals(root, model.findComponent(260));
         assertEquals(root, model.findComponent(279));
     }    
+    
+    public void testGetXmlFragment() throws Exception {
+        TestModel2 model = Util.loadModel("resources/test1.xml");
+        TestComponent2 root = model.getRootComponent();
+        TestComponent2.B b = model.getRootComponent().getChildren(TestComponent2.B.class).get(0);
+        String result = b.getXmlFragment();
+        assertTrue(result.startsWith(" <!-- comment -->"));
+        assertTrue(result.indexOf("value=\"c\"/>") > 0);
+    }
+
 }

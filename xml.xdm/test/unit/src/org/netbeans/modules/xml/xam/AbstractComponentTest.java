@@ -815,6 +815,48 @@ public class AbstractComponentTest extends TestCase {
         assertNull(p.getTrailingText(c1));
     }
           
+    public void testGetXmlFragmentInclusiveMiddle() throws Exception {
+        TestModel model = Util.loadModel("resources/test_xmlfragment.xml");
+        TestComponent root = model.getRootComponent();
+        TestComponent.B b = model.getRootComponent().getChildren(TestComponent.B.class).get(0);
+        String result = b.getXmlFragmentInclusive();
+        assertTrue(result.startsWith("<b index='1'>"));
+        assertTrue(result.endsWith("</b>"));
+    }
+
+    public void testGetXmlFragmentInclusiveEdgeWithCDATA() throws Exception {
+        TestModel model = Util.loadModel("resources/test_xmlfragment.xml");
+        TestComponent root = model.getRootComponent();
+        TestComponent.C c = model.getRootComponent().getChildren(TestComponent.C.class).get(1);
+        String result = c.getXmlFragmentInclusive();
+        assertEquals("<c index='2'/>", result);
+    }
+
+    public void testGetXmlFragmentInclusiveDeepWithComment() throws Exception {
+        TestModel model = Util.loadModel("resources/test_xmlfragment.xml");
+        TestComponent root = model.getRootComponent();
+        TestComponent.B b = model.getRootComponent().getChildren(TestComponent.B.class).get(0);
+        TestComponent.B bb = b.getChildren(TestComponent.B.class).get(0);
+        String result = bb.getXmlFragmentInclusive();
+        assertEquals("<b index='1' value=\"c\"/>", result);
+    }
+
+    public void testGetXmlFragmentInclusiveOnRoot() throws Exception {
+        TestModel model = Util.loadModel("resources/test_xmlfragment.xml");
+        TestComponent root = model.getRootComponent();
+        String result = root.getXmlFragmentInclusive();
+        assertTrue(result.startsWith("<test xmlns=\"http://www.test"));
+        assertTrue(result.endsWith("</test  >"));
+    }
+
+    public void testGetXmlFragmentInclusiveNoTextNode() throws Exception {
+        TestModel model = Util.loadModel("resources/test_xmlfragment.xml");
+        TestComponent root = model.getRootComponent();
+        TestComponent.A a = model.getRootComponent().getChildren(TestComponent.A.class).get(0);
+        String result = a.getXmlFragmentInclusive();
+        assertEquals("<a index='1'>CharDataString</a>", result);
+    }
+    
     // TODO support PI inside normal element
     public void FIXME_testProcessingInstruction() throws Exception {
         model = Util.loadModel("resources/PI_after_prolog.xml");
