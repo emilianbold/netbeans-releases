@@ -18,12 +18,16 @@
  */
 
 package org.netbeans.modules.mobility.project.classpath;
+
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
@@ -35,165 +39,114 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
+import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 
-@SuppressWarnings("deprecation")
+/**
+ * @author Adam Sotona
+ **/
 public class J2MEProjectClassPathExtender implements ProjectClassPathExtender {
     
-    private static final String CP_CLASS_PATH = "libs.classpath"; //NOI18N
+    //ToDo - this condition map should be constructed dynamically from each library definition
+    private static final Map<String, String> CONDITIONS = new HashMap(); 
+    static {
+        CONDITIONS.put("swing-layout", "javax/swing/JDialog.class"); //NOI18N
+        CONDITIONS.put("cdc-agui-swing-layout", "javax/swing/JComponent.class,-javax/swing/JDialog.class"); //NOI18N
+        CONDITIONS.put("cdc-pp-awt-layout", "java/awt/Component.class,-javax/swing/JComponent.class"); //NOI18N
+        CONDITIONS.put("NetBeans MIDP Components", "javax/microedition/lcdui/Screen.class"); //NOI18N
+        CONDITIONS.put("nb_svg_midp_components", "javax/microedition/m2g/SVGImage.class"); //NOI18N
+        CONDITIONS.put("J2MEUnit", "javax/microedition/midlet/MIDlet.class"); //NOI18N
+        CONDITIONS.put("JMUnit4CLDC10", "javax/microedition/midlet/MIDlet.class"); //NOI18N
+        CONDITIONS.put("JMUnit4CLDC11", "javax/microedition/midlet/MIDlet.class,java/lang/Double.class"); //NOI18N
+    }
     
     protected Project project;
-    protected ClassPathSupport cs;
     protected AntProjectHelper helper;
+    protected ReferenceHelper refHelper;
+    protected ProjectConfigurationsHelper confHelper;
     
-    public J2MEProjectClassPathExtender(Project project, AntProjectHelper helper, ReferenceHelper refHelper) {
+    public J2MEProjectClassPathExtender(Project project, AntProjectHelper helper, ReferenceHelper refHelper, ProjectConfigurationsHelper confHelper) {
         this.project = project;
         this.helper = helper;
-        this.cs = new ClassPathSupport( helper, refHelper);
+        this.refHelper = refHelper;
+        this.confHelper = confHelper;
     }
     
-    public boolean addLibrary(final Library library) throws IOException {
-        final ArrayList<String> list = collectAllConfigurationPropertiesToChange(CP_CLASS_PATH);
-        
-        boolean result = false;
-        for (int i = 0; i < list.size(); i++)
-            result |= addLibrary(list.get(i), library);
-        
-        return result;
-    }
-    
-    private ArrayList<String> collectAllConfigurationPropertiesToChange(final String property) {
-        final ProjectConfigurationsHelper confHelper = project.getLookup().lookup(ProjectConfigurationsHelper.class);
-        final ArrayList<String> properties = new ArrayList<String>();
-        
-        properties.add(property);
-        
-        ProjectManager.mutex().readAccess(new Runnable() {
-            public void run() {
-                final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                
-                final ProjectConfiguration[] configurations = confHelper.getConfigurations().toArray(new ProjectConfiguration[0]);
-                if (configurations != null)
-                    for (int i = 0; i < configurations.length; i++) {
-                    final String propName = "configs." + configurations[i].getDisplayName() + "." + property;
-                    if (props.containsKey(propName))
-                        properties.add(propName);
-                    }
-            }
-        });
-        
-        return properties;
-    }
-    
-    public boolean addLibrary(final String classPathId, final Library library) throws IOException {
-        assert library != null : "Parameter cannot be null";       //NOI18N
-        try {
-            return (ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction<Boolean>() {
-                public Boolean run() throws Exception {
-                    EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    final String raw = props.getProperty(classPathId);
-                    final List<VisualClassPathItem> resources = cs.itemsList( raw );
-                    final VisualClassPathItem item = VisualClassPathItem.create( library );
-                    if (!resources.contains(item)) {
-                        resources.add(item);
-                        final String itemRefs = cs.encodeToString( resources );
-                        props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties
-                        props.setProperty(classPathId, itemRefs);
-                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                        ProjectManager.getDefault().saveProject(project);
-                        return Boolean.TRUE;
-                    }
-                    return Boolean.FALSE;
-                }
-            }
-            )).booleanValue();
-        } catch (Exception e) {
-                final Exception t = new IOException();
-                throw (IOException) ErrorManager.getDefault().annotate(t,e);
+    public boolean addLibrary(Library library) throws IOException {
+        if (library == null) return false;
+        boolean modified = false;
+
+        //swing layout hack for CDC - try to add all possible swing layout libraries
+        if ("swing-layout".equals(library.getName())) { //NOI18N
+            modified = addLibrary(LibraryManager.getDefault().getLibrary("cdc-agui-swing-layout")) //NOI18N
+                     | addLibrary(LibraryManager.getDefault().getLibrary("cdc-pp-awt-layout")); //NOI18N
         }
+        
+        return addCPItemToAllCfg(VisualClassPathItem.create(library), CONDITIONS.get(library.getName())) | modified;
     }
     
-    public boolean addArchiveFile(final FileObject archiveFile) throws IOException {
-        final ArrayList<String> list = collectAllConfigurationPropertiesToChange(CP_CLASS_PATH);
-        
-        boolean result = false;
-        for (int i = 0; i < list.size(); i++) 
-            result |= addArchiveFile(list.get(i), archiveFile);
-        
-        return result;
-    }
-    
-    public boolean addArchiveFile(final String classPathId, final FileObject archiveFile) throws IOException {
+    public boolean addArchiveFile(FileObject archiveFile) throws IOException {
         assert archiveFile != null : "Parameter cannot be null";       //NOI18N
-        try {
-            return (ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction<Boolean>() {
-                public Boolean run() throws Exception {
-                    EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    final String raw = props.getProperty(classPathId);
-                    final List<VisualClassPathItem> resources = cs.itemsList( raw );
-                    final File f = FileUtil.toFile(archiveFile);
-                    if (f == null ) {
-                        throw new IllegalArgumentException("The file must exist on disk");     //NOI18N
-                    }
-                    final VisualClassPathItem item = VisualClassPathItem.create( f );
-                    
-                    if (!resources.contains(item)) {
-                        resources.add(item);
-                        final String itemRefs = cs.encodeToString( resources );
-                        props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
-                        props.setProperty(classPathId, itemRefs);
-                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                        ProjectManager.getDefault().saveProject(project);
-                        return Boolean.TRUE;
-                    }
-                    return Boolean.FALSE;
-                }
-            }
-            )).booleanValue();
-        } catch (Exception e)   {
-                final Exception t = new IOException();
-                throw (IOException) ErrorManager.getDefault().annotate(t,e);
+        final File f = FileUtil.toFile(archiveFile);
+        if (f == null ) {
+            throw new IllegalArgumentException("The file must exist on disk");     //NOI18N
         }
+        return addCPItemToAllCfg(VisualClassPathItem.create(f), null);
     }
-    
+
     public boolean addAntArtifact(final AntArtifact artifact, final URI artifactElement) throws IOException {
-        final ArrayList<String> list = collectAllConfigurationPropertiesToChange(CP_CLASS_PATH);
-        
-        boolean result = false;
-        for (int i = 0; i < list.size(); i++)
-            result |= addAntArtifact(list.get(i), artifact, artifactElement);
-        
-        return result;
+        assert artifact != null : "Parameter cannot be null";       //NOI18N
+        return addCPItemToAllCfg(VisualClassPathItem.create(artifact, artifactElement), null);
     }
     
-    public boolean addAntArtifact(final String classPathId, final AntArtifact artifact, final URI artifactElement) throws IOException {
-        assert artifact != null : "Parameter cannot be null";       //NOI18N
+    private boolean addCPItemToAllCfg(final VisualClassPathItem item, final String condition) throws IOException {
         try {
-            return (ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction<Boolean>() {
+            return (ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction<Boolean>() {
                 public Boolean run() throws Exception {
                     EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    final String raw = props.getProperty(classPathId);
-                    final List<VisualClassPathItem> resources = cs.itemsList( raw );
-                    final VisualClassPathItem item = VisualClassPathItem.create( artifact, artifactElement );
-                    if (!resources.contains(item)) {
-                        resources.add(item);
-                        final String itemRefs = cs.encodeToString( resources );
-                        props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                        props.setProperty(classPathId, itemRefs);
+                    boolean modified = false;
+                    final boolean defaultFits = checkCondition(props, null, condition);
+                    final String defaultRaw = props.getProperty(DefaultPropertiesDescriptor.LIBS_CLASSPATH);
+                    if (defaultFits) {
+                        List<VisualClassPathItem> resources = (List<VisualClassPathItem>)DefaultPropertyParsers.PATH_PARSER.decode(defaultRaw, helper, refHelper);
+                        if (!resources.contains(item)) {
+                            resources.add(item);
+                            String itemRefs = DefaultPropertyParsers.PATH_PARSER.encode(resources, helper, refHelper);
+                            props.setProperty(DefaultPropertiesDescriptor.LIBS_CLASSPATH, itemRefs);
+                            modified = true;
+                        }
+                    }
+                    for (ProjectConfiguration cfg : confHelper.getConfigurations().toArray(new ProjectConfiguration[0])) {
+                        if (!confHelper.getDefaultConfiguration().equals(cfg)) { 
+                            String propName = VisualPropertySupport.prefixPropertyName(cfg.getDisplayName(), DefaultPropertiesDescriptor.LIBS_CLASSPATH);
+                            boolean fits = checkCondition(props, cfg, condition);
+                            String raw = props.getProperty(propName);
+                            if (raw == null && fits != defaultFits) {
+                                raw = defaultRaw;
+                                props.put(propName, raw);
+                            }
+                            if (fits && raw != null) {
+                                List<VisualClassPathItem> resources = (List<VisualClassPathItem>)DefaultPropertyParsers.PATH_PARSER.decode(raw, helper, refHelper);
+                                if (!resources.contains(item)) {
+                                    resources.add(item);
+                                    final String itemRefs = DefaultPropertyParsers.PATH_PARSER.encode(resources, helper, refHelper);
+                                    props.setProperty(propName, itemRefs);
+                                    modified = true;
+                                }
+                            }
+                        }
+                    }
+                    if (modified) {
                         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                         ProjectManager.getDefault().saveProject(project);
-                        return Boolean.TRUE;
                     }
-                    return Boolean.FALSE;
+                    return Boolean.valueOf(modified);
                 }
             }
             )).booleanValue();
@@ -203,21 +156,22 @@ public class J2MEProjectClassPathExtender implements ProjectClassPathExtender {
         }
     }
     
-    private class ClassPathSupport {
-        private final AntProjectHelper helper;
-        private final ReferenceHelper refHelper;
-        
-        public ClassPathSupport(AntProjectHelper helper, ReferenceHelper refHelper) {
-            this.helper = helper;
-            this.refHelper = refHelper;
+    protected boolean checkCondition(EditableProperties props, ProjectConfiguration cfg, String condition) {
+        if (condition == null) return true;
+        String platformName = props.getProperty(cfg == null ? DefaultPropertiesDescriptor.PLATFORM_ACTIVE : VisualPropertySupport.prefixPropertyName(cfg.getDisplayName(), DefaultPropertiesDescriptor.PLATFORM_ACTIVE));
+        if (platformName == null) platformName = props.getProperty(DefaultPropertiesDescriptor.PLATFORM_ACTIVE);
+        if (platformName == null) return false;
+        for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()){
+            String antName = (String) platform.getProperties().get("platform.ant.name");        //NOI18N
+            if (antName != null && antName.equals(platformName)) {
+                ClassPath cp = platform.getBootstrapLibraries();
+                boolean ret = true;
+                for (String s : condition.split(",")) //NOI18N 
+                    if (s.startsWith("-")) ret &= platform.getBootstrapLibraries().findResource(s.substring(1)) == null; //NOI18N
+                    else ret &= platform.getBootstrapLibraries().findResource(s) != null;
+                return ret;
+            }
         }
-        
-        public List<VisualClassPathItem> itemsList(final String raw) {
-            return (List<VisualClassPathItem>)DefaultPropertyParsers.PATH_PARSER.decode(raw, helper, refHelper);
-        }
-        
-        public String encodeToString(final List<VisualClassPathItem> lt) {
-            return DefaultPropertyParsers.PATH_PARSER.encode(lt, helper, refHelper);
-        }
+        return true;
     }
 }

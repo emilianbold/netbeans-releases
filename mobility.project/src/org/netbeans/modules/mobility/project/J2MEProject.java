@@ -237,7 +237,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             midletsCacheHelper,
             fileBuiltQuery,
             refHelper,
-            new J2MEProjectClassPathExtender(this, helper, refHelper),
+            new J2MEProjectClassPathExtender(this, helper, refHelper, configHelper),
             new J2MEProjectOperations(this, helper, refHelper),
             new J2MEUnitPlugin(this,helper),
             new UnitTestForSourceQueryImpl(this.helper),
