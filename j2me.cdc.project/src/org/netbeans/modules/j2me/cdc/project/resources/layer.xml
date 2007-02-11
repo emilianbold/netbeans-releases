@@ -76,12 +76,13 @@
         </folder>
     </folder>
     <folder name="Templates">
-<!--
         <folder name="Project">
-            <attr name="Mobile/CDC" boolvalue="true"/>
-            <attr name="CDC/Samples" boolvalue="true"/>
-
-            <folder name="CDC">
+            <attr name="Standard/J2ME" boolvalue="true"/>
+            <attr name="Web/J2ME" boolvalue="true"/>
+            <attr name="J2EE/J2ME" boolvalue="true"/>
+            <attr name="J2ME/Samples" boolvalue="true"/>
+            
+            <folder name="J2ME">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/desktop.html"/>
 
@@ -89,8 +90,8 @@
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.NewCDCProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/emptyProject.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/cdcProject.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/emptyProject.html"/>
                 </file>
         
                 <attr name="emptyCDC.xml/emptyCDClibrary.xml" boolvalue="true"/>
@@ -99,8 +100,8 @@
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.NewCDCProjectWizardIterator.library"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/emptyLibrary.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/cdcProject.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/emptyLibrary.html"/>
                 </file>                
                 <attr name="emptyCDClibrary.xml/existingCDC.xml" boolvalue="true"/>
 
@@ -108,21 +109,21 @@
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.NewCDCProjectWizardIterator.existing"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/existingProject.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/cdcProject.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/existingProject.html"/>
                 </file>
 
                 <file name="j2sefreeform.shadow">
                     <attr name="template" boolvalue="true"/>
                     <attr name="originalFile" stringvalue="Templates/Project/Standard/j2sefreeform.xml"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/freeform-project-cdc.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/freeform-project-cdc.html"/>
                 </file>
                 <attr name="existingCDC.xml/j2sefreeform.xml" boolvalue="true"/>
                 <file name="j2sefreeform.xml" url="Templates/Project/Standard/j2sefreeform.xml"/>
             </folder>
         </folder>
--->    
+    
         <attr name="MIDP/CDC" boolvalue="true"/>    
         <attr name="CDC//Classes" boolvalue="true"/>    
         <folder name="CDC">

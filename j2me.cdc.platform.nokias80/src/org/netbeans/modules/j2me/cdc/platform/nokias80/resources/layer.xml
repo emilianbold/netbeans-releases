@@ -17,7 +17,15 @@
  Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
+<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="CDC">
+        <folder name="Information">
+            <file name="nokiaS80">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2me.cdc.platform.nokias80.NokiaS80ProjectInformationFactory"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
 

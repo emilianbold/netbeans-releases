@@ -323,6 +323,7 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.j2me.cdc.platform.nokias80</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project</friend>
+                <friend>org.netbeans.modules.j2me.cdc.project.ui.wizards</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.nokiaS80</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.ricoh</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.savaje</friend>
@@ -338,10 +339,11 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.mobility.project</package>
                 <package>org.netbeans.modules.mobility.project.preprocessor</package>
                 <package>org.netbeans.modules.mobility.project.ui</package>
+                <package>org.netbeans.modules.mobility.project.ui.wizard</package>
                 <package>org.netbeans.spi.mobility.project</package>
                 <package>org.netbeans.spi.mobility.project.support</package>
                 <package>org.netbeans.spi.mobility.project.ui.customizer</package>
-                <package>org.netbeans.spi.mobility.project.ui.customizer.support</package>
+                <package>org.netbeans.spi.mobility.project.ui.customizer.support</package>                
             </friend-packages>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>

@@ -48,7 +48,7 @@ public class CDCPropertiesDescriptor implements ProjectPropertiesDescriptor {
     public static final String PLATFORM_FAT_JAR = "platform.fat.jar"; //NOI18N
 
         
-    private Reference<Set<PropertyDescriptor>> ref = new WeakReference(null);
+    private Reference<Set<PropertyDescriptor>> ref = new WeakReference<Set<PropertyDescriptor>>(null);
     
     /** Creates a new instance of CDCPropertiesDescriptor */
     public CDCPropertiesDescriptor() {
@@ -58,7 +58,7 @@ public class CDCPropertiesDescriptor implements ProjectPropertiesDescriptor {
         Set<PropertyDescriptor> set = ref.get();
         if (set == null) {
             String EMPTY = ""; //NOI18N
-            set = new HashSet();
+            set = new HashSet<PropertyDescriptor>();
             set.add(new PropertyDescriptor(APPLICATION_ARGS, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
             set.add(new PropertyDescriptor(APPLICATION_DESCRIPTION_DETAIL, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
             set.add(new PropertyDescriptor(APPLICATION_DESCRIPTION, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));

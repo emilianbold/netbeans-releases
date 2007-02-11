@@ -226,6 +226,7 @@
                         <specification-version>6.7</specification-version>
                     </run-dependency>
                 </dependency>
+<!--
                 <dependency>
                     <code-name-base>org.openide.options</code-name-base>
                     <build-prerequisite/>
@@ -234,6 +235,7 @@
                         <specification-version>6.4</specification-version>
                     </run-dependency>
                 </dependency>
+-->
                 <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
@@ -254,6 +256,7 @@
             <public-packages>
                 <package>org.netbeans.modules.j2me.cdc.project</package>
                 <package>org.netbeans.modules.j2me.cdc.project.spi</package>
+                <package>org.netbeans.modules.j2me.cdc.project.ui.wizards</package>
                 <package>org.netbeans.modules.j2me.cdc.project.ui.wizards.samples</package>
             </public-packages>
             <extra-compilation-unit>
