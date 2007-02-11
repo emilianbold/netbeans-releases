@@ -44,7 +44,6 @@ import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.PropertyContainer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  *
@@ -338,8 +337,6 @@ public abstract class RegistryNode implements PropertyContainer {
     }
     
     public RegistryNode loadFromDom(Element element) throws InitializationException {
-        List<Node> nodes;
-        
         try {
             uid = element.getAttribute("uid");
             
@@ -355,8 +352,9 @@ public abstract class RegistryNode implements PropertyContainer {
             }
             
             offset = Long.parseLong(element.getAttribute("offset"));
-            initialVisible = Boolean.parseBoolean(element.getAttribute("visible"));
-            currentVisible = initialVisible;
+            currentVisible = 
+                    initialVisible = 
+                    Boolean.parseBoolean(element.getAttribute("visible"));
             expand = Boolean.parseBoolean(element.getAttribute("expand"));
             
             built = new Date(Long.parseLong(element.getAttribute("built")));

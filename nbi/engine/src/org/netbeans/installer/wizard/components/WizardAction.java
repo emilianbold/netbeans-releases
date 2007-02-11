@@ -218,10 +218,16 @@ public abstract class WizardAction extends WizardComponent {
         }
         
         private void initComponents() {
+            // titleLabel ///////////////////////////////////////////////////////////
             titleLabel  = new NbiLabel();
-            progressBar = new NbiProgressBar();
-            detailLabel = new NbiLabel();
             
+            // progressBar //////////////////////////////////////////////////////////
+            progressBar = new NbiProgressBar();
+            
+            // detailLabel //////////////////////////////////////////////////////////
+            detailLabel = new NbiLabel(true);
+            
+            // this /////////////////////////////////////////////////////////////////
             add(titleLabel, new GridBagConstraints(
                     0, 0,                             // x, y
                     1, 1,                             // width, height

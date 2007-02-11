@@ -54,6 +54,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         initComponents();
     }
     
+    @Override
     public void setVisible(final boolean visible) {
         super.setVisible(visible);
         
@@ -112,8 +113,6 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         getAccessibleContext().setAccessibleDescription(currentUi.getDescription());
     }
     
-    
-    
     public NbiButton getHelpButton() {
         return contentPane.getHelpButton();
     }
@@ -133,7 +132,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     private void initComponents() {
         setDefaultCloseOperation(NbiFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
+            public void windowClosing(WindowEvent event) {
                 if (contentPane.getCancelButton().isEnabled()) {
                     if (currentUi != null) {
                         currentUi.evaluateCancelButtonClick();
@@ -172,21 +171,21 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     }
     
     public class WizardContentPane extends NbiFrameContentPane {
-        private NbiPanel     titlePanel;
-        private NbiLabel     titleLabel;
-        private NbiTextPane  descriptionPane;
+        private NbiLabel titleLabel;
+        private NbiTextPane descriptionPane;
+        private NbiPanel titlePanel;
         
         private NbiSeparator topSeparator;
         
         private NbiSeparator bottomSeparator;
         
-        private NbiPanel     buttonsPanel;
-        private NbiButton    helpButton;
-        private NbiButton    backButton;
-        private NbiButton    nextButton;
-        private NbiButton    cancelButton;
+        private NbiButton helpButton;
+        private NbiButton backButton;
+        private NbiButton nextButton;
+        private NbiButton cancelButton;
+        private NbiPanel buttonsPanel;
         
-        private NbiPanel     currentPanel;
+        private NbiPanel currentPanel;
         
         public WizardContentPane() {
             initComponents();
@@ -244,21 +243,20 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         }
         
         private void initComponents() {
+            // titleLabel ///////////////////////////////////////////////////////////
+            titleLabel = new NbiLabel();
+            titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
+            
+            // descriptionPane //////////////////////////////////////////////////////
+            descriptionPane = new NbiTextPane();
+            descriptionPane.setOpaque(false);
+            
             // titlePanel ///////////////////////////////////////////////////////////
             titlePanel = new NbiPanel();
             titlePanel.setBackground(Color.WHITE);
             titlePanel.setLayout(new GridBagLayout());
             titlePanel.setOpaque(true);
             
-            // titleLabel
-            titleLabel = new NbiLabel();
-            titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
-            
-            // descriptionPane
-            descriptionPane = new NbiTextPane();
-            descriptionPane.setOpaque(false);
-            
-            // add components
             titlePanel.add(titleLabel, new GridBagConstraints(
                     0, 0,                             // x, y
                     1, 1,                             // width, height
@@ -285,21 +283,21 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             // bottomSeparator //////////////////////////////////////////////////////
             bottomSeparator = new NbiSeparator();
             
+            // helpButton ///////////////////////////////////////////////////////////
+            helpButton = new NbiButton();
+            
+            // backButton ///////////////////////////////////////////////////////////
+            backButton = new NbiButton();
+            
+            // nextButton ///////////////////////////////////////////////////////////
+            nextButton = new NbiButton();
+            
+            // cancelButton /////////////////////////////////////////////////////////
+            cancelButton = new NbiButton();
+            
             // buttonsPanel /////////////////////////////////////////////////////////
             buttonsPanel = new NbiPanel();
             buttonsPanel.setLayout(new GridBagLayout());
-            
-            // helpButton
-            helpButton = new NbiButton();
-            
-            // backButton
-            backButton = new NbiButton();
-            
-            // nextButton
-            nextButton = new NbiButton();
-            
-            // cancelButton
-            cancelButton = new NbiButton();
             
             buttonsPanel.add(helpButton, new GridBagConstraints(
                     0, 0,                             // x, y

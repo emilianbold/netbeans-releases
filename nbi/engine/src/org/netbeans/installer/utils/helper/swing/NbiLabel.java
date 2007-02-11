@@ -21,8 +21,10 @@
 package org.netbeans.installer.utils.helper.swing;
 
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import javax.swing.JLabel;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 
 /**
  *
@@ -55,23 +57,57 @@ public class NbiLabel extends JLabel {
             super.setText(DEFAULT_TEXT);
             super.setDisplayedMnemonic(DEFAULT_MNEMONIC_CHAR);
         } else {
-            this.text = StringUtils.stripMnemonic(text);
+            this.text = text;
             
-            super.setText(StringUtils.stripMnemonic(text));
-            super.setDisplayedMnemonic(StringUtils.fetchMnemonic(text));
+            super.setText(StringUtils.stripMnemonic(this.text));
+            super.setDisplayedMnemonic(StringUtils.fetchMnemonic(this.text));
         }
     }
     
-    public String getText() {
-        return text;
+    protected void paintComponent(Graphics graphics) {
+        if (collapsePaths && !text.equals(DEFAULT_TEXT)) {
+            final String string = StringUtils.stripMnemonic(text);
+            final String separator = SystemUtils.getFileSeparator();
+            
+            final int boundsWidth = getBounds().width;
+            final int lastIndex = string.lastIndexOf(separator);
+            
+            int stringWidth = getStringBounds(graphics).width;
+            int index = string.lastIndexOf(separator, lastIndex - 1);
+            
+            // we should continue while there is at least one separator 
+            // (lastIndex > -1), there is a previous separator (index > -1) and
+            // the redered string width exceeds the bounds 
+            // (stringWidth > boundsWidth)
+            // note: if there are no separators in the string, it will not be 
+            // shortened at all and the default shortening procedure will take 
+            // place, also if collapsing a path does not help completely, additional
+            // shortening will be performed by the default procedure
+            while ((lastIndex != -1) && 
+                    (index != -1) && 
+                    (stringWidth > boundsWidth)) {
+                final String shortenedString = 
+                        StringUtils.replace(string, "...", index + 1, lastIndex);
+                
+                super.setText(shortenedString);
+                
+                stringWidth = getStringBounds(graphics).width;
+                index = string.lastIndexOf(separator, index - 1);
+            }
+        }
+        
+        super.paintComponent(graphics);
     }
     
-    protected void paintComponent(Graphics graphics) {
-        super.paintComponent(graphics);
+    private Rectangle getStringBounds(Graphics graphics) {
+        return getFontMetrics(
+                getFont()).getStringBounds(super.getText(), graphics).getBounds();
     }
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String DEFAULT_TEXT = " "; // NOI18N
-    public static final char DEFAULT_MNEMONIC_CHAR = '\u0000';
+    public static final String DEFAULT_TEXT =
+            " "; // NOI18N
+    public static final char DEFAULT_MNEMONIC_CHAR =
+            '\u0000'; // NOI18N
 }

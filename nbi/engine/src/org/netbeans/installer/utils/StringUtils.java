@@ -33,18 +33,15 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.helper.DependencyType;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.Platform;
 
 /**
@@ -389,6 +386,10 @@ public abstract class StringUtils {
     
     public static String asPath(Class clazz) {
         return clazz.getPackage().getName().replace('.', '/');
+    }
+    
+    public static String replace(String string, String replacement, int begin, int end) {
+        return string.substring(0, begin) + replacement + string.substring(end);
     }
     
     // parsing //////////////////////////////////////////////////////////////////////

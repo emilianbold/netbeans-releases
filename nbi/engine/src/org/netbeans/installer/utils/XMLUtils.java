@@ -335,11 +335,13 @@ public abstract class XMLUtils {
     public static Properties parseProperties(final Element element) throws ParseException {
         final Properties properties = new Properties();
         
-        for (Element child: XMLUtils.getChildren(element, "property")) {
-            String name  = XMLUtils.getAttribute(child, "name");
-            String value = XMLUtils.getTextContent(child);
-            
-            properties.setProperty(name, value);
+        if (element != null) {
+            for (Element child: XMLUtils.getChildren(element, "property")) {
+                String name  = XMLUtils.getAttribute(child, "name");
+                String value = XMLUtils.getTextContent(child);
+                
+                properties.setProperty(name, value);
+            }
         }
         
         return properties;
@@ -397,28 +399,32 @@ public abstract class XMLUtils {
         element.setAttribute("size", Long.toString(uri.getSize()));
         element.setAttribute("md5", uri.getMd5());
         
-        final Element defaultUriElement = document.createElement("default-uri");
+        // the default uri would be either "local" (if it's present) or the
+        // "remote" one
+        Element uriElement = document.createElement("default-uri");
         if (uri.getLocal() != null) {
-            defaultUriElement.setTextContent(uri.getLocal().toString());
+            uriElement.setTextContent(uri.getLocal().toString());
         } else {
-            defaultUriElement.setTextContent(uri.getRemote().toString());
+            uriElement.setTextContent(uri.getRemote().toString());
         }
-        element.appendChild(defaultUriElement);
+        element.appendChild(uriElement);
         
-        // if the local uri is not null, we should save the remote uri as the first
-        // alternate
-        if (uri.getLocal() != null) {
-            final Element alternateUriElement = document.createElement("alternate-uri");
+        // if the "local" uri is not null, we should save the "remote" uri as the
+        // first alternate, unless it's the same as the local
+        if ((uri.getLocal() != null) && !uri.getRemote().equals(uri.getLocal())) {
+            uriElement = document.createElement("alternate-uri");
             
-            alternateUriElement.setTextContent(uri.getRemote().toString());
-            element.appendChild(alternateUriElement);
+            uriElement.setTextContent(uri.getRemote().toString());
+            element.appendChild(uriElement);
         }
         
         for (URI alternateUri: uri.getAlternates()) {
-            final Element alternateUriElement = document.createElement("alternate-uri");
-            
-            alternateUriElement.setTextContent(alternateUri.toString());
-            element.appendChild(alternateUriElement);
+            if (!alternateUri.equals(uri.getRemote())) {
+                uriElement = document.createElement("alternate-uri");
+                
+                uriElement.setTextContent(alternateUri.toString());
+                element.appendChild(uriElement);
+            }
         }
         
         return element;
