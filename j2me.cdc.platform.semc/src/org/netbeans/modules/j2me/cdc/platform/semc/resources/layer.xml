@@ -19,17 +19,10 @@
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Templates">
-        <folder name="CDC">
-            <file name="MHPXlet.java" url="templates/MHPXlet_java">
-                <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/Xlet.html" />
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" /> 
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/class.gif"/>
-                <attr name="CDC" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="CDC/MHP"/>
-                <attr name="isXlet" stringvalue="true"/>
+    <folder name="CDC">
+        <folder name="Information">
+            <file name="semc">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2me.cdc.platform.semc.SemcProjectInformationFactory"/>
             </file>
         </folder>
     </folder>
