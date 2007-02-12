@@ -37,7 +37,7 @@ public class NbClipboardTest extends NbTestCase {
     public NbClipboardTest(String testName) {
         super(testName);
     }
-
+    
     protected void setUp() throws Exception {
         System.getProperties().remove("netbeans.slow.system.clipboard.hack");
     }
@@ -66,41 +66,54 @@ public class NbClipboardTest extends NbTestCase {
     }
     
     public void testMemoryLeak89844() throws Exception {
-        NbClipboard ec = new NbClipboard();
-        
-        TopComponent tc = new TopComponent();
-        tc.open();
-        
-        Window w;
-        for(;;) {
-            w = SwingUtilities.getWindowAncestor(tc);
-            if (w != null && w.isVisible()) {
-                break;
+        class Safe implements Runnable {
+            WeakReference<Object> ref;
+            Window w;
+            TopComponent tc;
+            
+            
+            public void beforeAWT() throws InterruptedException {
+                NbClipboard ec = new NbClipboard();
+                
+                tc = new TopComponent();
+                tc.open();
+                
+                for(;;) {
+                    w = SwingUtilities.getWindowAncestor(tc);
+                    if (w != null && w.isVisible()) {
+                        break;
+                    }
+                    Thread.sleep(100);
+                }
+                
+                tc.close();
+                w.dispose();
+                
+                // opening new frame shall clear all the AWT references to previous frame
+                JFrame f = new JFrame("Focus stealer");
+                f.setVisible(true);
+                f.pack();
+                f.toFront();
+                f.requestFocus();
+                f.requestFocusInWindow();
             }
-            Thread.sleep(100);
-        }
-       
-        tc.close();
-        w.dispose();
+            
+            public void run() {
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+                
+                ref = new WeakReference<Object>(w);
+                w = null;
+                tc = null;
+            }
+}
         
-        // opening new frame shall clear all the AWT references to previous frame
-        JFrame f = new JFrame("Focus stealer");
-        f.setVisible(true);
-        f.pack();
-        f.toFront();
-        f.requestFocus();
-        f.requestFocusInWindow();
+        Safe safe = new Safe();
         
-        waitEQ(f);
-
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+        safe.beforeAWT();
+        SwingUtilities.invokeAndWait(safe);
         
-        WeakReference<Object> ref = new WeakReference<Object>(w);
-        w = null;
-        tc = null;
-
         try {
-            assertGC("Top component can disappear", ref);
+            assertGC("Top component can disappear", safe.ref);
         } catch (junit.framework.AssertionFailedError ex) {
             if (ex.getMessage().indexOf("NbClipboard") >= 0) {
                 throw ex;
