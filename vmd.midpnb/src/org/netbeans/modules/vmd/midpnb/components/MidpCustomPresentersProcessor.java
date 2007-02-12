@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.midpnb.components;
 
 import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
@@ -43,6 +44,8 @@ public final class MidpCustomPresentersProcessor extends PresentersProcessor {
             presenters.add (new AcceptTypePresenter (SimpleCancellableTaskCD.TYPEID));
             presenters.add (new AcceptTypePresenter (SimpleTableModelCD.TYPEID));
             presenters.add (new AcceptTypePresenter (SVGImageCD.TYPEID));
+             // actions
+            presenters.add(AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 30, SimpleTableModelCD.TYPEID, SimpleCancellableTaskCD.TYPEID, SVGImageCD.TYPEID));
         }
     }
 

@@ -62,7 +62,7 @@ public class SimpleTableModelCD extends ComponentDescriptor {
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
-     
+    
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
     }

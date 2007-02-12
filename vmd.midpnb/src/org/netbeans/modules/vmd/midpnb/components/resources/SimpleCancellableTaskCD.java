@@ -105,8 +105,8 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
             MidpCustomCodePresenterSupport.createAddImportPresenter (),
              // inspector
             InspectorFolderPresenter.create(true),
-            InspectorPositionPresenter.create(new ResourcePC (), FolderPositionControllerFactory.createHierarchical()),
-            InspectorPositionPresenter.create(new CategoryPC ())
+            InspectorPositionPresenter.create(new ResourcePC (), FolderPositionControllerFactory.createHierarchical())
+           // InspectorPositionPresenter.create(new CategoryPC ())
 
         );
     }

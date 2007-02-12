@@ -35,6 +35,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Collections;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
+import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
+import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
+import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
 
 /**
  *
@@ -113,7 +117,10 @@ public class SVGImageCD extends ComponentDescriptor {
             createPropertiesPresenter(),
             // code
             createSetterPresenter (),
-            MidpCustomCodePresenterSupport.createAddImportPresenter ()
+            MidpCustomCodePresenterSupport.createAddImportPresenter (),
+            // inspector
+            InspectorFolderPresenter.create(true),
+            InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical())
         );
     }
 
