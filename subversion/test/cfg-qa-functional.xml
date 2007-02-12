@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="Subversion functional test config">
 
-    <testbag testattribs="validation" executor="ide" name="versioning">
+    <testbag testattribs="svnvalid" executor="ide" name="versioning">
 	<testset dir="qa-functional/src">
             <patternset>
                 <!-- checkout -->
