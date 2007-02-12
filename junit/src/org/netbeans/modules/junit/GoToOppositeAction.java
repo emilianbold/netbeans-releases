@@ -97,6 +97,10 @@ public final class GoToOppositeAction extends CallableSystemAction {
         
         boolean sourceToTest = true;
         comp = TopComponent.getRegistry().getActivated();
+        if (comp == null) {
+            return;
+        }
+
         if (comp instanceof CloneableEditorSupport.Pane) {
             editorPane = ((CloneableEditorSupport.Pane) comp).getEditorPane();
             if (editorPane == null) {
@@ -356,6 +360,10 @@ public final class GoToOppositeAction extends CallableSystemAction {
      */
     private Boolean checkDirection() {
         TopComponent comp = TopComponent.getRegistry().getActivated();
+        if (comp == null) {
+            return null;
+        }
+
         FileObject fileObj = null;
         
         if (comp instanceof CloneableEditorSupport.Pane) {
