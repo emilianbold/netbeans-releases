@@ -344,7 +344,7 @@ public final class MidpCustomCodePresenterSupport {
             String menuInstanceName = CodeReferencePresenter.generateAccessCode (menu);
             boolean indexBased = MidpTypes.getBoolean (menu.readProperty (SVGMenuCD.PROP_INDEX_BASED_SWITCH));
             if (! indexBased) {
-                section.getWriter ().write ("String __selectedElement = " + menuInstanceName + ".getMenuElementAt (" + menuInstanceName + ".getSelectedIndex ());\n"); // NOI18N
+                section.getWriter ().write ("String __selectedElement = " + menuInstanceName + ".getMenuElementID (" + menuInstanceName + ".getSelectedIndex ());\n"); // NOI18N
             }
 
             if (array.size () > 0) {
