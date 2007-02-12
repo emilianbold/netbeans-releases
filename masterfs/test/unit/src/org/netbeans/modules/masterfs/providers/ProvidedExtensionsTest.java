@@ -81,6 +81,21 @@ public class ProvidedExtensionsTest extends NbTestCase {
         super(testName);
     }
     
+
+    public void testImplsBeforeChange() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        assertNotNull(fo);
+        assertNotNull(iListener);
+        FileObject toChange = fo.createData("aa");
+        assertNotNull(toChange);
+        OutputStream os = toChange.getOutputStream();
+        try {
+            assertEquals(1, iListener.implsBeforeChangeCalls);            
+        } finally {
+            os.close();
+        }
+        
+    }
     
     public void testImplsMove() throws IOException {
         FileObject fo = FileUtil.toFileObject(getWorkDir());
@@ -368,6 +383,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         private int moveImplCalls;
         private int implsRenameCalls;
         private int renameImplCalls;
+        private int implsBeforeChangeCalls;
         
         private static  boolean implsMoveRetVal = true;
         private static boolean implsRenameRetVal = true;
@@ -380,8 +396,13 @@ public class ProvidedExtensionsTest extends NbTestCase {
             moveImplCalls = 0;
             implsRenameCalls = 0;
             renameImplCalls = 0;
+            implsBeforeChangeCalls = 0;
         }
 
+        public void beforeChange(FileObject f) {
+            implsBeforeChangeCalls++;
+        }    
+        
         public ProvidedExtensions.DeleteHandler getDeleteHandler(File f) {
             return (!isImplsDeleteRetVal()) ? null : new ProvidedExtensions.DeleteHandler(){
                 final Set s = new HashSet();

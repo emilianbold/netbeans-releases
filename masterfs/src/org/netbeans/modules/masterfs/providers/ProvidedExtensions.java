@@ -115,4 +115,14 @@ public class ProvidedExtensions implements InterceptionListener {
     public void deleteSuccess(FileObject fo) {}    
     public void deleteFailure(FileObject fo) {}
     public void beforeDelete(FileObject fo) {}
+
+
+    /*
+     * Called by <code>MasterFileSystem</code> when <code>FileObject</code>
+     * is going to be modified by asking for <code>OutputStream<code>
+     * @see org.openide.filesystems.FileObject#getOutputStream
+     * @param fo file which is going to be notified
+     * @since 1.10
+     */        
+    public void beforeChange(FileObject fo) {}    
 }

@@ -23,6 +23,23 @@ Microsystems, Inc. All Rights Reserved.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
+        <change id="added-support-for-local-history">
+            <api name="masterfs"/>
+            <summary><code>ProvidedExtensions.beforeChange</code> was added.</summary>
+            <version major="1" minor="10"/>
+            <date day="12" month="2" year="2007"/>
+            <author login="rmatous"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    <code>ProvidedExtensions.beforeChange</code>which is called by 
+                    <code>MasterFileSystem</code> when <code>FileObject</code>
+                    is going to be modified by asking for <code>OutputStream</code>.
+                </p>                
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="ProvidedExtensions"/>
+            <issue number="92676"/>
+        </change>                        
         <change id="added-support-for-subversion-delete">
             <api name="masterfs"/>
             <summary><code>ProvidedExtensions.getDeleteHandler</code> was added.</summary>

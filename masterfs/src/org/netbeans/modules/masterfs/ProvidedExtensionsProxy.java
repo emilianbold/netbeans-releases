@@ -136,5 +136,15 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
                 iListener.beforeDelete(fo);
             }
         }
-    }            
+    }       
+
+    public void beforeChange(FileObject f) {    
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                ((ProvidedExtensions)iListener).beforeChange(f);
+            }
+        }
+    }
 }

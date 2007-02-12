@@ -42,7 +42,7 @@ import org.openide.util.Mutex;
 /**
  * @author rm111737
  */
-class FileObj extends BaseFileObj {
+public class FileObj extends BaseFileObj {
     static final long serialVersionUID = -1133540210876356809L;
     private long lastModified = -1;
     private boolean realLastModifiedCached;
@@ -52,11 +52,19 @@ class FileObj extends BaseFileObj {
         super(file, name);
         setLastModified(System.currentTimeMillis());        
     }
-    
+
     public OutputStream getOutputStream(final FileLock lock) throws IOException {
+        return getOutputStream(lock, null);
+    }
+    
+    public OutputStream getOutputStream(final FileLock lock, ProvidedExtensions extensions) throws IOException {
         final File f = getFileName().getFile();
 
+        if (extensions != null) {
+            extensions.beforeChange(this);
+        }        
         final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, false);
+        
         FileOutputStream retVal = null;
         try {
             retVal = new FileOutputStream(f) {
