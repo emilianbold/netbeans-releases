@@ -22,6 +22,7 @@ import org.netbeans.modules.e2e.api.wsdl.BindingInput;
 import org.netbeans.modules.e2e.api.wsdl.BindingOperation;
 import org.netbeans.modules.e2e.api.wsdl.BindingOutput;
 import org.netbeans.modules.e2e.api.wsdl.Definition;
+import org.netbeans.modules.e2e.api.wsdl.Input;
 import org.netbeans.modules.e2e.api.wsdl.Message;
 import org.netbeans.modules.e2e.api.wsdl.Operation;
 import org.netbeans.modules.e2e.api.wsdl.Output;
@@ -85,6 +86,7 @@ class WSDLValidator {
     private void checkService( Service service ) {
         this.service = service;
         for( Port port : service.getPorts()) {
+            System.err.println("Checking port: " + port.getName());
             checkPort( port );
         }
     }
@@ -98,6 +100,7 @@ class WSDLValidator {
 //                    flags.add( SOAPConstants.ADDRESS );
 
                 Binding binding = port.getBinding();
+                System.err.println("Checking binding: " + binding.getName());
                 checkBinding( binding );
             }
         }
@@ -114,10 +117,12 @@ class WSDLValidator {
                 System.err.println(" binding - style = " + soapBinding.getStyle());
 
                 for( BindingOperation bindingOperation : binding.getBindingOperations()) {
+                    System.err.println("Checking bindingOperation:" + bindingOperation.getName());
                     checkBindingOperation( bindingOperation );
                 }
                 PortType portType = binding.getPortType();
                 for( Operation operation : portType.getOperations()) {
+                    System.err.println("Checking operation: " + operation.getName());
                     checkOperation( operation );
                 }
             }
@@ -161,14 +166,16 @@ class WSDLValidator {
         }                                                                                
     }
     
-    private void checkOperation( Operation operation ) {
+    private void checkOperation( Operation operation ) {        
+        // Output
         Output output = operation.getOutput();
         if( output == null ) {
             addMessage( ErrorLevel.FATAL, "0007", operation.getName());
             return;
         }
-        Message message = operation.getOutput().getMessage();
-        if( message.getParts().size() == 0 ) {            
+        Message message = output.getMessage();
+        if( message.getParts().size() == 0 ) {
+            // zero parts
         } else if( message.getParts().size() > 1 ) {
             addMessage( ErrorLevel.FATAL, "0006", operation.getName());
         } else {
@@ -182,16 +189,43 @@ class WSDLValidator {
             if( elementName != null ) {
                 element = definition.getSchemaHolder().getSchemaElement( elementName );
                 type = element.getType();
-                checkType( element );
-            } else if( typeName != null ) {
-                type = definition.getSchemaHolder().getSchemaType( typeName );
+                checkType( element, new HashSet());
+            } else {
+                addMessage( ErrorLevel.FATAL, "0008", operation.getName());
+            }
+        }
+        
+        // Input
+        Input input = operation.getInput();
+        if( input == null ) {
+            addMessage( ErrorLevel.FATAL, "0009", operation.getName());
+            return;
+        }
+        message = input.getMessage();
+        if( message.getParts().size() == 0 ) {            
+            // zero parts
+        } else if( message.getParts().size() > 1 ) {
+            addMessage( ErrorLevel.FATAL, "0006", operation.getName());
+        } else {
+            
+        }
+        
+        for( Part part : message.getParts()) {
+            QName elementName = part.getElementName();
+            QName typeName = part.getTypeName();
+            Element element = null;
+            Type type = null;
+            if( elementName != null ) {
+                element = definition.getSchemaHolder().getSchemaElement( elementName );
+                type = element.getType();
+                checkType( element, new HashSet());
             } else {
                 addMessage( ErrorLevel.FATAL, "0008", operation.getName());
             }
         }
     }
     
-    private void checkType( Element element ) {
+    private void checkType( Element element, Set<Element> usedComplexTypes ) {
         Type type = element.getType();
         if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
             QName typeName = type.getName();
@@ -209,13 +243,18 @@ class WSDLValidator {
                 addMessage( ErrorLevel.FATAL, "0003", typeName.toString());
             }
         } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
+            usedComplexTypes.add( element );
             if( type.getSubconstructs().size() == 0 ) {
                 return;
             } else {
                 for( SchemaConstruct sc : type.getSubconstructs()) {
                     if( SchemaConstruct.ConstructType.ELEMENT.equals( sc.getConstructType())) {
                         Element sce = (Element) sc;
-                        checkType( sce );
+                        if( !usedComplexTypes.contains( sce )) {
+                            checkType( sce, usedComplexTypes );
+                        } else {
+                            addMessage( ErrorLevel.FATAL, "0010" );
+                        }
                     } else {
                         addMessage( ErrorLevel.FATAL, "0005", element.getName().toString());
                     }

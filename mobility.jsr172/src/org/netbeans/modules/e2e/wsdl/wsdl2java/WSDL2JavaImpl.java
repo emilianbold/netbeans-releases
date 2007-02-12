@@ -150,22 +150,27 @@ public class WSDL2JavaImpl implements WSDL2Java {
         }
         return javaTypeName + ( isArray ? "[]" : "" );
     }
-    
-//    public Element simplifyType( Element element ) {
-//        if( element.getMaxOccurs() > 1 ) return element;
-//        Type type = element.getType();
-//        if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
-//            return element;
-//        } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
-//            if( type.getSubconstructs().size() == 1 ) {
-//                SchemaConstruct sc = type.getSubconstructs().get( 0 );
-//                if( SchemaConstruct.ConstructType.ELEMENT.equals( sc.getConstructType())) {
-//                    return simplifyType((Element) sc);
-//                }
-//            }
-//        }
-//        return element;
-//    }
+
+    private boolean isElementComplex( Element e ) {
+        boolean isArray = e.getMaxOccurs() > 1;
+        if( isArray ) return true;
+        
+        Type type = e.getType();
+        if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
+            if( e.isNillable()) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
+            if( type.getSubconstructs().size() == 0 ) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return true;
+    }
     
     private void generateInterfaces() throws Exception {        
         Set<QName> usedTypes = new HashSet();
@@ -206,7 +211,9 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             if (output != null) {
                                 for( Part part : output.getMessage().getParts()) {
                                     Element e = getReturnElement( definition.getSchemaHolder().getSchemaElement( part.getElementName()));
-                                    usedTypes.add( e.getName());
+                                    if( isElementComplex( e )) {
+                                        usedTypes.add( e.getName());
+                                    }
                                     boolean isArray = e.getMaxOccurs() > 1;
                                     String javaTypeName = getJavaTypeName( e );
                                     
@@ -224,10 +231,12 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             if (input != null){
                                 for( Part part : input.getMessage().getParts()) {
                                     Element element = definition.getSchemaHolder().getSchemaElement( part.getElementName());
-                                    usedTypes.add( element.getName());
                                     List<Element> params = getParameterElements( element );
                                     for( Iterator<Element> it = params.iterator(); it.hasNext(); ) {
                                         Element e = it.next();
+                                        if( isElementComplex( e )) {
+                                            usedTypes.add( e.getName());
+                                        }
                                         Type type = e.getType();
                                         String javaTypeName = getJavaTypeName( e );
                                         off.write( javaTypeName + " " + e.getName().getLocalPart());
@@ -768,7 +777,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                         for( QName parameterName : usedParameterTypes ) {
                             SchemaConstruct sc;
                             sc = definition.getSchemaHolder().getSchemaElement( parameterName );
-                            off.write( "_type_" + sc.getName().getLocalPart() + " =" );
+                            off.write( "_type_" + sc.getName().getLocalPart() + " = " );
                             initTypes( off, sc, qnames, elements );
                             off.write( ";\n" );
                         }
