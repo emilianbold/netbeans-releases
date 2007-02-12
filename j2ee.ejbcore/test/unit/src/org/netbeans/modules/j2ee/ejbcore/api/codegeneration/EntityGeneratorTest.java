@@ -36,7 +36,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
-import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.netbeans.modules.j2ee.ejbcore.test.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbcore.test.EjbJarProviderImpl;
 import org.netbeans.modules.j2ee.ejbcore.test.FakeJavaDataLoaderPool;
@@ -58,7 +57,6 @@ public class EntityGeneratorTest extends TestBase {
     private FileOwnerQueryImpl fileOwnerQuery;
     
     private FileObject dataDir;
-    private EJBNameOptions ejbNames;
 
     public EntityGeneratorTest(String testName) {
         super(testName);
@@ -79,7 +77,6 @@ public class EntityGeneratorTest extends TestBase {
                 new FakeJavaDataLoaderPool()
                 );
         dataDir = FileUtil.toFileObject(getDataDir());
-        ejbNames = new EJBNameOptions();
     }
 
     public void testGenerate() throws Exception {
@@ -111,11 +108,11 @@ public class EntityGeneratorTest extends TestBase {
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFileObject);
         checkXml(ejbJar, EjbGenerationUtil.getSelectedPackageName(pkg) + ".", name, hasRemote, hasLocal, isCMP, primaryKeyClassName);
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
-        String ejbName = ejbNames.getEntityEjbNamePrefix() + name + ejbNames.getEntityEjbNameSuffix();
+        String ejbName = name + "Bean";
         Entity entity = (Entity) enterpriseBeans.findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_NAME, ejbName);
         final String JAVA = "java";
 
-        FileObject ejbClass = pkg.getFileObject(ejbNames.getEntityEjbClassPrefix() + name + ejbNames.getEntityEjbClassSuffix(), JAVA);
+        FileObject ejbClass = pkg.getFileObject(name + "Bean", JAVA);
         assertNotNull(ejbClass);
         if (isCMP) {
             checkCmpEjbClass(ejbClass, name, entity);
@@ -123,8 +120,8 @@ public class EntityGeneratorTest extends TestBase {
             checkBmpEjbClass(ejbClass, name, entity);
         }
         
-        FileObject remote = pkg.getFileObject(ejbNames.getEntityRemotePrefix() + name + ejbNames.getEntityRemoteSuffix(), JAVA);
-        FileObject remoteHome = pkg.getFileObject(ejbNames.getEntityRemoteHomePrefix() + name + ejbNames.getEntityRemoteHomeSuffix(), JAVA);
+        FileObject remote = pkg.getFileObject(name + "Remote", JAVA);
+        FileObject remoteHome = pkg.getFileObject(name + "RemoteHome", JAVA);
         if (hasRemote) {
             assertNotNull(remote);
             if (isCMP) {
@@ -145,8 +142,8 @@ public class EntityGeneratorTest extends TestBase {
             assertNull(entity.getHome());
         }
         
-        FileObject local = pkg.getFileObject(ejbNames.getSessionLocalPrefix() + name + ejbNames.getSessionLocalSuffix(), JAVA);
-        FileObject localHome = pkg.getFileObject(ejbNames.getSessionLocalHomePrefix() + name + ejbNames.getSessionLocalHomeSuffix(), JAVA);
+        FileObject local = pkg.getFileObject(name + "Local", JAVA);
+        FileObject localHome = pkg.getFileObject(name + "LocalHome", JAVA);
         if (hasLocal) {
             assertNotNull(local);
             if (isCMP) {
@@ -176,7 +173,7 @@ public class EntityGeneratorTest extends TestBase {
                 final String LONG = "java.lang.Long";
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionEjbClassPrefix() + name + ejbNames.getSessionEjbClassSuffix()));
+                assertTrue(clazz.getSimpleName().contentEquals(name + "Bean"));
                 assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EntityBean"}));
                 assertTrue(Util.contains(controller, clazz, MethodModel.create(
                             "getKey", LONG, null, 
@@ -227,7 +224,7 @@ public class EntityGeneratorTest extends TestBase {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionRemotePrefix() + name + ejbNames.getSessionRemoteSuffix()));
+                assertTrue(clazz.getSimpleName().contentEquals(name + "Remote"));
                 assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBObject"}));
                 assertEquals(1, clazz.getEnclosedElements().size());
                 assertTrue(Util.contains(controller, clazz, MethodModel.create(
@@ -250,7 +247,7 @@ public class EntityGeneratorTest extends TestBase {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionRemoteHomePrefix() + name + ejbNames.getSessionRemoteHomeSuffix()));
+                assertTrue(clazz.getSimpleName().contentEquals(name + "RemoteHome"));
                 assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBHome"}));
                 assertEquals(2, clazz.getEnclosedElements().size());
                 assertTrue(Util.contains(controller, clazz, MethodModel.create(
@@ -279,7 +276,7 @@ public class EntityGeneratorTest extends TestBase {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionLocalPrefix() + name + ejbNames.getSessionLocalSuffix()));
+                assertTrue(clazz.getSimpleName().contentEquals(name + "Local"));
                 assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalObject"}));
                 assertEquals(1, clazz.getEnclosedElements().size());
                 assertTrue(Util.contains(controller, clazz, MethodModel.create(
@@ -302,7 +299,7 @@ public class EntityGeneratorTest extends TestBase {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionLocalHomePrefix() + name + ejbNames.getSessionLocalHomeSuffix()));
+                assertTrue(clazz.getSimpleName().contentEquals(name + "LocalHome"));
                 assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalHome"}));
                 assertEquals(2, clazz.getEnclosedElements().size());
                 assertTrue(Util.contains(controller, clazz, MethodModel.create(
@@ -327,20 +324,20 @@ public class EntityGeneratorTest extends TestBase {
     }
     
     private void checkXml(EjbJar ejbJar, String pkgWithDot, String name, boolean hasRemote, boolean hasLocal, boolean isCMP, String primaryKeyClassName) {
-        String ejbName = ejbNames.getEntityEjbNamePrefix() + name + ejbNames.getEntityEjbNameSuffix();
+        String ejbName = name + "Bean";
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
         Entity entity = (Entity) enterpriseBeans.findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_NAME, ejbName);
         assertNotNull(entity);
         assertEquals(entity.getEjbName(), ejbName);
         assertEquals(entity.getPrimKeyClass(), primaryKeyClassName);
-        assertEquals(entity.getEjbClass(), pkgWithDot + ejbNames.getEntityEjbClassPrefix() + name + ejbNames.getEntityEjbClassSuffix());
+        assertEquals(entity.getEjbClass(), pkgWithDot + name + "Bean");
         if (hasLocal) {
-            assertEquals(entity.getLocal(), pkgWithDot + ejbNames.getEntityLocalPrefix() + name + ejbNames.getEntityLocalSuffix());
-            assertEquals(entity.getLocalHome(), pkgWithDot + ejbNames.getEntityLocalHomePrefix() + name + ejbNames.getEntityLocalHomeSuffix());
+            assertEquals(entity.getLocal(), pkgWithDot + name + "Local");
+            assertEquals(entity.getLocalHome(), pkgWithDot + name + "LocalHome");
         }
         if (hasRemote) {
-            assertEquals(entity.getRemote(), pkgWithDot + ejbNames.getEntityRemotePrefix() + name + ejbNames.getEntityRemoteSuffix());
-            assertEquals(entity.getHome(), pkgWithDot + ejbNames.getEntityRemoteHomePrefix() + name + ejbNames.getEntityRemoteHomeSuffix());
+            assertEquals(entity.getRemote(), pkgWithDot + name + "Remote");
+            assertEquals(entity.getHome(), pkgWithDot + name + "RemoteHome");
         }
     }
     

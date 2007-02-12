@@ -34,6 +34,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Method;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -59,7 +60,10 @@ public final class MessageGenerator {
     private final EJBNameOptions ejbNameOptions;
     private final String ejbName;
     private final String ejbClassName;
+    private final String displayName;
     
+    private final String packageNameWithDot;
+
     public static MessageGenerator create(String wizardTargetName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
         return new MessageGenerator(wizardTargetName, pkg, isQueue, isSimplified, isXmlBased);
     }
@@ -72,6 +76,8 @@ public final class MessageGenerator {
         this.ejbNameOptions = new EJBNameOptions();
         this.ejbName = ejbNameOptions.getMessageDrivenEjbNamePrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbNameSuffix();
         this.ejbClassName = ejbNameOptions.getMessageDrivenEjbClassPrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbClassSuffix();
+        this.displayName = ejbNameOptions.getMessageDrivenDisplayNamePrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenDisplayNameSuffix();
+        this.packageNameWithDot = EjbGenerationUtil.getSelectedPackageName(pkg) + ".";
     }
     
     public FileObject generate() throws IOException {
@@ -176,8 +182,8 @@ public final class MessageGenerator {
         config.addActivationConfigProperty(destProp);
         messageDriven.setActivationConfig(config);
         messageDriven.setEjbName(ejbName);
-        messageDriven.setDisplayName(ejbName); // TODO: add "MDB" suffix?
-        messageDriven.setEjbClass(ejbClassName);
+        messageDriven.setDisplayName(displayName);
+        messageDriven.setEjbClass(packageNameWithDot + ejbClassName);
         messageDriven.setTransactionType(MessageDriven.TRANSACTION_TYPE_CONTAINER);
         
         beans.addMessageDriven(messageDriven);
@@ -189,7 +195,7 @@ public final class MessageGenerator {
         }
         MessageDestination messageDestination = assemblyDescriptor.newMessageDestination();
         String destinationLink = ejbName + "Destination"; //NOI18N
-        messageDestination.setDisplayName("Destination for " + ejbClassName);
+        messageDestination.setDisplayName("Destination for " + displayName);
         messageDestination.setMessageDestinationName(destinationLink);
         assemblyDescriptor.addMessageDestination(messageDestination);
         

@@ -80,6 +80,7 @@ public class EntityGenerator {
     private final String remoteHomeName;
     private final String localName;
     private final String localHomeName;
+    private final String displayName;
     
     private final String packageNameWithDot;
 
@@ -102,6 +103,7 @@ public class EntityGenerator {
         this.remoteHomeName = ejbNameOptions.getEntityRemoteHomePrefix() + wizardTargetName + ejbNameOptions.getEntityRemoteHomeSuffix();
         this.localName = ejbNameOptions.getEntityLocalPrefix() + wizardTargetName + ejbNameOptions.getEntityLocalSuffix();
         this.localHomeName = ejbNameOptions.getEntityLocalHomePrefix() + wizardTargetName + ejbNameOptions.getEntityLocalHomeSuffix();
+        this.displayName = ejbNameOptions.getEntityDisplayNamePrefix() + wizardTargetName + ejbNameOptions.getEntityDisplayNameSuffix();
         this.packageNameWithDot = EjbGenerationUtil.getSelectedPackageName(pkg) + ".";
     }
 
@@ -187,7 +189,7 @@ public class EntityGenerator {
         entity.setEjbClass(packageNameWithDot + ejbClassName);
         entity.setPrimKeyClass(primaryKeyClassName);
         entity.setReentrant(false);
-        entity.setDisplayName(ejbName); // TODO: add "EB" suffix?
+        entity.setDisplayName(displayName);
         if (hasRemote) {
             entity.setRemote(packageNameWithDot + remoteName);
             entity.setHome(packageNameWithDot + remoteHomeName);

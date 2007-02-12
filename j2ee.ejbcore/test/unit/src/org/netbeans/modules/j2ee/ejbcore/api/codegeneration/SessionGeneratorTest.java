@@ -33,7 +33,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
-import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.netbeans.modules.j2ee.ejbcore.test.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbcore.test.EjbJarProviderImpl;
 import org.netbeans.modules.j2ee.ejbcore.test.FakeJavaDataLoaderPool;
@@ -54,7 +53,6 @@ public class SessionGeneratorTest extends TestBase {
     private ClassPathProviderImpl classPathProvider;
     private FileOwnerQueryImpl fileOwnerQuery;
     private FileObject dataDir;
-    private EJBNameOptions ejbNames;
 
     public SessionGeneratorTest(String testName) {
         super(testName);
@@ -75,7 +73,6 @@ public class SessionGeneratorTest extends TestBase {
                 new FakeJavaDataLoaderPool()
                 );
         dataDir = FileUtil.toFileObject(getDataDir());
-        ejbNames = new EJBNameOptions();
     }
 
     public void testGenerate() throws Exception {
@@ -107,17 +104,17 @@ public class SessionGeneratorTest extends TestBase {
         sessionGenerator.generate();
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFileObject);
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
-        String ejbName = ejbNames.getSessionEjbNamePrefix() + name + ejbNames.getSessionEjbNameSuffix();
+        String ejbName = name + "Bean";
         Session session = (Session) enterpriseBeans.findBeanByName(EnterpriseBeans.SESSION, Session.EJB_NAME, ejbName);
         final String JAVA = "java";
         assertEquals(session.getSessionType(), isStateful ? Session.SESSION_TYPE_STATEFUL : Session.SESSION_TYPE_STATELESS);
         
-        FileObject ejbClass = pkg.getFileObject(ejbNames.getSessionEjbClassPrefix() + name + ejbNames.getSessionEjbClassSuffix(), JAVA);
+        FileObject ejbClass = pkg.getFileObject(name + "Bean", JAVA);
         assertNotNull(ejbClass);
         checkEjbClass21(ejbClass, name, session);
         
-        FileObject remote = pkg.getFileObject(ejbNames.getSessionRemotePrefix() + name + ejbNames.getSessionRemoteSuffix(), JAVA);
-        FileObject remoteHome = pkg.getFileObject(ejbNames.getSessionRemoteHomePrefix() + name + ejbNames.getSessionRemoteHomeSuffix(), JAVA);
+        FileObject remote = pkg.getFileObject(name + "Remote", JAVA);
+        FileObject remoteHome = pkg.getFileObject(name + "RemoteHome", JAVA);
         if (hasRemote) {
             assertNotNull(remote);
             checkRemote21(remote, name, session);
@@ -130,8 +127,8 @@ public class SessionGeneratorTest extends TestBase {
             assertNull(session.getHome());
         }
         
-        FileObject local = pkg.getFileObject(ejbNames.getSessionLocalPrefix() + name + ejbNames.getSessionLocalSuffix(), JAVA);
-        FileObject localHome = pkg.getFileObject(ejbNames.getSessionLocalHomePrefix() + name + ejbNames.getSessionLocalHomeSuffix(), JAVA);
+        FileObject local = pkg.getFileObject(name + "Local", JAVA);
+        FileObject localHome = pkg.getFileObject(name + "LocalHome", JAVA);
         if (hasLocal) {
             assertNotNull(local);
             checkLocal21(local, name, session);
@@ -152,7 +149,7 @@ public class SessionGeneratorTest extends TestBase {
                 final String VOID = "void";
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionEjbClassPrefix() + name + ejbNames.getSessionEjbClassSuffix()));
+                assertTrue(clazz.getSimpleName().contentEquals(name + "Bean"));
                 assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.SessionBean"}));
                 assertTrue(Util.contains(controller, clazz, MethodModel.create(
                             "setSessionContext", VOID, "", 
@@ -189,7 +186,7 @@ public class SessionGeneratorTest extends TestBase {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionRemotePrefix() + name + ejbNames.getSessionRemoteSuffix()));
+                assertTrue(clazz.getSimpleName().contentEquals(name + "Remote"));
                 assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBObject"}));
                 assertTrue(clazz.getEnclosedElements().isEmpty());
                 assertTrue(clazz.getQualifiedName().contentEquals(session.getRemote()));
@@ -202,7 +199,7 @@ public class SessionGeneratorTest extends TestBase {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionRemoteHomePrefix() + name + ejbNames.getSessionRemoteHomeSuffix()));
+                assertTrue(clazz.getSimpleName().contentEquals(name + "RemoteHome"));
                 assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBHome"}));
                 assertTrue(clazz.getEnclosedElements().isEmpty());
                 assertTrue(clazz.getQualifiedName().contentEquals(session.getHome()));
@@ -215,7 +212,7 @@ public class SessionGeneratorTest extends TestBase {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionLocalPrefix() + name + ejbNames.getSessionLocalSuffix()));
+                assertTrue(clazz.getSimpleName().contentEquals(name + "Local"));
                 assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalObject"}));
                 assertTrue(clazz.getEnclosedElements().isEmpty());
                 assertTrue(clazz.getQualifiedName().contentEquals(session.getLocal()));
@@ -228,7 +225,7 @@ public class SessionGeneratorTest extends TestBase {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionLocalHomePrefix() + name + ejbNames.getSessionLocalHomeSuffix()));
+                assertTrue(clazz.getSimpleName().contentEquals(name + "LocalHome"));
                 assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalHome"}));
                 assertTrue(clazz.getEnclosedElements().isEmpty());
                 assertTrue(clazz.getQualifiedName().contentEquals(session.getLocalHome()));

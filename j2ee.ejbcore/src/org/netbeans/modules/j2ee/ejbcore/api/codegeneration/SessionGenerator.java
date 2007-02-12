@@ -72,6 +72,7 @@ public final class SessionGenerator {
     private final String remoteHomeName;
     private final String localName;
     private final String localHomeName;
+    private final String displayName;
     
     private final String packageNameWithDot;
 
@@ -96,6 +97,7 @@ public final class SessionGenerator {
         this.remoteHomeName = ejbNameOptions.getSessionRemoteHomePrefix() + wizardTargetName + ejbNameOptions.getSessionRemoteHomeSuffix();
         this.localName = ejbNameOptions.getSessionLocalPrefix() + wizardTargetName + ejbNameOptions.getSessionLocalSuffix();
         this.localHomeName = ejbNameOptions.getSessionLocalHomePrefix() + wizardTargetName + ejbNameOptions.getSessionLocalHomeSuffix();
+        this.displayName = ejbNameOptions.getSessionDisplayNamePrefix() + wizardTargetName + ejbNameOptions.getSessionDisplayNameSuffix();
         this.packageNameWithDot = EjbGenerationUtil.getSelectedPackageName(pkg) + ".";
     }
     
@@ -185,7 +187,7 @@ public final class SessionGenerator {
         }
         session = beans.newSession();
         session.setEjbName(ejbName);
-        session.setDisplayName(ejbName); // TODO: add SB suffix?
+        session.setDisplayName(displayName);
         session.setEjbClass(packageNameWithDot + ejbClassName);
 
         if (hasRemote) {
