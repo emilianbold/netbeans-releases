@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
@@ -164,8 +165,13 @@ public abstract class Index {
     }
     
     public static URL getClassFolder (final URL url) throws IOException {                
+        URI u = getClassFolderImpl(url).toURI();
+        String us = u.toString();
+        if (!us.endsWith("/")) {
+            u = URI.create(us + "/");
+        }
         try {            
-            return getClassFolderImpl(url).toURI().toURL();
+            return u.toURL();
         } catch (MalformedURLException mue) {
             //Should never happen
             ErrorManager.getDefault().notify (mue);
