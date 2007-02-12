@@ -26,7 +26,7 @@
         <property name="xlet.dalp" value="RICOH.dalp"/>
         <property name="xlet.dalp.name-only" value="RICOH.dalp"/>
         <property name="deploy.dir" value="${{dist.dir}}/deploy"/>
-        <property name="signed.jar" value="${{target.dir}}/RICOH.jar"/>
+        <property name="signed.jar" value="${{dist.dir}}/RICOH.jar"/>
         <property name="rideploy.zip" value="${{dist.dir}}/RICOH.zip"/>
         <property name="ricoh.dalp.is-managed" value="true"/>
         <property name="ricoh.application.type" value="xlet"/>

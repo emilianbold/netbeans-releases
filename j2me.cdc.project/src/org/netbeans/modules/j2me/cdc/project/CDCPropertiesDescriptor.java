@@ -44,7 +44,6 @@ public class CDCPropertiesDescriptor implements ProjectPropertiesDescriptor {
     public static final String MANIFEST_FILE = "manifest.file"; //NOI18N
     public static final String RESOURCES_DIR = "resources.dir"; //NOI18N
     public static final String RUN_JVMARGS = "run.jvmargs"; //NOI18N
-    public static final String TARGET_DIR = "target.dir"; //NOI18N
     public static final String PLATFORM_FAT_JAR = "platform.fat.jar"; //NOI18N
 
         
@@ -70,7 +69,6 @@ public class CDCPropertiesDescriptor implements ProjectPropertiesDescriptor {
             set.add(new PropertyDescriptor(MANIFEST_FILE, true, DefaultPropertyParsers.FILE_REFERENCE_PARSER,  "manifest.mf")); //NOI18N
             set.add(new PropertyDescriptor(RESOURCES_DIR, true, DefaultPropertyParsers.FILE_REFERENCE_PARSER,  "resources")); //NOI18N
             set.add(new PropertyDescriptor(RUN_JVMARGS, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
-            set.add(new PropertyDescriptor(TARGET_DIR, true, DefaultPropertyParsers.STRING_PARSER,  "target")); //NOI18N
             set.add(new PropertyDescriptor(PLATFORM_FAT_JAR, true, DefaultPropertyParsers.BOOLEAN_PARSER, "true")); //NOI18N
             ref = new WeakReference(set);
         }

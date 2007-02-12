@@ -63,7 +63,7 @@
             <env key="EPOCROOT" value="${{epocroot}}"/>
             <env key="Path" value="${{epocpath}}"/>
         </exec>
-        <copy todir="${{target.dir}}">
+        <copy todir="${{dist.dir}}">
             <fileset dir="${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/arm/PProLauncher${{semc.application.uid}}">
                 <include name="**/*.SIS"/>
                 <include name="**/*.sis"/>

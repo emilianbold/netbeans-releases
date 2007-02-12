@@ -1,0 +1,6 @@
+    <target name="clean-savaje" if="savaje-platform.trigger">
+        <delete dir="${{build.dir}}/jnlp"/>
+        <delete file="${{dist.dir}}/bundle.jnlp"/>
+        <delete file="${{dist.dir}}/bundle.policy"/>
+        <delete dir="${{dist.dir}}/lib"/>
+    </target>

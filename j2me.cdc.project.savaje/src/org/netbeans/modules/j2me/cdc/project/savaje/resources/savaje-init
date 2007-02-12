@@ -1,8 +1,11 @@
-    <xsl:comment>savaje-init</xsl:comment>
-    <target name="savaje-init" if="cdc-platform.trigger">
+<xsl:comment>savaje-init</xsl:comment>
+
+    <target name="savaje-pre-init" if="cdc-platform.trigger">
         <condition property="savaje-platform.trigger">
             <equals arg1="savaje" arg2="${{platform.type}}" casesensitive="false"/>
         </condition>
+    </target>
+    <target name="savaje-init" depends="savaje-pre-init" if="savaje-platform.trigger">
         <property name="savaje.application.uid" value="TBD"/>
         <condition property="savaje.bundle.base.invalid" value="true">
             <or>
@@ -23,5 +26,11 @@
             </or>
         </condition>
         <property name="jnlp.dist" value="${{build.dir}}/jnlp/bundle.jnlp"/>
+        <property name="deployment.dir" location="${{dist.dir}}"/>
+        <patternset id="deployment.patternset">
+            <include name="bundle.jnlp"/>
+            <include name="bundle.policy"/>
+            <include name="lib/*"/>
+        </patternset>
     </target>
     

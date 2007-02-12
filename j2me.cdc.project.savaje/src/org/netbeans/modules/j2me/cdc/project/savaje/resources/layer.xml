@@ -21,6 +21,10 @@
                         <attr name="semc-debug/savaje-debug" boolvalue="true"/>
                         <file name="savaje-debug" url="savaje-debug"/>
                     </folder>
+                    <folder name="clean-subtargets">
+                        <attr name="clean-semc/clean-savaje" boolvalue="true"/>
+                        <file name="clean-savaje" url="clean-savaje"/>
+                    </folder>
                 </folder>
             </folder>
         </folder>

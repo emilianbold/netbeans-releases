@@ -32,7 +32,7 @@
             </and>
         </condition>
         <condition property="application.version.invalid" value="true">
-            <equals arg1="${{application.version}}" arg2="" trim="true"/>
+            <equals arg1="${{deployment.number}}" arg2="" trim="true"/>
         </condition>
-        <fail if="application.version.invalid" message="Property application.version must not be empty and must contain version in format %d.%d.%d!"/>
+        <fail if="application.version.invalid" message="Property deployment.number must not be empty and must contain version in format %d.%d.%d!"/>
     </target>
