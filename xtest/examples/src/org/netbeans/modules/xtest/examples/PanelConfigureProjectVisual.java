@@ -46,7 +46,6 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
 
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "LBL_NWP1_ProjectTitleName")); //NOI18N
-        putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJ2SEApp")); //NOI18N
     }
 
     boolean valid(WizardDescriptor wizardDescriptor) {

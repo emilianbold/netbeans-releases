@@ -16,6 +16,13 @@
                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xtest.examples.J2SESampleProjectIterator"/>
                       <attr name="prjType" stringvalue="j2se"/>
                     </file>
+                    <file name="paintapp.zip" url="paintapp.zip">
+                      <attr name="template" boolvalue="true"/>
+                      <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xtest/examples/resources/descriptions/paintAppWithXTest.html"/>
+                      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xtest.examples.Bundle"/>
+                      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xtest/examples/resources/XTestProject.gif"/>
+                      <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xtest.examples.PaintAppProjectIterator"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

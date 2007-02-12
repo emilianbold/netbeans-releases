@@ -209,10 +209,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             formater = projectName + "{0}"; //NOI18N
         }
         if ((projectName == null) || (validFreeProjectName(projectLocation, projectName) == null)) {
-            int baseCount = FoldersListSettings.getDefault().getNewProjectCount() + 1;
-            while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null)
+            int baseCount = 1;
+            while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null) {
                 baseCount++;
-//            settings.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
+            }
         }
         projectNameTextField.setText(projectName);
         projectNameTextField.selectAll();

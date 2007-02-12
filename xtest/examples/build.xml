@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="xtest/examples" default="netbeans" basedir=".">
@@ -27,9 +27,14 @@ Microsystems, Inc. All Rights Reserved.
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/xtest/examples/resources"/>
         <mkdir dir="${examples}"/>
         <zip basedir="anagrams" destfile="${examples}/anagrams.zip">
-            <exclude name="build/"/>
-            <exclude name="dist/"/>
+            <exclude name="build"/>
+            <exclude name="dist"/>
             <exclude name="nbproject/private/"/>
+        </zip>
+        <zip basedir="PaintApp" destfile="${examples}/paintapp.zip">
+            <exclude name="build"/>
+            <exclude name="dist"/>
+            <exclude name="**/nbproject/private"/>
         </zip>
     </target>    
     

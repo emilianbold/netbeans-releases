@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -67,11 +67,7 @@ public class J2SESampleProjectIterator implements TemplateWizard.Iterator {
     
     public void initialize (org.openide.loaders.TemplateWizard templateWizard) {
         this.wiz = templateWizard;
-        String name = templateWizard.getTemplate().getNodeDelegate().getDisplayName();
-        if (name != null) {
-            name = name.replaceAll(" ", ""); //NOI18N
-        }
-        templateWizard.putProperty (WizardProperties.NAME, name);
+        templateWizard.putProperty(WizardProperties.NAME, NbBundle.getMessage(J2SESampleProjectIterator.class, "TXT_ProjectName_Anagram"));
         basicPanel = new PanelConfigureProject();
         currentIndex = 0;
         updateStepsList ();
@@ -116,6 +112,7 @@ public class J2SESampleProjectIterator implements TemplateWizard.Iterator {
         };
         component.putClientProperty ("WizardPanel_contentData", list); // NOI18N
         component.putClientProperty ("WizardPanel_contentSelectedIndex", new Integer (currentIndex)); // NOI18N
+        component.putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(J2SESampleProjectIterator.class, "TXT_Title_Anagram")); //NOI18N
     }
     
 }
