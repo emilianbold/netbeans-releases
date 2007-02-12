@@ -125,7 +125,7 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
 
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             CodeWriter writer = section.getWriter ();
-            writer.write ("new Executable() {\n"); // NOI18N
+            writer.write ("new org.netbeans.microedition.util.Executable() {\n"); // NOI18N
             writer.write ("public void execute () throws Exception {\n"); // NOI18N
             String code = MidpTypes.getJavaCode (component.readProperty (PROP_CODE));
             writer.write (code);

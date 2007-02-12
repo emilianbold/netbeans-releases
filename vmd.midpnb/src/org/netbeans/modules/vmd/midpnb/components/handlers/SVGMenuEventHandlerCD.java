@@ -19,22 +19,19 @@
 
 package org.netbeans.modules.vmd.midpnb.components.handlers;
 
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.DesignEventFilter;
-import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.codegen.CodeMultiGuardedLevelPresenter;
+import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerPinBadgePresenter;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 import org.openide.util.Utilities;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -73,22 +70,22 @@ public class SVGMenuEventHandlerCD extends ComponentDescriptor {
                     protected DesignEventFilter getEventFilter () {
                         return super.getEventFilter ().addParentFilter (getComponent (), 2, false);
                     }
-                }
+                },
                 // code
-//                new CodeMultiGuardedLevelPresenter () {
-//                    protected void generateMultiGuardedSectionCode (MultiGuardedSection section) {
-//                        DesignComponent listEventHandler = getComponent ();
-//
-//                        DesignComponent commandEventSource = listEventHandler.getParentComponent ();
-//                        if (commandEventSource == null)
-//                            return;
-//
-//                        DesignComponent list = commandEventSource.getParentComponent ();
-//                        String code = ListCode.getListActionMethodAccessCode (list);
-//                        if (code != null)
-//                            section.getWriter ().write (code + " ();\n");
-//                    }
-//                }
+                new CodeMultiGuardedLevelPresenter () {
+                    protected void generateMultiGuardedSectionCode (MultiGuardedSection section) {
+                        DesignComponent eventHandler = getComponent ();
+
+                        DesignComponent commandEventSource = eventHandler.getParentComponent ();
+                        if (commandEventSource == null)
+                            return;
+
+                        DesignComponent menu = commandEventSource.getParentComponent ();
+                        String code = MidpCustomCodePresenterSupport.getSVGMenuActionMethodAccessCode (menu);
+                        if (code != null)
+                            section.getWriter ().write (code + " ();\n");
+                    }
+                }
         );
     }
 

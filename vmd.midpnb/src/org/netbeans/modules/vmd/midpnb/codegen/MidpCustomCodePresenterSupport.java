@@ -25,24 +25,23 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.vmd.api.codegen.CodeGlobalLevelPresenter;
-import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
-import org.netbeans.modules.vmd.api.codegen.Parameter;
+import org.netbeans.modules.vmd.api.codegen.*;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodeSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCode;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.commands.*;
 import org.netbeans.modules.vmd.midpnb.components.displayables.SplashScreenCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGSplashScreenCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGSplashScreenCD;
 import org.openide.util.Exceptions;
 
 import javax.swing.text.StyledDocument;
@@ -59,6 +58,8 @@ public final class MidpCustomCodePresenterSupport {
     public static final String PARAM_TIMEOUT = "timeout"; // NOI18N
     public static final String PARAM_SVG_TIMEOUT = "timeout"; // NOI18N
     public static final String PARAM_SVG_MENU_ELEMENT = "menuElement"; // NOI18N
+
+    private static final String SVG_MENU_ACTION_METHOD_SUFFIX = "Action"; // NOI18N
 
     private static final Parameter PARAMETER_DISPLAY = new DisplayParameter ();
     private static final Parameter PARAMETER_TIMEOUT = new TimeoutParameter ();
@@ -104,6 +105,20 @@ public final class MidpCustomCodePresenterSupport {
         return PARAMETER_SVG_MENU_ELEMENT;
     }
 
+    public static Presenter createSVGMenuEventHandlerCodeNamePresenter () {
+        return new SVGMenuActionCodeNamePresenter ();
+    }
+
+    public static Presenter createSVGMenuCodePresenter () {
+        return new SVGMenuActionCodeClassLevelPresenter ();
+    }
+
+    public static String getSVGMenuActionMethodAccessCode (DesignComponent menu) {
+        if (menu == null || ! menu.getDocument ().getDescriptorRegistry ().isInHierarchy (SVGMenuCD.TYPEID, menu.getType ()))
+            return null;
+        return MidpTypes.getString (menu.readProperty (ClassCD.PROP_INSTANCE_NAME)) + SVG_MENU_ACTION_METHOD_SUFFIX;
+    }
+
     public static Presenter createAddImportPresenter () {
         return new CodeGlobalLevelPresenter() {
             protected void performGlobalGeneration (StyledDocument styledDocument) {
@@ -115,6 +130,7 @@ public final class MidpCustomCodePresenterSupport {
                         public void run (WorkingCopy parameter) throws Exception {
                             String fqn = getComponent ().getType ().getString ();
                             parameter.toPhase (JavaSource.Phase.PARSED);
+//                            SourceUtils.resolveImport (parameter, parameter.getTrees ().getPath (parameter.getCompilationUnit (), parameter.getCompilationUnit ()), fqn);
                             CompilationUnitTree oldTree = parameter.getCompilationUnit ();
                             CompilationUnitTree newTree = SourceUtils.addImports (oldTree, Arrays.asList (fqn), parameter.getTreeMaker ());
                             parameter.rewrite (oldTree, newTree);
@@ -300,5 +316,78 @@ public final class MidpCustomCodePresenterSupport {
         }
 
     }
+
+    private static final class SVGMenuActionCodeNamePresenter extends CodeNamePresenter {
+
+        public List<String> getReservedNames () {
+            return getReservedNamesFor (MidpTypes.getString (getComponent ().readProperty (ClassCD.PROP_INSTANCE_NAME)));
+        }
+
+        public List<String> getReservedNamesFor (String suggestedMainName) {
+            return Arrays.asList (suggestedMainName + SVG_MENU_ACTION_METHOD_SUFFIX);
+        }
+
+    }
+
+    private static final class SVGMenuActionCodeClassLevelPresenter extends CodeClassLevelPresenter.Adapter {
+
+        protected void generateClassBodyCode (StyledDocument document) {
+            DesignComponent menu = getComponent ();
+            List<PropertyValue> array = menu.readProperty (SVGMenuCD.PROP_ELEMENTS).getArray ();
+
+            MultiGuardedSection section = MultiGuardedSection.create (document, menu.getComponentID () + "-action"); // NOI18N
+            section.getWriter ().write ("public void " + CodeReferencePresenter.generateDirectAccessCode (menu) + SVG_MENU_ACTION_METHOD_SUFFIX + " () {\n").commit (); // NOI18N
+            section.switchToEditable (menu.getComponentID () + "-preAction"); // NOI18N
+            section.getWriter ().write (" // enter pre-action user code here\n").commit (); // NOI18N
+            section.switchToGuarded ();
+
+            String menuInstanceName = CodeReferencePresenter.generateAccessCode (menu);
+            boolean indexBased = MidpTypes.getBoolean (menu.readProperty (SVGMenuCD.PROP_INDEX_BASED_SWITCH));
+            if (! indexBased) {
+                section.getWriter ().write ("String __selectedElement = " + menuInstanceName + ".getMenuElementAt (" + menuInstanceName + ".getSelectedIndex ());\n"); // NOI18N
+            }
+
+            if (array.size () > 0) {
+                if (indexBased) {
+                    section.getWriter ().write ("switch (" + menuInstanceName + ".getSelectedIndex ()) {\n"); // NOI18N
+                } else {
+                    section.getWriter ().write ("if (__selectedElement != null) {\n"); // NOI18N
+                }
+
+                for (int i = 0; i < array.size (); i ++) {
+                    PropertyValue value = array.get (i);
+                    DesignComponent source = value.getComponent ();
+
+                    if (indexBased) {
+                        section.getWriter ().write ("case " + i + ":\n"); // NOI18N
+                    } else {
+                        if (i > 0)
+                            section.getWriter ().write ("} else "); // NOI18N
+                        section.getWriter ().write ("if (__selectedElement.equals ("); // NOI18N
+                        MidpCodeSupport.generateCodeForPropertyValue (section.getWriter (), source.readProperty (SVGMenuElementEventSourceCD.PROP_STRING));
+                        section.getWriter ().write (")) {\n"); // NOI18N
+                    }
+
+                    CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode (section, source);
+
+                    if (indexBased)
+                        section.getWriter ().write ("break;\n"); // NOI18N
+                }
+
+                if (! indexBased)
+                    section.getWriter ().write ("}\n"); // NOI18N
+                section.getWriter ().write ("}\n"); // NOI18N
+            }
+
+            section.getWriter ().commit ();
+            section.switchToEditable (menu.getComponentID () + "-postAction"); // NOI18N
+            section.getWriter ().write (" // enter post-action user code here\n").commit (); // NOI18N
+            section.switchToGuarded ();
+            section.getWriter ().write ("}\n").commit (); // NOI18N
+            section.close ();
+        }
+
+    }
+
 
 }

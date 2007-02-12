@@ -97,7 +97,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (PROP_SVG_IMAGE, MidpCustomCodePresenterSupport.PARAM_DISPLAY))
             .addSetters (MidpSetter.createSetter ("setTimeIncrement", MidpVersionable.MIDP_2).addParameters (PROP_TIME_INCREMENT))
             .addSetters (MidpSetter.createSetter ("setStartAnimationImmediately", MidpVersionable.MIDP_2).addParameters (PROP_START_ANIM_IMMEDEATELY))
-            .addSetters (MidpSetter.createSetter ("setResetAnimationWheStopped", MidpVersionable.MIDP_2).addParameters (PROP_RESET_ANIMATION_WHEN_STOPPED));
+            .addSetters (MidpSetter.createSetter ("setResetAnimationWhenStopped", MidpVersionable.MIDP_2).addParameters (PROP_RESET_ANIMATION_WHEN_STOPPED));
     }
 
     protected List<? extends Presenter> createPresenters() {

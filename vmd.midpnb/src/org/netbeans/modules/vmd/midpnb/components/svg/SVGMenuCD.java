@@ -101,6 +101,8 @@ public class SVGMenuCD extends ComponentDescriptor {
                 createPropertiesPresenter(),
                 // code
                 createSetterPresenter (),
+                MidpCustomCodePresenterSupport.createSVGMenuCodePresenter (),
+                MidpCustomCodePresenterSupport.createSVGMenuEventHandlerCodeNamePresenter (),
                 // flow
                 new FlowSVGMenuElementPinOrderPresenter ()
         );
