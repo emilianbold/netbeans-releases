@@ -77,6 +77,7 @@ final class InspectorUI  extends JPanel implements ExplorerManager.Provider,
         setBackground(Color.WHITE);
         setLayout(new GridBagLayout());
     }
+    
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }

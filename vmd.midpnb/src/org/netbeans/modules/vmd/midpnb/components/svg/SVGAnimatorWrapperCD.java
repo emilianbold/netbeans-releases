@@ -84,7 +84,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("SVG Image", PropertyEditorResourcesComboBox.creater(SVGImageCD.TYPEID, NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NEW"), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NONE")), PROP_SVG_IMAGE)
+                .addProperty("SVG Image", PropertyEditorResourcesComboBox.create(SVGImageCD.TYPEID, NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NEW"), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NONE")), PROP_SVG_IMAGE)
                 .addProperty("Start Animation Immediately", PropertyEditorBooleanUC.createInstance(), PROP_START_ANIM_IMMEDEATELY)
                 .addProperty("Animation Time Increment", PropertyEditorFloat.createInstance(), PROP_TIME_INCREMENT)
                 .addProperty("Reset Animation When Stopped", PropertyEditorBooleanUC.createInstance(), PROP_RESET_ANIMATION_WHEN_STOPPED);

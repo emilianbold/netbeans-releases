@@ -33,7 +33,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Karol Harezlak
  */
-public class GlobalDescriptorRegistryTest extends TestCase {
+public class PropertyValueArrayTest extends TestCase {
 
     private FileObject firstCD = ModelTestUtil.getTestFileObject(ModelTestUtil.getTestFolder(ModelTestUtil.PROJECT_TYPE+ModelTestUtil.FOLDER_PATH_COMPONENTS),
             ModelTestUtil.FIRST_FILE_NAME_CD);
@@ -42,7 +42,7 @@ public class GlobalDescriptorRegistryTest extends TestCase {
     private DesignDocument document;
     //private DocumentInterface project = ModelTestUtil.createTestDocumentInterface(ModelTestUtil.PROJECT_ID);
     
-    public GlobalDescriptorRegistryTest(String testName) {
+    public PropertyValueArrayTest(String testName) {
         super(testName);
     }
     
@@ -61,11 +61,10 @@ public class GlobalDescriptorRegistryTest extends TestCase {
     /**
      *  Checking if descriptor has been properly registered
      */
-    public void testPropertyValueArray() {
+    public void testGlobalDecriptorRegistering(){
         
-        document.getTransactionManager().writeAccess(new Runnable() {
+        document.getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                DesignComponent component = 
                 ComponentDescriptor firstCD = document.getDescriptorRegistry().getComponentDescriptor(FirstCD.TYPEID_CLASS);
                 ComponentDescriptor secondCD = document.getDescriptorRegistry().getComponentDescriptor(SecondCD.TYPEID_CLASS);
                 
@@ -74,5 +73,6 @@ public class GlobalDescriptorRegistryTest extends TestCase {
             }
         });
     }
+    
     
 }
