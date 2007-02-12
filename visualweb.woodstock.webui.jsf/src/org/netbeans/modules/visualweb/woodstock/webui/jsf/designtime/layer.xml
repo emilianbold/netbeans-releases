@@ -143,7 +143,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="WoodstockAddRemove.comp_palette_item/WoodstockBreadcrumbs.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockBreadcrumbs.comp_palette_item/WoodstockHelpInline.comp_palette_item" boolvalue="true"/>
             
-            <!-- Woodstock components not included in Shortfin. Add them here so that people can test the designtime code -->
+            <!-- Woodstock components not included in VWP. Add them here so that people can test the designtime code -->
             <attr name="WoodstockHelpInline.comp_palette_item/WoodstockContentPageTitle.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockContentPageTitle.comp_palette_item/WoodstockMasthead.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockMasthead.comp_palette_item/WoodstockVersionPage.comp_palette_item" boolvalue="true"/>
@@ -151,21 +151,18 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="WoodstockProgressIndicator.comp_palette_item/WoodstockCommonTasksSection.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockCommonTasksSection.comp_palette_item/WoodstockCommonTasksGroup.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockCommonTasksGroup.comp_palette_item/WoodstockCommonTask.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockCommonTask.comp_palette_item/WoodstockAlarmStatus.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockAlarmStatus.comp_palette_item/WoodstockEditableList.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockCommonTask.comp_palette_item/WoodstockEditableList.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockEditableList.comp_palette_item/WoodstockFileChooser.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockFileChooser.comp_palette_item/WoodstockHelpWindow.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockHelpWindow.comp_palette_item/WoodstockJobStatus.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockJobStatus.comp_palette_item/WoodstockLegend.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockLegend.comp_palette_item/WoodstockNotificationPhrase.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockNotificationPhrase.comp_palette_item/WoodstockOrderableList.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockHelpWindow.comp_palette_item/WoodstockLegend.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockLegend.comp_palette_item/WoodstockOrderableList.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockOrderableList.comp_palette_item/WoodstockScheduler.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockScheduler.comp_palette_item/WoodstockWizard.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockWizard.comp_palette_item/WoodstockWizardBranch.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockWizardBranchSteps.comp_palette_item/WoodstockWizardBranchSteps.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockWizardBranch.comp_palette_item/WoodstockWizardBranchSteps.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockWizardBranchSteps.comp_palette_item/WoodstockWizardStep.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockWizardStep.comp_palette_item/WoodstockWizardSubstepBranch" boolvalue="true"/>
-            <!-- End of Woodstock components not included in Shortfin -->
+            <!-- End of Woodstock components not included in VWP -->
             
             <!-- End Sort -->
   
@@ -174,7 +171,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="WoodstockBreadcrumbs.comp_palette_item" url="resources/WoodstockBreadcrumbs.comp_palette_item"/>     
             <file name="WoodstockHelpInline.comp_palette_item" url="resources/WoodstockHelpInline.comp_palette_item"/>  
             
-            <!-- Woodstock components not included in Shortfin. Add them here so that people can test the designtime code -->
+            <!-- Woodstock components not included in VWP. Add them here so that people can test the designtime code -->
             <file name="WoodstockContentPageTitle.comp_palette_item" url="resources/WoodstockContentPageTitle.comp_palette_item"/>
             <file name="WoodstockMasthead.comp_palette_item" url="resources/WoodstockMasthead.comp_palette_item"/>
             <file name="WoodstockVersionPage.comp_palette_item" url="resources/WoodstockVersionPage.comp_palette_item"/>
@@ -182,13 +179,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="WoodstockCommonTasksSection.comp_palette_item" url="resources/WoodstockCommonTasksSection.comp_palette_item"/>
             <file name="WoodstockCommonTasksGroup.comp_palette_item" url="resources/WoodstockCommonTasksGroup.comp_palette_item"/>
             <file name="WoodstockCommonTask.comp_palette_item" url="resources/WoodstockCommonTask.comp_palette_item"/>
-            <file name="WoodstockAlarmStatus.comp_palette_item" url="resources/WoodstockAlarmStatus.comp_palette_item"/>
             <file name="WoodstockEditableList.comp_palette_item" url="resources/WoodstockEditableList.comp_palette_item"/>
             <file name="WoodstockFileChooser.comp_palette_item" url="resources/WoodstockFileChooser.comp_palette_item"/>
             <file name="WoodstockHelpWindow.comp_palette_item" url="resources/WoodstockHelpWindow.comp_palette_item"/>
-            <file name="WoodstockJobStatus.comp_palette_item" url="resources/WoodstockJobStatus.comp_palette_item"/>
             <file name="WoodstockLegend.comp_palette_item" url="resources/WoodstockLegend.comp_palette_item"/>
-            <file name="WoodstockNotificationPhrase.comp_palette_item" url="resources/WoodstockNotificationPhrase.comp_palette_item"/>
             <file name="WoodstockOrderableList.comp_palette_item" url="resources/WoodstockOrderableList.comp_palette_item"/>
             <file name="WoodstockScheduler.comp_palette_item" url="resources/WoodstockScheduler.comp_palette_item"/>
             <file name="WoodstockWizard.comp_palette_item" url="resources/WoodstockWizard.comp_palette_item"/>
@@ -196,7 +190,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="WoodstockWizardBranchSteps.comp_palette_item" url="resources/WoodstockWizardBranchSteps.comp_palette_item"/>
             <file name="WoodstockWizardStep.comp_palette_item" url="resources/WoodstockWizardStep.comp_palette_item"/>
             <file name="WoodstockWizardSubstepBranch.comp_palette_item" url="resources/WoodstockWizardSubstepBranch.comp_palette_item"/>
-            <!-- End fo Woodstock components not included in Shortfin -->
+            <!-- End fo Woodstock components not included in VWP -->
         </folder>
         <folder name="Advanced">
             <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"/>-->
