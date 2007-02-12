@@ -652,6 +652,5 @@ public class CmpGenerator implements PersistenceGenerator {
     }
 
     public void uninit() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
