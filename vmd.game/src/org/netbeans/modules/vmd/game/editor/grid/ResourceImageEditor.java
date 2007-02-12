@@ -38,7 +38,7 @@ public class ResourceImageEditor extends javax.swing.JPanel {
 	}
 	
 	public void setImageResource(ImageResource imageResource) {
-		this.textFieldImage.setText(imageResource.getURL().toString());
+		this.textFieldImage.setText(imageResource.getRelativeResourcePath());
 		this.textFieldNumTiles.setText(Integer.toString(imageResource.getStaticTileCount()));
 		this.textFieldSize.setText(imageResource.getCellWidth()  + "x" + imageResource.getCellHeight());
 		this.resourceComponent.setImageResource(imageResource);

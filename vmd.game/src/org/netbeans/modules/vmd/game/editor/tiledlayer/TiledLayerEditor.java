@@ -57,7 +57,7 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 		this.buttonAddAnimatedTile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				NewAnimatedTileDialog dialog = new NewAnimatedTileDialog(TiledLayerEditor.this.tiledLayer.getImageResource());
-				DialogDescriptor dd = new DialogDescriptor(dialog, "Create a new Scene");
+				DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Animated Tile");
 				dd.setButtonListener(dialog);
 				dd.setValid(false);
 				dialog.setDialogDescriptor(dd);

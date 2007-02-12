@@ -84,11 +84,21 @@ public class GlobalRepository implements PropertyChangeListener {
 	    }
 	}
 	
+	/**
+	 * May return null if the image resource hasn't yet been created.
+	 */
+	public ImageResource getImageResource(String relativeResourcePath, int cellWidth, int cellHeight) {
+		return imgResourceMap.get(relativeResourcePath + "_" + cellWidth + "_" + cellHeight);
+	}
+	
+	/**
+	 * Returns ImageResource instance.
+	 */
 	public ImageResource getImageResource(URL imageURL, String relativeResourcePath, int cellWidth, int cellHeight) {
-		ImageResource imgResource = imgResourceMap.get(imageURL.toString() + "_" + cellWidth + "_" + cellHeight);
+		ImageResource imgResource = imgResourceMap.get(relativeResourcePath + "_" + cellWidth + "_" + cellHeight);
 		if (imgResource == null) {
 			imgResource = new ImageResource(imageURL, relativeResourcePath, cellWidth, cellHeight);
-			imgResourceMap.put(imageURL.toString() + "_" + cellWidth + "_" + cellHeight, imgResource);
+			imgResourceMap.put(relativeResourcePath + "_" + cellWidth + "_" + cellHeight, imgResource);
 			this.fireImageResourceAdded(imgResource);
 			
 			if (DEBUG) {

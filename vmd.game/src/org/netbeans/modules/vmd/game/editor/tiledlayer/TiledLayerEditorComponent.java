@@ -479,7 +479,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 						TiledLayerEditorComponent.this.cellsSelected.remove(cell);
 					}
 					if (e.isShiftDown()) {
-						System.out.println("SHIFT");
+						
 						int rowStep = firstDraggedCell.getRow() <= cell.getRow() ? 1 : -1;
 						System.out.println("row step : " + rowStep);
 						int colStep = firstDraggedCell.getCol() <= cell.getCol() ? 1 : -1;
@@ -487,28 +487,31 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 						
 						//if drag change in colls
 						if (cell.getCol() != lastDraggedCell.getCol()) {
+							
 							int dcOld = Math.abs(lastDraggedCell.getCol() - firstDraggedCell.getCol());
 							int dcNew = Math.abs(cell.getCol() - firstDraggedCell.getCol());
 							System.out.println("COL dcOld: " + dcOld + ", dcNew: " + dcNew);
 							
-							Set<Position> deltaSet = new HashSet<Position>();
-							for (int c = firstDraggedCell.getCol(); c <= cell.getCol(); c+=colStep) {
-								for (int r = firstDraggedCell.getRow(); r <= cell.getRow(); r+=rowStep) {								
+							Set<Position> deltaNewSet = new HashSet<Position>();
+							for (int c = lastDraggedCell.getCol(); c != cell.getCol(); c+=colStep) {
+								System.out.print("c = " + c);
+								for (int r = firstDraggedCell.getRow(); r != cell.getRow(); r+=rowStep) {								
+									System.out.println(" r = " + r);
 									Position pos = new Position(r, c);
 									System.out.println("\tadd to delta " + pos);
-									deltaSet.add(pos);
+									deltaNewSet.add(pos);
 								}
 							}
 							
 							//if shrinking selection - remove the deltaSet
 							if (dcOld > dcNew) {
 								System.out.println("remove delta");
-								cellsSelected.removeAll(deltaSet);
+								cellsSelected.removeAll(deltaNewSet);
 							}
 							//else growing selection - add the deltaSet
 							else {
 								System.out.println("add delta");
-								cellsSelected.addAll(deltaSet);
+								cellsSelected.addAll(deltaNewSet);
 							}
 						}
 						
@@ -519,8 +522,8 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 							System.out.println("ROW dcOld: " + dcOld + ", dcNew: " + dcNew);
 							
 							Set<Position> deltaSet = new HashSet<Position>();
-							for (int r = firstDraggedCell.getRow(); r <= cell.getRow(); r+=rowStep) {
-								for (int c = firstDraggedCell.getCol(); c <= cell.getCol(); c+=colStep) {
+							for (int r = lastDraggedCell.getRow(); r != cell.getRow(); r-=rowStep) {
+								for (int c = lastDraggedCell.getCol(); c != cell.getCol(); c-=colStep) {
 									Position pos = new Position(r, c);
 									System.out.println("\tadd to delta " + pos);
 									deltaSet.add(pos);

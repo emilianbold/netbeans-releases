@@ -150,7 +150,7 @@ public abstract class AbstractNameValidationDialog extends javax.swing.JPanel im
 		private void handleTextContentChange() {
 			String errMsg = null;
 			if (!isValidJavaIdentifier(AbstractNameValidationDialog.this.fieldName.getText())) {
-				errMsg = "Layer name must be a valid Java identifier.";
+				errMsg = "Name must be a valid Java identifier.";
 			}
 			else {
 				errMsg = AbstractNameValidationDialog.this.getCurrentStateErrorText();

@@ -82,7 +82,10 @@ public class PartialImageGridPreview extends JComponent {
 		this.repaint();
 	}
 
-
+	public Image getImage() {
+		return this.originalImage;
+	}
+	
 	private void createPreview() {
 		if (this.originalImage == null)
 			return;
@@ -161,7 +164,6 @@ public class PartialImageGridPreview extends JComponent {
 			g.drawImage(bottomRight, topLeft.getWidth(this) + TILE_GAP, topLeft.getHeight(this) + TILE_GAP, this);
 		}
 		this.preview = tmpImg;
-			//ImageUtils.getScaledImage(tmpImg, this.getWidth(), this.getHeight());
 	}
 	
 	public void setTileWidth(int width) {
@@ -195,15 +197,15 @@ public class PartialImageGridPreview extends JComponent {
 	
 	public List<Integer> getValidTileWidths() {
 		int imgWidth = this.originalImage.getWidth(null);
-		return this.getEvenDivisors(imgWidth);
+		return getEvenDivisors(imgWidth);
 	}
 	
 	public List<Integer> getValidTileHeights() {
 		int imgHeight = this.originalImage.getHeight(null);
-		return this.getEvenDivisors(imgHeight);
+		return getEvenDivisors(imgHeight);
 	}
 	
-	private List getEvenDivisors(int number) {
+	public static List getEvenDivisors(int number) {
 		ArrayList divisors = new ArrayList();
 		
 		for (int i = 1; i <= number; i++) {

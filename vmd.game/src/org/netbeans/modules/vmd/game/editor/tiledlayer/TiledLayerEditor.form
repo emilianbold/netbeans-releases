@@ -3,6 +3,7 @@
 <Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="1"/>
@@ -22,7 +23,7 @@
               <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
               <Component id="textFieldCols" min="-2" pref="41" max="-2" attributes="0"/>
           </Group>
-          <Component id="jSplitPane1" alignment="0" pref="381" max="32767" attributes="0"/>
+          <Component id="jSplitPane1" alignment="0" pref="383" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

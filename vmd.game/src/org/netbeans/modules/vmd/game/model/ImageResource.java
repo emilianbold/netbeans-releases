@@ -148,22 +148,43 @@ public class ImageResource implements CodeGenerator {
 		return Collections.unmodifiableList(sequences);
 	}
 	
-	public AnimatedTile createAnimatedTile(String name, int firstStaticTileIndex) {
-		int index = this.animatedTileIndexKey--;
+	
+	public AnimatedTile createAnimatedTile(int index, String name, int firstStaticTileIndex) {
+		assert (index < 0);
+		assert (this.animatedTiles.get(index) == null);
+		
+		if (this.animatedTileIndexKey >= index) {
+			this.animatedTileIndexKey = index -1;
+		}
 		AnimatedTile animatedTile = new AnimatedTile(name, this, index);
 		Sequence seq = animatedTile.getDefaultSequence();
 		seq.setFrame(new StaticTile(this, firstStaticTileIndex), 0);
-		this.animatedTiles.put(new Integer(index), animatedTile);
+		this.animatedTiles.put(index, animatedTile);
 		this.fireAnimatedTileAdded(animatedTile);
-		return animatedTile;
+		return animatedTile;		
+	}
+	
+	public AnimatedTile createAnimatedTile(String name, int firstStaticTileIndex) {
+		int index = this.animatedTileIndexKey--;
+		return this.createAnimatedTile(index, name, firstStaticTileIndex);
+	}
+	
+	public AnimatedTile createAnimatedTile(int index, String name, Sequence sequence) {
+		assert (index < 0);
+		assert (this.animatedTiles.get(index) == null);
+		
+		if (this.animatedTileIndexKey >= index) {
+			this.animatedTileIndexKey = index -1;
+		}
+		AnimatedTile animatedTile = new AnimatedTile(name, this, index, sequence);
+		this.animatedTiles.put(index, animatedTile);
+		this.fireAnimatedTileAdded(animatedTile);		
+		return animatedTile;		
 	}
 	
 	public AnimatedTile createAnimatedTile(String name, Sequence sequence) {
 		int index = this.animatedTileIndexKey--;
-		AnimatedTile animatedTile = new AnimatedTile(name, this, index, sequence);
-		this.animatedTiles.put(index, animatedTile);
-		this.fireAnimatedTileAdded(animatedTile);		
-		return animatedTile;
+		return this.createAnimatedTile(index, name, sequence);
 	}
 	
 	public AnimatedTile createAnimatedTile(int[] staticTileIndexes) {
@@ -267,7 +288,7 @@ public class ImageResource implements CodeGenerator {
 	}
 	
 	public List<AnimatedTile> getAnimatedTiles() {
-		List<AnimatedTile> list = new ArrayList(this.animatedTiles.values());
+		List<AnimatedTile> list = new ArrayList<AnimatedTile>(this.animatedTiles.values());
 		Collections.sort(list);
 		return Collections.unmodifiableList(list);
 	}

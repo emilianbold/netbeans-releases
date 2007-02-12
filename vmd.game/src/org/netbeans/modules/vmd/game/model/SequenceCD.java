@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class SequenceCD extends ComponentDescriptor {
 	
-	public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.game.model.Squence"); // NOI18N
+	public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.game.model.Sequence"); // NOI18N
 	
 	public static final String PROPERTY_IMAGE_RESOURCE = "sequncecd.prop.imageresource";
 	public static final String PROPERTY_NAME = "sequncecd.prop.name";

@@ -20,7 +20,10 @@
 package org.netbeans.modules.vmd.game;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -67,11 +70,16 @@ import org.netbeans.modules.vmd.game.model.StaticTile;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 import org.netbeans.modules.vmd.game.model.TiledLayerCD;
 import org.netbeans.modules.vmd.game.model.TiledLayerListener;
+import org.netbeans.modules.vmd.game.nbdialog.SelectImageForLayerDialog;
 import org.netbeans.modules.vmd.game.view.main.MainView;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -135,7 +143,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		}
 		else {
 			view = MainView.getInstance().getRootComponent();
-			designDocument.getTransactionManager().readAccess(new Runnable() {
+			designDocument.getTransactionManager().writeAccess(new Runnable() {
 				public void run() {
 					if (true) {
 						//add all components in the document
@@ -228,6 +236,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		}
 		else if (typeId.equals(ImageResourceCD.TYPEID)) {
 			ImageResource imageResource = this.constructImageResource(designComponent);
+			imageResource.addImageResourceListener(this);
 			designIdMap.put(imageResource, designComponent);
 		}
 		else if (typeId.equals(AnimatedTileCD.TYPEID)) {
@@ -241,9 +250,11 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	//These methods create game model from design components
 	
 	private AnimatedTile constructAnimatedTile(DesignComponent animatedTiledDC) {
+		int index = (Integer) animatedTiledDC.readProperty(AnimatedTileCD.PROPERTY_INDEX).getPrimitiveValue();
 		String name = (String) animatedTiledDC.readProperty(AnimatedTileCD.PROPERTY_NAME).getPrimitiveValue();
 		DesignComponent imgResDC = animatedTiledDC.readProperty(AnimatedTileCD.PROP_IMAGE_RESOURCE).getComponent();
 		ImageResource imgRes = this.constructImageResource(imgResDC);
+		
 		//if ImageResource already has an animated tile of that name it must have been already constructed
 		AnimatedTile animatedTile = imgRes.getAnimatedTileByName(name);
 		if (animatedTile != null) {
@@ -254,7 +265,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		List<PropertyValue> sequenceDCs = animatedTiledDC.readProperty(SequenceContainerCDProperties.PROP_SEQUENCES).getArray();
 
 		Sequence defaultSequence = this.constructSequence(defaultSequenceDC);		
-		animatedTile = imgRes.createAnimatedTile(name, defaultSequence);
+		animatedTile = imgRes.createAnimatedTile(index, name, defaultSequence);
 		
 		for (PropertyValue propertyValue : sequenceDCs) {
 			DesignComponent sequenceDC = propertyValue.getComponent();
@@ -306,6 +317,8 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		int[][]  grid = (int[][]) tiledLayerDC.readProperty(TiledLayerCD.PROPERTY_TILES).getPrimitiveValue();
 		
 		tiledLayer = GlobalRepository.getInstance().createTiledLayer(name, imgRes, grid);
+//		List<PropertyValue> animTileDCs = tiledLayerDC.readProperty(TiledLayerCD.PROPERTY_ANIMATED_TILES).getArray();
+		
 		return tiledLayer;
 	}
 	
@@ -332,41 +345,109 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		return sequence;
 	}	
 	
-	private ImageResource constructImageResource(DesignComponent imageResourceDC) {
-		URL imgResUrl = null;
+	private ImageResource constructImageResource(final DesignComponent imageResourceDC) {
+		ImageResource imgRes;
+		FileObject fo;
+		URL imgResUrl;
 
-		String imgResPath = (String) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_IMAGE_PATH).getPrimitiveValue();
+		final int tileHeight = (Integer) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_TILE_HEIGHT).getPrimitiveValue();
+		final int tileWidth = (Integer) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_TILE_WIDTH).getPrimitiveValue();
+		final String imgResPath = (String) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_IMAGE_PATH).getPrimitiveValue();
+		
+		imgRes = GlobalRepository.getInstance().getImageResource(imgResPath, tileWidth, tileHeight);
+		if (imgRes != null) {
+			return imgRes;
+		}
+				
 		Map<FileObject, FileObject> imagesMap = MidpProjectSupport.getFileObjectsForRelativeResourcePath(document, imgResPath);
 		if (imagesMap.size() > 1) {
 			//multiple locations (e.g. jars) contain the same image - show a dialog to let the
-			//user choose which image should be used
+			//user choose which single image should be used
 			System.out.println("found multiple images matching the relative path:");
 			for (Map.Entry<FileObject, FileObject> entry : imagesMap.entrySet()) {
 				System.out.println("root: " + entry.getValue() + ", path: " + entry.getKey());
 			}
+			
+			final SelectImageForLayerDialog dialog = new SelectImageForLayerDialog(
+					tileHeight,
+					tileWidth,
+					"Multiple images found matching the relative path: " + imgResPath,
+					imagesMap.keySet()
+			);
+			
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Select image");
+			dd.setValid(false);
+			dd.setButtonListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if (e.getSource() == NotifyDescriptor.CANCEL_OPTION) {
+						//XXX stop loading the document!
+					}
+				}
+			});
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
+			
+			fo = dialog.getValue();
+			final String newPath = "/" + FileUtil.getRelativePath(imagesMap.get(fo), fo);
+			System.out.println("Setting new path: " + newPath);
+			document.getTransactionManager().writeAccess(new Runnable() {
+				public void run() {
+					imageResourceDC.writeProperty(ImageResourceCD.PROPERTY_IMAGE_PATH, 
+							MidpTypes.createStringValue(newPath));
+                }
+			});
 		}
 		else if (imagesMap.isEmpty()) {
 			//image is no longer on the classpath - prompt the user to add the
 			//image to classpath
-			System.out.println("image doesn't exist");
+			fo = null;
+			System.out.println("Image " + imgResPath + " doesn't exist, select a replacement.");
+			
+			Map<FileObject, String> images = MidpProjectSupport.getImagesForProject(document, false);
+			
+			final SelectImageForLayerDialog dialog = new SelectImageForLayerDialog(
+					tileHeight,
+					tileWidth,
+					"Image " + imgResPath + " doesn't exist, select a replacement.",
+					images.keySet()
+			);
+			
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Select image");
+			dd.setValid(false);
+			dd.setButtonListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if (e.getSource() == NotifyDescriptor.CANCEL_OPTION) {
+						//XXX stop loading the document!
+					}
+				}
+			});
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
+			
+			fo = dialog.getValue();
+			final String newPath = images.get(fo);
+			System.out.println("Setting new path: " + newPath);
+			document.getTransactionManager().writeAccess(new Runnable() {
+				public void run() {
+					imageResourceDC.writeProperty(ImageResourceCD.PROPERTY_IMAGE_PATH, 
+							MidpTypes.createStringValue(newPath));
+                }
+			});
 		}
 		else {
 			//there is a single matching image on the classpath - excellent :)
-			FileObject fo = imagesMap.keySet().iterator().next();
-			System.out.println("found single matching image ULR: " + fo.getPath());
-			try {
-				imgResUrl = fo.getURL();
-			} catch (FileStateInvalidException e) {
-				//TODO here probably display a dialog allowing a user to supply new image location instead of bailing
-				throw new RuntimeException(e);
-			}
+			fo = imagesMap.keySet().iterator().next();
+			System.out.println("Found single matching image ULR: " + fo.getPath());
 		}
 		
-		
-		int tileHeight = (Integer) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_TILE_HEIGHT).getPrimitiveValue();
-		int tileWidth = (Integer) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_TILE_WIDTH).getPrimitiveValue();		
-		
-		ImageResource imgRes = GlobalRepository.getInstance().getImageResource(imgResUrl, imgResPath, tileWidth, tileHeight);
+		try {
+			imgResUrl = fo.getURL();
+		} catch (FileStateInvalidException e) {
+			throw new RuntimeException(e);
+		}
+		imgRes = GlobalRepository.getInstance().getImageResource(imgResUrl, imgResPath, tileWidth, tileHeight);
 		return imgRes;
 	}
 	
@@ -483,6 +564,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		}
 		dcAt = document.createComponent(AnimatedTileCD.TYPEID);
 		dcAt.writeProperty(AnimatedTileCD.PROPERTY_NAME, MidpTypes.createStringValue(tile.getName()));
+		dcAt.writeProperty(AnimatedTileCD.PROPERTY_INDEX, MidpTypes.createIntegerValue(tile.getIndex()));
 		
 		DesignComponent dcImgRes = designIdMap.get(tile.getImageResource());
 		assert(dcImgRes != null);
@@ -543,13 +625,32 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	}
 	
 	public DesignComponent createImageResourceDCFromImageResource(ImageResource imageResource) {
-		DesignComponent dcImgRes = document.createComponent(ImageResourceCD.TYPEID);
+		DesignComponent dcImgRes = designIdMap.get(imageResource);
+		if (dcImgRes != null) {
+			return dcImgRes;
+		}
+		dcImgRes = document.createComponent(ImageResourceCD.TYPEID);
 		dcImgRes.writeProperty(ImageResourceCD.PROPERTY_IMAGE_PATH, MidpTypes.createStringValue(imageResource.getRelativeResourcePath()));
 		dcImgRes.writeProperty(ImageResourceCD.PROPERTY_TILE_WIDTH, MidpTypes.createIntegerValue(imageResource.getCellWidth()));
 		dcImgRes.writeProperty(ImageResourceCD.PROPERTY_TILE_HEIGHT, MidpTypes.createIntegerValue(imageResource.getCellHeight()));
 		
+		this.writeAnimatedTilesToImageResourceDC(dcImgRes, imageResource);
+		
 		return dcImgRes;
 	}
+	
+	private void writeAnimatedTilesToImageResourceDC(DesignComponent dcImgRes, ImageResource imageResource) {
+		for (AnimatedTile at : imageResource.getAnimatedTiles()) {
+			DesignComponent dcAnimTile = designIdMap.get(at);
+			if (dcAnimTile == null) {
+				assert (!dcImgRes.getComponents().contains(dcAnimTile));
+				dcAnimTile = this.createAnimatedTileDCFromAnimatedTile(at);
+				dcImgRes.addComponent(dcAnimTile);
+				designIdMap.put(at, dcAnimTile);
+			}
+		}		
+	}
+
 	
 	public DesignComponent createSequnceDCFromSequence(Sequence sequence) {
 		DesignComponent dcSequence = designIdMap.get(sequence);
@@ -859,14 +960,15 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
     public void animatedTileAdded(final ImageResource imgRes, final AnimatedTile tile) {
 		document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
-				DesignComponent dcAnimTile = GameController.this.createAnimatedTileDCFromAnimatedTile(tile);
+				System.out.println("animatedTileAdded: " + tile);
+				DesignComponent dcImgRes = designIdMap.get(imgRes);
+				assert (dcImgRes != null);
+				
+				//update the image resource holding the animated tile
+				GameController.this.writeAnimatedTilesToImageResourceDC(dcImgRes, imgRes);
+				
 				tile.addSequenceContainerListener(GameController.this);
 				tile.addPropertyChangeListener(GameController.this);
-				designIdMap.put(tile, dcAnimTile);
-				
-				DesignComponent dcImgRes = designIdMap.get(imgRes);
-				assert(dcImgRes != null);
-				dcImgRes.addComponent(dcAnimTile);
 			}
 		});
     }
@@ -874,12 +976,16 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
     public void animatedTileRemoved(final ImageResource imgRes, final AnimatedTile tile) {
 		document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
+				System.out.println("animatedTileRemoved: " + tile);
 				DesignComponent dcAnimTile = designIdMap.get(tile);
-				assert(dcAnimTile != null);
+				assert (dcAnimTile != null);
 				
 				DesignComponent dcImgRes = designIdMap.get(imgRes);
-				assert(dcImgRes != null);
+				assert (dcImgRes != null);
 				dcImgRes.addComponent(dcAnimTile);
+				
+				//update the image resource holding the animated tile
+				GameController.this.writeAnimatedTilesToImageResourceDC(dcImgRes, imgRes);
 				
 				//TODO remove the tile from all tiled layers using this image resource
 				//replace it with Tile.EMPTY_TILE_INDEX either here or in the game model
