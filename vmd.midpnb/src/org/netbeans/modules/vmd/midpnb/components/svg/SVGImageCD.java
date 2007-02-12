@@ -45,83 +45,89 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
  * @author Karol Harezlak
  */
 public class SVGImageCD extends ComponentDescriptor {
-
+    
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.m2g.SVGImage"); // NOI18N
-
+    
     public static final String PROP_RESOURCE_PATH = "resourcePath";  // NOI18N
-
+    
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_16.png"; // NOI18N
+    
+    static {
+        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
+    }
+    
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
     }
-
+    
     public VersionDescriptor getVersionDescriptor() {
         return MidpVersionDescriptor.MIDP_2;
     }
-
+    
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
-        return Arrays.asList (
-            new PropertyDescriptor(PROP_RESOURCE_PATH, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2)
-        );
+        return Arrays.asList(
+                new PropertyDescriptor(PROP_RESOURCE_PATH, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2)
+                );
     }
-
+    
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
-            .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty("Resource Path", PropertyEditorImageChooser.create(), PROP_RESOURCE_PATH);
     }
-
-    private static Presenter createSetterPresenter () {
-        return new CodeSetterPresenter ()
-            .addSetters (new Setter () {
-                public boolean isConstructor () {
-                    return true;
+    
+    private static Presenter createSetterPresenter() {
+        return new CodeSetterPresenter()
+                .addSetters(new Setter() {
+            public boolean isConstructor() {
+                return true;
+            }
+            public TypeID getConstructorRelatedTypeID() {
+                return TYPEID;
+            }
+            public String getSetterName() {
+                return null;
+            }
+            public Versionable getVersionable() {
+                return MidpVersionable.MIDP_2;
+            }
+            public void generateSetterCode(MultiGuardedSection section, DesignComponent component, Map<String, Parameter> name2parameter) {
+                CodeWriter writer = section.getWriter();
+                PropertyValue pathValue = component.readProperty(PROP_RESOURCE_PATH);
+                String path = MidpTypes.getString(pathValue);
+                if (path == null) {
+                    writer.write(CodeReferencePresenter.generateDirectAccessCode(component)).write(" = SVGImage.createEmptyImage (null);\n"); // NOI18N
+                } else {
+                    writer.write("try {\n"); // NOI18N
+                    writer.write(CodeReferencePresenter.generateDirectAccessCode(component)).write(" = "); // NOI18N
+                    writer.write("(SVGImage) ScalableImage.createImage (");
+                    MidpCodeSupport.generateCodeForPropertyValue(writer, pathValue);
+                    writer.write(", null);\n"); // NOI18N
+                    
+                    writer.write("} catch (java.io.IOException e) {\n").commit(); // NOI18N
+                    section.switchToEditable(component.getComponentID() + "-@java.io.IOException"); // NOI18N
+                    section.getWriter().write("e.printStackTrace ();\n").commit(); // NOI18N
+                    section.switchToGuarded();
+                    writer.write("}\n"); // NOI18N
                 }
-                public TypeID getConstructorRelatedTypeID () {
-                    return TYPEID;
-                }
-                public String getSetterName () {
-                    return null;
-                }
-                public Versionable getVersionable () {
-                    return MidpVersionable.MIDP_2;
-                }
-                public void generateSetterCode (MultiGuardedSection section, DesignComponent component, Map<String, Parameter> name2parameter) {
-                    CodeWriter writer = section.getWriter ();
-                    PropertyValue pathValue = component.readProperty (PROP_RESOURCE_PATH);
-                    String path = MidpTypes.getString (pathValue);
-                    if (path == null) {
-                        writer.write (CodeReferencePresenter.generateDirectAccessCode (component)).write (" = SVGImage.createEmptyImage (null);\n"); // NOI18N
-                    } else {
-                        writer.write ("try {\n"); // NOI18N
-                        writer.write (CodeReferencePresenter.generateDirectAccessCode (component)).write (" = "); // NOI18N
-                        writer.write ("(SVGImage) ScalableImage.createImage (");
-                        MidpCodeSupport.generateCodeForPropertyValue (writer, pathValue);
-                        writer.write (", null);\n"); // NOI18N
-
-                        writer.write ("} catch (java.io.IOException e) {\n").commit (); // NOI18N
-                        section.switchToEditable (component.getComponentID () + "-@java.io.IOException"); // NOI18N
-                        section.getWriter ().write ("e.printStackTrace ();\n").commit (); // NOI18N
-                        section.switchToGuarded ();
-                        writer.write ("}\n"); // NOI18N
-                    }
-                }
-                public List<String> getParameters () {
-                    return Collections.emptyList ();
-                }
-            });
+            }
+            public List<String> getParameters() {
+                return Collections.emptyList();
+            }
+        });
     }
-
+    
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
-            // properties
-            createPropertiesPresenter(),
-            // code
-            createSetterPresenter (),
-            MidpCustomCodePresenterSupport.createAddImportPresenter (),
-            // inspector
-            InspectorFolderPresenter.create(true),
-            InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical())
-        );
+                // properties
+                createPropertiesPresenter(),
+                // code
+                createSetterPresenter(),
+                MidpCustomCodePresenterSupport.createAddImportPresenter(),
+                // inspector
+                InspectorFolderPresenter.create(true),
+                InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical())
+                );
     }
-
+    
 }

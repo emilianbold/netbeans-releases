@@ -91,7 +91,7 @@ public class TableItemCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty("Title", PropertyEditorString.createInstance(), new TextFieldBC(), PROP_TITLE)
-                    .addProperty("Table Model", PropertyEditorResourcesComboBox.creater(TableItemCD.TYPEID, NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NEW"), NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NONE")), PROP_MODEL)
+                    .addProperty("Table Model", PropertyEditorResourcesComboBox.creater(SimpleTableModelCD.TYPEID, NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NEW"), NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NONE")), PROP_MODEL)
                     .addProperty("Show Borders", Boolean.class, PROP_BORDERS)
                     .addProperty("Title Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_TITLE_FONT)
                     .addProperty("Headers Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_HEADERS_FONT)
