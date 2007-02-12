@@ -31,6 +31,7 @@ import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.properteditors.PropertyEditorExecutableUserCode;
