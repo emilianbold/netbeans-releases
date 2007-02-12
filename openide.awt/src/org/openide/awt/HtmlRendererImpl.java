@@ -129,7 +129,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
         type = TYPE_TREE;
 
         if (swingRendering && selected) {
-            if (HtmlLabelUI.GTK) {
+            if (HtmlLabelUI.isGTK()) {
                 setBackground(HtmlLabelUI.getBackgroundFor(this));
                 setForeground(HtmlLabelUI.getForegroundFor(this));
             }
@@ -150,6 +150,19 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
             setBackground(list.getSelectionBackground());
             setForeground(list.getSelectionForeground());
             setOpaque(true);
+        }
+        
+        // ##93658: In GTK we have to paint borders in combo boxes 
+        if (HtmlLabelUI.isGTK()) {
+            if (index == -1) {
+                Color borderC = UIManager.getColor("controlShadow");
+                borderC = borderC == null ? Color.GRAY : borderC;
+                setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(borderC),
+                        BorderFactory.createEmptyBorder(3, 2, 3, 2)));
+            } else {
+                setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+            }
         }
 
         return this;

@@ -47,12 +47,12 @@ import org.openide.util.Exceptions;
 class HtmlLabelUI extends LabelUI {
 
     /** System property to automatically turn on antialiasing for html strings */
-    static final boolean GTK = "GTK".equals(UIManager.getLookAndFeel().getID());//NOI18N
+    //static final boolean GTK = "GTK".equals(UIManager.getLookAndFeel().getID());//NOI18N
     static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID());//NOI18N
     
     private static final boolean antialias = Boolean.getBoolean("nb.cellrenderer.antialiasing") // NOI18N
          ||Boolean.getBoolean("swing.aatext") // NOI18N
-         ||(GTK && gtkShouldAntialias()) // NOI18N
+         ||(isGTK() && gtkShouldAntialias()) // NOI18N
          ||AQUA; 
     
     private static HtmlLabelUI uiInstance;
@@ -144,7 +144,7 @@ class HtmlLabelUI extends LabelUI {
                 prefSize.width += (icon.getIconWidth() + r.getIconTextGap());
             }
         }
-
+        
         //Antialiasing affects the text metrics, so use it if needed when
         //calculating preferred size or the result here will be narrower
         //than the space actually needed
@@ -198,7 +198,7 @@ class HtmlLabelUI extends LabelUI {
                 focus = Color.BLUE;
             }
 
-            if (!GTK && !AQUA) {
+            if (!isGTK() && !AQUA) {
                 int x = ((h.getIcon() == null) ? 0 : (h.getIcon().getIconWidth() + h.getIconTextGap()));
                 g.setColor(focus);
                 g.drawRect(x, 0, c.getWidth() - (x + 1), c.getHeight() - 1);
@@ -229,22 +229,25 @@ class HtmlLabelUI extends LabelUI {
         FontMetrics fm = g.getFontMetrics();
 
         //Find out what height we need
-        int txtH = fm.getHeight();
+        int txtH = fm.getMaxAscent() + fm.getMaxDescent();
         Insets ins = r.getInsets();
 
         //find out the available height less the insets
-        int availH = r.getHeight() - (ins.top + ins.bottom);
+        int rHeight = r.getHeight();
+        int availH = rHeight - (ins.top + ins.bottom);
 
         int txtY;
 
         if (availH >= txtH) {
             //Center the text if we have space
             txtY = (txtH + ins.top + ((availH / 2) - (txtH / 2))) - fm.getMaxDescent();
+        } else if (r.getHeight() > txtH) {
+            txtY = txtH + (rHeight - txtH) / 2 - fm.getMaxDescent();
         } else {
             //Okay, it's not going to fit, punt.
             txtY = fm.getMaxAscent();
         }
-
+        
         int txtX = r.getIndent();
 
         Icon icon = r.getIcon();
@@ -469,7 +472,7 @@ class HtmlLabelUI extends LabelUI {
         return (result == null) ? r.getForeground() : result;
     }
 
-    private static boolean isGTK() {
+    static boolean isGTK() {
         return "GTK".equals(UIManager.getLookAndFeel().getID());
     }
 
