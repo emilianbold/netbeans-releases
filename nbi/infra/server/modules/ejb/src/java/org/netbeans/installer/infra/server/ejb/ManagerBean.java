@@ -775,6 +775,7 @@ public class ManagerBean implements Manager {
                 
                 registry.setLocalDirectory(NBI);
                 registry.setFinishHandler(new DummyFinishHandler());
+                registry.setTargetPlatform(platform);
                 for (File file: files) {
                     registry.loadProductRegistry(file);
                 }
@@ -816,6 +817,9 @@ public class ManagerBean implements Manager {
                 if (platform == Platform.WINDOWS) {
                     bundle = new File(
                             bundle.getAbsolutePath().replaceFirst("\\.jar$", ".exe"));
+                } else {
+                    bundle = new File(
+                            bundle.getAbsolutePath().replaceFirst("\\.jar$", ".sh"));
                 }
                 
                 bundles.put(key, bundle);

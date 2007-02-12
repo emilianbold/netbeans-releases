@@ -15,7 +15,7 @@ import org.netbeans.installer.utils.helper.Platform;
 public interface Manager {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final File   ROOT            = new File("D:/temp/nbi-server");
+    public static final File   ROOT            = new File("/export/nbi/data/milestone11");
     public static final File   TEMP            = new File(ROOT, "temp");
     public static final File   REGISTRIES      = new File(ROOT, "registries");
     public static final File   UPLOADS         = new File(TEMP, "uploads");

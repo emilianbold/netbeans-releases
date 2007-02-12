@@ -329,9 +329,11 @@ public abstract class RegistryNode implements PropertyContainer {
                 iconUri,
                 document.createElement("icon")));
         
-        element.appendChild(XMLUtils.saveProperties(
-                properties,
-                document.createElement("properties")));
+        if (properties.size() > 0) {
+            element.appendChild(XMLUtils.saveProperties(
+                    properties,
+                    document.createElement("properties")));
+        }
         
         return element;
     }
@@ -352,8 +354,8 @@ public abstract class RegistryNode implements PropertyContainer {
             }
             
             offset = Long.parseLong(element.getAttribute("offset"));
-            currentVisible = 
-                    initialVisible = 
+            currentVisible =
+                    initialVisible =
                     Boolean.parseBoolean(element.getAttribute("visible"));
             expand = Boolean.parseBoolean(element.getAttribute("expand"));
             

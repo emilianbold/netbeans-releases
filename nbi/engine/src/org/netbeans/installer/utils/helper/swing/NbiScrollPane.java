@@ -24,6 +24,7 @@ import java.awt.Insets;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.installer.utils.SystemUtils;
 
 /**
  *
@@ -37,5 +38,11 @@ public class NbiScrollPane extends JScrollPane {
         
         setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        
+        // system-specific tweaks
+        if (SystemUtils.isMacOS()) {
+            setOpaque(false);
+            getViewport().setOpaque(false);
+        }
     }
 }

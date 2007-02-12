@@ -9,7 +9,7 @@
         <servlet-class>org.netbeans.installer.infra.server.client.servlets.GetFile</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>get-engine.jar</servlet-name>
+        <servlet-name>nbi-engine.jar</servlet-name>
         <servlet-class>org.netbeans.installer.infra.server.client.servlets.GetEngine</servlet-class>
     </servlet>
     <servlet>
@@ -37,8 +37,8 @@
         <url-pattern>/get-file</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>get-engine.jar</servlet-name>
-        <url-pattern>/get-engine.jar</url-pattern>
+        <servlet-name>nbi-engine.jar</servlet-name>
+        <url-pattern>/nbi-engine.jar</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>install</servlet-name>

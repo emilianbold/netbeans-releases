@@ -150,6 +150,10 @@ public class Registry {
         this.finishHandler = finishHandler;
     }
     
+    public void setTargetPlatform(final Platform targetPlatform) {
+        this.targetPlatform = targetPlatform;
+    }
+    
     public void initializeRegistry(final Progress progress) throws InitializationException {
         LogManager.logEntry("initializing product registry");
         
@@ -909,7 +913,10 @@ public class Registry {
     }
     
     public Product getProduct(final String uid, final Version version) {
-        List<Product> candidates = queryProducts(new ProductFilter(uid, version, targetPlatform));
+        final List<Product> candidates = queryProducts(new ProductFilter(
+                uid, 
+                version, 
+                targetPlatform));
         
         return (candidates.size() > 0) ? candidates.get(0) : null;
     }
@@ -1208,27 +1215,25 @@ public class Registry {
     
     public void saveStateFile(final File stateFile, final Progress progress) throws FinalizationException {
         try {
-            File schemaFile =
+            final File schemaFile =
                     FileProxy.getInstance().getFile(stateFileSchemaUri);
-            File stubFile =
+            final File stubFile =
                     FileProxy.getInstance().getFile(stateFileStubUri);
             
-            SchemaFactory schemaFactory =
-                    SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            final Schema schema = SchemaFactory.
+                    newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).
+                    newSchema(schemaFile);
             
-            Schema schema = schemaFactory.newSchema(schemaFile);
-            
-            DocumentBuilderFactory documentBuilderFactory =
+            final DocumentBuilderFactory documentBuilderFactory =
                     DocumentBuilderFactory.newInstance();
             documentBuilderFactory.setSchema(schema);
             documentBuilderFactory.setNamespaceAware(true);
             
-            DocumentBuilder documentBuilder =
-                    documentBuilderFactory.newDocumentBuilder();
+            final Document document = documentBuilderFactory.
+                    newDocumentBuilder().
+                    parse(stubFile);
             
-            Document document = documentBuilder.parse(stubFile);
-            
-            Element documentElement = document.getDocumentElement();
+            final Element documentElement = document.getDocumentElement();
             
             if (properties.size() > 0) {
                 Element propertiesNode = document.createElement("properties");
@@ -1247,24 +1252,35 @@ public class Registry {
                 documentElement.appendChild(propertiesNode);
             }
             
-            List<Product> components = queryProducts(new OrFilter(
-                    new ProductFilter(Status.INSTALLED),
-                    new ProductFilter(Status.NOT_INSTALLED)));
-            if (components.size() > 0) {
-                Element componentsNode = document.createElement("components");
-                for (Product component: components) {
-                    Element componentNode = document.createElement("product");
+            List<Product> products = queryProducts(new OrFilter(
+                    new ProductFilter(Status.INSTALLED, targetPlatform),
+                    new ProductFilter(Status.NOT_INSTALLED, targetPlatform)));
+            if (products.size() > 0) {
+                final Element productsNode = document.createElement("components");
+                
+                for (Product component: products) {
+                    final Element productNode = document.createElement("product");
                     
-                    componentNode.setAttribute("uid", component.getUid());
-                    componentNode.setAttribute("version", component.getVersion().toString());
-                    componentNode.setAttribute("platform", StringUtils.asString(component.getPlatforms(), " "));
+                    productNode.setAttribute(
+                            "uid", 
+                            component.getUid());
+                    productNode.setAttribute(
+                            "version", 
+                            component.getVersion().toString());
+                    productNode.setAttribute(
+                            "platform", 
+                            StringUtils.asString(component.getPlatforms(), " "));
                     
                     switch (component.getStatus()) {
                     case INSTALLED:
-                        componentNode.setAttribute("status", Status.TO_BE_INSTALLED.toString());
+                        productNode.setAttribute(
+                                "status", 
+                                Status.TO_BE_INSTALLED.toString());
                         break;
                     case NOT_INSTALLED:
-                        componentNode.setAttribute("status", Status.TO_BE_UNINSTALLED.toString());
+                        productNode.setAttribute(
+                                "status", 
+                                Status.TO_BE_UNINSTALLED.toString());
                         break;
                     default:
                         continue;
@@ -1283,13 +1299,13 @@ public class Registry {
                             
                             propertiesNode.appendChild(propertyNode);
                         }
-                        componentNode.appendChild(propertiesNode);
+                        productNode.appendChild(propertiesNode);
                     }
                     
-                    componentsNode.appendChild(componentNode);
+                    productsNode.appendChild(productNode);
                 }
                 
-                documentElement.appendChild(componentsNode);
+                documentElement.appendChild(productsNode);
             }
             
             XMLUtils.saveXMLDocument(document, stateFile);
