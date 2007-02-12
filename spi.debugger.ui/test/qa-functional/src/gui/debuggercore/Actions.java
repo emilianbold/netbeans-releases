@@ -272,8 +272,8 @@ public class Actions extends JellyTestCase {
         //wait for breakpoint
         Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
         EditorOperator eo = new EditorOperator("MemoryView.java");
-        assertTrue(Utilities.checkAnnotation(eo, 80, "Breakpoint"));
-        assertTrue(Utilities.checkAnnotation(eo, 80, "CurrentPC"));
+        assertTrue("Breakpoint annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
+        assertTrue("Current PC annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "CurrentPC"));
     }
     
     public void testStepInto() {
@@ -281,8 +281,8 @@ public class Actions extends JellyTestCase {
         lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", lastLineNumber);
         //check 80, 92
         EditorOperator eo = new EditorOperator("MemoryView.java");
-        assertTrue(Utilities.checkAnnotation(eo, 92, "CurrentPC"));
-        assertTrue(Utilities.checkAnnotation(eo, 80, "CallSite"));
+        assertTrue("Current PC annotation is not on line 92", Utilities.checkAnnotation(eo, 92, "CurrentPC"));
+        assertTrue("Call Site annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "CallSite"));
         /*
         Object[] annotations = ed.getAnnotations(80);
         for (int i = 0; i < annotations.length; i++) {
@@ -296,8 +296,8 @@ public class Actions extends JellyTestCase {
         lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:82", lastLineNumber);
         //check 82, 92
         EditorOperator eo = new EditorOperator("MemoryView.java");
-        assertFalse(Utilities.checkAnnotation(eo, 92, "CurrentPC"));
-        assertTrue(Utilities.checkAnnotation(eo, 82, "CurrentPC"));
+        assertFalse("Current PC annotation remains on line 92", Utilities.checkAnnotation(eo, 92, "CurrentPC"));
+        assertTrue("Current PC annotation is not on line 82", Utilities.checkAnnotation(eo, 82, "CurrentPC"));
     }
     
     public void testContinue() {
@@ -305,8 +305,8 @@ public class Actions extends JellyTestCase {
         lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:80", lastLineNumber);
         //check 80, 82
         EditorOperator eo = new EditorOperator("MemoryView.java");
-        assertFalse(Utilities.checkAnnotation(eo, 82, "CurrentPC"));
-        assertTrue(Utilities.checkAnnotation(eo, 80, "CurrentPC"));
+        assertFalse("Current PC annotation remains on line 82", Utilities.checkAnnotation(eo, 82, "CurrentPC"));
+        assertTrue("Current PC annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "CurrentPC"));
     }
     
     public void testStepOver() {
@@ -314,8 +314,8 @@ public class Actions extends JellyTestCase {
         lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:82", lastLineNumber);
         //check 80, 82
         EditorOperator eo = new EditorOperator("MemoryView.java");
-        assertFalse(Utilities.checkAnnotation(eo, 80, "CurrentPC"));
-        assertTrue(Utilities.checkAnnotation(eo, 82, "CurrentPC"));
+        assertFalse("Current PC annotation remains on line 80", Utilities.checkAnnotation(eo, 80, "CurrentPC"));
+        assertTrue("Current PC annotation is not on line 82", Utilities.checkAnnotation(eo, 82, "CurrentPC"));
     }
     
     public void testRunToCursor() {
@@ -331,15 +331,15 @@ public class Actions extends JellyTestCase {
         new RunToCursorAction().perform();
         lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:"+line, lastLineNumber);
         //check line
-        assertFalse(Utilities.checkAnnotation(eo, 80, "CurrentPC"));
-        assertTrue(Utilities.checkAnnotation(eo, line, "CurrentPC"));
+        assertFalse("Current PC annotation remains on line 80", Utilities.checkAnnotation(eo, 80, "CurrentPC"));
+        assertTrue("Current PC annotation is not on line "+line, Utilities.checkAnnotation(eo, line, "CurrentPC"));
     }
     
     public void removeBreakpoint() {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         //place breakpoint
         Utilities.toggleBreakpoint(eo, 80, false);
-        assertFalse("Breakpoint annotation is not removed", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
+        assertFalse("Breakpoint annotation is not removed from line 80", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
     }
     
     public void testPause() {
@@ -361,9 +361,16 @@ public class Actions extends JellyTestCase {
             MainWindowOperator.getDefault().menuBar().closeSubmenus();
             new EventTool().waitNoEvent(500);
         }
-        Utilities.waitStatusTextPrefix("Thread main stopped at ");
+        Utilities.waitDebuggerConsole("Thread main stopped at ", lastLineNumber);
         eo = new EditorOperator("MemoryView.java");
-        assertTrue("There is not annotation on line 82", Utilities.checkAnnotation(eo, 82, "CallSite"));
+        boolean found = false;
+        for (int i = 79; i < 87; i++) {
+            if (Utilities.checkAnnotation(eo, i, "CallSite")) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue("Call Site annotation is not in for cycle", found);
         //there should not be any other opened classes - issue 83704
         eo.closeAllDocuments();
     }

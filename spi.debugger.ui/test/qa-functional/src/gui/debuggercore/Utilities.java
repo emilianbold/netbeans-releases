@@ -398,7 +398,7 @@ public class Utilities {
         OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
         ConsoleChooser cch = new ConsoleChooser(op, text, status);
         JemmyProperties.getCurrentOutput().printLine("Waiting on text in debugger console '"+text+"' from line "+status);
-        JemmyProperties.setCurrentTimeout("OutputTabOperator.WaitStateTimeout", 30000l);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 30000l);
         try {
             op.waitState(cch);
         } catch (TimeoutExpiredException ex) {

@@ -360,7 +360,7 @@ public class Breakpoints extends JellyTestCase {
         new DebugProjectAction().performShortcut();
         //Class breakpoint hit for class examples.advanced.Helper.");
         int lines = Utilities.waitDebuggerConsole("Thread main stopped.", 0);
-        new ContinueAction().perform();
+        new EventTool().waitNoEvent(500);
         //Class breakpoint hit for class examples.advanced.MemoryView
         lines = Utilities.waitDebuggerConsole("Thread main stopped.", lines);
         new ContinueAction().perform();
