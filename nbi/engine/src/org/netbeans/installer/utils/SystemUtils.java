@@ -576,6 +576,7 @@ public final class SystemUtils {
         return false;
     }
     
+    
     // native accessor //////////////////////////////////////////////////////////////
     public static synchronized NativeUtils getNativeUtils() {
         if (nativeUtils == null) {
