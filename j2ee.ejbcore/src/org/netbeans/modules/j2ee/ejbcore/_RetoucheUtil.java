@@ -83,7 +83,13 @@ public final class _RetoucheUtil {
     public static ElementHandle<TypeElement> getJavaClassFromNode(Node node) throws IOException {
         //TODO: RETOUCHE TypeElement from Node, this one just takes main TypeElement
         FileObject fileObject = node.getLookup().lookup(FileObject.class);
+        if (fileObject == null) {
+            return null;
+        }
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        if (javaSource == null) {
+            return null;
+        }
         final List<ElementHandle<TypeElement>> result = new ArrayList<ElementHandle<TypeElement>>();
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {

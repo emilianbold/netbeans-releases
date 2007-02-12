@@ -123,6 +123,9 @@ public class UseDatabaseAction extends NodeAction {
         final boolean[] isInterface = new boolean[1];
         try {
             final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
+            if (elementHandle == null || javaSource == null) {
+                return false;
+            }
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
