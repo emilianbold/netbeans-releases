@@ -19,12 +19,16 @@
 
 package org.openide.loaders;
 
-import junit.textui.TestRunner;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
+import org.openide.util.Enumerations;
+import org.openide.util.MapFormat;
 
 /** Checks the ability to create data object from template.
  * (only for investing bug #38421, could be removed if needed)
@@ -34,6 +38,10 @@ public class CreateFromTemplateTest extends NbTestCase {
 
     public CreateFromTemplateTest (String name) {
         super(name);
+    }
+    
+    protected void setUp() {
+        MockServices.setServices(Pool.class);
     }
 
     public void testCreateExecutorFromTemplate () throws Exception {
@@ -67,6 +75,74 @@ public class CreateFromTemplateTest extends NbTestCase {
         }
 //        System.out.println("done.");
         assertTrue (newExecutorName + " was created on right place.", found);
+    }
+
+    public void testNoTemplateFlagUnset() throws Exception {
+        String folderName = "/Templates/";
+        FileObject data = org.openide.filesystems.FileUtil.createData (
+            Repository.getDefault ().getDefaultFileSystem ().getRoot (), 
+            folderName + "/" + "X.prima"
+        );
+        data.setAttribute ("template", Boolean.TRUE);
+        FileObject fo = data.getParent ();
+        assertNotNull ("FileObject " + folderName + " found on DefaultFileSystem.", fo);
+        DataFolder f = DataFolder.findFolder (fo);
+        DataObject templ = DataObject.find(data);
+        
+        DataObject res = templ.createFromTemplate(f);
+        
+        assertFalse("Not marked as template", res.isTemplate());
+        assertEquals(SimpleLoader.class, res.getLoader().getClass());
+    }
+    
+    public static final class Pool extends DataLoaderPool {
+        protected Enumeration<DataLoader> loaders() {
+            return Enumerations.<DataLoader>singleton(SimpleLoader.getLoader(SimpleLoader.class));
+        }
+    }
+    
+    public static final class SimpleLoader extends MultiFileLoader {
+        public SimpleLoader() {
+            super(SimpleObject.class.getName());
+        }
+        protected String displayName() {
+            return "SimpleLoader";
+        }
+        protected FileObject findPrimaryFile(FileObject fo) {
+            if (fo.hasExt("prima")) {
+                return fo;
+            }
+            return null;
+        }
+        protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+            return new SimpleObject(this, primaryFile);
+        }
+        protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
+            return new FE(obj, primaryFile);
+        }
+        protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj, FileObject secondaryFile) {
+            return new FileEntry(obj, secondaryFile);
+        }
+    }
+    
+    private static final class FE extends FileEntry.Format {
+        public FE(MultiDataObject mo, FileObject fo) {
+            super(mo, fo);
+        }
+        
+        protected java.text.Format createFormat(FileObject target, String n, String e) {
+            return new MapFormat(Collections.emptyMap());
+        }
+    }
+    
+    public static final class SimpleObject extends MultiDataObject {
+        public SimpleObject(SimpleLoader l, FileObject fo) throws DataObjectExistsException {
+            super(fo, l);
+        }
+        
+        public String getName() {
+            return getPrimaryFile().getNameExt();
+        }
     }
     
 }

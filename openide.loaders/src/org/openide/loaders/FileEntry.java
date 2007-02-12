@@ -187,7 +187,7 @@ public class FileEntry extends MultiDataObject.Entry {
                 }
             }
 
-            if (fo == null) {
+            if (fo != null) {
                 // unmark template state
                 DataObject.setTemplate (fo, false);
                 return fo;

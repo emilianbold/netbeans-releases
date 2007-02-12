@@ -54,7 +54,7 @@ public class TemplateWizardTest extends NbTestCase {
     public void testGetIteratorHonoursDataObjectsCookies () throws Exception {
         FileSystem fs = FileUtil.createMemoryFileSystem();
         DataObject obj;
-        Loader l = (Loader)Loader.findObject (Loader.class, true);
+        Loader l = Loader.findObject (Loader.class, true);
         try {
             AddLoaderManuallyHid.addRemoveLoader (l, true);
             obj = DataObject.find (fs.getRoot ());
@@ -121,7 +121,7 @@ public class TemplateWizardTest extends NbTestCase {
 
         public void addChangeListener(ChangeListener l) {
         }
-        public WizardDescriptor.Panel current() {
+        public WizardDescriptor.Panel<WizardDescriptor> current() {
             return null;
         }
         public boolean hasNext() {
@@ -179,11 +179,11 @@ public class TemplateWizardTest extends NbTestCase {
         TemplateWizardIterImpl iter = wizard.getIterImpl ();
         assertEquals ("IterImpl returns template chooser.", wizard.templateChooser (), iter.current ());
         final WizardDescriptor.Panel[] arr = {new P(1), new P(2)};
-        class I extends WizardDescriptor.ArrayIterator implements TemplateWizard.Iterator {
+        class I extends WizardDescriptor.ArrayIterator<WizardDescriptor> implements TemplateWizard.Iterator {
             public I () {
                 super (arr);
             }
-            public Set instantiate (TemplateWizard wiz) throws IOException {
+            public Set<DataObject> instantiate (TemplateWizard wiz) throws IOException {
                 throw new IOException ();
             }
             public void initialize(TemplateWizard wiz) {}

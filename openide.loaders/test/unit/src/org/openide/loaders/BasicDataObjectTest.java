@@ -23,7 +23,6 @@ import javax.swing.SwingUtilities;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import java.beans.*;
-import junit.textui.TestRunner;
 import org.netbeans.junit.*;
 import org.openide.nodes.Node;
 
