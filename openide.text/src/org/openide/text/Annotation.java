@@ -27,6 +27,8 @@ package org.openide.text;
  * asynchronously. It means that editors after the getShortDescription call
  * must listen on PropertyChangeListner while the tooltip is visible.
  * If the tooltip text property is changed, the tooltip value must be updated.
+ * <p>
+ * See more - <a href="doc-files/api.html#auto-ann">description of the way to declare an Annotation</a>.
  *
  * @author David Konecny, Jaroslav Tulach
  * @since 1.20
