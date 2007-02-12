@@ -57,7 +57,7 @@ final class GlobalDescriptorRegistry {
         }
     }
 
-//    private String projectType;
+    private String projectType;
 
     private final DataFolder registryFolder;
     private final DataFolder producersFolder;
@@ -70,7 +70,7 @@ final class GlobalDescriptorRegistry {
 
     private GlobalDescriptorRegistry (String projectType) {
         assert projectType != null  && projectType.length () > 0;
-//        this.projectType = projectType;
+        this.projectType = projectType;
 
         FileObject registryFileObject = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + "/components");
         if (registryFileObject != null) {
@@ -168,7 +168,7 @@ final class GlobalDescriptorRegistry {
         }
 
         for (ComponentDescriptor descriptor : tempDescriptors.values ())
-            resolveDescriptor (tempDescriptors, descriptor);
+            resolveDescriptor (projectType, tempDescriptors, descriptor);
 
         tempDescriptors = new HashMap<TypeID, ComponentDescriptor> ();
         for (ComponentDescriptor descriptor : descriptorsList) {
@@ -201,11 +201,11 @@ final class GlobalDescriptorRegistry {
             listener.descriptorRegistryUpdated ();
     }
 
-    static void resolveDescriptor (HashMap<TypeID, ComponentDescriptor> allDescriptors, ComponentDescriptor descriptor) {
-        resolveDescriptor (allDescriptors, new HashSet<TypeID> (), descriptor);
+    static void resolveDescriptor (String projectType, HashMap<TypeID, ComponentDescriptor> allDescriptors, ComponentDescriptor descriptor) {
+        resolveDescriptor (projectType, allDescriptors, new HashSet<TypeID> (), descriptor);
     }
 
-    private static void resolveDescriptor (HashMap<TypeID, ComponentDescriptor> allDescriptors, HashSet<TypeID> resolvingDescriptors, ComponentDescriptor descriptor) {
+    private static void resolveDescriptor (String projectType, HashMap<TypeID, ComponentDescriptor> allDescriptors, HashSet<TypeID> resolvingDescriptors, ComponentDescriptor descriptor) {
         assert Debug.isFriend (GlobalDescriptorRegistry.class)  ||  Debug.isFriend (DescriptorRegistry.class);
 
         TypeID thisType = descriptor.getTypeDescriptor ().getThisType ();
@@ -233,7 +233,7 @@ final class GlobalDescriptorRegistry {
                 Debug.warning ("Cannot find super descriptor for TypeID", superType);
                 return;
             }
-            resolveDescriptor (allDescriptors, superDescriptor);
+            resolveDescriptor (projectType, allDescriptors, superDescriptor);
 
             if (! superDescriptor.getTypeDescriptor ().isCanDerive ()) {
                 Debug.warning ("Cannot derive from descriptor", superDescriptor);
@@ -289,6 +289,9 @@ final class GlobalDescriptorRegistry {
         }
 
         descriptor.setSuperComponentDescriptor (superDescriptor);
+
+        descriptor.setPropertyDescriptors (null);
+        PropertiesProcessor.postProcessDescriptor (projectType, descriptor, propertyDescriptors);
         descriptor.setPropertyDescriptors (propertyDescriptors);
     }
 

@@ -110,6 +110,7 @@ public final class DesignComponent {
             
             ArrayList<Presenter> temp = new ArrayList<Presenter> ();
             gatherPresenters(temp, componentDescriptor);
+            PresentersProcessor.postProcessDescriptor (document.getDocumentInterface ().getProjectType (), document, componentDescriptor, temp);
             presenters = Lookups.fixed(temp.toArray());
             
             document.getTransactionManager().componentDescriptorChangeHappened(this, presentersToRemove, temp, useUndo);
