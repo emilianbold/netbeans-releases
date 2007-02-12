@@ -19,7 +19,6 @@
 package org.netbeans.modules.localhistory;
         
 import java.io.File;
-import java.util.regex.Pattern;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
@@ -96,10 +95,14 @@ public class LocalHistory {
     }
     
     boolean isManaged(File file) {        
+        if(file.isDirectory()) {
+            return true; // XXX is there something more we could do for folders?
+        }
         return isEditable(file) && file.length() <= LocalHistorySettings.getMaxFileSize();
     }
     
     private boolean isEditable(File file) {
+        
         FileObject fo = FileUtil.toFileObject(file);
         if(fo == null) {
             return false;
