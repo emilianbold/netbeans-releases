@@ -39,7 +39,7 @@ import java.util.List;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
-import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
 
 /**
@@ -63,7 +63,8 @@ public class SimpleTableModelCD extends ComponentDescriptor {
     }
      
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
+        //return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(ResourceCD.TYPEID, TYPEID, true, true);
     }
 
     public VersionDescriptor getVersionDescriptor() {
@@ -76,8 +77,8 @@ public class SimpleTableModelCD extends ComponentDescriptor {
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-            new PropertyDescriptor(PROP_VALUES, TYPEID_VALUES, PropertyValue.createEmptyArray(TYPEID_VALUES), true, true, MidpVersionable.MIDP_2),
-            new PropertyDescriptor (PROP_COLUMN_NAMES, TYPEID_COLUMN_NAMES, PropertyValue.createEmptyArray(TYPEID_COLUMN_NAMES), true, true, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_VALUES, TYPEID_VALUES, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor (PROP_COLUMN_NAMES, TYPEID_COLUMN_NAMES, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
         );
     }
     

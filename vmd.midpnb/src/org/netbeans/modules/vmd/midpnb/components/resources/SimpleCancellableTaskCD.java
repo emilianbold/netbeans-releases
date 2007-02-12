@@ -41,7 +41,7 @@ import java.util.List;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
-import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.CategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
 
@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
  * @author Karol Harezlak
  */
 public class SimpleCancellableTaskCD extends ComponentDescriptor {
-
+   
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.util.SimpleCancellableTask"); // NOI18N
     
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_16.png"; // NOI18N
@@ -65,8 +65,8 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
     }
 
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
-        //return new TypeDescriptor(ResourceCD.TYPEID, TYPEID, true, true);
+        //return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(ResourceCD.TYPEID, TYPEID, true, true);
     }
 
     public VersionDescriptor getVersionDescriptor() {
