@@ -29,72 +29,76 @@ import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
  * @author David Kaspar
  */
 public class DisplayableAccept {
-
+    
     static class DisplayableCommandsAcceptPresenter extends AbstractAcceptPresenter {
-
-        public boolean isAcceptable (ComponentProducer producer) {
-            if (getComponent ().getComponentDescriptor ().getPropertyDescriptor (DisplayableCD.PROP_COMMANDS).isReadOnly ())
-                return false;
-            DescriptorRegistry registry = getComponent ().getDocument ().getDescriptorRegistry ();
-            return registry.isInHierarchy (CommandCD.TYPEID, producer.getComponentTypeID ());
+        
+        public DisplayableCommandsAcceptPresenter() {
+            super(Kind.COMPONENT_PRODUCER);
         }
-
-        public final DesignComponent accept (ComponentProducer producer) {
-            DesignComponent displayable = getComponent ();
-            DesignDocument document = displayable.getDocument ();
-
-            DesignComponent command = producer.createComponent (document).getMainComponent ();
-            MidpDocumentSupport.getCategoryComponent (document, CommandsCategoryCD.TYPEID).addComponent (command);
-
-            DesignComponent source = document.createComponent (CommandEventSourceCD.TYPEID);
-            MidpDocumentSupport.addEventSource (displayable, DisplayableCD.PROP_COMMANDS, source);
-
-            source.writeProperty (CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference (displayable));
-            source.writeProperty (CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference (command));
-
+        
+        public boolean isAcceptable(ComponentProducer producer) {
+            if (getComponent().getComponentDescriptor().getPropertyDescriptor(DisplayableCD.PROP_COMMANDS).isReadOnly())
+                return false;
+            DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
+            return registry.isInHierarchy(CommandCD.TYPEID, producer.getComponentTypeID());
+        }
+        
+        public final DesignComponent accept(ComponentProducer producer) {
+            DesignComponent displayable = getComponent();
+            DesignDocument document = displayable.getDocument();
+            
+            DesignComponent command = producer.createComponent(document).getMainComponent();
+            MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).addComponent(command);
+            
+            DesignComponent source = document.createComponent(CommandEventSourceCD.TYPEID);
+            MidpDocumentSupport.addEventSource(displayable, DisplayableCD.PROP_COMMANDS, source);
+            
+            source.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(displayable));
+            source.writeProperty(CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference(command));
+            
             return source;
         }
-
+        
     }
-
-//    static class DisplayableCommandsEventHandlerAcceptPresenter extends AbstractAcceptPresenter {
-//
-//        public boolean isAcceptable (ComponentProducer producer) {
-//            if (getComponent ().getComponentDescriptor ().getPropertyDescriptor (DisplayableCD.PROP_COMMANDS).isReadOnly ())
-//                return false;
-//            DescriptorRegistry registry = getComponent ().getDocument ().getDescriptorRegistry ();
-//            return registry.isInHierarchy (EventHandlerCD.TYPEID, producer.getComponentTypeID ());
-//        }
-//
-//        public final void accept (ComponentProducer producer) {
-//            DesignComponent displayable = getComponent ();
-//            DesignDocument document = displayable.getDocument ();
-//
-//            DesignComponent handler = producer.createComponent (document).getMainComponent ();
-//            if (handler == null)
-//                return;
-//
-//            DesignComponent command = createBackCommand (document);
-//            MidpDocumentSupport.getCategoryComponent (document, CommandsCategoryCD.TYPEID).addComponent (command);
-//
-//            DesignComponent source = document.createComponent (CommandEventSourceCD.TYPEID);
-//            MidpDocumentSupport.addEventSource (displayable, DisplayableCD.PROP_COMMANDS, source);
-//
-//            source.writeProperty (CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference (displayable));
-//            source.writeProperty (CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference (command));
-//
-//            MidpDocumentSupport.updateEventHandlerWithNew (source, handler);
-//        }
-//
-//        private DesignComponent createBackCommand (DesignDocument document) {
-//            List<ComponentProducer> producers = document.getDescriptorRegistry ().getComponentProducers ();
-//            for (ComponentProducer producer : producers) {
-//                if (CommandProducer.PRODUCER_ID_BACK_COMMAND.equals (producer.getProducerID ()))
-//                    return producer.createComponent (document).getMainComponent ();
-//            }
-//            return null;
-//        }
-//
-//    }
-
+    
+    //    static class DisplayableCommandsEventHandlerAcceptPresenter extends AbstractAcceptPresenter {
+    //
+    //        public boolean isAcceptable (ComponentProducer producer) {
+    //            if (getComponent ().getComponentDescriptor ().getPropertyDescriptor (DisplayableCD.PROP_COMMANDS).isReadOnly ())
+    //                return false;
+    //            DescriptorRegistry registry = getComponent ().getDocument ().getDescriptorRegistry ();
+    //            return registry.isInHierarchy (EventHandlerCD.TYPEID, producer.getComponentTypeID ());
+    //        }
+    //
+    //        public final void accept (ComponentProducer producer) {
+    //            DesignComponent displayable = getComponent ();
+    //            DesignDocument document = displayable.getDocument ();
+    //
+    //            DesignComponent handler = producer.createComponent (document).getMainComponent ();
+    //            if (handler == null)
+    //                return;
+    //
+    //            DesignComponent command = createBackCommand (document);
+    //            MidpDocumentSupport.getCategoryComponent (document, CommandsCategoryCD.TYPEID).addComponent (command);
+    //
+    //            DesignComponent source = document.createComponent (CommandEventSourceCD.TYPEID);
+    //            MidpDocumentSupport.addEventSource (displayable, DisplayableCD.PROP_COMMANDS, source);
+    //
+    //            source.writeProperty (CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference (displayable));
+    //            source.writeProperty (CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference (command));
+    //
+    //            MidpDocumentSupport.updateEventHandlerWithNew (source, handler);
+    //        }
+    //
+    //        private DesignComponent createBackCommand (DesignDocument document) {
+    //            List<ComponentProducer> producers = document.getDescriptorRegistry ().getComponentProducers ();
+    //            for (ComponentProducer producer : producers) {
+    //                if (CommandProducer.PRODUCER_ID_BACK_COMMAND.equals (producer.getProducerID ()))
+    //                    return producer.createComponent (document).getMainComponent ();
+    //            }
+    //            return null;
+    //        }
+    //
+    //    }
+    
 }

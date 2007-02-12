@@ -55,31 +55,31 @@ public abstract class CustomComponentProducer extends ComponentProducer {
 
     public static final class SVGAnimatorWrapper extends CustomComponentProducer {
         public SVGAnimatorWrapper() {
-            super(SVGAnimatorWrapperCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVGAnimatorWrapper", "SVGAnimatorWrapper", SVGAnimatorWrapperCD.ICON_PATH, SVGAnimatorWrapperCD.ICON_LARGE_PATH)); // NOI18N
+            super(SVGAnimatorWrapperCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Animator Wrapper", "SVG Animator Wrapper", SVGAnimatorWrapperCD.ICON_PATH, SVGAnimatorWrapperCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
     
     public static final class SVGImage extends CustomComponentProducer {
         public SVGImage() {
-            super(SVGImageCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVGImage", "SVGImage", ResourceCD.ICON_PATH, null)); // NOI18N
+            super(SVGImageCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Image", "SVG Image", ResourceCD.ICON_PATH, null)); // NOI18N
         }
     }
     
     public static final class TableItem extends CustomComponentProducer {
         public TableItem() {
-            super(TableItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "TableItem", "TableItem", TableItemCD.ICON_PATH, null)); // NOI18N
+            super(TableItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Table Item", "Table Item", TableItemCD.ICON_PATH, null)); // NOI18N
         }
     }
     
     public static final class SimpleCancellableTask extends CustomComponentProducer {
         public SimpleCancellableTask() {
-            super(SimpleCancellableTaskCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "SimpleCancellableTask", "SimpleCancellableTask", SimpleTableModelCD.ICON_PATH, null)); // NOI18N
+            super(SimpleCancellableTaskCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Simple Cancellable Task", "Simple Cancellable Task", SimpleTableModelCD.ICON_PATH, null)); // NOI18N
         }
     }
     
      public static final class SimpleTableModel extends CustomComponentProducer {
         public SimpleTableModel() {
-            super(SimpleTableModelCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "SimpleTableModel", "SimpleTableModel", SimpleCancellableTaskCD.ICON_PATH, null)); // NOI18N
+            super(SimpleTableModelCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Simple Table Model", "Simple Table Model", SimpleCancellableTaskCD.ICON_PATH, null)); // NOI18N
         }
     }
 }

@@ -27,74 +27,53 @@ import java.awt.datatransfer.Transferable;
  * @author David Kaspar
  */
 public final class AcceptSupport {
-
+    
     private AcceptSupport() {
     }
-
+    
     public static boolean isAcceptable(DesignComponent component, Transferable transferable) {
-        if (component == null)
+        if (component == null) {
             return false;
+        }
         ComponentProducer producer = DefaultDataFlavor.decodeFromDataFlavors(component.getDocument(), transferable);
-        if (producer != null)
+        if (producer != null) {
             return isAcceptable(component, producer);
+        }
         return false;
     }
     
     public static boolean isAcceptable(DesignComponent component, ComponentProducer producer) {
-        if (producer == null)
+        if (producer == null) {
             return false;
-//        while (component != null) {
-            for (AbstractAcceptPresenter presenter : component.getPresenters(AbstractAcceptPresenter.class))
-                if (presenter.isAcceptable(producer))
-                    return true;
-//            component = component.getParentComponent();
-//        }
+        }
+        for (AbstractAcceptPresenter presenter : component.getPresenters(AbstractAcceptPresenter.class)) {
+            if (presenter.isAcceptable(producer)) {
+                return true;
+            }
+        }
         return false;
     }
     
-//    private static boolean isAcceptable (DesignComponent component, PropertyValue propertyValue) {
-//        while (component != null) {
-//            AbstractAcceptPresenter presenter = component.getPresenter (AbstractAcceptPresenter.class);
-//            if (presenter != null) {
-//                if (presenter.isAcceptable (propertyValue))
-//                    return true;
-//            }
-//            component = component.getParentComponent ();
-//        }
-//        return false;
-//    }
-    
     public static void accept(DesignComponent component, Transferable transferable) {
-        if (component == null)
+        if (component == null) {
             return;
+        }
         ComponentProducer producer = DefaultDataFlavor.decodeFromDataFlavors(component.getDocument(), transferable);
-        if (producer != null)
+        if (producer != null) {
             accept(component, producer);
+        }
     }
     
     public static DesignComponent accept(DesignComponent component, ComponentProducer producer) {
-        if (producer == null)
+        if (producer == null) {
             return null;
-//        while (component != null) {
-            for (AbstractAcceptPresenter presenter : component.getPresenters(AbstractAcceptPresenter.class))
-                if (presenter.isAcceptable(producer))
-                    return presenter.accept(producer);
-//            component = component.getParentComponent();
-//        }
+        }
+        for (AbstractAcceptPresenter presenter : component.getPresenters(AbstractAcceptPresenter.class)) {
+            if (presenter.isAcceptable(producer)) {
+                return presenter.accept(producer);
+            }
+        }
         return null;
     }
-    
-//    private static void accept (DesignComponent component, PropertyValue propertyValue) {
-//        while (component != null) {
-//            AbstractAcceptPresenter presenter = component.getPresenter (AbstractAcceptPresenter.class);
-//            if (presenter != null) {
-//                if (presenter.isAcceptable (propertyValue)) {
-//                    presenter.accept (propertyValue);
-//                    return;
-//                }
-//            }
-//            component = component.getParentComponent ();
-//        }
-//    }
     
 }

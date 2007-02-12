@@ -20,14 +20,14 @@
 
 package org.netbeans.modules.vmd.midpnb.components;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
-
-import java.util.ArrayList;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 
 /**
  * @author David Kaspar
@@ -42,6 +42,7 @@ public final class MidpCustomPresentersProcessor extends PresentersProcessor {
         if (document.getDescriptorRegistry ().isInHierarchy (ResourcesCategoryCD.TYPEID, descriptor.getTypeDescriptor ().getThisType ())) {
             presenters.add (new AcceptTypePresenter (SimpleCancellableTaskCD.TYPEID));
             presenters.add (new AcceptTypePresenter (SimpleTableModelCD.TYPEID));
+            presenters.add (new AcceptTypePresenter (SVGImageCD.TYPEID));
         }
     }
 

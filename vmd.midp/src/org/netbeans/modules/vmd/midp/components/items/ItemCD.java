@@ -185,6 +185,10 @@ public class ItemCD extends ComponentDescriptor {
     }
 
     private static class AcceptItemCommandPresenter extends AbstractAcceptPresenter {
+        
+        public AcceptItemCommandPresenter() {
+            super(Kind.COMPONENT_PRODUCER);
+        }
 
         public boolean isAcceptable (ComponentProducer producer) {
             DescriptorRegistry registry = getComponent ().getDocument ().getDescriptorRegistry ();

@@ -25,28 +25,29 @@ import org.netbeans.modules.vmd.api.model.*;
  * @author David Kaspar
  */
 public class AcceptTypePresenter extends AbstractAcceptPresenter {
-
+    
     private TypeID typeID;
-
-    public AcceptTypePresenter (TypeID typeID) {
+    
+    public AcceptTypePresenter(TypeID typeID) {
+        super(Kind.COMPONENT_PRODUCER);
         assert typeID != null;
         this.typeID = typeID;
     }
-
-    public final boolean isAcceptable (ComponentProducer producer) {
-        DescriptorRegistry registry = getComponent ().getDocument ().getDescriptorRegistry ();
-        return registry.isInHierarchy (typeID, producer.getComponentTypeID ());
+    
+    public final boolean isAcceptable(ComponentProducer producer) {
+        DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
+        return registry.isInHierarchy(typeID, producer.getComponentTypeID());
     }
-
-    public final DesignComponent accept (ComponentProducer producer) {
-        DesignComponent component = producer.createComponent (getComponent ().getDocument ()).getMainComponent ();
+    
+    public final DesignComponent accept(ComponentProducer producer) {
+        DesignComponent component = producer.createComponent(getComponent().getDocument()).getMainComponent();
         if (component != null)
-            notifyCreated (component);
+            notifyCreated(component);
         return component;
     }
-
-    protected void notifyCreated (DesignComponent component) {
-        getComponent ().addComponent (component);
+    
+    protected void notifyCreated(DesignComponent component) {
+        getComponent().addComponent(component);
     }
-
+    
 }

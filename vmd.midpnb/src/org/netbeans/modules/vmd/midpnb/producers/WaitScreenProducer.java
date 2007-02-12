@@ -31,7 +31,7 @@ import org.netbeans.modules.vmd.midpnb.components.sources.WaitScreenSuccessComma
 public class WaitScreenProducer extends MidpComponentProducer {
    
     public WaitScreenProducer() {
-       super(WaitScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "WaitScreen", "WaitScreen", WaitScreenCD.ICON_PATH, WaitScreenCD.ICON_LARGE_PATH)); // NOI18N
+       super(WaitScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "Wait Screen", "Wait Screen", WaitScreenCD.ICON_PATH, WaitScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     public Result createComponent(DesignDocument document) {

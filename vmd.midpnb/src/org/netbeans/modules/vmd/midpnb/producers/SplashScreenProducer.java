@@ -40,7 +40,7 @@ import org.netbeans.modules.vmd.midpnb.components.sources.SplashScreenDismissCom
 public class SplashScreenProducer extends MidpComponentProducer {
 
     public SplashScreenProducer () {
-       super(SplashScreenCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_DISPLAYABLES, "SplashScreen", "SplashScreen", SplashScreenCD.ICON_PATH, SplashScreenCD.ICON_LARGE_PATH)); // NOI18N
+       super(SplashScreenCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_DISPLAYABLES, "Splash Screen", "Splash Screen", SplashScreenCD.ICON_PATH, SplashScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     public Result createComponent(DesignDocument document) {
