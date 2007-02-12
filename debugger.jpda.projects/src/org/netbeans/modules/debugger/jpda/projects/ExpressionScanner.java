@@ -333,21 +333,23 @@ class ExpressionScanner extends TreeScanner<List<Tree>, ExpressionScanner.Expres
         Tree lastCond = null;
         if (acceptsTree(node)) {
             cond = scan(node.getCondition(), p);
-            lastCond = cond.get(cond.size() - 1);
+            if (cond != null) {
+                lastCond = cond.get(cond.size() - 1);
+            }
         }
         StatementTree thent = node.getThenStatement();
         StatementTree elset = node.getElseStatement();
         List<Tree> thenr = null;
-        if (acceptsTree(thent)) {
+        if (isCurrentTree(thent)) {
             thenr = scan(thent, p);
-            if (lastCond != null) {
+            if (lastCond != null && thenr != null) {
                 p.addNextExpression(lastCond, thenr.get(0));
             }
         }
         List<Tree> elser = null;
-        if (acceptsTree(elset)) {
+        if (isCurrentTree(elset)) {
             elser = scan(elset, p);
-            if (lastCond != null) {
+            if (lastCond != null && elser != null) {
                 p.addNextExpression(lastCond, elser.get(0));
             }
         }
