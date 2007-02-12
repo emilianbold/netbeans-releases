@@ -123,8 +123,6 @@ public final class NbSheet extends TopComponent {
             NbBundle.getBundle(NbSheet.class).getString ("ACSN_PropertiesSheet"));
         getAccessibleContext ().setAccessibleDescription (
             NbBundle.getBundle(NbSheet.class).getString ("ACSD_PropertiesSheet"));
-
-        updateGlobalListening();
     }
     
     /* Singleton accessor. As NbSheet is persistent singleton this
@@ -412,14 +410,25 @@ public final class NbSheet extends TopComponent {
 
     /** Helper, listener variable must be initialized before
     * calling this */
-    private void updateGlobalListening() {
+    private void updateGlobalListening(boolean listen) {
         if (global) {
-            TopComponent.getRegistry().addPropertyChangeListener(
-                org.openide.util.WeakListeners.propertyChange (listener, TopComponent.getRegistry ())
-            );
+            if (listen) {
+                TopComponent.getRegistry().addPropertyChangeListener(
+                    listener);
+            } else {
+                TopComponent.getRegistry().removePropertyChangeListener (listener);
+            }
         }
     }
-
+    
+    protected void componentOpened() {
+        updateGlobalListening (true);
+    }
+    
+    protected void componentClosed() {
+        updateGlobalListening (false);
+    }
+    
     protected void componentDeactivated() {
         super.componentDeactivated();
         if (Utilities.isMac()) {
