@@ -65,11 +65,9 @@ public final class AcceptAction extends WidgetAction.Adapter {
     public State drop (Widget widget, WidgetDropTargetDropEvent event) {
         ConnectorState acceptable = provider.isAcceptable (widget, event.getPoint (), event.getTransferable ());
 
-        if (acceptable == ConnectorState.ACCEPT)
-            provider.accept (widget, event.getPoint (), event.getTransferable ());
-
         if (acceptable == ConnectorState.ACCEPT) {
             event.acceptDrop (DnDConstants.ACTION_COPY_OR_MOVE);
+            provider.accept (widget, event.getPoint (), event.getTransferable ());
             return State.CONSUMED;
         } else if (acceptable == ConnectorState.REJECT_AND_STOP) {
             event.rejectDrop ();
