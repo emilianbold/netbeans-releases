@@ -400,6 +400,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         }
 
         public void beforeChange(FileObject f) {
+            assertNotNull(FileUtil.toFile(f));
             implsBeforeChangeCalls++;
         }    
         

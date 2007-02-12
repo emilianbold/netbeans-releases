@@ -54,14 +54,14 @@ public class FileObj extends BaseFileObj {
     }
 
     public OutputStream getOutputStream(final FileLock lock) throws IOException {
-        return getOutputStream(lock, null);
+        return getOutputStream(lock, null, null);
     }
     
-    public OutputStream getOutputStream(final FileLock lock, ProvidedExtensions extensions) throws IOException {
+    public OutputStream getOutputStream(final FileLock lock, ProvidedExtensions extensions, FileObject mfo) throws IOException {
         final File f = getFileName().getFile();
 
         if (extensions != null) {
-            extensions.beforeChange(this);
+            extensions.beforeChange(mfo);
         }        
         final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, false);
         
