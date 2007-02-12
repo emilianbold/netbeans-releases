@@ -117,7 +117,7 @@ public final class MidpTypes {
     }
 
     public static String getOptimalizedFQNClassName (TypeID type) {
-        assert TypeID.Kind.COMPONENT.equals (type.getKind ());
+//        assert TypeID.Kind.COMPONENT.equals (type.getKind ());
         String className = type.getString ();
         if (className.startsWith (PREFIX_LCDUI))
             return className.substring (PREFIX_LCDUI.length ());
