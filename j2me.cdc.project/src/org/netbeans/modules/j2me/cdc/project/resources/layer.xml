@@ -93,6 +93,7 @@
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/cdcProject.png"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/emptyProject.html"/>
                 </file>
+<!--
         
                 <attr name="emptyCDC.xml/emptyCDClibrary.xml" boolvalue="true"/>
 
@@ -104,7 +105,6 @@
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/emptyLibrary.html"/>
                 </file>                
                 <attr name="emptyCDClibrary.xml/existingCDC.xml" boolvalue="true"/>
-
                 <file name="existingCDC.xml">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.NewCDCProjectWizardIterator.existing"/>
@@ -121,6 +121,7 @@
                 </file>
                 <attr name="existingCDC.xml/j2sefreeform.xml" boolvalue="true"/>
                 <file name="j2sefreeform.xml" url="Templates/Project/Standard/j2sefreeform.xml"/>
+-->
             </folder>
         </folder>
     

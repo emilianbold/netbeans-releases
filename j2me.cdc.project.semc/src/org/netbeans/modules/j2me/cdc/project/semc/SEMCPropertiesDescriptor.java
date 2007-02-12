@@ -44,18 +44,23 @@ public class SEMCPropertiesDescriptor implements ProjectPropertiesDescriptor {
     public static final String SEMC_PASSWORD    = "semc.private.key.password";
 
     private Reference<Set<PropertyDescriptor>> ref = new WeakReference(null);
+    private PropertyDescriptor uid;
     
     /** Creates a new instance of SEMCPropertiesDescriptor */
     public SEMCPropertiesDescriptor() {
     }
     
-    public Set<PropertyDescriptor> getPropertyDescriptors() {
+    private String randomUID() {
+        String s = "0000000" + String.valueOf(Math.random()*10000000); //NOI18N
+        return 'E' + s.substring(s.length()-7, s.length());
+    }
+    
+    public synchronized Set<PropertyDescriptor> getPropertyDescriptors() {
         Set<PropertyDescriptor> set = ref.get();
         if (set == null) {
             set = new HashSet();
             final String EMPTY = ""; //NOI18N
             set.add(new PropertyDescriptor(SEMC_APPLICATION_ICON_SPLASH_INSTALLONLY, true, DefaultPropertyParsers.BOOLEAN_PARSER,  "false")); //NOI18N
-            set.add(new PropertyDescriptor(SEMC_APPLICATION_UID, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
             set.add(new PropertyDescriptor(SEMC_APPLICATION_ICON, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
             set.add(new PropertyDescriptor(SEMC_APPLICATION_ICON_COUNT, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
             set.add(new PropertyDescriptor(SEMC_APPLICATION_ICON_SPLASH, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
@@ -65,6 +70,9 @@ public class SEMCPropertiesDescriptor implements ProjectPropertiesDescriptor {
             set.add(new PropertyDescriptor(SEMC_PASSWORD, true, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
             ref = new WeakReference(set);
         }
+        if (uid != null) set.remove(uid);
+        uid = new PropertyDescriptor(SEMC_APPLICATION_UID, true, DefaultPropertyParsers.STRING_PARSER,  randomUID());
+        set.add(uid);
         return set;
     }
 

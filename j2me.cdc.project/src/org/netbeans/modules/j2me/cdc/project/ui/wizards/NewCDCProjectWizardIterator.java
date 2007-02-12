@@ -42,6 +42,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
+import org.netbeans.modules.j2me.cdc.project.CDCPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.netbeans.modules.mobility.project.ui.wizard.PlatformInstallPanel;
 import org.netbeans.modules.j2me.cdc.project.ui.CDCFoldersListSettings;
@@ -240,8 +241,11 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
                                          File projectLocationFile,
                                          ArrayList<String> configurations) throws IOException {
                 final FileObject src = projectLocation.createFolder("src");
-                createMainClass(mainClass, src, activePlatform);
+                boolean isXlet = createMainClass(mainClass, src, activePlatform);
                 final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS, mainClass);
+                ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS_CLASS, isXlet ? "xlet" : "main"); //NOI18N
+                ep.setProperty(CDCPropertiesDescriptor.APPLICATION_NAME, project.getProjectDirectory().getNameExt());
                 JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms (activePlatform, new Specification(CDCPlatform.PLATFORM_CDC,null));    //NOI18N
                 
                 if (platforms.length != 0){
