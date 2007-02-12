@@ -48,17 +48,18 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -921,9 +922,11 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      * @see  SourceGroup#getDisplayName()
      * @see  FileUtil#getFileDisplayName(FileObject)
      */
-    private final class LocationChooserRenderer
-            extends DefaultListCellRenderer {
-        public LocationChooserRenderer () {}
+    private final class LocationChooserRenderer extends JLabel implements ListCellRenderer, UIResource {
+        
+        public LocationChooserRenderer () {
+            setOpaque(true);
+        }
         
         public Component getListCellRendererComponent(
                 JList list,
@@ -931,17 +934,34 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
                 int index,
                 boolean isSelected,
                 boolean cellHasFocus) {
-            return super.getListCellRendererComponent(
-                    list,
-                    value instanceof SourceGroup
+            // #93658: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+            
+            String text = value instanceof SourceGroup
                         ? ((SourceGroup) value).getDisplayName()
                         : value instanceof FileObject
                               ?  FileUtil.getFileDisplayName((FileObject) value)
-                              : value.toString(),
-                    index,
-                    isSelected,
-                    cellHasFocus);
+                              : value.toString();
+            setText(text);
+            
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            
+            return this;
         }
+        
+        // #93658: GTK needs name to render cell renderer "natively"
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
+        }
+            
     }
 
     /**
