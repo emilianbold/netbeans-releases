@@ -25,7 +25,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
-import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
@@ -46,7 +45,7 @@ public class CreatePersistenceUnit implements Fix {
         SwingUtilities.invokeLater(new Runnable(){
             public void run() {
                 try{
-                    Util.createPersistenceUnitUsingWizard(project, null, TableGeneration.CREATE);
+                    Util.createPersistenceUnitUsingWizard(project, null);
                 } catch(InvalidPersistenceXmlException e){
                     JPAProblemFinder.LOG.log(Level.WARNING, e.getMessage(), e);
                 }
