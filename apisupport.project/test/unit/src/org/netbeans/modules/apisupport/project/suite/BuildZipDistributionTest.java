@@ -27,6 +27,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
@@ -60,6 +61,12 @@ public class BuildZipDistributionTest extends TestBase {
         super(name);
     }
 
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    
     protected void setUp() throws Exception {
         clearWorkDir();
         

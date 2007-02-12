@@ -22,6 +22,7 @@ package org.netbeans.modules.apisupport.project.suite;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -51,6 +52,11 @@ public class BuildNBMSTest extends TestBase {
         super(name);
     }
 
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
     protected void setUp() throws Exception {
         clearWorkDir();
         
