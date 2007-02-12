@@ -233,7 +233,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     private StoreEntry[] getStoreEntriesImpl(File file) {
         File storeFolder = getStoreFolder(file);
         File[] storeFiles = storeFolder.listFiles(fileEntriesFilter);
-        if(storeFiles != null || storeFiles.length > 0) {
+        if(storeFiles != null && storeFiles.length > 0) {
             List<StoreEntry> ret = new ArrayList<StoreEntry>(storeFiles.length);                
             if(storeFiles.length > 0) {
                 Map<Long, String> labels = getLabels(getLabelsFile(file));

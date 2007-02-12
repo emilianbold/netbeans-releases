@@ -62,6 +62,9 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     
     private Map<String, StorageMoveHandler> moveHandlerMap;
     
+    private Set<File> toBeDeleted = new HashSet<File>(); 
+    private Set<File> toBeCreated = new HashSet<File>(); 
+        
     /** Creates a new instance of LocalHistoryVCSInterceptor */
     public LocalHistoryVCSInterceptor() {
         
@@ -70,12 +73,11 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // ==================================================================================================
     // DELETE
     // ==================================================================================================
-    Set<File> toBeDeleted = new HashSet<File>(5); // XXX
     public boolean beforeDelete(File file) {
         if(!accept(file)) {
             return false;
         }
-        toBeDeleted.add(file);
+        toBeDeleted.add(file); // XXX do this with a hanlder, get the correct ts
         storeFile(file); // will be stored in the history if there is no actuall entry yet        
         return false;
     }
@@ -85,9 +87,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     public void afterDelete(File file) {      
-        if(!toBeDeleted.remove(file)) {
-            return;
-        }               
+        toBeDeleted.remove(file);                
         
         String key = file.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {
@@ -146,23 +146,24 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // CREATE
     // ==================================================================================================
 
-    public boolean beforeCreate(File file, boolean isDirectory) {
-        // do nothing
-        return false;
+    public boolean beforeCreate(File file, boolean isDirectory) {  
+        if(!accept(file)) {
+            return false;
+        }
+        toBeCreated.add(file);        
+        return false;                
     }
 
     public void doCreate(File file, boolean isDirectory) throws IOException {
         // do nothing  
     }
 
-    public void afterCreate(File file) {                       
-        if(!accept(file)) {
+    public void afterCreate(File file) { 
+        if(!accept(file) || file.length() == 0) {
             return;
-        }
-                
-        if(file.length() == 0) {            
-            return;
-        }
+        }                
+        
+        toBeCreated.remove(file);
         
         String key = file.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {
@@ -173,7 +174,8 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
                 getMoveHandlerMap().remove(key);
             }            
         } else {
-            getStore().fileCreate(file, file.lastModified());            
+            // XXX since we have beforeChange - reconsider if there is any situation when after create would make sense 
+            //getStore().fileCreate(file, file.lastModified());            
         }               
     }
     
@@ -181,19 +183,30 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // CHANGE
     // ==================================================================================================
     
-    public void afterChange(File file) {    
-        if(!accept(file)) {
+    public void beforeChange(File file) {                    
+        if(toBeCreated.contains(file)) {
+            // ignore change events 
+            // if they happen in scope of a create
             return;
-        }        
-        storeFile(file);
-    }
-
-    public void beforeChange(File file) {    
+        }
         // XXX file.exists() is a hack
         if(file.exists() && !accept(file)) {
             return;
         }        
         storeFile(file);
+    }
+    
+    public void afterChange(File file) {           
+        // XXX since we have beforeChange - reconsider if there is any situation when after create would make sense 
+//        if(toBeCreated.contains(file)) {
+//            // ignore change events 
+//            // if they happen in scope of a create
+//            return;
+//        }        
+//        if(!accept(file)) {
+//            return;
+//        }        
+//        storeFile(file);
     }
     
     private void storeFile(File file) {        
@@ -218,7 +231,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
      */
     private boolean accept(File file) {       
         if(file.lastModified() > 0 &&                  
-           file.lastModified() < System.currentTimeMillis() - LocalHistorySettings.getTTL()) 
+           file.lastModified() < System.currentTimeMillis() - LocalHistorySettings.getTTL())  // XXX does this make sense?
         {
             return false;
         }

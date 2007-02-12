@@ -42,6 +42,10 @@ public class RevertToAction extends NodeAction {
         return new HelpCtx(getClass());
     }   
     
+    protected boolean asynchronous() {
+        return false;
+    }
+    
     protected void performAction(final Node[] activatedNodes) {
         // XXX try to save files in invocation context only
         // list somehow modified file in the context and save
