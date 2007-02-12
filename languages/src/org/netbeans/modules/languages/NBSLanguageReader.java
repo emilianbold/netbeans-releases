@@ -383,19 +383,14 @@ public class NBSLanguageReader {
                 getEvaluator (m, "condition", false)
             );
             Object f = language.getFeature (featureName, identifier.toString());
-            if (f == null) {
-                language.addFeature (featureName, identifier, feature);
+            List flist;
+            if (f != null) {
+                flist = (List)f;
             } else {
-                List flist;
-                if (f instanceof List) {
-                    flist = (List)f;
-                } else {
-                    flist = new ArrayList();
-                    flist.add(f);
-                }
-                flist.add(feature);
-                language.addFeature (featureName, identifier, flist);
+                flist = new ArrayList();
             }
+            flist.add(feature);
+            language.addFeature (featureName, identifier, flist);
         } else
         if (Language.COMPLETE.equals (featureName)) {
             if (identifier != null)

@@ -496,13 +496,7 @@ public class Language {
         while (it.hasNext ()) {
             TokenType token = (TokenType) it.next ();
             Object obj = getFeature(Language.COLOR, token.getType ());
-            if (obj instanceof SimpleAttributeSet) {
-                SimpleAttributeSet as = (SimpleAttributeSet)obj;
-                String id = (String)as.getAttribute("color_name"); // NOI18N
-                if (id == null)
-                    id = token.getType ();
-                addColor (id, as, colorsMap, defaultsMap);
-            } else if (obj instanceof List) {
+            if (obj != null) {
                 for (Iterator iter = ((List)obj).iterator(); iter.hasNext(); ) {
                     SimpleAttributeSet as = (SimpleAttributeSet)iter.next();
                     String id = (String)as.getAttribute("color_name"); // NOI18N
@@ -521,9 +515,7 @@ public class Language {
             if (colorsMap.containsKey (type))
                 continue;
             Object obj = m.get (type);
-            if (obj instanceof SimpleAttributeSet) {
-                addColor (type, (SimpleAttributeSet)obj, colorsMap, defaultsMap);
-            } else if (obj instanceof List) {
+            if (obj != null) {
                 for (Iterator iter = ((List)obj).iterator(); iter.hasNext(); ) {
                     SimpleAttributeSet as = (SimpleAttributeSet) iter.next();
                     addColor (type, as, colorsMap, defaultsMap);
