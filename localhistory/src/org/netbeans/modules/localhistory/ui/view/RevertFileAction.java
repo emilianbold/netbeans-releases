@@ -43,12 +43,8 @@ public class RevertFileAction extends NodeAction {
         return new HelpCtx(getClass());
     }  
     
-    protected void performAction(Node[] activatedNodes) {      
-        RevertFileChanges.revert(activatedNodes);
-    }
-    
-    public static void revert(final Node[] nodes) {
-        // XXX try to save files in invocation context only
+    protected void performAction(final Node[] activatedNodes) {      
+       // XXX try to save files in invocation context only
         // list somehow modified file in the context and save
         // just them.
         // The same (global save) logic is in CVS, no complaint
@@ -57,12 +53,12 @@ public class RevertFileAction extends NodeAction {
         // XXX progress support ???
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {                 
-                Utils.revert(nodes);
+                Utils.revert(activatedNodes);
             }
         });
         // XXX refresh view        
     }
-    
+            
     protected boolean enable(Node[] activatedNodes) {
         if(activatedNodes == null || activatedNodes.length != 1) {
             return false;

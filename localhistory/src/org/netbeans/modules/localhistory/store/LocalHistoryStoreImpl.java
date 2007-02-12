@@ -227,31 +227,27 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     
     public synchronized StoreEntry[] getStoreEntries(File file) {
         // XXX file.isFile() won't work for deleted files
-        return getStoreEntriesImpl(file, file.isFile());
+        return getStoreEntriesImpl(file);
     }
     
-    private StoreEntry[] getStoreEntriesImpl(File file, boolean isFile) {
-        if(isFile) {
-            File storeFolder = getStoreFolder(file);
-            File[] storeFiles = storeFolder.listFiles(fileEntriesFilter);
-            if(storeFiles != null) {
-                List<StoreEntry> ret = new ArrayList<StoreEntry>(storeFiles.length);                
-                if(storeFiles.length > 0) {
-                    Map<Long, String> labels = getLabels(getLabelsFile(file));
-                    for (int i = 0; i < storeFiles.length; i++) {
-                        long ts = Long.parseLong(storeFiles[i].getName());
-                        String label = labels.get(ts);
-                        ret.add(StoreEntry.createStoreEntry(file, storeFiles[i], ts, label));                
-                    }
-                    return ret.toArray(new StoreEntry[storeFiles.length]);
+    private StoreEntry[] getStoreEntriesImpl(File file) {
+        File storeFolder = getStoreFolder(file);
+        File[] storeFiles = storeFolder.listFiles(fileEntriesFilter);
+        if(storeFiles != null || storeFiles.length > 0) {
+            List<StoreEntry> ret = new ArrayList<StoreEntry>(storeFiles.length);                
+            if(storeFiles.length > 0) {
+                Map<Long, String> labels = getLabels(getLabelsFile(file));
+                for (int i = 0; i < storeFiles.length; i++) {
+                    long ts = Long.parseLong(storeFiles[i].getName());
+                    String label = labels.get(ts);
+                    ret.add(StoreEntry.createStoreEntry(file, storeFiles[i], ts, label));                
                 }
-                return emptyStoreEntryArray;                        
-            } else {
-                return emptyStoreEntryArray;            
-            }           
+                return ret.toArray(new StoreEntry[storeFiles.length]);
+            }
+            return emptyStoreEntryArray;                        
         } else {
             return emptyStoreEntryArray;            
-        }        
+        }           
     }
 
     public StoreEntry[] getFolderState(File root, File[] files, long ts) {
@@ -474,7 +470,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             return null;
         }
         if(data.isFile()) {
-            StoreEntry[] entries = getStoreEntriesImpl(file, data.isFile());                    
+            StoreEntry[] entries = getStoreEntriesImpl(file);                    
             for(StoreEntry se : entries) {
                 if(se.getTimestamp() <= ts) {
                     if( entry == null || se.getTimestamp() > entry.getTimestamp() ) {                        
@@ -483,7 +479,6 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 }
             } 
         } else {
-            // XXX could be a folder
             // XXX dont implement this for folders as long there is no need
         }
         

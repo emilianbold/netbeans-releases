@@ -26,9 +26,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.diff.Diff;
@@ -109,7 +112,18 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
                     try {   
                         
                         StreamSource ss1 = StreamSource.createSource("historyfile", entry.getFile().getName() + " " + StoreEntryNode.getFormatedDate(entry), entry.getMIMEType(), new InputStreamReader(entry.getStoreFileInputStream()));
-                        StreamSource ss2 = StreamSource.createSource("currentfile", NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_Diff_CurrentFile"), entry.getMIMEType(), new FileReader(entry.getFile()));
+                        
+                        String title;
+                        Reader r;
+                        File file = entry.getFile();
+                        if(file.exists()) {
+                            title = NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_Diff_CurrentFile");
+                            r = new FileReader(file);
+                        } else {
+                            title = NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_Diff_FileDeleted");
+                            r = new StringReader(""); // XXX
+                        }
+                        StreamSource ss2 = StreamSource.createSource("currentfile", title, entry.getMIMEType(), r);
                         
                         diffView = diff.createDiff(ss1, ss2);  
                         
@@ -141,8 +155,8 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         }       
         panel.diffPanel.add(component, BorderLayout.CENTER);
         diffComponent = component;   
-//        panel.diffPanel.revalidate();
-//        panel.diffPanel.repaint();
+        panel.diffPanel.revalidate();
+        panel.diffPanel.repaint();
         //panel.splitPane.setDividerLocation(dl);                
     }       
     

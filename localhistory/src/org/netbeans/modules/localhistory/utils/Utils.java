@@ -51,12 +51,11 @@ public class Utils {
         try {                        
             FileObject fo = FileUtil.toFileObject(se.getFile());  
             if(se.getStoreFile() != null) { // XXX change this semantic to isDeleted() or something similar                
-                if(fo != null) {
-                    os = getOutputStream(fo);     
-                    is = se.getStoreFileInputStream();                        
-                } else {
+                if(fo == null) {
                     fo = FileUtil.createData(se.getFile());                                    
                 }                
+                os = getOutputStream(fo);     
+                is = se.getStoreFileInputStream();                 
                 FileUtil.copy(is, os);
             } else {
                 fo.delete();

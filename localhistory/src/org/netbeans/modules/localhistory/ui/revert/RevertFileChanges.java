@@ -36,7 +36,7 @@ public class RevertFileChanges extends RevertChanges implements PropertyChangeLi
            
     void show(File[] roots) {
         LocalHistoryFileView view = new LocalHistoryFileView (roots);        
-        view.getPanel().setPreferredSize(new Dimension(400, 250));
+        view.getPanel().setPreferredSize(new Dimension(550, 250));
         if(show(view.getPanel())) {
             Node[] nodes = view.getExplorerManager().getSelectedNodes();
             revert(nodes); // XXX get selected nodes            
