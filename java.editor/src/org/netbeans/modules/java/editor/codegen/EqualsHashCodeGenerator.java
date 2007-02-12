@@ -192,13 +192,36 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         //int hash = <startNumber>;
         statements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "hash", make.PrimitiveType(TypeKind.INT), make.Literal(startNumber))); //NOI18N        
         for (VariableElement ve : hashCodeFields) {
-            ExpressionTree variableRead;            
-            if (ve.asType().getKind().isPrimitive()) {
-                variableRead = make.MemberSelect(make.Identifier("this"), ve.getSimpleName()); //NOI18N
-            } else {
-                variableRead = make.ConditionalExpression(make.Binary(Tree.Kind.NOT_EQUAL_TO, make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier("null")), //NOI18N
-                        make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), "hashCode"), Collections.<ExpressionTree>emptyList()), //NOI18N
-                        make.Literal(0));
+            ExpressionTree variableRead;
+            switch (ve.asType().getKind()) {
+                case BYTE:
+                case CHAR:
+                case SHORT:
+                case INT:
+                    variableRead = make.MemberSelect(make.Identifier("this"), ve.getSimpleName()); //NOI18N
+                    break;
+                case LONG:
+                    variableRead = make.TypeCast(make.PrimitiveType(TypeKind.INT), make.Parenthesized(make.Binary(Tree.Kind.XOR,
+                            make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Parenthesized(make.Binary(Tree.Kind.UNSIGNED_RIGHT_SHIFT, //NOI18N
+                            make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Literal(32)))))); //NOI18N
+                    break;
+                case FLOAT:
+                    variableRead = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier("Float"), "floatToIntBits"), //NOI18N
+                            Collections.singletonList(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()))); //NOI18N
+                    break;
+                case DOUBLE:
+                    ExpressionTree et = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier("Double"), "doubleToLongBits"), //NOI18N
+                            Collections.singletonList(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()))); //NOI18N
+                    variableRead = make.TypeCast(make.PrimitiveType(TypeKind.INT), make.Parenthesized(make.Binary(Tree.Kind.XOR,
+                            et, make.Parenthesized(make.Binary(Tree.Kind.UNSIGNED_RIGHT_SHIFT, et, make.Literal(32)))))); //NOI18N
+                    break;
+                case BOOLEAN:
+                    variableRead = make.ConditionalExpression(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Literal(1), make.Literal(0)); //NOI18N
+                    break;
+                default:
+                    variableRead = make.ConditionalExpression(make.Binary(Tree.Kind.NOT_EQUAL_TO, make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier("null")), //NOI18N
+                            make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), "hashCode"), Collections.<ExpressionTree>emptyList()), //NOI18N
+                            make.Literal(0));
             }
             statements.add(make.ExpressionStatement(make.Assignment(make.Identifier("hash"), make.Binary(Tree.Kind.PLUS, make.Binary(Tree.Kind.MULTIPLY, make.Literal(multiplyNumber), make.Identifier("hash")), variableRead)))); //NOI18N
         }
