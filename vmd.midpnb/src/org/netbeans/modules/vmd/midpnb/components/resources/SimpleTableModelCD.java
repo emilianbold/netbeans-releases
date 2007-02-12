@@ -65,7 +65,6 @@ public class SimpleTableModelCD extends ComponentDescriptor {
      
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
-        //return new TypeDescriptor(ResourceCD.TYPEID, TYPEID, true, true);
     }
 
     public VersionDescriptor getVersionDescriptor() {
