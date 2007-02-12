@@ -176,6 +176,7 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
     protected CloneableTopComponent createCloneableTopComponent() {
         CloneableTopComponent tc = super.createCloneableTopComponent();
         this.mvtc = tc;
+        updateDisplayName ();
         return tc;
     }
 
