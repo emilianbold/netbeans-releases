@@ -22,8 +22,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <property name="build.sysclasspath" value="ignore"/>
     
-    <property name="xtest.home" location="../.."/>
-    <property name="xtest.basedir" location=".."/>
+    <property name="xtest.home" location="${netbeans.user}/xtest-distribution"/>
+    <property name="xtest.basedir" location="../.."/>
     
     <property name="xtest.config" value="all-tests"/>
     <property name="xtest.instance.name" value="Paint Application tests"/>
