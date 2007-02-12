@@ -51,7 +51,7 @@ public class SEMCPropertiesDescriptor implements ProjectPropertiesDescriptor {
     }
     
     private String randomUID() {
-        String s = "0000000" + String.valueOf(Math.random()*10000000); //NOI18N
+        String s = "0000000" + String.valueOf((long)(Math.random()*10000000)); //NOI18N
         return 'E' + s.substring(s.length()-7, s.length());
     }
     

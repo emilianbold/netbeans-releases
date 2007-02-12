@@ -39,6 +39,14 @@
             </folder>
         </folder>
     </folder>
+    <folder name="MainTemplates">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <file name="nokiaS80">
+                <attr name="templateName" stringvalue="Templates/GUIForms/AWTForms/Frame.java"/>
+                <attr name="templateType" stringvalue="main"/>
+            </file>
+        </folder>
+    </folder>    
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="nokiaS80-ant-utils.xml" url="Utils.xml"/>

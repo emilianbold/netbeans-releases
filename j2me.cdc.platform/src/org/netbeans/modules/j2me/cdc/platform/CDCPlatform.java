@@ -34,8 +34,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2me.cdc.platform.platformdefinition.Util;
-import org.netbeans.modules.j2me.cdc.platform.spi.CDCProjectInformation;
-import org.netbeans.modules.j2me.cdc.platform.spi.CDCProjectInformationFactory;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -67,11 +65,6 @@ public class CDCPlatform extends JavaPlatform {
     public static String PROP_EXEC_MAIN   = "main";
     public static String PROP_EXEC_XLET   = "xlet";
     public static String PROP_EXEC_APPLET = "applet";
-    
-    /**
-     * Holds the facory for creating project info
-     */
-     private CDCProjectInformationFactory cpiFactory;
     
     /**
      * Holds the properties of the platform
@@ -160,47 +153,6 @@ public class CDCPlatform extends JavaPlatform {
         }
         properties = new Properties();
         properties.put (PLAT_PROP_ANT_NAME, antName);
-        getCDCProjectInformation();
-    }
-    
-    private void createCDCFactory()
-    {
-        if (cpiFactory == null)
-        {            
-            FileObject fo=Repository.getDefault().getDefaultFileSystem().findResource("/CDC/Information");
-            FileObject pif=fo.getFileObject(type);
-            if (pif != null)
-            {
-                try             {
-                    java.lang.Object str = pif.getAttribute("instanceClass");
-                    java.lang.Class  cl1=((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass((String)str);
-
-
-                    cpiFactory = (org.netbeans.modules.j2me.cdc.platform.spi.CDCProjectInformationFactory) cl1.getConstructor(null).newInstance(null);
-                }
-                catch (Exception ex) {
-                    java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                                                                     ex.getMessage(),
-                                                                     ex);
-                }
-            }
-        }
-    }
-    
-    public CDCProjectInformation getCDCProjectInformation()
-    {
-        createCDCFactory();
-        if (cpiFactory != null)
-            return cpiFactory.createCDCProjectInformation();
-        else return null;
-    }
-    
-    public String getMainClassTemplate()
-    {
-        createCDCFactory();
-        if (cpiFactory != null)
-            return cpiFactory.getMainClassTemplate();
-        else return null;
     }
     
     /**

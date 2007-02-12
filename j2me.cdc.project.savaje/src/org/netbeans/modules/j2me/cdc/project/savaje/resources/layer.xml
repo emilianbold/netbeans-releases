@@ -42,7 +42,14 @@
             </folder>
         </folder>
     </folder>
-
+    <folder name="MainTemplates">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <file name="savaje">
+                <attr name="templateName" stringvalue="Templates/GUIForms/JFrame.java"/>
+                <attr name="templateType" stringvalue="main"/>
+            </file>
+        </folder>
+    </folder>    
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="savaje-ant-utils.xml" url="Utils.xml"/>

@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.j2me.cdc.platform.CDCDevice;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
-import org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformConfigurator;
 import org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformDetector;
 import org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformUtil;
 import org.netbeans.modules.j2me.cdc.platform.spi.StreamReader;

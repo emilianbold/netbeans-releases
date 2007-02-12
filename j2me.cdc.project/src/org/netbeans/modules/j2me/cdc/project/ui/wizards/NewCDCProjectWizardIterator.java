@@ -124,38 +124,25 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
             };
     }
     
-    private static boolean createMainClass( String mainClassName, FileObject srcFolder, String  activePlatform ) throws IOException {
-        
+    private static String createMainClass( String mainClassName, FileObject srcFolder, String platformType) throws IOException {
         int lastDotIdx = mainClassName.lastIndexOf( '.' );
         String mName, pName;
         if ( lastDotIdx == -1 ) {
             mName = mainClassName.trim();
             pName = null;
-        }
-        else {
+        } else {
             mName = mainClassName.substring( lastDotIdx + 1 ).trim();
             pName = mainClassName.substring( 0, lastDotIdx ).trim();
         }
-        
-        if ( mName.length() == 0 ) {
-            return false;
-        }
-        FileObject mainTemplate = null;
-        JavaPlatform platforms[]=JavaPlatformManager.getDefault().getPlatforms(activePlatform, null);
-        if (platforms.length!=0 && platforms[0] instanceof CDCPlatform)
-        {
-            CDCPlatform platform=(CDCPlatform)platforms[0];
-            String s = platform.getMainClassTemplate();
-            if (s != null)
-                mainTemplate = Repository.getDefault().getDefaultFileSystem().findResource(s);
-        }        
-        
-        if ( mainTemplate == null ) {
-            return false; // Don't know the template
-        }
-                
+        if ( mName.length() == 0 || platformType == null) return null;
+        FileObject mainTemplate = Repository.getDefault().getDefaultFileSystem().findResource("MainTemplates/org.netbeans.modules.kjava.j2meproject/" + platformType); //NOI18N
+        if ( mainTemplate == null ) return null;
+        String templateName = (String)mainTemplate.getAttribute("templateName"); //NOI18N
+        String templateType = (String)mainTemplate.getAttribute("templateType"); //NOI18N
+        if (templateName == null || templateType == null) return null;
+        mainTemplate = Repository.getDefault().getDefaultFileSystem().findResource(templateName);
+        if ( mainTemplate == null ) return null;
         DataObject mt = DataObject.find( mainTemplate );
-        
         FileObject pkgFolder = srcFolder;
         if ( pName != null ) {
             String fName = pName.replace( '.', '/' ); // NOI18N
@@ -163,8 +150,7 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
         }
         DataFolder pDf = DataFolder.findFolder( pkgFolder );        
         mt.createFromTemplate( pDf, mName );
-        
-        return "true".equals(mainTemplate.getAttribute("isXlet")); //NOI18N
+        return templateType;
     }
     
     private static String normalizePath (File path,  File jdkHome, String propName) {
@@ -235,21 +221,18 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
             
             PlatformSelectionPanel.PlatformDescription pd=(PlatformSelectionPanel.PlatformDescription) wiz.getProperty(PlatformSelectionPanel.PLATFORM_DESCRIPTION);
             AntProjectHelper h =J2MEProjectGenerator.createProject(dirF, name, pd,new J2MEProjectGenerator.ProjectGeneratorCallback() {
-            public void doPostGeneration(Project project,
-                                         AntProjectHelper helper,
-                                         FileObject projectLocation,
-                                         File projectLocationFile,
-                                         ArrayList<String> configurations) throws IOException {
+            public void doPostGeneration(Project project, AntProjectHelper helper, FileObject projectLocation, File projectLocationFile, ArrayList<String> configurations) throws IOException {
                 final FileObject src = projectLocation.createFolder("src");
-                boolean isXlet = createMainClass(mainClass, src, activePlatform);
-                final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS, mainClass);
-                ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS_CLASS, isXlet ? "xlet" : "main"); //NOI18N
-                ep.setProperty(CDCPropertiesDescriptor.APPLICATION_NAME, project.getProjectDirectory().getNameExt());
                 JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms (activePlatform, new Specification(CDCPlatform.PLATFORM_CDC,null));    //NOI18N
-                
                 if (platforms.length != 0){
                     CDCPlatform cdcplatform = (CDCPlatform)platforms[0];
+                    String templateType = createMainClass(mainClass, src, cdcplatform.getType());
+                    final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS, mainClass);
+                    if (templateType != null) {
+                        ep.setProperty(CDCPropertiesDescriptor.MAIN_CLASS_CLASS, templateType);
+                    }
+                    ep.setProperty(CDCPropertiesDescriptor.APPLICATION_NAME, project.getProjectDirectory().getNameExt());
                     ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_ACTIVE, cdcplatform.getAntName()); // NOI18N        
                     ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_ACTIVE_DESCRIPTION, cdcplatform.getDisplayName()); // NOI18N        
                     ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_TRIGGER, "CDC"); // NOI18N        

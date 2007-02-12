@@ -34,7 +34,6 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
-import org.netbeans.modules.j2me.cdc.platform.spi.CDCProjectInformation;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -51,7 +50,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     private int type;
 
     //private ProjectTypeProvider provider;
-    private JPanel additionalInfoPanel;
     private PropertyChangeListener pcl;
         
     private String PROP_PLATFROM_RESOLVED = "platfromResolved";
@@ -201,20 +199,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     }// </editor-fold>//GEN-END:initComponents
            
     boolean valid(WizardDescriptor settings) {
-        
-        String s = (String)settings.getProperty("activePlatform");
-        JavaPlatform platforms[]=JavaPlatformManager.getDefault().getPlatforms (s, new Specification(CDCPlatform.PLATFORM_CDC,null));    //NOI18N
-        if (platforms.length!=0 && platforms[0] instanceof CDCPlatform)
-        {
-            CDCPlatform plat=(CDCPlatform)platforms[0];
-            CDCProjectInformation info = plat.getCDCProjectInformation();
-            if (info == null)
-                return false;
-            settings.putProperty( "WizardPanel_errorMessage", info.getMessage());
-            if (!info.isPanelValid())
-                return false;
-        }
-        
         if (mainClassTextField.isVisible () && mainClassTextField.isEnabled ()) {
             if (!valid) {
                 settings.putProperty( "WizardPanel_errorMessage", // NOI18N
@@ -237,16 +221,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
             Properties p = (Properties) d.getProperty("additionalProperties");
             p.put(PROP_PLATFROM_RESOLVED, platform);
-            CDCProjectInformation cpi=platform.getCDCProjectInformation();
-            assert cpi != null;
-            cpi.setProperties( p );
-            additionalInfoPanel = platform.getCDCProjectInformation().getAdditionalPanel();
-            this.setVisible(false);
-            containerPanel.removeAll();
-            containerPanel.add(additionalInfoPanel, BorderLayout.CENTER);
-            additionalInfoPanel.addPropertyChangeListener(pcl);
-            this.setVisible(true);
-            this.invalidate();
         }
     }
     
@@ -257,18 +231,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     void store( WizardDescriptor d ) {
         d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         d.putProperty( /*XXX Define somewhere */ "mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null ); // NOI18N
-        if (additionalInfoPanel != null){
-            additionalInfoPanel.removePropertyChangeListener(pcl);
-        }
-        String s = (String)d.getProperty("activePlatform");
-        JavaPlatform platforms[]=JavaPlatformManager.getDefault().getPlatforms (s, new Specification(CDCPlatform.PLATFORM_CDC,null));    //NOI18N
-        if (platforms.length!=0 && platforms[0] instanceof CDCPlatform)
-        {
-            CDCPlatform platform=(CDCPlatform)platforms[0];
-            Properties p = platform.getCDCProjectInformation().getProperties();
-            p.remove(PROP_PLATFROM_RESOLVED); //remove otherwise it is going to be stored in propejct.properties!!
-            d.putProperty("additionalProperties", p);
-        }
    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

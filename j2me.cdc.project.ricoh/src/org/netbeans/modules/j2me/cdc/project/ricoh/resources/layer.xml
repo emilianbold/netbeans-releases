@@ -42,13 +42,19 @@
             </folder>
         </folder>
     </folder>
-
+    <folder name="MainTemplates">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <file name="ricoh">
+                <attr name="templateName" stringvalue="Templates/CDC/RicohXlet.java"/>
+                <attr name="templateType" stringvalue="xlet"/>
+            </file>
+        </folder>
+    </folder>    
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="ricoh-ant-utils.xml" url="Utils.xml"/>
         </folder>
     </folder>    
-
     <folder name="Templates">
         <folder name="CDC">
             <attr name="AWTXlet.java/RicohXlet.java" boolvalue="true"/>
@@ -61,7 +67,6 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/class.gif"/>
                 <attr name="CDC" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="CDC/Ricoh"/>
-                <attr name="isXlet" stringvalue="true"/>
             </file>            
         </folder>
     </folder>

@@ -78,12 +78,18 @@ public class RicohPropertiesDescriptor implements ProjectPropertiesDescriptor {
     public static final String RICOH_DALP_ARGUMENT               = "ricoh.dalp.argument"; //NOI18N                     
                                                                                                       
     private Reference<Set<PropertyDescriptor>> ref = new WeakReference(null);
-    
+    private PropertyDescriptor uid;
+   
     /** Creates a new instance of RicohPropertiesDescriptor */
     public RicohPropertiesDescriptor() {
     }
-    
-    public Set getPropertyDescriptors() {
+     
+    private String randomUID() {
+        String s = "00000000" + String.valueOf((long)(Math.random()*100000000)); //NOI18N
+        return s.substring(s.length()-8, s.length());
+    }
+   
+    public synchronized Set getPropertyDescriptors() {
         Set<PropertyDescriptor> set = ref.get();
         if (set == null) {
             String FALSE = "false"; //NOI18N
@@ -93,7 +99,6 @@ public class RicohPropertiesDescriptor implements ProjectPropertiesDescriptor {
             set.add(new PropertyDescriptor(RICOH_EMAIL, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
             set.add(new PropertyDescriptor(RICOH_FAX, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
             set.add(new PropertyDescriptor(RICOH_PHONE, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
-            set.add(new PropertyDescriptor(RICOH_UID, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
             set.add(new PropertyDescriptor(RICOH_ICON, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
             set.add(new PropertyDescriptor(RICOH_TARGET_JAR, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
             set.add(new PropertyDescriptor(RICOH_APP_VERSION, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
@@ -129,6 +134,9 @@ public class RicohPropertiesDescriptor implements ProjectPropertiesDescriptor {
             set.add(new PropertyDescriptor(RICOH_DALP_ARGUMENT, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                    
             ref = new WeakReference(set);
         }
+        if (uid != null) set.remove(uid);
+        uid = new PropertyDescriptor(RICOH_UID, true, DefaultPropertyParsers.STRING_PARSER,  randomUID());
+        set.add(uid);
         return set;
     }
 }

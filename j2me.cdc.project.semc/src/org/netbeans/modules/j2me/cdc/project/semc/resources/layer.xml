@@ -48,7 +48,14 @@
             </folder>
         </folder>
     </folder>
-
+    <folder name="MainTemplates">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <file name="semc">
+                <attr name="templateName" stringvalue="Templates/GUIForms/AWTForms/Frame.java"/>
+                <attr name="templateType" stringvalue="main"/>
+            </file>
+        </folder>
+    </folder>    
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="semc-ant-utils.xml" url="Utils.xml"/>
