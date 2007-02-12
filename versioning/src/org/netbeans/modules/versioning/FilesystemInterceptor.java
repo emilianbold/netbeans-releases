@@ -22,7 +22,6 @@ import org.openide.filesystems.*;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -87,6 +86,10 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     public void fileChanged(FileEvent fe) {
         removeFromDeletedFiles(fe.getFile());
         getInterceptor(fe).afterChange();                
+    }
+            
+    public void beforeChange(FileObject fo) {    
+        getInterceptor(FileUtil.toFile(fo), fo.isFolder()).beforeChange();
     }
 
     // ==================================================================================================
@@ -238,6 +241,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         public boolean beforeCreate() { return false; }
         public void doCreate() throws IOException {  }
         public void afterCreate() {  }
+        public void beforeChange() {  }        
         public void afterChange() {  }
         public void afterMove() {  }
         public void handle() throws IOException {  }
@@ -321,6 +325,11 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
             interceptor.afterChange(file);            
         }
 
+        public void beforeChange() {
+            lhInterceptor.beforeChange(file);
+            interceptor.beforeChange(file);            
+        }
+        
         /**
          * We are doing MOVE here, inspite of the generic name of the method.
          * 

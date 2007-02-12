@@ -146,4 +146,13 @@ public abstract class VCSInterceptor {
      */
     public void afterChange(File file) {
     }
+    
+    /**
+     * Called before a file is changed.
+     * 
+     * @param file to be changed file
+     */
+    public void beforeChange(File file) {
+    }
+    
 }
