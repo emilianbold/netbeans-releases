@@ -43,6 +43,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
     // immutable method prototype
     private final MethodModel methodModel;
     private final ParametersPanel parametersPanel;
+    private final boolean hasInterfaces;
     
     private MethodCustomizerPanel(
             MethodModel methodModel,
@@ -58,6 +59,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         initComponents();
         
         this.methodModel = methodModel;
+        this.hasInterfaces = hasInterfaces;
         
         nameTextField.setText(methodModel.getName());
         returnTypeTextField.setText(methodModel.getReturnType());
@@ -373,6 +375,10 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         return methodModel.getBody();
     }
     
+    public boolean supportsInterfacesChecking() {
+        return hasInterfaces;
+    }
+    
     public boolean hasLocal() {
         return localCheckBox.isEnabled() & localCheckBox.isSelected();
     }
@@ -384,23 +390,6 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
     private void disableReturnType() {
         returnTypeLabel.setVisible(false);
         returnTypeTextField.setVisible(false);
-    }
-    
-    private void disableCardinality() {
-        cardinalityLabel.setVisible(false);
-        oneRadioButton.setVisible(false);
-        manyRadioButton.setVisible(false);
-    }
-    
-    private void disableInterfaces() {
-        interfaceLabel.setVisible(false);
-        remoteCheckBox.setVisible(false);
-        localCheckBox.setVisible(false);
-    }
-    
-    private void disableEjbql() {
-        ejbqlLabel.setVisible(false);
-        ejbqlScrollPane.setVisible(false);
     }
     
     /**

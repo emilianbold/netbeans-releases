@@ -33,37 +33,43 @@ public final class ValidatingPropertyChangeListener implements PropertyChangeLis
     
     private final MethodCustomizerPanel panel;
     private final NotifyDescriptor notifyDescriptor;
+    private final boolean checkInterfaces;
     
     public ValidatingPropertyChangeListener(MethodCustomizerPanel panel, NotifyDescriptor notifyDescriptor) {
         this.panel = panel;
         this.notifyDescriptor = notifyDescriptor;
+        this.checkInterfaces = panel.supportsInterfacesChecking();
     }
     
     public void propertyChange(PropertyChangeEvent event) {
         validate();
     }
     
-    private void validate() {
+    // protected for testing
+    protected boolean validate() {
         // method name
         String name = panel.getMethodName();
         if (!Utilities.isJavaIdentifier(name)) {
             setError(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_nameNonJavaIdentifier"));
-            return;
+            return false;
         }
         // return type
         String returnType = panel.getReturnType();
         if ("".equals(returnType)) {
             setError(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_returnTypeInvalid"));
-            return;
+            return false;
         }
         // interfaces
-        boolean local = panel.hasLocal();
-        boolean remote = panel.hasRemote();
-        if (!local && !remote) {
-            setError(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_selectSomeInterface"));
-            return;
+        if (checkInterfaces) {
+            boolean local = panel.hasLocal();
+            boolean remote = panel.hasRemote();
+            if (!local && !remote) {
+                setError(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_selectSomeInterface"));
+                return false;
+            }
         }
         unsetError();
+        return true;
     }
     
     private void setError(String message) {
