@@ -163,7 +163,7 @@ public class GoToSupport {
                     
                     if (controller.getElementUtilities().isSynthetic(el) && el.getKind() == ElementKind.CONSTRUCTOR) {
                         //check for annonymous innerclasses:
-                        el = handlePossibleAnnonymousInnerClass(controller, el);
+                        el = handlePossibleAnonymousInnerClass(controller, el);
                     }
                     
                     if (isError(el)) {
@@ -236,7 +236,7 @@ public class GoToSupport {
         performGoTo(doc, offset, goToSource, false);
     }
     
-    private static final Set<JavaTokenId> USABLE_TOKEN_IDS = new HashSet(Arrays.asList(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER));
+    private static final Set<JavaTokenId> USABLE_TOKEN_IDS = new HashSet<JavaTokenId>(Arrays.asList(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER));
     
     public static int[] getIdentifierSpan(Document doc, int offset, Token<JavaTokenId>[] token) {
         if (getFileObject(doc) == null) {
@@ -244,7 +244,7 @@ public class GoToSupport {
             return null;
         }
         
-        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
         TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
         
         if (ts == null)
@@ -271,7 +271,7 @@ public class GoToSupport {
         return new int [] {ts.offset(), ts.offset() + t.length()};
     }
     
-    private static Element handlePossibleAnnonymousInnerClass(CompilationInfo info, final Element el) {
+    private static Element handlePossibleAnonymousInnerClass(CompilationInfo info, final Element el) {
         Element encl = el.getEnclosingElement();
         Element doubleEncl = encl != null ? encl.getEnclosingElement() : null;
         
@@ -400,7 +400,7 @@ public class GoToSupport {
             Element enclosing = e.getEnclosingElement();
             
             if (enclosing == SourceUtils.getEnclosingTypeElement(e)) {
-                result.append(((TypeElement) e).getQualifiedName());
+                result.append(e.getQualifiedName());
                 result.append('.');
                 boldStartCheck(highlightName);
                 result.append(e.getSimpleName());
