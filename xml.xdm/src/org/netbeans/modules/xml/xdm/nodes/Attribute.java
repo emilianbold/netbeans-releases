@@ -57,7 +57,7 @@ public class Attribute extends NodeImpl implements Node, org.w3c.dom.Attr {
         tokens.add(Token.create(" ", TokenType.TOKEN_WHITESPACE));
         tokens.add(Token.create(name, TokenType.TOKEN_ATTR_NAME));
         tokens.add(Token.create("=", TokenType.TOKEN_ATTR_EQUAL));
-        tokens.add(Token.create("\"".concat(value).concat("\""), TokenType.TOKEN_ATTR_VAL));
+        tokens.add(Token.create("\"".concat(insertEntityReference(value)).concat("\""), TokenType.TOKEN_ATTR_VAL));
     }
     
     public short getNodeType() {

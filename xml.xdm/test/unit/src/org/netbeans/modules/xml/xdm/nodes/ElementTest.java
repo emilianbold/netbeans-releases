@@ -419,6 +419,22 @@ public class ElementTest extends TestCase {
         assertNull(pasted.getAttribute("xmlns"));
     }
 
+    public void testSetAttributeWithXmlEscape() throws Exception {
+        javax.swing.text.Document doc = Util.getResourceAsDocument("nodes/test2.xml");
+        XDMModel model = Util.loadXDMModel(doc);
+        Element root = (Element) model.getDocument().getDocumentElement();
+        Element a1 = Util.getChildElementByTag(root, "tst:a");
+        String shouldEscapeXML = "a < b && c == '3'";
+        model.setAttribute(a1, "newattr", shouldEscapeXML);
+        model.flush();
+        String doctext = doc.getText(0, doc.getLength()-1);
+        System.out.println(doctext);
+        assertEquals(-1, doctext.indexOf(shouldEscapeXML));
+        assertEquals(124, doctext.indexOf("&lt;"));
+        assertEquals(131, doctext.indexOf("&amp;&amp;"));
+        assertEquals(147, doctext.indexOf("&apos;3&apos;"));
+    }
+    
     private XDMModel xmlModel;
     private Element elem;
 }
