@@ -6,7 +6,7 @@
         <property name="ricoh.application.email" value=""/>
         <condition property="no.unmanaged.dalp">
             <and>
-                <equals arg1="${{ricoh.dalp.is-managed}}" arg2="false" trim="true"/>
+                <isfalse value="${{ricoh.dalp.is-managed}}"/>
                 <not>
                     <available file="./RICOH.dalp"/>
                 </not>
@@ -22,7 +22,6 @@
                 <equals arg1="${{ricoh.application.icon}}" arg2="" trim="true"/>
             </or>
         </condition>
-        <property name="dalp.dist" value="${{build.dir}}/dalp/RICOH.dalp"/>
         <mkdir dir="${{dist.dir}}/lib"/>
     </target>
     <xsl:comment>ricoh-add-app-icon</xsl:comment>
@@ -42,7 +41,7 @@
     <target name="ricoh-build-dalp-with-icon" depends="ricoh-add-app-icon" if="ricoh-platform.trigger" unless="ricoh.icon.invalid">
         <mkdir dir="${{build.dir}}/dalp/"/>
         <taskIf if="ricoh.dalp.is-managed" value="true">
-            <dalp file="${{dalp.dist}}" iconname="${{icon.name}}">
+            <dalp file="${{dalp.dist}}" iconname="${{icon.name}}" execmode="true">
                 <fileset dir="${{dist.dir}}/lib"/>
             </dalp>
             <echo message="Managed dalp file ${{dalp.dist}} created w/ icon"/>
@@ -58,7 +57,7 @@
     <target name="ricoh-build-dalp-without-icon" if="ricoh.icon.invalid">
         <mkdir dir="${{build.dir}}/dalp/"/>
         <taskIf if="ricoh.dalp.is-managed" value="true">
-            <dalp file="${{dalp.dist}}">
+            <dalp file="${{dalp.dist}}" execmode="true">
                 <fileset dir="${{dist.dir}}/lib"/>
             </dalp>
             <echo message="Managed dalp file ${{dalp.dist}} created w/o icon"/>
@@ -70,5 +69,7 @@
             <echo message="Non-managed dalp file ${{dalp.dist}} w/o icon imported"/>
         </taskIf>
     </target>
-    <target name="ricoh-build-dalp" depends="ricoh-build-dalp-with-icon,ricoh-build-dalp-without-icon" if="ricoh-platform.trigger"/>
+    <target name="ricoh-build-dalp" depends="ricoh-build-dalp-with-icon,ricoh-build-dalp-without-icon" if="ricoh-platform.trigger">
+       <copy todir="${{dist.dir}}" file="${{dalp.dist}}" overwrite="true"/>
+    </target>
     

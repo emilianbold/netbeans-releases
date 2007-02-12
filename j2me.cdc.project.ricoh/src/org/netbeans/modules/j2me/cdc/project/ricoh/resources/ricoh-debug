@@ -1,7 +1,11 @@
 <xsl:comment>ricoh-debug</xsl:comment>
 
     <target name="ricoh-debug" if="ricoh-platform.trigger">
-        <delete file="${{build.dir}}/.timestamp"/>
+        <copy todir="${{platform.home}}/mnt/sd3/sdk/dsdk/dist/${{ricoh.application.uid}}" overwrite="true">
+            <fileset dir="${{dist.dir}}">
+                <patternset refid="deployment.patternset"/>
+            </fileset>
+        </copy>
         <taskIf if="ricoh.application.type" value="xlet">
             <parallel>
                 <ant antfile="${{platform.home}}/startemulator_debug.xml" target="debug_emulator" dir="${{platform.home}}">

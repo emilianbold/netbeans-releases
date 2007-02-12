@@ -2,7 +2,9 @@
 
     <target name="ricoh-run" if="ricoh-platform.trigger">
         <copy todir="${{platform.home}}/mnt/sd3/sdk/dsdk/dist/${{ricoh.application.uid}}" overwrite="true">
-            <fileset dir="${{dist.dir}}"/>
+            <fileset dir="${{dist.dir}}">
+                <patternset refid="deployment.patternset"/>
+            </fileset>
         </copy>
         <taskIf if="ricoh.application.type" value="xlet">
             <ant antfile="${{platform.home}}/startemulator.xml" target="start_emulator" dir="${{platform.home}}">

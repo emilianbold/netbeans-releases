@@ -1,7 +1,6 @@
 <xsl:comment>cldc-debug</xsl:comment>    
 
     <target name="cldc-debug" if="cldc-platform.trigger">
-        <delete file="${{build.dir}}/.timestamp"/>
         <parallel>
             <nb-run debug="true" debugsuspend="true" debugserver="true" debuggeraddressproperty="jpda.port" platformtype="${{platform.type}}" platformhome="${{platform.home}}" device="${{platform.device}}" jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="${{dist.dir}}/${{dist.jar}}" execmethod="${{run.method}}" securitydomain="${{evaluated.run.security.domain}}" commandline="${{platform.debugcommandline}}" classpath="${{platform.bootclasspath}}:${{dist.dir}}/${{dist.jar}}" cmdoptions="${{run.cmd.options}}"/>
             <sequential>

@@ -47,6 +47,8 @@ public class DalpBuilder extends Task {
     
     private List filesets = new LinkedList(); // List<FileSet>
     
+    private boolean execMode = false;
+    
     public void addFileset(FileSet fs) {
         filesets.add(fs);
     }    
@@ -67,7 +69,7 @@ public class DalpBuilder extends Task {
             pw.println("    <vendor>"     + getProject().getProperty("application.vendor")    + "</vendor>");
             if ("true".equals((getProject().getProperty("ricoh.dalp.information.is-icon-used"))) && (iconName != null))
             {
-                  pw.println("    <icon href=\"./" + getProject().getProperty("dist.jar.name") + "\" basepath=\"current\" location=\"jar\">" + iconName + "</icon>");
+                  pw.println("    <icon href=\"./" + getProject().getProperty("dist.jar") + "\" basepath=\"current\" location=\"jar\">" + iconName + "</icon>");
 //                pw.println("    <icon href=\"" + iconName + "\" location=\"jar\"/>");
             }
             else
@@ -79,7 +81,7 @@ public class DalpBuilder extends Task {
             pw.println("    <telephone>"                   + getProject().getProperty("ricoh.application.telephone")    + "</telephone>");
             pw.println("    <fax>"                         + getProject().getProperty("ricoh.application.fax")          + "</fax>");
             pw.println("    <e-mail>"                      + getProject().getProperty("ricoh.application.email")        + "</e-mail>");
-            pw.println("    <application-ver>"             + getProject().getProperty("application.version")            + "</application-ver>");
+            pw.println("    <application-ver>"             + getProject().getProperty("deployment.number")            + "</application-ver>");
             pw.println("    <offline-allowed/>");
             pw.println("  </information>");
             
@@ -90,10 +92,10 @@ public class DalpBuilder extends Task {
             pw.println("  <resources>");
             //pw.println("    <dsdk version=\"1.0\"/>");
             pw.println("    <dsdk version=\"" + getProject().getProperty("ricoh.dalp.resources.dsdk.version") + "\"/>");
-            if ("sdcard".equals(getProject().getProperty("ricoh.install-server.deploy-method")) || "httppost".equals(getProject().getProperty("ricoh.install-server.deploy-method")))
+            if (execMode || "sdcard".equals(getProject().getProperty("ricoh.install-server.deploy-method")) || "httppost".equals(getProject().getProperty("ricoh.install-server.deploy-method")))
             {
-                pw.println("    <jar href=\"./"   + getProject().getProperty("dist.jar.name") + 
-                                 "\" version=\""  + getProject().getProperty("application.version") + 
+                pw.println("    <jar href=\"./"   + getProject().getProperty("dist.jar") + 
+                                 "\" version=\""  + getProject().getProperty("deployment.number") + 
                                  "\" basepath=\"current\" main=\"true\" />");
             }
             else
@@ -101,8 +103,8 @@ public class DalpBuilder extends Task {
                 pw.println("    <jar href=\"http://" + getProject().getProperty("ricoh.install-server") + 
                                     ":" + getProject().getProperty("ricoh.install-server.web-port") + 
                                           getProject().getProperty("ricoh.install-server.path") + 
-                                    "/" + getProject().getProperty("dist.jar.name") +
-                                    "\" version=\""  + getProject().getProperty("application.version") + 
+                                    "/" + getProject().getProperty("dist.jar") +
+                                    "\" version=\""  + getProject().getProperty("deployment.number") + 
                                     "\" basepath=\"current\" main=\"true\" />");
             }
             
@@ -176,6 +178,10 @@ public class DalpBuilder extends Task {
         this.file = file;
     }
     
+    public void setExecMode(boolean execMode) {
+        this.execMode = execMode;
+    }
+    
     public String getIconName(){
         return iconName;
     }
@@ -198,9 +204,9 @@ public class DalpBuilder extends Task {
                     pw.println("    <jar href=\"http://" + getProject().getProperty("ricoh.install-server") + 
                                     ":" + getProject().getProperty("ricoh.install-server.web-port") + 
                                           getProject().getProperty("ricoh.install-server.path") + 
-                                                "/" + files[i] + "\" version=\"" + getProject().getProperty("application.version") + "\" basepath=\"current\" />");                
+                                                "/" + files[i] + "\" version=\"" + getProject().getProperty("deployment.number") + "\" basepath=\"current\" />");                
                 else
-                    pw.println("    <jar href=\"./" + files[i] + "\" version=\"" + getProject().getProperty("application.version") + "\" basepath=\"current\" />");                
+                    pw.println("    <jar href=\"./" + files[i] + "\" version=\"" + getProject().getProperty("deployment.number") + "\" basepath=\"current\" />");                
             }
         }        
     }

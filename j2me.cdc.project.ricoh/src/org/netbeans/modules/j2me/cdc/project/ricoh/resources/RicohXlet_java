@@ -1,0 +1,144 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.Classes;
+
+import java.io.File;
+import jp.co.ricoh.dsdk.xlet.XletContext;
+import jp.co.ricoh.dsdk.xlet.XletStateChangeException;
+
+/**
+ *
+ * @author __USER__
+ */
+public class __NAME__ implements jp.co.ricoh.dsdk.xlet.Xlet {
+
+    jp.co.ricoh.dsdk.xlet.XletContext xletContext = null;
+    jp.co.ricoh.dsdk.panel.Frame rootFrame = null;
+    java.io.File homeDirectory = null;
+    
+    /**
+     * Put your initialization here, not in constructor.
+     * If something goes wrong, XletStateChangeException
+     * should be thrown.
+     */
+    public synchronized void initXlet(jp.co.ricoh.dsdk.xlet.XletContext context)
+        throws jp.co.ricoh.dsdk.xlet.XletStateChangeException {
+	xletContext = context;
+	rootFrame = __NAME__.getRootFrame(context);
+	homeDirectory = new java.io.File((String)xletContext.getXletProperty(jp.co.ricoh.dsdk.xlet.XletContext.HOME));
+	this.makeUIControls();
+    }
+
+    /**
+     * Xlet will be started here.
+     * If something goes wrong, XletStateChangeException
+     * should be thrown.
+     */
+    public synchronized void startXlet() throws jp.co.ricoh.dsdk.xlet.XletStateChangeException {
+        // TODO implement
+    }
+
+    /**
+     * Free resources, stop unnecessary threads, remove
+     * itself from the screen.
+     */
+    public synchronized void pauseXlet() {
+        // TODO implement
+    }
+
+    /**
+     * Destroy yout xlet here.
+     * If parameter is false, you can try to not destroy xlet
+     * by throwing an XletStateChangeException
+     */
+    public synchronized void destroyXlet(boolean unconditional)
+        throws jp.co.ricoh.dsdk.xlet.XletStateChangeException {
+        //if((unconditional == false) && (okayToExit == false)) {
+	//    throw new jp.co.ricoh.dsdk.xlet.XletStateChangeException();
+	//}
+
+	// TODO implement
+    }
+    
+    /**
+     * Make controls for xlet UI.
+     */
+    private void makeUIControls() {
+	//
+	// Make an example label
+	//
+	jp.co.ricoh.dsdk.panel.Label exampleLabel = new jp.co.ricoh.dsdk.panel.Label("TODO implement makeUIControls");
+	exampleLabel.setLocation(100,80);
+	exampleLabel.setSize(300,16);
+	
+	rootFrame.add(exampleLabel);
+	
+	//
+	// Make an example button
+	//
+	jp.co.ricoh.dsdk.panel.Button quitButton = new jp.co.ricoh.dsdk.panel.Button("Quit");
+	quitButton.setBounds(520,200,60,16);
+	quitButton.addActionListener(new jp.co.ricoh.dsdk.panel.event.ActionListener() {
+            public void actionPerformed(jp.co.ricoh.dsdk.panel.event.ActionEvent e) {
+                quit();
+            }
+	});
+	
+	rootFrame.add(quitButton);
+    }
+
+    /**
+     * Terminate the program
+     */
+    private void quit() {
+	try {
+	    this.destroyXlet(true);
+	    xletContext.notifyDestroyed();
+	}  catch(jp.co.ricoh.dsdk.xlet.XletStateChangeException e) {}
+    }
+    
+    /**
+     * Returns a reference to the main window.
+     */
+    private static jp.co.ricoh.dsdk.panel.Frame getRootFrame(jp.co.ricoh.dsdk.xlet.XletContext context) throws jp.co.ricoh.dsdk.xlet.XletStateChangeException {
+        // find the frame window
+        jp.co.ricoh.dsdk.panel.Container parent = null;
+        
+	try {
+            parent = context.getContainer();
+        } catch (jp.co.ricoh.dsdk.xlet.UnavailableContainerException ex) {
+            throw new jp.co.ricoh.dsdk.xlet.XletStateChangeException(ex.toString());
+        }
+        
+        while(!(parent instanceof jp.co.ricoh.dsdk.panel.Frame)) {
+            parent = parent.getParent();
+            
+            if (parent == null)
+            {
+                return null;
+            }
+        }
+        
+        return (jp.co.ricoh.dsdk.panel.Frame)parent;
+    }
+    
+    /**
+     * Create a new thread for background processing.
+     */
+    private Thread createThread(java.lang.Runnable target) {
+	ThreadGroup xletThreadGroup = (ThreadGroup) xletContext.getXletProperty(jp.co.ricoh.dsdk.xlet.XletContext.THREADGROUP);
+	
+	Thread resultThread = new Thread(xletThreadGroup, target);
+	resultThread.setDaemon(true);
+	resultThread.start();
+	
+	return resultThread;
+    }
+}

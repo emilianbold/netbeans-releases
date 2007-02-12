@@ -39,4 +39,11 @@
         <property name="ricoh.dalp.information.abbreviation" value="RICOH"/>
         <taskdef name="taskIf" classname="ricoh.ant.ConditionalTask" classpath="${{libs.ricoh-ant-utils.classpath}}"/>
         <taskdef name="dalp" classname="org.netbeans.modules.j2me.cdc.project.ricoh.DalpBuilder" classpath="${{libs.ricoh-ant-utils.classpath}}"/>
+        <property name="dalp.dist" value="${{build.dir}}/dalp/RICOH.dalp"/>
+        <property name="deployment.dir" location="${{dist.dir}}"/>
+        <patternset id="deployment.patternset">
+            <include name="${{dist.jar}}"/>
+            <include name="RICOH.dalp"/>
+            <include name="lib/*"/>
+        </patternset>
     </target>
