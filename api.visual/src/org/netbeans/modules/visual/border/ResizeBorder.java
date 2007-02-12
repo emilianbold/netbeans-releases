@@ -45,6 +45,10 @@ public final class ResizeBorder implements Border {
         return new Insets (thickness, thickness, thickness, thickness);
     }
 
+    public boolean isOuter () {
+        return outer;
+    }
+
     public void paint (Graphics2D gr, Rectangle bounds) {
         gr.setColor (color);
 
