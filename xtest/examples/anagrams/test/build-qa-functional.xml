@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="anagrams/test-qa-functional" basedir="." default="all">
+
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+
+    <!-- Compile functional tests. This target is used in cfg-qa-functional.xml. -->
+    <target name="qa-functional-compiler">
+        <!-- Build application before tests -->
+        <ant dir=".." target="jar"/>
+        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
+            <classpath>
+                <!-- Add classpath elements needed to compile tests -->
+                <pathelement location="../dist/anagrams.jar"/>
+                <pathelement location="${jemmy.path}"/>
+            </classpath>
+        </buildTests>
+    </target>
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <!-- Run tests in JVM -->
+    <target name="run-jvm">        
+        <executeTests  pluginName="jvm">
+            <classpath>
+                <!-- Add classpath elements needed to run tests -->
+                <pathelement location="../dist/anagrams.jar"/>
+                <pathelement location="${jemmy.path}"/>
+            </classpath>
+        </executeTests>
+    </target>
+</project>
+

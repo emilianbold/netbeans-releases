@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
     <!--
-    <property name="xtest.testtype" value="functional"/>
+    <property name="xtest.testtype" value="qa-functional"/>
     <property name="xtest.attribs" value="stable,validation"/>
     -->
     
