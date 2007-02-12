@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project basedir="." default="all" name="xtest-master">
+    
+    <property name="build.sysclasspath" value="ignore"/>
+    
+    <property name="xtest.home" location="../.."/>
+    <property name="xtest.basedir" location=".."/>
+    
+    <property name="xtest.config" value="all-tests"/>
+    <property name="xtest.instance.name" value="Paint Application tests"/>
+    
+    <property name="xtest.harness.antfile" location="${xtest.home}/lib/harness.xml"/>
+    
+    
+    <!-- ============= -->
+
+    <target name="all">
+        <echo message="You should provide target to execute, see 'ant -projecthelp'"/>
+    </target>
+    
+    <target name="runtests">
+        <ant dir="." antfile="${xtest.harness.antfile}"
+             target="runtests"/>
+    </target>
+    
+    <target name="runtestsdist">
+        <ant dir="." antfile="${xtest.harness.antfile}"
+             target="runtestsdist"/>
+    </target>
+    
+    <target name="buildtests">
+        <ant dir="." antfile="${xtest.harness.antfile}"
+             target="buildtests"/>
+    </target>
+    
+    <target name="cleantests">        
+        <ant dir="." antfile="${xtest.harness.antfile}"
+             target="cleantests"/>
+    </target>
+    
+    <target name="cleanresults">
+        <ant dir="." antfile="${xtest.harness.antfile}"
+             target="cleanresults"/>
+    </target>
+    
+    <target name="realclean">
+        <ant dir="." antfile="${xtest.harness.antfile}"
+             target="realclean"/>
+    </target>
+    
+    <target name="real-clean" depends="realclean"/>
+    
+    <target name="buildtestsdist">
+        <ant dir="." antfile="${xtest.harness.antfile}"
+             target="buildtestsdist"/>
+    </target>
+    
+    <target name="cleantestsdist">
+        <ant dir="." antfile="${xtest.harness.antfile}"
+             target="cleantestsdist"/>
+    </target>
+    
+    <target name="localresults-clean">
+        <ant dir="." antfile="${xtest.harness.antfile}"
+             target="localresults-clean"/>
+    </target>
+</project>
