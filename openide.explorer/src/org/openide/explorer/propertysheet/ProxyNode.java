@@ -37,6 +37,7 @@ import org.openide.nodes.Node.PropertySet;
 final class ProxyNode extends AbstractNode {
     private static final int MAX_NAMES = 2;
     private Node[] original;
+    private ArrayList<Node.PropertySet[]> originalPropertySets;
     private NodeListener pcl;
     String displayName = null;
     private String shortDescription = null;
@@ -184,18 +185,31 @@ final class ProxyNode extends AbstractNode {
             return shortDescription;
         }
     }
+    
+    private ArrayList<Node.PropertySet[]> getOriginalPropertySets() {
+        if( null == originalPropertySets ) {
+            originalPropertySets = new ArrayList<Node.PropertySet[]>( original.length );
+            
+            for( int i=0; i<original.length; i++) {	    
+                Node.PropertySet[] p = original[i].getPropertySets();
+                originalPropertySets.add( p );
+            }
+            
+        }
+        return originalPropertySets;
+    }
 
     /** Computes intersection of tabs and intersection
      * of properties in those tabs.
      */
     private Sheet.Set[] computePropertySets() {
         if (original.length > 0) {
-            Node.PropertySet[] firstSet = original[0].getPropertySets();
+            Node.PropertySet[] firstSet = getOriginalPropertySets().get( 0 );
             java.util.Set<Node.PropertySet> sheets = new HashSet<Node.PropertySet>(Arrays.asList(firstSet));
 
             // compute intersection of all Node.PropertySets for given nodes
             for (int i = 1; i < original.length; i++) {
-                sheets.retainAll(new HashSet<Node.PropertySet>(Arrays.asList(original[i].getPropertySets())));
+                sheets.retainAll(new HashSet(Arrays.asList(getOriginalPropertySets().get(i))));
             }
 
             ArrayList<Sheet.Set> resultSheets = new ArrayList<Sheet.Set>(sheets.size());
@@ -226,7 +240,7 @@ final class ProxyNode extends AbstractNode {
 
                 // intersection of properties from the corresponding tabs
                 for (int j = 0; j < original.length; j++) {
-                    Node.PropertySet[] p = original[j].getPropertySets();
+                    Node.PropertySet[] p = getOriginalPropertySets().get(j);
 
                     for (int k = 0; k < p.length; k++) {
                         if (current.getName().equals(p[k].getName())) {
@@ -266,7 +280,7 @@ final class ProxyNode extends AbstractNode {
         Node.Property[] arr = new Node.Property[original.length];
 
         for (int i = 0; i < original.length; i++) {
-            Node.PropertySet[] p = original[i].getPropertySets();
+            Node.PropertySet[] p = getOriginalPropertySets().get(i);
 
             for (int j = 0; j < p.length; j++) {
                 if (p[j].getName().equals(setName)) {
