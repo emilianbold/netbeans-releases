@@ -209,7 +209,9 @@ implements Executor {
         LocatableEvent event = (LocatableEvent) ev;
         String className = event.location ().declaringType ().name ();
         ThreadReference tr = event.thread ();
-        setLastOperation(tr);
+        if (stepRequest.depth() == StepRequest.STEP_OUT) {
+            setLastOperation(tr);
+        }
         synchronized (getDebuggerImpl ().LOCK) {
             //S ystem.out.println("/nStepAction.exec");
 
@@ -330,6 +332,7 @@ implements Executor {
         }
         JPDAThreadImpl jtr = (JPDAThreadImpl) getDebuggerImpl().getThread(tr);
         jtr.addLastOperation(lastOperation);
+        jtr.setCurrentOperation(lastOperation);
     }
     
     private StepIntoActionProvider stepIntoActionProvider;

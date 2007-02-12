@@ -356,7 +356,7 @@ public class SourcePath {
         } catch (AbsentInformationException e) {
             url = getURL (convertClassNameToRelativePath (t.getClassName ()), true);
         }
-        List operationsAnn = annotateOperations(debugger, url, operation, t.getLastOperations());
+        List operationsAnn = annotateOperations(debugger, url, operation, t.getLastOperations(), lineNumber);
         if (operation == null) {
             if (operationsAnn.size() == 0) {
                 return EditorContextBridge.annotate (
@@ -425,7 +425,8 @@ public class SourcePath {
     }
     
     private static List annotateOperations(JPDADebugger debugger, String url,
-                                           Operation currentOperation, List lastOperations) {
+                                           Operation currentOperation, List lastOperations,
+                                           int locLineNumber) {
         List annotations = null;
         if (currentOperation != null) {
             annotations = new ArrayList();
@@ -445,30 +446,42 @@ public class SourcePath {
                 debugger
             ));
         }
+        boolean isNewLineExp = false;
         if (lastOperations != null && lastOperations.size() > 0) {
             if (annotations == null) {
                 annotations = new ArrayList();
             }
+            isNewLineExp = currentOperation == null;
             for (int i = 0; i < lastOperations.size(); i++) {
-                if (currentOperation == null && i == lastOperations.size() - 1) {
+                Operation lastOperation = (Operation) lastOperations.get(i);
+                if (currentOperation == lastOperation && i == lastOperations.size() - 1) {
                     annotations.add(createAnnotation(debugger, url,
-                                                     (Operation) lastOperations.get(i),
+                                                     lastOperation,
                                                      EditorContext.CURRENT_OUT_OPERATION_ANNOTATION_TYPE,
                                                      false));
-                    int lineNumber = ((Operation) lastOperations.get(i)).getEndPosition().getLine();
+                    int lineNumber = lastOperation.getEndPosition().getLine();
                     annotations.add(EditorContextBridge.annotate (
                         url,
                         lineNumber,
                         EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE,
                         debugger
                     ));
+                    isNewLineExp = false;
                 } else {
                     annotations.add(createAnnotation(debugger, url,
-                                                     (Operation) lastOperations.get(i),
+                                                     lastOperation,
                                                      EditorContext.CURRENT_LAST_OPERATION_ANNOTATION_TYPE,
                                                      true));
                 }
             }
+        }
+        if (isNewLineExp) {
+            annotations.add(EditorContextBridge.annotate (
+                url,
+                locLineNumber,
+                EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
+                debugger
+            ));
         }
         if (annotations != null) {
             return annotations;
