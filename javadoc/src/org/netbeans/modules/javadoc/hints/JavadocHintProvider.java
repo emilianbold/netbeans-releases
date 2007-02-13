@@ -109,6 +109,14 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
     private final FileObject file;
     private boolean cancel = false;
     
+    // settings
+    // max count of Create Missing Javadoc hints to process
+    private static int CREATE_JAVADOC_HINT_LIMIT = Integer.MAX_VALUE;
+    // max count of Add/Remove Tag hints to process
+    private static int FIX_JAVADOC_HINT_LIMIT = Integer.MAX_VALUE;
+    
+    private static Access access;
+    
     /** Creates a new instance of JavadocHintProvider */
     public JavadocHintProvider(FileObject file) {
         this.file = file;
@@ -123,16 +131,53 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
     }
 
     public void run(CompilationInfo javac) throws Exception {
+        readSettings();
+        if (CREATE_JAVADOC_HINT_LIMIT <= 0 && FIX_JAVADOC_HINT_LIMIT <= 0) {
+            return;
+        }
+        
         Document doc = javac.getDocument();
         if (doc == null) {
             return;
         }
         List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
         Analyzer an = new Analyzer(javac, doc);
-        an.scan(javac.getCompilationUnit(), errors);
-        if (isCanceled())
+        try {
+            an.scan(javac.getCompilationUnit(), errors);
+        } catch (CancelException ex) {
+            // task was cancelled
             return;
+        }
         HintsController.setErrors(file, "javadoc", errors);
+    }
+    
+    // XXX Since there are no editor hint options yet, read the settings as system properties.
+    private static void readSettings() {
+        if (access != null) {
+            return;
+        }
+        String s = System.getProperty("org.netbeans.modules.javadoc.hints.MissingJavadocLimit"); // NOI18N
+        try {
+            if (s != null) {
+                CREATE_JAVADOC_HINT_LIMIT = Integer.parseInt(s);
+            }
+        } catch (NumberFormatException ex) {
+            Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+        }
+        
+        s = System.getProperty("org.netbeans.modules.javadoc.hints.FixJavadocTagLimit"); // NOI18N
+        try {
+            if (s != null) {
+                FIX_JAVADOC_HINT_LIMIT = Integer.parseInt(s);
+            }
+        } catch (NumberFormatException ex) {
+            Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+        }
+        
+        // accept [public|protected|package|private], default is protected
+        // according to http://java.sun.com/javase/6/docs/technotes/tools/solaris/javadoc.html#javadocoptions
+        s = System.getProperty("org.netbeans.modules.javadoc.hints.Visibility"); // NOI18N
+        access = Access.resolve(s);
     }
     
     private static SourceVersion resolveSourceVersion(FileObject file) {
@@ -165,6 +210,8 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
         private final SourceVersion spec;
         private final FixAll fixAll = new FixAll();
         private final Document doc;
+        private int createJavadocHintCounter = CREATE_JAVADOC_HINT_LIMIT;
+        private int fixJavadocHintCounter = FIX_JAVADOC_HINT_LIMIT;
         
         Analyzer(CompilationInfo javac, Document doc) {
             this.javac = javac;
@@ -179,7 +226,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
 
         @Override
         public Void visitClass(ClassTree node, List<ErrorDescription> arg1) {
-            if (isVisible2Analyze(node.getModifiers().getFlags())) {
+            if (access.isAccesible(node.getModifiers().getFlags())) {
                 processNode(node, arg1);
                 // scan enclosed members
                 return scan(node.getMembers(), arg1);
@@ -189,7 +236,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
         
         @Override
         public Void visitMethod(MethodTree node, List<ErrorDescription> arg1) {
-            if (isVisible2Analyze(node.getModifiers().getFlags())) {
+            if (access.isAccesible(node.getModifiers().getFlags())) {
                 processNode(node, arg1);
             }
             return null;
@@ -197,7 +244,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
         
         @Override
         public Void visitVariable(VariableTree node, List<ErrorDescription> arg1) {
-            if (isVisible2Analyze(node.getModifiers().getFlags())) {
+            if (access.isAccesible(node.getModifiers().getFlags())) {
                 processNode(node, arg1);
             }
             return null;
@@ -211,8 +258,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
         }
 
         void processNode(Tree node, List<ErrorDescription> errors) {
-            if (isCanceled())
-                return;
+            checkTaskState();
             
             if (javac.getTreeUtilities().isSynthetic(getCurrentPath())) {
                 return;
@@ -229,7 +275,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             String jdText = javac.getElements().getDocComment(elm);
             // create hint descriptor + prepare javadoc
             if (jdText == null) {
-                if (JavadocUtilities.hasInheritedDoc(javac, elm)) {
+                if (createJavadocHintCounter <= 0 || JavadocUtilities.hasInheritedDoc(javac, elm)) {
                     return;
                 }
                 
@@ -243,32 +289,49 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                             positions[0],
                             positions[1]);
                     errors.add(err);
+                    if (--createJavadocHintCounter <= 0) {
+                        ErrorDescription warning = ErrorDescriptionFactory.createErrorDescription(
+                                Severity.WARNING,
+                                NbBundle.getMessage(JavadocHintProvider.class, "OUT_OF_MISSING_JD_LIMIT_DESC", FIX_JAVADOC_HINT_LIMIT), // NOI18N
+                                doc,
+                                positions[0],
+                                positions[1]);
+                        errors.add(warning);
+                    }
                 } catch (BadLocationException ex) {
                     Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             } else {
-                Doc jDoc = javac.getElementUtilities().javaDocFor(elm);
-                if (jDoc.isMethod()) {
-                    MethodDoc methDoc = (MethodDoc) jDoc;
-                    ExecutableElement methodEl = (ExecutableElement) elm;
-                    MethodTree methodTree = (MethodTree) node;
-                    processParameters(methodEl, methodTree, methDoc, errors);
-                    processThrows(methodEl, methodTree, methDoc, errors);
-                    processReturn(methodEl, methodTree, methDoc, errors);
-                } else if (jDoc.isConstructor()) {
-                    ExecutableMemberDoc methDoc = (ExecutableMemberDoc) jDoc;
-                    ExecutableElement methodEl = (ExecutableElement) elm;
-                    MethodTree methodTree = (MethodTree) node;
-                    processParameters(methodEl, methodTree, methDoc, errors);
-                    processThrows(methodEl, methodTree, methDoc, errors);
-                } else if(jDoc.isClass() || jDoc.isInterface()) {
-                    TypeElement classEl = (TypeElement) elm;
-                    ClassDoc classDoc = (ClassDoc) jDoc;
-                    ClassTree classTree = (ClassTree) node;
-                    processTypeParameters(classEl, classTree, classDoc, errors);
+                if (fixJavadocHintCounter <= 0) {
+                    return;
                 }
                 
-                processDeprecatedAnnotation(elm, jDoc, errors);
+                try {
+                    Doc jDoc = javac.getElementUtilities().javaDocFor(elm);
+                    if (jDoc.isMethod()) {
+                        MethodDoc methDoc = (MethodDoc) jDoc;
+                        ExecutableElement methodEl = (ExecutableElement) elm;
+                        MethodTree methodTree = (MethodTree) node;
+                        processParameters(methodEl, methodTree, methDoc, errors);
+                        processThrows(methodEl, methodTree, methDoc, errors);
+                        processReturn(methodEl, methodTree, methDoc, errors);
+                    } else if (jDoc.isConstructor()) {
+                        ExecutableMemberDoc methDoc = (ExecutableMemberDoc) jDoc;
+                        ExecutableElement methodEl = (ExecutableElement) elm;
+                        MethodTree methodTree = (MethodTree) node;
+                        processParameters(methodEl, methodTree, methDoc, errors);
+                        processThrows(methodEl, methodTree, methDoc, errors);
+                    } else if(jDoc.isClass() || jDoc.isInterface()) {
+                        TypeElement classEl = (TypeElement) elm;
+                        ClassDoc classDoc = (ClassDoc) jDoc;
+                        ClassTree classTree = (ClassTree) node;
+                        processTypeParameters(classEl, classTree, classDoc, errors);
+                    }
+
+                    processDeprecatedAnnotation(elm, jDoc, errors);
+                } catch (OutOfLimitException ex) {
+                    // fixJavadocHintCounter run out, next jd errors will be ignored
+                }
                 
             }
         }
@@ -288,7 +351,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                                 NbBundle.getMessage(JavadocHintProvider.class, "MISSING_DEPRECATED_DESC"), // NOI18N
                                 Collections.<Fix>singletonList(AddTagFix.createAddDeprecatedTagFix(elm, file, spec)),
                                 doc, poss[0], poss[1]);
-                        errors.add(err);
+                        addTagHint(errors, err);
                     } catch (BadLocationException ex) {
                         Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
@@ -359,7 +422,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                             NbBundle.getMessage(JavadocHintProvider.class, "MISSING_RETURN_DESC"), // NOI18N
                             Collections.<Fix>singletonList(AddTagFix.createAddReturnTagFix(exec, file, spec)),
                             doc, poss[0], poss[1]);
-                    errors.add(err);
+                    addTagHint(errors, err);
                 } catch (BadLocationException ex) {
                     Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
@@ -408,7 +471,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                                 NbBundle.getMessage(JavadocHintProvider.class, "MISSING_THROWS_DESC", tel.getQualifiedName().toString()), // NOI18N
                                 Collections.<Fix>singletonList(AddTagFix.createAddThrowsTagFix(exec, tel.getQualifiedName().toString(), index, file, spec)),
                                 doc, poss[0], poss[1]);
-                        errors.add(err);
+                        addTagHint(errors, err);
                     } catch (BadLocationException ex) {
                         Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
@@ -478,7 +541,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                                 NbBundle.getMessage(JavadocHintProvider.class, "MISSING_PARAM_DESC", param.getName()), // NOI18N
                                 Collections.<Fix>singletonList(AddTagFix.createAddParamTagFix(exec, param.getName().toString(), file, spec)),
                                 doc, poss[0], poss[1]);
-                        errors.add(err);
+                        addTagHint(errors, err);
                     } catch (BadLocationException ex) {
                         Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
@@ -540,7 +603,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                                 NbBundle.getMessage(JavadocHintProvider.class, "MISSING_TYPEPARAM_DESC", param.getName()), // NOI18N
                                 Collections.<Fix>singletonList(AddTagFix.createAddTypeParamTagFix(elm, param.getName().toString(), file, spec)),
                                 doc, poss[0], poss[1]);
-                        errors.add(err);
+                        addTagHint(errors, err);
                     } catch (BadLocationException ex) {
                         Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
@@ -616,7 +679,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                         description,
                         Collections.<Fix>singletonList(new RemoveTagFix(tag.name(), TagHandle.create(tag), ElementHandle.create(elm), file, spec)),
                         doc, poss[0], poss[1]);
-                errors.add(err);
+                addTagHint(errors, err);
             } catch (BadLocationException ex) {
                 Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
             }
@@ -649,11 +712,30 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             return fixList;
         }
         
-        private boolean isVisible2Analyze(Set<Modifier> flags) {
-            // XXX add options to configure accesibility of members
-            return flags.contains(Modifier.PUBLIC) || flags.contains(Modifier.PROTECTED);
+        private void addTagHint(List<ErrorDescription> errors, ErrorDescription desc) {
+            errors.add(desc);
+            checkTaskState();
+            if (--fixJavadocHintCounter <= 0) {
+                try {
+                    ErrorDescription warning = ErrorDescriptionFactory.createErrorDescription(
+                            Severity.WARNING,
+                            NbBundle.getMessage(JavadocHintProvider.class, "OUT_OF_TAG_FIXES_LIMIT_DESC", FIX_JAVADOC_HINT_LIMIT), // NOI18N
+                            doc,
+                            desc.getRange().getBegin().getPosition(),
+                            desc.getRange().getEnd().getPosition());
+                    errors.add(warning);
+                } catch (IOException  ex) {
+                    Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                }
+                throw new OutOfLimitException();
+            }
         }
         
+        private void checkTaskState() {
+            if (isCanceled()) {
+                throw new CancelException();
+            }
+        }
     }
     
     private static final class JavadocLazyFixList implements LazyFixList {
@@ -1242,5 +1324,70 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
         return false;
+    }
+    
+    /**
+     * according to http://java.sun.com/javase/6/docs/technotes/tools/solaris/javadoc.html#javadocoptions
+     */
+    private enum Access {
+        PUBLIC, PROTECTED, PACKAGE, PRIVATE;
+        
+        /**
+         * accept [public|protected|package|private], default(null or other) is protected
+         */
+        public static Access resolve(String s) {
+            if (s != null) {
+                s = s.trim().toLowerCase();
+                if ("public".equals(s)) { // NOI18N
+                    return Access.PUBLIC;
+                } else if ("protected".equals(s)) { // NOI18N
+                    return Access.PROTECTED;
+                } else if ("private".equals(s)) { // NOI18N
+                    return Access.PRIVATE;
+                } else if ("package".equals(s)) { // NOI18N
+                    return Access.PACKAGE;
+                }
+            } 
+            return Access.PROTECTED;
+        }
+        
+        public boolean isAccesible(Set<Modifier> flags) {
+            switch(this) {
+                case PRIVATE:
+                    return true;
+                case PACKAGE:
+                    return !flags.contains(Modifier.PRIVATE);
+                case PROTECTED:
+                    return flags.contains(Modifier.PUBLIC) || flags.contains(Modifier.PROTECTED);
+                case PUBLIC:
+                    return flags.contains(Modifier.PUBLIC);
+                default:
+                    throw new IllegalStateException();
+            }
+        }
+    }
+    /**
+     * This is not regular exception! It allows to promtly cancel
+     * javadoc hints computation on CancellableTask request.
+     * NO STACK TRACE IS FILLED! performance reason
+     */
+    private static final class CancelException extends RuntimeException {
+        @Override
+        public synchronized Throwable fillInStackTrace() {
+            return null;
+        }
+    }
+    
+    /**
+     * This is not regular throwable! It allows to promtly cancel
+     * javadoc add/remove tag hints computation on running
+     * out of the FIX_JAVADOC_HINT_LIMIT.
+     * NO STACK TRACE IS FILLED! performance reason
+     */
+    private static final class OutOfLimitException extends RuntimeException {
+        @Override
+        public synchronized Throwable fillInStackTrace() {
+            return null;
+        }
     }
 }
