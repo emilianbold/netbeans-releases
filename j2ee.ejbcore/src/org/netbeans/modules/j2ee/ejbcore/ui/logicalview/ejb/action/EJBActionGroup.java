@@ -101,6 +101,9 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final String[] className = new String[1];
         try {
+            if (javaSource == null) {
+                return false;
+            }
             javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
