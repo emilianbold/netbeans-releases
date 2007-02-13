@@ -13,23 +13,17 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.setup;
 
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import gui.Utilities;
 
 import org.netbeans.junit.ide.ProjectSupport;
 
 import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.operators.JMenuItemOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
@@ -63,45 +57,36 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
      * Close Welcome.
      */
     public void closeWelcome(){
-        TopComponentOperator tComponent = new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title"));
-        new JCheckBoxOperator(tComponent,Bundle.getStringTrimmed("org.netbeans.modules.welcome.resources.Bundle","LBL_ShowOnStartup")).changeSelection(false);
-        tComponent.close();
+        Utilities.closeWelcome();
     }
     
     /**
      * Close BluePrints.
      */
     public void closeBluePrints(){
-        new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.blueprints.Bundle","LBL_Tab_Title")).close();
+        Utilities.closeBluePrints();
     }
     
     /**
      * Close All Documents.
      */
     public void closeAllDocuments(){
-        new CloseAllDocumentsAction().perform();
+        Utilities.closeAllDocuments();
     }
     
     /**
      * Close Memory Toolbar.
      */
     public void closeMemoryToolbar(){
-        String MENU =
-                Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
-                Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
-                Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory");
-        
-        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-        JMenuBarOperator menuBar = new JMenuBarOperator(mainWindow.getJMenuBar());
-        JMenuItemOperator menuItem = menuBar.showMenuItem(MENU,"|");
-        
-        if(menuItem.isSelected())
-            menuItem.push();
-        else {
-            menuItem.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-            mainWindow.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-        }
-        
+        Utilities.closeMemoryToolbar();
+    }
+
+    
+    /**
+     * Close UI Gestures Toolbar.
+     */
+    public void closeUIGesturesToolbar(){
+        Utilities.closeUIGesturesToolbar();
     }
     
     private void waitProjectOpenedScanFinished(String projectFolder){

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,7 +41,6 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -82,6 +81,7 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
         suite.addTest(new PrepareIDEForComplexMeasurements("closeWelcome"));
         suite.addTest(new PrepareIDEForComplexMeasurements("closeAllDocuments"));
         suite.addTest(new PrepareIDEForComplexMeasurements("closeMemoryToolbar"));
+        suite.addTest(new PrepareIDEForComplexMeasurements("closeUIGesturesToolbar"));
         suite.addTest(new PrepareIDEForComplexMeasurements("openFiles"));
         suite.addTest(new PrepareIDEForComplexMeasurements("saveStatus"));
         return suite;
@@ -135,30 +135,36 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
     /**
      * Close Memory Toolbar.
      */
-    public void closeMemoryToolbar(){
-        try {
-            String MENU =
-                    Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
-                    Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
-                    Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory");
-            
-            MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-            JMenuBarOperator menuBar = new JMenuBarOperator(mainWindow.getJMenuBar());
-            JMenuItemOperator menuItem = menuBar.showMenuItem(MENU,"|");
-            
-            if(menuItem.isSelected())
-                menuItem.push();
-            else {
-                menuItem.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-                mainWindow.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-            }
-        }catch(Exception exc){
-            test_failed = true;
-            fail(exc);
-        }
+    public static void closeMemoryToolbar(){
+        closeToolbar(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
+                Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
+                Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory"));
+    }
+
+    
+    /**
+     * Close UI Gestures Toolbar.
+     */
+    public static void closeUIGesturesToolbar(){
+        closeToolbar(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
+                Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
+                "UIGestures");
         
     }
     
+    private static void closeToolbar(String menu){
+        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
+        JMenuBarOperator menuBar = new JMenuBarOperator(mainWindow.getJMenuBar());
+        JMenuItemOperator menuItem = menuBar.showMenuItem(menu,"|");
+        
+        if(menuItem.isSelected())
+            menuItem.push();
+        else {
+            menuItem.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+            mainWindow.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+        }
+    }
+        
     /**
      * Open 10 selected files from jEdit project.
      */

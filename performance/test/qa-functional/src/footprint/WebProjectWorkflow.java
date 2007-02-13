@@ -53,6 +53,7 @@ public class WebProjectWorkflow extends MemoryFootprintTestCase {
         super.initialize();
         FootprintUtilities.closeAllDocuments();
         FootprintUtilities.closeMemoryToolbar();
+        FootprintUtilities.closeUIGesturesToolbar();
     }
     
     public void prepare() {

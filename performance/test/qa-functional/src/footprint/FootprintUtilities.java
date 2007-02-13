@@ -13,12 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package footprint;
 
+import gui.Utilities;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -26,20 +27,15 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
-
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
-
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JMenuItemOperator;
 
 import org.netbeans.junit.ide.ProjectSupport;
 
@@ -49,28 +45,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class FootprintUtilities {
-    
-    static void closeMemoryToolbar(){
-        String MENU =
-                org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
-                org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
-                org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory");
-        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-        JMenuBarOperator menuBar = new JMenuBarOperator(mainWindow.getJMenuBar());
-        JMenuItemOperator menuItem = menuBar.showMenuItem(MENU,"|");
-        if(menuItem.isSelected())
-            menuItem.push();
-        else {
-            menuItem.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-            mainWindow.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-        }
-        
-    }
-    
-    static void closeAllDocuments() {
-        new CloseAllDocumentsAction().perform();
-    }
+public class FootprintUtilities extends Utilities{
     
     static void collapseProject(String project) {
         ProjectRootNode prn = new ProjectsTabOperator().getProjectRootNode(project);

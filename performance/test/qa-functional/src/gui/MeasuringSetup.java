@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -39,8 +39,9 @@ public class MeasuringSetup extends NbTestSuite {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite");
 
         suite.addTest(new IDESetupTest("closeMemoryToolbar"));
+        suite.addTest(new IDESetupTest("closeUIGesturesToolbar"));
         
-        suite.addTest(new gui.setup.IDESetupTest("closeWelcome"));
+        suite.addTest(new IDESetupTest("closeWelcome"));
         
         // replaced by close all documents suite.addTest(new gui.setup.IDESetupTest("closeBluePrints"));
         suite.addTest(new IDESetupTest("closeAllDocuments"));

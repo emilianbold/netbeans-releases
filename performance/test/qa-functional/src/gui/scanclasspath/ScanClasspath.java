@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -73,6 +73,7 @@ public class ScanClasspath extends org.netbeans.performance.test.utilities.Perfo
         NbTestSuite suite = new NbTestSuite();
         
         suite.addTest(new gui.setup.IDESetupTest("closeMemoryToolbar"));
+        suite.addTest(new gui.setup.IDESetupTest("closeUIGesturesToolbar"));
         suite.addTest(new gui.setup.IDESetupTest("closeAllDocuments"));
         suite.addTest(new ScanClasspath("openJEditProject"));
 

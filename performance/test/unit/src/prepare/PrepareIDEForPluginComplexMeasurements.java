@@ -13,15 +13,11 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package prepare;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -33,7 +29,6 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.operators.Operator;
 
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.junit.NbTestSuite;
 
 import junit.framework.Test;
@@ -65,6 +60,7 @@ public class PrepareIDEForPluginComplexMeasurements extends PrepareIDEForComplex
         suite.addTest(new PrepareIDEForComplexMeasurements("closeWelcome"));
         suite.addTest(new PrepareIDEForComplexMeasurements("closeAllDocuments"));
         suite.addTest(new PrepareIDEForComplexMeasurements("closeMemoryToolbar"));
+        suite.addTest(new PrepareIDEForComplexMeasurements("closeUIGesturesToolbar"));
         suite.addTest(new PrepareIDEForPluginComplexMeasurements("openFiles"));
         suite.addTest(new PrepareIDEForComplexMeasurements("saveStatus"));
         return suite;

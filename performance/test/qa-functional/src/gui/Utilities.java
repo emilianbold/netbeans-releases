@@ -27,18 +27,21 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.jellytools.Bundle;
-
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.EditorOperator;
-
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
-
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JMenuItemOperator;
 
 
 
@@ -57,6 +60,62 @@ public class Utilities {
     public Utilities() {
     }
 
+    /**
+     * Close Welcome.
+     */
+    public static void closeWelcome(){
+        TopComponentOperator tComponent = new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title"));
+        new JCheckBoxOperator(tComponent,Bundle.getStringTrimmed("org.netbeans.modules.welcome.resources.Bundle","LBL_ShowOnStartup")).changeSelection(false);
+        tComponent.close();
+    }
+    
+    /**
+     * Close BluePrints.
+     */
+    public static void closeBluePrints(){
+        new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.blueprints.Bundle","LBL_Tab_Title")).close();
+    }
+    
+    /**
+     * Close All Documents.
+     */
+    public static void closeAllDocuments(){
+        new CloseAllDocumentsAction().perform();
+    }
+    
+    /**
+     * Close Memory Toolbar.
+     */
+    public static void closeMemoryToolbar(){
+        closeToolbar(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
+                Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
+                Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory"));
+    }
+
+    
+    /**
+     * Close UI Gestures Toolbar.
+     */
+    public static void closeUIGesturesToolbar(){
+        closeToolbar(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
+                Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
+                "UIGestures");
+        
+    }
+    
+    private static void closeToolbar(String menu){
+        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
+        JMenuBarOperator menuBar = new JMenuBarOperator(mainWindow.getJMenuBar());
+        JMenuItemOperator menuItem = menuBar.showMenuItem(menu,"|");
+        
+        if(menuItem.isSelected())
+            menuItem.push();
+        else {
+            menuItem.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+            mainWindow.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+        }
+    }
+    
     /**
      * Work around issue 35962 (Main menu popup accidentally rolled up)
      * Issue has been fixed for JDK 1.5, so we will use it only for JDK 1.4.X

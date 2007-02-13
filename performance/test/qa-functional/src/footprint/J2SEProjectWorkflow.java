@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,6 +56,7 @@ public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
         super.initialize();
         FootprintUtilities.closeAllDocuments();
         FootprintUtilities.closeMemoryToolbar();
+        FootprintUtilities.closeUIGesturesToolbar();
     }
     
     public ComponentOperator open(){
