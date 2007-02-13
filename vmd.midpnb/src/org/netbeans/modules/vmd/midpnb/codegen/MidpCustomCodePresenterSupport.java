@@ -20,7 +20,7 @@
 
 package org.netbeans.modules.vmd.midpnb.codegen;
 
-import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.util.TreePath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
@@ -130,10 +130,7 @@ public final class MidpCustomCodePresenterSupport {
                         public void run (WorkingCopy parameter) throws Exception {
                             String fqn = getComponent ().getType ().getString ();
                             parameter.toPhase (JavaSource.Phase.PARSED);
-//                            SourceUtils.resolveImport (parameter, parameter.getTrees ().getPath (parameter.getCompilationUnit (), parameter.getCompilationUnit ()), fqn);
-                            CompilationUnitTree oldTree = parameter.getCompilationUnit ();
-                            CompilationUnitTree newTree = SourceUtils.addImports (oldTree, Arrays.asList (fqn), parameter.getTreeMaker ());
-                            parameter.rewrite (oldTree, newTree);
+                            SourceUtils.resolveImport (parameter, new TreePath (parameter.getCompilationUnit ()), fqn);
                         }
                     }).commit ();
                 } catch (IOException e) {
