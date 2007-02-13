@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.jar.JarEntry;
@@ -55,6 +56,7 @@ import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.FinishHandler;
 import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.wizard.Wizard;
+import static org.netbeans.installer.utils.StringUtils.LF;
 
 /**
  * The main class of the NBI framework. It represents the installer and
@@ -525,6 +527,37 @@ public class Installer implements FinishHandler {
                 LogManager.unindent();
                 continue;
             }
+            
+            if (arguments[i].equalsIgnoreCase("--registry")) {
+                LogManager.log("parsing command line parameter \"--registry\"");
+                LogManager.indent();
+                
+                if (i < arguments.length - 1) {
+                    final String value = arguments[i + 1];
+                    
+                    final String existing = System.getProperty(
+                            Registry.REMOTE_PRODUCT_REGISTRIES_PROPERTY);
+                    
+                    if (existing == null) {
+                        System.setProperty(
+                                Registry.REMOTE_PRODUCT_REGISTRIES_PROPERTY,
+                                value);
+                    } else {
+                        if (!Arrays.asList(existing.split(LF)).contains(value)) {
+                            System.setProperty(
+                                    Registry.REMOTE_PRODUCT_REGISTRIES_PROPERTY,
+                                    existing + LF + value);
+                        }
+                    }
+                    
+                    i = i + 1;
+                } else {
+                    ErrorManager.notifyWarning("required parameter missing for command line argument \"--registry\". Should be \"--registry <remote-registry-url>\".");
+                }
+                
+                LogManager.unindent();
+                continue;
+            }
         }
         
         if (arguments.length == 0) {
@@ -632,7 +665,7 @@ public class Installer implements FinishHandler {
                     "bundled-registry.xml"));
             
             XMLUtils.saveXMLDocument(
-                    Registry.getInstance().getEmptyRegistryDocument(), 
+                    Registry.getInstance().getEmptyRegistryDocument(),
                     jos);
             
             jos.putNextEntry(new JarEntry(EngineResources.ENGINE_CONTENTS_LIST));
@@ -740,10 +773,10 @@ public class Installer implements FinishHandler {
                     cachedEngine.getAbsolutePath());
             
             System.setProperty(
-                    EngineResources.LOCAL_ENGINE_MODIFY_COMMAND_PROPERTY, 
+                    EngineResources.LOCAL_ENGINE_MODIFY_COMMAND_PROPERTY,
                     modifyCommand);
             System.setProperty(
-                    EngineResources.LOCAL_ENGINE_UNINSTALL_COMMAND_PROPERTY, 
+                    EngineResources.LOCAL_ENGINE_UNINSTALL_COMMAND_PROPERTY,
                     uninstallCommand);
         } catch (IOException ex) {
             ErrorManager.notifyCritical("can`t cache installer engine", ex);
