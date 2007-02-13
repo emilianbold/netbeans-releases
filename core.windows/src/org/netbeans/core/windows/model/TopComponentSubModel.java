@@ -87,11 +87,16 @@ final class TopComponentSubModel {
         String tcID = getID(tc);
         int index = tcIDs.indexOf(tcID);
         
-        int position;
-        if(index < 0 || index > openedTopComponents.size()) {
-            position = openedTopComponents.size();
-        } else {
-            position = index;
+        int position = openedTopComponents.size();
+        if( index >= 0 ) {
+            for( TopComponent otc : openedTopComponents ) {
+                String otcID = getID(otc);
+                int openedIndex = tcIDs.indexOf( otcID );
+                if( openedIndex >= index ) {
+                    position = openedTopComponents.indexOf( otc );
+                    break;
+                }
+            }
         }
         // additional double check if we got the same instance of topcomponent
         //#39914 + #43401 - no need to remove this one without fixing the inconsistency, it will fail later on TabbedAdapter.

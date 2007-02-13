@@ -999,6 +999,7 @@ final class Central implements ControllerHandler {
         }
         
         tcs = tcGroup.getOpeningSet();
+        HashSet<ModeImpl> openedModes = new HashSet<ModeImpl>( tcs.size() );
         List<TopComponent> openedTcs = new ArrayList<TopComponent>();
         for(Iterator<TopComponent> it = tcs.iterator(); it.hasNext(); ) {
             TopComponent tc = it.next();
@@ -1008,6 +1009,10 @@ final class Central implements ControllerHandler {
                 if(mode == null) {
                     // Only view TopComponent is in group.
                     mode = wm.getDefaultViewMode();
+                } else {
+                    if( mode.getOpenedTopComponentsIDs().isEmpty() ) {
+                        openedModes.add( mode );
+                    }
                 }
                 model.addModeOpenedTopComponent(mode, tc);
                 
@@ -1024,6 +1029,13 @@ final class Central implements ControllerHandler {
 
         
         model.openGroup(tcGroup, new HashSet<TopComponent>(openedTcs), openedBeforeTopComponents);
+        
+        //restore selected TopComponents
+        for( ModeImpl mode : openedModes ) {
+            TopComponent prevSelTC = mode.getPreviousSelectedTopComponent();
+            if( null != prevSelTC )
+                mode.setSelectedTopComponent( prevSelTC );
+        }
         
         if(isVisible()) {
             viewRequestor.scheduleRequest(new ViewRequest(tcGroup, 
@@ -1070,6 +1082,23 @@ final class Central implements ControllerHandler {
             }
         }
 
+        ArrayList<ModeImpl> groupModes = new ArrayList<ModeImpl>( tcs.size() );
+        //remember which TCs are active
+        for(Iterator it = tcs.iterator(); it.hasNext(); ) {
+            TopComponent tc = (TopComponent)it.next();
+            if( !tc.isOpened() || openedTcsBefore.contains(tc)) {
+                continue;
+            }
+            ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
+            if( null != mode )
+                groupModes.add( mode );
+        }
+        for( ModeImpl mode : groupModes ) {
+            TopComponent selTC = mode.getSelectedTopComponent();
+            if( null != selTC )
+                setModePreviousSelectedTopComponent( mode, selTC );
+        }
+        
         // Now close those which needed.
         for(Iterator it = tcs.iterator(); it.hasNext(); ) {
             TopComponent tc = (TopComponent)it.next();
