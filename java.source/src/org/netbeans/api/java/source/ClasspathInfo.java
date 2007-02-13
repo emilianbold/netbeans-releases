@@ -21,16 +21,12 @@ package org.netbeans.api.java.source;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import javax.tools.JavaFileManager;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
@@ -41,12 +37,10 @@ import org.netbeans.modules.java.source.parsing.ProxyFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
-import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /** Class which contains info about classpath
@@ -238,18 +232,6 @@ public final class ClasspathInfo {
         }
     }
 
-    private static ClassPath createOutputClassPath (final ClassPath cp) throws IOException {
-        assert cp != null;
-        final List<ClassPath.Entry> entries = cp.entries();
-        final List<URL> roots = new ArrayList<URL>(entries.size());
-        for (ClassPath.Entry entry : entries) {
-            final URL root = Index.getClassFolder(entry.getURL());
-            if (root != null) {
-                roots.add(root);
-            }
-        }
-        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
-    }
 
     // Innerclasses ------------------------------------------------------------
     
@@ -269,15 +251,7 @@ public final class ClasspathInfo {
                     // Kill FileManager
                     fileManager = null;
                     // Kill indexes
-                    usagesQuery = null;
-                    // Reset the root files
-                    if (event.getSource() == ClasspathInfo.this.srcClassPath) {
-                        try {
-                            ClasspathInfo.this.outputClassPath = createOutputClassPath (ClasspathInfo.this.srcClassPath);
-                        } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
-                        }
-                    }
+                    usagesQuery = null;                    
                 }
                 fireChangeListenerStateChanged();
             }

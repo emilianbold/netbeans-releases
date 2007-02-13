@@ -90,16 +90,7 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                     this.cache.add (ClassPathSupport.createResource(entry.getURL()));
                 }
             }
-            else {
-                boolean hasSigFiles = true;
-                if (!translate) {
-                    for (ClassPath.Entry entry : entries) {
-                        if (!"file".equals(entry.getURL().getProtocol()))  {  //NOI18N
-                            hasSigFiles = false;
-                            break;
-                        }
-                    }
-                }                
+            else {                                
                 final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
                 for (ClassPath.Entry entry : entries) {
                     URL url = entry.getURL();
@@ -107,16 +98,13 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                     if (translate) {
                         sourceUrls = gsp.getSourceRootForBinaryRoot(url, this.cp, true);
                     }
-                    else if (hasSigFiles) {        
+                    else {        
                         sourceUrls = new URL[] {url};
-                    }
-                    else {
-                        sourceUrls = new URL[0];
                     }
                     if (sourceUrls != null) {
                         for (URL sourceUrl : sourceUrls) {
                             try {
-                                File cacheFolder = Index.getClassFolder(new File (URI.create(sourceUrl.toExternalForm())));
+                                File cacheFolder = Index.getClassFolder(sourceUrl);
                                 URL cacheUrl = cacheFolder.toURI().toURL();
                                 if (!cacheFolder.exists()) {                                
                                     cacheUrl = new URL (cacheUrl.toExternalForm()+"/");     //NOI18N
