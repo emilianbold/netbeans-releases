@@ -2187,17 +2187,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         copy.toPhase(JavaSource.Phase.PARSED);
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                            ArrayList<VariableElement> fieldElements = new ArrayList<VariableElement>();
+                            if (fieldHandles != null) {
+                                for (ElementHandle<? extends Element> handle : fieldHandles)
+                                    fieldElements.add((VariableElement)handle.resolve(copy));
+                            }
                             int idx = 0;
                             for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
                                 if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < offset)
                                     idx++;
                                 else
                                     break;
-                            }
-                            ArrayList<VariableElement> fieldElements = new ArrayList<VariableElement>();
-                            if (fieldHandles != null) {
-                                for (ElementHandle<? extends Element> handle : fieldHandles)
-                                    fieldElements.add((VariableElement)handle.resolve(copy));
                             }
                             GeneratorUtils.generateConstructor(copy, tp, fieldElements, null, idx);
                         }

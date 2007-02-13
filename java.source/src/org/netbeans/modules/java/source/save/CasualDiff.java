@@ -1816,22 +1816,9 @@ public class CasualDiff {
             if (Kind.METHOD == tree.getKind()) {
                 // filter syntetic constructors, i.e. constructors which are in
                 // the tree, but not available in the source.
-                CharSequence name = ((MethodTree) tree).getName();
-                if ("<init>".contentEquals(name) && tree.pos == oldParent.pos)
+                if ((((JCMethodDecl)tree).mods.flags & Flags.GENERATEDCONSTR) != 0)
                     continue;
-            } // else if (Kind.BLOCK == tree.getKind()) {
-                // #92127, #92276: filter out also empty initializers represented
-                // by semicolon in the source. This mean something like this:
-                // class Test {
-                //    static enum Kind {
-                //       K1, K2
-                //    };
-                // }
-                // The semicolon at the end of the Kind is represented in
-                // class members as an empty initializer with position -1.
-                // This can cause problems described in issues above.
-                // if (tree.pos < 0) continue;
-            // }
+            }
             result.add(tree);
         }
         return result;
