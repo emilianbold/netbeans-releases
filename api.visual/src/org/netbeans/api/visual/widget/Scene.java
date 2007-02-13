@@ -257,6 +257,7 @@ public class Scene extends Widget {
     // TODO - requires optimalization while changing preferred size and calling revalidate/repaint
     private void layoutScene () {
         layout (false);
+        resolveBounds (null, null);
         justify ();
 
         Rectangle rect = null;

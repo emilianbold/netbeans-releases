@@ -62,6 +62,7 @@ public class LayerWidget extends Widget {
 
     void layout (boolean fullValidation) {
         super.layout (fullValidation);
+        resolveBounds (null, null);
         justify ();
     }
 
