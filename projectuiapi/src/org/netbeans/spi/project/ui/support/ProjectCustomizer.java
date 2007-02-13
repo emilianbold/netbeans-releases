@@ -21,7 +21,6 @@ package org.netbeans.spi.project.ui.support;
 
 import java.awt.Dialog;
 import java.awt.Image;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,7 +52,7 @@ import org.openide.util.Lookup;
 /** Support for creating dialogs which can be used as project
  * customizers. The dialog may display multiple panels or categories.
  * @see org.netbeans.spi.project.ui.CustomizerProvider
- * @see org.netbeans.spi.project.ui.support.ProjectCustomizer#Category
+ * @see ProjectCustomizer.Category
  *
  * @author Petr Hrebejk, Martin Krauskopf
  */
@@ -258,6 +257,7 @@ public final class ProjectCustomizer {
          * @param icon Icon for given category. Will use default icon if null.
          * @param subcategories Subcategories to be shown under given category.
          *        Category won't be expandable if null or empty array.
+         * @return a new category description
          */
         public static Category create( String name,
                                        String displayName,
@@ -298,6 +298,7 @@ public final class ProjectCustomizer {
         
         /**
          * Returns an error message for this category.
+         * @return the error message (could be null)
          */
         public String getErrorMessage() {
             return errorMessage;
@@ -357,9 +358,9 @@ public final class ProjectCustomizer {
         }
         
         /**
-         * Returns the action listener associated with this category that gets notified 
+         * Returns the action listener associated with this category that gets notified
          * when OK button is pressed on the customizer.
-         * @returns instance of ActionListener or null if not set.
+         * @return instance of ActionListener or null if not set.
          * @since org.netbeans.modules.projectuiapi/1 1.20
          */ 
         public ActionListener getOkButtonListener() {

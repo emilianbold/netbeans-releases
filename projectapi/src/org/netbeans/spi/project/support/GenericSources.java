@@ -88,6 +88,7 @@ public class GenericSources {
      * @param displayName a display name for the source group
      * @param icon a regular icon to use for the source group, or null
      * @param openedIcon an opened variant icon to use, or null
+     * @return a new group object
      */
     public static SourceGroup group(Project p, FileObject rootFolder, String name, String displayName, Icon icon, Icon openedIcon) {
         if (name == null) {

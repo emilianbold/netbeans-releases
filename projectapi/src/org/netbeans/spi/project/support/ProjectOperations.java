@@ -197,14 +197,15 @@ public final class ProjectOperations {
         }
     }
     
-    /**Test whether the move operation is supported on the given project.
+    /**
+     * Tests whether the move or rename operations are supported on the given project.
      * 
      * @param prj project to test
      * @return <code>true</code> if the project supports the move operation,
      *         <code>false</code> otherwise
      */
     public static boolean isMoveOperationSupported(Project prj) {
-        return true;
+        return true; // XXX ???
     }
     
 }

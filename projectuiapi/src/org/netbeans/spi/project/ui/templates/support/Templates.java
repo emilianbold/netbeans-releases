@@ -43,7 +43,7 @@ public class Templates {
      * Find the project selected for a custom template wizard iterator.
      * <p class="nonnormative">
      * If the user selects File | New File, this will be the project chosen in the first panel.
-     * If the user selects New from {@link org.netbeans.modules.project.ui.actions.Actions#newFileAction}, this will
+     * If the user selects New from {@link org.netbeans.spi.project.ui.support.CommonProjectActions#newFileAction}, this will
      * be the project on which the context menu was invoked.
      * </p>
      * @param wizardDescriptor the wizard as passed to {@link WizardDescriptor.InstantiatingIterator#initialize}
@@ -58,7 +58,7 @@ public class Templates {
      * Find the template with which a custom template wizard iterator is associated.
      * <p class="nonnormative">
      * If the user selects File | New File, this will be the template chosen in the first panel.
-     * If the user selects New from {@link org.netbeans.modules.project.ui.actions.Actions#newFileAction}, this will
+     * If the user selects New from {@link org.netbeans.spi.project.ui.support.CommonProjectActions#newFileAction}, this will
      * be the template selected from the context submenu.
      * </p>
      * @param wizardDescriptor the wizard as passed to {@link WizardDescriptor.InstantiatingIterator#initialize}
@@ -141,6 +141,10 @@ public class Templates {
     /** Method to communicate current choice of target name to a custom 
      * {@link WizardDescriptor.InstantiatingIterator} associated with particular template.
      * <p>XXX why is this public? only used from NewFileIterator in projectui?
+     * @param wizardDescriptor a file wizard
+     * @return the selected target name (could be null?)
+     * @see TemplateWizard#getTargetName
+     * @see ProjectChooserFactory#WIZARD_KEY_TARGET_NAME
      */
     public static String getTargetName( WizardDescriptor wizardDescriptor ) {
         if ( wizardDescriptor instanceof TemplateWizard ) {
@@ -154,6 +158,10 @@ public class Templates {
     /** Sets the target name for given WizardDescriptor to be used from
      * custom target choosers
      * <p>XXX why is this public? only used from SimpleTargetChooserPanel in projectui?
+     * @param wizardDescriptor a file wizard
+     * @param targetName a desired target name
+     * @see TemplateWizard#setTargetName
+     * @see ProjectChooserFactory#WIZARD_KEY_TARGET_NAME
      */
     public static void setTargetName( WizardDescriptor wizardDescriptor, String targetName ) {
         if ( wizardDescriptor instanceof TemplateWizard ) {                        

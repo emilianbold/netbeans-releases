@@ -44,6 +44,7 @@ public class FileSensitiveActions {
      *        name (label). It takes two parameters a la {@link java.text.MessageFormat}: <code>{0}</code> - number of selected projects;
      *        <code>{1}</code> - name of the first project.
      * @param icon icon of the action (or null)
+     * @return newly created file-sensitive action
      */    
     public static Action fileCommandAction( String command, String namePattern, Icon icon ) {
         return Utilities.getActionsFactory().fileCommandAction( command, namePattern, icon );

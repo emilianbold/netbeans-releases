@@ -30,7 +30,8 @@ import org.netbeans.api.project.Project;
  * An implementation of this interface may be registered in the project's lookup to support
  * move operation in the following cases:
  * <ul>
- *     <li>The project type wants to use the {@link org.netbeans.spi.project.ui.support.DefaultProjectOperationsImplementation}
+ *     <li>The project type wants to use
+ * <a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/support/DefaultProjectOperations.html"><code>DefaultProjectOperations</code></a>
  *         to perform the rename/move operation.
  *    </li>
  *    <li>If this project may be part of of a compound project (like EJB project is a part of a J2EE project),

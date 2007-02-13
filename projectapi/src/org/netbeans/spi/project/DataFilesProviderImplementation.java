@@ -33,19 +33,19 @@ public interface DataFilesProviderImplementation {
     /**
      * Returns list of {@link FileObject}s that are considered to be metadata files
      * and folders belonging into this project.
-     * See {@link ProjectOperations#getMetadataFiles(Project)} for more information.
+     * See {@link org.netbeans.spi.project.support.ProjectOperations#getMetadataFiles(Project)} for more information.
      *
      * @return list of metadata files and folders
      */
-    public List<FileObject> getMetadataFiles();
+    List<FileObject> getMetadataFiles();
     
     /**
      * Returns list of {@link FileObject}s that are considered to be data files and folders
      * belonging into this project.
-     * See {@link ProjectOperations#getDataFiles(Project)} for more information.
+     * See {@link org.netbeans.spi.project.support.ProjectOperations#getDataFiles(Project)} for more information.
      *
      * @return list of data files and folders
      */
-    public List<FileObject> getDataFiles();
+    List<FileObject> getDataFiles();
     
 }

@@ -19,12 +19,9 @@
 
 package org.netbeans.spi.project.ui.support;
 
-import javax.swing.JFileChooser;
-import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
-import org.netbeans.modules.project.uiapi.Utilities;
-import org.openide.util.Lookup;
-
 import java.io.File;
+import javax.swing.JFileChooser;
+import org.netbeans.modules.project.uiapi.Utilities;
 
 /**
  * Support for creating project chooser.

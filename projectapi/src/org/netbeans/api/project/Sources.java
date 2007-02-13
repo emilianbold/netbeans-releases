@@ -20,7 +20,6 @@
 package org.netbeans.api.project;
 
 import javax.swing.event.ChangeListener;
-import org.openide.filesystems.FileObject;
 
 /**
  * Optional interface for a project to enumerate folders containing sources

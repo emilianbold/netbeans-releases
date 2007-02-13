@@ -19,11 +19,9 @@
 
 package org.netbeans.spi.project;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-
 /**
- * Callback permitting {@link Project}s to inform the {@link ProjectManager}
+ * Callback permitting {@link org.netbeans.api.project.Project}s to inform the
+ * {@link org.netbeans.api.project.ProjectManager}
  * of important lifecycle events.
  * Currently the only available events are modification of the project metadata
  * and project deletion notification.
@@ -48,18 +46,18 @@ public interface ProjectState {
     
     /**
      * <p>Inform the manager that the project has been deleted. The project will
-     * be removed from any {@link ProjectManager}'s  mappings.
-     * If {@link ProjectManager#findProject} is called on the project directory,
+     * be removed from any {@link org.netbeans.api.project.ProjectManager}'s  mappings.
+     * If {@link org.netbeans.api.project.ProjectManager#findProject} is called on the project directory,
      * the {@link ProjectFactory ProjectFactories} are asked again to recognize
      * the project.</p>
      *
-     * <p>The project is no longer recognized as created by the {@link ProjectManager}.</p>
+     * <p>The project is no longer recognized as created by the {@link org.netbeans.api.project.ProjectManager}.</p>
      *
      * <p>Acquires write access.</p>
      *
      * @throws IllegalStateException if notifyDeleted is called more than once for a project.
      * @since 1.6
      */
-    void notifyDeleted() throws IllegalStateException ;
+    void notifyDeleted() throws IllegalStateException;
     
 }

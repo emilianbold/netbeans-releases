@@ -20,7 +20,6 @@
 package org.netbeans.spi.project.ui.support;
 
 import org.netbeans.api.project.Project;
-import org.openide.nodes.Node;
 
 /**
  * Factory interface for distributed creation of project node's children. Implementation
@@ -48,7 +47,7 @@ public interface NodeFactory {
      * @return never return null, if the project is not relevant to the NodeFactory,
      * use {@link org.netbeans.spi.project.ui.support.NodeFactorySupport#fixedNodeList} empty value.
      */ 
-    NodeList createNodes(Project p);
+    NodeList<?> createNodes(Project p);
     
 //    Node findPath(Project p, Node root, Object target);
     

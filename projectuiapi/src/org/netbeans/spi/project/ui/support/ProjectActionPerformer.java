@@ -34,12 +34,12 @@ public interface ProjectActionPerformer {
      * @param project the currently selected project, or null if no project is selected
      * @return true to enable the action, false to disable it
      */
-    public boolean enable( Project project ); 
+    boolean enable(Project project);
         
     /**
      * Called when the user invokes the action.
      * @param project the project this action was invoked for (XXX can this be null or not?)
      */
-    public void perform( Project project ); 
+    void perform(Project project);
     
 }

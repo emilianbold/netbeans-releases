@@ -19,7 +19,6 @@
 
 package org.netbeans.spi.project;
 
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 
 /**

@@ -22,7 +22,6 @@ package org.netbeans.spi.project.ui.support;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -45,24 +44,25 @@ import org.openide.util.LookupListener;
  */
 public class NodeFactorySupport {
     
-    /**
-     * Creates a new instance of NodeFactorySupport
-     */
     private NodeFactorySupport() {
     }
     
     /**
-     * create Node' Children instance that works on top of NodeFactory instances
-     * in the layers.
+     * Creates children list that works on top of {@link NodeFactory} instances
+     * in layers.
+     * @param project the project which is being displayed
      * @param folderPath the path in the System Filesystem that is used as root for subnode composition.
      *        The content of the folder is assumed to be {@link org.netbeans.spi.project.ui.support.NodeFactory} instances
-     * 
+     * @return a new children list
      */
     public static Children createCompositeChildren(Project project, String folderPath) {
         return new DelegateChildren(project, folderPath);
     }
+
     /**
      * Utility method for creating a non variable NodeList instance.
+     * @param nodes a fixed set of nodes to display
+     * @return a constant node list
      */
     public static NodeList fixedNodeList(Node... nodes) {
         return new FixedNodeList(nodes);
@@ -94,11 +94,11 @@ public class NodeFactorySupport {
         }
     }
     
-    static class DelegateChildren extends Children.Keys implements LookupListener, ChangeListener {
+    static class DelegateChildren extends Children.Keys<NodeList<?>> implements LookupListener, ChangeListener {
         
         private String folderPath;
         private Project project;
-        private List<NodeList> nodeLists = new ArrayList<NodeList>();
+        private List<NodeList<?>> nodeLists = new ArrayList<NodeList<?>>();
         private List<NodeFactory> factories = new ArrayList<NodeFactory>();
         private Lookup.Result<NodeFactory> result;
         
@@ -114,12 +114,12 @@ public class NodeFactorySupport {
             return new FolderLookup(folder).getLookup();
         }
         
-        protected Node[] createNodes(Object key) {
-            NodeList lst = (NodeList)key;
-            Iterator it = lst.keys().iterator();
+        protected Node[] createNodes(NodeList<?> lst) {
+            return _createNodes(lst);
+        }
+        private static <K> Node[] _createNodes(NodeList<K> lst) {
             List<Node> toRet = new ArrayList<Node>();
-            while (it.hasNext()) {
-                Object elem = it.next();
+            for (K elem : lst.keys()) {
                 Node nd = lst.node(elem);
                 if (nd != null) {
                     toRet.add(nd);
@@ -131,10 +131,8 @@ public class NodeFactorySupport {
         protected void addNotify() {
             super.addNotify();
             result = createLookup().lookup(new Lookup.Template<NodeFactory>(NodeFactory.class));
-            Iterator it = result.allInstances().iterator();
-            while (it.hasNext()) {
-                NodeFactory factory = (NodeFactory) it.next();
-                NodeList lst = factory.createNodes(project);
+            for (NodeFactory factory : result.allInstances()) {
+                NodeList<?> lst = factory.createNodes(project);
                 assert lst != null;
                 nodeLists.add(lst);
                 lst.addNotify();
@@ -147,10 +145,8 @@ public class NodeFactorySupport {
         
         protected void removeNotify() {
             super.removeNotify();
-            setKeys(Collections.EMPTY_LIST);
-            Iterator it = nodeLists.iterator();
-            while (it.hasNext()) {
-                NodeList elem = (NodeList) it.next();
+            setKeys(Collections.<NodeList<?>>emptySet());
+            for (NodeList elem : nodeLists) {
                 elem.removeChangeListener(this);
                 elem.removeNotify();
             }
@@ -163,17 +159,15 @@ public class NodeFactorySupport {
         }
         
         public void stateChanged(ChangeEvent e) {
-            refreshKey(e.getSource());
+            refreshKey((NodeList<?>) e.getSource());
         }
 
         public void resultChanged(LookupEvent ev) {
-            Iterator it = result.allInstances().iterator();
             int index = 0;
-            while (it.hasNext()) {
-                NodeFactory factory = (NodeFactory) it.next();
+            for (NodeFactory factory : result.allInstances()) {
                 if (!factories.contains(factory)) {
                     factories.add(index, factory);
-                    NodeList lst = factory.createNodes(project);
+                    NodeList<?> lst = factory.createNodes(project);
                     assert lst != null;
                     nodeLists.add(index, lst);
                     lst.addNotify();
@@ -181,7 +175,7 @@ public class NodeFactorySupport {
                 } else {
                     while (!factory.equals(factories.get(index))) {
                         factories.remove(index);
-                        NodeList lst = nodeLists.remove(index);
+                        NodeList<?> lst = nodeLists.remove(index);
                         lst.removeNotify();
                         lst.removeChangeListener(this);                            
                     }

@@ -106,8 +106,8 @@ public interface ProjectConfigurationProvider<C extends ProjectConfiguration> {
      * <p class="nonnormative">
      * The likely values of <code>command</code> are those actions
      * normally shown in the IDE's tool bar with main project bindings:
-     * {@link ActionProvider#BUILD}, {@link ActionProvider#REBUILD},
-     * {@link ActionProvider#RUN}, and {@link ActionProvider#DEBUG}.
+     * {@link ActionProvider#COMMAND_BUILD}, {@link ActionProvider#COMMAND_REBUILD},
+     * {@link ActionProvider#COMMAND_RUN}, and {@link ActionProvider#COMMAND_DEBUG}.
      * </p>
      * @param command one of {@link ActionProvider#getSupportedActions}
      * @return true if the named command refers to an action affected by configurations

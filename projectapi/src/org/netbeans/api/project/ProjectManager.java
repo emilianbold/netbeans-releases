@@ -77,6 +77,7 @@ public final class ProjectManager {
 
     /**
      * Returns the singleton project manager instance.
+     * @return the default instance
      */
     public static ProjectManager getDefault() {
         return DEFAULT;
@@ -521,6 +522,7 @@ public final class ProjectManager {
      * Check whether a given project is current modified.
      * <p>Acquires read access.
      * @param p a project loaded by this manager
+     * @return true if it is modified, false if has been saved since the last modification
      * @throws IllegalArgumentException if the project was not created through this manager
      */
     public boolean isModified(final Project p) throws IllegalArgumentException {
@@ -613,12 +615,13 @@ public final class ProjectManager {
     }
     
     /**
-     * Check whether a given project is still valid (ie. not deleted).
+     * Checks whether a project is still valid.
      * <p>Acquires read access.</p>
      *
      * @since 1.6
      *
      * @param p a project loaded by this manager
+     * @return true if the project is still valid, false if it has been deleted
      */
     public boolean isValid(final Project p) {
         return mutex().readAccess(new Mutex.Action<Boolean>() {

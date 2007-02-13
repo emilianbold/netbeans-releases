@@ -29,6 +29,7 @@ import org.openide.nodes.Node;
  * instances. For utility methods of creating a <code>NodeList</code> instance, see
  * {@link org.netbeans.spi.project.ui.support.NodeFactorySupport}
 
+ * @param K the type of key you would like to use to represent nodes
  * @author mkleint
  * @since org.netbeans.modules.projectuiapi/1 1.18
  */

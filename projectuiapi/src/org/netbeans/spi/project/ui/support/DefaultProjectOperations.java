@@ -48,7 +48,7 @@ public final class DefaultProjectOperations {
      * @param p project to delete
      * @throws IllegalArgumentException if
      * <code>p == null</code> or
-     * if {@link org.netbeans.api.projects.ProjectOperations.isDeleteOperationSupported}
+     * if {@link org.netbeans.spi.project.support.ProjectOperations#isDeleteOperationSupported}
      * returns false for this project.
      */
     public static void performDefaultDeleteOperation(Project p) throws IllegalArgumentException {
@@ -71,7 +71,7 @@ public final class DefaultProjectOperations {
      * @param p project to copy
      * @throws IllegalArgumentException if
      * <code>p == null</code> or
-     * {@link org.netbeans.api.projects.ProjectOperations.isCopyOperationSupported}
+     * {@link org.netbeans.spi.project.support.ProjectOperations#isCopyOperationSupported}
      * returns false for this project.
      */
     public static void performDefaultCopyOperation(Project p) throws IllegalArgumentException {
@@ -94,7 +94,7 @@ public final class DefaultProjectOperations {
      * @param p project to move
      * @throws IllegalArgumentException if
      * <code>p == null</code> or
-     * {@link org.netbeans.api.projects.ProjectOperations.ismoveOperationSupported}
+     * {@link ProjectOperations#isMoveOperationSupported}
      * returns false for this project.
      */
     public static void performDefaultMoveOperation(Project p) throws IllegalArgumentException {
@@ -103,7 +103,7 @@ public final class DefaultProjectOperations {
         }
         
         if (!ProjectOperations.isMoveOperationSupported(p)) {
-            throw new IllegalStateException("Attempt to delete project that does not support move.");
+            throw new IllegalArgumentException("Attempt to delete project that does not support move.");
         }
         
         DefaultProjectOperationsImplementation.moveProject(p);
@@ -118,16 +118,16 @@ public final class DefaultProjectOperations {
      * @param newName new project's name or null
      * @throws IllegalArgumentException if
      * <code>p == null</code> or
-     * {@link org.netbeans.api.projects.ProjectOperations.ismoveOperationSupported}
+     * {@link ProjectOperations#isMoveOperationSupported}
      * returns false for this project.
      */
-    public static void performDefaultRenameOperation(Project p, String newName) throws IllegalStateException {
+    public static void performDefaultRenameOperation(Project p, String newName) throws IllegalArgumentException {
         if (p == null) {
             throw new IllegalArgumentException("Project is null");
         }
         
         if (!ProjectOperations.isMoveOperationSupported(p)) {
-            throw new IllegalStateException("Attempt to delete project that does not support move.");
+            throw new IllegalArgumentException("Attempt to delete project that does not support move.");
         }
         
         DefaultProjectOperationsImplementation.renameProject(p, newName);
