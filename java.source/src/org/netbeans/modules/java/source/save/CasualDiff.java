@@ -2407,10 +2407,15 @@ public class CasualDiff {
     }
 
     private void copyTo(int from, int to) {
-        printer.print(origText.substring(from, to));
+        copyTo(from, to, printer);
     }
     
     private void copyTo(int from, int to, VeryPretty loc) {
+        if (from == to) { 
+            return;
+        } else if (from > to || from < 0 || to < 0) {
+            throw new IllegalArgumentException("Illegal values: from = " + from + "; to = " + to + ".");
+        }
         loc.print(origText.substring(from, to));
     }
     
