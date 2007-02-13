@@ -68,7 +68,10 @@ public class JPAHelper {
         AnnotationMirror annTable = Utilities.findAnnotation(entityClass, JPAAnnotations.TABLE);
         AnnotationValue nameAttrValue = Utilities.getAnnotationAttrValue(annTable, JPAAnnotations.NAME_ATTR);
         
-        if (nameAttrValue == null){
+        if (nameAttrValue != null){
+            name = nameAttrValue.getValue().toString();
+        }
+        else {
             AnnotationMirror annEntity = Utilities.findAnnotation(entityClass, JPAAnnotations.ENTITY);
             nameAttrValue = Utilities.getAnnotationAttrValue(annEntity, JPAAnnotations.NAME_ATTR);
             
@@ -78,6 +81,8 @@ public class JPAHelper {
                 name = nameAttrValue.getValue().toString();
             }
         }
+        
+        assert name != null;
         
         return name;
     }
