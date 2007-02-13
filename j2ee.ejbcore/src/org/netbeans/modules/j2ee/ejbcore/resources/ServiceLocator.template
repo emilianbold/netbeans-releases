@@ -23,11 +23,11 @@ import javax.mail.Session;
  * @author __USER__
  * @version 
  */
-public class ServiceLocator {
+public class __NAME__ {
     
     private InitialContext ic;
     
-    public ServiceLocator() {
+    public __NAME__() {
         try {
             ic = new InitialContext();
         } catch (NamingException ne) {

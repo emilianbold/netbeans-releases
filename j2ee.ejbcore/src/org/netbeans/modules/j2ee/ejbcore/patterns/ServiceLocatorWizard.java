@@ -19,11 +19,9 @@
 
 package org.netbeans.modules.j2ee.ejbcore.patterns;
 
+import java.io.IOException;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
-import org.openide.*;
-import org.openide.util.*;
-import java.io.*;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -36,9 +34,11 @@ import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 
 /** 

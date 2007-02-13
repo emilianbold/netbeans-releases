@@ -25,7 +25,7 @@ import javax.mail.Session;
  * @author __USER__
  * @version 
  */
-public class ServiceLocator {
+public class __NAME__ {
     
     private InitialContext ic;
     private Map cache;
