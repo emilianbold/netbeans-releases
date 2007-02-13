@@ -91,6 +91,7 @@ import org.netbeans.modules.bpel.nodes.dnd.BpelNodeTransferable;
 import org.netbeans.modules.bpel.nodes.dnd.Util;
 import org.netbeans.modules.bpel.properties.PropertyType;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Named;
@@ -219,7 +220,7 @@ public abstract class BpelNode<T>
         ACTION_TYPE_MAP.put(ActionType.SHOW_BPEL_MAPPER
                 , SystemAction.get(ShowBpelMapperAction.class));
         ACTION_TYPE_MAP.put(ActionType.FIND_USAGES,
-                  SystemAction.get(FindUsagesAction.class));
+                  RefactoringActionsFactory.whereUsedAction());
     }
     
     private Object reference;

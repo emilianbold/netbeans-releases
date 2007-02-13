@@ -21,12 +21,14 @@ package org.netbeans.modules.bpel.nodes.actions;
 import org.openide.nodes.Node;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.bpel.nodes.BpelNode;
+import org.openide.util.HelpCtx;
+
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.10.27
  */
-public class FindUsagesAction extends org.netbeans.modules.xml.refactoring.actions.FindUsagesAction {
+public class FindUsagesAction  { //extends org.netbeans.modules.xml.refactoring.actions.FindUsagesAction {
 
   protected Referenceable getReferenceable(Node[] nodes) {
     if (nodes.length != 1) {
@@ -44,4 +46,5 @@ public class FindUsagesAction extends org.netbeans.modules.xml.refactoring.actio
     }
     return null;
   }
+
 }
