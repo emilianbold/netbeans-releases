@@ -38,6 +38,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 
 /** Default implementation of {@link org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer}.
@@ -149,15 +150,17 @@ public final class EjbEnterpriseReferenceContainerSupport {
         
         private Ejb findEjbForClass(String className) throws IOException {
             EjbJar dd = findDD();
-            EnterpriseBeans beans = dd.getEnterpriseBeans();
             Ejb ejb = null;
-            if (beans != null) {
-                ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className);
-                if (ejb == null) {
-                    ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className);
-                }
-                if (ejb == null) {
-                    ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.MESSAGE_DRIVEN, Ejb.EJB_CLASS, className);
+            if (dd != null) {
+                EnterpriseBeans beans = dd.getEnterpriseBeans();
+                if (beans != null) {
+                    ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className);
+                    if (ejb == null) {
+                        ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className);
+                    }
+                    if (ejb == null) {
+                        ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.MESSAGE_DRIVEN, Ejb.EJB_CLASS, className);
+                    }
                 }
             }
             return ejb;
@@ -256,7 +259,13 @@ public final class EjbEnterpriseReferenceContainerSupport {
                 ref = ejb.newResourceRef();
             } else {
                 try {
-                    ref = (ResourceRef) findDD().createBean("ResourceRef");
+                    EjbJar ejbJar = findDD();
+                    if (ejbJar != null) {
+                        ref = (ResourceRef) ejbJar.createBean("ResourceRef");
+                    } else {
+                        ErrorManager.getDefault().log(ErrorManager.USER,
+                                NbBundle.getMessage(EjbEnterpriseReferenceContainerSupport.class, "MSG_MissingMetadata"));
+                    }
                 } catch (ClassNotFoundException cnfe) {
                     IOException ioe = new IOException();
                     ioe.initCause(cnfe);

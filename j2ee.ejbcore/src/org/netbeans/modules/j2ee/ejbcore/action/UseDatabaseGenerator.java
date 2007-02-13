@@ -41,7 +41,11 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.ServiceLocatorStrategy;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -69,7 +73,9 @@ public final class UseDatabaseGenerator {
         } else {
             String jndiName = generateJNDILookup(datasource.getJndiName(), erc, 
                     fileObject, className, datasource.getUrl(), createServerResources);
-            generateLookupMethod(fileObject, className, jndiName, serviceLocatorStrategy);
+            if (jndiName != null) {
+                generateLookupMethod(fileObject, className, jndiName, serviceLocatorStrategy);
+            }
         }
         if (serviceLocator != null) {
             erc.setServiceLocatorName(serviceLocator);
@@ -78,15 +84,19 @@ public final class UseDatabaseGenerator {
     
     private String generateJNDILookup(String jndiName, EnterpriseReferenceContainer enterpriseReferenceContainer, 
             FileObject fileObject, String className, String nodeName, boolean createServerResources) throws IOException {
+        String result = null;
         ResourceRef ref = enterpriseReferenceContainer.createResourceRef(className);
-        if (createServerResources) {
-            ref.setDescription(nodeName);
+        if (ref != null) {
+            if (createServerResources) {
+                ref.setDescription(nodeName);
+            }
+            ref.setResRefName(jndiName);
+            ref.setResAuth(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_AUTH_CONTAINER);
+            ref.setResSharingScope(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_SHARING_SCOPE_SHAREABLE);
+            ref.setResType(javax.sql.DataSource.class.getName());
+            result = enterpriseReferenceContainer.addResourceRef(ref, fileObject, className);
         }
-        ref.setResRefName(jndiName);
-        ref.setResAuth(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_AUTH_CONTAINER);
-        ref.setResSharingScope(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_SHARING_SCOPE_SHAREABLE);
-        ref.setResType(javax.sql.DataSource.class.getName());
-        return enterpriseReferenceContainer.addResourceRef(ref, fileObject, className);
+        return result;
     }
     
     private void generateLookupMethod(FileObject fileObject, final String className, final String jndiName, 
