@@ -98,7 +98,7 @@ public abstract class JPAProblemFinder {
         }
         
         //TODO: should we really reset the errors if the task is cancelled?
-        LOG.info("resetting errors, current number of errors in file:" + problemsFound.size());
+        LOG.log(Level.FINE, "resetting errors, current number of errors in file: {0}", problemsFound.size());
         HintsController.setErrors(file, "JPA Verification", problemsFound); //NOI18N
     }
     
