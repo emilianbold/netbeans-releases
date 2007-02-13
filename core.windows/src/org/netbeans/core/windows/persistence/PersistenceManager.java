@@ -85,7 +85,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     static final String WINDOWMANAGER_FOLDER = "WindowManager"; // NOI18N
     static final String GROUPS_FOLDER = "Groups"; // NOI18N
     static final String MODES_FOLDER = "Modes"; // NOI18N
-    private static final String COMPS_FOLDER = "Components"; // NOI18N
+    public static final String COMPS_FOLDER = "Components"; // NOI18N
     
     /** Constants for file extensions that winsys uses */
     public static final String WINDOWMANAGER_EXT = "wswmgr"; // NOI18N

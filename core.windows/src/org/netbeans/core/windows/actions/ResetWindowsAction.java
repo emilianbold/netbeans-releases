@@ -82,7 +82,11 @@ public class ResetWindowsAction extends AbstractAction {
                 FileObject rootFolder = fs.getRoot().getFileObject( PersistenceManager.ROOT_LOCAL_FOLDER );
                 if( null != rootFolder ) {
                     try {
-                        rootFolder.delete();
+                        for( FileObject fo : rootFolder.getChildren() ) {
+                            if( PersistenceManager.COMPS_FOLDER.equals( fo.getName() ) )
+                                continue; //do not delete settings files
+                            fo.delete();
+                        }
                     } catch( IOException ioE ) {
                         ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
                     }
