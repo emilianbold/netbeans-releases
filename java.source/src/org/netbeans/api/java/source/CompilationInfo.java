@@ -88,8 +88,8 @@ public class CompilationInfo {
        
     /**
      * Returns the javac tree representing the source file.
-     * @return {@link CompilationUnitTree} the compilation unit cantaining the top level classes contained in the
-     * java source file
+     * @return {@link CompilationUnitTree} the compilation unit cantaining the top level classes contained in the,
+     * java source file. It may return null when the phase is less than {@link JavaSource.Phase#PARSED}
      */
     public CompilationUnitTree getCompilationUnit() {
         if (this.jfo == null) {

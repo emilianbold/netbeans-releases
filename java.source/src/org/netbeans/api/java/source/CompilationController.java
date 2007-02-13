@@ -97,7 +97,9 @@ public class CompilationController extends CompilationInfo {
      * Returns the javac tree representing the source file.
      *
      * @return {@link CompilationUnitTree} the compilation unit cantaining the top level classes contained in the
-     * java source file
+     * java source file. It may return null when the {@link CompilationController#getPhase} is lower than 
+     * {@link JavaSource.Phase#PARSED}. Before calling this method the client has to call {@link CompilationController#toPhase}
+     * with required {@link JavaSource.Phase}.
      */
     @Override
     public CompilationUnitTree getCompilationUnit() {
