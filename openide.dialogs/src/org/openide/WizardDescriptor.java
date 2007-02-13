@@ -932,11 +932,12 @@ public class WizardDescriptor extends DialogDescriptor {
             return;
         }
         
-        Window parentWindow = SwingUtilities.getWindowAncestor((Component) getMessage());
-        if (parentWindow != null) {
-            parentWindow.setEnabled (false);
-        }
-        
+        // bugfix #92539: JR: I don't see the reason this code, I have tried comment out
+//        Window parentWindow = SwingUtilities.getWindowAncestor((Component) getMessage());
+//        if (parentWindow != null) {
+//            parentWindow.setEnabled (false);
+//        }
+//        
         if (wizardPanel != null) {
             // save escapeActionListener for normal state
             KeyStroke ks = KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0);
