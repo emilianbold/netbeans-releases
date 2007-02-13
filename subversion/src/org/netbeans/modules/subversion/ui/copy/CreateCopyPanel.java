@@ -107,6 +107,9 @@ public class CreateCopyPanel extends javax.swing.JPanel {
 
         previewTextField.setEditable(false);
 
+        invalidValuesLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/ui/resources/error.gif")));
+        org.openide.awt.Mnemonics.setLocalizedText(invalidValuesLabel, "Error");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -158,8 +161,9 @@ public class CreateCopyPanel extends javax.swing.JPanel {
                                 .add(urlComboBox, 0, 584, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(browseRepositoryButton))))
-                    .add(warningLabel)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 815, Short.MAX_VALUE))
+                    .add(invalidValuesLabel)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 815, Short.MAX_VALUE)
+                    .add(warningLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -204,7 +208,9 @@ public class CreateCopyPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(invalidValuesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(warningLabel)
                 .addContainerGap())
@@ -223,6 +229,7 @@ public class CreateCopyPanel extends javax.swing.JPanel {
     final javax.swing.JTextField copyFromRemoteTextField = new javax.swing.JTextField();
     final javax.swing.JTextField copyFromRevisionTextField = new javax.swing.JTextField();
     final javax.swing.JLabel copyToLabel = new javax.swing.JLabel();
+    final javax.swing.JLabel invalidValuesLabel = new javax.swing.JLabel();
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;

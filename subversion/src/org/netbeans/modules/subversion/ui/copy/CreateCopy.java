@@ -113,30 +113,52 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         ((JTextComponent) panel.urlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
         
         setFromLocal();
+        validateUserInput();
     }       
     
     protected void validateUserInput() {                        
-        String text = getCreateCopyPanel().messageTextArea.getText();
-        if (text == null || text.length() == 0) {            
-            getOKButton().setEnabled(false);        
-            return;
-        }        
+        String text = getCreateCopyPanel().messageTextArea.getText();    
         try {
             RepositoryFile rf[] = copyToRepositoryPaths.getRepositoryFiles();
             if(rf == null || rf.length == 0) {
+                
+                setErrorText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_MISSING_REPOSITORY_FOLDER"));
+                
                 getOKButton().setEnabled(false);        
                 return;
             }
-        } catch (NumberFormatException ex) {
+        } catch (NumberFormatException ex) {            
+            setErrorText(ex.getLocalizedMessage()); // should not happen            
             getOKButton().setEnabled(false);        
             return;
-        } catch (MalformedURLException ex) {
+        } catch (MalformedURLException ex) {            
+            setErrorText(ex.getLocalizedMessage()); // should not happen           
             getOKButton().setEnabled(false);        
             return;
         }        
+        if (text == null || text.length() == 0) {   
+                        
+            setErrorText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_MISSING_COPY_MESSAGE"));
+            
+            getOKButton().setEnabled(false);        
+            return;
+        }    
+        resetErrorText();
         getOKButton().setEnabled(true);              
     }    
 
+    private void setErrorText(String txt) {
+        CreateCopyPanel panel = getCreateCopyPanel();
+        panel.invalidValuesLabel.setVisible(true);
+        panel.invalidValuesLabel.setText(txt);
+    }
+    
+    private void resetErrorText() {
+        CreateCopyPanel panel = getCreateCopyPanel();        
+        panel.invalidValuesLabel.setVisible(false);
+        panel.invalidValuesLabel.setText("");        
+    }
+    
     CreateCopyPanel getCreateCopyPanel() {
         return (CreateCopyPanel) getPanel();
     }
