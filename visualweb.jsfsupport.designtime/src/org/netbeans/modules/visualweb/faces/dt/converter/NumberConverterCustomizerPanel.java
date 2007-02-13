@@ -247,10 +247,10 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
     // Get the display names for all the available locales
     private String[] getLocaleDisplayNames() {
         locales = Locale.getAvailableLocales();
-        
+
         // Sort the locales based on the display names
         Arrays.sort( locales, new LocaleComparator() );
-        
+
         String[] displayNames = new String[locales.length+1];
         ArrayList currencyCodes = new ArrayList();
 
@@ -263,9 +263,9 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
 
         return displayNames;
     }
-    
+
        class LocaleComparator implements java.util.Comparator <Locale> {
-           
+
            public int compare(Locale locale1, Locale locale2) {
                return locale1.getDisplayName().compareTo(locale2.getDisplayName());
            }
@@ -729,7 +729,7 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
             txtResults.setText( decimalFormat.format( sampleNumber ) );
         }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -974,7 +974,7 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
         pnlType.add(lblFractional, gridBagConstraints);
         lblFractional.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("fractionalDigits"));
-        lblFractional.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweorg/netbeans/modules/visualweb/converter/Bundle").getString("fractionalDigits"));
+        lblFractional.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("fractionalDigits"));
 
         lblInteger.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("integerDigits_mnemonic").charAt(0));
         lblInteger.setLabelFor(cmbMinInteger);
@@ -998,7 +998,7 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         pnlType.add(cbUseGrouping, gridBagConstraints);
-        cbUseGrouping.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweorg/netbeans/modules/visualweb/converter/Bundle").getString("groupingUsed"));
+        cbUseGrouping.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("groupingUsed"));
 
         pnlLocale.setLayout(new java.awt.GridBagLayout());
 
