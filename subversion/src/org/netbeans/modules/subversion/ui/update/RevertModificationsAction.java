@@ -132,9 +132,9 @@ public class RevertModificationsAction extends ContextAction {
         if(support.isCanceled()) {
             return;
         }
-        
+                
         if(revertModifications.revertNewFiles()) {
-            File[] newfiles = Subversion.getInstance().getStatusCache().listFiles(files, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+            File[] newfiles = Subversion.getInstance().getStatusCache().listFiles(ctx.getRootFiles(), FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
             for (int i = 0; i < newfiles.length; i++) {                                
                 FileObject fo = FileUtil.toFileObject(newfiles[i]);                                    
                 try {
