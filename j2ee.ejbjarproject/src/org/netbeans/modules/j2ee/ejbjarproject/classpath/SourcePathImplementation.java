@@ -65,6 +65,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             }
         }        
         URL[] roots = this.sourceRoots.getRootURLs();                                
+        String buildDir = projectHelper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.BUILD_DIR);
         synchronized (this) {
             if (this.resources == null) {
                 List result = new ArrayList (roots.length);
@@ -75,7 +76,6 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                 // adds build/generated/wsimport/client and build/generated/wsimport/service to resources to be available for code completion
                 if (projectHelper!=null) {
                     try {
-                        String buildDir = projectHelper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.BUILD_DIR);
                         if (buildDir!=null) {
                             // generated/wsimport/client
                             File f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/client"); //NOI18N

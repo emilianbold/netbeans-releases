@@ -257,18 +257,18 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender,
     }
     
     private void storeLibLocations() {
-        ProjectManager.mutex().postWriteRequest(new Runnable () {
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                //update lib references in private properties
-                EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                List wmLibs = cs.itemsList(props.getProperty(EjbJarProjectProperties.JAVAC_CLASSPATH),  ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
-                cs.encodeToStrings(wmLibs.iterator(), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
-                EjbJarProjectProperties.storeLibrariesLocations(wmLibs.iterator(), privateProps);
-                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
-
-                RequestProcessor.getDefault().post(new Runnable() {
+                ProjectManager.mutex().writeAccess(new Runnable() {
                     public void run() {
+                        EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                        //update lib references in private properties
+                        EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                        List wmLibs = cs.itemsList(props.getProperty(EjbJarProjectProperties.JAVAC_CLASSPATH),  ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
+                        cs.encodeToStrings(wmLibs.iterator(), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
+                        EjbJarProjectProperties.storeLibrariesLocations(wmLibs.iterator(), privateProps);
+                        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+
                         try {
                             ProjectManager.getDefault().saveProject(project);
                         } catch (IOException e) {
