@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.mobility.project.PropertyDescriptor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -48,6 +49,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.mobility.project.classpath.J2MEProjectClassPathExtender;
@@ -297,42 +299,23 @@ public final class J2MEProject implements Project, AntProjectListener {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Object>() {
                 public Object run()  {
-                    EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    ep.setProperty("netbeans.user",  System.getProperty("netbeans.user")); //NOI18N
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                    
-                    //upgrade from 4.0 -> 4.1 by adding missing properties
-                    ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     boolean modified = false;
-                    if (!ep.containsKey(DefaultPropertiesDescriptor.DEPLOYMENT_JARURL)) {
-                        modified = true;
-                        ep.setProperty(DefaultPropertiesDescriptor.DEPLOYMENT_JARURL, "${dist.jar}");//NOI18N
+                    EditableProperties proj = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    priv.setProperty("netbeans.user",  System.getProperty("netbeans.user")); //NOI18N
+                    for (ProjectPropertiesDescriptor p : Lookup.getDefault().lookup(new Lookup.Template<ProjectPropertiesDescriptor>(ProjectPropertiesDescriptor.class)).allInstances() ) {
+                        for (PropertyDescriptor d : p.getPropertyDescriptors()) {
+                            if (d.getDefaultValue() != null) {
+                                EditableProperties ep = d.isShared() ? proj : priv;
+                                if (!ep.containsKey(d.getName())) {
+                                    ep.setProperty(d.getName(), d.getDefaultValue());
+                                    modified = true;
+                                }
+                            }
+                        }
                     }
-                    if (!ep.containsKey(DefaultPropertiesDescriptor.DEPLOYMENT_METHOD)) {
-                        modified = true;
-                        ep.setProperty(DefaultPropertiesDescriptor.DEPLOYMENT_METHOD, "NONE");//NOI18N
-                    }
-                    if (!ep.containsKey(DefaultPropertiesDescriptor.DEPLOYMENT_OVERRIDE_JARURL)) {
-                        modified = true;
-                        ep.setProperty(DefaultPropertiesDescriptor.DEPLOYMENT_OVERRIDE_JARURL, "false");//NOI18N
-                    }
-                    if (!ep.containsKey(DefaultPropertiesDescriptor.MANIFEST_JAD)) {
-                        modified = true;
-                        ep.setProperty(DefaultPropertiesDescriptor.MANIFEST_JAD, "");//NOI18N
-                    }
-                    if (!ep.containsKey(DefaultPropertiesDescriptor.MANIFEST_MANIFEST)) {
-                        modified = true;
-                        ep.setProperty(DefaultPropertiesDescriptor.MANIFEST_MANIFEST, "");//NOI18N
-                    }
-                    if (!ep.containsKey(DefaultPropertiesDescriptor.OBFUSCATION_CUSTOM)) {
-                        modified = true;
-                        ep.setProperty(DefaultPropertiesDescriptor.OBFUSCATION_CUSTOM, "");//NOI18N
-                    }
-                    if (!ep.containsKey(DefaultPropertiesDescriptor.JAVAC_ENCODING)) {
-                        modified = true;
-                        ep.setProperty(DefaultPropertiesDescriptor.JAVAC_ENCODING, System.getProperty("file.encoding"));//NOI18N
-                    }
-                    if (modified) helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
+                    if (modified) helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, proj);
                     return null;
                 }
             });

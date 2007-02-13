@@ -5,7 +5,7 @@
             <equals arg1="CLDC" arg2="${{platform.trigger}}" casesensitive="false"/>
         </condition>
     </target>
-    <target name="cldc-init" if="cldc-platform.trigger">
+    <target name="cldc-init" depends="cldc-pre-init" if="cldc-platform.trigger">
         <property name="manifest.build.file" location="${{build.dir}}/manifest.mf"/>
         <property name="platform.device" value=""/>
         <property name="dist.jad.url" value="file://"/>
