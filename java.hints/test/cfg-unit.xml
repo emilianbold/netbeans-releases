@@ -25,10 +25,22 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
+                <!-- issue #94324:-->
+                <exclude name="org/netbeans/modules/java/hints/JavaHintsTest.class/testAddCastHint6" />
+                <!-- issue #95354:-->
+                <exclude name="org/netbeans/modules/java/hints/JavaHintsTest.class/testMakeClassAbstract3" />
             </patternset>
         </testset>
     </testbag>
 
+    <testbag testattribs="95354" executor="unit-executor" name="java/hints">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/modules/java/hints/JavaHintsTest.class/testMakeClassAbstract3" />
+            </patternset>
+        </testset>
+    </testbag>
+    
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
 
