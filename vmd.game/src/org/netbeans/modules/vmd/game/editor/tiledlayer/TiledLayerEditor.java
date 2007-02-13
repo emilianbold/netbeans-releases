@@ -65,6 +65,9 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 				d.setVisible(true);
 			}
 		});
+		this.textFieldName.setBackground(this.textFieldName.getParent().getBackground());
+		this.textFieldRows.setBackground(this.textFieldRows.getParent().getBackground());
+		this.textFieldCols.setBackground(this.textFieldCols.getParent().getBackground());
 		this.editorScroll.setColumnHeaderView(this.editorComponent.rulerHorizontal);
 		this.editorScroll.setRowHeaderView(this.editorComponent.rulerVertical);
 		this.editorScroll.setCorner(JScrollPane.UPPER_LEFT_CORNER, this.editorComponent.getGridButton());

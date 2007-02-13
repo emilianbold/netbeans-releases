@@ -72,7 +72,7 @@ import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 import org.netbeans.modules.vmd.game.model.TiledLayerListener;
-import org.netbeans.modules.vmd.game.nbdialog.NewLayerDialog;
+import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 import org.netbeans.modules.vmd.game.view.main.MainView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -677,13 +677,12 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
     
 	public class CreateTiledLayerAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Create new");
+			this.putValue(NAME, "Create new TiledLayer");
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			NewLayerDialog nld = new NewLayerDialog(null);
-			nld.selectTiledLayer();
-			DialogDescriptor dd = new DialogDescriptor(nld, "Create a new layer");
+			TiledLayerDialog nld = new TiledLayerDialog(null);
+			DialogDescriptor dd = new DialogDescriptor(nld, "Create new TiledLayer");
 			dd.setButtonListener(nld);
 			dd.setValid(false);
 			nld.setDialogDescriptor(dd);

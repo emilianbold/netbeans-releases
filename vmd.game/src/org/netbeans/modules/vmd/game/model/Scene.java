@@ -42,7 +42,8 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.modules.vmd.game.dialog.RenameSceneDialog;
 import org.netbeans.modules.vmd.game.editor.scene.SceneEditor;
 import org.netbeans.modules.vmd.game.editor.scene.SceneLayerNavigator;
-import org.netbeans.modules.vmd.game.nbdialog.NewLayerDialog;
+import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
+import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -510,8 +511,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			NewLayerDialog nld = new NewLayerDialog(Scene.this);
-			nld.selectSprite();
+			SpriteDialog nld = new SpriteDialog(Scene.this);
 			DialogDescriptor dd = new DialogDescriptor(nld, "Create a new Sprite");
 			dd.setButtonListener(nld);
 			dd.setValid(false);
@@ -527,8 +527,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			NewLayerDialog nld = new NewLayerDialog(Scene.this);
-			nld.selectTiledLayer();
+			TiledLayerDialog nld = new TiledLayerDialog(Scene.this);
 			DialogDescriptor dd = new DialogDescriptor(nld, "Create a new Tiled Layer");
 			dd.setButtonListener(nld);
 			dd.setValid(false);

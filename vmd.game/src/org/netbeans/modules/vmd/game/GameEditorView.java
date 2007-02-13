@@ -25,16 +25,16 @@ import org.netbeans.modules.vmd.game.dialog.NewSceneDialog;
 import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.EditorManagerListener;
 import org.netbeans.modules.vmd.game.model.adapter.GlobalRepositoryComboBoxModel;
-import org.netbeans.modules.vmd.game.nbdialog.NewLayerDialog;
 import org.netbeans.modules.vmd.game.view.main.MainView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
+import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 
 /**
  *
@@ -130,7 +130,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
             buttonCreateScene.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     NewSceneDialog dialog = new NewSceneDialog();
-                    DialogDescriptor dd = new DialogDescriptor(dialog, "Create a new Scene");
+                    DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Scene");
                     dd.setButtonListener(dialog);
                     dd.setValid(false);
                     dialog.setDialogDescriptor(dd);
@@ -139,11 +139,24 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
                 }
             });
 
-            JButton buttonCreateTiledLayer = new JButton("New layer");
+            JButton buttonCreateTiledLayer = new JButton("New TiledLayer");
             buttonCreateTiledLayer.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    NewLayerDialog nld = new NewLayerDialog(null);
-                    DialogDescriptor dd = new DialogDescriptor(nld, "Create a new layer");
+                    TiledLayerDialog nld = new TiledLayerDialog(null);
+                    DialogDescriptor dd = new DialogDescriptor(nld, "Create new TiledLayer");
+                    dd.setButtonListener(nld);
+                    dd.setValid(false);
+                    nld.setDialogDescriptor(dd);
+                    Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+                    d.setVisible(true);
+                }
+            });
+
+            JButton buttonCreateSprite = new JButton("New Sprite");
+            buttonCreateSprite.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    SpriteDialog nld = new SpriteDialog(null);
+                    DialogDescriptor dd = new DialogDescriptor(nld, "Create new Sprite");
                     dd.setButtonListener(nld);
                     dd.setValid(false);
                     nld.setDialogDescriptor(dd);
@@ -154,6 +167,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
 
             tool.add(buttonCreateScene);
             tool.add(buttonCreateTiledLayer);
+			tool.add(buttonCreateSprite);
 
             this.toolBarRepresentation = tool;
         }

@@ -33,6 +33,11 @@ public class ResourceImageEditor extends javax.swing.JPanel {
 	/** Creates new form ResourceImageEditor */
 	public ResourceImageEditor() {
 		initComponents();
+		
+		this.textFieldImage.setBackground(this.textFieldImage.getParent().getBackground());
+		this.textFieldNumTiles.setBackground(this.textFieldNumTiles.getParent().getBackground());
+		this.textFieldSize.setBackground(this.textFieldSize.getParent().getBackground());
+
 		this.resourceComponent = new ResourceImageList();
 		this.panelResourceList.add(new JScrollPane(this.resourceComponent));
 	}

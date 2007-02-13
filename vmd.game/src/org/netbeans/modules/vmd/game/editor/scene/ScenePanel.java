@@ -66,7 +66,8 @@ import org.netbeans.modules.vmd.game.model.Scene.CreateTiledLayerAction;
 import org.netbeans.modules.vmd.game.model.Scene.LayerInfo;
 import org.netbeans.modules.vmd.game.model.Scene.RemoveSceneAction;
 import org.netbeans.modules.vmd.game.model.Scene.RenameSceneAction;
-import org.netbeans.modules.vmd.game.nbdialog.NewLayerDialog;
+import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
+import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 import org.netbeans.modules.vmd.game.view.main.MainView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -1356,9 +1357,8 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			NewLayerDialog nld = new NewLayerDialog(ScenePanel.this.scene);
-			nld.selectTiledLayer();
-			DialogDescriptor dd = new DialogDescriptor(nld, "Create a new Tiled Layer");
+			TiledLayerDialog nld = new TiledLayerDialog(ScenePanel.this.scene);
+			DialogDescriptor dd = new DialogDescriptor(nld, "Create new TiledLayer");
 			dd.setButtonListener(nld);
 			dd.setValid(false);
 			nld.setDialogDescriptor(dd);
@@ -1372,9 +1372,8 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			NewLayerDialog nld = new NewLayerDialog(ScenePanel.this.scene);
-			nld.selectSprite();
-			DialogDescriptor dd = new DialogDescriptor(nld, "Create a new Sprite");
+			SpriteDialog nld = new SpriteDialog(ScenePanel.this.scene);
+			DialogDescriptor dd = new DialogDescriptor(nld, "Create new Sprite");
 			dd.setButtonListener(nld);
 			dd.setValid(false);
 			nld.setDialogDescriptor(dd);

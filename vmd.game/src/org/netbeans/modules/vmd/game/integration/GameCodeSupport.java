@@ -27,14 +27,20 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.game.integration.components.GameTypes;
-import org.netbeans.modules.vmd.game.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-
-import java.awt.*;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.netbeans.modules.vmd.game.model.AnimatedTileCD;
+import org.netbeans.modules.vmd.game.model.ImageResourceCD;
+import org.netbeans.modules.vmd.game.model.LayerCD;
+import org.netbeans.modules.vmd.game.model.SceneCD;
+import org.netbeans.modules.vmd.game.model.SceneItemCD;
+import org.netbeans.modules.vmd.game.model.SequenceCD;
+import org.netbeans.modules.vmd.game.model.SequenceContainerCDProperties;
+import org.netbeans.modules.vmd.game.model.TiledLayerCD;
 
 /**
  * @author David Kaspar
@@ -202,7 +208,6 @@ public class GameCodeSupport {
                 DesignComponent component = getComponent ();
                 String layerName = MidpTypes.getString (component.readProperty (LayerCD.PROPERTY_NAME));
                 section.getWriter ().write ("private TiledLayer tiledLayer_" + layerName + ";\n"); // NOI18N
-                // TODO - animTile fields?
             }
 
             protected void generateMethodSectionCode (MultiGuardedSection section) {
@@ -221,7 +226,6 @@ public class GameCodeSupport {
 				writer.write ("this.tiledLayer_" + layerName + " = new TiledLayer(" // NOI18N
 						+ tiles[0].length + ", " + tiles.length + ", this.getImage_" // NOI18N
 						+ imageName + "(), " + tileWidth + ", " + tileHeight + ");\n"); // NOI18N
-                // TODO - animTile fields assignment?
 				
                 writer.write ("int[][] tiles = {\n"); // NOI18N
                 for (int rowIndex = 0; rowIndex < tiles.length; rowIndex ++) {
