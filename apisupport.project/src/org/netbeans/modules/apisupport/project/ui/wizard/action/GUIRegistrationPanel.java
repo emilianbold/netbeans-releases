@@ -36,6 +36,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -43,6 +44,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.plaf.UIResource;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
@@ -1011,10 +1013,17 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         }
     }
     
-    private static class PositionRenderer extends DefaultListCellRenderer {
+    private static class PositionRenderer extends JLabel implements ListCellRenderer, UIResource {
+        
+        public PositionRenderer () {
+            setOpaque(true);
+        }
         
         public Component getListCellRendererComponent(
                 JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            // #93658: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+            
             String text;
             if (value == null || value == CustomizerComponentFactory.WAIT_VALUE) {
                 text = CustomizerComponentFactory.WAIT_VALUE;
@@ -1026,9 +1035,24 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 String after = pos.getAfterName() == null ? "" : POSITION_SEPARATOR + pos.getAfterName();
                 text = before + POSITION_HERE + after;
             }
-            Component c = super.getListCellRendererComponent(
-                    list, text, index, isSelected, cellHasFocus);
-            return c;
+            setText(text);
+            
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            
+            return this;
+        }
+        
+        // #93658: GTK needs name to render cell renderer "natively"
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
         }
         
     }

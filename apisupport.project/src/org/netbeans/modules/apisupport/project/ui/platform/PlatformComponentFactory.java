@@ -34,11 +34,13 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.UIManager;
+import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
@@ -124,19 +126,44 @@ public final class PlatformComponentFactory {
      * renders an empty string.
      * <p>Use in conjuction with {@link NbPlatformListModel}</p>
      */
-    private static class NbPlatformListRenderer extends DefaultListCellRenderer {
+    private static class NbPlatformListRenderer extends JLabel implements ListCellRenderer, UIResource {
+        
+        public NbPlatformListRenderer () {
+            setOpaque(true);
+        }
+        
         public Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
+            // #93658: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+            
             NbPlatform plaf = ((NbPlatform) value);
             // NetBeans.org modules doesn't have platform at all --> null
             String text = plaf == null ? "" : plaf.getLabel(); // NOI18N
-            Component c = super.getListCellRendererComponent(
-                    list, text, index, isSelected, cellHasFocus);
-            if (plaf != null && !plaf.isValid()) {
-                c.setForeground(INVALID_PLAF_COLOR);
+            setText(text);
+            
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
             }
-            return c;
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            
+            if (plaf != null && !plaf.isValid()) {
+                setForeground(INVALID_PLAF_COLOR);
+            }
+            
+            return this;
         }
+        
+        // #93658: GTK needs name to render cell renderer "natively"
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
+        }
+        
     }
     
     /**

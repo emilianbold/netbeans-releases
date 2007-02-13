@@ -41,10 +41,12 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
@@ -104,25 +106,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         
         configChanged(uiProperties.activeConfig);
         
-        configCombo.setRenderer(new DefaultListCellRenderer() {
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                String config = (String) value;
-                String label;
-                if (config == null) {
-                    // uninitialized?
-                    label = null;
-                } else if (config.length() > 0) {
-                    Map<String,String> m = configs.get(config);
-                    label = m != null ? m.get("$label") : /* temporary? */ null;
-                    if (label == null) {
-                        label = config;
-                    }
-                } else {
-                    label = NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.default");
-                }
-                return super.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus);
-            }
-        });
+        configCombo.setRenderer(new ConfigListCellRenderer());
         
         for (int i = 0; i < data.length; i++) {
             final JTextField field = data[i];
@@ -580,5 +564,52 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         }
         
     }
+    
+    private final class ConfigListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
+        
+        public ConfigListCellRenderer () {
+            setOpaque(true);
+        }
+        
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            // #93658: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+            
+            String config = (String) value;
+            String label;
+            if (config == null) {
+                // uninitialized?
+                label = null;
+            } else if (config.length() > 0) {
+                Map<String,String> m = configs.get(config);
+                label = m != null ? m.get("$label") : /* temporary? */ null;
+                if (label == null) {
+                    label = config;
+                }
+            } else {
+                label = NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.default");
+            }
+            setText(label);
+            
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            
+            return this;
+        }
+        
+        // #93658: GTK needs name to render cell renderer "natively"
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
+        }
+        
+    }
+    
     
 }

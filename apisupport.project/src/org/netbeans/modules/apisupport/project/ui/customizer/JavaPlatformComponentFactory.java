@@ -32,10 +32,12 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.openide.util.WeakListeners;
@@ -131,15 +133,37 @@ public class JavaPlatformComponentFactory {
 
     }
     
-    private static final class Renderer extends DefaultListCellRenderer/*<JavaPlatform>*/ {
+    private static final class Renderer extends JLabel implements ListCellRenderer, UIResource /*<JavaPlatform>*/ {
         
-        public Renderer() {}
+        public Renderer() {
+            setOpaque(true);
+        }
         
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            // #93658: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+            
             String name = value != null ? ((JavaPlatform) value).getDisplayName() : null;
-            return super.getListCellRendererComponent(list, name, index, isSelected, cellHasFocus);
+            setText(name);
+            
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            
+            return this;
         }
 
+        // #93658: GTK needs name to render cell renderer "natively"
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
+        }
+        
     }
     
 }
