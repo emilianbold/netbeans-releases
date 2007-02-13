@@ -43,7 +43,7 @@ public class DisplayableAccept {
             return registry.isInHierarchy(CommandCD.TYPEID, producer.getComponentTypeID());
         }
         
-        public final DesignComponent accept(ComponentProducer producer) {
+        public final ComponentProducer.Result accept(ComponentProducer producer) {
             DesignComponent displayable = getComponent();
             DesignDocument document = displayable.getDocument();
             
@@ -56,7 +56,7 @@ public class DisplayableAccept {
             source.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(displayable));
             source.writeProperty(CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference(command));
             
-            return source;
+            return new ComponentProducer.Result (source);
         }
         
     }

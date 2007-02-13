@@ -38,10 +38,11 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.categories.*;
 import org.netbeans.modules.vmd.midp.inspector.controllers.RootPC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorVersion;
+
 import java.awt.datatransfer.Transferable;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorVersion;
 
 /**
  * @author David Kaspar
@@ -133,12 +134,15 @@ public final class RootCD extends ComponentDescriptor {
         public void accept (FlowDescriptor descriptor, Transferable transferable) {
             DesignComponent categoryComponent = MidpDocumentSupport.getCategoryComponent (descriptor.getRepresentedComponent ().getDocument (), DisplayablesCategoryCD.TYPEID);
             if (AcceptSupport.isAcceptable (categoryComponent, transferable)) {
-                AcceptSupport.accept (categoryComponent, transferable);
+                ComponentProducer.Result result = AcceptSupport.accept (categoryComponent, transferable);
+                MidpDocumentSupport.selectComponentProducerResult (result);
                 return;
             }
             categoryComponent = MidpDocumentSupport.getCategoryComponent (descriptor.getRepresentedComponent ().getDocument (), PointsCategoryCD.TYPEID);
-            if (AcceptSupport.isAcceptable (categoryComponent, transferable))
-                AcceptSupport.accept (categoryComponent, transferable);
+            if (AcceptSupport.isAcceptable (categoryComponent, transferable)) {
+                ComponentProducer.Result result = AcceptSupport.accept (categoryComponent, transferable);
+                MidpDocumentSupport.selectComponentProducerResult (result);
+            }
         }
 
     }

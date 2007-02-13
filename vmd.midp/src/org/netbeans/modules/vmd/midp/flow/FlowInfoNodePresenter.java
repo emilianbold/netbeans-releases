@@ -30,14 +30,13 @@ import org.netbeans.modules.vmd.api.flow.visual.FlowPinDescriptor;
 import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEventFilter;
+import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 
 import java.awt.datatransfer.Transferable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author David Kaspar
@@ -135,7 +134,8 @@ public final class FlowInfoNodePresenter extends FlowNodePresenter {
         }
 
         public void accept (FlowDescriptor descriptor, Transferable transferable) {
-            AcceptSupport.accept (descriptor.getRepresentedComponent (), transferable);
+            ComponentProducer.Result result = AcceptSupport.accept (descriptor.getRepresentedComponent (), transferable);
+            MidpDocumentSupport.selectComponentProducerResult (result);
         }
 
         public boolean isEditable (FlowDescriptor descriptor) {

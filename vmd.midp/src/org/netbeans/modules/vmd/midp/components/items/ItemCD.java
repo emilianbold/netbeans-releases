@@ -195,7 +195,7 @@ public class ItemCD extends ComponentDescriptor {
             return registry.isInHierarchy (CommandCD.TYPEID, producer.getComponentTypeID ());
         }
 
-        public final DesignComponent accept (ComponentProducer producer) {
+        public final ComponentProducer.Result accept (ComponentProducer producer) {
             DesignComponent item = getComponent ();
             DesignDocument document = item.getDocument ();
 
@@ -208,7 +208,7 @@ public class ItemCD extends ComponentDescriptor {
             source.writeProperty (ItemCommandEventSourceCD.PROP_ITEM, PropertyValue.createComponentReference (item));
             source.writeProperty (ItemCommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference (command));
 
-            return item;
+            return new ComponentProducer.Result (item);
         }
 
     }

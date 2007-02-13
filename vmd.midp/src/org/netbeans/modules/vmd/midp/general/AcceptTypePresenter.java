@@ -39,11 +39,12 @@ public class AcceptTypePresenter extends AbstractAcceptPresenter {
         return registry.isInHierarchy(typeID, producer.getComponentTypeID());
     }
     
-    public final DesignComponent accept(ComponentProducer producer) {
-        DesignComponent component = producer.createComponent(getComponent().getDocument()).getMainComponent();
+    public final ComponentProducer.Result accept(ComponentProducer producer) {
+        ComponentProducer.Result result = producer.createComponent (getComponent ().getDocument ());
+        DesignComponent component = result.getMainComponent();
         if (component != null)
             notifyCreated(component);
-        return component;
+        return result;
     }
     
     protected void notifyCreated(DesignComponent component) {

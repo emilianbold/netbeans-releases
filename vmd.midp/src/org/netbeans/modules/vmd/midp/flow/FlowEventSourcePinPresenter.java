@@ -28,6 +28,7 @@ import org.netbeans.modules.vmd.api.flow.FlowPinPresenter;
 import org.netbeans.modules.vmd.api.flow.visual.*;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEventFilter;
+import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 
@@ -155,7 +156,8 @@ public abstract class FlowEventSourcePinPresenter extends FlowPinPresenter {
         }
 
         public void accept (FlowDescriptor descriptor, Transferable transferable) {
-            AcceptSupport.accept (descriptor.getRepresentedComponent (), transferable);
+            ComponentProducer.Result result = AcceptSupport.accept (descriptor.getRepresentedComponent (), transferable);
+            MidpDocumentSupport.selectComponentProducerResult (result);
         }
 
         public boolean isConnectionSource (FlowPinDescriptor pin) {
