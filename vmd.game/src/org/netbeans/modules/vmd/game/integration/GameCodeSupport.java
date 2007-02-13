@@ -20,7 +20,6 @@
 
 package org.netbeans.modules.vmd.game.integration;
 
-import java.awt.Point;
 import org.netbeans.modules.vmd.api.codegen.CodeClassLevelPresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeWriter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
@@ -28,19 +27,14 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.game.integration.components.GameTypes;
+import org.netbeans.modules.vmd.game.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.netbeans.modules.vmd.game.model.AnimatedTileCD;
-import org.netbeans.modules.vmd.game.model.ImageResourceCD;
-import org.netbeans.modules.vmd.game.model.LayerCD;
-import org.netbeans.modules.vmd.game.model.SceneCD;
-import org.netbeans.modules.vmd.game.model.SceneItemCD;
-import org.netbeans.modules.vmd.game.model.SequenceCD;
-import org.netbeans.modules.vmd.game.model.SequenceContainerCDProperties;
-import org.netbeans.modules.vmd.game.model.TiledLayerCD;
 
 /**
  * @author David Kaspar
@@ -225,7 +219,7 @@ public class GameCodeSupport {
 				writer.write ("public TiledLayer getLayer_" + layerName + "() throws java.io.IOException {\n"); // NOI18N
                 writer.write ("if (this.tiledLayer_" + layerName + " == null) {\n"); // NOI18N
 				writer.write ("this.tiledLayer_" + layerName + " = new TiledLayer(" // NOI18N
-						+ tiles.length + ", " + tiles[0].length + ", this.getImage_" // NOI18N
+						+ tiles[0].length + ", " + tiles.length + ", this.getImage_" // NOI18N
 						+ imageName + "(), " + tileWidth + ", " + tileHeight + ");\n"); // NOI18N
                 // TODO - animTile fields assignment?
 				
@@ -246,8 +240,8 @@ public class GameCodeSupport {
                 }
 				writer.write ("};\n");
 				
-                writer.write ("for (int row = 0; row < tiles.length; row++) {\n");
-                writer.write ("for (int col = 0; col < tiles[row].length; col++) {\n");
+                writer.write ("for (int row = 0; row < " + tiles.length + "; row++) {\n");
+                writer.write ("for (int col = 0; col < " + tiles[0].length + "; col++) {\n");
                 writer.write ("this.tiledLayer_" + layerName + ".setCell(col, row, tiles[row][col]);\n");
                 writer.write ("}\n");
                 writer.write ("}\n");
