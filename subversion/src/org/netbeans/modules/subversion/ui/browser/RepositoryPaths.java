@@ -119,6 +119,10 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     }            
     
     public RepositoryFile[] getRepositoryFiles() throws MalformedURLException, NumberFormatException {
+        return getRepositoryFiles(null);
+    }
+    
+    public RepositoryFile[] getRepositoryFiles(String defaultPath) throws MalformedURLException, NumberFormatException {
 
         SVNRevision revision = getRevision();
         
@@ -126,9 +130,13 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             RepositoryFile rf = new RepositoryFile(repositoryFile.getRepositoryUrl(), repositoryFile.getFileUrl(), revision);
             return new RepositoryFile[] {rf};
         }
-
+     
         if(getRepositoryString().equals("")) { // NOI18N
-            return EMPTY_REPOSITORY_FILES;
+            if(defaultPath != null && !defaultPath.trim().equals("") ) {                
+                return new RepositoryFile[] { new RepositoryFile(getRepositoryUrl(), defaultPath, revision) } ;
+            } else {
+                return EMPTY_REPOSITORY_FILES;   
+            }            
         }
         if(revision == null) {
             // should not be possible to get here!
@@ -145,7 +153,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
                path.startsWith("http://")  ||   // NOI18N
                path.startsWith("https://") ||   // NOI18N
                path.startsWith("svn://")   ||   // NOI18N
-               path.startsWith("svn+ssh://")) { // NOI18N
+               path.startsWith("svn+ssh://")) { // NOI18N   // XXX check only for svn+ and concat the remaining part from the protocol
                 // must be a complete URL 
                 // so check if it matches with the given repository URL
                 if(path.startsWith(repositoryUrlString)) {
@@ -154,7 +162,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
                 } else {
                     throw new MalformedURLException(NbBundle.getMessage(RepositoryPaths.class, "MSG_RepositoryPath_WrongStart", path, repositoryUrlString)); // NOI18N
                 }
-            } else {
+            } else {                
                 ret[i] = new RepositoryFile(repositoryUrl, path, revision);    
             }                
         }                                    

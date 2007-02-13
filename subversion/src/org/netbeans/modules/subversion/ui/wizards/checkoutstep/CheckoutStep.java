@@ -269,8 +269,8 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     }        
 
     public RepositoryFile[] getRepositoryFiles() {
-        try {
-            return repositoryPaths.getRepositoryFiles();
+        try {            
+            return repositoryPaths.getRepositoryFiles(".");
         } catch (MalformedURLException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
         }
