@@ -54,9 +54,7 @@ import org.openide.util.lookup.Lookups;
  * @author Tomas Stupka
  */
 public class CheckoutCompleted implements ActionListener {
-
-    static final String SHOW_CHECKOUT_COMPLETED = "checkoutCompleted.showCheckoutCompleted";
-    
+       
     private final File workingFolder;
     private final boolean openProject;
     private String[] checkedOutFolders;
@@ -176,8 +174,7 @@ public class CheckoutCompleted implements ActionListener {
 
         } else if (panel.createButton.equals(src)) {
             ProjectUtilities.newProjectWizard(workingFolder);
-        }
-        SvnModuleConfig.getDefault().getPreferences().putBoolean(SHOW_CHECKOUT_COMPLETED, !panel.againCheckBox.isSelected());
+        }        
     }
     
     public static Action findAction( String key ) {

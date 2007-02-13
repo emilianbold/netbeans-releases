@@ -89,6 +89,11 @@ public class CheckoutPanel extends javax.swing.JPanel {
         atWorkingDirLevelCheckBox.setEnabled(false);
         atWorkingDirLevelCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        scanForProjectsCheckBox.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(scanForProjectsCheckBox, "Scan for Netbeans Projects after Checkout");
+        scanForProjectsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        scanForProjectsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -121,7 +126,8 @@ public class CheckoutPanel extends javax.swing.JPanel {
                             .add(browseRepositoryButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(browseWorkdirButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 95, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 475, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 475, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(scanForProjectsCheckBox))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -151,7 +157,9 @@ public class CheckoutPanel extends javax.swing.JPanel {
                     .add(browseWorkdirButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel7)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(23, 23, 23)
+                .add(scanForProjectsCheckBox)
+                .addContainerGap(40, Short.MAX_VALUE))
         );
 
         jLabel2.getAccessibleContext().setAccessibleDescription("Local Folder");
@@ -183,6 +191,7 @@ public class CheckoutPanel extends javax.swing.JPanel {
     private javax.swing.JPopupMenu jPopupMenu1;
     final javax.swing.JTextField repositoryPathTextField = new javax.swing.JTextField();
     final javax.swing.JTextField revisionTextField = new javax.swing.JTextField();
+    final javax.swing.JCheckBox scanForProjectsCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JButton searchRevisionButton = new javax.swing.JButton();
     final javax.swing.JTextField workdirTextField = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables

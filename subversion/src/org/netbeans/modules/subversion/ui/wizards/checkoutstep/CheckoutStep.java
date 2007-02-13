@@ -29,7 +29,6 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.SvnModuleConfig;
@@ -63,7 +62,8 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
             workdirPanel = new CheckoutPanel();
             workdirPanel.browseWorkdirButton.addActionListener(this);
             workdirPanel.browseRepositoryButton.addActionListener(this);
-            
+            workdirPanel.scanForProjectsCheckBox.addActionListener(this);
+                    
             workdirPanel.workdirTextField.setText(defaultWorkingDirectory().getPath());            
             workdirPanel.workdirTextField.getDocument().addDocumentListener(this);                
             workdirPanel.workdirTextField.addFocusListener(this);
@@ -98,6 +98,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         } else {
             workdirPanel.revisionTextField.setText("");
         }
+        workdirPanel.scanForProjectsCheckBox.setSelected(SvnModuleConfig.getDefault().getShowCheckoutCompleted());
     }    
      
     protected void validateBeforeNext() {
@@ -261,7 +262,9 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     public void actionPerformed(ActionEvent e) {
         if(e.getSource()==workdirPanel.browseWorkdirButton) {            
             onBrowseWorkdir();
-        } 
+        } else if (e.getSource() == workdirPanel.scanForProjectsCheckBox) {
+            SvnModuleConfig.getDefault().setShowCheckoutCompleted(workdirPanel.scanForProjectsCheckBox.isSelected());
+        }
     }
     
     public File getWorkdir() {

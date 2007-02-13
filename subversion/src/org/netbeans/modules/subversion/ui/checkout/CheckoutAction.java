@@ -70,7 +70,7 @@ public final class CheckoutAction extends CallableSystemAction {
                 }
                 
                 setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_ScanFolders_Progress"));
-                if (SvnModuleConfig.getDefault().getPreferences().getBoolean(CheckoutCompleted.SHOW_CHECKOUT_COMPLETED, true)) {
+                if (SvnModuleConfig.getDefault().getShowCheckoutCompleted()) {
                     String[] folders;
                     if(atWorkingDirLevel) {
                         folders = new String[1];

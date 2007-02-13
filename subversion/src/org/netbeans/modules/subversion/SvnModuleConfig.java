@@ -36,23 +36,20 @@ import org.netbeans.modules.versioning.util.Utils;
  */
 public class SvnModuleConfig {
     
-    public static final String PROP_IGNORED_FILEPATTERNS    = "ignoredFilePatterns";    // NOI18N
-    public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";       // NOI18N
-    public static final String PROP_DEFAULT_VALUES          = "defaultValues";          // NOI18N
-    public static final String PROP_TEXT_ANNOTATIONS_FORMAT = "textAnnotations";        // NOI18N
-    public static final String KEY_EXECUTABLE_BINARY        = "svnExecBinary";          // NOI18N
-    public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";       // NOI18N
+    public static final String PROP_IGNORED_FILEPATTERNS    = "ignoredFilePatterns";                        // NOI18N
+    public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";                           // NOI18N
+    public static final String PROP_DEFAULT_VALUES          = "defaultValues";                              // NOI18N
+    public static final String PROP_TEXT_ANNOTATIONS_FORMAT = "textAnnotations";                            // NOI18N
+    public static final String KEY_EXECUTABLE_BINARY        = "svnExecBinary";                              // NOI18N
+    public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";                           // NOI18N
             
-    private static final String RECENT_URL = "repository.recentURL";                            // NOI18N
-    private static final String RECENT_PASSWORD = "repository.recentPassword";                  // NOI18N
-    private static final String RECENT_USERNAME = "repository.recentUsername";                  // NOI18N
-    private static final String RECENT_EXTERNAL_COMMAND = "repository.recentExternalCommand";   // NOI18N
-    private static final String RECENT_PROXY = "repository.recentProxy";                        // NOI18N
+    private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
+    private static final String SHOW_CHECKOUT_COMPLETED = "checkoutCompleted.showCheckoutCompleted";        // NOI18N  
 
-    private static final String URL_EXP = "annotator.urlExp";                                   // NOI18N
-    private static final String ANNOTATION_EXP = "annotator.annotationExp";                     // NOI18N
+    private static final String URL_EXP = "annotator.urlExp";                                               // NOI18N
+    private static final String ANNOTATION_EXP = "annotator.annotationExp";                                 // NOI18N
     
-    public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";           // NOI18N
+    public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";                               // NOI18N           
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
     
@@ -66,6 +63,10 @@ public class SvnModuleConfig {
 
     public Preferences getPreferences() {
         return NbPreferences.forModule(SvnModuleConfig.class);
+    }
+    
+    public boolean getShowCheckoutCompleted() {
+        return getPreferences().getBoolean(SHOW_CHECKOUT_COMPLETED, true);
     }
     
     public Pattern [] getIgnoredFilePatterns() {
@@ -116,6 +117,10 @@ public class SvnModuleConfig {
         getPreferences().put(KEY_ANNOTATION_FORMAT, annotationFormat);        
     }
 
+    public void setShowCheckoutCompleted(boolean bl) {
+        getPreferences().putBoolean(SHOW_CHECKOUT_COMPLETED, bl);
+    }
+    
     public RepositoryConnection getRepositoryConnection(String url) {
         List<RepositoryConnection> rcs = getRecentUrls();
         for (Iterator<RepositoryConnection> it = rcs.iterator(); it.hasNext();) {
