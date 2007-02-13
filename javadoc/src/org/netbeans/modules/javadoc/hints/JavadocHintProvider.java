@@ -28,6 +28,7 @@ import com.sun.javadoc.Tag;
 import com.sun.javadoc.ThrowsTag;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ErroneousTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -199,6 +200,13 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             if (isVisible2Analyze(node.getModifiers().getFlags())) {
                 processNode(node, arg1);
             }
+            return null;
+        }
+
+        @Override
+        public Void visitErroneous(ErroneousTree node,
+                                   List<ErrorDescription> p) {
+            // ignore error nodes
             return null;
         }
 
