@@ -19,17 +19,16 @@
 
 package org.netbeans.modules.visualweb.project.jsf.actions;
 
+import java.util.Collection;
 import org.netbeans.modules.visualweb.project.jsf.api.Importable;
 import java.util.Iterator;
 import javax.swing.Action;
-
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
-
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.NotifyDescriptor.Message;
@@ -38,7 +37,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter.Menu;
 import org.openide.awt.StatusDisplayer;
 import org.openide.DialogDisplayer;
-
 import org.openide.awt.JMenuPlus;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -115,14 +113,12 @@ public final class ImportAction extends CallableSystemAction implements Menu {
             JMenu menu = (JMenu)e.getSource();
 
             // Add the import items to the menu
-            Lookup l = Lookup.getDefault();
-            Lookup.Template template = new Lookup.Template(Importable.class);
-            Iterator it = l.lookup(template).allInstances().iterator();
-            while (it.hasNext()) {
-                Importable type = (Importable) it.next();
-                JMenuItem item = createMenuItem(type);
+            Collection<Importable> importables = (Collection<Importable>) Lookup.getDefault().lookupAll(Importable.class); 
+            for( Importable importable : importables ){
+                JMenuItem item = createMenuItem(importable);
                 menu.add(item);
             }
+           
             menu.add(createAddFileMenuItem(ImportFileAction.TYPE_IMAGE));
             menu.add(createAddFileMenuItem(ImportFileAction.TYPE_STYLESHEET));
             menu.add(createAddFileMenuItem(ImportFileAction.TYPE_JAVA));
