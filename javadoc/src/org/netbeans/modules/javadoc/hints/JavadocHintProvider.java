@@ -122,8 +122,12 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
     }
 
     public void run(CompilationInfo javac) throws Exception {
+        Document doc = javac.getDocument();
+        if (doc == null) {
+            return;
+        }
         List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
-        Analyzer an = new Analyzer(javac);
+        Analyzer an = new Analyzer(javac, doc);
         an.scan(javac.getCompilationUnit(), errors);
         if (isCanceled())
             return;
@@ -159,9 +163,11 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
         private final CompilationInfo javac;
         private final SourceVersion spec;
         private final FixAll fixAll = new FixAll();
+        private final Document doc;
         
-        Analyzer(CompilationInfo javac) {
+        Analyzer(CompilationInfo javac, Document doc) {
             this.javac = javac;
+            this.doc = doc;
             this.spec = resolveSourceVersion(javac.getFileObject());
         }
         
@@ -206,9 +212,15 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             // check javadoc
             Element elm = javac.getTrees().getElement(getCurrentPath());
             
-            String doc = javac.getElements().getDocComment(elm);
+            if (elm == null) {
+                Logger.getLogger(JavadocHintProvider.class.getName()).log(
+                        Level.INFO, "Cannot resolve element for " + node + " in " + file); // NOI18N
+                return;
+            }
+            
+            String jdText = javac.getElements().getDocComment(elm);
             // create hint descriptor + prepare javadoc
-            if (doc == null) {
+            if (jdText == null) {
                 if (JavadocUtilities.hasInheritedDoc(javac, elm)) {
                     return;
                 }
@@ -219,12 +231,10 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                             hintSeverity,
                             NbBundle.getMessage(JavadocHintProvider.class, "MISSING_JAVADOC_DESC"), // NOI18N
                             createGenerateFixes(elm),
-                            javac.getDocument(),
+                            doc,
                             positions[0],
                             positions[1]);
                     errors.add(err);
-                } catch (IOException ex) {
-                    Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 } catch (BadLocationException ex) {
                     Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
@@ -269,11 +279,9 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                                 hintSeverity,
                                 NbBundle.getMessage(JavadocHintProvider.class, "MISSING_DEPRECATED_DESC"), // NOI18N
                                 Collections.<Fix>singletonList(AddTagFix.createAddDeprecatedTagFix(elm, file, spec)),
-                                javac.getDocument(), poss[0], poss[1]);
+                                doc, poss[0], poss[1]);
                         errors.add(err);
                     } catch (BadLocationException ex) {
-                        Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                    } catch (IOException ex) {
                         Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                 } else if (deprTags.length > 1) {
@@ -311,10 +319,10 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             }
         }
         
-        private void processReturn(ExecutableElement exec, MethodTree node, MethodDoc doc, List<ErrorDescription> errors) {
+        private void processReturn(ExecutableElement exec, MethodTree node, MethodDoc jdoc, List<ErrorDescription> errors) {
             final TypeMirror returnType = exec.getReturnType();
             final Tree returnTree = node.getReturnType();
-            final Tag[] tags = doc.tags("@return"); // NOI18N
+            final Tag[] tags = jdoc.tags("@return"); // NOI18N
             
             for (int i = 0; i < tags.length; i++) {
                 // check duplicate @return
@@ -334,7 +342,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             }
             
             if (returnType.getKind() != TypeKind.VOID && tags.length == 0 &&
-                    JavadocUtilities.findReturnTag(doc, true) == null) {
+                    JavadocUtilities.findReturnTag(jdoc, true) == null) {
                 // missing @return
                 try {
                     Position[] poss = createPositions(returnTree);
@@ -342,20 +350,18 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                             hintSeverity,
                             NbBundle.getMessage(JavadocHintProvider.class, "MISSING_RETURN_DESC"), // NOI18N
                             Collections.<Fix>singletonList(AddTagFix.createAddReturnTagFix(exec, file, spec)),
-                            javac.getDocument(), poss[0], poss[1]);
+                            doc, poss[0], poss[1]);
                     errors.add(err);
                 } catch (BadLocationException ex) {
-                    Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                } catch (IOException ex) {
                     Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             }
 
         }
         
-        private void processThrows(ExecutableElement exec, MethodTree node, ExecutableMemberDoc doc, List<ErrorDescription> errors) {
+        private void processThrows(ExecutableElement exec, MethodTree node, ExecutableMemberDoc jdoc, List<ErrorDescription> errors) {
             final List<? extends ExpressionTree> throwz = node.getThrows();
-            final ThrowsTag[] tags = doc.throwsTags();
+            final ThrowsTag[] tags = jdoc.throwsTags();
             
             Map<String, ThrowsTag> tagNames = new HashMap<String, ThrowsTag>();
             for (ThrowsTag throwsTag : tags) {
@@ -384,8 +390,8 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                 Element el = javac.getTrees().getElement(path);
                 TypeElement tel = (TypeElement) el;
                 boolean exists = tagNames.remove(tel.getQualifiedName().toString()) != null;
-                if (!exists && doc.isMethod() &&
-                        JavadocUtilities.findThrowsTag((MethodDoc) doc, tel.getQualifiedName().toString(), true) == null) {
+                if (!exists && jdoc.isMethod() &&
+                        JavadocUtilities.findThrowsTag((MethodDoc) jdoc, tel.getQualifiedName().toString(), true) == null) {
                     // missing @throws
                     try {
                         Position[] poss = createPositions(throwTree);
@@ -393,11 +399,9 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                                 hintSeverity,
                                 NbBundle.getMessage(JavadocHintProvider.class, "MISSING_THROWS_DESC", tel.getQualifiedName().toString()), // NOI18N
                                 Collections.<Fix>singletonList(AddTagFix.createAddThrowsTagFix(exec, tel.getQualifiedName().toString(), index, file, spec)),
-                                javac.getDocument(), poss[0], poss[1]);
+                                doc, poss[0], poss[1]);
                         errors.add(err);
                     } catch (BadLocationException ex) {
-                        Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                    } catch (IOException ex) {
                         Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
@@ -427,10 +431,10 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
 
         }
         
-        private void processParameters(ExecutableElement exec, MethodTree node, ExecutableMemberDoc doc, List<ErrorDescription> errors) {
+        private void processParameters(ExecutableElement exec, MethodTree node, ExecutableMemberDoc jdoc, List<ErrorDescription> errors) {
             final List<? extends VariableTree> params = node.getParameters();
 //            final ParamTag[] tags = doc.paramTags();
-            final Tag[] tags = doc.tags("@param"); //NOI18N
+            final Tag[] tags = jdoc.tags("@param"); //NOI18N
             
             Map<String, ParamTag> tagNames = new HashMap<String, ParamTag>();
             // create param tag names set and reveal duplicates
@@ -456,8 +460,8 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             // resolve existing and missing tags
             for (VariableTree param : params) {
                 boolean exists = tagNames.remove(param.getName().toString()) != null;
-                if (!exists && doc.isMethod() &&
-                        JavadocUtilities.findParamTag((MethodDoc) doc, param.getName().toString(), true) == null) {
+                if (!exists && jdoc.isMethod() &&
+                        JavadocUtilities.findParamTag((MethodDoc) jdoc, param.getName().toString(), true) == null) {
                     // missing @param
                     try {
                         Position[] poss = createPositions(param);
@@ -465,11 +469,9 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                                 hintSeverity,
                                 NbBundle.getMessage(JavadocHintProvider.class, "MISSING_PARAM_DESC", param.getName()), // NOI18N
                                 Collections.<Fix>singletonList(AddTagFix.createAddParamTagFix(exec, param.getName().toString(), file, spec)),
-                                javac.getDocument(), poss[0], poss[1]);
+                                doc, poss[0], poss[1]);
                         errors.add(err);
                     } catch (BadLocationException ex) {
-                        Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                    } catch (IOException ex) {
                         Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
@@ -498,10 +500,10 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
 
         }
         
-        private void processTypeParameters(TypeElement elm, ClassTree node, ClassDoc doc, List<ErrorDescription> errors) {
+        private void processTypeParameters(TypeElement elm, ClassTree node, ClassDoc jdoc, List<ErrorDescription> errors) {
             final List<? extends TypeParameterTree> params = node.getTypeParameters();
 //            final ParamTag[] tags = doc.typeParamTags();
-            final Tag[] tags = doc.tags("@param"); // NOI18N
+            final Tag[] tags = jdoc.tags("@param"); // NOI18N
             
             Map<String, ParamTag> tagNames = new HashMap<String, ParamTag>();
             // create param tag names set and reveal duplicates
@@ -529,11 +531,9 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                                 hintSeverity,
                                 NbBundle.getMessage(JavadocHintProvider.class, "MISSING_TYPEPARAM_DESC", param.getName()), // NOI18N
                                 Collections.<Fix>singletonList(AddTagFix.createAddTypeParamTagFix(elm, param.getName().toString(), file, spec)),
-                                javac.getDocument(), poss[0], poss[1]);
+                                doc, poss[0], poss[1]);
                         errors.add(err);
                     } catch (BadLocationException ex) {
-                        Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                    } catch (IOException ex) {
                         Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
@@ -548,9 +548,8 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             }
         }
         
-        Position[] createPositions(Tree t) throws IOException, BadLocationException {
+        Position[] createPositions(Tree t) throws BadLocationException {
             final Position[] poss = new Position[2];
-            final Document doc = javac.getDocument();
             final int start = (int) javac.getTrees().getSourcePositions().
                     getStartPosition(javac.getCompilationUnit(), t);
             final int end = (int) javac.getTrees().getSourcePositions().
@@ -565,12 +564,8 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
         /**
          * creates start and end positions of the tree 
          */
-        Position[] createSignaturePositions(final Tree t) throws IOException, BadLocationException {
+        Position[] createSignaturePositions(final Tree t) throws BadLocationException {
             final Position[] pos = new Position[2];
-            final Document doc = javac.getDocument();
-            final int start = (int) javac.getTrees().getSourcePositions().
-                    getStartPosition(javac.getCompilationUnit(), t);
-            
             final BadLocationException[] blex = new BadLocationException[1];
             NbDocument.runAtomic((StyledDocument) doc, new Runnable() {
                 public void run() {
@@ -592,12 +587,6 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                         }
                         
                         assert true: t.toString();
-                        
-//                        pos[0] = doc.createPosition(start);
-//                        String s = doc.getText(0, doc.getLength());
-//                        int enter = s.indexOf('\n', start);
-//                        int end = enter >= 0? enter: doc.getLength();
-//                        pos[1] = doc.createPosition(end);
                     } catch (BadLocationException ex) {
                         blex[0] = ex;
                     }
@@ -610,7 +599,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
         
         private void addRemoveTagFix(Tag tag, String description, Element elm, List<ErrorDescription> errors) {
             try {
-                Position[] poss = JavadocUtilities.findTagNameBounds(javac, javac.getDocument(), tag);
+                Position[] poss = JavadocUtilities.findTagNameBounds(javac, doc, tag);
                 if (poss == null) {
                     throw new BadLocationException("no position for " + tag, -1); // NOI18N
                 }
@@ -618,16 +607,14 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                         hintSeverity,
                         description,
                         Collections.<Fix>singletonList(new RemoveTagFix(tag.name(), TagHandle.create(tag), ElementHandle.create(elm), file, spec)),
-                        javac.getDocument(), poss[0], poss[1]);
+                        doc, poss[0], poss[1]);
                 errors.add(err);
             } catch (BadLocationException ex) {
-                Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-            } catch (IOException ex) {
                 Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
         
-        JavadocLazyFixList createGenerateFixes(Element elm) throws IOException {
+        JavadocLazyFixList createGenerateFixes(Element elm) {
             List<Fix> fixes = new ArrayList<Fix>(3);
             ElementHandle handle = ElementHandle.create(elm);
             
@@ -767,6 +754,9 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                             // XXX workaround until the generator start to do its job
                             javadocForDocument[0] = javadocTxt;
                             docs[0] = wc.getDocument();
+                            if (docs[0] == null) {
+                                return;
+                            }
                             position = docs[0].createPosition((int) wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), t));
                         }
                     }
@@ -846,6 +836,9 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                 }
                 
                 final Document doc = ci.getDocument();
+                if (doc == null) {
+                    return;
+                }
                 NbDocument.runAtomicAsUser((StyledDocument) doc, new Runnable() {
                     public void run() {
                         try {
@@ -860,7 +853,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
         }
         
         private void removeTag() throws BadLocationException {
-            if (tagBounds == null) {
+            if (tagBounds == null || doc == null) {
                 return;
             }
             NbDocument.runAtomicAsUser((StyledDocument) doc, new Runnable() {
@@ -995,6 +988,9 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             
             final Doc jdoc = wc.getElementUtilities().javaDocFor(elm);
             doc = wc.getDocument();
+            if (doc == null) {
+                return;
+            }
             
             NbDocument.runAtomicAsUser((StyledDocument) doc, new Runnable() {
                 public void run() {
