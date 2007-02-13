@@ -40,7 +40,7 @@ import org.netbeans.modules.visualweb.faces.dt_1_2.component.UIOutputBeanInfoBas
 public class HtmlOutputLabelBeanInfo extends UIOutputBeanInfoBase {
 
     protected static ResourceBundle resources =
-            ResourceBundle.getBundle("org.netbeansmodules.visualweb.faces.dt_1_2.component.html.Bundle-JSF", Locale.getDefault(), HtmlOutputLabelBeanInfo.class.getClassLoader());
+            ResourceBundle.getBundle("org.netbeans.modules.visualweb.faces.dt_1_2.component.html.Bundle-JSF", Locale.getDefault(), HtmlOutputLabelBeanInfo.class.getClassLoader());
 
 
     public HtmlOutputLabelBeanInfo() {
