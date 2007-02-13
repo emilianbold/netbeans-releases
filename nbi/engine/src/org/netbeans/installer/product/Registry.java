@@ -69,7 +69,6 @@ import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 /**
@@ -640,7 +639,7 @@ public class Registry {
             }
             
             // load the features list
-            final Element featuresElement = 
+            final Element featuresElement =
                     XMLUtils.getChild(registryElement, "features");
             
             if (featuresElement != null) {
@@ -914,8 +913,8 @@ public class Registry {
     
     public Product getProduct(final String uid, final Version version) {
         final List<Product> candidates = queryProducts(new ProductFilter(
-                uid, 
-                version, 
+                uid,
+                version,
                 targetPlatform));
         
         return (candidates.size() > 0) ? candidates.get(0) : null;
@@ -1095,101 +1094,95 @@ public class Registry {
     // state file methods ///////////////////////////////////////////////////////////
     public void loadStateFile(final File stateFile, final Progress progress) throws InitializationException {
         try {
-            LogManager.log(ErrorLevel.DEBUG, "Loading state file from " + stateFile.getAbsolutePath());
+            LogManager.log("loading state file from " + stateFile.getAbsolutePath());
             
-            File schemaFile =
+            LogManager.log("parsing xml file...");
+            final File schemaFile =
                     FileProxy.getInstance().getFile(stateFileSchemaUri);
             
-            SchemaFactory schemaFactory =
-                    SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            final Schema schema = SchemaFactory.
+                    newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).
+                    newSchema(schemaFile);
             
-            Schema schema = schemaFactory.newSchema(schemaFile);
-            
-            DocumentBuilderFactory documentBuilderFactory =
+            final DocumentBuilderFactory documentBuilderFactory =
                     DocumentBuilderFactory.newInstance();
             documentBuilderFactory.setSchema(schema);
             documentBuilderFactory.setNamespaceAware(true);
             
-            DocumentBuilder documentBuilder =
-                    documentBuilderFactory.newDocumentBuilder();
+            final Document document = documentBuilderFactory.
+                    newDocumentBuilder().
+                    parse(stateFile);
+            LogManager.log("...complete");
             
-            LogManager.log(ErrorLevel.DEBUG, "    parsing xml file...");
-            Document document = documentBuilder.parse(stateFile);
-            LogManager.log(ErrorLevel.DEBUG, "    ...complete");
-            
-            Node documentElement = document.getDocumentElement();
+            final Element element = document.getDocumentElement();
             
             // get the total number of components in this state file, we need this to
             // be able to properly update the progress
-            int componentsNumber = getNumberOfComponents(documentElement);
+            int productsNumber = XMLUtils.countDescendants(element, "product");
             
             // we should get the percentage per component and we reserce one area for
             // registry-wide properties
-            int percentageChunk = Progress.COMPLETE / (componentsNumber + 1);
-            int percentageLeak = Progress.COMPLETE % (componentsNumber + 1);
+            int percentageChunk = Progress.COMPLETE / (productsNumber + 1);
+            int percentageLeak = Progress.COMPLETE % (productsNumber + 1);
             
-            LogManager.log(ErrorLevel.DEBUG, "    parsing registry properties...");
-            List<Node> propertiesNodes = XMLUtils.getChildList(documentElement, "./properties/property");
+            LogManager.log("    parsing registry properties...");
             
-            progress.setDetail("Loading registry properties");
-            for (int i = 0; i < propertiesNodes.size(); i++) {
-                Node propertyNode = propertiesNodes.get(i);
-                
-                String name = XMLUtils.getAttribute(propertyNode, "name");
-                String value = XMLUtils.getTextContent(propertyNode);
-                
-                LogManager.log(ErrorLevel.DEBUG, "        parsing property \"" + name + "\"");
-                if (getProperty(name) == null) {
-                    setProperty(name, value);
-                }
+            final Element propertiesElement =
+                    XMLUtils.getChild(element, "properties");
+            if (propertiesElement != null) {
+                progress.setDetail("Loading registry properties");
+                properties.putAll(XMLUtils.parseProperties(propertiesElement));
             }
-            LogManager.log(ErrorLevel.DEBUG, "    ...complete");
+            
+            LogManager.log("    ...complete");
             progress.addPercentage(percentageChunk + percentageLeak);
             
             LogManager.log(ErrorLevel.DEBUG, "    parsing components...");
-            List<Node> componentsNodes = XMLUtils.getChildList(documentElement, "./components/product");
-            for (Node componentNode: componentsNodes) {
-                String uid = XMLUtils.getAttribute(componentNode, "uid");
-                Version version = Version.getVersion(XMLUtils.getAttribute(componentNode, "version"));
-                List<Platform> platforms = StringUtils.parsePlatforms(XMLUtils.getAttribute(componentNode, "platform"));
-                
-                LogManager.log(ErrorLevel.DEBUG, "        parsing component uid=" + uid + ", version=" + version);
-                progress.setDetail("Loading component: uid=" + uid + ", version=" + version);
-                if (platforms.contains(targetPlatform)) {
-                    Product component = getProduct(uid, version);
+            
+            final Element productsElement =
+                    XMLUtils.getChild(element, "components");
+            if (productsElement != null) {
+                for (Element productElement: XMLUtils.getChildren(productsElement)) {
+                    final String uid = 
+                            productElement.getAttribute("uid");
+                    final Version version = 
+                            Version.getVersion(productElement.getAttribute("version"));
+                    final List<Platform> platforms = 
+                            StringUtils.parsePlatforms(productElement.getAttribute("platform"));
                     
-                    if (component != null) {
-                        Status status = StringUtils.parseStatus(XMLUtils.getAttribute(componentNode, "status"));
-                        switch (status) {
-                        case NOT_INSTALLED:
-                            continue;
-                        case TO_BE_INSTALLED:
-                            if (component.getStatus() != Status.INSTALLED) {
-                                component.setStatus(status);
-                            } else {
-                                continue;
-                            }
-                            break;
-                        case INSTALLED:
-                            continue;
-                        case TO_BE_UNINSTALLED:
-                            if (component.getStatus() != Status.NOT_INSTALLED) {
-                                component.setStatus(status);
-                            } else {
-                                continue;
-                            }
-                            break;
-                        }
+                    LogManager.log("        parsing component uid=" + uid + ", version=" + version);
+                    progress.setDetail("Loading component: uid=" + uid + ", version=" + version);
+                    if (platforms.contains(targetPlatform)) {
+                        final Product product = getProduct(uid, version);
                         
-                        List<Node> componentPropertiesNodes = XMLUtils.getChildList(componentNode, "./properties/property");
-                        for (int i = 0; i < componentPropertiesNodes.size(); i++) {
-                            Node propertyNode = componentPropertiesNodes.get(i);
+                        if (product != null) {
+                            final Status status = StringUtils.parseStatus(productElement.getAttribute("status"));
+                            switch (status) {
+                            case NOT_INSTALLED:
+                                continue;
+                            case TO_BE_INSTALLED:
+                                if (product.getStatus() != Status.INSTALLED) {
+                                    product.setStatus(status);
+                                } else {
+                                    continue;
+                                }
+                                break;
+                            case INSTALLED:
+                                continue;
+                            case TO_BE_UNINSTALLED:
+                                if (product.getStatus() != Status.NOT_INSTALLED) {
+                                    product.setStatus(status);
+                                } else {
+                                    continue;
+                                }
+                                break;
+                            }
                             
-                            String name = XMLUtils.getAttribute(propertyNode, "name");
-                            String value = XMLUtils.getTextContent(propertyNode);
-                            
-                            LogManager.log(ErrorLevel.DEBUG, "            parsing property \"" + name + "\"");
-                            component.setProperty(name, value);
+                            final Element productPropertiesElement = XMLUtils.getChild(productElement, "properties");
+                            if (productPropertiesElement != null) {
+                                product.getProperties().putAll(
+                                        XMLUtils.parseProperties(productPropertiesElement));
+                            }
                         }
                     }
                 }
@@ -1262,24 +1255,24 @@ public class Registry {
                     final Element productNode = document.createElement("product");
                     
                     productNode.setAttribute(
-                            "uid", 
+                            "uid",
                             component.getUid());
                     productNode.setAttribute(
-                            "version", 
+                            "version",
                             component.getVersion().toString());
                     productNode.setAttribute(
-                            "platform", 
+                            "platform",
                             StringUtils.asString(component.getPlatforms(), " "));
                     
                     switch (component.getStatus()) {
                     case INSTALLED:
                         productNode.setAttribute(
-                                "status", 
+                                "status",
                                 Status.TO_BE_INSTALLED.toString());
                         break;
                     case NOT_INSTALLED:
                         productNode.setAttribute(
-                                "status", 
+                                "status",
                                 Status.TO_BE_UNINSTALLED.toString());
                         break;
                     default:
@@ -1350,15 +1343,6 @@ public class Registry {
     
     public Platform getTargetPlatform() {
         return targetPlatform;
-    }
-    
-    private int getNumberOfComponents(final Node node) {
-        List<Node> list = XMLUtils.getChildList(node,"./components/(product,group)");
-        int result = list.size();
-        for(int i=0;i<list.size();i++) {
-            result += getNumberOfComponents(list.get(i));
-        }
-        return result;
     }
     
     /////////////////////////////////////////////////////////////////////////////////

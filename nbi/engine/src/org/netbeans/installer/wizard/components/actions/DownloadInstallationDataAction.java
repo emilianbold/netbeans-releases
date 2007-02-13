@@ -75,7 +75,7 @@ public class DownloadInstallationDataAction extends WizardAction {
                 if (product.getRegistryType() == RegistryType.REMOTE) {
                     overallProgress.setTitle("Downloading installation data for " + product.getDisplayName());
                 } else {
-                    overallProgress.setTitle("Exctracting installation data for " + product.getDisplayName());
+                    overallProgress.setTitle("Extracting installation data for " + product.getDisplayName());
                 }
                 
                 product.downloadData(currentProgress);

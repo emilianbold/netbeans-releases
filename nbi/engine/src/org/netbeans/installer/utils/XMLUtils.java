@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,7 +56,6 @@ import org.netbeans.installer.utils.helper.Feature;
 import org.netbeans.installer.utils.helper.Version;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -66,21 +66,12 @@ import org.xml.sax.SAXException;
  */
 public abstract class XMLUtils {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    private static final String ATTR_BEGIN  = "[@";
-    private static final String ATTR_END    = "]";
-    private static final String ATTR_DELIM  = "=";
-    private static final String ATTRS_DELIM = " and ";
-    
-    public static final String XSLT_REFORMAT_RESOURCE =
-            "org/netbeans/installer/utils/xml/reformat.xslt";
-    public static final String XSLT_REFORMAT_URI =
-            FileProxy.RESOURCE_SCHEME_PREFIX + XSLT_REFORMAT_RESOURCE;
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Static
-    public static void saveXMLDocument(Document document, File file) throws XMLException {
+    public static void saveXMLDocument(
+            final Document document,
+            final File file) throws XMLException {
         FileOutputStream output = null;
+        
         try {
             saveXMLDocument(document, output = new FileOutputStream(file));
         } catch (IOException e) {
@@ -96,18 +87,21 @@ public abstract class XMLUtils {
         }
     }
     
-    public static void saveXMLDocument(Document document, OutputStream output) throws XMLException {
+    public static void saveXMLDocument(
+            final Document document,
+            final OutputStream output) throws XMLException {
         try {
-            final Source domSource = new DOMSource(
+            final Source source = new DOMSource(
                     document);
-            final Result streamResult = new StreamResult(
+            final Result result = new StreamResult(
                     output);
-            final Source xsltSource = new StreamSource(
+            final Source xslt = new StreamSource(
                     FileProxy.getInstance().getFile(XSLT_REFORMAT_URI));
             final Transformer transformer = TransformerFactory.
-                    newInstance().newTransformer(xsltSource);
+                    newInstance().
+                    newTransformer(xslt);
             
-            transformer.transform(domSource, streamResult);
+            transformer.transform(source, result);
         } catch (DownloadException e) {
             throw new XMLException("Cannot save XML document", e);
         } catch (TransformerConfigurationException e) {
@@ -117,8 +111,10 @@ public abstract class XMLUtils {
         }
     }
     
-    public static Document loadXMLDocument(File file) throws XMLException {
+    public static Document loadXMLDocument(
+            final File file) throws XMLException {
         FileInputStream input = null;
+        
         try {
             return loadXMLDocument(input = new FileInputStream(file));
         } catch (IOException e) {
@@ -134,10 +130,13 @@ public abstract class XMLUtils {
         }
     }
     
-    public static Document loadXMLDocument(InputStream input) throws XMLException {
+    public static Document loadXMLDocument(
+            final InputStream input) throws XMLException {
         try {
             return DocumentBuilderFactory.
-                    newInstance().newDocumentBuilder().parse(input);
+                    newInstance().
+                    newDocumentBuilder().
+                    parse(input);
         } catch (ParserConfigurationException e) {
             throw new XMLException("Cannot parse XML", e);
         } catch (SAXException e) {
@@ -147,29 +146,19 @@ public abstract class XMLUtils {
         }
     }
     
-    public static List<Node> getChildList(Node root, String... children) {
-        List<Node> resultList = new LinkedList<Node>();
-        
-        if (root != null)  {
-            if (children.length > 0) {
-                resultList.add(root);
-                if (children.length == 1) {
-                    if (children[0].startsWith("./")) {
-                        children [0] = children [0].substring("./".length());
-                    }
-                    children = children [0].split("/");
-                }
-                
-                for (String child: children) {
-                    resultList = getChildListFromRootList(resultList, child);
-                }
-            }
-        }
-        return resultList;
+    public static Element getDocumentElement(
+            final File file) throws XMLException {
+        return loadXMLDocument(file).getDocumentElement();
     }
     
-    public static List<Element> getChildren(Element element) {
-        List<Element> children = new LinkedList<Element>();
+    public static Element getDocumentElement(
+            final InputStream input) throws XMLException {
+        return loadXMLDocument(input).getDocumentElement();
+    }
+    
+    public static List<Element> getChildren(
+            final Element element) {
+        final List<Element> children = new LinkedList<Element>();
         
         final NodeList list = element.getChildNodes();
         for (int i = 0; i < list.getLength(); i++) {
@@ -183,8 +172,10 @@ public abstract class XMLUtils {
         return children;
     }
     
-    public static List<Element> getChildren(Element element, String... names) {
-        List<Element> children = new LinkedList<Element>();
+    public static List<Element> getChildren(
+            final Element element,
+            final String... names) {
+        final List<Element> children = new LinkedList<Element>();
         
         final NodeList list = element.getChildNodes();
         for (int i = 0; i < list.getLength(); i++) {
@@ -203,14 +194,34 @@ public abstract class XMLUtils {
         return children;
     }
     
-    public static Element getChild(Element element, String name) {
-        Element child = null;
+    public static Element getChild(
+            final Element element,
+            final String path) {
+        final String[] pathComponents;
         
-        NodeList nodes = element.getChildNodes();
-        for (int i = 0; i < nodes.getLength(); i++) {
-            Node node = nodes.item(i);
-            if ((node instanceof Element) && node.getNodeName().equals(name)) {
-                child = (Element) node;
+        if (path.contains(StringUtils.FORWARD_SLASH)) {
+            pathComponents = path.split(StringUtils.FORWARD_SLASH);
+        } else {
+            pathComponents = new String[] {
+                path
+            };
+        }
+        
+        Element child = element;
+        
+        for (String name: pathComponents) {
+            boolean found = false;
+            
+            for (Element subchild: getChildren(child)) {
+                if (subchild.getNodeName().equals(name)) {
+                    child = subchild;
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found) {
+                child = null;
                 break;
             }
         }
@@ -218,68 +229,43 @@ public abstract class XMLUtils {
         return child;
     }
     
-    public static Node getChildNode(Node root, String... children) throws ParseException {
-        List<Node> list = getChildList(root, children);
-        
-        if (list.size() == 0) {
-            return null;
-        }
-        
-        if (list.size() > 1 ) {
-            throw new ParseException("Requested single node, returned " +
-                    list.size() + " nodes");
-        }
-        
-        return list.get(0);
+    public static int countDescendants(
+            final Element element, 
+            final String... names) {
+        return countDescendants(element, Arrays.asList(names));
     }
     
-    public static String getAttribute(Node node, String name) {
-        String value = null;
-        
-        if ((node != null) && (name != null)) {
-            if (name.startsWith("./@")) {
-                name = name.substring("./@".length());
+    public static int countDescendants(
+            final Element element, 
+            final List<String> names) {
+        int count = 0;
+        for (Element child: getChildren(element)) {
+            if (names.contains(child.getNodeName())) {
+                count++;
             }
             
-            NamedNodeMap map = node.getAttributes();
-            if (map != null) {
-                Node attribute = map.getNamedItem(name);
-                if ((attribute != null) && (attribute.getNodeType() == Node.ATTRIBUTE_NODE)) {
-                    value = attribute.getNodeValue();
-                }
-            }
+            count += countDescendants(child, names);
         }
         
-        return value;
+        return count;
     }
     
-    public static String getTextContent(Node node) {
-        return (node == null) ? null : node.getTextContent();
-    }
-    
-    public static String getChildNodeTextContent(Node root, String... childs) throws ParseException {
-        return getTextContent(getChildNode(root,childs));
-    }
-    
-    public static Element addChildNode(Node parentNode, String tag, String textContent) {
-        Element result = null;
-        if (parentNode!=null && tag!=null) {
-            
-            result = parentNode.getOwnerDocument().createElement(tag);
-            if (textContent!=null) {
-                result.setTextContent(textContent);
-            }
-            parentNode.appendChild(result);
-        }
-        return result;
+    public static Element appendChild(Element element, String name, String text) {
+        final Element child = element.getOwnerDocument().createElement(name);
+        
+        child.setTextContent(text != null ? text : StringUtils.EMPTY_STRING);
+        element.appendChild(child);
+        
+        return child;
     }
     
     // object <-> dom ///////////////////////////////////////////////////////////////
-    public static Dependency parseDependency(final Element element) throws ParseException {
+    public static Dependency parseDependency(
+            final Element element) throws ParseException {
         final DependencyType type =
                 StringUtils.parseDependencyType(element.getNodeName());
         final String uid =
-                XMLUtils.getAttribute(element, "uid");
+                element.getAttribute("uid");
         final Version lower =
                 Version.getVersion(element.getAttribute("version-lower"));
         final Version upper =
@@ -290,7 +276,9 @@ public abstract class XMLUtils {
         return new Dependency(type, uid, lower, upper, resolved);
     }
     
-    public static Element saveDependency(final Dependency dependency, final Element element) {
+    public static Element saveDependency(
+            final Dependency dependency,
+            final Element element) {
         element.setAttribute("uid",
                 dependency.getUid());
         
@@ -310,7 +298,8 @@ public abstract class XMLUtils {
         return element;
     }
     
-    public static List<Dependency> parseDependencies(final Element element) throws ParseException {
+    public static List<Dependency> parseDependencies(
+            final Element element) throws ParseException {
         final List<Dependency> dependencies = new LinkedList<Dependency>();
         
         for (Element child: getChildren(element)) {
@@ -320,7 +309,9 @@ public abstract class XMLUtils {
         return dependencies;
     }
     
-    public static Element saveDependencies(final List<Dependency> dependencies, final Element element) {
+    public static Element saveDependencies(
+            final List<Dependency> dependencies,
+            final Element element) {
         final Document document = element.getOwnerDocument();
         
         for (Dependency dependency: dependencies) {
@@ -332,13 +323,14 @@ public abstract class XMLUtils {
         return element;
     }
     
-    public static Properties parseProperties(final Element element) throws ParseException {
+    public static Properties parseProperties(
+            final Element element) throws ParseException {
         final Properties properties = new Properties();
         
         if (element != null) {
             for (Element child: XMLUtils.getChildren(element, "property")) {
-                String name  = XMLUtils.getAttribute(child, "name");
-                String value = XMLUtils.getTextContent(child);
+                String name = child.getAttribute("name");
+                String value = child.getTextContent();
                 
                 properties.setProperty(name, value);
             }
@@ -347,7 +339,9 @@ public abstract class XMLUtils {
         return properties;
     }
     
-    public static Element saveProperties(final Properties properties, final Element element) {
+    public static Element saveProperties(
+            final Properties properties,
+            final Element element) {
         final Document document = element.getOwnerDocument();
         
         for (Object key: properties.keySet()) {
@@ -362,17 +356,15 @@ public abstract class XMLUtils {
         return element;
     }
     
-    public static ExtendedUri parseExtendedUri(final Element element) throws ParseException {
+    public static ExtendedUri parseExtendedUri(
+            final Element element) throws ParseException {
         try {
-            final URI uri = new URI(XMLUtils.getChildNodeTextContent(
-                    element,
-                    "default-uri"));
-            final long size = Long.parseLong(XMLUtils.getAttribute(
-                    element,
-                    "size"));
-            final String md5 = XMLUtils.getAttribute(
-                    element,
-                    "md5");
+            final URI uri =
+                    new URI(getChild(element, "default-uri").getTextContent());
+            final long size =
+                    Long.parseLong(element.getAttribute("size"));
+            final String md5 =
+                    element.getAttribute("md5");
             
             final List<URI> alternates = new LinkedList<URI>();
             
@@ -393,7 +385,9 @@ public abstract class XMLUtils {
         }
     }
     
-    public static Element saveExtendedUri(final ExtendedUri uri, final Element element) {
+    public static Element saveExtendedUri(
+            final ExtendedUri uri,
+            final Element element) {
         final Document document = element.getOwnerDocument();
         
         element.setAttribute("size", Long.toString(uri.getSize()));
@@ -430,7 +424,8 @@ public abstract class XMLUtils {
         return element;
     }
     
-    public static List<ExtendedUri> parseExtendedUrisList(final Element element) throws ParseException {
+    public static List<ExtendedUri> parseExtendedUrisList(
+            final Element element) throws ParseException {
         final List<ExtendedUri> uris = new LinkedList<ExtendedUri>();
         
         for (Element uriElement: getChildren(element)) {
@@ -440,7 +435,9 @@ public abstract class XMLUtils {
         return uris;
     }
     
-    public static Element saveExtendedUrisList(final List<ExtendedUri> uris, final Element element) {
+    public static Element saveExtendedUrisList(
+            final List<ExtendedUri> uris,
+            final Element element) {
         final Document document = element.getOwnerDocument();
         
         for (ExtendedUri uri: uris) {
@@ -451,7 +448,8 @@ public abstract class XMLUtils {
         return element;
     }
     
-    public static Map<Locale, String> parseLocalizedString(final Element element) throws ParseException {
+    public static Map<Locale, String> parseLocalizedString(
+            final Element element) throws ParseException {
         final Map<Locale, String> map = new HashMap<Locale, String>();
         
         final Element defaultElement = getChild(element, "default");
@@ -469,7 +467,9 @@ public abstract class XMLUtils {
         return map;
     }
     
-    public static Element saveLocalizedString(final Map<Locale, String> map, final Element element) {
+    public static Element saveLocalizedString(
+            final Map<Locale, String> map,
+            final Element element) {
         final Document document = element.getOwnerDocument();
         
         final Element defaultElement = document.createElement("default");
@@ -490,7 +490,8 @@ public abstract class XMLUtils {
         return element;
     }
     
-    public static Feature parseFeature(final Element element) throws ParseException {
+    public static Feature parseFeature(
+            final Element element) throws ParseException {
         final String id = element.getAttribute("id");
         final long offset = Long.parseLong(element.getAttribute("offset"));
         final ExtendedUri iconUri = parseExtendedUri(getChild(element, "icon"));
@@ -503,7 +504,9 @@ public abstract class XMLUtils {
         return new Feature(id, offset, iconUri, displayNames, descriptions);
     }
     
-    public static Element saveFeature(final Feature feature, final Element element) {
+    public static Element saveFeature(
+            final Feature feature,
+            final Element element) {
         final Document document = element.getOwnerDocument();
         
         element.setAttribute("id", feature.getId());
@@ -519,7 +522,8 @@ public abstract class XMLUtils {
         return element;
     }
     
-    public static List<Feature> parseFeaturesList(final Element element) throws ParseException {
+    public static List<Feature> parseFeaturesList(
+            final Element element) throws ParseException {
         final List<Feature> features = new LinkedList<Feature>();
         
         for (Element featureElement: XMLUtils.getChildren(element)) {
@@ -530,7 +534,8 @@ public abstract class XMLUtils {
     }
     
     public static Element saveFeaturesList(
-            final List<Feature> features, final Element element) {
+            final List<Feature> features,
+            final Element element) {
         final Document document = element.getOwnerDocument();
         
         for (Feature feature: features) {
@@ -541,100 +546,9 @@ public abstract class XMLUtils {
         return element;
     }
     
-    // private //////////////////////////////////////////////////////////////////////
-    private static String[] getChildNamesFromString(String childname, String name) {
-        String[] result = new String[] {};
-        if(childname!=null) {
-            if (childname.equals(name)) {
-                result = new String[] { childname };
-            } else if (childname.startsWith("(") && childname.endsWith(")")) {
-                // several childs in round brackets separated by commas
-                int len = childname.length();
-                String[] names = childname.substring(1,len-1).split(",");
-                int index =0;
-                for (String n:names) {
-                    if (name.equals(n)) {
-                        index ++;
-                    }
-                }
-                result = new String [index];
-                index  = 0 ;
-                for (String n:names) {
-                    if (name.equals(n)) {
-                        result[index] = n;
-                        index ++;
-                    }
-                }
-            }
-        }
-        return result;
-    }
-    
-    private static HashMap<String,String> getAttributesFromChildName(String childname) {
-        HashMap<String,String> map = new HashMap<String,String> ();
-        if(childname!=null) {
-            int start = childname.indexOf(ATTR_BEGIN);
-            int end = childname.indexOf(ATTR_END);
-            if (start!=-1 && end == (childname.length()-1 )) {
-                // child with specified attribute
-                String sub = childname.substring(start + ATTR_BEGIN.length(), end);
-                String[] attrs = sub.split(ATTRS_DELIM);
-                for (String s: attrs) {
-                    String[] nameValue = s.split(ATTRS_DELIM);
-                    if (nameValue.length==2) {
-                        if (nameValue[1].indexOf("\"")==0 && nameValue[1].lastIndexOf("\"")==(nameValue[1].length()-1)) {
-                            nameValue[1] = nameValue[1].substring(1,nameValue[1].length()-1);
-                        }
-                        map.put(nameValue[0],nameValue[1]);
-                    }
-                }
-            }
-        }
-        return map;
-    }
-    
-    private static boolean hasAttributes(Node childNode, HashMap<String, String> attributes) {
-        int size = attributes.size();
-        if (size==0) {
-            return true;
-        } else {
-            Object [] keys = attributes.keySet().toArray();
-            for (int i=0;i<size;i++) {
-                if (keys[i] instanceof String) {
-                    if (!getAttribute(childNode,(String)keys[i]).equals(attributes.get(keys[i]))) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
-    
-    private static void processChild(List<Node> result, Node childNode, String childnameString) {
-        String name =  childNode.getNodeName();
-        String[] names = getChildNamesFromString(childnameString,name);
-        HashMap<String,String> attributes = getAttributesFromChildName(childnameString);
-        for (String n:names) {
-            if (name.equals(n) && hasAttributes(childNode,attributes)) {
-                result.add(childNode);
-            }
-        }
-    }
-    
-    private static List<Node> getChildListFromRootList(List<Node> rootlist, String childname) {
-        List<Node> result = new LinkedList<Node>();
-        
-        for (int i = 0; i < rootlist.size(); i++) {
-            Node node = rootlist.get(i);
-            if (node == null) {
-                continue;
-            }
-            
-            NodeList childsList = node.getChildNodes();
-            for (int j = 0; j < childsList.getLength(); j++) {
-                processChild(result, childsList.item(j), childname);
-            }
-        }
-        return result;
-    }
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String XSLT_REFORMAT_URI =
+            FileProxy.RESOURCE_SCHEME_PREFIX +
+            "org/netbeans/installer/utils/xml/reformat.xslt"; // NOI18N
 }

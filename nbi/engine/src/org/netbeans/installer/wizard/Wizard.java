@@ -167,10 +167,10 @@ public class Wizard {
             final Element element,
             final ClassLoader loader) throws InitializationException {
         WizardComponent component = null;
-        Element         child     = null;
+        Element child = null;
         
         try {
-            String classname = XMLUtils.getAttribute(element, "class");
+            String classname = element.getAttribute("class");
             
             component = (WizardComponent) loader.loadClass(classname).newInstance();
             

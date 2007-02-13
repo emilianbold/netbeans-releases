@@ -37,9 +37,9 @@ import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
-import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -229,11 +229,11 @@ public class MacOsNativeUtils extends UnixNativeUtils {
             
             LogManager.log(ErrorLevel.DEBUG,
                     "    getting root element");
-            Node root = document.getDocumentElement();
+            Element root = document.getDocumentElement();
             
             LogManager.log(ErrorLevel.DEBUG,
                     "    getting root/dict element");
-            Node dict = XMLUtils.getChildNode(root,"./dict");
+            Element dict = XMLUtils.getChild(root, "dict");
             
             LogManager.log(ErrorLevel.DEBUG,
                     "    getting root/dict/[key=persistent-apps] element. dict = " +
@@ -241,9 +241,9 @@ public class MacOsNativeUtils extends UnixNativeUtils {
             LogManager.log(ErrorLevel.DEBUG,"Get Keys");
             
             
-            List <Node> keys = XMLUtils.getChildList(dict, "./key");
+            List<Element> keys = XMLUtils.getChildren(dict, "key");
             LogManager.log(ErrorLevel.DEBUG,"Length = " + keys.size());
-            Node persistentAppsKeyNode = null;
+            Element persistentAppsKeyNode = null;
             int index = 0;
             while(keys.get(index)!=null) {
                 if(keys.get(index).getTextContent().equals("persistent-apps")) {
@@ -256,17 +256,17 @@ public class MacOsNativeUtils extends UnixNativeUtils {
             LogManager.log(ErrorLevel.DEBUG,
                     "    done. KeyNode = " + persistentAppsKeyNode.getTextContent());
             
-            if(persistentAppsKeyNode==null) {
+            if(persistentAppsKeyNode == null) {
                 LogManager.log(ErrorLevel.DEBUG,
                         "    Not found.. strange.. Create new one");
-                persistentAppsKeyNode = XMLUtils.addChildNode(dict,"key","persistent-apps");
+                persistentAppsKeyNode = XMLUtils.appendChild(dict,"key","persistent-apps");
             }
             LogManager.log(ErrorLevel.DEBUG,
                     "    Getting next element.. expecting it to be array element");
-            Node array = keys.get(index);
+            Element array = keys.get(index);
             index = 0 ;
             while(!array.getNodeName().equals("array") && index < 10) {
-                array = array.getNextSibling();
+                array = (Element) array.getNextSibling();
                 index++;
             }
             if(index==10) {
@@ -293,21 +293,22 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                 LogManager.log(ErrorLevel.DEBUG, "    executable = " + shortcut.getExecutablePath());
                 LogManager.log(ErrorLevel.DEBUG, "    name = " + shortcut.getName());
                 
-                dict = XMLUtils.addChildNode(array,"dict",null);
-                XMLUtils.addChildNode(dict,"key","tile-data");
-                Node dictChild = XMLUtils.addChildNode(dict,"dict",null);
-                XMLUtils.addChildNode(dictChild,"key","file-data");
-                Node dictCC = XMLUtils.addChildNode(dictChild,"dict",null);
-                XMLUtils.addChildNode(dictCC,"key","_CFURLString");
-                XMLUtils.addChildNode(dictCC,"string",shortcut.getExecutablePath());
-                XMLUtils.addChildNode(dictCC,"key","_CFURLStringType");
-                XMLUtils.addChildNode(dictCC,"integer","0");
-                XMLUtils.addChildNode(dictChild,"key","file-label");
-                XMLUtils.addChildNode(dictChild,"string",shortcut.getName());
-                XMLUtils.addChildNode(dictChild,"key","file-type");
-                XMLUtils.addChildNode(dictChild,"integer","41");
-                XMLUtils.addChildNode(dict,"key","tile-type");
-                XMLUtils.addChildNode(dict, "string","file-tile");                                
+                
+                dict = XMLUtils.appendChild(array,"dict",null);
+                XMLUtils.appendChild(dict,"key","tile-data");
+                Element dictChild = XMLUtils.appendChild(dict,"dict",null);
+                XMLUtils.appendChild(dictChild,"key","file-data");
+                Element dictCC = XMLUtils.appendChild(dictChild,"dict",null);
+                XMLUtils.appendChild(dictCC,"key","_CFURLString");
+                XMLUtils.appendChild(dictCC,"string",shortcut.getExecutablePath());
+                XMLUtils.appendChild(dictCC,"key","_CFURLStringType");
+                XMLUtils.appendChild(dictCC,"integer","0");
+                XMLUtils.appendChild(dictChild,"key","file-label");
+                XMLUtils.appendChild(dictChild,"string",shortcut.getName());
+                XMLUtils.appendChild(dictChild,"key","file-type");
+                XMLUtils.appendChild(dictChild,"integer","41");
+                XMLUtils.appendChild(dict,"key","tile-type");
+                XMLUtils.appendChild(dict, "string","file-tile");                                
                 LogManager.log(ErrorLevel.DEBUG,
                         "... adding shortcut to Dock XML finished");
             } else {
@@ -320,8 +321,8 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                         "name = " + shortcut.getName());
                 
                 String location = shortcut.getExecutablePath();
-                List <Node> dcts = XMLUtils.getChildList(array,
-                        "./dict/dict/dict/string");
+                Element dctsElement = XMLUtils.getChild(array, "dict/dict/dict");
+                List<Element> dcts = XMLUtils.getChildren(dctsElement, "string");
                 index = 0;
                 Node dct = null;
                 LogManager.log(ErrorLevel.DEBUG,
@@ -364,9 +365,6 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                     "    Done (saving xml)");
             
         } catch (ParserConfigurationException e) {
-            LogManager.log(ErrorLevel.WARNING,e);
-            return false;
-        }  catch (ParseException e) {
             LogManager.log(ErrorLevel.WARNING,e);
             return false;
         } catch (XMLException e) {

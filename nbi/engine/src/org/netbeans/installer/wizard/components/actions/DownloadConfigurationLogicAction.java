@@ -85,7 +85,7 @@ public class DownloadConfigurationLogicAction extends WizardAction {
                 if (product.getRegistryType() == RegistryType.REMOTE) {
                     overallProgress.setTitle("Downloading configuration logic for " + product.getDisplayName());
                 } else {
-                    overallProgress.setTitle("Exctracting configuration logic for " + product.getDisplayName());
+                    overallProgress.setTitle("Extracting configuration logic for " + product.getDisplayName());
                 }
                 
                 product.downloadLogic(currentProgress);

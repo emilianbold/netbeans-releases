@@ -801,15 +801,17 @@ public final class Product extends RegistryNode {
             
             features = StringUtils.asList(element.getAttribute("features"), " ");
             
-            logicUris.addAll(XMLUtils.parseExtendedUrisList(
-                    XMLUtils.getChild(element, "configuration-logic")));
+            logicUris.addAll(XMLUtils.parseExtendedUrisList(XMLUtils.getChild(
+                    element, 
+                    "configuration-logic")));
             
-            dataUris.addAll(XMLUtils.parseExtendedUrisList(
-                    XMLUtils.getChild(element, "installation-data")));
+            dataUris.addAll(XMLUtils.parseExtendedUrisList(XMLUtils.getChild(
+                    element, 
+                    "installation-data")));
             
-            requiredDiskSpace = Long.parseLong(XMLUtils.getChildNodeTextContent(
-                    element,
-                    "./system-requirements/disk-space"));
+            requiredDiskSpace = Long.parseLong(XMLUtils.getChild(
+                    element, 
+                    "system-requirements/disk-space").getTextContent());
             
             dependencies.addAll(XMLUtils.parseDependencies(
                     XMLUtils.getChild(element, "dependencies")));
