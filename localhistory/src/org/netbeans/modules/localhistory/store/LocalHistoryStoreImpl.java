@@ -28,7 +28,6 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -39,7 +38,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;  
@@ -160,7 +158,13 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                     writeHistory(parent, new HistoryEntry[] {new HistoryEntry(ts, null, file.getAbsolutePath(), TOUCHED)});                        
                 }   
             }
-        } 
+        } else {
+            try {
+                touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, file.isFile()));
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
+            }             
+        }
         fireChanged(null, file);        
     }
     
@@ -170,7 +174,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
         }      
-        fireChanged(null, file);        
+        fireChanged(null, file);
     }
 
     private void fileDeleteImpl(File file, String from, String to, long ts) throws IOException {        
@@ -262,13 +266,6 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
         
         List<HistoryEntry> history = readHistory(root);                
-        
-//        // files for which we will return a StoreEntry representing its state
-//        Set<File> existingFiles = new HashSet<File>();
-//        // files for which we will return a StoreEntry indicating that it was deleteded in the given time
-//        List<File> deletedFiles = new ArrayList<File>();                
-//        // files for which were added after the given time
-//        Set<File> latelyAddedFiles = new HashSet<File>(); 
         
         // StoreEntries we will return
         List<StoreEntry> ret = new ArrayList<StoreEntry>();                        
@@ -367,74 +364,12 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             }            
         }
         
-        for(Entry<File, HistoryEntry> entry : afterRevert.entrySet()) {        
-            // XXX do we even need this            
-//            if(entry.getValue().getStatus() == TOUCHED) {                
-//                continue;
-//            }      
-        }
+        // XXX do we even need this                 
+//        for(Entry<File, HistoryEntry> entry : afterRevert.entrySet()) {        
+//            
+//        }
         return ret.toArray(new StoreEntry[ret.size()]);
-        
-        
-//        // get rid of files which where deleted at the given time
-//        for(File file : files) {
-//            if(!wasDeleted(file, history, ts)) {
-//                existingFiles.add(file);
-//            } else {
-//                deletedFiles.add(file);
-//            }                                   
-//        }                        
-//
-//        // get the files which where deleted or added after the given time
-//        for(HistoryEntry he : history) {
-//            if(he.getTimestamp() >= ts) {
-//                File file = new File(he.getTo());
-//                if( he.getStatus() == DELETED && !existingFiles.contains(file) ) {
-//                    // file was deleted and is not in the list yet - (still deleted and not created again?)
-//                    existingFiles.add(file);
-//                } else if (he.getStatus() == TOUCHED /*&& !existingFiles.contains(file)*/) {
-//                    // file was created (changed?) and it's not between the existing files yet
-//                    latelyAddedFiles.add(file);                    
-//                }
-//            }                        
-//        }                        
-        
-//        // get the StoreEntries for each file 
-//        for(File file : existingFiles) {            
-//            StoreDataFile data = readStoreData(file, true);            
-//            if(data != null) {
-//                if(data.isFile()) {
-//                    StoreEntry se = getStoreEntryImpl(file, ts, data);
-//                    if(se != null) {
-//                        ret.add(se);
-//                    } else {
-//              
-//                        // XXX hm, was added later? set as to be deleted
-//                        if(latelyAddedFiles.contains(file)) {
-//                            deletedFiles.add(file);    
-//                        }         
-//                
-//                    }   
-//                } else {
-//                    // XXX hm, was added later? set as to be deleted
-//                    if(latelyAddedFiles.contains(file)) {
-//                        // was 
-//                        deletedFiles.add(file);    
-//                    } else {                          
-//                        // it's a folder and we know it existed -> should be returned
-//                        File storeFile = getStoreFolder(root); // XXX why returning the root
-//                        StoreEntry folderEntry = new StoreEntry(new File(data.getAbsolutePath()), storeFile, data.getLastModified(), "");
-//                        ret.add(folderEntry);
-//                    }
-//                }
-//            }
-//        }
-                      
-//        // add entries for files which were deleted
-//        for(File file : deletedFiles) {
-//            ret.add(new DeletedStoreEntry(file, ts));
-//        }
-        
+               
     }
     
     private boolean wasDeleted(File file, List<HistoryEntry> history , long ts) {        
@@ -604,13 +539,13 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {              
                 if(Diagnostics.ON) {
-                    Diagnostics.println("Cleanup Start");
+                    Diagnostics.println("Cleanup Start");                       // NOI18N                                  
                 }
                 
                 cleanUpImpl(ttl);
                 
                 if(Diagnostics.ON) {
-                    Diagnostics.println("Cleanup End");
+                    Diagnostics.println("Cleanup End");                         // NOI18N                                      
                 }                
             }
         });
@@ -662,7 +597,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 // it took you to long, get out                
                 try {
                     if(Diagnostics.ON) {
-                        Diagnostics.println("Cleanup Sleep 200");
+                        Diagnostics.println("Cleanup Sleep 200");               // NOI18N                                  
                     }                
                     java.lang.Thread.sleep(200);
                 } catch (InterruptedException ex) { }                    
@@ -836,7 +771,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         int fileHash = filePath.hashCode();                                        
         String storeFileName = getMD5(filePath); 
         String storeIndex = storage.getAbsolutePath() + "/" + Integer.toString(fileHash % 173 + 172);   // NOI18N                                  
-        return new File(storeIndex + "/" + storeFileName);
+        return new File(storeIndex + "/" + storeFileName);                                              // NOI18N                                  
     }
     
     private String getMD5(String name) {
@@ -849,13 +784,13 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
         digest.update(name.getBytes());
         byte[] hash = digest.digest();
-        StringBuffer ret = new StringBuffer();                                  // NOI18N
+        StringBuffer ret = new StringBuffer();                                  
         for (int i = 0; i < hash.length; i++) {
             String hex = Integer.toHexString(hash[i] & 0x000000FF);
             if(hex.length()==1) {
                 hex = "0" + hex;                                                // NOI18N
             }
-            ret.append(hex);                                                    // NOI18N
+            ret.append(hex);                                                    
         }       
         return ret.toString();
     }
@@ -916,7 +851,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         
         if(Diagnostics.ON) {                
             if(getDataFile(file) == null) {
-                Diagnostics.println("writing history for file without data : " + file);    
+                Diagnostics.println("writing history for file without data : " + file);    // NOI18N                                  
             }            
         } 
         
