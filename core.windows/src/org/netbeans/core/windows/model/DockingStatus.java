@@ -25,9 +25,6 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
-import org.openide.windows.Mode;
-import org.openide.windows.TopComponent;
 
 /**
  * This class stores the snapshot of the docking status (docked/slided-out) of TopComponents 
@@ -80,7 +77,9 @@ public class DockingStatus {
      * (Used when switching to/from maximized mode)
      */
     public boolean shouldSlide( String tcID ) {
-        return null != tcID && slided.contains( tcID );
+        return null != tcID && (slided.contains( tcID )
+                                //special case for TopComponents not declared in XML layer
+                                || (!slided.contains( tcID ) && !docked.contains( tcID )));
     }
     
     /**
