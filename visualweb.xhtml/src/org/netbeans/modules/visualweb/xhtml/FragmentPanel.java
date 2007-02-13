@@ -129,12 +129,12 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
 //                            }
 //                        }
 //                    );
-        
+
 //                }
 //            }
 //         );
     }
-    
+
     private void addSubFolderFragments(DataFolder folder, List formList,
             /*FacesModelSet modelset,*/ DataObject current) {
         DataObject[] children = folder.getChildren();
@@ -146,12 +146,12 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
                 addSubFolderFragments((DataFolder)children[i], formList, /*modelset,*/ current);
             } else {
                 DataObject d = children[i];
-                
+
                 if (d == current) {
                     continue;
                 }
                 // See if it's a fragment
-                
+
                 if (d.getPrimaryFile().getNameExt().endsWith(".jspf")) {
                     String path = computePathFromTo(current, d);
                     formList.add(path);
@@ -159,7 +159,7 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
             }
         }
     }
-    
+
     public static String computePathFromTo(DataObject from, DataObject to) {
         FileObject fromFile = from.getPrimaryFile();
         FileObject toFile = to.getPrimaryFile();
@@ -188,7 +188,7 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
         }
         return stringBuffer.toString();
     }
-    
+
     public static ArrayList getPathList(FileObject file) {
         if (!file.isFolder()) {
             file = file.getParent();
@@ -201,7 +201,7 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
         Collections.reverse(result);
         return result;
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -225,7 +225,7 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("com/sun/rave/xhtml/Bundle").getString("PF_LBL_ACCESS_DESC"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/xhtml/Bundle").getString("PF_LBL_ACCESS_DESC"));
 
         jLabel2.setLabelFor(comboBox);
         jLabel2.setText(NbBundle.getMessage(FragmentPanel.class, "JspPage"));
@@ -261,7 +261,7 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
         add(jPanel1, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
-    
+
     // Implements ActionListener
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if (e.getSource() == createButton) {
@@ -274,13 +274,13 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
             }
         }
     }
-    
+
     // Implements ItemListener
     public void itemStateChanged(java.awt.event.ItemEvent e) {
         prop.setValue(comboBox.getSelectedItem().toString());
     }
-    
-    
+
+
     /** Create a pagefragment and return its URL string - or null
      * if creating the webform didn't succeed.
      */
@@ -320,7 +320,7 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
         String name = null;
         //!CQ This is bad to have this base name buried in the source here... should talk to project some how..
         FormNamePanel panel = new FormNamePanel(project, "Fragment");
-        
+
         String title = NbBundle.getMessage(FragmentPanel.class, "CreateFragment"); // NOI18N
         DialogDescriptor dlg = new DialogDescriptor(
                 panel,
@@ -331,7 +331,7 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
                 DialogDescriptor.DEFAULT_ALIGN, // DialogDescriptor.BOTTOM_ALIGN,
                 null, //new HelpCtx("new_page_fragment"), // NOI18N
                 null);
-        
+
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dlg);
         panel.setDescriptor(dlg);
         dialog.show();
@@ -341,14 +341,14 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
             return null;
         }
         name = panel.getName();
-        
+
         // Check name - shouldn't be necessary, form should enforce it.
         boolean validName;
         validName = JsfProjectUtils.isValidJavaFileName(name);
         if (!validName) {
             return null;
         }
-        
+
         // Create files
         try {
             FileSystem fs = Repository.getDefault().getDefaultFileSystem();
@@ -358,7 +358,7 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
                 throw new IOException("Can't find template FileObject for " + tmpl);  // NOI18N
             DataObject webformTemplate = DataObject.find(fo);
             DataObject webform = webformTemplate.createFromTemplate(folderObj, name);
-            
+
             // Next, try to access the insync units! This is important for
             // bug 4960018; the backing file template is empty so we've gotta
             // force insync to "create" it
@@ -370,15 +370,15 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
 //                }
                 InSyncService.getProvider().initModelsForWebformFile(project, webform.getPrimaryFile());
             }
-            
+
             return webform.getPrimaryFile().getNameExt();
-            
+
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
         return null;
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox comboBox;
     private javax.swing.JButton createButton;
