@@ -49,8 +49,8 @@ public class ChildrenKeysTest extends NbTestCase {
     }
     
     public static junit.framework.Test suite() {
-        //return new ChildrenKeysTest("testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces");
-        return new NbTestSuite(ChildrenKeysTest.class);
+        return new ChildrenKeysTest("testGetNodesFromTwoThreads57769");
+        //return new NbTestSuite(ChildrenKeysTest.class);
     }
     
     @Override
@@ -118,7 +118,7 @@ public class ChildrenKeysTest extends NbTestCase {
             pw.close();
             
             fail(w.toString());;
-        }
+        }//fail("Ok");
     }
 
     /**

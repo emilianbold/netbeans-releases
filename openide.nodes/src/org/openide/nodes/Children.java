@@ -371,10 +371,12 @@ public abstract class Children extends Object {
                 PR.exitReadAccess();
             }
 
-            //      off = off.substring (2);
-            //System.err.println(off + "  length     : " + nodes.length);
-            //System.err.println(off + "  entries    : " + entries);
-            //System.err.println(off + "  init now   : " + isInitialized());
+            final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
+            if (IS_LOG_GET_ARRAY) {
+                LOG_GET_ARRAY.fine("  length     : " + nodes.length); // NOI18N
+                LOG_GET_ARRAY.fine("  entries    : " + entries); // NOI18N
+                LOG_GET_ARRAY.fine("  init now   : " + isInitialized()); // NOI18N
+            }
             // if not initialized that means that after
             // we computed the nodes, somebody changed them (as a
             // result of addNotify) => we have to compute them
@@ -419,9 +421,21 @@ public abstract class Children extends Object {
      * @return array of nodes
      */
     public Node[] getNodes(boolean optimalResult) {
+        ChildrenArray hold;
+        Node find;
         if (optimalResult) {
-            getArray(null);
-            findChild(null);
+            final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
+            if (IS_LOG_GET_ARRAY) {
+                LOG_GET_ARRAY.fine("computing optimal result");// NOI18N
+            }
+            hold = getArray(null);
+            if (IS_LOG_GET_ARRAY) {
+                LOG_GET_ARRAY.fine("optimal result is here: " + hold);// NOI18N
+            }
+            find = findChild(null);
+            if (IS_LOG_GET_ARRAY) {
+                LOG_GET_ARRAY.fine("Find child got: " + find); // NOI18N
+            }
         }
 
         return getNodes();
