@@ -1209,6 +1209,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 ExpressionTree et = it.next();
                                 if (et == fa || (et.getKind() == Tree.Kind.ASSIGNMENT && ((AssignmentTree)et).getExpression() == fa)) {
                                     Element el = controller.getTrees().getElement(expPath);
+                                    if (type.getKind() == TypeKind.ERROR && el.getKind().isClass()) {
+                                        el = controller.getElements().getPackageElement(((TypeElement)el).getQualifiedName());
+                                    }
                                     if (el instanceof PackageElement)
                                         addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null);
                                     else if (type.getKind() == TypeKind.DECLARED)
@@ -1220,6 +1223,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                     } else if (parent.getKind() == Tree.Kind.ASSIGNMENT && ((AssignmentTree)parent).getExpression() == fa && grandParent != null && grandParent.getKind() == Tree.Kind.ANNOTATION) {
                         Element el = controller.getTrees().getElement(expPath);
+                        if (type.getKind() == TypeKind.ERROR && el.getKind().isClass()) {
+                            el = controller.getElements().getPackageElement(((TypeElement)el).getQualifiedName());
+                        }
                         if (el instanceof PackageElement)
                             addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null);
                         else if (type.getKind() == TypeKind.DECLARED)
@@ -1306,6 +1312,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                             break;
                         default:
                             el = controller.getTrees().getElement(expPath);
+                            if (type.getKind() == TypeKind.ERROR && el.getKind().isClass()) {
+                                el = controller.getElements().getPackageElement(((TypeElement)el).getQualifiedName());
+                            }
                             if (el != null && el.getKind() == PACKAGE) {
                                 if (parent.getKind() == Tree.Kind.NEW_CLASS && ((NewClassTree)parent).getIdentifier() == fa && prefix != null) {
                                     String typeName = Utilities.getElementName(el, true) + "." + prefix; //NOI18N
@@ -2296,7 +2305,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return false;
                     switch (e.getKind()) {
                         case FIELD:
-                            if (((VariableElement)e).getConstantValue() == null)
+                            if (((VariableElement)e).getConstantValue() == null && !CLASS_KEYWORD.contentEquals(e.getSimpleName()))
                                 return false;
                         case ENUM_CONSTANT:
                             return tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t) &&
@@ -2314,7 +2323,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                 switch (e.getKind()) {
                     case FIELD:
                     case ENUM_CONSTANT:
-                        results.add(JavaCompletionItem.createVariableItem((VariableElement)e, type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType(), offset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e)));
+                        String name = e.getSimpleName().toString();
+                        if (CLASS_KEYWORD.equals(name))
+                            results.add(JavaCompletionItem.createKeywordItem(name, null, offset));
+                        else
+                            results.add(JavaCompletionItem.createVariableItem((VariableElement)e, type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType(), offset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e)));
                         break;
                     case CLASS:
                     case ENUM:
