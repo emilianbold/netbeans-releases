@@ -759,6 +759,10 @@ public class EditorContextImpl extends EditorContext {
                     
                     Scope scope = ci.getTreeUtilities().scopeFor(offset);
                     Element method = scope.getEnclosingMethod();
+                    if (method == null) {
+                        ops[0] = new Operation[] {};
+                        return ;
+                    }
                     Tree methodTree = SourceUtils.treeFor(ci, method);
                     CompilationUnitTree cu = ci.getCompilationUnit();
                     ExpressionScanner scanner = new ExpressionScanner(lineNumber, cu, ci.getTrees().getSourcePositions());
