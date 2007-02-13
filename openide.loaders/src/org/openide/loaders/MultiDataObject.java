@@ -762,8 +762,11 @@ public class MultiDataObject extends DataObject {
         synchronized (cookieSetLock) {
             if (cookieSet != null) return cookieSet;
 
-            // sets empty sheet and adds a listener to it
-            setCookieSet (CookieSet.createGeneric(getChangeListener()), false);
+            // generic cookie set with reference to data object and 
+            // a callback that updates FileObjects in its list.
+            CookieSet g = CookieSet.createGeneric(getChangeListener());
+            g.assign(DataObject.class, this);
+            setCookieSet (g, false);
             return cookieSet;
         }
     }
