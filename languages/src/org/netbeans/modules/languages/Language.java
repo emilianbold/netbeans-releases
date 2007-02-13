@@ -314,12 +314,8 @@ public class Language {
         while (it.hasNext ()) {
             String colorName = (String) it.next ();
             Object value = from.get (colorName);
-            if (value instanceof AttributeSet) {
-                SimpleAttributeSet as = new SimpleAttributeSet (
-                    (AttributeSet) from.get (colorName)
-                );
-                as.addAttribute (StyleConstants.NameAttribute, colorName);
-                to.put (colorName, as);
+            if (value instanceof List) {
+                to.put (colorName, value);
             } else {
                 Map newTo = (Map) to.get (colorName);
                 if (newTo == null) {
