@@ -119,7 +119,7 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
         task.put("Set Layout|GridBagLayout","setLayout(new java.awt.GridBagLayout());"); // NOI18N
         task.put("Set Layout|GridLayout","setLayout(new java.awt.GridLayout());"); // NOI18N
         task.put("Set Layout|Null Layout","setLayout(null);"); // NOI18N
-        task.put("Set Layout|Free Design","layout = new org.jdesktop.layout.GroupLayout(getContentPane());"); // NOI18N
+        task.put("Set Layout|Free Design",".GroupLayout(getContentPane());"); // NOI18N
         task.put("Set Layout|BorderLayout", "setLayout("); //setLayout("); // NOI18N
         
         for (Map.Entry<String,String> entry : task.entrySet()) {

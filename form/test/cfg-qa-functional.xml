@@ -94,6 +94,6 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
 
-    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true" />
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true" />
 </mconfig>
