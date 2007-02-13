@@ -153,7 +153,7 @@ public class SendJMSMessageAction extends NodeAction {
             final boolean[] isInterface = new boolean[1];
             try {
                 final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
-                if (elementHandle == null) {
+                if (javaSource == null || elementHandle == null) {
                     return false;
                 }
                 javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
