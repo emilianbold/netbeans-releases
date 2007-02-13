@@ -143,7 +143,7 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
      */
     public Object getDefaultValue() {
         if (propertyNames == null || propertyNames.isEmpty())
-            throw new IllegalStateException("Unable to obtain default value for this proeprty without property name");
+            throw new IllegalStateException("Unable to obtain default value for this property without property name");
         
         if (! (tempValue instanceof GroupValue))
             return readDefaultPropertyValue(propertyNames.iterator().next());
