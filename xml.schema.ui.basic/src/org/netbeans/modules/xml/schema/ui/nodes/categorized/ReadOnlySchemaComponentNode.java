@@ -35,14 +35,18 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import javax.swing.Action;
-import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
 import org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
@@ -166,12 +170,18 @@ public class ReadOnlySchemaComponentNode extends FilterNode {
     public Action[] getActions(boolean context) {
         ArrayList<Action> actionList = new ArrayList<Action>();
         Collections.addAll(actionList,super.getActions(context));
+       
         for(int i=0;i<actionList.size();) {
             Action a=actionList.get(i++);
-            if(a instanceof RefactorAction) {
+            String actionName =null;
+            if(a != null) {
+               actionName = (String)a.getValue(Action.NAME);
+            }
+            if(actionName != null && actionName.equals("Refactor") ) {
                 actionList.remove(a);
                 break;
             }
+          
         }
         return actionList.toArray(new Action[0]);
     }

@@ -35,8 +35,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
-import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
-import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+
+//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
 import org.netbeans.modules.xml.refactoring.ui.ReferenceableProvider;
 import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
 import org.netbeans.modules.xml.schema.model.Annotation;
@@ -59,6 +60,7 @@ import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.ui.actions.ShowSchemaAction;
+//import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
 import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
 import org.netbeans.modules.xml.xam.ui.customizer.CustomizerProvider;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
@@ -790,9 +792,13 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
             }
             actions.add(null);
             actions.add(SystemAction.get(GoToAction.class));
-            actions.add(SystemAction.get(FindUsagesAction.class));
+            //actions.add(SystemAction.get(FindUsagesAction.class));
+            //new action based on new refactoring API
+            actions.add(RefactoringActionsFactory.whereUsedAction());
             actions.add(null);
-            actions.add(SystemAction.get(RefactorAction.class));
+            //actions.add(SystemAction.get(RefactorAction.class));
+            //new action based on new refactoring API
+            actions.add(RefactoringActionsFactory.editorSubmenuAction());
             actions.add(null);
             actions.add(SystemAction.get(PropertiesAction.class));
         }

@@ -37,7 +37,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JTabbedPane;
 //import org.openide.awt.JPopupMenuPlus;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.xml.refactoring.ui.j.ui.CloseButtonTabbedPane;
+//import org.netbeans.modules.xml.refactoring.ui.j.ui.CloseButtonTabbedPane;
 
 /**
  *
@@ -302,10 +302,10 @@ public class QueryPanelContainer extends TopComponent
     private class CloseListener implements PropertyChangeListener {
         
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
-            if (CloseButtonTabbedPane.PROP_CLOSE.equals(
-                    evt.getPropertyName())) {
-                removePanel((JPanel) evt.getNewValue());
-            }
+         //   if (CloseButtonTabbedPane.PROP_CLOSE.equals(
+           //         evt.getPropertyName())) {
+            //    removePanel((JPanel) evt.getNewValue());
+            //}
         }
         
     }

@@ -24,6 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIComponent.ComponentType;
 import org.netbeans.modules.xml.axi.AXIContainer;
@@ -36,12 +37,12 @@ import org.netbeans.modules.xml.refactoring.CannotRefactorException;
 import org.netbeans.modules.xml.refactoring.DeleteRequest;
 import org.netbeans.modules.xml.refactoring.RefactoringManager;
 import org.netbeans.modules.xml.refactoring.RenameRequest;
-import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
-import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
+//import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
+//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
 import org.netbeans.modules.xml.refactoring.ui.ReferenceableProvider;
 import org.netbeans.modules.xml.refactoring.ui.j.spi.ui.DeleteRefactoringUI;
 import org.netbeans.modules.xml.refactoring.ui.j.spi.ui.RenameRefactoringUI;
-import org.netbeans.modules.xml.refactoring.ui.j.ui.RefactoringPanel;
+//import org.netbeans.modules.xml.refactoring.ui.j.ui.RefactoringPanel;
 import org.netbeans.modules.xml.refactoring.ui.views.WhereUsedView;
 import org.netbeans.modules.xml.schema.abe.InstanceDesignConstants;
 import org.netbeans.modules.xml.schema.abe.InstanceUIContext;
@@ -56,6 +57,7 @@ import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
 import org.netbeans.modules.xml.xam.ui.actions.ShowDesignAction;
 import org.netbeans.modules.xml.xam.ui.cookies.GetSuperCookie;
+import org.netbeans.modules.xml.nbprefuse.View;
 import org.openide.ErrorManager;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.NewAction;
@@ -67,6 +69,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -216,7 +219,11 @@ public abstract class ABEAbstractNode extends AbstractNode
                 //filter out refactor action if this is a readonly file
                 SystemAction[] ret = new SystemAction[ALL_ACTIONS.length];
                 for(int i = 0; i < ALL_ACTIONS.length; i++){
-                    if(ALL_ACTIONS[i] instanceof RefactorAction){
+                    String name = null;
+                    if(ALL_ACTIONS[i] != null)
+                        name = (String)ALL_ACTIONS[i].getValue(Action.NAME);
+                                
+                    if(name != null && name.equals("Refactor") ){
                         ret[i] = null;
                     }else{
                         ret[i] = ALL_ACTIONS[i];
@@ -243,8 +250,10 @@ public abstract class ABEAbstractNode extends AbstractNode
         null,
         SystemAction.get(GoToAction.class),
         null,
-        SystemAction.get(FindUsagesAction.class),
-        SystemAction.get(RefactorAction.class),
+       // SystemAction.get(FindUsagesAction.class),
+     //   SystemAction.get(RefactorAction.class),
+        (SystemAction)RefactoringActionsFactory.whereUsedAction(),
+        (SystemAction)RefactoringActionsFactory.editorSubmenuAction(),
         null,
         SystemAction.get(PropertiesAction.class)
     };
@@ -428,6 +437,7 @@ public abstract class ABEAbstractNode extends AbstractNode
             model.sync();
         } catch(CannotRefactorException ex) {
             // call rename refactoring UI
+           /*
             WhereUsedView wuv = new WhereUsedView(ref);
             RenameRefactoringUI ui = new RenameRefactoringUI(wuv, request);
             TopComponent activetc = TopComponent.getRegistry().getActivated();
@@ -435,7 +445,7 @@ public abstract class ABEAbstractNode extends AbstractNode
                 new RefactoringPanel(ui, activetc);
             } else {
                 new RefactoringPanel(ui);
-            }
+            }*/
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
@@ -491,7 +501,9 @@ public abstract class ABEAbstractNode extends AbstractNode
             model.sync();
         } catch(CannotRefactorException ex) {
             // call delete refactoring UI
-            SwingUtilities.invokeLater(new Runnable(){
+            //SwingUtilities.invokeLater();
+                    
+                    /*new Runnable(){
                 public void run() {
                     WhereUsedView wuv = new WhereUsedView(ref);
                     DeleteRefactoringUI ui = new DeleteRefactoringUI(wuv, ref);
@@ -502,7 +514,7 @@ public abstract class ABEAbstractNode extends AbstractNode
                         new RefactoringPanel(ui);
                     }
                 }
-            });
+            });*/
             
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

@@ -40,6 +40,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -116,7 +117,7 @@ public class SchemaUIHelper extends UIHelper{
     
     private Node createNode(final SchemaComponent sc) {
 	CategorizedSchemaNodeFactory nodeFactory = 
-	    new CategorizedSchemaNodeFactory(sc.getModel(), Lookup.EMPTY);
+	    new CategorizedSchemaNodeFactory(sc.getModel(), Lookups.singleton(sc));
 	return new FilteredSchemaNode(nodeFactory.createNode(sc),sc);
     }
     
@@ -132,6 +133,7 @@ public class SchemaUIHelper extends UIHelper{
                 DELEGATE_GET_ACTIONS |
                 DELEGATE_DESTROY);
 	    this.sc = sc;
+          
 	    DisplayInfoVisitor div = new DisplayInfoVisitor();
             DisplayInfo dInfo = div.getDisplayInfo(sc);       
             this.setShortDescription(dInfo.getCompType());  // Component type
