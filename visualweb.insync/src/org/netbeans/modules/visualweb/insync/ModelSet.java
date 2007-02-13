@@ -484,15 +484,12 @@ public abstract class ModelSet implements FileChangeListener {
             List urls1List = new ArrayList();
 
 			// Add design time jars from COMPLIBS
-            JsfProjectClassPathExtender jsfProjectClassPathExtender = (JsfProjectClassPathExtender) 
-                project.getLookup().lookup(JsfProjectClassPathExtender.class);
-            
             LibraryManager libraryManager = LibraryManager.getDefault();
             Library[] libraries = libraryManager.getLibraries();
             
             for (int i = 0; i < libraries.length; i++) {
                 Library library = libraries[i];
-                if (jsfProjectClassPathExtender.hasLibraryReference(library,
+                if (JsfProjectUtils.hasLibraryReference(project, library,
                         JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
                     // TODO The following hardcoded constants are defined in
                     // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider
