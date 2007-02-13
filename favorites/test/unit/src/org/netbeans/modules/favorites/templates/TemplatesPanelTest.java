@@ -20,12 +20,15 @@ package org.netbeans.modules.favorites.templates;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import org.netbeans.junit.*;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 
 /**
  * Tests creating/renaming/removing templates via TemplatesPanel.
@@ -93,5 +96,13 @@ public class TemplatesPanelTest extends NbTestCase {
         assertTrue ("Duplicate is template.", dobj.isTemplate ());
         assertEquals ("Template is in same folder as original.", dobj.getFolder (), dupl.getFolder ());
         assertTrue ("Name is derived from original.", dupl.getNodeDelegate ().getName ().startsWith (dobj.getNodeDelegate ().getName ()));
+    }
+    public void testIgnoresSimplefolders() throws Exception {
+        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        FileObject fo = FileUtil.createFolder(root, "Templates/SimpleFolder");
+        fo.setAttribute("simple", Boolean.FALSE);
+        Node n = TemplatesPanel.getTemplateRootNode();
+        Node[] arr = n.getChildren().getNodes(true);
+        assertEquals("Empty: " + Arrays.asList(arr), 0, arr.length);
     }
 }
