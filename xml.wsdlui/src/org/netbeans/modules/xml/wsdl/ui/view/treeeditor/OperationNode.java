@@ -30,9 +30,10 @@ import java.util.logging.Level;
 
 import javax.swing.Action;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 
-import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
-import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
+//import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
+//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
 import org.netbeans.modules.xml.wsdl.model.NotificationOperation;
 import org.netbeans.modules.xml.wsdl.model.OneWayOperation;
 import org.netbeans.modules.xml.wsdl.model.Operation;
@@ -97,9 +98,10 @@ public abstract class OperationNode extends WSDLExtensibilityElementNode {
 //        SystemAction.get(CreateBindingFromOperationAction.class),
         null,
         SystemAction.get(GoToAction.class),
-        SystemAction.get(FindUsagesAction.class),
+        //SystemAction.get(FindUsagesAction.class),
+        (SystemAction)RefactoringActionsFactory.whereUsedAction(),
         null,
-        SystemAction.get(RefactorAction.class),
+        (SystemAction)RefactoringActionsFactory.editorSubmenuAction(),
         null,
         SystemAction.get(PropertiesAction.class)
     };

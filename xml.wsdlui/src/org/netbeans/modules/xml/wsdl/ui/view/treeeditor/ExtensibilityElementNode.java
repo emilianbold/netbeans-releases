@@ -34,9 +34,10 @@ import java.util.List;
 
 import javax.swing.Action;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 
-import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
-import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
+//import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
+//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
@@ -285,9 +286,10 @@ public class ExtensibilityElementNode extends WSDLNamedElementNode{
             }
             actions.add(SystemAction.get(GoToAction.class));
             if (isNamedReferenceable()) {
-                actions.add(SystemAction.get(FindUsagesAction.class));
+               // actions.add(SystemAction.get(FindUsagesAction.class));
+                actions.add(RefactoringActionsFactory.whereUsedAction());
                 actions.add(null);
-                actions.add(SystemAction.get(RefactorAction.class));
+                actions.add(RefactoringActionsFactory.editorSubmenuAction());
             }
             actions.add(null);
             actions.add(SystemAction.get(PropertiesAction.class));

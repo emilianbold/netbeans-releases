@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.xml.nbprefuse.util.GraphUtilities;
 import org.openide.filesystems.FileObject;
 import prefuse.Visualization;
@@ -189,7 +190,7 @@ public class FindUsagesFocusControl extends NbFocusControl{
                 
                 // Use Object instead of Component in order
                 //  to remove dependency on XAM module
-                else if (item.canGet(AnalysisConstants.XAM_COMPONENT, Object.class)) {
+              /*  else if (item.canGet(AnalysisConstants.XAM_COMPONENT, Object.class)) {
                     Object comp = item.get(AnalysisConstants.XAM_COMPONENT);
                     assert item.canGet(
                             AnalysisConstants.OPENIDE_NODE, org.openide.nodes.Node.class):
@@ -205,6 +206,13 @@ public class FindUsagesFocusControl extends NbFocusControl{
                                 "");    //NOI18N
                         preferredAction.actionPerformed(event);
                     }
+                }*/
+                
+                else if (item.canGet(AnalysisConstants.REFACTORING_ELEMENT, RefactoringElement.class)) {
+                    RefactoringElement comp = (RefactoringElement) item.get(AnalysisConstants.REFACTORING_ELEMENT);
+                    
+                   // if(comp != null)
+                      //  comp.openInEditor();
                 }
   
             if (item instanceof NodeItem){
@@ -379,6 +387,6 @@ private Object getGraphNodeUserObject(NodeItem item ){
     if (fo != null) {
         return fo;
     }
-    return item.get(AnalysisConstants.XAM_COMPONENT);
+    return item.get(AnalysisConstants.USER_OBJECT);
 }
 }

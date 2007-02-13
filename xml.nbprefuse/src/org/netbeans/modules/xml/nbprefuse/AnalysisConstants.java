@@ -77,7 +77,7 @@ public interface AnalysisConstants {
     public static final String GRAPH_GROUP_AGGR = "aggregates";
 
     public static final int DISPLAY_PREFERRED_WIDTH = 300;
-    public static final int DISPLAY_PREFERRED_HEIGHT = 200;
+    public static final int DISPLAY_PREFERRED_HEIGHT =200;
 
     // named Visualization ActionLists and Actions
     public static final String ACTION_UPDATE = "action-update";      //NOI18N
@@ -145,5 +145,8 @@ public interface AnalysisConstants {
     // java.util.prefs.Preferences keys
     public static final String PREFERENCES_XML_REFACTORING_PREVIEW_ALL =  
             "preferences-xml-refactoring-preview-all";   //NOI18N   boolean
+    
+    public static final String USER_OBJECT = "user-obj";
+    public static final String REFACTORING_ELEMENT = "refactor-element";
 
 }

@@ -71,7 +71,7 @@ public final class PopupMouseControl extends ControlAdapter {
         }
         
         private boolean hasActions(){
-            org.openide.nodes.Node displayNode = null;
+        /*    org.openide.nodes.Node displayNode = null;
             if (vItem.canGet(AnalysisConstants.OPENIDE_NODE, 
                     org.openide.nodes.Node.class)) {
                 displayNode = (org.openide.nodes.Node)
@@ -81,13 +81,13 @@ public final class PopupMouseControl extends ControlAdapter {
                 }
                 Action[] actions = displayNode.getActions(false);
                 return (actions != null && actions.length > 0);
-            }
+            }*/
             return false;
         }
         
 	private JPopupMenu createPopup() {
 	    JPopupMenu menu = null;
-	    if (vItem.canGet(AnalysisConstants.OPENIDE_NODE, 
+	    /*if (vItem.canGet(AnalysisConstants.OPENIDE_NODE, 
                     org.openide.nodes.Node.class)) {
 		org.openide.nodes.Node displayNode = null;
                 displayNode = (org.openide.nodes.Node)
@@ -95,7 +95,7 @@ public final class PopupMouseControl extends ControlAdapter {
 		if (displayNode != null) {
 		    menu = displayNode.getContextMenu();
 		}
-	    }
+	    }*/
 	    return menu == null ? new JPopupMenu() : menu;
 	}
 
