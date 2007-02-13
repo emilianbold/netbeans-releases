@@ -97,7 +97,7 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
         component.add (editor);
         provider.notifyOpened (this, widget, editor);
 
-        Rectangle rectangle = widget.getScene ().convertSceneToView (widget.convertLocalToScene (widget.getPreferredBounds ()));
+        Rectangle rectangle = widget.getScene ().convertSceneToView (widget.convertLocalToScene (widget.getBounds ()));
 
         Point center = GeomUtil.center (rectangle);
         Dimension size = editor.getMinimumSize ();
