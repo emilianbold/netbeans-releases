@@ -745,8 +745,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }    
        
     private void initStorage() {
-        String userDir = System.getProperty("netbeans.user");                                       // NOI18N                
-        storage = new File(new File (userDir , "cache"), "localstorage");                           // NOI18N        
+        String userDir = System.getProperty("netbeans.user");                   // NOI18N                
+        storage = new File(new File (userDir , "cache"), "localstorage");       // NOI18N                    
         if(!storage.exists()) {
             storage.mkdirs();
         }        
