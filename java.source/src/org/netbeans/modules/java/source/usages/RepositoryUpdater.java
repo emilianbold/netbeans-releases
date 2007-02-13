@@ -182,6 +182,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
     }
     
+    public synchronized boolean isScanInProgress() {
+        return this.noSubmited > 0;
+    }
+    
     public synchronized void waitScanFinished () throws InterruptedException {
         while (this.noSubmited > 0 ) {
             this.wait();

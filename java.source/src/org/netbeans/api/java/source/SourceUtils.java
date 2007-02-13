@@ -615,6 +615,13 @@ out:                for (URL e : roots) {
     
     
     /**
+     * Tests whether the initial scan is in progress.
+     */
+    public static boolean isScanInProgress () {
+        return RepositoryUpdater.getDefault().isScanInProgress();
+    }
+
+    /**
      * Waits for the end of the initial scan, this helper method 
      * is designed for tests which require to wait for end of initial scan.
      * @throws InterruptedException is thrown when the waiting thread is interrupted.

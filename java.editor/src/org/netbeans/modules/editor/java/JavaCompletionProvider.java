@@ -234,6 +234,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                             js = JavaSource.forFileObject(fo);
                     }
                     if (js != null) {
+                        if (SourceUtils.isScanInProgress())
+                            resultSet.setWaitText(NbBundle.getMessage(JavaCompletionProvider.class, "scanning-in-progress")); //NOI18N
                         js.runUserActionTask(this, (queryType & COMPLETION_QUERY_TYPE) == 0);
                         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                             if (results != null)
