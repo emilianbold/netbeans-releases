@@ -717,7 +717,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         props.put(prefix+"platform.bootclasspath", device == null ? classpath.toString() : device.sortClasspath(classpath.toString())); //NOI18N
         props.put(prefix+"abilities", encodeAbilities(abilities)); //NOI18N
         props.put(prefix+"platform.type", type); //NOI18N
-        props.put(prefix+"platform.trigger", "cldc"); //NOI18N
+        props.put(prefix+"platform.trigger", "CLDC"); //NOI18N
         return props;
     }
     
