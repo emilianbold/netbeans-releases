@@ -229,6 +229,8 @@ public class WhereUsedView implements View, PropertyChangeListener {
                 display.setSize(dim.width, dim.height);
             }
             
+          //  display.setSize(740, 500);
+            //viewer.getPanel().setSize(display.getSize());
             this.displayPanel = new JPanel(new BorderLayout());
             displayPanel.add(display, BorderLayout.CENTER);
             viewer.addDisplayPanel(displayPanel);
@@ -540,7 +542,8 @@ public class WhereUsedView implements View, PropertyChangeListener {
             Iterator it = allItems.tuples();
             while (it.hasNext()){
                 Tuple n = (Tuple)it.next();
-                Component sc = (Component)n.get(AnalysisConstants.XAM_COMPONENT);
+               // Component sc = (Component)n.get(AnalysisConstants.XAM_COMPONENT);
+                Object sc = n.get(AnalysisConstants.USER_OBJECT);
                 FileObject fo = (FileObject)n.get(AnalysisConstants.FILE_OBJECT);
                 if (sc == newVal || fo == newVal) {
                     ts.setTuple(n);
