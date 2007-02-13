@@ -777,7 +777,10 @@ out:                for (URL e : roots) {
         final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>> ();
         for (FileObject root : sourceRoots) {
             try {
-                ClasspathInfo cpInfo = ClasspathInfo.create(root);
+                ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
+                ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
+                ClassPath srcPath = ClassPathSupport.createClassPath(new FileObject[] {root});
+                ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, srcPath);
                 final Set<ElementHandle<TypeElement>> classes = cpInfo.getClassIndex().getDeclaredTypes("", ClassIndex.NameKind.PREFIX, EnumSet.of(ClassIndex.SearchScope.SOURCE));
                 JavaSource js = JavaSource.create(cpInfo);
                 js.runUserActionTask(new CancellableTask<CompilationController>() {
