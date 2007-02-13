@@ -241,14 +241,16 @@ Microsystems, Inc. All Rights Reserved.
                   <file name="DeleteAction.instance">
                     <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
                   </file>
-                  <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
-                  <file name="RenameAction.instance">
+		  <!-- Disable Rename action for M7 -->
+                  <!-- attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" / -->
+                  <!-- file name="RenameAction.instance" -->
                     <!-- <RAVE> Replacing the original action instance by insync impl -->
                     <!-- <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" /> -->
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.visualweb.insync.faces.refactoring.JsfJspRenameAction" />
+                    <!-- attr name="instanceClass" stringvalue="org.netbeans.modules.visualweb.insync.faces.refactoring.JsfJspRenameAction" / -->
                     <!-- </RAVE> -->
-                  </file>
-                  <attr boolvalue="true" name="RenameAction.instance/jsp-project-separator-6.instance" />
+                  <!-- /file -->
+                  <!-- attr boolvalue="true" name="RenameAction.instance/jsp-project-separator-6.instance" / -->
+                  <attr boolvalue="true" name="DeleteAction.instance/jsp-project-separator-6.instance" />             
                   <file name="jsp-project-separator-6.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
                   </file>
