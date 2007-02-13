@@ -815,7 +815,7 @@ public class SecurityPolicyModelHelper {
         if ("From".equals(name)) return new MessageHeader(MessageHeader.ADDRESSING_FROM);           //NOI18N
         if ("FaultTo".equals(name)) return new MessageHeader(MessageHeader.ADDRESSING_FAULTTO);     //NOI18N
         if ("ReplyTo".equals(name)) return new MessageHeader(MessageHeader.ADDRESSING_REPLYTO);     //NOI18N
-        if ("MessageId".equals(name)) return new MessageHeader(MessageHeader.ADDRESSING_MESSAGEID); //NOI18N
+        if ("MessageID".equals(name)) return new MessageHeader(MessageHeader.ADDRESSING_MESSAGEID); //NOI18N
         if ("RelatesTo".equals(name)) return new MessageHeader(MessageHeader.ADDRESSING_RELATESTO); //NOI18N
         if ("Action".equals(name)) return new MessageHeader(MessageHeader.ADDRESSING_ACTION);       //NOI18N
         if ("AckRequested".equals(name)) return new MessageHeader(MessageHeader.RM_ACKREQUESTED);   //NOI18N
@@ -852,7 +852,7 @@ public class SecurityPolicyModelHelper {
             h.setNamespace(Addressing10QName.ADDRESSING10_NS_URI);
         }
         if (MessageHeader.ADDRESSING_MESSAGEID.equals(item)) {
-            h.setName("MessageId"); //NOI18N
+            h.setName("MessageID"); //NOI18N
             h.setNamespace(Addressing10QName.ADDRESSING10_NS_URI);
         }
         if (MessageHeader.ADDRESSING_RELATESTO.equals(item)) {
