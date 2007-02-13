@@ -299,12 +299,12 @@ public class Bean extends BeansNode {
      * @return The new name, after any fixup or numbering. Null if naming failed.
      */
     public String setName(String newname, boolean autoNumber, DesignBean liveBean) {
-        if (autoNumber)
+        if (autoNumber) {
             newname = unit.nextAvailableName(newname, this, false);
-        else
-            if (!unit.isBeanNameAvailable(newname, this))
-                return null;
-
+        }else if (!unit.isBeanNameAvailable(newname, this)) {
+            return null;
+        }
+        
         String oldname = this.name;
         if (!oldname.equals(newname)) {
             //System.err.println("B.setName " + oldname + "=>" + name);
@@ -313,58 +313,38 @@ public class Bean extends BeansNode {
             String setterName = Naming.setterName(newname);
             
             LiveUnit[] units = (LiveUnit[]) ((FacesModelSet)unit.getModel().getOwner()).getDesignContexts();
-            JMIUtils.beginTrans(true);
-            boolean rollback = true;
-            try {
-                for (int i=0; i < units.length; i++) {
-                    LiveUnit lu = units[i];
-                    String description = NbBundle.getMessage(Bean.class, "RenameId", oldname);  //NOI18N
-                    //UndoEvent event = lu.getSourceUnit().model.writeLock(description);
-                    JMIRefactor.IdentRenamer renamer = null;
-                    JavaUnit ju = lu.getBeansUnit().getJavaUnit();
-                    if(lu.getSourceUnit() == unit) {
-                        renamer = new JMIRefactor.IdentRenamer(oldname, newname);
-                        renamer.apply(ju.getJavaClass());
-
-                        // rename getter and setter methods
-                        renamer = new JMIRefactor.IdentRenamer(Naming.getterName(oldname), Naming.getterName(newname));
-                        renamer.apply(ju.getJavaClass());
-                        
-                        renamer = new JMIRefactor.IdentRenamer(Naming.setterName(oldname), Naming.setterName(newname));
-                        renamer.apply(ju.getJavaClass());
-                    } else {
-						//To take care of cross referencing accessors
-                        //Example: getSessionBean1().getPersonRowSet()
-                        String parentMethodInvocationName = Naming.getterName(unit.getBeanName()); //NOI18N
-                        
-                        // getter
-                        String oName = Naming.getterName(oldname);
-                        String nName = Naming.getterName(newname);
-                        
-                        JMIRefactor.MethodInvocationRenamer methodInvocationRenamer =
+            for (int i=0; i < units.length; i++) {
+                LiveUnit lu = units[i];
+                String description = NbBundle.getMessage(Bean.class, "RenameId", oldname);  //NOI18N
+                //UndoEvent event = lu.getSourceUnit().model.writeLock(description);
+                JMIRefactor.IdentRenamer renamer = null;
+                JavaUnit ju = lu.getBeansUnit().getJavaUnit();
+                if(lu.getSourceUnit() == unit) {
+                    ju.getJavaClass().renameProperty(oldname, newname);
+                } else {
+                    /*
+                    //To take care of cross referencing accessors
+                    //Example: getSessionBean1().getPersonRowSet()
+                    String parentMethodInvocationName = Naming.getterName(unit.getBeanName()); //NOI18N
+                    
+                    // getter
+                    String oName = Naming.getterName(oldname);
+                    String nName = Naming.getterName(newname);
+                    
+                    JMIRefactor.MethodInvocationRenamer methodInvocationRenamer =
                             new JMIRefactor.MethodInvocationRenamer(parentMethodInvocationName, oName, nName);
-                        methodInvocationRenamer.apply(ju.getJavaClass());
-                        
-                        // setter
-                        oName = Naming.setterName(oldname);
-                        nName = Naming.setterName(newname);
-                        
-                        methodInvocationRenamer =
+                    methodInvocationRenamer.apply(ju.getJavaClass());
+                    
+                    // setter
+                    oName = Naming.setterName(oldname);
+                    nName = Naming.setterName(newname);
+                    
+                    methodInvocationRenamer =
                             new JMIRefactor.MethodInvocationRenamer(parentMethodInvocationName, oName, nName);
-                        methodInvocationRenamer.apply(ju.getJavaClass());
-                    }                                        
-                    //To take care of VB expressions
-                    //Example: getValue(#{SessionBean1.personRowSet})
-                    String oldLiteral = "#{" + unit.getBeanName() + "." + oldname + "}"; //NOI18N
-                    String newLiteral = "#{" + unit.getBeanName() + "." + newname + "}"; //NOI18N
-                    JMIRefactor.LiteralRenamer litRenamer = new JMIRefactor.LiteralRenamer(oldLiteral, newLiteral);
-                    litRenamer.apply(ju.getJavaClass());
+                    methodInvocationRenamer.apply(ju.getJavaClass());
+                     * */
                 }
-                rollback = false;
-            }finally {
-                //lu.getSourceUnit().model.writeUnlock(event);
-                JMIUtils.endTrans(rollback);
-            }
+             }
         }
         return newname;
     }

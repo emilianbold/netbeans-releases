@@ -21,7 +21,6 @@ package org.netbeans.modules.visualweb.insync.java;
 
 import com.sun.rave.designtime.ContextMethod;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -31,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -40,6 +40,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeMaker;
@@ -49,6 +50,7 @@ import org.netbeans.modules.visualweb.insync.beans.Naming;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.filesystems.FileObject;
+import org.netbeans.api.java.classpath.ClassPath;
 
 /**
  *
@@ -208,7 +210,6 @@ public class JavaClass {
                 TypeElement typeElement = typeElementHandle.resolve(wc);
                 ClassTree ctree = wc.getTrees().getTree(typeElement);
                 ClassTree newctree = ctree;
-                TreeMakerUtils utils = new TreeMakerUtils(wc);
                 VariableElement varElem = getField(wc, name);
                 if(varElem != null) {
                     newctree = make.removeClassMember(ctree, wc.getTrees().getTree(varElem));
@@ -227,8 +228,50 @@ public class JavaClass {
                 return null;
             }
         }, fObj);    
-    }    
-
+    }
+    
+    /*
+     * Renames field, getter and setter and its usage given the property new and old names
+     */    
+    public void renameProperty(final String name, final String newName) {
+        WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
+            public Object run(WorkingCopy wc) {
+                TypeElement typeElement = typeElementHandle.resolve(wc);
+                ClassTree ctree = wc.getTrees().getTree(typeElement);
+                List<Element> elemsToRename = new ArrayList<Element>();
+                Refactor.ElementRenamer elementRenamer = null;
+                VariableElement varElem = getField(wc, name);
+                if(varElem != null) {
+                    elementRenamer = new Refactor.ElementRenamer(wc, newName);
+                    elementRenamer.scan(wc.getCompilationUnit(), varElem);
+                }
+                ExecutableElement getElem = getMethod(wc, Naming.getterName(name), new Class[0]);
+                if(getElem != null) {
+                    elementRenamer = new Refactor.ElementRenamer(wc, Naming.getterName(newName));
+                    elementRenamer.scan(wc.getCompilationUnit(), getElem);
+                    TypeMirror type = getElem.getReturnType();
+                    ExecutableElement setElem = getMethod(wc, Naming.setterName(name), Collections.<TypeMirror>singletonList(type));
+                    if(setElem != null) {
+                        elementRenamer = new Refactor.ElementRenamer(wc, Naming.setterName(newName));
+                        elementRenamer.scan(wc.getCompilationUnit(), setElem);
+                    }
+                }
+                //To take care of VB expressions, Ex:- getValue(#{SessionBean1.personRowSet})                
+                //renamePropertyBindingExpression(wc, name, newName);
+                return null;
+            }
+        }, fObj);    
+    }
+    
+    public void renamePropertyBindingExpression(WorkingCopy wc, String name, String newName) {
+        String oldLiteral = "#{" + getShortName() + "." + name + "}"; //NOI18N
+        String newLiteral = "#{" + getShortName() + "." + newName + "}"; //NOI18N
+        new Refactor.LiteralRenamer(wc, oldLiteral, newLiteral).scan(wc.getCompilationUnit(), null);
+    }
+    
+    /*
+     *  Internal method to add a method, returns element handle which can be cached by the caller
+     */ 
     private ElementHandle<ExecutableElement> addMethod(final ContextMethod cm, final String retType) {
         return (ElementHandle<ExecutableElement>)WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
             public Object run(WorkingCopy wc) {
@@ -471,7 +514,6 @@ public class JavaClass {
     public static JavaClass getJavaClass(final FileObject fObj) {
         return (JavaClass)ReadTaskWrapper.execute(new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
-                CompilationUnitTree cu = cinfo.getCompilationUnit();
                 String pkgName = JsfProjectUtils.getProjectProperty(FileOwnerQuery.getOwner(fObj), 
                         JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE);
                 TypeElement element = cinfo.getElements().getTypeElement(pkgName + "." + fObj.getName());
