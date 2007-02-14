@@ -20,9 +20,11 @@
 package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -115,7 +117,21 @@ org.netbeans.api.debugger.jpda.Field {
     
     protected void setValue (Value value) throws InvalidExpressionException {
         try {
-            objectReference.setValue (field, value);
+            boolean set = false;
+            if (objectReference != null) {
+                objectReference.setValue (field, value);
+                set = true;
+            } else {
+                ReferenceType rt = field.declaringType();
+                if (rt instanceof ClassType) {
+                    ClassType ct = (ClassType) rt;
+                    ct.setValue(field, value);
+                    set = true;
+                }
+            }
+            if (!set) {
+                throw new InvalidExpressionException(field.toString());
+            }
         } catch (InvalidTypeException ex) {
             throw new InvalidExpressionException (ex);
         } catch (ClassNotLoadedException ex) {
