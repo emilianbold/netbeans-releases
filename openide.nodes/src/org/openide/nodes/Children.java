@@ -698,7 +698,7 @@ public abstract class Children extends Object {
     */
     final Node[] justComputeNodes() {
         if (map == null) {
-            map = new HashMap<Entry,Info>(17);
+            map = Collections.synchronizedMap(new HashMap<Entry,Info>(17));
 
             //      debug.append ("Map initialized\n"); // NOI18N
             //      printStackTrace();
@@ -731,18 +731,19 @@ public abstract class Children extends Object {
     * it, if not registered yet.
     */
     private Info findInfo(Entry entry) {
-        Info info = map.get(entry);
+        synchronized(map) {
+            Info info = map.get(entry);
 
-        if (info == null) {
-            info = new Info(entry);
-            map.put(entry, info);
+            if (info == null) {
+                info = new Info(entry);
+                map.put(entry, info);
 
-            //      debug.append ("Put: " + entry + " info: " + info); // NOI18N
-            //      debug.append ('\n');
-            //      printStackTrace();
+                //      debug.append ("Put: " + entry + " info: " + info); // NOI18N
+                //      debug.append ('\n');
+                //      printStackTrace();
+            }
+            return info;
         }
-
-        return info;
     }
 
     //
