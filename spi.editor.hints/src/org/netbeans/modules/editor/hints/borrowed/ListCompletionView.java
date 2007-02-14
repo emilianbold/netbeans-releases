@@ -69,7 +69,6 @@ public class ListCompletionView extends JList implements ListCellRenderer {
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) { 
         Component c  = defaultRenderer.getListCellRendererComponent( list, value instanceof Fix ? ((Fix) value).getText() : value.toString(), index, isSelected, cellHasFocus );
         defaultRenderer.setIcon( icon );
-        defaultRenderer.setHtml(true);
         defaultRenderer.setParentFocused(true);
         defaultRenderer.setRenderStyle(HtmlRenderer.STYLE_CLIP);
         c.setBackground(list.getBackground());
