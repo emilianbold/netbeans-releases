@@ -35,8 +35,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.game.integration.res.Bundle"/>
                 <attr name="SystemFileSystem.icon" stringvalue="nbresloc:org/netbeans/modules/vmd/game/integration/res/canvas_16.png"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mvd.ui.wizard.FileWizardIterator.singleton"/>
-                <attr name="isMIDletTemplate" boolvalue="true"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
             </file>
