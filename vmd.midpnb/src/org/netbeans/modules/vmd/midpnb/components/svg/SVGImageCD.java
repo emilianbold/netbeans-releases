@@ -20,6 +20,9 @@
 package org.netbeans.modules.vmd.midpnb.components.svg;
 
 import org.netbeans.modules.vmd.api.codegen.*;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
+import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
+import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodeSupport;
@@ -27,18 +30,15 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.imagechooser.PropertyEditorImageChooser;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
-import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
-import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
 
 /**
  *
@@ -108,7 +108,7 @@ public class SVGImageCD extends ComponentDescriptor {
                     section.switchToEditable(component.getComponentID() + "-@java.io.IOException"); // NOI18N
                     section.getWriter().write("e.printStackTrace ();\n").commit(); // NOI18N
                     section.switchToGuarded();
-                    writer.write("}\n"); // NOI18N
+                    section.getWriter ().write("}\n"); // NOI18N
                 }
             }
             public List<String> getParameters() {
