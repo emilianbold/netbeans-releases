@@ -483,14 +483,15 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             
                             String messageName = operation.getOutput().getMessage().getName();
                             Message message = definition.getMessage( messageName );
-                            for( Part part : message.getParts()) {                                                                
-                                Element e = getReturnElement( definition.getSchemaHolder().getSchemaElement( part.getElementName()));
+                            for( Part part : message.getParts()) {
+                                Element element = definition.getSchemaHolder().getSchemaElement( part.getElementName());
+                                returnTypeName = element.getName().getLocalPart();
+                                Element e = getReturnElement( element );
                                 String javaTypeName = getJavaTypeName( e );
                                 
                                 off.write( "\n" );
                                 off.write( "public " + javaTypeName + " " );
-                                returnTypeName = e.getName().getLocalPart();
-                                usedParameterTypes.add( e.getName());
+                                usedParameterTypes.add( element.getName());
                                 break;
                             }
 
@@ -575,9 +576,9 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                     boolean isArray = e.getMaxOccurs() > 1;
                                     if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
                                         if( !isArray ) {
-                                            off.write( "return " + unwrapPrimitiveType( e, "resultObj" ) + ";\n");
+                                            off.write( "return " + unwrapPrimitiveType( e, "((Object []) resultObj )[0] " ) + ";\n");
                                         } else {
-                                            off.write( "return " + type.getJavaTypeName() + "_ArrayfromObject((Object []) resultObj );\n" );
+                                            off.write( "return " + type.getJavaTypeName() + "_ArrayfromObject((Object []) resultObj[0] );\n" );
                                             fromObjects.add( e );
                                         }
                                     } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {
@@ -609,9 +610,6 @@ public class WSDL2JavaImpl implements WSDL2Java {
                         Set<SchemaConstruct> from = new HashSet();
                         for( Element e : fromObjects ) {
                             from.addAll( traverseObjectElements( e, from ));
-                        }
-                        for( SchemaConstruct sc : from ) {
-                            System.err.println(" ~~~ " + sc.getName().getLocalPart());
                         }
                         // toObject methods
                         Set<String> usedToMethods = new HashSet();

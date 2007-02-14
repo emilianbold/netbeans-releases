@@ -304,9 +304,12 @@ public class SchemaParser extends DefaultHandler {
 //                // add as type
 //                type = new Type( qn );
 //                schemaHolder.addSchemaType( type );
+                String typeName = attributes.getValue( "name" );
+                if( typeName == null ) typeName = "";
+                
                 validationResults.add( new WSDL2Java.ValidationResult(
-                        WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Simple type is not supported by JSR-172" ));
-                throw new SAXException( "", new SchemaException( "Invalid type 'simple type'" )); 
+                        WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Simple type is not supported by JSR-172 - " + typeName ));
+//                throw new SAXException( "", new SchemaException( "Invalid type 'simple type'" )); 
             }
 //            // Restriction
 //            if( localName.equals( SchemaConstants.RESTRICTION.getLocalPart())) {
