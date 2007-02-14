@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -340,7 +340,7 @@ public class WizardDescriptor extends DialogDescriptor {
     
     private <Data> WizardDescriptor(SettingsAndIterator<Data> data) {
         super("", "", true, DEFAULT_OPTION, null, CLOSE_PREVENTER); // NOI18N
-
+        
         this.data = data;
 
         baseListener = new Listener();
@@ -955,7 +955,7 @@ public class WizardDescriptor extends DialogDescriptor {
             // none waitingComponent --> don't change cursor to normal
             return;
         }
-
+        
         Window parentWindow = SwingUtilities.getWindowAncestor((Component) getMessage());
         if (parentWindow != null) {
             parentWindow.setEnabled (true);
@@ -1842,9 +1842,13 @@ public class WizardDescriptor extends DialogDescriptor {
                         Runnable performFinish = new Runnable () {
                             public void run () {
                                 err.log (Level.FINE, "performFinish entry."); // NOI18N
+                                Object oldValue = getValue();
+                                    
                                 // do instantiate
                                 try {
                                     callInstantiate();
+                                    setValueWithoutPCH(OK_OPTION);
+                                    resetWizard();
                                 } catch (IOException ioe) {
                                     // notify to log
                                     err.log(Level.FINE, null, ioe);
@@ -1857,12 +1861,19 @@ public class WizardDescriptor extends DialogDescriptor {
 
                                     // if validation failed => cannot move to next panel
                                     return;
+                                } catch (RuntimeException x) {
+                                    // notify to log
+                                    err.log(Level.FINE, null, x);
+
+                                    setValueWithoutPCH(NEXT_OPTION);
+                                    updateStateWithFeedback();
+
+                                    // notify user by the wizard's status line
+                                    putProperty(PROP_ERROR_MESSAGE, x.getLocalizedMessage());
+
+                                    // if validation failed => cannot move to next panel
+                                    return;
                                 }
-                                Object oldValue = getValue();
-                                setValueWithoutPCH(OK_OPTION);
-
-                                resetWizard();
-
                                 firePropertyChange(PROP_VALUE, oldValue, OK_OPTION);
                                 
                                 SwingUtilities.invokeLater (new Runnable () {
@@ -1902,7 +1913,13 @@ public class WizardDescriptor extends DialogDescriptor {
                 setValueWithoutPCH(CANCEL_OPTION);
 
                 if (Arrays.asList(getClosingOptions()).contains(cancelButton)) {
-                    resetWizard();
+                    try {
+                        resetWizard();
+                    } catch (RuntimeException x) {
+                        // notify to log
+                        err.log(Level.FINE, null, x);
+                    }
+
                 }
 
                 firePropertyChange(PROP_VALUE, oldValue, CANCEL_OPTION);

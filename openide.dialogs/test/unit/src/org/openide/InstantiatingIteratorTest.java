@@ -13,16 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide;
 
 
-import java.lang.reflect.InvocationTargetException;
 import org.netbeans.junit.*;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
@@ -32,12 +29,10 @@ import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.JLabel;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.*;
 import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor.Task;
 
 /** Testing functional implementation calling the methods to interface <code>WizardDescriptor.InstantiatingIterator</code>
  * from WizardDescriptor.
@@ -61,6 +56,7 @@ public class InstantiatingIteratorTest extends NbTestCase {
     protected int attachedInPanel = 0;
     protected boolean checkOrder = false;
     protected boolean shouldThrowException = false;
+    protected boolean uninitializeShouldThrowException = false;
     protected Set/*<ChangeListener>*/ changeListenersInIterator = new HashSet ();
     protected Set/*<ChangeListener>*/ changeListenersInPanel = new HashSet ();
     protected boolean checkIfInAWT;
@@ -171,6 +167,17 @@ public class InstantiatingIteratorTest extends NbTestCase {
         } catch (IllegalStateException ise) {
             // correct behavior
         }
+        assertEquals ("The state is same as before instantiate()", state, wd.getValue ());
+    }
+    
+    public void testFinishOptionWhenUninitializeThrowsError () throws Exception {
+        shouldThrowException = false;
+        uninitializeShouldThrowException = true;
+
+        wd.doFinishClick();
+        Object state = wd.getValue();
+        finishWizard (wd);
+        
         assertEquals ("The state is same as before instantiate()", state, wd.getValue ());
     }
     
@@ -296,6 +303,9 @@ public class InstantiatingIteratorTest extends NbTestCase {
             initialized = Boolean.TRUE;
         }
         public void uninitialize (WizardDescriptor wizard) {
+            if (uninitializeShouldThrowException) {
+                throw new RuntimeException ("test");
+            }
             helpSet.clear ();
             initialized = Boolean.FALSE;
             panels = null;
