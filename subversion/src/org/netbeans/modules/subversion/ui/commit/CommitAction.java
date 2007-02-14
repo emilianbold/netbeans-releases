@@ -55,7 +55,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Petr Kuzel
  */
-public class CommitAction extends ContextAction {
+    public class CommitAction extends ContextAction {
     
     static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
 
@@ -84,9 +84,6 @@ public class CommitAction extends ContextAction {
             if(tag!=null && !tag.equals("")) {
                 tagsFiles.add(roots[i]);
             }
-        }
-        if(tagsFiles.size() > 0) {
-            
         }
         
         File[][] split = Utils.splitFlatOthers(roots);
