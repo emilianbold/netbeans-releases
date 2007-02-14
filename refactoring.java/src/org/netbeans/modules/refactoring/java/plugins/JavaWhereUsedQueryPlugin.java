@@ -72,15 +72,15 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     }
     
     public Problem preCheck() {
-        Problem p = isElementAvail(getSearchHandle(), refactoring.getContext().lookup(CompilationInfo.class));
-        if (p != null)
-            return p;
+//        Problem p = isElementAvail(getSearchHandle(), refactoring.getContext().lookup(CompilationInfo.class));
+//        if (p != null)
+//            return p;
         
 //        if (!((jmiObject instanceof Feature) || (jmiObject instanceof Variable) || (jmiObject instanceof JavaPackage) || (jmiObject instanceof TypeParameter)) ) {
 //            return new Problem(true, NbBundle.getMessage(WhereUsedQuery.class, "ERR_WhereUsedWrongType"));
 //        }
         
-        return p;
+        return null;
     }
     
     private Set<FileObject> getRelevantFiles(final TreePathHandle tph) {
