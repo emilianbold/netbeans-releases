@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <bindings>
     <bind actionName="abbrev-reset" key="S-SPACE"/>
+    <bind actionName="all-completion-show" key="DO-SPACE"/>
     <bind actionName="annotations-cycling" key="DS-C"/>
     <bind actionName="caret-backward" key="LEFT"/>
     <bind actionName="caret-backward" key="KP_LEFT"/>

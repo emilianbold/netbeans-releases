@@ -22,6 +22,7 @@ Microsystems, Inc. All Rights Reserved.
 <bindings>
     <bind actionName="abbrev-expand" key="S-SPACE"/>    
     <bind actionName="adjust-window-center" key="D-U$D-L"/>
+    <bind actionName="all-completion-show" key="DO-SPACE"/>
     <bind actionName="annotations-cycling" key="DS-C"/>
     <bind actionName="caret-backward" key="D-B"/>
     <bind actionName="caret-backward" key="LEFT"/>
