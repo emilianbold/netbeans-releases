@@ -22,12 +22,15 @@ package org.netbeans.modules.vmd.midp.palette;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.palette.PaletteProvider;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.palette.wizard.AddToPaletteWizardAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
+import org.openide.util.actions.SystemAction;
 
 import javax.swing.*;
 import java.io.IOException;
 import java.util.List;
+import java.util.Collections;
 
 /**
  *
@@ -90,7 +93,7 @@ public class MidpPaletteProvider implements PaletteProvider {
         if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (projectType))
             return null;
 
-        return null;//Collections.singletonList(SystemAction.get (AddToPaletteWizardAction.class));
+        return Collections.singletonList(SystemAction.get (AddToPaletteWizardAction.class));
     }
 
 }
