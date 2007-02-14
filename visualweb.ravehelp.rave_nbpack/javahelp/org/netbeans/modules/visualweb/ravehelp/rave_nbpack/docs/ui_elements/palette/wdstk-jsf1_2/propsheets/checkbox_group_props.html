@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -104,7 +104,7 @@ that the correct value is entered by a user. If the conditions defined by the va
 <h3>Events</h3>
 <p>Set the event properties by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; <i>eventname</i>.</p>
 <ul>
-  <li><b>validate.</b> Indicates the name of the method that is called to validate the value of the component, if any. If you want to code a validate method rather than choosing a JavaServer Faces validator for the <code>validatorExpression</code> property, right-click the component and choose Edit Event Handler &gt; validate. The default name for the method is <code><i>component-id</i>_validate</code>, where <i>component-id</i> is the value of the component's <code>id</code> property. When you define this method in this way, the <code>validator</code> and <code>validate</code> properties are automatically set for you. If you define a validator, you might also want to select the <code>required</code> property to ensure that the user enters a value.</p>
+  <li><b>validate.</b> Indicates the name of the method that is called to validate the value of the component, if any. If you want to code a validate method rather than choosing a JavaServer Faces validator for the <code>validatorExpression</code> property, right-click the component and choose Edit Event Handler &gt; validate. The default name for the method is <code><i>component-id</i>_validate</code>, where <i>component-id</i> is the value of the component's <code>id</code> property. When you define this method in this way, the <code>validator</code> and <code>validate</code> properties are automatically set for you. If you define a validator, you might also want to select the <code>required</code> property to ensure that the user enters a value.
       <ul class="note">
         <li>Setting this property also sets the value of the <code>validatorExpression</code> property. If you define your own validate method, do not separately change the value of the <code>validatorExpression</code> property, or you will lose the connection to your validate method.</li>
       </ul>
@@ -194,7 +194,8 @@ A simpler way of getting this functionality is to associate the component with a
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                 <param name="content" value="http://www.netbeans.org/kb/55/vwp-listbox_components.html">
                 <param name="text" value="Using Listbox Components"></object>
-</dd><dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+</dd>
+<dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
       <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">
       <param name="text" value="Understanding Scope and Managed Beans"></object>
 </dd>

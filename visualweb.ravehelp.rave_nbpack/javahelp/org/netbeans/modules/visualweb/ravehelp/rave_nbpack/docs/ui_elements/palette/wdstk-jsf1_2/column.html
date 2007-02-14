@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -37,15 +37,17 @@
   <li>You can use the Table Layout dialog box to set many of the Column properties, except for the table column header or table column footer. These properties are described below under <a href="#columnlayoutelements">Column Layout Elements</a>. Not only is the Table Layout dialog box easier to use in some respects than individual Properties windows for the Table, Table Column, and Table Row Group components, but you can work more naturally with the table and all its columns there. To open the dialog box, right-click the table in the Visual Designer and choose Table Layout.</li>
 </ul>
 <h3>Working with a  Table Column Component</h3>
-<p>To work with a Table Column component, you can select it in the <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+<p>To work with a Table Column component, you can select it either in the Visual Designer or in the  
+  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
     <param name="content" value="../app_outline_win_graphic.html">
     <param name="viewerActivator" value="javax.help.LinkLabel">
     <param name="viewerStyle" value="javax.help.Popup">
     <param name="viewerSize" value="300,400">
-    <param name="text" value="Outline window"></object> 
-and then edit its properties. You can also select it in the Visual Designer, but not as easily, and the pop-up menu items are not as cleanly defined. With the column selected, you can right-click and choose a number of options from the pop-up menu, some of which are described below: </p>
+    <param name="text" value="Outline window">
+  </object>
+ and then edit its properties. With the Table Column selected in the Visual Designer, you can right-click and choose a number of options from the pop-up menu, some of which are described below: </p>
 <ul>
-  <li><b>Select Parent.</b> Choose this option or press the Esc key to select the table. If you want to select the Table Row Group that contains this component, click the Table Row Group's node in the Outline window.</li>
+  <li><b>Select Parent.</b> Choose this option or press the Esc key and then click the component again to select the table. If you want to select the Table Row Group that contains this component, click the Table Row Group's node in the Outline window.</li>
   <li><b> Add.</b> Click this item to display a submenu of  components that you can add directly to the column. The same component is added to every cell of the column. For example, you might want to add a <a href="checkbox.html">Checkbox</a> component to a column so the user can click it to select a row. You can add more than one component to a column. By default, the IDE puts a  <a href="static_text.html">Static Text</a> component in a column when you create it. Unless you delete the Static Text component, it remains in the column alongside the component you add. 
     <p>You can add components other than those in the menu, but first you must add a <a href="group_panel.html">Group Panel</a> component, and then you can put the component in the Group Panel. It is easiest to drop components on the Group Panel in the Outline window. You might have to drop the component and then move it in the Outline window to ensure that it is actually in the Group Panel.</p>
   </li>

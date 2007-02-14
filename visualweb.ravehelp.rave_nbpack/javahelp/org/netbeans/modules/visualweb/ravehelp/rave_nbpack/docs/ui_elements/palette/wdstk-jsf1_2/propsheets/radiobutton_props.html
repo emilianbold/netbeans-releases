@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -64,7 +64,7 @@ A number that affects the appearance of the label. 1 (Strong) is larger and bold
 <h3>Data</h3>
 <ul>
   <li><b>converter.</b><code> Type: Converter</code><br>
-A JavaServer Faces converter that produces the correct type of value for the value property. If the user enters the wrong type of value, the converter sends a message that you can display in a <a href="../message.html">Message component</a>.
+A JavaServer Faces converter that produces the correct type of value for the selectedValue property. If the user enters the wrong type of value, the converter sends a message that you can display in a <a href="../message.html">Message component</a>.
 <ul class="note">
   <li>If you use an Enum converter with this component, you must edit the converter's Java declaration to use an <code>enum</code> class as a parameter, as described in <a href="../../jsf-val-conv/enum_converter.html">Enum Converter</a>.</li>
   </ul>
@@ -189,7 +189,15 @@ A simpler way of getting this functionality is to associate the component with a
 		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
 		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
 </object>
-</dd><dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+</dd>
+<dd>
+ <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+ <param name="content" value="http://www.netbeans.org/kb/55/vwp-listbox_components.html">
+ <param name="text" value="Using Listbox Components"></object>
+</dd> 
+
+<dd>
+      <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
       <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">
       <param name="text" value="Understanding Scope and Managed Beans"></object>
 </dd>

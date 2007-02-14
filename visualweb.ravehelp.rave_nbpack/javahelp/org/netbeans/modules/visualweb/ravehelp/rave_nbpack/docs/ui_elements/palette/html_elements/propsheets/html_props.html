@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -24,7 +24,7 @@
 <h3>Advanced</h3>
 <ul>
   <li><b>lang.</b><code> Type: String</code><br>
-Code specifying the base language of the page. Equivalent to the <code>lang</code> attribute of the <code>&lt;html&gt;</code> tag. To choose a language code, you can click the ellipsis button (...) to open the property editor. Some examples:
+Code specifying the base language of the page. Equivalent to the <code>lang</code> attribute of the <code>&lt;html&gt;</code> tag. You must directly enter a value for the language code. Some examples:
 <ul>
   <li><code>ar</code> - Traditional Arabic</li>
   <li><code>de</code> - German</li>
@@ -33,15 +33,17 @@ Code specifying the base language of the page. Equivalent to the <code>lang</cod
   <li><code>es</code> - Spanish</li>
   <li><code>fr</code> - French</li>
   <li><code>ja</code> - Japanese </li>
-</ul>
-<p>In addition to the codes available in the property editor, you can also enter additional codes using ISO standard names. Some examples:</p>
-<ul>
   <li><code>en-US</code> - United States English</li>
   <li><code>ja-JP</code> - Japanese</li>
   <li><code>zh-guoyu</code> - Mandarin or Standard Chinese </li>
   <li><code>zh-Hans</code> - Simplified Chinese script</li>
   <li><code>zh-HanT</code> - Traditional Chinese script</li>
 </ul>
+<p>For a longer list of two-character codes, see 
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+ <param name="content" value="http://www.oasis-open.org/cover/iso639a.html">
+ <param name="text" value="http://www.oasis-open.org/cover/iso639a.html"></object>
+</p>
   </li>
   <li><b>rendered.</b><code> Type: boolean</code><br>
     If selected, the html component is to be rendered and processed on any subsequent page submission. If not selected, the <code>&lt;html&gt;</code> tag does not appear in the page at all. </li>

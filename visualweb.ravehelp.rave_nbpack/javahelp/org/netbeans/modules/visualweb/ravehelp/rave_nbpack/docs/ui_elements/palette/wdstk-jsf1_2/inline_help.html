@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -28,8 +28,12 @@ the Composite category of the Palette to the Visual Designer to provide short he
 </ul>
 
 <p> You can click inside the component and start typing text. You can also resize the bounding box to limit the width of the text. The text  wraps to the width of the box. </p>
-<p>You can set the <code>type</code> property in the Properties window to <code>page</code> or <code>field</code> to control the appearance of the text. Field help is intended to describe individual components on the page and is in a smaller font than page help, which describes the whole page or sections of the page, and not just individual components.</p>
 <p>You can also set the <code>style</code> property by using the <a href="../../propeditors/style_prop_ed_main.html">Style Editor</a> or the <code>styleClass</code> property by using the <a href="../../propeditors/styleclass_prop_ed.html">styleClass Property Editor</a> to change the appearance of the text. </p>
+<ul class="note">
+<li>
+If you want to change the appearance of this component, use the <code>style</code> property. Do not use the <code>type</code> property because it has no effect.</li>
+</ul>
+
 <p>If you  right-click the component, you can choose one of the following options:</p>
 <ul>
   <li><b>Bind to Data</b>. Opens a dialog box that enables you to bind the component's <code>text</code> property to a data provider or to an object that supplies its value so you can update the help text dynamically. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>.</li>

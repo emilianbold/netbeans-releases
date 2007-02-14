@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -36,17 +36,12 @@
 </ul>
 <h3>Events</h3>
 <p>You typically set the event properties by right-clicking the component's node in the Outline window and choosing Edit Event Handler &gt; <i>eventname</i>.  The IDE creates the approriate event method for this data provider and opens the Java Editor so you can edit the new method. </p>
-<ul><li>
-    <div><b>cursorChanged. </b>Type: <code>tableCursorListener</code>
-      <p>This event is called when the cursor has moved to another row in the list. </p>
-    </div>
-    </li>
-    <li>
-       <b>cursorChanging. </b>Type: <code>tableCursorListener</code>
-          <p>This event gives a listener the opportunity to veto a change, similar to the way a <code>PropertyChangeListener</code> in JavaBeans can veto a change.&nbsp;For example, you might use this event when the user is positioned on a current row and tries to navigate away, but there are  validation failures  in the current row</p>
-    </li>
-    <li><b>providerChanged. </b>Type: <code>dataListener</code>
-      <p>This event is called when a large scale change occurs that is not an individual property change. The most common scenario is if you change the type of object in the array. <b><i>Doesn't seem to apply--the object is a String? </i></b></p>
+<ul>
+  <li><b>cursorChanging. </b>Type: <code>tableCursorListener</code>
+        <p>This event gives a listener the opportunity to veto a change, similar to the way a <code>PropertyChangeListener</code> in JavaBeans can veto a change.&nbsp;For example, you might use this event when the user is positioned on a current row and tries to navigate away, but there are  validation failures  in the current row</p>
+  </li>
+ <li><b>providerChanged. </b>Type: <code>dataListener</code>
+    <p>This event is called when a large scale change occurs that is not an individual property change. The most common scenario is if you change the type of object in the array.</p>
     </li>
     <li><b>rowAdded. </b>Type: <code>tableDataListener</code>
       <p>This event is called when a row has been added to the list.</p>
@@ -55,7 +50,7 @@
       <p>This event is called when a row has been removed from the list. </p>
     </li>
     <li><b>valueChanged. </b>Type: <code>dataListener</code>
-        <div>This event is called when<b><i> (?) there is a change to one of the fields in the object wrapped by this data provider. Doesn't seem to apply--no fields in the object. </i></b></div>
+        <p>This event is called when there is a change to one of the fields in the object wrapped by this data provider.</p>
     </li>
 </ul>
 

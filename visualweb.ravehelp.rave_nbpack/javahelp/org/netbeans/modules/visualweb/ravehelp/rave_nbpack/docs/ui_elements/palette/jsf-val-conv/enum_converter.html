@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -46,12 +46,9 @@
 <ul class="note">
   <li>There is an additional feature available for input components, such as the Basic Text Field component. This feature is similar to validation. If the user enters a value that cannot be converted and submits the page, the server changes the label of the component, if there is one, to indicate that an error occurred, and also returns an error message that you can display to the user in a <a href="../wdstk-jsf1_2/message.html">Message component</a>. The error message is:
     <p>
-  &nbsp;&nbsp;&nbsp;<code><i>name</i>: '<i>entered-value'</i> must be a signed decimal number.</code>
-</p>
- <p>
-  In this message, <i>name</i> is either the ID of the component or the contents of its label if the component has one, and <i>entered-value</i> is the value that the user entered.
-</p>
-</li>
+  &nbsp;&nbsp;&nbsp;<code><i>name</i>: '<i>entered-value'</i> must be a <i>converter-type</i>.</code> </p>
+ <p> In this message, <i>name</i> is either the ID of the component or the contents of its label if the component has one, <i>entered-value</i> is the value that the user entered, and <i>converter-type</i> is the type of the converter. For example, if the converter is a Big Decimal converter, the <i>converter-type</i> is <code>signed decimal number</code>. </p>
+  </li>
 </ul>
 <dl>
   <dt><a name="seealso">See Also</a></dt><dd><a href="../../../connect_data/jdbc_type_conversions.html">JDBC Type Conversions

@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -109,7 +109,7 @@ Indicates the JavaServer Faces validator that is called when the value is submit
       <li>Setting this property also sets the value of the <code>validator</code> property. If you define your own validate method, do not separately change the value of the <code>validator</code> property, or you could lose the connection to your validate method.</li>
     </ul>
   </li>
-  <li><b>valueChange.</b> Indicates the name of the component value change listener method that is called when the value of the component changes. If this method is not defined, the value of this property is <code>null</code>. You typically define this method in the page bean by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; processValueChange. The default name for the method is <code><i>component-id</i>_processValueChange</code>, where <i>component-id</i> is the value of the component's <code>id</code> property.</li>
+  <li><b>valueChangeListener</b> Indicates the name of the component value change listener method that is called when the value of the component changes. If this method is not defined, the value of this property is <code>null</code>. You typically define this method in the page bean by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; processValueChange. The default name for the method is <code><i>component-id</i>_processValueChange</code>, where <i>component-id</i> is the value of the component's <code>id</code> property.</li>
 </ul>
 <h3>Behavior</h3>
 <ul>
@@ -197,7 +197,14 @@ See the Event section's <code>valueChange</code> property above, which provides 
 		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
 		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
 </object>
-</dd><dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+</dd>
+<dd>
+ <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+ <param name="content" value="http://www.netbeans.org/kb/55/vwp-listbox_components.html">
+ <param name="text" value="Using Listbox Components"></object>
+</dd>
+<dd>
+      <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
       <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">
       <param name="text" value="Understanding Scope and Managed Beans"></object>
 </dd>
