@@ -96,9 +96,9 @@ class HTMLAutoCompletion {
                 TokenHierarchy hi = TokenHierarchy.get(doc);
                 TokenSequence ts = hi.tokenSequence();
                 
-                int diff = ts.move(dotPos);
-                if(diff >= ts.token().length() || diff == Integer.MAX_VALUE) {
-                    return; //no token found
+                ts.move(dotPos);
+                if(!ts.moveNext()) {
+                    return ; //no token
                 }
                 
                 Token token = ts.token();
@@ -108,7 +108,7 @@ class HTMLAutoCompletion {
                     //the text looks following in such a situation:
                     //
                     //  atrname="abcd|"", where offset of the | == dotPos
-                    if("\"\"".equals(doc.getText(dotPos, 2))) {
+                    if("\"\"".equals(doc.getText(dotPos , 2))) {
                         doc.remove(dotPos,1);
                         caret.setDot(dotPos+1);
                     }
@@ -127,9 +127,9 @@ class HTMLAutoCompletion {
             TokenHierarchy hi = TokenHierarchy.get(doc);
             TokenSequence ts = hi.tokenSequence();
             
-            int diff = ts.move(dotPos);
-            if(diff >= ts.token().length() || diff == Integer.MAX_VALUE) {
-                return; //no token found
+            ts.move(dotPos);
+            if(!ts.moveNext()) {
+                return ; //no token
             }
             
             Token token = ts.token();
