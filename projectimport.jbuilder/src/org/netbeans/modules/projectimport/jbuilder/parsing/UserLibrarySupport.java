@@ -28,6 +28,8 @@ import java.io.InputStream;
 import java.util.logging.Logger;
 import java.util.List;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.projectimport.j2seimport.AbstractProject;
 import org.netbeans.modules.projectimport.j2seimport.LoggerFactory;
 import org.openide.ErrorManager;
@@ -61,8 +63,9 @@ public final class UserLibrarySupport {
     
     public static AbstractProject.UserLibrary getInstance(String libraryName, File projectDir)  {
         File[] folders = new File[] {projectDir, getUserHomeLib(),getInstallDirLib()};
+        Set checkCyclicDeps = new HashSet();
         UserLibrarySupport uSupport = UserLibrarySupport.getInstance(libraryName, folders);
-        return (uSupport != null) ? uSupport.getLibrary(folders) : null;
+        return (uSupport != null) ? uSupport.getLibrary(folders, checkCyclicDeps) : null;
     }
     
     public static File getUserHomeLib() {
@@ -120,7 +123,7 @@ public final class UserLibrarySupport {
             });
             if (allChildren == null) continue;
             for (int j = 0; j < allChildren.length; j++) {
-                UserLibrarySupport result = resolveLibrary(libraryName, allChildren[j], folders);
+                UserLibrarySupport result = resolveLibrary(libraryName, allChildren[j], folders, new HashSet());
                 if (result != null) {
                     return result;
                 }
@@ -131,10 +134,9 @@ public final class UserLibrarySupport {
         return null;
     }
 
-    private static UserLibrarySupport resolveLibrary(final String libraryName, final File libFile, final File[] folders) {
-        File library = null;
+    private static UserLibrarySupport resolveLibrary(final String libraryName, final File libFile, final File[] folders,final Set checkCyclicDeps) {
         UserLibrarySupport instance = new UserLibrarySupport(libraryName, libFile);
-        AbstractProject.UserLibrary ul = instance.getLibrary(folders);
+        AbstractProject.UserLibrary ul = instance.getLibrary(folders, checkCyclicDeps);
         return ul != null ? instance : null;
     }
     
@@ -144,9 +146,9 @@ public final class UserLibrarySupport {
         this.library = library;
     }
     
-    AbstractProject.UserLibrary getLibrary(File[] folders)  {
+    private AbstractProject.UserLibrary getLibrary(File[] folders, Set checkCyclicDeps)  {
         try {
-            return buildLibrary(folders);
+            return buildLibrary(folders, checkCyclicDeps);
         } catch (IOException iex) {
             ErrorManager.getDefault().notify(iex);
         } catch (SAXException sax) {
@@ -157,8 +159,10 @@ public final class UserLibrarySupport {
     }
     
     
-    private AbstractProject.UserLibrary buildLibrary(File[] folders) throws IOException, SAXException {
+    private AbstractProject.UserLibrary buildLibrary(File[] folders, Set checkCyclicDeps) throws IOException, SAXException {
         AbstractProject.UserLibrary retval = new AbstractProject.UserLibrary(libraryName);
+        boolean isthere = checkCyclicDeps.add(libraryName);
+        assert isthere : libraryName;
         InputStream jprIs = new BufferedInputStream(new FileInputStream(library));
         try {
             Document doc = XMLUtil.parse(new InputSource(jprIs), false, false, null, null);
@@ -178,11 +182,16 @@ public final class UserLibrarySupport {
                 } else {
                     String requiredLibrary = getRequiredLibrary(elem);
                     if (requiredLibrary != null) {
-                        UserLibrarySupport uS = UserLibrarySupport.getInstance(requiredLibrary, folders);
-                        if (uS != null) {
-                            AbstractProject.UserLibrary uL = uS.getLibrary(folders);
-                            if (uL != null) {
-                                retval.addDependency(uL);
+                        if (checkCyclicDeps.contains(requiredLibrary)) {
+                            AbstractProject.UserLibrary uL = new AbstractProject.UserLibrary(requiredLibrary, false);
+                            retval.addDependency(uL);
+                        } else {
+                            UserLibrarySupport uS = UserLibrarySupport.getInstance(requiredLibrary, folders);
+                            if (uS != null) {
+                                AbstractProject.UserLibrary uL = uS.getLibrary(folders, checkCyclicDeps);
+                                if (uL != null) {
+                                    retval.addDependency(uL);
+                                }
                             }
                         }
                     }

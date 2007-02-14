@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library>
+  <fullname>MainTest</fullname>
+  <class>
+    <path>[maintest.jar]</path>
+  </class>
+  <required>CyclicDepsTest</required>
+  <required>RegularDepsTest</required>
+  <required>RegularDepsTest2</required>
+</library>
+
