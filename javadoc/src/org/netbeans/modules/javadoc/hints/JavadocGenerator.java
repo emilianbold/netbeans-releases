@@ -58,13 +58,14 @@ public final class JavadocGenerator {
             builder.append(" * @author " + System.getProperty("user.name") + "\n"); // NOI18N
         }
         
-        if (srcVersion.ordinal() >= SourceVersion.RELEASE_5.ordinal()) {
+        if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0) {
             for (TypeParameterElement param : clazz.getTypeParameters()) {
                 builder.append(" * @param " + param.getSimpleName().toString() + " \n"); // NOI18N
             }
         }
         
-        if (JavadocUtilities.isDeprecated(javac, clazz)) {
+        if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0 ||
+                JavadocUtilities.isDeprecated(javac, clazz)) {
             builder.append(" * @deprecated\n"); // NOI18N
         }
         
@@ -92,7 +93,8 @@ public final class JavadocGenerator {
             builder.append(" * @throws ").append(exception.getQualifiedName().toString()).append(" \n"); // NOI18N
         }
         
-        if (JavadocUtilities.isDeprecated(javac, method)) {
+        if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0 ||
+                JavadocUtilities.isDeprecated(javac, method)) {
             builder.append(" * @deprecated\n"); // NOI18N
         }
 
@@ -107,7 +109,8 @@ public final class JavadocGenerator {
                 " * \n" // NOI18N
                 );
         
-        if (JavadocUtilities.isDeprecated(javac, field)) {
+        if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0 ||
+                JavadocUtilities.isDeprecated(javac, field)) {
             builder.append(" * @deprecated\n"); // NOI18N
         }
         

@@ -352,6 +352,11 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
         }
         
         private void processDeprecatedAnnotation(Element elm, Doc jDoc, List<ErrorDescription> errors) {
+            if (SourceVersion.RELEASE_5.compareTo(spec) > 0) {
+                // jdks older than 1.5 do not support annotations
+                return;
+            }
+            
             Tag[] deprTags = jDoc.tags("@deprecated"); // NOI18N
             AnnotationMirror annMirror = JavadocUtilities.findDeprecated(javac, elm);
             
