@@ -645,7 +645,10 @@ public class CasualDiff {
         localPointer = diffList(oldT.init, newT.init, LineInsertionType.NONE, initListHint);
         copyTo(localPointer, getOldPos(oldT.cond));
         localPointer = diffTree(oldT.cond, newT.cond, getBounds(oldT.cond));
-        copyTo(localPointer, getOldPos(oldT.step.head));
+        if (oldT.step.nonEmpty()) 
+            copyTo(localPointer, getOldPos(oldT.step.head));
+        else
+            copyTo(localPointer, stepListHint);
         localPointer = diffList(oldT.step, newT.step, LineInsertionType.NONE, stepListHint);
         copyTo(localPointer, getOldPos(oldT.body));
         localPointer = diffTree(oldT.body, newT.body, getBounds(oldT.body));
