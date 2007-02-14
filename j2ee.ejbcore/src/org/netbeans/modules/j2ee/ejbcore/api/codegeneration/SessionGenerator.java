@@ -22,6 +22,8 @@ package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 import com.sun.source.tree.ClassTree;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -44,16 +46,16 @@ import org.openide.filesystems.FileObject;
  */
 public final class SessionGenerator {
     
-    private static final String EJB21_EJBCLASS = "Templates/J2EE/EJB21/SessionEjbClass.java"; // NOI18N
-    private static final String EJB21_LOCAL = "Templates/J2EE/EJB21/SessionLocal.java"; // NOI18N
-    private static final String EJB21_LOCALHOME = "Templates/J2EE/EJB21/SessionLocalHome.java"; // NOI18N
-    private static final String EJB21_REMOTE = "Templates/J2EE/EJB21/SessionRemote.java"; // NOI18N
-    private static final String EJB21_REMOTEHOME = "Templates/J2EE/EJB21/SessionRemoteHome.java"; // NOI18N
+    public static final String EJB21_EJBCLASS = "Templates/J2EE/EJB21/SessionEjbClass.java"; // NOI18N
+    public static final String EJB21_LOCAL = "Templates/J2EE/EJB21/SessionLocal.java"; // NOI18N
+    public static final String EJB21_LOCALHOME = "Templates/J2EE/EJB21/SessionLocalHome.java"; // NOI18N
+    public static final String EJB21_REMOTE = "Templates/J2EE/EJB21/SessionRemote.java"; // NOI18N
+    public static final String EJB21_REMOTEHOME = "Templates/J2EE/EJB21/SessionRemoteHome.java"; // NOI18N
     
-    private static final String EJB30_STATELESS_EJBCLASS = "Templates/J2EE/EJB30/StatelessEjbClass.java"; // NOI18N
-    private static final String EJB30_STATEFUL_EJBCLASS = "Templates/J2EE/EJB30/StatefulEjbClass.java"; // NOI18N
-    private static final String EJB30_LOCAL = "Templates/J2EE/EJB30/SessionLocal.java"; // NOI18N
-    private static final String EJB30_REMOTE = "Templates/J2EE/EJB30/SessionRemote.java"; // NOI18N
+    public static final String EJB30_STATELESS_EJBCLASS = "Templates/J2EE/EJB30/StatelessEjbClass.java"; // NOI18N
+    public static final String EJB30_STATEFUL_EJBCLASS = "Templates/J2EE/EJB30/StatefulEjbClass.java"; // NOI18N
+    public static final String EJB30_LOCAL = "Templates/J2EE/EJB30/SessionLocal.java"; // NOI18N
+    public static final String EJB30_REMOTE = "Templates/J2EE/EJB30/SessionRemote.java"; // NOI18N
 
     // informations collected in wizard
     private final FileObject pkg;
@@ -74,7 +76,10 @@ public final class SessionGenerator {
     private final String localHomeName;
     private final String displayName;
     
+    private final String packageName;
     private final String packageNameWithDot;
+
+    private final Map<String, String> templateParameters;
 
     public static SessionGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
             boolean isStateful, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
@@ -98,7 +103,13 @@ public final class SessionGenerator {
         this.localName = ejbNameOptions.getSessionLocalPrefix() + wizardTargetName + ejbNameOptions.getSessionLocalSuffix();
         this.localHomeName = ejbNameOptions.getSessionLocalHomePrefix() + wizardTargetName + ejbNameOptions.getSessionLocalHomeSuffix();
         this.displayName = ejbNameOptions.getSessionDisplayNamePrefix() + wizardTargetName + ejbNameOptions.getSessionDisplayNameSuffix();
-        this.packageNameWithDot = EjbGenerationUtil.getSelectedPackageName(pkg) + ".";
+        this.packageName = EjbGenerationUtil.getSelectedPackageName(pkg);
+        this.packageNameWithDot = packageName + ".";
+        this.templateParameters = new HashMap<String, String>();
+        // fill all possible template parameters
+        this.templateParameters.put("package", packageName);
+        this.templateParameters.put("localInterface", packageNameWithDot + localName);
+        this.templateParameters.put("remoteInterface", packageNameWithDot + remoteName);
     }
     
     public FileObject generate() throws IOException {
@@ -136,26 +147,26 @@ public final class SessionGenerator {
     }
 
     private FileObject generateEJB21Classes() throws IOException {
-        FileObject ejbClassFO = GenerationUtils.createClass(EJB21_EJBCLASS, pkg, ejbClassName, null);
+        FileObject ejbClassFO = GenerationUtils.createClass(EJB21_EJBCLASS, pkg, ejbClassName, null, templateParameters);
         if (hasRemote) {
-            GenerationUtils.createClass(EJB21_REMOTE,  pkg, remoteName, null);
-            GenerationUtils.createClass(EJB21_REMOTEHOME, pkg, remoteHomeName, null);
+            GenerationUtils.createClass(EJB21_REMOTE,  pkg, remoteName, null, templateParameters);
+            GenerationUtils.createClass(EJB21_REMOTEHOME, pkg, remoteHomeName, null, templateParameters);
         }
         if (hasLocal) {
-            GenerationUtils.createClass(EJB21_LOCAL, pkg, localName, null);
-            GenerationUtils.createClass(EJB21_LOCALHOME, pkg, localHomeName, null);
+            GenerationUtils.createClass(EJB21_LOCAL, pkg, localName, null, templateParameters);
+            GenerationUtils.createClass(EJB21_LOCALHOME, pkg, localHomeName, null, templateParameters);
         }
         return ejbClassFO;
     }
     
     private FileObject generateEJB30Classes() throws IOException {
         String ejbClassTemplateName = isStateful ? EJB30_STATEFUL_EJBCLASS : EJB30_STATELESS_EJBCLASS;
-        FileObject ejbClassFO = GenerationUtils.createClass(ejbClassTemplateName,  pkg, ejbClassName, null);
+        FileObject ejbClassFO = GenerationUtils.createClass(ejbClassTemplateName,  pkg, ejbClassName, null, templateParameters);
         if (hasRemote) {
-            GenerationUtils.createClass(EJB30_REMOTE, pkg, remoteName, null);
+            GenerationUtils.createClass(EJB30_REMOTE, pkg, remoteName, null, templateParameters);
         }
         if (hasLocal) {
-            GenerationUtils.createClass(EJB30_LOCAL, pkg, localName, null);
+            GenerationUtils.createClass(EJB30_LOCAL, pkg, localName, null, templateParameters);
         }
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {

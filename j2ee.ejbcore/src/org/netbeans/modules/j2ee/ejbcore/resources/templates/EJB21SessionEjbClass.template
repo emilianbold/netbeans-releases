@@ -1,22 +1,22 @@
 /*
- * __NAME__.java
+ * ${name}.java
  *
- * Created on __DATE__, __TIME__
+ * Created on ${date}, ${time}
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
 
-package Templates.J2EE.EJB21;
+package ${package};
 
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 
 /**
  *
- * @author __USER__
+ * @author ${user}
  */
-public class __NAME__ implements SessionBean {
+public class ${name} implements SessionBean {
     
     private SessionContext context;
     
@@ -59,14 +59,12 @@ public class __NAME__ implements SessionBean {
      * See section 7.10.3 of the EJB 2.0 specification
      * See section 7.11.3 of the EJB 2.1 specification
      */
-/*
     public void ejbCreate() {
         // TODO implement ejbCreate if necessary, acquire resources
         // This method has access to the JNDI context so resource aquisition
         // spanning all methods can be performed here such as home interfaces
         // and data sources.
     }
-*/
     
     // Add business logic below. (Right-click in editor and choose
     // "EJB Methods > Add Business Method" or "Web Service > Add Operation")

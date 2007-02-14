@@ -1,32 +1,33 @@
 /*
- * __NAME__.java
+ * ${name}.java
  *
- * Created on __DATE__, __TIME__
+ * Created on ${date}, ${time}
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
 
-package Templates.J2EE.EJB30;
+package ${package};
 
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
 import javax.jms.Message;
+import javax.jms.MessageListener;
 
 /**
  *
- * @author __USER__
+ * @author ${user}
  */
-@MessageDriven(mappedName = "jms/__NAME__", activationConfig =  {
+@MessageDriven(mappedName = "jms/${name}", activationConfig =  {
         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
         @ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "Durable"),
-        @ActivationConfigProperty(propertyName = "clientId", propertyValue = "__NAME__"),
-        @ActivationConfigProperty(propertyName = "subscriptionName", propertyValue = "__NAME__")
+        @ActivationConfigProperty(propertyName = "clientId", propertyValue = "${name}"),
+        @ActivationConfigProperty(propertyName = "subscriptionName", propertyValue = "${name}")
     })
-public class __NAME__ {
+public class ${name} implements MessageListener {
     
-    public __NAME__() {
+    public ${name}() {
     }
 
     public void onMessage(Message message) {

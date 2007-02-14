@@ -1,13 +1,13 @@
 /*
- * __NAME__.java
+ * ${name}.java
  *
- * Created on __DATE__, __TIME__
+ * Created on ${date}, ${time}
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
 
-package Templates.J2EE.EJB30;
+package ${package};
 
 import javax.ejb.MessageDrivenBean;
 import javax.ejb.MessageDrivenContext;
@@ -16,9 +16,9 @@ import javax.jms.MessageListener;
 
 /**
  *
- * @author __USER__
+ * @author ${user}
  */
-public class __NAME__ implements MessageDrivenBean, MessageListener {
+public class ${name} implements MessageDrivenBean, MessageListener {
     
     private MessageDrivenContext context;
     

@@ -380,6 +380,16 @@ Microsystems, Inc. All Rights Reserved.
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.templates</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.freemarker</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>

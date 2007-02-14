@@ -21,9 +21,11 @@ package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -60,7 +62,7 @@ public class SessionGeneratorTest extends TestBase {
     
     protected void setUp() throws IOException {
         clearWorkDir();
-        File file = new File(getWorkDir(),"cache");	//NOI18N
+        File file = new File(getWorkDir(), "cache");	//NOI18N
         file.mkdirs();
         IndexUtil.setCacheFolder(file);
         ejbJarProvider = new EjbJarProviderImpl();
@@ -75,7 +77,7 @@ public class SessionGeneratorTest extends TestBase {
         dataDir = FileUtil.toFileObject(getDataDir());
     }
 
-    public void testGenerate() throws Exception {
+    public void testGenerate() throws IOException {
         FileObject ddFileObject = dataDir.getFileObject("EJBModule1/src/conf/ejb-jar.xml");
         FileObject[] sources = new FileObject[] {dataDir.getFileObject("EJBModule1/src/java")};
         ejbJarProvider.setEjbModule(EjbProjectConstants.J2EE_14_LEVEL, ddFileObject, sources);
@@ -85,15 +87,16 @@ public class SessionGeneratorTest extends TestBase {
         fileOwnerQuery.setProject(projectImpl);
         
         // Session EJB 2.1
-        FileObject pkg = sources[0].getFileObject("ejb21");
+        String packageName = "ejb21";
+        FileObject pkg = sources[0].getFileObject(packageName);
         if (pkg != null) {
             pkg.delete();
         }
-        pkg = sources[0].createFolder("ejb21");
+        pkg = sources[0].createFolder(packageName);
         // stateless with remote and local interfaces
         checkEJB21("StatelessEJB21RL", pkg, ddFileObject, true, true, false);
         // stateful with remote interface
-//        checkEJB21("StatefulEJB21R", pkg, ddFileObject, true, false, true);
+        checkEJB21("StatefulEJB21R", pkg, ddFileObject, true, false, true);
         
         // Session EJB 3.0
     }
@@ -104,8 +107,7 @@ public class SessionGeneratorTest extends TestBase {
         sessionGenerator.generate();
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFileObject);
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
-        String ejbName = name + "Bean";
-        Session session = (Session) enterpriseBeans.findBeanByName(EnterpriseBeans.SESSION, Session.EJB_NAME, ejbName);
+        Session session = (Session) enterpriseBeans.findBeanByName(EnterpriseBeans.SESSION, Session.EJB_NAME, name + "Bean");
         final String JAVA = "java";
         assertEquals(session.getSessionType(), isStateful ? Session.SESSION_TYPE_STATEFUL : Session.SESSION_TYPE_STATELESS);
         
@@ -140,7 +142,6 @@ public class SessionGeneratorTest extends TestBase {
             assertNull(localHome);
             assertNull(session.getLocalHome());
         }
-        
     }
     
     private void checkEjbClass21(final FileObject ejbClass, final String name, final Session session) throws IOException {
@@ -150,7 +151,10 @@ public class SessionGeneratorTest extends TestBase {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
                 assertTrue(clazz.getSimpleName().contentEquals(name + "Bean"));
+                assertTrue(clazz.getQualifiedName().contentEquals(session.getEjbClass()));
                 assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.SessionBean"}));
+                assertEquals(5, ElementFilter.methodsIn(clazz.getEnclosedElements()).size());
+                assertEquals(1, ElementFilter.fieldsIn(clazz.getEnclosedElements()).size());
                 assertTrue(Util.contains(controller, clazz, MethodModel.create(
                             "setSessionContext", VOID, "", 
                             Collections.singletonList(MethodModel.Variable.create("javax.ejb.SessionContext", "aContext")), 
@@ -175,8 +179,13 @@ public class SessionGeneratorTest extends TestBase {
                             Collections.<String>emptyList(), 
                             Collections.singleton(Modifier.PUBLIC)
                             )));
+                assertTrue(Util.contains(controller, clazz, MethodModel.create(
+                            "ejbCreate", VOID, "", 
+                            Collections.<MethodModel.Variable>emptyList(), 
+                            Collections.<String>emptyList(), 
+                            Collections.singleton(Modifier.PUBLIC)
+                            )));
                 assertTrue(Util.contains(controller, clazz, MethodModel.Variable.create("javax.ejb.SessionContext", "context")));
-                assertTrue(clazz.getQualifiedName().contentEquals(session.getEjbClass()));
             }
         });
     }
@@ -187,9 +196,9 @@ public class SessionGeneratorTest extends TestBase {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
                 assertTrue(clazz.getSimpleName().contentEquals(name + "Remote"));
+                assertTrue(clazz.getQualifiedName().contentEquals(session.getRemote()));
                 assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBObject"}));
                 assertTrue(clazz.getEnclosedElements().isEmpty());
-                assertTrue(clazz.getQualifiedName().contentEquals(session.getRemote()));
             }
         });
     }
@@ -200,9 +209,15 @@ public class SessionGeneratorTest extends TestBase {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
                 assertTrue(clazz.getSimpleName().contentEquals(name + "RemoteHome"));
-                assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBHome"}));
-                assertTrue(clazz.getEnclosedElements().isEmpty());
                 assertTrue(clazz.getQualifiedName().contentEquals(session.getHome()));
+                assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBHome"}));
+                assertEquals(1, ElementFilter.methodsIn(clazz.getEnclosedElements()).size());
+                assertTrue(Util.contains(controller, clazz, MethodModel.create(
+                            "create", session.getRemote(), "", 
+                            Collections.<MethodModel.Variable>emptyList(), 
+                            Arrays.asList("java.rmi.RemoteException", "javax.ejb.CreateException"), 
+                            Collections.<Modifier>emptySet()
+                            )));
             }
         });
     }
@@ -213,9 +228,9 @@ public class SessionGeneratorTest extends TestBase {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
                 assertTrue(clazz.getSimpleName().contentEquals(name + "Local"));
+                assertTrue(clazz.getQualifiedName().contentEquals(session.getLocal()));
                 assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalObject"}));
                 assertTrue(clazz.getEnclosedElements().isEmpty());
-                assertTrue(clazz.getQualifiedName().contentEquals(session.getLocal()));
             }
         });
     }
@@ -226,9 +241,15 @@ public class SessionGeneratorTest extends TestBase {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
                 assertTrue(clazz.getSimpleName().contentEquals(name + "LocalHome"));
-                assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalHome"}));
-                assertTrue(clazz.getEnclosedElements().isEmpty());
                 assertTrue(clazz.getQualifiedName().contentEquals(session.getLocalHome()));
+                assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalHome"}));
+                assertEquals(1, ElementFilter.methodsIn(clazz.getEnclosedElements()).size());
+                assertTrue(Util.contains(controller, clazz, MethodModel.create(
+                            "create", session.getLocal(), "", 
+                            Collections.<MethodModel.Variable>emptyList(), 
+                            Arrays.asList("javax.ejb.CreateException"), 
+                            Collections.<Modifier>emptySet()
+                            )));
             }
         });
     }

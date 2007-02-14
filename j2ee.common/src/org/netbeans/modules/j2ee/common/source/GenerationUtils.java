@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
@@ -156,6 +157,26 @@ public final class GenerationUtils extends SourceUtils {
         return classFO;
     }
 
+    /**
+     * Creates a new Java class based on the provided template.
+     *
+     * @param  targetFolder the folder the new class should be created in;
+     *         cannot be null.
+     * @param  targetName the name of the new interface (a valid Java identifier);
+     *         cannot be null.
+     * @param  parameters map of named objects that are going to be used when creating the new object
+     * @return the FileObject for the new Java class; never null.
+     */
+    public static FileObject createClass(String template, FileObject targetFolder, String className, final String javadoc, 
+            Map<String,? extends Object> parameters) throws IOException {
+        Parameters.notNull("template", template); // NOI18N
+        Parameters.notNull("targetFolder", targetFolder); // NOI18N
+        Parameters.javaIdentifier("className", className); // NOI18N
+
+        FileObject classFO = createDataObjectFromTemplate(template, targetFolder, className, parameters).getPrimaryFile();
+        return classFO;
+    }
+
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Non-public static methods">
@@ -177,6 +198,26 @@ public final class GenerationUtils extends SourceUtils {
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
         return templateDO.createFromTemplate(dataFolder, targetName);
+    }
+
+    /**
+     * Creates a data object from a given template path in the system
+     * file system and using parameters defined in <code>parameters</code> map.
+     *
+     * @return the <code>DataObject</code> of the newly created file.
+     * @throws IOException if an error occured while creating the file.
+     */
+    private static DataObject createDataObjectFromTemplate(String template, FileObject targetFolder, String targetName, 
+            Map<String,? extends Object> parameters) throws IOException {
+        assert template != null;
+        assert targetFolder != null;
+        assert targetName != null && targetName.trim().length() >  0;
+
+        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
+        FileObject templateFO = defaultFS.findResource(template);
+        DataObject templateDO = DataObject.find(templateFO);
+        DataFolder dataFolder = DataFolder.findFolder(targetFolder);
+        return templateDO.createFromTemplate(dataFolder, targetName, parameters);
     }
 
     // </editor-fold>

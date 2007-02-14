@@ -1,24 +1,24 @@
 /*
- * __NAME__.java
+ * ${name}.java
  *
- * Created on __DATE__, __TIME__
+ * Created on ${date}, ${time}
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
 
-package Templates.J2EE.EJB21;
+package ${package};
 
+import java.rmi.RemoteException;
+import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 
 /**
  *
- * @author __USER__
+ * @author ${user}
  */
-public interface __NAME__ extends EJBHome {
+public interface ${name} extends EJBHome {
 
-/*
-    __REMOTE_INTERFACE__ create()  throws CreateException, RemoteException;
-*/
+    ${remoteInterface} create()  throws CreateException, RemoteException;
     
 }

@@ -1,13 +1,13 @@
 /*
- * __NAME__.java
+ * ${name}.java
  *
- * Created on __DATE__, __TIME__
+ * Created on ${date}, ${time}
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
 
-package Templates.J2EE.EJB21;
+package ${package};
 
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
@@ -15,12 +15,14 @@ import javax.ejb.FinderException;
 
 /**
  *
- * @author __USER__
+ * @author ${user}
  */
-public class __NAME__ implements EntityBean {
+public class ${name} implements EntityBean {
 
     private EntityContext context;
     
+    // <editor-fold defaultstate="collapsed" desc="EJB infrastructure methods. Click the + sign on the left to edit the code.">
+
     // TODO Add code to acquire and use other enterprise resources (DataSource, JMS, enterprise beans, Web services)
     // TODO Add business methods
     // TODO Add create methods
@@ -73,5 +75,16 @@ public class __NAME__ implements EntityBean {
     public void ejbStore() {
         // TODO add code to persist data
     }
+
+    // </editor-fold>
     
+    /**
+     * See EJB 2.0 and EJB 2.1 section 12.2.5
+     */
+    public ${primaryKey} ejbFindByPrimaryKey(${primaryKey} aKey) throws FinderException {
+        // TODO add code to locate aKey from persistent storage
+        // throw javax.ejb.ObjectNotFoundException if aKey is not in
+        // persistent storage.
+    }
+
 }

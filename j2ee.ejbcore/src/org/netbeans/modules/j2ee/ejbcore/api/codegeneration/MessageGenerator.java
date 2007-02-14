@@ -20,6 +20,8 @@
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
@@ -62,7 +64,10 @@ public final class MessageGenerator {
     private final String ejbClassName;
     private final String displayName;
     
+    private final String packageName;
     private final String packageNameWithDot;
+    
+    private final Map<String, String> templateParameters;
 
     public static MessageGenerator create(String wizardTargetName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
         return new MessageGenerator(wizardTargetName, pkg, isQueue, isSimplified, isXmlBased);
@@ -77,7 +82,11 @@ public final class MessageGenerator {
         this.ejbName = ejbNameOptions.getMessageDrivenEjbNamePrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbNameSuffix();
         this.ejbClassName = ejbNameOptions.getMessageDrivenEjbClassPrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbClassSuffix();
         this.displayName = ejbNameOptions.getMessageDrivenDisplayNamePrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenDisplayNameSuffix();
-        this.packageNameWithDot = EjbGenerationUtil.getSelectedPackageName(pkg) + ".";
+        this.packageName = EjbGenerationUtil.getSelectedPackageName(pkg);
+        this.packageNameWithDot = packageName + ".";
+        this.templateParameters = new HashMap<String, String>();
+        // fill all possible template parameters
+        this.templateParameters.put("package", packageName);
     }
     
     public FileObject generate() throws IOException {
@@ -101,7 +110,7 @@ public final class MessageGenerator {
     }
     
     private FileObject generateEJB21Classes() throws IOException {
-        FileObject resultFileObject = GenerationUtils.createClass(EJB21_EJBCLASS,  pkg, ejbClassName, null);
+        FileObject resultFileObject = GenerationUtils.createClass(EJB21_EJBCLASS,  pkg, ejbClassName, null, templateParameters);
         ///
         Project project = FileOwnerQuery.getOwner(pkg);
         J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
@@ -112,7 +121,7 @@ public final class MessageGenerator {
     
     private FileObject generateEJB30Classes() throws IOException {
         String ejbClassTemplate = isQueue ? EJB30_QUEUE_EJBCLASS : EJB30_TOPIC_EJBCLASS;
-        FileObject resultFileObject = GenerationUtils.createClass(ejbClassTemplate,  pkg, ejbClassName, null);
+        FileObject resultFileObject = GenerationUtils.createClass(ejbClassTemplate,  pkg, ejbClassName, null, templateParameters);
 
         //TODO: RETOUCHE we don't have model for annotations yet
 //        // Create server resources for this bean.
