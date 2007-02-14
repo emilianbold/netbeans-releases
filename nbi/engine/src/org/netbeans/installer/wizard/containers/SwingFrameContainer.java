@@ -88,26 +88,34 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         
         // handle the default buttons
         getRootPane().setDefaultButton(currentUi.getDefaultEnterButton());
+        
         getRootPane().getInputMap().put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
                 "evaluate.cancel");
         getRootPane().getActionMap().put("evaluate.cancel", new AbstractAction() {
             public void actionPerformed(ActionEvent event) {
-                if (currentUi.getDefaultEscapeButton().equals(getHelpButton())) {
-                    currentUi.evaluateHelpButtonClick();
-                }
-                if (currentUi.getDefaultEscapeButton().equals(getBackButton())) {
-                    currentUi.evaluateBackButtonClick();
-                }
-                if (currentUi.getDefaultEscapeButton().equals(getNextButton())) {
-                    currentUi.evaluateNextButtonClick();
-                }
-                if (currentUi.getDefaultEscapeButton().equals(getCancelButton())) {
-                    currentUi.evaluateCancelButtonClick();
+                final NbiButton button = currentUi.getDefaultEscapeButton();
+                if (button != null) {
+                    if (button.equals(getHelpButton())) {
+                        currentUi.evaluateHelpButtonClick();
+                    }
+                    if (button.equals(getBackButton())) {
+                        currentUi.evaluateBackButtonClick();
+                    }
+                    if (button.equals(getNextButton())) {
+                        currentUi.evaluateNextButtonClick();
+                    }
+                    if (button.equals(getCancelButton())) {
+                        currentUi.evaluateCancelButtonClick();
+                    }
                 }
             }
         });
-
+        
+        if (currentUi.getDefaultFocusOwner() != null) {
+            currentUi.getDefaultFocusOwner().requestFocusInWindow();
+        }
+        
         // a11y - fwiw
         getAccessibleContext().setAccessibleName(currentUi.getTitle());
         getAccessibleContext().setAccessibleDescription(currentUi.getDescription());

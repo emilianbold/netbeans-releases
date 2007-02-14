@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import javax.swing.JComponent;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -265,6 +266,10 @@ public abstract class WizardComponent {
         
         public NbiButton getDefaultEscapeButton() {
             return container.getCancelButton();
+        }
+        
+        public JComponent getDefaultFocusOwner() {
+            return null;
         }
         
         protected void initializeContainer() {

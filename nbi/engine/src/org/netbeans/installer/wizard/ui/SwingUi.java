@@ -20,6 +20,7 @@
  */
 package org.netbeans.installer.wizard.ui;
 
+import javax.swing.JComponent;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 
@@ -45,4 +46,6 @@ public abstract class SwingUi extends NbiPanel {
     public abstract NbiButton getDefaultEnterButton();
     
     public abstract NbiButton getDefaultEscapeButton();
+    
+    public abstract JComponent getDefaultFocusOwner();
 }
