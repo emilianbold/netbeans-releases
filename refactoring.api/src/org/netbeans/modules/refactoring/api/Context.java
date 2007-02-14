@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.refactoring.api;
 
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.Lookup.Template;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -28,12 +31,14 @@ import org.openide.util.lookup.InstanceContent;
  * @see AbstractRefactoring
  * @author Jan Becicka
  */
-public final class Context extends AbstractLookup {
+public final class Context extends Lookup {
 
     private InstanceContent instanceContent;
+    private AbstractLookup delegate;
 
     Context(InstanceContent instanceContent) {
-        super(instanceContent);
+        super();
+        delegate = new AbstractLookup(instanceContent);
         this.instanceContent = instanceContent;
     }
 
@@ -49,5 +54,13 @@ public final class Context extends AbstractLookup {
             instanceContent.remove(old);
         }
         instanceContent.add(value);
+    }
+
+    public <T> T lookup(Class<T> clazz) {
+        return delegate.lookup(clazz);
+    }
+
+    public <T> Result<T> lookup(Template<T> template) {
+        return delegate.lookup(template);
     }
 }
