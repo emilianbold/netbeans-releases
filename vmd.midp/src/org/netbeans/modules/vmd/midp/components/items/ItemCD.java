@@ -129,7 +129,7 @@ public class ItemCD extends ComponentDescriptor {
 
     private static Presenter createSetterPresenter() {
         return new CodeSetterPresenter()
-                .addParameters(MidpParameter.create(PROP_LABEL, PROP_PREFERRED_WIDTH, PROP_PREFERRED_HEIGHT, PROP_DEFAULT_COMMAND))
+                .addParameters(MidpParameter.create(PROP_LABEL, PROP_PREFERRED_WIDTH, PROP_PREFERRED_HEIGHT))
                 .addParameters (ItemCode.createCommandParameter ())
                 .addParameters (ItemCode.createItemCommandListenerParameter ())
                 .addParameters (ItemCode.createItemLayoutParameter ())
