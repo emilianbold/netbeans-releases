@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="C:/HelpProjects/Rave/cvstree/trunk/ravehelp/rave_nbpack/javahelp/com/sun/rave/modules/rave_nbpack/docs">
+		<directory title="C:/HelpProjects/Rave/cvstree/shortfin5-5-1/ravehelp/rave_nbpack/javahelp/com/sun/rave/modules/rave_nbpack/docs">
 			<directory title="a11y">
 				<file title="abouta11y.html"/>
 				<file title="component_palette_shortcuts.html"/>
@@ -760,9 +760,6 @@
 					<file title="runtime_nav_graphic.html"/>
 					<file title="runtime_navigator.html"/>
 					<file title="srvs_rnode.html"/>
-				</directory>
-				<directory title="welcome_window">
-					<file title="newprojectdb.html"/>
 				</directory>
 				<directory title="wizards">
 					<file title="new_project_choose_type.html"/>

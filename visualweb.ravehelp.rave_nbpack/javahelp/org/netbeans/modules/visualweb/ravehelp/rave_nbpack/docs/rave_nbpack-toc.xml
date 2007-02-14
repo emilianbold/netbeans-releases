@@ -190,7 +190,6 @@
 				<tocitem text="About the Projects and Files Windows" target="projrave_ui_elements_project_nav_about_project_nav" />
 				<tocitem text="About the Files Window" target="projrave_ui_elements_project_nav_portfoliofilesystem" />
 				<tocitem text="build.xml Node" target="projrave_ui_elements_project_nav_buildxml_node" />
-				<tocitem text="New Project Dialog Box" target="projrave_ui_elements_welcome_window_newprojectdb" />
 				<tocitem text="Projects View">
 					<tocitem text="Projects Window" target="projrave_ui_elements_project_nav_portfoliological" />
 					<tocitem text="Project Node" target="projrave_ui_elements_project_nav_webapp_node" />
