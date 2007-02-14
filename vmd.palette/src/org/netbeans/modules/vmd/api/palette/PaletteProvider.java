@@ -21,13 +21,16 @@ package org.netbeans.modules.vmd.api.palette;
 
 import org.openide.loaders.DataFolder;
 
+import javax.swing.Action;
+import java.util.List;
+
 /**
  * This interface represents category in the VMD palette.
  *
  * @author Anton Chechel
  */
 public interface PaletteProvider {
-    
+
     /**
      * Initializes palette categories as a directories provided by particular implementation of project type.
      *
@@ -35,5 +38,12 @@ public interface PaletteProvider {
      * @param rootFolder folder categories to be created
      */
     void initPaletteCategories(String projectType, DataFolder rootFolder);
-    
+
+    /**
+     * Returns a list of actions that are available in the palette manager
+     * @param projectType the project type of the palette
+     * @return the list of actions
+     */
+    List<? extends Action> getActions (String projectType);
+
 }

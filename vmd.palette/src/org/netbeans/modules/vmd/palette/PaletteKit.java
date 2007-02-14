@@ -25,7 +25,6 @@ import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.DefaultDataFlavor;
 import org.netbeans.modules.vmd.api.palette.PaletteProvider;
-import org.netbeans.modules.vmd.palette.actions.ComponentInstallerAction;
 import org.netbeans.spi.palette.*;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -301,7 +300,19 @@ public class PaletteKit implements Runnable {
     
     private class Actions extends PaletteActions {
         public Action[] getImportActions() {
-            return new Action[] {new ComponentInstallerAction()};
+            DesignDocument doc = activeDocument;
+            if (doc == null)
+                return null;
+            final String projectType = doc.getDocumentInterface ().getProjectType ();
+
+            Collection<? extends PaletteProvider> providers = Lookup.getDefault ().lookupAll (PaletteProvider.class);
+            ArrayList<Action> actions = new ArrayList<Action> ();
+            for (PaletteProvider paletteProvider : providers) {
+                List<? extends Action> list = paletteProvider.getActions (projectType);
+                if (list != null)
+                    actions.addAll (list);
+            }
+            return actions.toArray (new Action[actions.size ()]);
         }
         
         public Action[] getCustomPaletteActions() {
@@ -339,7 +350,7 @@ public class PaletteKit implements Runnable {
             }
             String projectID = doc.getDocumentInterface().getProjectID();
             String projectType = doc.getDocumentInterface().getProjectType();
-            final String producerID = ((PaletteItemDataObject) item.lookup(PaletteItemDataObject.class)).getProducerID();
+            final String producerID = item.lookup(PaletteItemDataObject.class).getProducerID();
             
             final DescriptorRegistry registry = DescriptorRegistry.getDescriptorRegistry(projectType, projectID);
             registry.readAccess(new Runnable() {

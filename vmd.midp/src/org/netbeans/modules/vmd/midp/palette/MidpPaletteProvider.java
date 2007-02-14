@@ -25,13 +25,16 @@ import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 
+import javax.swing.*;
 import java.io.IOException;
+import java.util.List;
 
 /**
  *
  * @author Anton Chechel
  */
 public class MidpPaletteProvider implements PaletteProvider {
+
     public static final String CATEGORY_COMMANDS = "commands"; // NOI18N
     public static final String CATEGORY_DISPLAYABLES = "displayables"; // NOI18N
     public static final String CATEGORY_ELEMENTS = "elements"; // NOI18N
@@ -43,10 +46,10 @@ public class MidpPaletteProvider implements PaletteProvider {
     private String[] paletteCategories = {CATEGORY_DISPLAYABLES, CATEGORY_COMMANDS, CATEGORY_ELEMENTS,
                                           CATEGORY_ITEMS, CATEGORY_PROCESS_FLOW, CATEGORY_RESOURCES,
                                           CATEGORY_CUSTOM};
-    
+
     public MidpPaletteProvider() {
     }
-    
+
     public void initPaletteCategories(String projectType, DataFolder rootFolder) {
         if (MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(projectType)) {
             // set soring order if need
@@ -58,14 +61,14 @@ public class MidpPaletteProvider implements PaletteProvider {
                         order.append('/'); // NOI18N
                     }
                 }
-                
+
                 try {
                     rootFolder.getPrimaryFile().setAttribute("OpenIDE-Folder-Order", order.toString()); // NOI18N
                 } catch (IOException e) {
                     Debug.error("Can't set attribute for palette category directory: " + e);
                 }
             }
-            
+
             // create category folders
             for (String categoryName : paletteCategories) {
                 try {
@@ -82,5 +85,12 @@ public class MidpPaletteProvider implements PaletteProvider {
             }
         }
     }
-    
+
+    public List<? extends Action> getActions (String projectType) {
+        if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (projectType))
+            return null;
+
+        return null;//Collections.singletonList(SystemAction.get (AddToPaletteWizardAction.class));
+    }
+
 }

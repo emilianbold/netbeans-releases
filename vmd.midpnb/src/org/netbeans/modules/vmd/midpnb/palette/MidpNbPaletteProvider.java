@@ -19,25 +19,27 @@
 
 package org.netbeans.modules.vmd.midpnb.palette;
 
-import java.io.IOException;
-
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.palette.PaletteProvider;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 
+import javax.swing.*;
+import java.io.IOException;
+import java.util.List;
+
 /**
  *
  * @author Anton Chechel
  */
 public class MidpNbPaletteProvider implements PaletteProvider {
-    
+
     public static final String CATEGORY_SVG = "svg"; // NOI18N
-    
+
     public MidpNbPaletteProvider() {
     }
-    
+
     public void initPaletteCategories(String projectType, DataFolder rootFolder) {
         if (MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(projectType)) {
             try {
@@ -53,4 +55,9 @@ public class MidpNbPaletteProvider implements PaletteProvider {
             }
         }
     }
+
+    public List<? extends Action> getActions (String projectType) {
+        return null;
+    }
+
 }
