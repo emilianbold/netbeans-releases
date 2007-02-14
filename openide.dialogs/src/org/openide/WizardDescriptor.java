@@ -1148,7 +1148,12 @@ public class WizardDescriptor extends DialogDescriptor {
 
         // #17360: Reset wizard on CLOSED_OPTION too.
         if (CLOSED_OPTION.equals(convertedValue)) {
-            resetWizard();
+            try {
+                resetWizard();
+            } catch (RuntimeException x) {
+                // notify to log
+                err.log(Level.FINE, null, x);
+            }
         } else if (FINISH_OPTION.equals(convertedValue) || NEXT_OPTION.equals(convertedValue)) {
             //Bugfix #25820: make sure that storeSettings
             //is called before propertyChange.
