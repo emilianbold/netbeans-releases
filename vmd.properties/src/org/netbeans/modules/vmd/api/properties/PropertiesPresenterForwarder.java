@@ -54,13 +54,12 @@ public class PropertiesPresenterForwarder extends PropertiesPresenter {
     }
     
     public List<DesignPropertyDescriptor> getDesignerPropertyDescriptors() {
-        List<DesignPropertyDescriptor> descriptors = new ArrayList<DesignPropertyDescriptor>();
         DesignComponent component = getComponent().readProperty(propertyName).getComponent();
         
-        if (component == null) {
-            return descriptors;
-        }
+        if (component == null) 
+            return Collections.<DesignPropertyDescriptor>emptyList();
         
+        List<DesignPropertyDescriptor> descriptors = new ArrayList<DesignPropertyDescriptor>();
         Collection<? extends PropertiesPresenter> propertiesPresenters  = component.getPresenters(PropertiesPresenter.class);
         if (propertiesPresenters == null)
             return Collections.EMPTY_LIST; 
@@ -73,9 +72,12 @@ public class PropertiesPresenterForwarder extends PropertiesPresenter {
     }
     
     public List<String> getPropertiesCategories() {
-        List<String> categories = new ArrayList<String>();
         DesignComponent component = getComponent().readProperty(propertyName).getComponent();
         
+        if (component == null) 
+            return Collections.<String>emptyList();
+        
+        List<String> categories = new ArrayList<String>();
         for (PropertiesPresenter presenter : component.getPresenters(PropertiesPresenter.class)) {
             categories.addAll(presenter.getPropertiesCategories());
         }
