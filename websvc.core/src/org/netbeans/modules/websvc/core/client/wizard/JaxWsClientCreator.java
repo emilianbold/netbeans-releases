@@ -128,7 +128,7 @@ public class JaxWsClientCreator implements ClientCreator {
         String filePath = (String)wiz.getProperty(ClientWizardProperties.WSDL_FILE_PATH);
         //if (wsdlUrl==null) wsdlUrl = "file:"+(filePath.startsWith("/")?filePath:"/"+filePath); //NOI18N
         if(wsdlUrl == null){
-            wsdlUrl = FileUtil.toFileObject(new File(filePath)).getURL().toExternalForm();
+            wsdlUrl = FileUtil.toFileObject(FileUtil.normalizeFile(new File(filePath))).getURL().toExternalForm();
         }
         String packageName = (String)wiz.getProperty(ClientWizardProperties.WSDL_PACKAGE_NAME);
         if (packageName!=null && packageName.length()==0) packageName=null;

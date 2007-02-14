@@ -943,6 +943,11 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 return false; // invalid WSDL file
             }
             
+            if(!"wsdl".equalsIgnoreCase(FileUtil.getExtension(f.getName()))) {
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WsdlInvalid")); // NOI18N
+                return false; // invalid WSDL file
+            }
+            
             // 50103 - could be done via xml api, but this way should be quicker and suffice the need
             FileReader fr = null;
             LineNumberReader lnReader = null;
