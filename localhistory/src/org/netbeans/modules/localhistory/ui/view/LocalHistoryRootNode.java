@@ -172,9 +172,9 @@ public class LocalHistoryRootNode extends AbstractNode {
                           c.get(Calendar.MINUTE)      * 60 * 1000 + 
                           c.get(Calendar.SECOND)      * 1000 + 
                           c.get(Calendar.MILLISECOND);                
-        c.add(Calendar.MILLISECOND, -1 * todayMillis);                
+        c.add(Calendar.MILLISECOND, -1 * todayMillis);                        
         
-        if(c.before(date)) {
+        if(c.getTime().compareTo(date) < 0) {
             return 0;
         }
         
