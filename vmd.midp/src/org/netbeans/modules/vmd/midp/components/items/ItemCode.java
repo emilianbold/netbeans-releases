@@ -20,13 +20,14 @@ package org.netbeans.modules.vmd.midp.components.items;
 
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.codegen.Parameter;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodeSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
+import org.netbeans.modules.vmd.midp.components.sources.ItemCommandEventSourceCD;
 
 import java.util.List;
 
@@ -39,6 +40,7 @@ public class ItemCode {
     static final String PARAM_ITEM_COMMAND_LISTENER = "itemCommandListener"; // NOI18N
     static final String PARAM_LAYOUT = "layout"; // NOI18N
     static final String PARAM_APPEARANCE_MODE = "appearanceMode"; // NOI18N
+    static final String PARAM_DEFAULT_COMMAND = "defaultCommand"; // NOI18N
 
     public static Parameter createCommandParameter () {
         return new CommandParameter ();
@@ -54,6 +56,10 @@ public class ItemCode {
 
     public static Parameter createAppearanceModeParameter () {
         return new AppearanceModeParameter ();
+    }
+
+    public static Parameter createDefaultCommandParameter () {
+        return new DefaultCommandParameter ();
     }
 
     private static class CommandParameter implements Parameter {
@@ -182,6 +188,39 @@ public class ItemCode {
             }
             super.generateParameterCode (component, section, index);
         }
+    }
+
+    private static class DefaultCommandParameter implements Parameter {
+
+        public String getParameterName () {
+            return PARAM_DEFAULT_COMMAND;
+        }
+
+        public int getParameterPriority () {
+            return 0;
+        }
+
+        public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
+            MidpCodeSupport.generateCodeForPropertyValue (section.getWriter (), getDefaultCommand (component));
+        }
+
+        public boolean isRequiredToBeSet (DesignComponent component) {
+            return getDefaultCommand (component).getKind () != PropertyValue.Kind.NULL;
+        }
+
+        public int getCount (DesignComponent component) {
+            return -1;
+        }
+
+        public boolean isRequiredToBeSet (DesignComponent component, int index) {
+            throw Debug.illegalState ();
+        }
+
+        private PropertyValue getDefaultCommand (DesignComponent component) {
+            DesignComponent source = component.readProperty (ItemCD.PROP_DEFAULT_COMMAND).getComponent ();
+            return source != null ? source.readProperty (ItemCommandEventSourceCD.PROP_COMMAND) : PropertyValue.createNull ();
+        }
+
     }
 
 }

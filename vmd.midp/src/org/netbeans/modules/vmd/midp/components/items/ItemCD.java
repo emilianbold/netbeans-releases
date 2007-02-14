@@ -133,9 +133,10 @@ public class ItemCD extends ComponentDescriptor {
                 .addParameters (ItemCode.createCommandParameter ())
                 .addParameters (ItemCode.createItemCommandListenerParameter ())
                 .addParameters (ItemCode.createItemLayoutParameter ())
+                .addParameters (ItemCode.createDefaultCommandParameter ())
                 .addSetters(MidpSetter.createSetter("addCommand", MidpVersionable.MIDP_2).setArrayParameter(ItemCode.PARAM_COMMAND).addParameters(ItemCode.PARAM_COMMAND))
                 .addSetters(MidpSetter.createSetter("setItemCommandListener", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_ITEM_COMMAND_LISTENER))
-                .addSetters(MidpSetter.createSetter("setDefaultCommand", MidpVersionable.MIDP_2).addParameters(PROP_DEFAULT_COMMAND))
+                .addSetters(MidpSetter.createSetter("setDefaultCommand", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_DEFAULT_COMMAND))
                 .addSetters(MidpSetter.createSetter("setLabel", MidpVersionable.MIDP).addParameters(PROP_LABEL))
                 .addSetters(MidpSetter.createSetter("setLayout", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_LAYOUT))
                 .addSetters(MidpSetter.createSetter("setPreferredSize", MidpVersionable.MIDP_2).addParameters(PROP_PREFERRED_WIDTH, PROP_PREFERRED_HEIGHT));
