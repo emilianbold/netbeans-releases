@@ -21,11 +21,12 @@ package org.netbeans.modules.java.j2seplatform.platformdefinition;
 import java.text.MessageFormat;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-
 import java.util.*;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.util.zip.ZipFile;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -64,6 +65,17 @@ public class Util {
                 String surl = url.toExternalForm();
                 if (!surl.endsWith("/")) {
                     url = new URL (surl+"/");
+                }
+            }
+            else if (f.isFile()) {
+                //Slow but it will be called only in very rare cases:
+                //file on the classpath for which isArchiveFile returned false
+                try {
+                    ZipFile z = new ZipFile (f);
+                    z.close();
+                    url = FileUtil.getArchiveRoot (url);
+                } catch (IOException e) {
+                    url = null;
                 }
             }
             return url;
