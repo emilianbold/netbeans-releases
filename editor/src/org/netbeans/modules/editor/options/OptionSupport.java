@@ -65,11 +65,10 @@ public class OptionSupport extends SystemOption {
         kitClass2Type.put(kitClass, typeName);
         
         // Hook up the settings initializer
-        synchronized (Settings.class) {
-            Settings.Initializer si = getSettingsInitializer();
-            Settings.removeInitializer(si.getName());
-            Settings.addInitializer(si, Settings.OPTION_LEVEL);
-        }
+        Settings.Initializer si = getSettingsInitializer();
+        Settings.removeInitializer(si.getName());
+        Settings.addInitializer(si, Settings.OPTION_LEVEL);
+        Settings.reset();
     }
 
     public Class getKitClass() {

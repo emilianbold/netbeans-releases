@@ -20,7 +20,6 @@
 package org.netbeans.modules.editor.options;
 
 import java.util.Collection;
-import java.util.Iterator;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -58,6 +57,7 @@ public class BaseOptionsDeadlock92449Test extends NbTestCase {
         final Runnable runnableA = new Runnable() {
             public void run() {
                 baseOptions[0] = (BaseOptions) MimeLookup.getLookup(mimePath).lookup(BaseOptions.class);
+                baseOptions[0].getAbbrevMap();
             }
         };
 
@@ -65,6 +65,7 @@ public class BaseOptionsDeadlock92449Test extends NbTestCase {
         final Runnable runnableB = new Runnable() {
             public void run() {
                 editorKit[0] = (EditorKit) MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
+                editorKit[0].getActions();
             }
         };
 
@@ -88,7 +89,7 @@ public class BaseOptionsDeadlock92449Test extends NbTestCase {
         Task taskA = RequestProcessor.getDefault().post(runnableA);
         Task taskB = RequestProcessor.getDefault().post(runnableB);
         
-        for(int i = 0; i < 10; i++) {
+        for(int i = 0; i < 50; i++) {
             if (taskA.isFinished() && taskB.isFinished()) {
                 break;
             }

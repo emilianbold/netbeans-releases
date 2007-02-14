@@ -339,7 +339,7 @@ public class BaseOptions extends OptionSupport {
             return null;
         }
 
-        synchronized (this) {
+        synchronized (Settings.class) {
             // return already initialized folder
             if (settingsFolder!=null) return settingsFolder;
             
@@ -389,9 +389,13 @@ public class BaseOptions extends OptionSupport {
     }
     
     /** Gets MIMEOptionNode that belongs to this bean */
-    public synchronized MIMEOptionNode getMimeNode(){
-        if (mimeNode == null) createMIMENode(getTypeName());
-        return mimeNode;
+    public MIMEOptionNode getMimeNode() {
+        synchronized (Settings.class) {
+            if (mimeNode == null) {
+                createMIMENode(getTypeName());
+            }
+            return mimeNode;
+        }
     }
     
     /** Creates Node in global options for appropriate MIME type */
@@ -937,60 +941,64 @@ public class BaseOptions extends OptionSupport {
         }
     }
     
-    private synchronized KeyBindingSettings getKeybindingSettings(){
-        if (keyBindingsSettings == null){
-            String mime = getContentType();
-            Lookup lookup = MimeLookup.getLookup(MimePath.parse(mime));
-            resultKB = lookup.lookup(new Lookup.Template(KeyBindingSettings.class));
-            Collection inst = resultKB.allInstances();
-            lookupListenerKB = new LookupListener(){
-                public void resultChanged(LookupEvent ev){
-                    Lookup.Result result = ((Lookup.Result)ev.getSource());
-                    // refresh keyBindingsSettings
-                    Collection newInstances = result.allInstances();
-                    if (newInstances.size() > 0){
-                        keyBindingsSettings = (KeyBindingSettings)newInstances.iterator().next();
+    private KeyBindingSettings getKeybindingSettings() {
+        synchronized (Settings.class) {
+            if (keyBindingsSettings == null){
+                String mime = getContentType();
+                Lookup lookup = MimeLookup.getLookup(MimePath.parse(mime));
+                resultKB = lookup.lookup(new Lookup.Template(KeyBindingSettings.class));
+                Collection inst = resultKB.allInstances();
+                lookupListenerKB = new LookupListener(){
+                    public void resultChanged(LookupEvent ev){
+                        Lookup.Result result = ((Lookup.Result)ev.getSource());
+                        // refresh keyBindingsSettings
+                        Collection newInstances = result.allInstances();
+                        if (newInstances.size() > 0){
+                            keyBindingsSettings = (KeyBindingSettings)newInstances.iterator().next();
+                        }
+
+                        updateKeybindingsFromNewOptionsDialogAttributes();
                     }
-                    
-                    updateKeybindingsFromNewOptionsDialogAttributes();
+                };
+
+                weakLookupListenerKB = (LookupListener) WeakListeners.create(
+                        LookupListener.class, lookupListenerKB, resultKB);
+
+                resultKB.addLookupListener(weakLookupListenerKB);            
+                if (inst.size() > 0){
+                    keyBindingsSettings = (KeyBindingSettings)inst.iterator().next();
                 }
-            };
-            
-            weakLookupListenerKB = (LookupListener) WeakListeners.create(
-                    LookupListener.class, lookupListenerKB, resultKB);
-            
-            resultKB.addLookupListener(weakLookupListenerKB);            
-            if (inst.size() > 0){
-                keyBindingsSettings = (KeyBindingSettings)inst.iterator().next();
             }
+            return keyBindingsSettings;
         }
-        return keyBindingsSettings;
     }
     
-    private synchronized FontColorSettings getFontColorSettings(){
-        if (fontColorSettings == null){
-            String mime = getContentType();
-            Lookup lookup = MimeLookup.getLookup(MimePath.parse(mime));
-            Lookup.Result result = lookup.lookup(new Lookup.Template(FontColorSettings.class));
-            Collection inst = result.allInstances();
-            lookupListener = new LookupListener(){
-                public void resultChanged(LookupEvent ev){
-                    Lookup.Result result = ((Lookup.Result)ev.getSource());
-                    // refresh fontColorSettings
-                    Collection newInstances = result.allInstances();
-                    if (newInstances.size() > 0){
-                        fontColorSettings = (FontColorSettings)newInstances.iterator().next();
+    private FontColorSettings getFontColorSettings() {
+        synchronized (Settings.class) {
+            if (fontColorSettings == null) {
+                String mime = getContentType();
+                Lookup lookup = MimeLookup.getLookup(MimePath.parse(mime));
+                Lookup.Result result = lookup.lookup(new Lookup.Template(FontColorSettings.class));
+                Collection inst = result.allInstances();
+                lookupListener = new LookupListener(){
+                    public void resultChanged(LookupEvent ev){
+                        Lookup.Result result = ((Lookup.Result)ev.getSource());
+                        // refresh fontColorSettings
+                        Collection newInstances = result.allInstances();
+                        if (newInstances.size() > 0){
+                            fontColorSettings = (FontColorSettings)newInstances.iterator().next();
+                        }
+
+                        updateColoringsFromNewOptionsDialogAttributes();
                     }
-                    
-                    updateColoringsFromNewOptionsDialogAttributes();
+                };
+                result.addLookupListener(lookupListener);
+                if (inst.size() > 0){
+                    fontColorSettings = (FontColorSettings)inst.iterator().next();
                 }
-            };
-            result.addLookupListener(lookupListener);
-            if (inst.size() > 0){
-                fontColorSettings = (FontColorSettings)inst.iterator().next();
             }
+            return fontColorSettings;
         }
-        return fontColorSettings;
     }
     
     public Map getColoringMap() {
