@@ -32,13 +32,13 @@ public final class AcceptSupport {
     }
     
     public static boolean isAcceptable(DesignComponent component, Transferable transferable) {
-        if (component == null)
+        if (component == null  ||  transferable == null)
             return false;
         ComponentProducer producer = DefaultDataFlavor.decodeFromDataFlavors (component.getDocument (), transferable);
         for (AbstractAcceptPresenter presenter : component.getPresenters (AbstractAcceptPresenter.class))
             switch (presenter.getKind ()) {
                 case COMPONENT_PRODUCER:
-                    if (presenter.isAcceptable (producer))
+                    if (producer != null  &&  presenter.isAcceptable (producer))
                         return true;
                     break;
                 case TRANSFERABLE:
@@ -48,30 +48,15 @@ public final class AcceptSupport {
             }
         return false;
     }
-    
-    public static boolean isAcceptable(DesignComponent component, ComponentProducer producer) {
-        if (component == null)
-            return false;
-        for (AbstractAcceptPresenter presenter : component.getPresenters (AbstractAcceptPresenter.class))
-            switch (presenter.getKind ()) {
-                case COMPONENT_PRODUCER:
-                    if (presenter.isAcceptable (producer))
-                        return true;
-                    break;
-                case TRANSFERABLE:
-                    break;
-            }
-        return false;
-    }
-    
-    public static ComponentProducer.Result accept(DesignComponent component, Transferable transferable) {
-        if (component == null)
+
+    public static ComponentProducer.Result accept (DesignComponent component, Transferable transferable) {
+        if (component == null || transferable == null)
             return null;
         ComponentProducer producer = DefaultDataFlavor.decodeFromDataFlavors (component.getDocument (), transferable);
         for (AbstractAcceptPresenter presenter : component.getPresenters (AbstractAcceptPresenter.class))
             switch (presenter.getKind ()) {
                 case COMPONENT_PRODUCER:
-                    if (presenter.isAcceptable (producer))
+                    if (producer != null  &&  presenter.isAcceptable (producer))
                         return presenter.accept (producer);
                     break;
                 case TRANSFERABLE:
@@ -81,9 +66,24 @@ public final class AcceptSupport {
             }
         return null;
     }
+
+    public static boolean isAcceptable(DesignComponent component, ComponentProducer producer) {
+        if (component == null  ||  producer == null)
+            return false;
+        for (AbstractAcceptPresenter presenter : component.getPresenters (AbstractAcceptPresenter.class))
+            switch (presenter.getKind ()) {
+                case COMPONENT_PRODUCER:
+                    if (presenter.isAcceptable (producer))
+                        return true;
+                    break;
+                case TRANSFERABLE:
+                    break;
+            }
+        return false;
+    }
     
     public static ComponentProducer.Result accept(DesignComponent component, ComponentProducer producer) {
-        if (component == null)
+        if (component == null  || producer == null)
             return null;
         for (AbstractAcceptPresenter presenter : component.getPresenters (AbstractAcceptPresenter.class))
             switch (presenter.getKind ()) {
