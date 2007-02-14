@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.javadoc.hints;
 
+import com.sun.javadoc.AnnotationTypeElementDoc;
+import com.sun.javadoc.AnnotationTypeElementDoc;
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.ExecutableMemberDoc;
@@ -236,7 +238,11 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
         
         @Override
         public Void visitMethod(MethodTree node, List<ErrorDescription> arg1) {
-            if (access.isAccesible(node.getModifiers().getFlags())) {
+            Tree clazz = getCurrentPath().getParentPath().getLeaf();
+            if (clazz.getKind() == Tree.Kind.CLASS &&
+                    (javac.getTreeUtilities().isInterface((ClassTree) clazz) ||
+                    javac.getTreeUtilities().isAnnotation((ClassTree) clazz) ||
+                    access.isAccesible(node.getModifiers().getFlags()))) {
                 processNode(node, arg1);
             }
             return null;
@@ -326,6 +332,15 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                         ClassDoc classDoc = (ClassDoc) jDoc;
                         ClassTree classTree = (ClassTree) node;
                         processTypeParameters(classEl, classTree, classDoc, errors);
+                    } else if (jDoc.isAnnotationType()) {
+                        processAnnTypeParameters(elm, node, jDoc, errors);
+                    } else if (jDoc.isAnnotationTypeElement()) {
+                        AnnotationTypeElementDoc annDoc = (AnnotationTypeElementDoc) jDoc;
+                        ExecutableElement methodEl = (ExecutableElement) elm;
+                        MethodTree methodTree = (MethodTree) node;
+                        processAnnTypeParameters(methodEl, methodTree, annDoc, errors);
+                        processReturn(methodEl, methodTree, annDoc, errors);
+                        processAnnTypeThrows(methodEl, methodTree, annDoc, errors);
                     }
 
                     processDeprecatedAnnotation(elm, jDoc, errors);
@@ -446,7 +461,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                 if (tagNames.containsKey(tagFQN)) {
                     // duplicate throws error
                     addRemoveTagFix(throwsTag,
-                            NbBundle.getMessage(JavadocHintProvider.class, "DUPLICATE_THROWS_DESC", throwsTag.exceptionName()), // NOI18N
+                            NbBundle.getMessage(JavadocHintProvider.class, "DUPLICATE_THROWS_DESC", throwsTag.name(), throwsTag.exceptionName()), // NOI18N
                             exec, errors);
                 } else {
                     tagNames.put(tagFQN, throwsTag);
@@ -496,10 +511,37 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                     }
                 }
                 addRemoveTagFix(throwsTag,
-                        NbBundle.getMessage(JavadocHintProvider.class, "UNKNOWN_THROWABLE_DESC", throwsTag.exceptionName()), // NOI18N
+                        NbBundle.getMessage(JavadocHintProvider.class, "UNKNOWN_THROWABLE_DESC", throwsTag.name(), throwsTag.exceptionName()), // NOI18N
                         exec, errors);
             }
 
+        }
+        
+        private void processAnnTypeThrows(ExecutableElement exec, MethodTree node, AnnotationTypeElementDoc jdoc, List<ErrorDescription> errors) {
+            // this surprisingly gets both @throws and @exception tags
+            Tag[] tags = jdoc.tags("@throws"); //NOI18N
+            
+            for (Tag tag : tags) {
+                // annotation type element cannot contain throwables
+                ThrowsTag throwsTag = (ThrowsTag) tag;
+                addRemoveTagFix(throwsTag,
+                        NbBundle.getMessage(JavadocHintProvider.class, "ILLEGAL_ANNOTATION_TYPE_THROWS_DESC", // NOI18N
+                        throwsTag.name(),
+                        throwsTag.exceptionName()),
+                        exec, errors);
+            }
+        }
+        
+        private void processAnnTypeParameters(Element elm, Tree node, Doc jdoc, List<ErrorDescription> errors) {
+            final Tag[] tags = jdoc.tags("@param"); //NOI18N
+            
+            for (Tag tag : tags) {
+                // annotation type element cannot contain params
+                ParamTag paramTag = (ParamTag) tag;
+                addRemoveTagFix(paramTag,
+                        NbBundle.getMessage(JavadocHintProvider.class, "ILLEGAL_ANNOTATION_TYPE_PARAM_DESC", paramTag.parameterName()), // NOI18N
+                        elm, errors);
+            }
         }
         
         private void processParameters(ExecutableElement exec, MethodTree node, ExecutableMemberDoc jdoc, List<ErrorDescription> errors) {
