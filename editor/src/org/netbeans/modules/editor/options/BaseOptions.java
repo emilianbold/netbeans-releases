@@ -407,6 +407,9 @@ public class BaseOptions extends OptionSupport {
     }
     
     protected void updateSettingsMap(Class kitClass, Map settingsMap) {
+//        final String id = "kitClass=" + kitClass + "; getKitClass()=" + getKitClass() + "; this=" + this;
+//        System.out.println("### USM: " + id);
+        
         loadXMLSettings();
 
         super.updateSettingsMap(kitClass, settingsMap);
@@ -433,17 +436,14 @@ public class BaseOptions extends OptionSupport {
                     }
                 }
             );
-            
-            // Antialiasing evaluator - for global options only
-            if (kitClass == BaseKit.class) {
-                settingsMap.put(SettingsNames.RENDERING_HINTS,
-                    new Settings.Evaluator() {
-                        public Object getValue(Class kitClass2, String settingName) {
-                            return computeTextAntialiasingMap( isTextAntialiasing() );
-                        }
+
+            settingsMap.put(SettingsNames.RENDERING_HINTS,
+                new Settings.Evaluator() {
+                    public Object getValue(Class kitClass2, String settingName) {
+                        return computeTextAntialiasingMap( isTextAntialiasing() );
                     }
-                );
-            }
+                }
+            );
 
             if (coloringMapInitializer != null) {
                 coloringMapInitializer.updateSettingsMap(kitClass, settingsMap);
