@@ -24,7 +24,6 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.StringTokenizer;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
@@ -40,6 +39,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.text.PositionBounds;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -74,26 +74,22 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
             );
             return createProblem(null, true, msg);
         }
-//        if (!isValidPackageName(refactoring.getTargetPackageName())) {
-//            String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoring.class, "ERR_InvalidPackage")).format(
-//                new Object[] {refactoring.getTargetPackageName()}
-//            );
-//            return createProblem(null, true, msg);
-//        }
-//        String name = refactoring.getTargetPackageName().replace('.','/') + '/' + refactoring.getNewName() + ".java"; // NOI18N
-//        if (refactoring.getTargetClassPathRoot().getFileObject(name) != null)
-//            return createProblem(null, true, new MessageFormat(NbBundle.getMessage(MoveClassRefactoring.class, "ERR_ClassToMoveClashes")).format(new Object[]{refactoring.getNewName()}));
-        return null;
-    }
-    
-    private static boolean isValidPackageName(String name) {
-        StringTokenizer tokenizer = new StringTokenizer(name, "."); // NOI18N
-        while (tokenizer.hasMoreTokens()) {
-            if (!Utilities.isJavaIdentifier(tokenizer.nextToken())) {
-                return false;
-            }
+        URL target = (URL) refactoring.getTarget();
+        String targetPackageName = RetoucheUtils.getPackageName(target);
+        if (!RetoucheUtils.isValidPackageName(targetPackageName)) {
+            String msg = new MessageFormat(NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_InvalidPackage")).format(
+                new Object[] {targetPackageName}
+            );
+            return createProblem(null, true, msg);
         }
-        return true;
+        String name = targetPackageName.replace('.','/') + '/' + refactoring.getNewName() + ".java"; // NOI18N
+        FileObject fo = URLMapper.findFileObject(target);
+        if (fo==null) {
+            return null;
+        }
+        if (fo.getFileObject(refactoring.getNewName(), ((FileObject) refactoring.getRefactoredObject()).getExt()) != null)
+            return createProblem(null, true, new MessageFormat(NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_ClassToMoveClashes")).format(new Object[]{refactoring.getNewName()}));
+        return null;
     }
 
     public Problem checkParameters() {
