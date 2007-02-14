@@ -30,7 +30,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ExtSettingsDefaults;
+import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -141,7 +144,9 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
             queryCaretOffset = caretOffset;
             queryAnchorOffset = (identifierBeforeCursor != null) ? caretOffset - identifierBeforeCursor.length() : caretOffset;
             if (identifierBeforeCursor != null) {
-                Collection cts = op.findByParametrizedText(identifierBeforeCursor, true);
+                boolean ignoreCase = !SettingsUtil.getBoolean(component.getUI().getEditorKit(component).getClass(), ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
+                        ExtSettingsDefaults.defaultCompletionCaseSensitive);
+                Collection cts = op.findByParametrizedText(identifierBeforeCursor, ignoreCase);
                 Collection/*<CodeTemplateFilter>*/ filters = op.getTemplateFilters(component, queryAnchorOffset);
                 queryResult = new ArrayList(cts.size());
                 for (Iterator it = cts.iterator(); it.hasNext();) {
