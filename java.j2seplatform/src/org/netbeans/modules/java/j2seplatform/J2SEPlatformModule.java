@@ -22,16 +22,14 @@ import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.Logger;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-
-import java.util.Iterator;
+import org.openide.util.Exceptions;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -40,7 +38,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
-import org.openide.ErrorManager;
 
 
 public class J2SEPlatformModule extends ModuleInstall {
@@ -67,7 +64,7 @@ public class J2SEPlatformModule extends ModuleInstall {
                             PropertyUtils.putGlobalProperties (ep);
                         }
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify (ioe);
+                        Exceptions.printStackTrace(ioe);
                     }
                 }
             });
@@ -98,8 +95,10 @@ public class J2SEPlatformModule extends ModuleInstall {
                     try {
                         PlatformConvertor.generatePlatformProperties(installedPlatforms[i], systemName, ep);
                         changed = true;
+                    } catch (PlatformConvertor.BrokenPlatformException b) {
+                        Logger.getLogger(J2SEPlatformModule.class.getName()).info("Platform: " + installedPlatforms[i].getDisplayName() +" is missing: " + b.getMissingTool());
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+                        Exceptions.printStackTrace(ioe);
                   }
                 }
             }

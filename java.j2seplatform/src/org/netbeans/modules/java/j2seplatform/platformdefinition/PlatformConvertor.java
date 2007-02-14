@@ -44,7 +44,6 @@ import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.util.lookup.*;
 import org.openide.xml.*;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -64,7 +63,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     private static final String CLASSIC = "classic";        //NOI18N
     private static final String MODERN = "modern";          //NOI18N
     private static final String JAVAC13 = "javac1.3";       //NOI18N
-    private static final String[] IMPORTANT_TOOLS = {
+    static final String[] IMPORTANT_TOOLS = {
         // Used by j2seproject:
         "javac", // NOI18N
         "java", // NOI18N
@@ -321,7 +320,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                         props.setProperty(toolName, normalizePath(getToolPath(tool), jdkHome, homePropName));
                     }
                 } else {
-                    throw new IOException("Cannot locate " + name + " command"); // NOI18N
+                    throw new BrokenPlatformException (name);
                 }
             }
         }
@@ -380,6 +379,21 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         else {
             return loc;
         }
+    }
+    
+    public static class BrokenPlatformException extends IOException {
+        
+        private final String toolName;
+        
+        public BrokenPlatformException (final String toolName) {
+            super ("Cannot locate " + toolName + " command");   //NOI18N
+            this.toolName = toolName;
+        }
+        
+        public String getMissingTool () {
+            return this.toolName;
+        }
+        
     }
 
     static class W implements FileSystem.AtomicAction {

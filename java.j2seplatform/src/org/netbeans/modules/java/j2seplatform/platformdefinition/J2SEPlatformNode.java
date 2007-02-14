@@ -87,7 +87,15 @@ class J2SEPlatformNode extends AbstractNode {
     }
 
     private boolean isBroken () {
-        return this.platform.getInstallFolders().size()==0;
+        if (this.platform.getInstallFolders().size()==0) {
+            return true;
+        }
+        for (int i=0; i<PlatformConvertor.IMPORTANT_TOOLS.length; i++) {
+            if (this.platform.findTool(PlatformConvertor.IMPORTANT_TOOLS[i]) == null) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
