@@ -50,7 +50,7 @@ public class GenerateCodeAction extends BaseAction {
         new GetterSetterGenerator.Factory(),
         new EqualsHashCodeGenerator.Factory(),
         new DelegateMethodGenerator.Factory(),
-        new OverrideMethodGenerator.Factory()
+        new ImplementOverrideMethodGenerator.Factory()
     };
 
     public GenerateCodeAction(){

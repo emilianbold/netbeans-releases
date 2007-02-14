@@ -182,6 +182,18 @@ public class GeneratorUtils {
         }
     }
     
+    public static void generateAbstractMethodImplementations(WorkingCopy wc, TreePath path, List<? extends ExecutableElement> elements, int index) {
+        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        TypeElement te = (TypeElement)wc.getTrees().getElement(path);
+        if (te != null) {
+            TreeMaker make = wc.getTreeMaker();
+            ClassTree nue = (ClassTree)path.getLeaf();
+            for(ExecutableElement element : elements)
+                nue = make.addClassMember(nue, createMethodImplementation(wc, element, (DeclaredType)te.asType()));
+            wc.rewrite(path.getLeaf(), nue);
+        }
+    }
+    
     public static void generateAbstractMethodImplementation(WorkingCopy wc, TreePath path, ExecutableElement element, int index) {
         assert path.getLeaf().getKind() == Tree.Kind.CLASS;
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
