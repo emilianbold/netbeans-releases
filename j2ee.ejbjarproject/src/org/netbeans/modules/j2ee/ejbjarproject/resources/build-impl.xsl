@@ -82,6 +82,10 @@ is divided into following sections:
             <target name="-init-user">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir</xsl:attribute>
                 <property file="${{user.properties.file}}"/>
+                <xsl:comment> The two properties below are usually overridden </xsl:comment>
+                <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
+                <property name="default.javac.source" value="1.4"/>
+                <property name="default.javac.target" value="1.4"/>
             </target>
             
             <target name="-init-project">
@@ -125,10 +129,6 @@ is divided into following sections:
                 </xsl:if>
                 <xsl:comment> Ensure configuration directory exists. </xsl:comment>
                 <mkdir dir="${{meta.inf}}"/>
-                <xsl:comment> The two properties below are usually overridden </xsl:comment>
-                <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
-                <property name="default.javac.source" value="1.4"/>
-                <property name="default.javac.target" value="1.4"/>
                 <property name="runmain.jvmargs" value=""/>
                 <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:use-manifest">
                     <fail unless="manifest.file">Must set manifest.file</fail>
