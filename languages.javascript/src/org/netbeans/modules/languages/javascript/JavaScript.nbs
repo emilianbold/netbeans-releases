@@ -331,7 +331,7 @@ COLOR:js_identifier {
 
 FOLD:FunctionBody:"{...}"
 FOLD:js_comment:"{...}"
-FOLD:js_line_commnet:"{...}"
+FOLD:js_line_comment:"{...}"
 
 ########### navigator ##########################################################
 
