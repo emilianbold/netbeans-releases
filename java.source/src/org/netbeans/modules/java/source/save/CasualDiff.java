@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.java.source.save;
 
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
@@ -2514,16 +2513,7 @@ public class CasualDiff {
                 }
                 String match2 = builder.toString();
                 makeTokenListMatch(match1, match2, lines1[delStart].start);
-                
-//                append(Diff.delete(lines1[delStart].start, lines1[delEnd].end));
-//                StringBuilder builder = new StringBuilder();
-//                for (int i = addStart; i <= addEnd; i++) {
-//                    builder.append(lines2[i].data);
-//                }
-//                append(Diff.insert(delEnd == Difference.NONE ? lines1[delStart].start : lines1[delEnd].end,
-//                        builder.toString(), null, "", LineInsertionType.NONE));
             }
-                    
         }
         return null;
     }
