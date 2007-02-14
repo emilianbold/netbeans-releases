@@ -22,6 +22,8 @@ import java.awt.Image;
 import java.beans.BeanInfo;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
@@ -38,8 +40,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * The toplevel Node in the LocalHistoryView
- *
- * The node hierarchy looks like 
+ * 
  * <ul> 
  * <li>
  * In case the LocalHistoryView was invoked for a 1 file Node
@@ -122,24 +123,21 @@ public class LocalHistoryRootNode extends AbstractNode {
         Map<Long, List<StoreEntry>> entriesMap = new HashMap<Long, List<StoreEntry>>();                        
         for (File f : files) {
             StoreEntry[] ses = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntries(f);
-            for(StoreEntry e : ses) {
-                List<StoreEntry> storeEntries = entriesMap.get(e.getTimestamp());
+            for(StoreEntry se : ses) {
+                List<StoreEntry> storeEntries = entriesMap.get(se.getTimestamp());
                 if(storeEntries == null) {
                     storeEntries = new ArrayList<StoreEntry>();
-                    entriesMap.put(e.getTimestamp(), storeEntries);
+                    entriesMap.put(se.getTimestamp(), storeEntries);
                 }
-                storeEntries.add(e);
+                storeEntries.add(se);
             }
         }
                     
-        long now = System.currentTimeMillis();
-        
         Map<Integer, List<Node>> storeEntryNodesToDays = new HashMap<Integer, List<Node>>();        
         
         // segment the StoreEntries in day groups
-        for (Long ts  : entriesMap.keySet()) {          
-            int day = (int) ( (now - ts) / (24 * 60 * 60 * 1000) );
-                                
+        for (Long ts  : entriesMap.keySet()) {                      
+            int day = getDay(ts);                                                        
             List<Node> nodesFromADay =  storeEntryNodesToDays.get(day);
             if(nodesFromADay == null) {
                 nodesFromADay = new ArrayList<Node>();
@@ -162,6 +160,27 @@ public class LocalHistoryRootNode extends AbstractNode {
 
         return dateFolderNodes.toArray(new DateFolderNode[dateFolderNodes.size()]);
     }                
+    
+    private static int getDay(long ts) {
+        Date date = new Date(ts);
+                
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());        
+        
+        // set the cal at today midnight
+        int todayMillis = c.get(Calendar.HOUR_OF_DAY) * 60 * 60 * 1000 +
+                          c.get(Calendar.MINUTE)      * 60 * 1000 + 
+                          c.get(Calendar.SECOND)      * 1000 + 
+                          c.get(Calendar.MILLISECOND);                
+        c.add(Calendar.MILLISECOND, -1 * todayMillis);                
+        
+        if(c.before(date)) {
+            return 0;
+        }
+        
+        return (int) ( (c.getTimeInMillis() - ts) / (24 * 60 * 60 * 1000) ) + 1;
+                
+    }
     
     /**
      * 
