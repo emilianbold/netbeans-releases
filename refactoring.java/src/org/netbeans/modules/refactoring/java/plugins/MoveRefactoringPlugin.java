@@ -24,43 +24,15 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.spi.Transaction;
-import org.netbeans.modules.refactoring.api.MoveRefactoring;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.java.DiffElement;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.api.*;
+import org.netbeans.modules.refactoring.java.*;
 import org.netbeans.modules.refactoring.java.classpath.RefactoringClassPathImplementation;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
-import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -135,7 +107,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                     }
                     
                     public void run(final CompilationController parameter) throws Exception {
-                        parameter.toPhase(Phase.ELEMENTS_RESOLVED);
+                        parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         List<? extends Tree> trees= parameter.getCompilationUnit().getTypeDecls();
                         for (Tree t: trees) {
                             if (t.getKind() == Tree.Kind.CLASS) {
@@ -173,7 +145,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
             elements.registerTransaction(new RetoucheCommit(results));
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
-                    for (Difference dif: result.getDifferences(jfo)) {
+                    for (ModificationResult.Difference dif: result.getDifferences(jfo)) {
                         elements.add(refactoring,DiffElement.create(dif, jfo,result));
                     }
                 }
