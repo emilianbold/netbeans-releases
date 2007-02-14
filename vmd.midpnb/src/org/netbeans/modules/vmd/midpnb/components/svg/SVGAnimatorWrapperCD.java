@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.midpnb.components.svg;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
@@ -135,7 +136,9 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
             new AcceptSVGFilesPresenter(),
             // code
             createSetterPresenter (),
-            MidpCustomCodePresenterSupport.createAddImportPresenter ()
+            MidpCustomCodePresenterSupport.createAddImportPresenter (),
+            // delete
+            DeleteDependencyPresenter.createDependentOnPropertyPresenter (PROP_SVG_IMAGE)
         );
     }
     
