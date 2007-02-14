@@ -381,7 +381,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             cancel = true;
         }
         Document document = Registry.getMostActiveDocument();
-        if (document != getActiveDocument()) {
+        if (component != null && document == component.getDocument() && document != getActiveDocument()) {
             activeProviders = getCompletionProvidersForComponent(component);
             if (debug) {
                 StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n"); // NOI18N
