@@ -51,14 +51,11 @@ public final class ApplicationManagedResourceTransactionNonInjectableInWeb exten
                 Collections.<AnnotationTree>emptyList()
                 );
         
-        
-        
-        
         modifiedClazz = getTreeMaker().insertClassMember(getClassTree(), getIndexForField(getClassTree()), createEntityManagerFactory());
 
         String text =
+            "javax.persistence.EntityManager em = emf.createEntityManager();\n" +
             "try {\n" +
-            "    javax.persistence.EntityManager em = emf.createEntityManager();\n" +
             "    em.getTransaction().begin();\n" +
             generateCallLines() +
             "    em.getTransaction().commit();\n" +
