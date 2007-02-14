@@ -26,7 +26,7 @@ import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.DatabaseManager;
 import org.netbeans.api.languages.LibrarySupport;
 import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.PTPath;
+import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.SyntaxCookie;
 import org.netbeans.api.languages.support.CompletionSupport;
 import org.netbeans.api.lexer.Token;
@@ -38,7 +38,7 @@ import org.netbeans.api.languages.Cookie;
 import org.netbeans.api.languages.LibrarySupport;
 import org.netbeans.api.languages.SyntaxCookie;
 import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.ASTToken;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.ErrorManager;
@@ -75,6 +75,7 @@ import javax.swing.text.StyledDocument;
 public class JavaScript {
 
     private static final String DOC = "org/netbeans/modules/languages/javascript/Documentation.xml";
+    private static final String MIME_TYPE = "text/javascript";
     
     private static Set regExp = new HashSet ();
     static {
@@ -95,7 +96,7 @@ public class JavaScript {
             ) {
                 input.setIndex (start);
                 return new Object[] {
-                    SToken.create ("js_operator", ""),
+                    ASTToken.create (MIME_TYPE, "js_operator", ""),
                     null
                 };
             }
@@ -129,13 +130,13 @@ public class JavaScript {
             ) {
                 input.setIndex (start);
                 return new Object[] {
-                    SToken.create ("js_operator", ""),
+                    ASTToken.create (MIME_TYPE, "js_operator", ""),
                     null
                 };
             } else {
                 input.setIndex (end);
                 return new Object[] {
-                    SToken.create ("js_regularExpression", ""),
+                    ASTToken.create (MIME_TYPE, "js_regularExpression", ""),
                     null
                 };
             }
@@ -145,20 +146,20 @@ public class JavaScript {
         ) {
             input.setIndex (end);
             return new Object[] {
-                SToken.create ("js_regularExpression", ""),
+                ASTToken.create (MIME_TYPE, "js_regularExpression", ""),
                 null
             };
         }
         input.setIndex (start);
         return new Object[] {
-            SToken.create ("js_operator", ""),
+            ASTToken.create (MIME_TYPE, "js_operator", ""),
             null
         };
     }
 
     public static Runnable hyperlink (SyntaxCookie cookie) {
-        PTPath path = cookie.getPTPath ();
-        SToken t = (SToken) path.getLeaf ();
+        ASTPath path = cookie.getPTPath ();
+        ASTToken t = (ASTToken) path.getLeaf ();
         ASTNode n = path.size () > 1 ? 
             (ASTNode) path.get (path.size () - 2) :
             null;
@@ -184,7 +185,7 @@ public class JavaScript {
     }
     
     public static String functionName (SyntaxCookie cookie) {
-        PTPath path = cookie.getPTPath ();
+        ASTPath path = cookie.getPTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
         String name = null;
         ASTNode nameNode = n.getNode ("FunctionName");
@@ -213,7 +214,7 @@ public class JavaScript {
     }
 
     public static String objectName (SyntaxCookie cookie) {
-        PTPath path = cookie.getPTPath ();
+        ASTPath path = cookie.getPTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
         ASTNode p = n.getParent ();
         while (p != null) {
@@ -236,7 +237,7 @@ public class JavaScript {
     public static List completionItems (Cookie cookie) {
         List result = new ArrayList ();
         if (cookie instanceof SyntaxCookie) {
-            PTPath path = ((SyntaxCookie) cookie).getPTPath ();
+            ASTPath path = ((SyntaxCookie) cookie).getPTPath ();
             DatabaseManager databaseManager = DatabaseManager.getDefault ();
             Collection c = databaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
             result.addAll (c);
@@ -350,7 +351,7 @@ public class JavaScript {
 //            }
 //        }
 //        if (!(cookie instanceof SyntaxCookie)) return completionDescriptions;
-//        PTPath path = ((SyntaxCookie) cookie).getPTPath ();
+//        ASTPath path = ((SyntaxCookie) cookie).getPTPath ();
 //        ArrayList l = new ArrayList ();
 //        DatabaseManager databaseManager = DatabaseManager.getDefault ();
 //        Collection c = databaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
@@ -367,7 +368,7 @@ public class JavaScript {
     public static void performDeleteCurrentMethod (ASTNode node, JTextComponent comp) {
         NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
         int position = comp.getCaretPosition();
-        PTPath path = node.findPath(position);
+        ASTPath path = node.findPath(position);
         ASTNode methodNode = null;
         for (Iterator iter = path.listIterator(); iter.hasNext(); ) {
             Object obj = iter.next();
@@ -390,7 +391,7 @@ public class JavaScript {
     public static boolean enabledDeleteCurrentMethod (ASTNode node, JTextComponent comp) {
         NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
         int position = comp.getCaretPosition();
-        PTPath path = node.findPath(position);
+        ASTPath path = node.findPath(position);
         if (path == null) return false;
         for (Iterator iter = path.listIterator(); iter.hasNext(); ) {
             Object obj = iter.next();
@@ -514,9 +515,11 @@ public class JavaScript {
             return false;
         }
         SyntaxCookie scookie = (SyntaxCookie)cookie;
-        PTPath path = scookie.getPTPath();
-        int size = path.size();
-        ASTNode node = (ASTNode)path.get(size - 2);
+        ASTPath path = scookie.getPTPath ();
+        int size = path.size ();
+        if (size < 2) return false;
+        if (!(path.get (size - 2) instanceof ASTNode)) return false;
+        ASTNode node = (ASTNode) path.get (size - 2);
         String nt = node.getNT();
         if ("FormalParameterList".equals(nt)) { // NOI18N
             return true;
@@ -524,7 +527,7 @@ public class JavaScript {
         if ("MemberOperator".equals(nt)) { // NOI18N
             return false;
         }
-        SToken leaf = (SToken)path.getLeaf();
+        ASTToken leaf = (ASTToken)path.getLeaf();
         ListIterator iter = path.listIterator(size - 1);
         while (iter.hasPrevious()) {
             Object obj = iter.previous();
@@ -550,9 +553,11 @@ public class JavaScript {
             return false;
         }
         SyntaxCookie scookie = (SyntaxCookie)cookie;
-        PTPath path = scookie.getPTPath();
+        ASTPath path = scookie.getPTPath();
         int size = path.size();
-        ASTNode node = (ASTNode)path.get(size - 2);
+        if (size < 2) return false;
+        if (!(path.get (size - 2) instanceof ASTNode)) return false;
+        ASTNode node = (ASTNode) path.get (size - 2);
         String nt = node.getNT();
         if ("VariableDeclaration".equals(nt) || "VariableDeclarationNoIn".equals(nt)) { // NOI18N
             return true;
@@ -560,7 +565,7 @@ public class JavaScript {
         if ("MemberOperator".equals(nt)) { // NOI18N
             return false;
         }
-        SToken leaf = (SToken)path.getLeaf();
+        ASTToken leaf = (ASTToken)path.getLeaf();
         Object lastElem = leaf;
         String varId = leaf.getIdentifier();
         ListIterator iter = path.listIterator(size - 1);
@@ -604,7 +609,7 @@ public class JavaScript {
             }
             ASTNode n = (ASTNode)obj;
             if ("VariableDeclaration".equals(n.getNT()) && 
-                    ((SToken)n.getChildren().get(0)).getIdentifier().equals(varId)) { // NOI18N
+                    ((ASTToken)n.getChildren().get(0)).getIdentifier().equals(varId)) { // NOI18N
                 return true;
             }
         }

@@ -20,7 +20,7 @@
 package org.netbeans.modules.languages.parser;
 
 import org.netbeans.api.languages.CharInput;
-import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.ASTToken;
 import java.util.*;
 import org.netbeans.modules.languages.Language.TokenType;
 
@@ -46,7 +46,7 @@ public class Parser {
         return p;
     }
     
-    public SToken read (Cookie cookie, CharInput input) {
+    public ASTToken read (Cookie cookie, CharInput input, String mimeType) {
         if (input.eof ()) return null;
         int originalState = cookie.getState ();
         int originalIndex = input.getIndex ();
@@ -93,7 +93,8 @@ public class Parser {
                 );
                 cookie.setProperties (lastTT.getProperties ());
                 input.setIndex (lastIndex);
-                return SToken.create (
+                return ASTToken.create (
+                    mimeType,
                     lastTT.getType (),
                     input.getString (originalIndex, lastIndex),
                     originalIndex
@@ -115,7 +116,8 @@ public class Parser {
             return null;
         }
         cookie.setProperties (lastTT.getProperties ());
-        return SToken.create (
+        return ASTToken.create (
+            mimeType,
             lastTT.getType (),
             input.getString (originalIndex, lastIndex),
             originalIndex

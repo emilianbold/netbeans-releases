@@ -20,16 +20,16 @@
 package org.netbeans.modules.languages;
 
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
 import org.netbeans.modules.languages.Language.Identifier;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.parser.*;
-
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -37,6 +37,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
+import org.netbeans.modules.languages.parser.LLSyntaxAnalyser.Rule;
 
 
 /**
@@ -68,13 +69,13 @@ public class Language {
     
     
     private Parser              parser;
-    private List                tokenTypes = new ArrayList ();
-    private Set                 skipTokenTypes = new HashSet ();
+    private List<TokenType>     tokenTypes = new ArrayList ();
+    private Set<String>         skipTokenTypes = new HashSet ();
     private String              mimeType;
     private LLSyntaxAnalyser    analyser = null;
-    private List                analyserRules = new ArrayList ();
-    private List                analyserRules2;
-    private List                importedLangauges = new ArrayList ();
+    private List<ASTNode>       grammarASTNodes = new ArrayList ();
+    private List<Rule>          grammarRules;
+    private List<Language>      importedLangauges = new ArrayList ();
 
     
     /** Creates a new instance of Language */
@@ -95,16 +96,16 @@ public class Language {
         return parser;
     }
     
-    public List getTokens () {
+    public List<TokenType> getTokenTypes () {
         return Collections.unmodifiableList (tokenTypes);
     }
     
-    public Set getSkipTokenTypes () {
+    public Set<String> getSkipTokenTypes () {
         return skipTokenTypes;
     }
     
     public boolean hasAnalyser () {
-        return !analyserRules.isEmpty ();
+        return !grammarASTNodes.isEmpty ();
     }
     
     public LLSyntaxAnalyser getAnalyser () {
@@ -116,7 +117,7 @@ public class Language {
         }
     }
     
-    public List getImportedLanguages () {
+    public List<Language> getImportedLanguages () {
         return importedLangauges;
     }
     
@@ -193,18 +194,18 @@ public class Language {
     void addRule (ASTNode rule) {
         if (analyser != null)
             throw new InternalError ();
-        analyserRules.add (rule);
+        grammarASTNodes.add (rule);
     }
     
-    public void addRule (LLSyntaxAnalyser.Rule rule) {
-        if (analyserRules2 == null) analyserRules2 = new ArrayList ();
-        analyserRules2.add (rule);
+    public void addRule (Rule rule) {
+        if (grammarRules == null) grammarRules = new ArrayList ();
+        grammarRules.add (rule);
     }
     
     public List getRules () {
-        if (analyserRules2 == null)
-            analyserRules2 = Petra.convert (analyserRules);
-        return analyserRules2;
+        if (grammarRules == null)
+            grammarRules = Petra.convert (grammarASTNodes, getMimeType ());
+        return grammarRules;
     }
 
     private Map properties = new HashMap ();
@@ -254,9 +255,9 @@ public class Language {
         String state = stateEvaluator == null ? null : (String) stateEvaluator.evaluate ();
         
         // import tokenTypes
-        Iterator it = l.tokenTypes.iterator ();
+        Iterator<TokenType> it = l.getTokenTypes ().iterator ();
         while (it.hasNext ()) {
-            TokenType tt = (TokenType) it.next ();
+            TokenType tt = it.next ();
             String startState = tt.getStartState ();
             Pattern pattern = tt.getPattern ().clonePattern ();
             String endState = tt.getEndState ();
@@ -272,7 +273,7 @@ public class Language {
         }
         
         // import grammar rues
-        analyserRules.addAll (l.analyserRules);
+        grammarASTNodes.addAll (l.grammarASTNodes);
         // import colorings
         importColorings (l);
         // import other features
@@ -357,7 +358,7 @@ public class Language {
     
     private Map features = new HashMap ();
     
-    public Object getFeature (String featureName, ASTNode node) {
+    private Object getFeature (String featureName, ASTNode node) {
         Map m = (Map) features.get (featureName);
         if (m == null) return null;
         while (true) {
@@ -389,7 +390,13 @@ public class Language {
         return (Map) features.get (featureName);
     }
     
-    public Object getFeature (String featureName, SToken token) {
+    public Object getFeature (String featureName, ASTItem item) {
+        if (item instanceof ASTNode)
+            return getFeature (featureName, (ASTNode) item);
+        return getFeature (featureName, (ASTToken) item);
+    }
+    
+    private Object getFeature (String featureName, ASTToken token) {
         Map m = (Map) features.get (featureName);
         if (m == null) return null;
         Object result = m.get (token.getType ());
@@ -437,15 +444,15 @@ public class Language {
     void print () {
         System.out.println("\nPrint " + mimeType);
         System.out.println("Tokens:");
-        Iterator it = tokenTypes.iterator ();
+        Iterator<TokenType> it = getTokenTypes ().iterator ();
         while (it.hasNext ()) {
-            TokenType r = (TokenType) it.next ();
+            TokenType r = it.next ();
             System.out.println("  " + r);
         }
         System.out.println("Grammar Rules:");
-        it = getAnalyser ().getRules ().iterator ();
+        Iterator<Rule> it2 = getAnalyser ().getRules ().iterator ();
         while (it.hasNext ()) {
-            LLSyntaxAnalyser.Rule r = (LLSyntaxAnalyser.Rule) it.next ();
+            Rule r = it2.next ();
             System.out.println("  " + r);
         }
     }
@@ -488,26 +495,28 @@ public class Language {
     public Map getColorMap () {
         Map defaultsMap = getDefaultColors ();
         Map colorsMap = getCurrentColors ();
-        Iterator it = getTokens ().iterator ();
+        Iterator<TokenType> it = getTokenTypes ().iterator ();
         while (it.hasNext ()) {
-            TokenType token = (TokenType) it.next ();
-            Object obj = getFeature(Language.COLOR, token.getType ());
-            if (obj != null) {
-                for (Iterator iter = ((List)obj).iterator(); iter.hasNext(); ) {
-                    SimpleAttributeSet as = (SimpleAttributeSet)iter.next();
-                    String id = (String)as.getAttribute("color_name"); // NOI18N
+            TokenType token = it.next ();
+            List<SimpleAttributeSet> colors = (List<SimpleAttributeSet>) getFeature 
+                (Language.COLOR, token.getType ());
+            if (colors != null)
+                for (Iterator<SimpleAttributeSet> it2 = colors.iterator (); it2.hasNext ();) {
+                    SimpleAttributeSet as = it2.next();
+                    String id = (String) as.getAttribute ("color_name"); // NOI18N
                     if (id == null)
                         id = token.getType ();
                     addColor (id, as, colorsMap, defaultsMap);
                 }
-            }
+            else
+                addColor (token.getType (), null, colorsMap, defaultsMap);
         }
         Map m = getFeature (Language.COLOR);
         if (m == null)
             return Collections.EMPTY_MAP;
-        it = m.keySet ().iterator ();
-        while (it.hasNext ()) {
-            String type = (String) it.next ();
+        Iterator<String> it2 = m.keySet ().iterator ();
+        while (it2.hasNext ()) {
+            String type = it2.next ();
             if (colorsMap.containsKey (type))
                 continue;
             Object obj = m.get (type);

@@ -20,16 +20,14 @@
 package org.netbeans.modules.languages;
 
 import java.lang.ref.WeakReference;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManagerListener;
-import org.netbeans.api.languages.TokenInput;
-import org.netbeans.api.languages.SToken;
+import org.netbeans.modules.languages.parser.TokenInput;
+import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.SyntaxCookie;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.LanguagesManagerImpl.LanguagesManagerListener;
@@ -217,14 +215,14 @@ public class ParserManagerImpl extends ParserManager {
         LLSyntaxAnalyser a = l.getAnalyser ();
         long start = System.currentTimeMillis ();
 
-        TokenInput input = createTokenInput (doc, mimeType);
+        TokenInput input = createTokenInput (doc);
         long to = System.currentTimeMillis () - start;
         ASTNode n = a.read (input, true);
         System.out.println("parse " + doc.getProperty ("title") + " " + (System.currentTimeMillis () - start) + " " + to);
         return n;
     }
 
-    private static TokenInput createTokenInput (NbEditorDocument doc, String mimeType) {
+    private static TokenInput createTokenInput (NbEditorDocument doc) {
         try {
             doc.readLock ();
             TokenHierarchy th = TokenHierarchy.get (doc);
@@ -242,63 +240,61 @@ public class ParserManagerImpl extends ParserManager {
             String type = t.id ().name ();
             int offset = ts.offset ();
             String ttype = (String) t.getProperty ("type");
-            if (ttype == null) {
-                Map embeddings = null;
+//            if (ttype == null) {
+                List embeddings = null;
                 TokenSequence ts2 = ts.embedded ();
                 if (ts2 != null)
-                    embeddings = Collections.singletonMap (
-                        ts2.language ().mimeType (),
-                        getTokens (ts2)
-                    );
-                tokens.add (SToken.create (
+                    embeddings = getTokens (ts2);
+                tokens.add (ASTToken.create (
+                    ts.language ().mimeType (),
                     type, 
                     t.text ().toString (), 
                     offset,
                     t.length (),
                     embeddings
                 ));
-            } else
-            if (ttype.equals ("E"))
-                continue;
-            else
-            if (ttype.equals ("S")) {
-                StringBuilder sb = new StringBuilder (t.text ().toString ());
-                Map embeddings = new HashMap ();
-                while (ts.moveNext ()) {
-                    t = ts.token ();
-                    TokenSequence ts2 = ts.embedded ();
-                    if (ts2 != null)
-                        embeddings.put (
-                            ts2.language ().mimeType (),
-                            getTokens (ts2)
-                        );
-                    ttype = (String) t.getProperty ("type");
-                    if (ttype == null) {
-                        ts.movePrevious ();
-                        break;
-                    }
-                    if (ttype.equals ("E"))
-                        continue;
-                    if (ttype.equals ("S")) {
-                        ts.movePrevious ();
-                        break;
-                    }
-                    if (!ttype.equals ("C"))
-                        throw new IllegalArgumentException ();
-                    if (!type.equals (t.id ().name ()))
-                        throw new IllegalArgumentException ();
-                    sb.append (t.text ().toString ());
-                }
-                int no = ts.offset () + ts.token ().length ();
-                tokens.add (SToken.create (
-                    type, 
-                    sb.toString (), 
-                    offset,
-                    no - offset,
-                    embeddings
-                ));
-            } else
-                throw new IllegalArgumentException ();
+//            } else
+//            if (ttype.equals ("E"))
+//                continue;
+//            else
+//            if (ttype.equals ("S")) {
+//                StringBuilder sb = new StringBuilder (t.text ().toString ());
+//                Map embeddings = new HashMap ();
+//                while (ts.moveNext ()) {
+//                    t = ts.token ();
+//                    TokenSequence ts2 = ts.embedded ();
+//                    if (ts2 != null)
+//                        embeddings.put (
+//                            ts2.language ().mimeType (),
+//                            getTokens (ts2)
+//                        );
+//                    ttype = (String) t.getProperty ("type");
+//                    if (ttype == null) {
+//                        ts.movePrevious ();
+//                        break;
+//                    }
+//                    if (ttype.equals ("E"))
+//                        continue;
+//                    if (ttype.equals ("S")) {
+//                        ts.movePrevious ();
+//                        break;
+//                    }
+//                    if (!ttype.equals ("C"))
+//                        throw new IllegalArgumentException ();
+//                    if (!type.equals (t.id ().name ()))
+//                        throw new IllegalArgumentException ();
+//                    sb.append (t.text ().toString ());
+//                }
+//                int no = ts.offset () + ts.token ().length ();
+//                tokens.add (ASTToken.create (
+//                    type, 
+//                    sb.toString (), 
+//                    offset,
+//                    no - offset,
+//                    embeddings
+//                ));
+//            } else
+//                throw new IllegalArgumentException ();
         }
         return tokens;
     }

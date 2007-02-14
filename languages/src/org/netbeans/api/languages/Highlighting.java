@@ -27,7 +27,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 
 import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.ASTToken;
 
 
 /**
@@ -60,7 +60,12 @@ public class Highlighting {
     
     private Highlighting () {}
     
-    public void highlight (SToken token, AttributeSet as) {
+    public void highlight (ASTItem item, AttributeSet as) {
+        if (item instanceof ASTNode) {
+            highlights.put ((ASTNode) item, as);
+            return;
+        }
+        ASTToken token = (ASTToken) item;
         Integer id = new Integer (token.getOffset ());
         Map m = (Map) tokens.get (id);
         if (m == null) {
@@ -70,7 +75,12 @@ public class Highlighting {
         m.put (token.getIdentifier (), as);
     }
     
-    public void removeHighlight (SToken token) {
+    public void removeHighlight (ASTItem item) {
+        if (item instanceof ASTNode) {
+            highlights.remove ((ASTNode) item);
+            return;
+        }
+        ASTToken token = (ASTToken) item;
         Integer id = new Integer (token.getOffset ());
         Map m = (Map) tokens.get (id);
         if (m == null) return;
@@ -79,22 +89,13 @@ public class Highlighting {
             tokens.remove (id);
     }
     
-   public AttributeSet get (SToken token) {
+    public AttributeSet get (ASTItem item) {
+        if (item instanceof ASTNode)
+            return (AttributeSet) highlights.get ((ASTNode) item);
+        ASTToken token = (ASTToken) item;
         Integer id = new Integer (token.getOffset ());
         Map m = (Map) tokens.get (id);
         if (m == null) return null;
         return (AttributeSet) m.get (token.getIdentifier ());
-    }
-    
-    public void highlight (ASTNode node, AttributeSet as) {
-        highlights.put (node, as);
-    }
-    
-    public void removeHighlight (ASTNode node) {
-        highlights.remove (node);
-    }
-    
-    public AttributeSet get (ASTNode node) {
-        return (AttributeSet) highlights.get (node);
     }
 }

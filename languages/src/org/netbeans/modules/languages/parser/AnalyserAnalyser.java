@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.languages.parser;
 
-import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.ASTToken;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -93,7 +93,7 @@ public class AnalyserAnalyser {
             Iterator it2 = r.getRight ().iterator ();
             while (it2.hasNext ()) {
                 Object e = it2.next ();
-                if (e instanceof SToken) continue;
+                if (e instanceof ASTToken) continue;
                 if (e instanceof T && !f.contains (e)) 
                     result.add (e);
             }

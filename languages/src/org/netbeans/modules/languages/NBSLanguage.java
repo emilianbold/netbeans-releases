@@ -20,13 +20,13 @@
 package org.netbeans.modules.languages;
 
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.ASTToken;
 import java.util.Arrays;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.Pattern;
-import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.ASTToken;
 
     
     
@@ -37,34 +37,34 @@ import org.netbeans.api.languages.SToken;
 public class NBSLanguage {
     
     static final String NBS = "text/x-nbs";
-    static final SToken STRING = SToken.create ("string", null);
-    static final SToken OPERATOR = SToken.create ("operator", null);
-    static final SToken KEYWORD = SToken.create ("keyword", null);
-    static final SToken IDENTIFIER = SToken.create ("identifier", null);
-    static final SToken COMMENT = SToken.create ("comment", null);
-    static final SToken WHITESPACE = SToken.create ("whitespace", null);
-    static final SToken BRACE = SToken.create ("operator", "{");
-    static final SToken BRACE2 = SToken.create ("operator", "}");
-    static final SToken BRACKET = SToken.create ("operator", "[");
-    static final SToken BRACKET2 = SToken.create ("operator", "]");
-    static final SToken KEYWORD_TOKEN = SToken.create ("keyword", "TOKEN");
-    static final SToken COLON = SToken.create ("operator", ":");
-    static final SToken SEMICOLON = SToken.create ("operator", ";");
-    static final SToken EQUAL = SToken.create ("operator", "=");
-    static final SToken MINUS = SToken.create ("operator", "-");
-    static final SToken DOLLAR = SToken.create ("operator", "$");
-    static final SToken UPP = SToken.create ("operator", "^");
-    static final SToken OR = SToken.create ("operator", "|");
-    static final SToken COMMA = SToken.create ("operator", ",");
-    static final SToken DOT = SToken.create ("operator", ".");
-    static final SToken PLUS = SToken.create ("operator", "+");
-    static final SToken MULTIPLY = SToken.create ("operator", "*");
-    static final SToken QUESTION = SToken.create ("operator", "?");
-    static final SToken DOUBLE_QUOTES = SToken.create ("operator", "\"");
-    static final SToken LT = SToken.create ("operator", "<");
-    static final SToken GT = SToken.create ("operator", ">");
-    static final SToken PARENTHESIS = SToken.create ("operator", "(");
-    static final SToken PARENTHESIS2 = SToken.create ("operator", ")");
+    static final ASTToken STRING = ASTToken.create (NBS, "string", null);
+    static final ASTToken OPERATOR = ASTToken.create (NBS, "operator", null);
+    static final ASTToken KEYWORD = ASTToken.create (NBS, "keyword", null);
+    static final ASTToken IDENTIFIER = ASTToken.create (NBS, "identifier", null);
+    static final ASTToken COMMENT = ASTToken.create (NBS, "comment", null);
+    static final ASTToken WHITESPACE = ASTToken.create (NBS, "whitespace", null);
+    static final ASTToken BRACE = ASTToken.create (NBS, "operator", "{");
+    static final ASTToken BRACE2 = ASTToken.create (NBS, "operator", "}");
+    static final ASTToken BRACKET = ASTToken.create (NBS, "operator", "[");
+    static final ASTToken BRACKET2 = ASTToken.create (NBS, "operator", "]");
+    static final ASTToken KEYWORD_TOKEN = ASTToken.create (NBS, "keyword", "TOKEN");
+    static final ASTToken COLON = ASTToken.create (NBS, "operator", ":");
+    static final ASTToken SEMICOLON = ASTToken.create (NBS, "operator", ";");
+    static final ASTToken EQUAL = ASTToken.create (NBS, "operator", "=");
+    static final ASTToken MINUS = ASTToken.create (NBS, "operator", "-");
+    static final ASTToken DOLLAR = ASTToken.create (NBS, "operator", "$");
+    static final ASTToken UPP = ASTToken.create (NBS, "operator", "^");
+    static final ASTToken OR = ASTToken.create (NBS, "operator", "|");
+    static final ASTToken COMMA = ASTToken.create (NBS, "operator", ",");
+    static final ASTToken DOT = ASTToken.create (NBS, "operator", ".");
+    static final ASTToken PLUS = ASTToken.create (NBS, "operator", "+");
+    static final ASTToken MULTIPLY = ASTToken.create (NBS, "operator", "*");
+    static final ASTToken QUESTION = ASTToken.create (NBS, "operator", "?");
+    static final ASTToken DOUBLE_QUOTES = ASTToken.create (NBS, "operator", "\"");
+    static final ASTToken LT = ASTToken.create (NBS, "operator", "<");
+    static final ASTToken GT = ASTToken.create (NBS, "operator", ">");
+    static final ASTToken PARENTHESIS = ASTToken.create (NBS, "operator", "(");
+    static final ASTToken PARENTHESIS2 = ASTToken.create (NBS, "operator", ")");
     
     private static Parser nbsParser;
     

@@ -24,9 +24,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.languages.CharInput;
-import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -73,16 +73,16 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         }
         if (input.eof ()) return null;
         int index = input.getIndex ();
-        SToken token = null;
+        ASTToken token = null;
         Evaluator.Method evaluator = null;
-        token = parser.read (this, input);
+        token = parser.read (this, input, language.getMimeType ());
         if (language != null && properties != null) {
             evaluator = (Evaluator.Method) properties.get ("call");
         }
         if (evaluator != null) {
             input.setIndex (index);
             Object[] r = (Object[]) evaluator.evaluate (new Object[] {input});
-            token = (SToken) r [0];
+            token = (ASTToken) r [0];
             if (r [1] != null)
                 setState (((Integer) r [1]).intValue ());
         }

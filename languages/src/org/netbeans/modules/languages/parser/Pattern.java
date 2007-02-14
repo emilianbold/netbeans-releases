@@ -21,7 +21,7 @@ package org.netbeans.modules.languages.parser;
 
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.CharInput;
-import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.ASTToken;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -83,13 +83,13 @@ public class Pattern {
                     if (input.read () != ')')
                         throw new ParseException (") expected: " + input);
                     break;
-                case '<':
-                    input.read ();
-                    if (last != null) pattern = pattern.append (last);
-                    last = new Pattern (readToken (input));
-                    if (input.read () != '>')
-                        throw new ParseException ("> expected: " + input);
-                    break;
+//                case '<':
+//                    input.read ();
+//                    if (last != null) pattern = pattern.append (last);
+//                    last = new Pattern (readToken (input));
+//                    if (input.read () != '>')
+//                        throw new ParseException ("> expected: " + input);
+//                    break;
                 case '\'':
                 case '"':
                     input.read ();
@@ -272,15 +272,15 @@ public class Pattern {
                                 if (l == 0) throw new ParseException (input.toString ());
                                 minus = true;
                                 break;
-                            case '<':
-                                input.read ();
-                                if (minus) throw new ParseException (input.toString ());
-                                if (l != 0) 
-                                    set.add (new Character (l));
-                                set.add (readToken (input));
-                                if (input.read () != '>')
-                                    throw new ParseException ("> expected: " + input);
-                                break;
+//                            case '<':
+//                                input.read ();
+//                                if (minus) throw new ParseException (input.toString ());
+//                                if (l != 0) 
+//                                    set.add (new Character (l));
+//                                set.add (readToken (input));
+//                                if (input.read () != '>')
+//                                    throw new ParseException ("> expected: " + input);
+//                                break;
                             default:
                                 throw new ParseException (input.toString ());
                         } // switch
@@ -304,52 +304,52 @@ public class Pattern {
         return pattern;
     }
 
-    private static SToken readToken (CharInput input) throws ParseException {
-        StringBuilder sb = new StringBuilder ();
-        char ch = input.next ();
-        while (ch != ',' && ch != '>') {
-            if (ch == 0) throw new ParseException ("Unexpected end." + input.toString ());
-            sb.append (ch);
-            input.read ();
-            ch = input.next ();
-        }
-        ch = input.next ();
-        String type = sb.toString ().trim ();
-        if (ch == '>') return SToken.create (type, null);
-        input.read ();
-        skipWhitespaces (input);
-        sb = new StringBuilder ();
-        ch = input.next ();
-        boolean read = ch != '"' && ch != '\'';
-        if (!read) {
-            input.read ();
-            ch = input.next ();
-        }
-        while (ch != '>' && ch != '"' && ch != '\'' && ch != ',') {
-            if (ch == 0) throw new ParseException ("Unexpected end." + input.toString ());
-            sb.append (ch);
-            input.read ();
-            ch = input.next ();
-        }
-        if (read && (ch == '"' || ch == '\'')) throw new ParseException ("Unexpected \":" + input.toString ());
-        if (!read) input.read ();
-        String identifier = null;
-        String name = null;
-        if (read) name = sb.toString ();
-        else identifier = sb.toString ();
-        if (!read && ch == ',') {
-            ch = input.next ();
-            sb = new StringBuilder ();
-            while (ch != '>') {
-                if (ch == 0) throw new ParseException ("Unexpected end." + input.toString ());
-                sb.append (ch);
-                input.read ();
-                ch = input.next ();
-            }
-            name = sb.toString ();
-        }
-        return SToken.create (type, identifier);
-    }
+//    private static ASTToken readToken (CharInput input) throws ParseException {
+//        StringBuilder sb = new StringBuilder ();
+//        char ch = input.next ();
+//        while (ch != ',' && ch != '>') {
+//            if (ch == 0) throw new ParseException ("Unexpected end." + input.toString ());
+//            sb.append (ch);
+//            input.read ();
+//            ch = input.next ();
+//        }
+//        ch = input.next ();
+//        String type = sb.toString ().trim ();
+//        if (ch == '>') return ASTToken.create (type, null);
+//        input.read ();
+//        skipWhitespaces (input);
+//        sb = new StringBuilder ();
+//        ch = input.next ();
+//        boolean read = ch != '"' && ch != '\'';
+//        if (!read) {
+//            input.read ();
+//            ch = input.next ();
+//        }
+//        while (ch != '>' && ch != '"' && ch != '\'' && ch != ',') {
+//            if (ch == 0) throw new ParseException ("Unexpected end." + input.toString ());
+//            sb.append (ch);
+//            input.read ();
+//            ch = input.next ();
+//        }
+//        if (read && (ch == '"' || ch == '\'')) throw new ParseException ("Unexpected \":" + input.toString ());
+//        if (!read) input.read ();
+//        String identifier = null;
+//        String name = null;
+//        if (read) name = sb.toString ();
+//        else identifier = sb.toString ();
+//        if (!read && ch == ',') {
+//            ch = input.next ();
+//            sb = new StringBuilder ();
+//            while (ch != '>') {
+//                if (ch == 0) throw new ParseException ("Unexpected end." + input.toString ());
+//                sb.append (ch);
+//                input.read ();
+//                ch = input.next ();
+//            }
+//            name = sb.toString ();
+//        }
+//        return ASTToken.create (type, identifier);
+//    }
     
     private static Set whitespace = new HashSet ();
     static {

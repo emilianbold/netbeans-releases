@@ -31,11 +31,12 @@ import java.util.Set;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.TokenInput;
+import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.LanguagesManager;
-import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.Evaluator;
@@ -83,7 +84,7 @@ public class LLSyntaxAnalyser {
     public ASTNode read (TokenInput input, boolean skipErrors) throws ParseException {
         cancel = false;
         if (rules.isEmpty () || input.eof ())
-            return ASTNode.create (null, "Root", -1, 0);
+            return readNoGrammar (input, skipErrors);
         if (first == null) {
             first = Petra.first2 (rules);
             boolean hasConflicts = AnalyserAnalyser.printConflicts (first, null);
@@ -93,18 +94,21 @@ public class LLSyntaxAnalyser {
                 AnalyserAnalyser.printF (first, null);
             AnalyserAnalyser.printUndefinedNTs (rules, null);
         }
-        return read (input, false, skipErrors);
+        return read2 (input, skipErrors);
     }
     
     
     // helper methods ..........................................................
     
-    private ASTNode read (TokenInput input, boolean embeded, boolean skipErrors) throws ParseException {
+    private ASTNode read2 (TokenInput input, boolean skipErrors) throws ParseException {
         Stack stack = new Stack ();
         Node root = null, node = null;
         Iterator it = Collections.singleton ("S").iterator ();
         do {
-            List whitespaces = readWhitespaces (node, input, embeded, skipErrors);
+            int offset = input.getOffset ();
+            List whitespaces = readWhitespaces (node, input, skipErrors);
+            if (node != null)
+                offset = input.getOffset ();
             while (!it.hasNext ()) {
                 if (stack.empty ()) break;
                 node = (Node) stack.pop ();
@@ -120,7 +124,7 @@ public class LLSyntaxAnalyser {
                         throw new ParseException ("No rule for " + input.next (1) + " in " + input, root.createASTNode ());
                     if (input.eof ()) {
                         if (node == null)
-                            root = node = new Node ("Root", -1, input.getOffset (), whitespaces);
+                            root = node = new Node ("Root", -1, offset, whitespaces);
                         createErrorNode (node, input.getOffset ());
                         //S ystem.out.println(input.getIndex () + ": unexpected eof " + nt);
                         return root.createASTNode ();
@@ -149,7 +153,12 @@ public class LLSyntaxAnalyser {
                                 stack.push (it);
                                 stack.push (node);
                             } else {
-                                Node nnode = new Node ( rule.getNT (), newRule, input.getOffset (), whitespaces);
+                                Node nnode = new Node (
+                                    rule.getNT (), 
+                                    newRule, 
+                                    offset, 
+                                    whitespaces
+                                );
                                 if (node != null) {
                                     node.addNode (nnode);
                                     stack.push (it);
@@ -165,7 +174,7 @@ public class LLSyntaxAnalyser {
                     }
                 }
             } else {
-                SToken token = (SToken) current;
+                ASTToken token = (ASTToken) current;
                 if (input.eof ()) {
                     if (!skipErrors)
                         throw new ParseException ("Unexpected end of file in " + input, root.createASTNode ());
@@ -184,51 +193,80 @@ public class LLSyntaxAnalyser {
                 }
             }
         } while (true);
-        if (embeded) {
-            while (
-                !input.eof () //&& 
-                //input.next (1).getMimeType () == mimeType
-            )
-                createErrorNode (node, input.getOffset ()).addToken (input.read ());
-        }
+        while (
+            !input.eof () //&& 
+            //input.next (1).getMimeType () == mimeType
+        )
+            createErrorNode (node, input.getOffset ()).addToken (input.read ());
         return root.createASTNode ();
     }
     
     private List readWhitespaces (
         Node node, 
         TokenInput input, 
-        boolean embeded, 
         boolean skipErrors
     ) throws ParseException {
-        List l = null;
-        while (!input.eof ()) {
-            Object result = null;
-            if (skip.contains (input.next (1).getType ())) {
-                result = input.read ();
-                Map embeddings = ((SToken) result).getEmbeddings ();
-                if (!embeddings.isEmpty ()) {
-                    Iterator it = embeddings.keySet ().iterator ();
-                    while (it.hasNext ()) {
-                        String mimeType = (String) it.next ();
-                        List tokens = (List) embeddings.get (mimeType);
-                        TokenInput in = TokenInput.create (tokens);
-                        Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
-                            getLanguage (mimeType);
-                        ASTNode n = language.getAnalyser ().read (in, skipErrors);
-                        result = n;
-                    }
-                }
-            } else
-                break;
+        List result = null;
+        while (
+            !input.eof () &&
+            skip.contains (input.next (1).getType ())
+        ) {
+            ASTToken token = input.read ();
             if (node != null)
-                node.addNode (result);
+                node.addToken (token);
             else {
-                if (l == null)
-                    l = new ArrayList ();
-                l.add (result);
+                if (result == null)
+                    result = new ArrayList ();
+                result.add (token);
             }
+            List embeddings = readEmbeddings (token, node, skipErrors);
+            if (node == null && !embeddings.isEmpty ())
+                result.addAll (embeddings);
         }
-        return l;
+        return result;
+    }
+    
+    private List readEmbeddings (
+        ASTToken token, 
+        Node node,
+        boolean skipErrors
+    ) throws ParseException {
+        List result = null;
+//        Iterator<ASTItem> it = token.getChildren ().iterator ();
+//        if (!embeddings.isEmpty ()) {
+//            Iterator it = embeddings.keySet ().iterator ();
+//            while (it.hasNext ()) {
+//                String mimeType = (String) it.next ();
+//                List tokens = (List) embeddings.get (mimeType);
+//                TokenInput in = TokenInput.create (tokens);
+//                Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+//                    getLanguage (mimeType);
+//                ASTNode n = language.getAnalyser ().read (in, skipErrors);
+//                if (node != null)
+//                    node.addNode (n);
+//                else {
+//                    if (result == null)
+//                        result = new ArrayList ();
+//                    result.add (result);
+//                }
+//            }
+//        }
+        if (result == null)
+            return Collections.EMPTY_LIST;
+        return result;
+    }
+    
+    private ASTNode readNoGrammar (
+        TokenInput input,
+        boolean skipErrors
+    ) throws ParseException {
+        Node root = new Node ("S", -1, input.getIndex (), null);
+        while (!input.eof ()) {
+            ASTToken token = input.read ();
+            root.addToken (token);
+            readEmbeddings (token, root, skipErrors);
+        }
+        return root.createASTNode ();
     }
     
     private Node createErrorNode (Node parentNode, int offset) {
@@ -257,7 +295,7 @@ public class LLSyntaxAnalyser {
         if (m == null) return -1;
         int i = 1;
         while (true) {
-            SToken token = input.next (i);
+            ASTToken token = input.next (i);
             if (token == null /*|| !mimeType.equals (token.getMimeType ())*/) {
                 Set result = (Set) (Set) m.get ("#");
                 if (result == null || result.size () > 1) return -1;
@@ -446,7 +484,7 @@ public class LLSyntaxAnalyser {
 //            this.identifier = identifier;
 //        }
         
-        T (SToken t) {
+        T (ASTToken t) {
             type = t.getType ();
             identifier = t.getIdentifier ();
             if (type == null && identifier == null)
@@ -489,16 +527,34 @@ public class LLSyntaxAnalyser {
             this.nt = nt;
             this.rule = rule;
             this.offset = offset;
-            this.children = children;
+            if (children != null) {
+                Iterator it = children.iterator ();
+                while (it.hasNext ()) {
+                    Object o = it.next ();
+                    if (o instanceof ASTToken)
+                        addToken ((ASTToken) o);
+                    else
+                        addNode (o);
+                }
+            }
         }
         
         void addNode (Object n) {
             if (children == null) children = new ArrayList ();
+            if (n instanceof ASTNode) {
+                if (((ASTNode) n).getOffset () != getEndOffset ())
+                    throw new IllegalStateException ();
+            } else {
+                if (((Node) n).offset != getEndOffset ())
+                    throw new IllegalStateException ();
+            }
             children.add (n);
         }
         
-        void addToken (SToken t) {
+        void addToken (ASTToken t) {
             if (children == null) children = new ArrayList ();
+            if (t.getOffset () != getEndOffset ())
+                throw new IllegalStateException ();
             children.add (t);
         }
         
@@ -512,6 +568,18 @@ public class LLSyntaxAnalyser {
                 }
             }
             throw new IllegalStateException ();
+        }
+        
+        private int getEndOffset () {
+            if (children == null) return offset;
+            if (children.isEmpty ()) return offset;
+            Object l = children.get (children.size () - 1);
+            if (l instanceof ASTToken)
+                return ((ASTToken) l).getOffset () + ((ASTToken) l).getLength ();
+            if (l instanceof Node) {
+                return ((Node) l).getEndOffset ();
+            }
+            return ((ASTNode) l).getEndOffset ();
         }
 
         ASTNode createASTNode () {

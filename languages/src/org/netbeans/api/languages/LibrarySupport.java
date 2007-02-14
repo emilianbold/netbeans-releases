@@ -50,12 +50,12 @@ public class LibrarySupport {
     }
     
     
-    private Map keys = new HashMap ();
+    private Map<String,List> keys = new HashMap ();
     
-    public List getItems (String context) {
+    public List<String> getItems (String context) {
         List k = (List) keys.get (context);
         if (k == null) {
-            Map m = (Map) getItems ().get (context);
+            Map m = getItems ().get (context);
             if (m == null) return null;
             k = new ArrayList (m.keySet ());
             Collections.sort (k);
@@ -66,7 +66,7 @@ public class LibrarySupport {
     }
     
     public String getProperty (String context, String item, String propertyName) {
-        Map m = (Map) getItems ().get (context);
+        Map m = getItems ().get (context);
         if (m == null) return null;
         m = (Map) m.get (item);
         if (m == null) return null;
@@ -76,9 +76,9 @@ public class LibrarySupport {
     
     // generics support methods ................................................
     
-    private Map items;
+    private Map<String,Map> items;
     
-    private Map getItems () {
+    private Map<String,Map> getItems () {
         if (items == null)
             try {
                 XMLReader reader = XMLUtil.createXMLReader ();
@@ -103,7 +103,7 @@ public class LibrarySupport {
     
     static class Handler extends DefaultHandler {
         
-        Map result = new HashMap ();
+        Map<String,Map> result = new HashMap ();
         
         public void startElement (
             String uri, 

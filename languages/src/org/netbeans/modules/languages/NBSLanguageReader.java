@@ -19,10 +19,11 @@
 
 package org.netbeans.modules.languages;
 
+import java.util.Collections;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.CharInput;
-import org.netbeans.api.languages.TokenInput;
-import org.netbeans.api.languages.SToken;
+import org.netbeans.modules.languages.parser.TokenInput;
+import org.netbeans.api.languages.ASTToken;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,7 +41,6 @@ import java.util.StringTokenizer;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.Language.Identifier;
@@ -48,11 +48,10 @@ import org.netbeans.modules.languages.Language.Navigator;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.parser.Pattern;
-import org.netbeans.api.languages.SToken;
-import org.netbeans.api.languages.TokenInput;
+import org.netbeans.api.languages.ASTToken;
+import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.modules.languages.parser.StringInput;
 import org.openide.ErrorManager;
-
 import org.openide.filesystems.FileObject;
 
     
@@ -108,9 +107,10 @@ public class NBSLanguageReader {
             Language language = new Language (mimeType);
             Language nbsLanguage = NBSLanguage.getNBSLanguage ();
             TokenInput tokenInput = TokenInput.create (
+                mimeType,
                 nbsLanguage.getParser (), 
                 input, 
-                nbsLanguage.getSkipTokenTypes ()
+                Collections.EMPTY_SET //nbsLanguage.getSkipTokenTypes ()
             );
             ASTNode node = nbsLanguage.getAnalyser ().read (tokenInput, false);
             if (node == null) 
@@ -133,7 +133,7 @@ public class NBSLanguageReader {
         Iterator it = root.getChildren ().iterator ();
         while (it.hasNext ()) {
             Object o = it.next ();
-            if (o instanceof SToken) continue;
+            if (o instanceof ASTToken) continue;
             ASTNode node = (ASTNode) o;
             if (node.getNT ().equals ("token"))
                 readToken (node, language, null);
@@ -170,7 +170,7 @@ public class NBSLanguageReader {
             endState = getString (properties, "end_state", false);
             pattern = (Pattern) properties.get ("pattern");
         } else {
-            String patternString = node.getNode ("token2.regularExpression").getAsText ();
+            String patternString = node.getNode ("token2.regularExpression").getAsText ().trim ();
             endState = node.getTokenTypeIdentifier ("token2.token3.state.identifier");
             pattern = Pattern.create (patternString);
         }
@@ -216,7 +216,7 @@ public class NBSLanguageReader {
         Iterator it = node.getNode ("tokensInGroup").getChildren ().iterator ();
         while (it.hasNext ()) {
             Object o = it.next ();
-            if (o instanceof SToken) continue;
+            if (o instanceof ASTToken) continue;
             ASTNode n = (ASTNode) o;
             readToken (n, language, startState);
         }
@@ -229,7 +229,7 @@ public class NBSLanguageReader {
         String keyword = node.getTokenTypeIdentifier ("keyword");
         ASTNode classNode = node.getNode ("command0.class");
         Identifier identifier = classNode != null ?
-            Language.createIdentifier (classNode.getAsText ()):
+            Language.createIdentifier (classNode.getAsText ().trim ()):
             null;
         
         Object value = node.getNode ("command0.properties");
@@ -241,7 +241,7 @@ public class NBSLanguageReader {
         if (value == null) {
             ASTNode n = node.getNode ("command0.command1.command2.class");
             if (n != null)
-                value = Evaluator.createMethodEvaluator (n.getAsText ());
+                value = Evaluator.createMethodEvaluator (n.getAsText ().trim ());
         }
         if (value == null) {
             String s = node.getTokenTypeIdentifier ("command0.command1.command2.string");
@@ -254,7 +254,7 @@ public class NBSLanguageReader {
         if (value == null) {
             ASTNode n = node.getNode ("command0.command2.class");
             if (n != null)
-                value = Evaluator.createMethodEvaluator (n.getAsText ());
+                value = Evaluator.createMethodEvaluator (n.getAsText ().trim ());
         }
         if (value == null) {
             String s = node.getTokenTypeIdentifier ("command0.command2.string");
@@ -272,7 +272,7 @@ public class NBSLanguageReader {
         Iterator it = node.getChildren ().iterator ();
         while (it.hasNext ()) {
             Object o = it.next ();
-            if (o instanceof SToken) continue;
+            if (o instanceof ASTToken) continue;
             ASTNode n = (ASTNode) o;
             String key = n.getTokenTypeIdentifier ("identifier");
             String value = n.getTokenTypeIdentifier ("propertyValue.string");
@@ -282,11 +282,11 @@ public class NBSLanguageReader {
                 result.put (key, evaluator);
             } else 
             if (n.getNode ("propertyValue.class") != null) {
-                value = n.getNode ("propertyValue.class").getAsText ();
+                value = n.getNode ("propertyValue.class").getAsText ().trim ();
                 Evaluator evaluator = Evaluator.createMethodEvaluator (value);
                 result.put (key, evaluator);
             } else {
-                value = n.getNode ("propertyValue.regularExpression").getAsText ();
+                value = n.getNode ("propertyValue.regularExpression").getAsText ().trim ();
                 Pattern pattern = Pattern.create (value);
                 result.put (key, pattern);
             }
@@ -382,15 +382,11 @@ public class NBSLanguageReader {
                 getString (m, "font_type", false),
                 getEvaluator (m, "condition", false)
             );
-            Object f = language.getFeature (featureName, identifier.toString());
-            List flist;
-            if (f != null) {
-                flist = (List)f;
-            } else {
-                flist = new ArrayList();
-            }
-            flist.add(feature);
-            language.addFeature (featureName, identifier, flist);
+            List list = (List) language.getFeature (featureName, identifier.toString ());
+            if (list == null)
+                list = new ArrayList ();
+            list.add (feature);
+            language.addFeature (featureName, identifier, list);
         } else
         if (Language.COMPLETE.equals (featureName)) {
             if (identifier != null)
