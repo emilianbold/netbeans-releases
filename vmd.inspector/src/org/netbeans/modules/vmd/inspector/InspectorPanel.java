@@ -12,7 +12,6 @@
  */
 package org.netbeans.modules.vmd.inspector;
 
-import org.netbeans.spi.navigator.NavigatorHandler;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -48,11 +47,11 @@ public final class InspectorPanel implements NavigatorPanel , LookupListener {
     }
    
     public void panelActivated(Lookup lookup) {
-        SwingUtilities.invokeLater (new Runnable() {
-            public void run () {
-                NavigatorHandler.activatePanel (InspectorPanel.this);
-            }
-        });
+//        SwingUtilities.invokeLater (new Runnable() {
+//            public void run () {
+//                NavigatorHandler.activatePanel (InspectorPanel.this);
+//            }
+//        });
     }
     
     public void panelDeactivated() {
