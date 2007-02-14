@@ -19,6 +19,10 @@
 
 package org.netbeans.modules.vmd.midpnb.components.svg;
 
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
@@ -35,9 +39,9 @@ import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.openide.util.NbBundle;
-
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
 
 /**
  *
@@ -100,10 +104,33 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
             .addSetters (MidpSetter.createSetter ("setResetAnimationWhenStopped", MidpVersionable.MIDP_2).addParameters (PROP_RESET_ANIMATION_WHEN_STOPPED));
     }
 
+    private static class AcceptSVGFilesPresenter extends AbstractAcceptPresenter {
+        public AcceptSVGFilesPresenter() {
+            super(Kind.TRANSFERABLE);
+        }
+
+        public boolean isAcceptable (Transferable transferable) {
+            DataFlavor[] df = transferable.getTransferDataFlavors();
+            for (DataFlavor dataFlavor : df) {
+                try {
+                    java.lang.Object obj = transferable.getTransferData(dataFlavor);
+                } catch (Exception ex) {
+                }
+            }
+            return true;
+        }
+
+        public ComponentProducer.Result accept (Transferable transferable) {
+            return new ComponentProducer.Result ((DesignComponent) null);
+        }
+    }
+    
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // properties
             createPropertiesPresenter(),
+            // accept
+            new AcceptSVGFilesPresenter(),
             // code
             createSetterPresenter (),
             MidpCustomCodePresenterSupport.createAddImportPresenter ()
