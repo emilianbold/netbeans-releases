@@ -26,6 +26,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.io.BufferedOutputStream;
 import java.text.MessageFormat;
 import java.util.List;
@@ -58,6 +59,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.e2e.api.wsdl.wsdl2java.WSDL2Java;
 import org.netbeans.modules.e2e.wsdl.wsdl2java.WSDL2JavaImpl;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -1040,17 +1042,10 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             config.setWSDLFileName( wsdlFile.toURL().toString());
             WSDL2Java wsdl2java = WSDL2JavaFactory.getWSDL2Java( config );
             
-            List<WSDL2Java.ValidationResult> validationResult = wsdl2java.validate();
-            for( WSDL2Java.ValidationResult v : validationResult ) {
-                if( v.getErrorLevel() == WSDL2Java.ValidationResult.ErrorLevel.FATAL ) {
-                    DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( v.getMessage(), NotifyDescriptor.ERROR_MESSAGE ));                    
-                    return false;
-                }
-                if( v.getErrorLevel() == WSDL2Java.ValidationResult.ErrorLevel.WARNING ) {
-                    DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( v.getMessage(), NotifyDescriptor.WARNING_MESSAGE ));                    
-                    return true;
-                }
-            }            
+            List<WSDL2Java.ValidationResult> validationResults = wsdl2java.validate();
+            
+            return showValidationResults( validationResults );
+            
         } catch( IOException e ) {
             
         }
@@ -1070,18 +1065,10 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             config.setWSDLFileName( tempWSDL.toURL().toString());
             WSDL2Java wsdl2java = WSDL2JavaFactory.getWSDL2Java( config );
             
-            List<WSDL2Java.ValidationResult> validationResult = wsdl2java.validate();
-            for( WSDL2Java.ValidationResult v : validationResult ) {
-                if( v.getErrorLevel() == WSDL2Java.ValidationResult.ErrorLevel.FATAL ) {
-                    DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( v.getMessage(), NotifyDescriptor.ERROR_MESSAGE ));                    
-                    return false;
-                }
-                if( v.getErrorLevel() == WSDL2Java.ValidationResult.ErrorLevel.WARNING ) {
-                    DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( v.getMessage(), NotifyDescriptor.WARNING_MESSAGE ));                    
-                    return true;
-                }
-                
-            }                        
+            List<WSDL2Java.ValidationResult> validationResults = wsdl2java.validate();
+            
+            return showValidationResults( validationResults );
+            
         } catch( IOException e ) {
             
         } finally {
@@ -1093,6 +1080,30 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         return true;
     }
         
+    private boolean showValidationResults( List<WSDL2Java.ValidationResult> validationResults ) {
+        
+        boolean presentWarnings = false;
+        boolean presentErrors = false;
+        
+        for( WSDL2Java.ValidationResult v : validationResults ) {
+            if( v.getErrorLevel() == WSDL2Java.ValidationResult.ErrorLevel.FATAL ) {
+                presentErrors = true;
+                break;
+            }
+            if( v.getErrorLevel() == WSDL2Java.ValidationResult.ErrorLevel.WARNING ) {
+                presentWarnings = true;
+                break;
+            }
+        }
+        if( presentWarnings | presentErrors ) {
+            Dialog d = DialogDisplayer.getDefault().createDialog( new DialogDescriptor( new ValidationNotifier( validationResults ), "Validation Results" ));        
+            d.setModal( true );
+            d.setVisible( true );
+        }
+        
+        return !presentErrors;
+    }
+    
     private void updateHelperValues() {
         String possibleClientName;
         if(wsdlSource == WSDL_FROM_SERVICE) {
