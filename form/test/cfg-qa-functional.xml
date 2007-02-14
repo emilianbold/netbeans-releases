@@ -41,6 +41,16 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 <!-- Marek G. -->    
 
+<!-- Jana Maleckova -->
+   <testbag testattribs="validation, full" executor="ide" name="testbag_openTempl_defaultPack">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/qa/form/OpenTempl_defaultPack.*"/>                
+            </patternset>
+        </testset>
+    </testbag>
+<!-- Jana Maleckova -->   
+
 <!-- no tests
     <testbag testattribs="validation, full" executor="ide" name="testbag_compatibility">
         <testset dir="qa-functional/src">
@@ -71,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
  -->    
     
-    <testbag testattribs="unstable" executor="ide" name="testbag_palette">
+    <testbag testattribs="validation, full" executor="ide" name="testbag_palette">
         <testset dir="qa-functional/src">
             <patternset>
                 <!--                                
