@@ -157,7 +157,10 @@ final class NodeListener implements MouseListener, KeyListener,
         } else if (pathCount == 2) {
             Node nbNode = getNbNode(path, resultModel);
             if (nbNode != null) {
-                createFileNodePopupMenu(nbNode).show(tree, e.getX(), e.getY());
+                JPopupMenu popup = createFileNodePopupMenu(nbNode);
+                if (popup != null) {
+                    popup.show(tree, e.getX(), e.getY());
+                }
             }
         } else if (pathCount == 3) {        //detail node
             Node nbNode = getNbNode(path, resultModel);
