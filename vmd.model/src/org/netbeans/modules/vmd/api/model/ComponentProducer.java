@@ -102,6 +102,7 @@ public abstract class ComponentProducer {
         public Result (DesignComponent... components) {
             this.mainComponent = components.length > 0 ? components[0] : null;
             this.components = Arrays.asList (components);
+            assert ! this.components.contains (null);
         }
 
         /**

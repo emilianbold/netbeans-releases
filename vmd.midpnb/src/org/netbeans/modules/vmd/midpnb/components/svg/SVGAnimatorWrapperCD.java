@@ -19,14 +19,13 @@
 
 package org.netbeans.modules.vmd.midpnb.components.svg;
 
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
-import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
@@ -35,13 +34,13 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorFloat;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
-import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
-import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.openide.util.NbBundle;
+
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
 
 /**
  *
@@ -110,10 +109,13 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
         }
 
         public boolean isAcceptable (Transferable transferable) {
+            System.out.println ("transferable = " + transferable);
             DataFlavor[] df = transferable.getTransferDataFlavors();
             for (DataFlavor dataFlavor : df) {
                 try {
+                    System.out.println ("dataFlavor = " + dataFlavor);
                     java.lang.Object obj = transferable.getTransferData(dataFlavor);
+                    System.out.println ("obj = " + obj);
                 } catch (Exception ex) {
                 }
             }
@@ -121,7 +123,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
         }
 
         public ComponentProducer.Result accept (Transferable transferable) {
-            return new ComponentProducer.Result ((DesignComponent) null);
+            return new ComponentProducer.Result ();
         }
     }
     
