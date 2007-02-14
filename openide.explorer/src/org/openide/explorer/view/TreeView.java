@@ -33,7 +33,6 @@ import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -43,6 +42,9 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.dnd.Autoscroll;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
@@ -55,21 +57,17 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.accessibility.AccessibleContext;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -86,6 +84,7 @@ import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
@@ -97,6 +96,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
+import javax.swing.plaf.UIResource;
 import javax.swing.text.Position;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.RowMapper;
@@ -1497,6 +1497,8 @@ public abstract class TreeView extends JScrollPane {
             }
 
             setupSearch();
+            
+            setDragEnabled( true );
         }
 
         public void addNotify() {
@@ -1512,8 +1514,13 @@ public abstract class TreeView extends JScrollPane {
         public void updateUI() {
             super.updateUI();
             setBorder(BorderFactory.createEmptyBorder());
+            if( getTransferHandler() != null && getTransferHandler() instanceof UIResource ) {
+                //we handle drag and drop in our own way, so let's just fool the UI with a dummy
+                //TransferHandler to ensure that multiple selection is not lost when drag starts
+                setTransferHandler( new DummyTransferHandler() );
+            }
         }
-
+        
         private void calcRowHeight(Graphics g) {
             int height = Math.max(18, 2 + g.getFontMetrics(getFont()).getHeight());
 
@@ -2053,6 +2060,25 @@ public abstract class TreeView extends JScrollPane {
                     }
                 }
             }
+        }
+    }
+    
+    private static class DummyTransferHandler extends TransferHandler /*implements UIResource*/ {
+        public void exportAsDrag(JComponent comp, InputEvent e, int action) {
+            //do nothing - ExplorerDnDManager will kick in when necessary
+        }
+        public void exportToClipboard(JComponent comp, Clipboard clip, int action)
+                                                      throws IllegalStateException {
+            //do nothing - Node actions will hande this
+        }
+        public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
+            return false; //TreeViewDropSupport will decided
+        }
+        public boolean importData(JComponent comp, Transferable t) {
+            return false;
+        }
+        public int getSourceActions(JComponent c) {
+            return COPY_OR_MOVE;
         }
     }
 }
