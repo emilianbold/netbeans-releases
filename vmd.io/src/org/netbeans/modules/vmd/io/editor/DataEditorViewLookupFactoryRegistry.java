@@ -33,10 +33,10 @@ final class DataEditorViewLookupFactoryRegistry {
 
     private static final Lookup.Result<DataEditorViewLookupFactory> factoriesLookupResult = Lookup.getDefault ().lookupResult (DataEditorViewLookupFactory.class);
 
-    static ArrayList<Object> getLookupObjects (DataObjectContext context, String viewID, DataEditorView.Kind viewKind) {
+    static ArrayList<Object> getLookupObjects (DataObjectContext context, DataEditorView view) {
         ArrayList<Object> list = new ArrayList<Object> ();
         for (DataEditorViewLookupFactory factory : factoriesLookupResult.allInstances ()) {
-            Collection<? extends Object> objects = factory.getLookupObjects (context, viewID, viewKind);
+            Collection<? extends Object> objects = factory.getLookupObjects (context, view);
             if (objects != null)
                 list.addAll (objects);
         }

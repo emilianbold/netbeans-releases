@@ -30,8 +30,8 @@ import java.util.Collections;
  */
 public class PaletteLookupFactory implements DataEditorViewLookupFactory {
 
-    public Collection<? extends Object> getLookupObjects(DataObjectContext context, String viewID, DataEditorView.Kind viewKind) {
-        if (viewKind == DataEditorView.Kind.MODEL) {
+    public Collection<? extends Object> getLookupObjects(DataObjectContext context, DataEditorView view) {
+        if (view.canShowSideWindows ()  &&  view.getKind () == DataEditorView.Kind.MODEL) {
             return Collections.singleton(PaletteMap.getInstance().getPaletteControllerForProjectType(context.getProjectType()));
         } else {
             return null;

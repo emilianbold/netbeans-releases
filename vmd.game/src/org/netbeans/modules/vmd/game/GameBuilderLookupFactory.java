@@ -23,7 +23,7 @@ import java.util.Collection;
  */
 public class GameBuilderLookupFactory implements DataEditorViewLookupFactory {
     
-    public Collection<?> getLookupObjects(DataObjectContext context, String viewID, DataEditorView.Kind viewKind) {
+    public Collection<?> getLookupObjects(DataObjectContext context, DataEditorView view) {
         if (! GameController.PROJECT_TYPE_GAME.equals (context.getProjectType ()))
             return null;
         return Arrays.asList(

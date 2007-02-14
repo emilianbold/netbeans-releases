@@ -42,7 +42,7 @@ public class EditorViewElement implements MultiViewElement, Serializable {
 
     private static final long serialVersionUID = -1;
 
-    private static final String CLOSING_ID = "ID_JAVA_CLOSING";
+    private static final String CLOSING_ID = "ID_JAVA_CLOSING"; // NOI18N
 
     private DataObjectContext context;
     private DataEditorView view;
@@ -62,7 +62,7 @@ public class EditorViewElement implements MultiViewElement, Serializable {
 
     private void init () {
         kind = view.getKind ();
-        ArrayList<Object> lookupObjects = DataEditorViewLookupFactoryRegistry.getLookupObjects (context, view.preferredID (), kind);
+        ArrayList<Object> lookupObjects = DataEditorViewLookupFactoryRegistry.getLookupObjects (context, view);
         lookupObjects.add (view);
         lookup = Lookups.fixed (lookupObjects.toArray ());
         IOSupport.getDocumentSerializer (context.getDataObject ()).startLoadingDocument ();

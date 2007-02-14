@@ -35,9 +35,9 @@ import java.util.Collections;
  */
 public final class MESourceLookupFactory implements DataEditorViewLookupFactory {
 
-    public Collection<? extends Object> getLookupObjects (DataObjectContext context, String viewID, DataEditorView.Kind viewKind) {
+    public Collection<? extends Object> getLookupObjects (DataObjectContext context, DataEditorView view) {
         try {
-            if (MESourceEditorView.VIEW_ID.equals (viewID)  &&  viewKind == DataEditorView.Kind.CODE)
+            if (view instanceof MESourceEditorView  &&  view.getKind () == DataEditorView.Kind.CODE)
                 return Collections.singleton (SnippetsPaletteSupport.getPaletteController ());
         } catch (IOException e) {
             Debug.warning (e);

@@ -25,6 +25,6 @@ import java.util.Collection;
  */
 public interface DataEditorViewLookupFactory {
 
-    public Collection<? extends Object> getLookupObjects (DataObjectContext context, String viewID, DataEditorView.Kind viewKind);
+    public Collection<? extends Object> getLookupObjects (DataObjectContext context, DataEditorView view);
 
 }
