@@ -125,6 +125,8 @@ public class ResourcesAnalyzerPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         resourcesList = new javax.swing.JList();
 
+        setPreferredSize(new java.awt.Dimension(400, 150));
+
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(ResourcesAnalyzerPanel.class, "ResourcesAnalyzerPanel.removeButton.text")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
