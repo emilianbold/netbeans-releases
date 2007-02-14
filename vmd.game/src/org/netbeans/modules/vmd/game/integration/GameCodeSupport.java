@@ -30,9 +30,14 @@ import org.netbeans.modules.vmd.game.integration.components.GameTypes;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.vmd.game.model.AnimatedTileCD;
 import org.netbeans.modules.vmd.game.model.ImageResourceCD;
 import org.netbeans.modules.vmd.game.model.LayerCD;
@@ -99,9 +104,9 @@ public class GameCodeSupport {
 
     private static String getImageName (DesignComponent imageResource) {
 		String path = MidpTypes.getString(imageResource.readProperty(ImageResourceCD.PROPERTY_IMAGE_PATH));
-		int index = path.lastIndexOf("/");
+		int index = path.lastIndexOf("/"); // NOI18N
 		String name = path.substring(index + 1);
-		name = name.substring(0, name.lastIndexOf("."));
+		name = name.substring(0, name.lastIndexOf(".")); // NOI18N
 		return name;
     }
 
@@ -149,21 +154,21 @@ public class GameCodeSupport {
         };
     }
 	
-	public static Presenter createAnimatedTileCodePresenter() {
-        return new CodeClassLevelPresenter.Adapter() {
-
-            protected void generateFieldSectionCode(MultiGuardedSection section) {
-                DesignComponent component = getComponent();
-                String name = MidpTypes.getString (component.readProperty (AnimatedTileCD.PROPERTY_NAME));
-                section.getWriter().write("private int animatedTile_" + name + ";\n"); // NOI18N
-			}
-			
-            protected void generateMethodSectionCode(MultiGuardedSection section) {
-                CodeWriter writer = section.getWriter();
-                DesignComponent component = getComponent();
-			}
-		};
-	}
+//	public static Presenter createAnimatedTileCodePresenter() {
+//        return new CodeClassLevelPresenter.Adapter() {
+//
+//            protected void generateFieldSectionCode(MultiGuardedSection section) {
+//                DesignComponent component = getComponent();
+//                String name = MidpTypes.getString (component.readProperty (AnimatedTileCD.PROPERTY_NAME));
+//                section.getWriter().write("private int animatedTile_" + name + ";\n"); // NOI18N
+//			}
+//			
+//            protected void generateMethodSectionCode(MultiGuardedSection section) {
+//                CodeWriter writer = section.getWriter();
+//                DesignComponent component = getComponent();
+//			}
+//		};
+//	}
 	
     public static Presenter createSpriteCodePresenter () {
         return new CodeClassLevelPresenter.Adapter () {
@@ -201,13 +206,52 @@ public class GameCodeSupport {
         };
     }
 
+	private static Set<Integer> getAnimatedTileIndexesFromTiledLayer(DesignComponent tiledLayer) {
+		assert (tiledLayer.getType().equals(TiledLayerCD.TYPEID));
+		Set<Integer> animSet = new HashSet<Integer>();
+		int[][] tiles = GameTypes.getTiles (tiledLayer.readProperty(TiledLayerCD.PROPERTY_TILES));
+		for (int i = 0; i < tiles.length; i++) {
+			for (int j = 0; j < tiles[i].length; j ++) {
+				int index = tiles[i][j];
+				if (index < 0) {
+					animSet.add(index);
+				}
+			}
+		}
+		return animSet;
+	}
+	
+	
+	private static Set<DesignComponent> getAnimatedTilesFromTiledLayer(DesignComponent tiledLayer) {
+		Set<DesignComponent> finalSet = new HashSet<DesignComponent>();
+		Set<Integer> animSet = getAnimatedTileIndexesFromTiledLayer(tiledLayer);
+		DesignComponent dcImgRes = tiledLayer.readProperty(LayerCD.PROPERTY_IMAGE_RESOURCE).getComponent();
+		Collection <DesignComponent> children = dcImgRes.getComponents();
+		for (DesignComponent child : children) {
+			if (child.getType().equals(AnimatedTileCD.TYPEID)) {
+				if (animSet.contains(MidpTypes.getInteger(child.readProperty(AnimatedTileCD.PROPERTY_INDEX)))) {
+					finalSet.add(child);
+				}
+			}
+		}
+		return finalSet;
+	}
+	
     public static Presenter createTiledLayerCodePresenter () {
         return new CodeClassLevelPresenter.Adapter() {
 
             protected void generateFieldSectionCode (MultiGuardedSection section) {
                 DesignComponent component = getComponent ();
-                String layerName = MidpTypes.getString (component.readProperty (LayerCD.PROPERTY_NAME));
-                section.getWriter ().write ("private TiledLayer tiledLayer_" + layerName + ";\n"); // NOI18N
+                
+				//define the layer
+				String layerName = MidpTypes.getString (component.readProperty (LayerCD.PROPERTY_NAME));
+                section.getWriter().write("private TiledLayer tiledLayer_" + layerName + ";\n"); // NOI18N
+				
+				Set<DesignComponent> ats = getAnimatedTilesFromTiledLayer(component);
+				for (DesignComponent animtile : ats) {
+					String animTileName = MidpTypes.getString(animtile.readProperty(AnimatedTileCD.PROPERTY_NAME));
+					section.getWriter().write("public int animTile_" + animTileName + "_" + layerName + ";\n"); // NOI18N					
+				}
             }
 
             protected void generateMethodSectionCode (MultiGuardedSection section) {
@@ -227,6 +271,22 @@ public class GameCodeSupport {
 						+ tiles[0].length + ", " + tiles.length + ", this.getImage_" // NOI18N
 						+ imageName + "(), " + tileWidth + ", " + tileHeight + ");\n"); // NOI18N
 				
+				//init animated tiles
+				Set<DesignComponent> ats = getAnimatedTilesFromTiledLayer(component);
+				for (DesignComponent animtile : ats) {
+					String animTileName = MidpTypes.getString(animtile.readProperty(AnimatedTileCD.PROPERTY_NAME));
+					DesignComponent defSeq = animtile.readProperty(SequenceContainerCDProperties.PROP_DEFAULT_SEQUENCE).getComponent();
+
+	                String seqName = MidpTypes.getString(defSeq.readProperty (SequenceCD.PROPERTY_NAME));
+					String imageResourceNameNoExt = getImageName(imageResource);
+					section.getWriter().write("this.animTile_" + animTileName + "_" + layerName + " = this.tiledLayer_" + layerName + ".createAnimatedTile(this.sequence_" + seqName + "_" + imageResourceNameNoExt + "[0]);\n"); // NOI18N				
+				}
+				Map<Integer, String> indexNames = new HashMap<Integer, String>();
+				for (DesignComponent at : ats) {
+					indexNames.put(MidpTypes.getInteger(at.readProperty(AnimatedTileCD.PROPERTY_INDEX)), MidpTypes.getString(at.readProperty(AnimatedTileCD.PROPERTY_NAME)));
+				}
+				
+				//write tile matrix
                 writer.write ("int[][] tiles = {\n"); // NOI18N
                 for (int rowIndex = 0; rowIndex < tiles.length; rowIndex ++) {
                     writer.write ("{ "); // NOI18N
@@ -234,31 +294,34 @@ public class GameCodeSupport {
                     for (int columnIndex = 0; columnIndex < row.length; columnIndex ++) {
                         if (columnIndex > 0)
                             writer.write (", "); // NOI18N
-                        // TODO - check for animTile?
-                        writer.write (Integer.toString (row[columnIndex]));
+                        //check for animTile
+						int tileIndex = row[columnIndex];
+						if (tileIndex >= 0) {
+	                        writer.write (Integer.toString (row[columnIndex]));
+						}
+						else {
+							String atName = indexNames.get(tileIndex);
+							writer.write ("this.animTile_" + atName + "_" + layerName); // NOI18N
+						}
                     }
                     if (rowIndex < tiles.length - 1)
                         writer.write (" },\n"); // NOI18N
                     else
                         writer.write (" }\n"); // NOI18N
                 }
-				writer.write ("};\n");
+				writer.write ("};\n"); // NOI18N
 				
-                writer.write ("for (int row = 0; row < " + tiles.length + "; row++) {\n");
-                writer.write ("for (int col = 0; col < " + tiles[0].length + "; col++) {\n");
-                writer.write ("this.tiledLayer_" + layerName + ".setCell(col, row, tiles[row][col]);\n");
-                writer.write ("}\n");
-                writer.write ("}\n");
+                writer.write ("for (int row = 0; row < " + tiles.length + "; row++) {\n"); // NOI18N
+                writer.write ("for (int col = 0; col < " + tiles[0].length + "; col++) {\n"); // NOI18N
+                writer.write ("this.tiledLayer_" + layerName + ".setCell(col, row, tiles[row][col]);\n"); // NOI18N
+                writer.write ("}\n"); // NOI18N
+                writer.write ("}\n"); // NOI18N
                 writer.write ("}\n"); // NOI18N
                 writer.write ("	return this.tiledLayer_" + layerName + ";\n"); // NOI18N
                 writer.write ("}\n"); // NOI18N
                 writer.write ("\n"); // NOI18N
-
-                // TODO - animTiles method?
             }
         };
     }
-
-    // TODO - createAnimatedTileCodePresenter
 
 }

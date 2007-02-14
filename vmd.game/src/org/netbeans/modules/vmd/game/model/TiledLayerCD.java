@@ -33,7 +33,6 @@ public class TiledLayerCD extends ComponentDescriptor {
 	public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.game.model.TiledLayer"); // NOI18N
 	
 	public static final String PROPERTY_TILES = "tiledlayercd.prop.tiles"; // NOI18N
-	public static final String PROPERTY_ANIMATED_TILES = "tiledlayercd.prop.animatedtiles"; // NOI18N
 	
 	public TypeDescriptor getTypeDescriptor() {
 		return new TypeDescriptor(LayerCD.TYPEID, TYPEID, true, false);
@@ -50,8 +49,6 @@ public class TiledLayerCD extends ComponentDescriptor {
 		return Arrays.asList(
 			new PropertyDescriptor(PROPERTY_TILES, GameTypes.TYPEID_TILED_LAYER_TILES, 
 				PropertyValue.createNull(), false, false, null)
-//			new PropertyDescriptor(PROPERTY_ANIMATED_TILES, AnimatedTileCD.TYPEID.getArrayType(), 
-//				PropertyValue.createEmptyArray(AnimatedTileCD.TYPEID), false, false, null)
 		);
 	}
 	

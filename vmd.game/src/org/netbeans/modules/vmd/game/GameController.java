@@ -129,9 +129,10 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		//if we already have a document then dereister listeners and clean game model
 		if (document != null) {
 			this.removeAllListeners();
-			designIdMap.clear();
 			//clean my internal model - remove all scenes, layers, and image resources
+			//thnx david for reordering these 2 :)
 			GlobalRepository.getInstance().removeAllComponents();
+			designIdMap.clear();
 		}
 		
 		JComponent view = null;

@@ -30,7 +30,6 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.game.integration.GameCodeSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 /**
@@ -73,8 +72,6 @@ public class AnimatedTileCD extends ComponentDescriptor {
 
 	protected List<? extends Presenter> createPresenters() {
 		return Arrays.asList (
-            // code
-            GameCodeSupport.createAnimatedTileCodePresenter ()
         );
 	}
 	
