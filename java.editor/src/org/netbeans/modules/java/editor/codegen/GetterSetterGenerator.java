@@ -32,6 +32,7 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
@@ -86,7 +87,7 @@ public class GetterSetterGenerator implements CodeGenerator {
             for (VariableElement variableElement : ElementFilter.fieldsIn(elements.getAllMembers(typeElement))) {
                 ElementNode.Description description = ElementNode.Description.create(variableElement, null);
                 boolean hasGetter = GeneratorUtils.hasGetter(controller, variableElement, methods);
-                boolean hasSetter = GeneratorUtils.hasSetter(controller, variableElement, methods);
+                boolean hasSetter = variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, variableElement, methods);
                 if (!hasGetter) {
                     List<ElementNode.Description> descriptions = gDescriptions.get(variableElement.getEnclosingElement());
                     if (descriptions == null) {
