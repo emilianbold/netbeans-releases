@@ -140,6 +140,8 @@ public class DefaultModel implements Model, NodeListener {
     */
     public void childrenAdded(NodeMemberEvent ev) {
         categories = null;
+        if( isRefreshingChildren )
+            return;
         getCategories();
         Category[] addedCategories = findCategories( ev.getDelta() );
         fireCategoriesChanged( addedCategories, true );
@@ -224,10 +226,16 @@ public class DefaultModel implements Model, NodeListener {
         return res;
     }
 
+    private boolean isRefreshingChildren = false;
     public void refresh() {
         clearSelection();
         categories = null;
-        rootNode.refreshChildren();
+        isRefreshingChildren = true;
+        try {
+            rootNode.refreshChildren();
+        } finally {
+            isRefreshingChildren = false;
+        }
     }
     
     public void showCustomizer( PaletteController controller, Settings settings ) {

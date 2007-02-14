@@ -140,10 +140,12 @@ public class ModelTest extends AbstractPaletteTestHid {
         
         model.moveCategory( source, target, true );
         
+        pc.refresh();
+        
         Category[] movedCategories = model.getCategories();
         assertEquals( categories.length, movedCategories.length );
-        assertEquals( target, movedCategories[movedCategories.length-1] );
-        assertEquals( source, movedCategories[movedCategories.length-1-1] );
+        assertEquals( target.getName(), movedCategories[movedCategories.length-1].getName() );
+        assertEquals( source.getName(), movedCategories[movedCategories.length-1-1].getName() );
     }
 
     /**
@@ -159,10 +161,12 @@ public class ModelTest extends AbstractPaletteTestHid {
         
         model.moveCategory( source, target, false );
         
+        pc.refresh();
+        
         Category[] movedCategories = model.getCategories();
         assertEquals( categories.length, movedCategories.length );
-        assertEquals( target, movedCategories[movedCategories.length-1-1] );
-        assertEquals( source, movedCategories[movedCategories.length-1] );
+        assertEquals( target.getName(), movedCategories[movedCategories.length-1-1].getName() );
+        assertEquals( source.getName(), movedCategories[movedCategories.length-1].getName() );
     }
 
     /**

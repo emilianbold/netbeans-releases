@@ -107,7 +107,7 @@ public class PaletteFactoryTest extends TestCase {
         PaletteActions actions = new DummyActions();
         Node rootNode = DummyPalette.createPaletteRoot();
         PaletteController controller = PaletteFactory.createPalette( rootNode, actions );
-        assertEquals( rootNode, controller.getRoot().lookup( Node.class ) );
+        assertEquals( rootNode.getName(), controller.getRoot().lookup( Node.class ).getName() );
         assertEquals( actions, controller.getRoot().lookup( PaletteActions.class ) );
     }
     

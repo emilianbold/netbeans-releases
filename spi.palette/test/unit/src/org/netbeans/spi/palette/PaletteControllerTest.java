@@ -257,7 +257,7 @@ public class PaletteControllerTest extends TestCase {
      * Test of getRoot method, of class org.netbeans.modules.palette.api.PaletteController.
      */
     public void testGetRoot() {
-        assertEquals( rootNode, controller.getRoot().lookup( Node.class ) );
+        assertEquals( rootNode.getName(), controller.getRoot().lookup( Node.class ).getName() );
     }
 
     private static class MyPropertyChangeListener implements PropertyChangeListener {
