@@ -70,7 +70,7 @@ public final class ASTNode extends ASTItem {
         int         rule,
         int         offset
     ) {
-        return new ASTNode (mimeType, nt, rule, offset, Collections.EMPTY_LIST);
+        return new ASTNode (mimeType, nt, rule, offset, Collections.<ASTItem>emptyList ());
     }
 
     

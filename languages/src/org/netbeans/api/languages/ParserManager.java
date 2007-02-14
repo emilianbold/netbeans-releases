@@ -38,14 +38,15 @@ public abstract class ParserManager {
     public static final int NOT_PARSED = 4;
     
     
-    private static Map managers = new WeakHashMap ();
+    private static Map<NbEditorDocument,WeakReference<ParserManager>> managers = 
+        new WeakHashMap<NbEditorDocument,WeakReference<ParserManager>> ();
     
     public static synchronized ParserManager get (NbEditorDocument doc) {
-        WeakReference wr = (WeakReference) managers.get (doc);
-        ParserManager pm = wr != null ? (ParserManager) wr.get () : null;
+        WeakReference<ParserManager> wr = managers.get (doc);
+        ParserManager pm = wr != null ? wr.get () : null;
         if (pm == null) {
             pm = new ParserManagerImpl (doc);
-            managers.put (doc, new WeakReference (pm));
+            managers.put (doc, new WeakReference<ParserManager> (pm));
             //Utils.startTest ("ParserManager.managers", managers);
         }
         return pm;

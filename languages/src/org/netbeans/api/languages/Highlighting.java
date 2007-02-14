@@ -37,26 +37,26 @@ import org.netbeans.api.languages.ASTToken;
 public class Highlighting {
     
     
-    private static Map highlightings = new WeakHashMap ();
+    private static Map<Document,WeakReference<Highlighting>> highlightings = new WeakHashMap<Document,WeakReference<Highlighting>> ();
     
     {
         //Utils.startTest("Highlighting.highlightings", highlightings);
     }
     
     public static Highlighting getHighlighting (Document doc) {
-        WeakReference wr = (WeakReference) highlightings.get (doc);
-        Highlighting highlighting = wr == null ? null : (Highlighting) wr.get ();
+        WeakReference<Highlighting> wr = highlightings.get (doc);
+        Highlighting highlighting = wr == null ? null : wr.get ();
         if (highlighting == null) {
             highlighting = new Highlighting ();
-            highlightings.put (doc, new WeakReference (highlighting));
+            highlightings.put (doc, new WeakReference<Highlighting> (highlighting));
         }
         return highlighting;
     }
     
     
     
-    private Map highlights = new HashMap ();
-    private Map tokens = new HashMap ();
+    private Map<ASTNode,AttributeSet> highlights = new HashMap<ASTNode,AttributeSet> ();
+    private Map<Integer,Map<String,AttributeSet>> tokens = new HashMap<Integer,Map<String,AttributeSet>> ();
     
     private Highlighting () {}
     
@@ -67,9 +67,9 @@ public class Highlighting {
         }
         ASTToken token = (ASTToken) item;
         Integer id = new Integer (token.getOffset ());
-        Map m = (Map) tokens.get (id);
+        Map<String,AttributeSet> m = tokens.get (id);
         if (m == null) {
-            m = new HashMap ();
+            m = new HashMap<String,AttributeSet> ();
             tokens.put (id, m);
         }
         m.put (token.getIdentifier (), as);

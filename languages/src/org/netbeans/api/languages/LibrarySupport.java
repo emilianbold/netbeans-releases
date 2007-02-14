@@ -50,35 +50,35 @@ public class LibrarySupport {
     }
     
     
-    private Map<String,List> keys = new HashMap ();
+    private Map<String,List<String>> keys = new HashMap<String,List<String>> ();
     
     public List<String> getItems (String context) {
-        List k = (List) keys.get (context);
+        List<String> k = keys.get (context);
         if (k == null) {
-            Map m = getItems ().get (context);
+            Map<String,Map<String,String>> m = getItems ().get (context);
             if (m == null) return null;
-            k = new ArrayList (m.keySet ());
-            Collections.sort (k);
-            k = Collections.unmodifiableList (k);
+            k = new ArrayList<String> (m.keySet ());
+            Collections.<String>sort (k);
+            k = Collections.<String>unmodifiableList (k);
             keys.put (context, k);
         }
         return k;
     }
     
     public String getProperty (String context, String item, String propertyName) {
-        Map m = getItems ().get (context);
+        Map<String,Map<String,String>> m = getItems ().get (context);
         if (m == null) return null;
-        m = (Map) m.get (item);
-        if (m == null) return null;
-        return (String) m.get (propertyName);
+        Map<String,String> m1 = m.get (item);
+        if (m1 == null) return null;
+        return m1.get (propertyName);
     }
     
     
     // generics support methods ................................................
     
-    private Map<String,Map> items;
+    private Map<String,Map<String,Map<String,String>>> items;
     
-    private Map<String,Map> getItems () {
+    private Map<String,Map<String,Map<String,String>>> getItems () {
         if (items == null)
             try {
                 XMLReader reader = XMLUtil.createXMLReader ();
@@ -96,14 +96,14 @@ public class LibrarySupport {
                 items = handler.result;
             } catch (Exception ex) {
                 ErrorManager.getDefault ().notify (ex);
-                items = Collections.EMPTY_MAP;
+                items = Collections.<String,Map<String,Map<String,String>>> emptyMap ();
             }
         return items;
     }
     
     static class Handler extends DefaultHandler {
         
-        Map<String,Map> result = new HashMap ();
+        Map<String,Map<String,Map<String,String>>> result = new HashMap<String,Map<String,Map<String,String>>> ();
         
         public void startElement (
             String uri, 
@@ -115,9 +115,9 @@ public class LibrarySupport {
                 if (name.equals ("node")) {
                     String contexts = attributes.getValue ("context");
                     String key = attributes.getValue ("key");
-                    Map properties = null;
+                    Map<String,String> properties = null;
                     if (attributes.getLength () > 2) {
-                        properties = new HashMap ();
+                        properties = new HashMap<String,String> ();
                         int i, k = attributes.getLength ();
                         for (i = 0; i < k; i++) {
                             String propertyName = attributes.getQName (i);
@@ -130,9 +130,9 @@ public class LibrarySupport {
                         int i = contexts.indexOf (',');
                         String context = i >= 0 ? 
                             contexts.substring (0, i).trim () : contexts;
-                        Map c = (Map) result.get (context);
+                        Map<String,Map<String,String>> c = result.get (context);
                         if (c == null) {
-                            c = new HashMap ();
+                            c = new HashMap<String,Map<String,String>> ();
                             result.put (context, c);
                         }
                         if (c.containsKey (key))
