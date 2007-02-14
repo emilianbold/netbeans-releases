@@ -330,7 +330,8 @@ COLOR:js_identifier {
 ########### code folding #######################################################
 
 FOLD:FunctionBody:"{...}"
-
+FOLD:js_comment:"{...}"
+FOLD:js_line_commnet:"{...}"
 
 ########### navigator ##########################################################
 
