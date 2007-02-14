@@ -159,10 +159,10 @@ public final class I18nUtil {
     public static List getRegExpItems() {
         if(regExpItems == null) {
             regExpItems = new ArrayList(4);
-            regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*{hardString}|// NOI18N"); // NOI18N
+            regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*{hardString}|// *NOI18N"); // NOI18N
             regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*{hardString}"); // NOI18N
-            regExpItems.add("// NOI18N"); // NOI18N
-            regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*|getMessage[:space:]*\\(([:alnum:]|[:punct:]|[:space:])*,[:space:]*{hardString}|// NOI18N"); // NOI18N
+            regExpItems.add("// *NOI18N"); // NOI18N
+            regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*|getMessage[:space:]*\\(([:alnum:]|[:punct:]|[:space:])*,[:space:]*{hardString}|// *NOI18N"); // NOI18N
         }
             
         return regExpItems;
