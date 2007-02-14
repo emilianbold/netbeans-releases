@@ -37,10 +37,10 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
-import org.netbeans.modules.vmd.midp.inspector.controllers.CategoryPC;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
-import org.netbeans.modules.vmd.midpnb.components.properteditors.PropertyEditorExecutableUserCode;
+
 
 import java.util.Arrays;
 import java.util.List;
@@ -86,7 +86,7 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
      private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                     .addProperty("Executable Code", new PropertyEditorExecutableUserCode(), PROP_CODE);
+                     .addProperty("Executable Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_CODE);
     }
 
     private static Presenter createSetterPresenter () {
