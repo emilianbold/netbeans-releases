@@ -47,6 +47,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
+import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
@@ -650,12 +651,24 @@ class J2SEActionProvider implements ActionProvider {
         if (mainClass == null || mainClass.length () == 0) {
             return MainClassStatus.UNSET;
         }
-        
-        ClassPath bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);        //Single compilation unit
-        ClassPath compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.COMPILE);
-        ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.SOURCE);
-        if (J2SEProjectUtil.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
-            return MainClassStatus.SET_AND_VALID;
+        if (sourcesRoots.length > 0) {
+            ClassPath bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);        //Single compilation unit
+            ClassPath compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.COMPILE);
+            ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.SOURCE);
+            if (J2SEProjectUtil.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
+                return MainClassStatus.SET_AND_VALID;
+            }
+        }
+        else {
+            ClassPathProviderImpl cpProvider = project.getLookup().lookup(ClassPathProviderImpl.class);
+            if (cpProvider != null) {
+                ClassPath bootPath = cpProvider.getProjectSourcesClassPath(ClassPath.BOOT);
+                ClassPath compilePath = cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE);
+                ClassPath sourcePath = cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE);   //Empty ClassPath
+                if (J2SEProjectUtil.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
+                    return MainClassStatus.SET_AND_VALID;
+                }
+            }
         }
         return MainClassStatus.SET_BUT_INVALID;
     }
