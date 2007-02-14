@@ -53,7 +53,7 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
         if (tokenIds == null) {
             tokenIds = new ArrayList ();
             tokensMap = new HashMap ();
-            Iterator it = getLanguage ().getTokens ().iterator ();
+            Iterator it = getLanguage ().getTokenTypes ().iterator ();
             while (it.hasNext ()) {
                 TokenType t = (TokenType) it.next ();
                 if (tokensMap.containsKey (t.getType ())) continue;
