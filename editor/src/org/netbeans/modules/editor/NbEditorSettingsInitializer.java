@@ -202,48 +202,51 @@ public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
             
             // Get the root of the MimeLookup registry
             FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
-            
-            // Go through mime type types
-            FileObject [] types = fo.getChildren();
-            for(int i = 0; i < types.length; i++) {
-                if (!types[i].isFolder()) {
-                    continue;
-                }
-                
-                // Go through mime type subtypes
-                FileObject [] subTypes = types[i].getChildren();
-                for(int j = 0; j < subTypes.length; j++) {
-                    if (!subTypes[j].isFolder()) {
+
+            // Generally may not exist (e.g. in tests)
+            if (fo != null) {
+                // Go through mime type types
+                FileObject [] types = fo.getChildren();
+                for(int i = 0; i < types.length; i++) {
+                    if (!types[i].isFolder()) {
                         continue;
                     }
-                    
-                    String mimeType = types[i].getNameExt() + "/" + subTypes[j].getNameExt(); //NOI18N
-                    MimePath mimePath = MimePath.parse(mimeType);
-                    EditorKit kit = (EditorKit) MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
-                    
-                    if (kit != null) {
-                        String genericMimeType;
-                        if (!kit.getContentType().equals(mimeType) && 
-                            !(null != (genericMimeType = getGenericPartOfCompoundMimeType(mimeType)) && genericMimeType.equals(kit.getContentType())))
-                        {
-                            LOG.warning("Inconsistent mime type declaration for the kit: " + kit + //NOI18N
-                                "; mimeType from the kit is '" + kit.getContentType() + //NOI18N
-                                ", but the kit is registered for '" + mimeType + "'"); //NOI18N
+
+                    // Go through mime type subtypes
+                    FileObject [] subTypes = types[i].getChildren();
+                    for(int j = 0; j < subTypes.length; j++) {
+                        if (!subTypes[j].isFolder()) {
+                            continue;
                         }
-                        mimeType2kitClass.put(mimeType, kit.getClass());
-                    } else {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("No kit for '" + mimeType + "'");
+
+                        String mimeType = types[i].getNameExt() + "/" + subTypes[j].getNameExt(); //NOI18N
+                        MimePath mimePath = MimePath.parse(mimeType);
+                        EditorKit kit = (EditorKit) MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
+
+                        if (kit != null) {
+                            String genericMimeType;
+                            if (!kit.getContentType().equals(mimeType) && 
+                                !(null != (genericMimeType = getGenericPartOfCompoundMimeType(mimeType)) && genericMimeType.equals(kit.getContentType())))
+                            {
+                                LOG.warning("Inconsistent mime type declaration for the kit: " + kit + //NOI18N
+                                    "; mimeType from the kit is '" + kit.getContentType() + //NOI18N
+                                    ", but the kit is registered for '" + mimeType + "'"); //NOI18N
+                            }
+                            mimeType2kitClass.put(mimeType, kit.getClass());
+                        } else {
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("No kit for '" + mimeType + "'");
+                            }
                         }
                     }
+
+                    types[i].addFileChangeListener(this);
+                    eventSources.add(types[i]);
                 }
-                
-                types[i].addFileChangeListener(this);
-                eventSources.add(types[i]);
+
+                fo.addFileChangeListener(this);
+                eventSources.add(fo);
             }
-            
-            fo.addFileChangeListener(this);
-            eventSources.add(fo);
             
             needsReloading = false;
         }
