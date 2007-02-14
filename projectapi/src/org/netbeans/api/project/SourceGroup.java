@@ -34,6 +34,7 @@ public interface SourceGroup {
 
     /**
      * Pseudo-property used to indicate changes in containership of some subfiles.
+     * (The old and new value should be left null.)
      */
     String PROP_CONTAINERSHIP = "containership"; // NOI18N
 
