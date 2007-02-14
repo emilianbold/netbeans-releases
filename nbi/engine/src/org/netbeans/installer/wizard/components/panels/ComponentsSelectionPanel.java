@@ -228,6 +228,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             initComponents();
         }
         
+        @Override
         protected void initialize() {
             descriptionPane.setContentType(
                     component.getProperty(COMPONENT_DESCRIPTION_CONTENT_TYPE_PROPERTY));
@@ -242,6 +243,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             super.initialize();
         }
         
+        @Override
         protected String validateInput() {
             final Registry registry = Registry.getInstance();
             
@@ -607,9 +609,11 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         private List<CellEditorListener> listeners =
                 new LinkedList<CellEditorListener>();
         
-        private NbiPanel    panel;
+        private NbiPanel panel;
         private NbiCheckBox checkBox;
-        private NbiLabel    label;
+        private NbiLabel iconLabel;
+        private NbiLabel titleLabel;
+        private NbiLabel statusLabel;
         
         private Color foreground;
         private Color background;
@@ -624,51 +628,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             selectionForeground = UIManager.getColor("Tree.selectionForeground");
             selectionBackground = UIManager.getColor("Tree.selectionBackground");
             
-            panel = new NbiPanel();
-            panel.setLayout(new GridBagLayout());
-            panel.setBackground(selectionBackground);
-            
-            checkBox = new NbiCheckBox();
-            checkBox.setOpaque(false);
-            checkBox.setFocusable(false);
-            checkBox.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent event) {
-                    stopCellEditing();
-                }
-            });
-            
-            label = new NbiLabel();
-            label.setFocusable(false);
-            label.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(final MouseEvent event) {
-                    cancelCellEditing();
-                }
-                
-                public void mousePressed(final MouseEvent event) {
-                    cancelCellEditing();
-                }
-                
-                public void mouseReleased(final MouseEvent event) {
-                    cancelCellEditing();
-                }
-            });
-            
-            panel.add(checkBox, new GridBagConstraints(
-                    0, 0,                             // x, y
-                    1, 1,                             // width, height
-                    0.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_START,    // anchor
-                    GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(0, 0, 0, 0),           // padding
-                    0, 0));                           // padx, pady - ???);
-            panel.add(label, new GridBagConstraints(
-                    1, 0,                             // x, y
-                    1, 1,                             // width, height
-                    1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_START,    // anchor
-                    GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(0, 0, 0, 0),           // padding
-                    0, 0));                           // padx, pady - ???);
+            initComponents();
         }
         
         public Component getTreeCellRendererComponent(
@@ -726,6 +686,109 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         // private //////////////////////////////////////////////////////////////////
+        private void initComponents() {
+            // panel ////////////////////////////////////////////////////////////////
+            panel = new NbiPanel();
+            panel.setLayout(new GridBagLayout());
+            panel.setOpaque(false);
+            
+            // checkBox /////////////////////////////////////////////////////////////
+            checkBox = new NbiCheckBox();
+            checkBox.setOpaque(false);
+            checkBox.setFocusable(false);
+            checkBox.addActionListener(new ActionListener() {
+                public void actionPerformed(final ActionEvent event) {
+                    stopCellEditing();
+                }
+            });
+            
+            // iconLabel ////////////////////////////////////////////////////////////
+            iconLabel = new NbiLabel();
+            iconLabel.setFocusable(false);
+            iconLabel.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(final MouseEvent event) {
+                    cancelCellEditing();
+                }
+                
+                public void mousePressed(final MouseEvent event) {
+                    cancelCellEditing();
+                }
+                
+                public void mouseReleased(final MouseEvent event) {
+                    cancelCellEditing();
+                }
+            });
+            
+            // titleLabel ///////////////////////////////////////////////////////////
+            titleLabel = new NbiLabel();
+            titleLabel.setFocusable(false);
+            titleLabel.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(final MouseEvent event) {
+                    cancelCellEditing();
+                }
+                
+                public void mousePressed(final MouseEvent event) {
+                    cancelCellEditing();
+                }
+                
+                public void mouseReleased(final MouseEvent event) {
+                    cancelCellEditing();
+                }
+            });
+            
+            // statusLabel //////////////////////////////////////////////////////////
+            statusLabel = new NbiLabel();
+            statusLabel.setForeground(Color.GRAY);
+            statusLabel.setFocusable(false);
+            statusLabel.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(final MouseEvent event) {
+                    cancelCellEditing();
+                }
+                
+                public void mousePressed(final MouseEvent event) {
+                    cancelCellEditing();
+                }
+                
+                public void mouseReleased(final MouseEvent event) {
+                    cancelCellEditing();
+                }
+            });
+            
+            // this /////////////////////////////////////////////////////////////////
+            panel.add(checkBox, new GridBagConstraints(
+                    0, 0,                             // x, y
+                    1, 1,                             // width, height
+                    0.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 0, 0, 0),           // padding
+                    0, 0));                           // padx, pady - ???);
+            panel.add(iconLabel, new GridBagConstraints(
+                    1, 0,                             // x, y
+                    1, 1,                             // width, height
+                    0.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 0, 0, 0),           // padding
+                    0, 0));                           // padx, pady - ???);
+            panel.add(titleLabel, new GridBagConstraints(
+                    2, 0,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 0, 0, 0),           // padding
+                    0, 0));                           // padx, pady - ???);
+            panel.add(statusLabel, new GridBagConstraints(
+                    3, 0,                             // x, y
+                    1, 1,                             // width, height
+                    0.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 0, 0, 0),           // padding
+                    0, 0));                           // padx, pady - ???);
+        }
+        
         private void fireEditingStopped() {
             final CellEditorListener[] clone;
             synchronized (listeners) {
@@ -759,30 +822,37 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 final int row,
                 final boolean focus) {
             if (selected) {
-                panel.setOpaque(true);
+                titleLabel.setOpaque(true);
                 
-                checkBox.setForeground(selectionForeground);
-                label.setForeground(selectionForeground);
+                titleLabel.setForeground(selectionForeground);
+                titleLabel.setBackground(selectionBackground);
             } else {
-                panel.setOpaque(false);
+                titleLabel.setOpaque(false);
                 
-                checkBox.setForeground(foreground);
-                label.setForeground(foreground);
+                titleLabel.setForeground(foreground);
+                titleLabel.setBackground(background);
             }
             
             if (value instanceof Product) {
                 final Product product = (Product) value;
                 
                 final String title =
-                        product.getDisplayName() +
+                        " " + product.getDisplayName() + " ";
+                final String status =
                         " [" + product.getStatus().getDisplayName() + "]";
+                final String tooltip = title + status;
                 
-                label.setText(title);
-                label.setIcon(product.getIcon());
-                label.setToolTipText(title);
+                iconLabel.setIcon(product.getIcon());
+                iconLabel.setToolTipText(tooltip);
+                
+                titleLabel.setText(title);
+                titleLabel.setToolTipText(tooltip);
+                
+                statusLabel.setText(status);
+                statusLabel.setToolTipText(tooltip);
                 
                 checkBox.setVisible(true);
-                checkBox.setToolTipText(title);
+                checkBox.setToolTipText(tooltip);
                 
                 if ((product.getStatus() == Status.INSTALLED) ||
                         (product.getStatus() == Status.TO_BE_INSTALLED)) {
@@ -793,9 +863,20 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             } else if (value instanceof Group) {
                 final Group group = (Group) value;
                 
-                label.setText(group.getDisplayName());
-                label.setIcon(group.getIcon());
-                label.setToolTipText(group.getDisplayName());
+                final String title =
+                        " " + group.getDisplayName() + " ";
+                final String status =
+                        "";
+                final String tooltip = title + status;
+                
+                iconLabel.setIcon(group.getIcon());
+                iconLabel.setToolTipText(tooltip);
+                
+                titleLabel.setText(title);
+                titleLabel.setToolTipText(tooltip);
+                
+                statusLabel.setText(status);
+                statusLabel.setToolTipText(tooltip);
                 
                 checkBox.setVisible(false);
             }
