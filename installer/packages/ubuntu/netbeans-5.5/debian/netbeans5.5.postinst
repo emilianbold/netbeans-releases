@@ -49,6 +49,10 @@ case "$1" in
             netbeans.desktop \
             /usr/share/netbeans/5.5/nb5.5/netbeans.desktop
 
+         if [ ! -f /etc/netbeans5.5/netbeans.conf ] ; then
+            cp /usr/share/netbeans/5.5/etc/netbeans.conf.orig /etc/netbeans5.5/netbeans.conf
+         fi
+
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

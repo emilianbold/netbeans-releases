@@ -1,3 +1,12 @@
+netbeans5.5 (5.5-0.50) java-test; urgency=low
+
+  * Move netbeans.conf to /etc/netbeans5.5. Symlink to /etc/netbeans5.5/netbeans.conf
+    is created at original netbeans.conf location at /usr/share/netbeans/5.5/etc.
+  * Fix man page and desktop file so that it works correctly with alternatives.
+  * Add netbeans5.5.conffiles and add netbeans.conf to it.
+
+ -- Marek Slama <mslama@netbeans.org>  Wed, 14 Feb 2007 13:10:00 +0100
+
 netbeans5.5 (5.5-0.49) java-test; urgency=low
 
   [ Marek Slama ]

@@ -62,12 +62,12 @@ DEB_INSTALL_DIRS_$(p_platform) = usr/share/doc/$(p_platform) $(NBROOT) $(OVERRID
 DEB_INSTALL_DIRS_$(p_platform_ja) = usr/share/doc/$(p_platform_ja) $(NBROOT) $(OVERRIDES)
 DEB_INSTALL_DIRS_$(p_platform_pt) = usr/share/doc/$(p_platform_pt) $(NBROOT) $(OVERRIDES)
 DEB_INSTALL_DIRS_$(p_platform_zh) = usr/share/doc/$(p_platform_zh) $(NBROOT) $(OVERRIDES)
-DEB_INSTALL_DIRS_$(p_ide) = usr/share/doc/$(p_ide) $(NBROOT) usr/bin $(APPLICATIONS) $(OVERRIDES)
+DEB_INSTALL_DIRS_$(p_ide) = usr/share/doc/$(p_ide) $(NBROOT) usr/bin etc/$(p_ide) $(APPLICATIONS) $(OVERRIDES)
 DEB_INSTALL_DIRS_$(p_ide_ja) = usr/share/doc/$(p_ide_ja) $(NBROOT) $(OVERRIDES)
 DEB_INSTALL_DIRS_$(p_ide_pt) = usr/share/doc/$(p_ide_pt) $(NBROOT) $(OVERRIDES)
 DEB_INSTALL_DIRS_$(p_ide_zh) = usr/share/doc/$(p_ide_zh) $(NBROOT) $(OVERRIDES)
 
-DEB_INSTALL_MANPAGES_$(p_ide) = debian/netbeans.1
+#DEB_INSTALL_MANPAGES_$(p_ide) = debian/netbeans.1
 
 update-copyright:
 	sh debian/copyright-files/mkcopy.sh debian/copyright debian/copyright-files/PKG_PREAMBLE debian/copyright-files/PKG_NOTICE debian/copyright-files/MIT_LICENSE debian/copyright-files/NETBEANS_NOTICE $(DEB_SRCDIR)/LICENSE.txt $(DEB_SRCDIR)/THIRDPARTYLICENSE.txt $(DEB_SRCDIR)/platform6/THIRDPARTYLICENSEREADME.txt $(DEB_SRCDIR)/enterprise3/apache-tomcat-5.5.17/LICENSE $(DEB_SRCDIR)/enterprise3/modules/ext/toplink/3RD-PARTY-LICENSE.txt
@@ -169,8 +169,15 @@ install/$(p_ide)::
 	cp debian/productid $(r_ide)/nb5.5/config/
 	# add desktop file
 	cp debian/netbeans.desktop $(r_ide)/nb5.5/
-	cp debian/netbeans.desktop $(d_ide)/$(APPLICATIONS)/
 	cp debian/lintian/$(p_ide) $(d_ide)/$(OVERRIDES)/
+	# add man page to ide
+	mkdir -p $(r_ide)/man
+	cp debian/netbeans.1 $(r_ide)/man
+	gzip $(r_ide)/man/netbeans.1
+	# Create symlink for netbeans.conf
+	cp $(r_ide)/etc/netbeans.conf $(d_ide)/etc/$(p_ide)
+	mv  $(r_ide)/etc/netbeans.conf  $(r_ide)/etc/netbeans.conf.orig
+	dh_link etc/$(p_ide)/netbeans.conf  $(NBROOT)/etc/netbeans.conf
 
 install/$(p_ide_ja)::
 	# copy core ide files
