@@ -565,11 +565,12 @@ public class DetectPanel extends javax.swing.JPanel {
                     try {
                         URL url = f.toURI().toURL();
                         if (FileUtil.isArchiveFile(url)) {
-                            jdoc.add (FileUtil.getArchiveRoot(url));
+                            url = FileUtil.getArchiveRoot(url);
                         }
-                        else {
-                            jdoc.add (url);
+                        else if (!f.exists()){
+                            url = new URL (url.toExternalForm()+'/');
                         }
+                        jdoc.add (url);
                     } catch (MalformedURLException mue) {
                         ErrorManager.getDefault().notify (mue);
                     }
