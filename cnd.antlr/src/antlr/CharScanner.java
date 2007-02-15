@@ -69,11 +69,11 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
         }
     }
 
-    public void commit() {
+    /*public void commit() {
         inputState.input.commit();
-    }
+    }*/
 
-    public void consume() throws CharStreamException {
+    public void consume() {
         if (inputState.guessing == 0) {
             char c = LA(1);
             if (caseSensitive) {
@@ -95,7 +95,7 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
     }
 
     /** Consume chars until one matches the given char */
-    public void consumeUntil(int c) throws CharStreamException {
+    public void consumeUntil(int c) {
         char LA1 = LA(1);
         while (LA1 != EOF_CHAR && LA1 != c) {
             consume();
@@ -104,7 +104,7 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
     }
 
     /** Consume chars until one matches the given set */
-    public void consumeUntil(BitSet set) throws CharStreamException {
+    public void consumeUntil(BitSet set) {
         char LA1 = LA(1);
         while (LA1 != EOF_CHAR && !set.member(LA1)) {
             consume();
@@ -161,7 +161,7 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
         return _returnToken;
     }
 
-    public char LA(int i) throws CharStreamException {
+    public char LA(int i) {
         if (caseSensitive) {
             return inputState.input.LA(i);
         }
@@ -198,14 +198,14 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
         return inputState.input.mark();
     }
     
-    public void match(char c) throws MismatchedCharException, CharStreamException {
+    public void match(char c) throws MismatchedCharException {
         if (LA(1) != c) {
             throw new MismatchedCharException(LA(1), c, false, this);
         }
         consume();
     }
 
-    public void match(BitSet b) throws MismatchedCharException, CharStreamException {
+    public void match(BitSet b) throws MismatchedCharException {
         if (!b.member(LA(1))) {
             throw new MismatchedCharException(LA(1), b, false, this);
         }
@@ -214,7 +214,7 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
         }
     }
 
-    public void match(String s) throws MismatchedCharException, CharStreamException {
+    public void match(String s) throws MismatchedCharException {
         int len = s.length();
         for (int i = 0; i < len; i++) {
             if (LA(1) != s.charAt(i)) {
@@ -224,14 +224,14 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
         }
     }
 
-    public void matchNot(char c) throws MismatchedCharException, CharStreamException {
+    public void matchNot(char c) throws MismatchedCharException {
         if (LA(1) == c) {
             throw new MismatchedCharException(LA(1), c, true, this);
         }
         consume();
     }
 
-    public void matchRange(char c1, char c2) throws MismatchedCharException, CharStreamException {
+    public void matchRange(char c1, char c2) throws MismatchedCharException {
         if (LA(1) < c1 || LA(1) > c2) throw new MismatchedCharException(LA(1), c1, c2, false, this);
         consume();
     }
@@ -382,13 +382,13 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
             System.out.print(" ");
     }
 
-    public void traceIn(String rname) throws CharStreamException {
+    public void traceIn(String rname) {
         traceDepth += 1;
         traceIndent();
         System.out.println("> lexer " + rname + "; c==" + LA(1));
     }
 
-    public void traceOut(String rname) throws CharStreamException {
+    public void traceOut(String rname) {
         traceIndent();
         System.out.println("< lexer " + rname + "; c==" + LA(1));
         traceDepth -= 1;
@@ -409,6 +409,6 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
      *  like: "Heh, premature eof" or a retry stream exception
      *  ("I found the end of this file, go back to referencing file").
      */
-    public void uponEOF() throws TokenStreamException, CharStreamException {
+    public void uponEOF() throws TokenStreamException {
     }
 }

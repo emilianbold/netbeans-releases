@@ -38,7 +38,7 @@ public abstract class CharScannerNoEx extends CharScanner {
         super(sharedState);
     }
     
-    public void match(char c) throws CharStreamException {
+    public void match(char c) {
         if (LA(1) == c) {
             consume();
             //matchError = false;
@@ -50,7 +50,7 @@ public abstract class CharScannerNoEx extends CharScanner {
         }
     }
 
-    public void match(BitSet b) throws CharStreamException {
+    public void match(BitSet b) {
         if (b.member(LA(1))) {
             consume();
             //matchError = false;
@@ -62,7 +62,7 @@ public abstract class CharScannerNoEx extends CharScanner {
         }
     }
 
-    public void match(String s) throws CharStreamException {
+    public void match(String s) {
         int len = s.length();
         for (int i = 0; i < len; i++) {
             if (LA(1) != s.charAt(i)) {
@@ -77,7 +77,7 @@ public abstract class CharScannerNoEx extends CharScanner {
         //matchError = false;
     }
 
-    public void matchNot(char c) throws CharStreamException {
+    public void matchNot(char c) {
         if (LA(1) != c) {
             consume();
             //matchError = false;
@@ -89,7 +89,7 @@ public abstract class CharScannerNoEx extends CharScanner {
         }
     }
 
-    public void matchRange(char c1, char c2) throws CharStreamException {
+    public void matchRange(char c1, char c2) {
         char LA1 = LA(1);
         if (LA1 < c1 || LA1 > c2) {
             if (inputState.guessing == 0) {
@@ -100,5 +100,29 @@ public abstract class CharScannerNoEx extends CharScanner {
             consume();
             //matchError = false;
         }
+    }
+
+    public void setCaseSensitive(boolean t) {
+        if (t != true) {
+            throw new UnsupportedOperationException("In this version only case sensitive grammars supported");
+        }
+        super.setCaseSensitive(t);
+    }
+    
+    public void consume() {
+        if (inputState.guessing == 0) {
+            char c = LA(1);
+            append(c);
+            if (c == '\t') {
+                tab();
+            } else {
+                inputState.column++;
+            }
+        }
+        inputState.input.consume();
+    }
+
+    public char LA(int i) {
+        return inputState.input.LA(i);
     }
 }

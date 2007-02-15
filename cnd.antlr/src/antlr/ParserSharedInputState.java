@@ -20,11 +20,11 @@ public class ParserSharedInputState {
     /** What file (if known) caused the problem? */
     protected String filename;
 
-    public void reset() {
+    /*public void reset() {
          guessing = 0;
          filename = null;
          input.reset();
-     }
+     }*/
     
     public String getFilename() {
 		return filename;

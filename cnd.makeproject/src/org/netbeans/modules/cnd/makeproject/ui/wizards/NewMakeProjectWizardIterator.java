@@ -32,14 +32,18 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -103,11 +107,24 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
 		};
 	}
 	else if (wizardtype == TYPE_MAKEFILE) {
-	    return new WizardDescriptor.Panel[] {
+            WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {
 		    new BuildActionsDescriptorPanel(),
 		    new SourceFoldersDescriptorPanel(),
 		    new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false),
 		};
+            IteratorExtension extension = (IteratorExtension)Lookup.getDefault().lookup(IteratorExtension.class);
+            if (extension != null) {
+                WizardDescriptor.Panel[] additional = extension.getPanels();
+                WizardDescriptor.Panel[] res = new WizardDescriptor.Panel[panels.length+additional.length];
+                for(int i = 0; i < panels.length; i++){
+                    res[i] = panels[i];
+                }
+                for(int i = 0; i < additional.length; i++){
+                    res[i+panels.length] = additional[i];
+                }
+                return res;
+            }
+            return panels;
 	}
 	else {
 	    return null; // FIXUP
@@ -116,8 +133,13 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     
     private String[] createSteps(WizardDescriptor.Panel[] panels) {
 	String[] steps = new String[panels.length];
-	for (int i = 0; i < panels.length; i++)
-	    steps[i] = ((Name)panels[i]).getName();
+	for (int i = 0; i < panels.length; i++) {
+            if (panels[i] instanceof Name) {
+                steps[i] = ((Name)panels[i]).getName();
+            } else {
+                steps[i] = panels[i].getComponent().getName();
+            }
+        }
 	return steps;
     }
     
@@ -187,6 +209,14 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             MakeProjectGenerator.createProject(dirF, name, makefileName, new MakeConfiguration[] {extConf}, (Iterator)wiz.getProperty("sourceFolders"), importantItemsIterator); // NOI18N
 	    FileObject dir = FileUtil.toFileObject(dirF);
 	    resultSet.add (dir);
+            IteratorExtension extension = (IteratorExtension)Lookup.getDefault().lookup(IteratorExtension.class);
+            if (extension != null) {
+                Project p = ProjectManager.getDefault().findProject(dir);
+                if (extension.canApply(wiz, p)){
+                    extension.apply(wiz, p);
+                }
+                extension.uninitialize(wiz);
+            }
 	}
         else if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB) { 
 	    int conftype = -1;

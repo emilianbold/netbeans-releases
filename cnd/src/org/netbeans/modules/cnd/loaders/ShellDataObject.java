@@ -34,7 +34,7 @@ import org.openide.text.DataEditorSupport;
 /**
  *  Represents a Shell object in the Repository.
  */
-public class ShellDataObject extends CCFSrcObject {
+public class ShellDataObject extends CndDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = -5853234372530618782L;
@@ -79,7 +79,7 @@ public class ShellDataObject extends CCFSrcObject {
   
 
     /**
-     *  The init method is called from CCFSrcObject's constructor.
+     *  The init method is called from CndDataObject's constructor.
      */
     protected void init() {
 	CookieSet cookies = getCookieSet();

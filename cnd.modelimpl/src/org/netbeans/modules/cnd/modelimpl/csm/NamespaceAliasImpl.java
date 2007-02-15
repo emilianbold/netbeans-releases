@@ -30,7 +30,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  * Implements CsmNamespaceAlias
  * @author Vladimir Kvasihn
  */
-public class NamespaceAliasImpl extends OffsetableDeclarationBase implements CsmNamespaceAlias, RawNamable {
+public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAlias> implements CsmNamespaceAlias, RawNamable {
 
     private final String alias;
     private final String namespace;

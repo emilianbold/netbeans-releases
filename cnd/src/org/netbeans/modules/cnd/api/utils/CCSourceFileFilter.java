@@ -26,6 +26,8 @@ public class CCSourceFileFilter extends SourceFileFilter{
     
     private static CCSourceFileFilter instance = null;
     
+    private String[] suffixList = null;
+    
     public static SourceFileFilter getInstance() {
         if (instance == null)
             instance = new CCSourceFileFilter();
@@ -37,6 +39,9 @@ public class CCSourceFileFilter extends SourceFileFilter{
     }
     
     public String[] getSuffixes() {
-        return CCDataLoader.getInstance().suffixes();
+        if (suffixList == null) {
+            suffixList = getSuffixList(CCDataLoader.getInstance().getExtensions());
+        }
+        return suffixList;
     }
 }

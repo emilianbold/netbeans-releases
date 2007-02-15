@@ -30,9 +30,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.loaders.CCDataLoader;
-import org.netbeans.modules.cnd.loaders.CCSrcObject;
-import org.netbeans.modules.cnd.loaders.CSrcObject;
-import org.netbeans.modules.cnd.loaders.FortranSrcObject;
+import org.netbeans.modules.cnd.loaders.CCDataObject;
+import org.netbeans.modules.cnd.loaders.CDataObject;
+import org.netbeans.modules.cnd.loaders.FortranDataObject;
 import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -222,43 +222,29 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     
     public int getDefaultTool() {
         DataObject dataObject = getDataObject();
-        int tool = Tool.CustomTool;
+        int tool;
+        
         if (dataObject == null) {
-            String suffix = null;
-            int i = path.lastIndexOf("."); // NOI18N
-            if (i >= 0)
-                suffix = path.substring(i+1);
-            if (suffix != null) {
-                if (amongSuffixes(suffix, CCDataLoader.getInstance().suffixes()))
-                    tool = Tool.CCCompiler;
-                else if (amongSuffixes(suffix, CDataLoader.getInstance().suffixes()))
-                    tool = Tool.CCompiler;
-                else if (MakeOptions.getInstance().getFortran() && amongSuffixes(suffix, FortranDataLoader.getInstance().suffixes()))
-                    tool = Tool.FortranCompiler;
-                else
-                    tool = Tool.CustomTool;
+            if (CCDataLoader.getInstance().getExtensions().isRegistered(path)) {
+                tool = Tool.CCCompiler;
+            } else if (CDataLoader.getInstance().getExtensions().isRegistered(path)) {
+                tool = Tool.CCompiler;
+            } else if (FortranDataLoader.getInstance().getExtensions().isRegistered(path)) {
+                tool = Tool.FortranCompiler;
             } else {
                 tool = Tool.CustomTool;
             }
-        } else if (dataObject instanceof CSrcObject)
+        } else if (dataObject instanceof CDataObject)
             tool = Tool.CCompiler;
         else if (dataObject instanceof HDataObject)
             tool = Tool.CustomTool;
-        else if (dataObject instanceof CCSrcObject)
+        else if (dataObject instanceof CCDataObject)
             tool = Tool.CCCompiler;
-        else if (MakeOptions.getInstance().getFortran() && dataObject instanceof FortranSrcObject)
+        else if (MakeOptions.getInstance().getFortran() && dataObject instanceof FortranDataObject)
             tool = Tool.FortranCompiler;
         else
             tool = Tool.CustomTool;
         return tool;
-    }
-    
-    private boolean amongSuffixes(String suffix, String[] suffixes) {
-        for (int i = 0; i < suffixes.length; i++) {
-            if (suffixes[i].equals(suffix))
-                return true;
-        }
-        return false;
     }
     
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
@@ -352,5 +338,30 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValuesAsVector());
         }
         return vec;
+    }
+
+    /**
+     * NativeFileItem interface
+     **/
+    public Language getLanguage() {
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
+        if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: itemConfiguration should never be null
+            return NativeFileItem.Language.OTHER;
+        else if (itemConfiguration.getTool() == Tool.CCompiler)
+            return NativeFileItem.Language.C;
+        else if (itemConfiguration.getTool() == Tool.CCCompiler)
+            return NativeFileItem.Language.CPP;
+        else if (itemConfiguration.getTool() == Tool.FortranCompiler)
+            return NativeFileItem.Language.FORTRAN;
+        else
+            return NativeFileItem.Language.OTHER;
+    }
+    
+    /**
+     * NativeFileItem interface
+     **/
+    public LanguageFlavor getLanguageFlavor() {
+        return NativeFileItem.LanguageFlavor.GENERIC;
     }
 }

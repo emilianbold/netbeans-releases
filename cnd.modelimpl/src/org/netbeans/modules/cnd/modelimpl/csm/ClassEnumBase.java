@@ -30,33 +30,34 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
  * Common ancestor for ClassImpl and EnumImpl
  * @author Vladimir Kvashin
  */
-public abstract class ClassEnumBase extends OffsetableDeclarationBase implements Disposable, CsmCompoundClassifier, CsmMember {
-
-
+public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> implements Disposable, CsmCompoundClassifier<T>, CsmMember<T> {
+    
     private final String name;
     
     private String qualifiedName;
     
     // only one of namespaceOLD/namespaceUID must be used (based on USE_REPOSITORY)    
     private NamespaceImpl namespaceOLD;
-    private CsmUID namespaceUID;
+    private CsmUID<CsmNamespace> namespaceUID;
     
     private boolean isValid = true;
 
     private boolean _static = false;
     private CsmVisibility visibility = CsmVisibility.PRIVATE;
-    private CsmClass containingClass = null;
+    // only one of containingClassOLD/containingClassUID must be used (based on USE_REPOSITORY)  
+    private CsmClass containingClassOLD = null;
+    private CsmUID<CsmClass> containingClassUID = null;
     
     public ClassEnumBase(String name, NamespaceImpl namespace, CsmFile file, CsmClass containingClass, AST ast) {
         super(ast, file);
         this._setNamespaceImpl(namespace);
         this.name = (name == null) ? "" : name;
-        this.containingClass = containingClass;
+        this._setContainingClass(containingClass);
         if( containingClass == null ) {
-            qualifiedName = Utils.getQualifiedName(getName(), namespace);
+            qualifiedName = Utils.getQualifiedName(getQualifiedNamePostfix(), namespace);
         }
         else {
-            qualifiedName = containingClass.getQualifiedName() + "::" + getName(); // NOI18N
+            qualifiedName = containingClass.getQualifiedName() + "::" + getQualifiedNamePostfix(); // NOI18N
         }
         // can't register here, because descendant class' constructor hasn't yet finished!
         // so registering is a descendant class' responsibility
@@ -65,16 +66,20 @@ public abstract class ClassEnumBase extends OffsetableDeclarationBase implements
     public String getName() {
         return name;
     }
-
+    
     abstract public Kind getKind();
     
     protected void register() {
-        if( getName().length() > 0 ) {
+        if( ProjectBase.canRegisterDeclaration(this) ) {
             registerInProject();
             NamespaceImpl ns = _getNamespaceImpl();
             if (ns != null) {
                 // It can be local class
                 ns.addDeclaration(this);
+            }
+        } else {
+            if (TraceFlags.USE_REPOSITORY) {
+                RepositoryUtils.put(this);
             }
         }
     }
@@ -85,6 +90,7 @@ public abstract class ClassEnumBase extends OffsetableDeclarationBase implements
     
     private void unregisterInProject() {
         ((ProjectBase) getContainingFile().getProject()).unregisterDeclaration(this);
+        this.cleanUID();
     }
     
     public CsmNamespace getContainingNamespace() {
@@ -119,7 +125,7 @@ public abstract class ClassEnumBase extends OffsetableDeclarationBase implements
     }
     
     public CsmClass getContainingClass() {
-        return containingClass;
+        return _getContainingClass();
     }
     
 //    private void setContainingClass(CsmClass cls) {
@@ -146,6 +152,7 @@ public abstract class ClassEnumBase extends OffsetableDeclarationBase implements
     private NamespaceImpl _getNamespaceImpl() {
         if (TraceFlags.USE_REPOSITORY) {
             NamespaceImpl ns = (NamespaceImpl)UIDCsmConverter.UIDtoNamespace(namespaceUID);
+            assert (ns != null || namespaceUID == null);
             return ns;            
         } else {
             return namespaceOLD;
@@ -154,14 +161,30 @@ public abstract class ClassEnumBase extends OffsetableDeclarationBase implements
 
     private void _setNamespaceImpl(NamespaceImpl ns) {
         if (TraceFlags.USE_REPOSITORY) {
-            if (namespaceUID != null) {
-                RepositoryUtils.remove(namespaceUID);
-                namespaceUID = null;
-            }
-            namespaceUID = RepositoryUtils.put(ns);
+            namespaceUID = UIDCsmConverter.namespaceToUID(ns);
+            assert (namespaceUID != null || ns == null);
         } else {
             this.namespaceOLD = ns;
         }
     }
-    
+
+    private CsmClass _getContainingClass() {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmClass containingClass = UIDCsmConverter.UIDtoDeclaration(containingClassUID);
+            assert (containingClass != null || containingClassUID == null);
+            return containingClass;            
+        } else {
+            return containingClassOLD;
+        }
+    }
+
+    private void _setContainingClass(CsmClass containingClass) {
+        if (TraceFlags.USE_REPOSITORY) {
+            containingClassUID = UIDCsmConverter.declarationToUID(containingClass);
+            assert (containingClassUID != null || containingClass == null);
+        } else {
+            this.containingClassOLD = containingClass;
+        }     
+    }
+
 }

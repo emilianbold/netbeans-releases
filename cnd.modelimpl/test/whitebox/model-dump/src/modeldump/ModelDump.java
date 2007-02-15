@@ -246,10 +246,11 @@ public class ModelDump {
         APTIncludeHandler aptIncludeHandler = new APTIncludeHandlerImpl(file.getAbsolutePath(), quoteIncludes, checkedSysIncludes);
         
         APTPreprocState preprocState = new APTPreprocStateImpl(map, aptIncludeHandler, true);
+        APTPreprocState.State state = preprocState.getState();
         fileImpl = (FileImpl) project.testAPTParseFile(file.getAbsolutePath(), preprocState);
         
         try {
-            fileImpl.scheduleParsing(true);
+            fileImpl.scheduleParsing(true, state);
         } catch (InterruptedException e) {
             e.printStackTrace(log);
         }

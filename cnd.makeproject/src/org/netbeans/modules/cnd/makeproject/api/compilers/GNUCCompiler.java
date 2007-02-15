@@ -129,6 +129,10 @@ public class GNUCCompiler extends CCCCompiler {
             systemPreprocessorSymbolsList = new PersistentList();
         getSystemIncludesAndDefines(platform, compilerStderrCommand, false);
         getSystemIncludesAndDefines(platform, compilerStdoutCommand, true);
+	    // a workaround for gcc bug - see http://gcc.gnu.org/ml/gcc-bugs/2006-01/msg00767.html
+	    if (!containsMacro(systemPreprocessorSymbolsList, "__STDC__")) { // NOI18N
+		systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
+	    }
             saveOK = true;
     }
         catch (IOException ioe) {

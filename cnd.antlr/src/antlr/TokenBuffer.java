@@ -24,58 +24,28 @@ import java.util.ArrayList;
 
 public class TokenBuffer {
 
-    // Token source
-    protected TokenStream input;
-
     // Number of active markers
-    int nMarkers = 0;
+    private int nMarkers = 0;
 
 	/** The index into the tokens list of the current token (next token
-     *  to consume).  p==-1 indicates that the tokens list is empty
+     *  to consume).
      */
-    protected int p = -1;
+    private int p = 0;
 
+    public static final int INITIAL_BUFFER_SIZE = 2048;
+    
     /** Record every single token pulled from the source so we can reproduce
      *  chunks of it later.
      */
-    protected List tokens;
+    private final List tokens = new ArrayList(INITIAL_BUFFER_SIZE);
 
     // type buffer data (created to improve performance of LA)
-    protected int size = 0;
-    protected int[] data = null;
-    public static final int INITIAL_BUFFER_SIZE = 2048;
+    private int size = 0;
+    private int[] data = new int[INITIAL_BUFFER_SIZE];
 
     /** Create a token buffer */
-    public TokenBuffer(TokenStream input_) {
-        input = input_;
-		tokens = new ArrayList(INITIAL_BUFFER_SIZE);
-		fill(); // fill buffer
-		p = 0; // point at beginning of buffer
-	}
-
-    /** Reset the input buffer to empty state */
-    public final void reset() {
-        nMarkers = 0;
-        p = 0;
-        size = 0;
-        tokens.clear();
-        data = null;
-    }
-    
-    // double data size
-    private void resizeData() {
-        int[] newdata = new int[data.length*2]; // resize
-        System.arraycopy(data, 0, newdata, 0, data.length);
-        data = newdata;
-    }
-
-    /** Mark another token for deferred consumption */
-    public final void consume() {
-		p++;
-    }
-
-    private void fill() {
-        data = new int[INITIAL_BUFFER_SIZE];
+    public TokenBuffer(TokenStream input) {
+        // fill buffer
         try {
             int pos = 0;
             Token t = input.nextToken();
@@ -92,13 +62,34 @@ public class TokenBuffer {
         }
     }
 
-    /** return the Tokenizer (needed by ParseView) */
-    public TokenStream getInput() {
-        return input;
+    /** Reset the input buffer to empty state */
+    /*public final void reset() {
+        nMarkers = 0;
+        p = 0;
+        size = 0;
+        tokens.clear();
+        data = null;
+    }*/
+    
+    // double data size
+    private final void resizeData() {
+        int[] newdata = new int[data.length*2]; // resize
+        System.arraycopy(data, 0, newdata, 0, data.length);
+        data = newdata;
     }
 
+    /** Mark another token for deferred consumption */
+    public final void consume() {
+        p++;
+    }
+
+    /** return the Tokenizer (needed by ParseView) */
+    /*public TokenStream getInput() {
+        return input;
+    }*/
+
     /** Get a lookahead token value */
-    public final int LA(int i) throws TokenStreamException {
+    public final int LA(int i) {
         int dataPos = p + i - 1;
         if ( dataPos >= size ) {
                 return TokenImpl.EOF_TYPE;
@@ -107,46 +98,46 @@ public class TokenBuffer {
     }
 
     /** Get a lookahead token */
-    public final Token LT(int i) throws TokenStreamException {
+    public final Token LT(int i) {
         if ( (p+i-1) >= tokens.size() ) {
                 return TokenImpl.EOF_TOKEN;
         }
         return (Token)tokens.get(p + i - 1);
     }
 
-	/** Get token at absolute position (indexed from 0) */
-	public final Token get(int i) {
-		return (Token)tokens.get(i);
-	}
+    /** Get token at absolute position (indexed from 0) */
+    /*public final Token get(int i) {
+        return (Token)tokens.get(i);
+    }*/
 
 	/**Return an integer marker that can be used to rewind the buffer to
      * its current state.
      */
     public final int mark() {
-		//System.out.println("Marking at " + p);
-//try { for (int i = 1; i <= 2; i++) { System.out.println("LA("+i+")=="+LT(i).getText()); } } catch (ScannerException e) {}
+        //System.out.println("Marking at " + p);
+        //try { for (int i = 1; i <= 2; i++) { System.out.println("LA("+i+")=="+LT(i).getText()); } } catch (ScannerException e) {}
         nMarkers++;
         return p;
     }
 
-	/** What token index are we at?  Assume mark() done at start.
-	 */
-	public final int index() {
-		return p;
-	}
+    /** What token index are we at?  Assume mark() done at start.
+     */
+    public final int index() {
+        return p;
+    }
 
-	public final void seek(int position) {
-		p = position;
-	}
+    public final void seek(int position) {
+        p = position;
+    }
 
-	/**Rewind the token buffer to a marker.
+    /**Rewind the token buffer to a marker.
      * @param marker Marker returned previously from mark()
      */
     public final void rewind(int marker) {
-		seek(marker);
+        seek(marker);
         nMarkers--;
-		//System.out.println("Rewinding to " + marker);
-//try { for (int i = 1; i <= 2; i++) { System.out.println("LA("+i+")=="+LT(i).getText()); } } catch (ScannerException e) {}
+        //System.out.println("Rewinding to " + marker);
+        //try { for (int i = 1; i <= 2; i++) { System.out.println("LA("+i+")=="+LT(i).getText()); } } catch (ScannerException e) {}
     }
 
 }

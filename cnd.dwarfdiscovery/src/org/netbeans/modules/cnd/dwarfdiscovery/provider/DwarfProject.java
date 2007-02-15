@@ -31,6 +31,7 @@ import org.netbeans.modules.cnd.discovery.api.FolderProperties;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -59,7 +60,11 @@ public class DwarfProject implements ProjectProperties {
                     userIncludes.add(source.getCompilePath());
                 } else {
                     try {
-                        userIncludes.add((new File(source.getCompilePath()+File.separator+path)).getCanonicalPath());
+                        path = (new File(source.getCompilePath()+File.separator+path)).getCanonicalPath();
+                        if (Utilities.isWindows()) {
+                            path = path.replace('\\', '/');
+                        }
+                        userIncludes.add(path);
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -85,6 +90,9 @@ public class DwarfProject implements ProjectProperties {
             if (file.exists()) {
                 try {
                     path = file.getParentFile().getCanonicalPath();
+                    if (Utilities.isWindows()) {
+                        path = path.replace('\\', '/');
+                    }
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }

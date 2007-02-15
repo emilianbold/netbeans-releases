@@ -25,7 +25,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
  * Represents enumerator
  * @author Vladimir Kvashin
  */
-public interface CsmEnumerator extends CsmOffsetableDeclaration {
+public interface CsmEnumerator extends CsmOffsetableDeclaration<CsmEnumerator> {
 
     /** Gets this enumerator' parent - enum, within which this enumerator is declared */
     CsmEnum getEnumeration();

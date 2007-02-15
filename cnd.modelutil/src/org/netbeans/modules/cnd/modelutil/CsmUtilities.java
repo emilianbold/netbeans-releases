@@ -109,6 +109,8 @@ public class CsmUtilities {
     public static final int MEMBER           = 0x00008000;
     public static final int ENUMERATOR       = 0x00000400;
     public static final int CONSTRUCTOR      = 0x00000800;
+    public static final int DESTRUCTOR       = 0x00020000;
+    public static final int OPERATOR         = 0x00040000;
     public static final int MACRO            = 0x00010000;
 
     public static final boolean DEBUG = Boolean.getBoolean("csm.utilities.trace.summary") || 
@@ -129,6 +131,9 @@ public class CsmUtilities {
                 mod |= ENUMERATOR;
             }
         } 
+        if (CsmKindUtilities.isOperator(obj)) {
+            mod |= OPERATOR;
+        }
         // add contst info for variables
         if (CsmKindUtilities.isVariable(obj)) {
             CsmVariable var = (CsmVariable)obj;
@@ -155,6 +160,8 @@ public class CsmUtilities {
         mod |= MEMBER;
         if (CsmKindUtilities.isConstructor(member)){
             mod |= CONSTRUCTOR;
+        } else if (CsmKindUtilities.isDestructor(member)){
+            mod |= DESTRUCTOR;
         }
 	return mod;
     }

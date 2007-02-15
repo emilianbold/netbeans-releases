@@ -54,17 +54,17 @@ public class ParseTreeDebugParser extends LLkParser {
 		return numberOfDerivationSteps;
 	}
 
-	public void match(int i) throws MismatchedTokenException, TokenStreamException {
+	public void match(int i) throws MismatchedTokenException {
 		addCurrentTokenToParseTree();
 		super.match(i);
 	}
 
-	public void match(BitSet bitSet) throws MismatchedTokenException, TokenStreamException {
+	public void match(BitSet bitSet) throws MismatchedTokenException {
 		addCurrentTokenToParseTree();
 		super.match(bitSet);
 	}
 
-	public void matchNot(int i) throws MismatchedTokenException, TokenStreamException {
+	public void matchNot(int i) throws MismatchedTokenException {
 		addCurrentTokenToParseTree();
 		super.matchNot(i);
 	}
@@ -76,7 +76,7 @@ public class ParseTreeDebugParser extends LLkParser {
 	 *  alternative errors, no node will be in the tree as nothing was
 	 *  matched() (the lookahead failed to predict an alternative).
 	 */
-	protected void addCurrentTokenToParseTree() throws TokenStreamException {
+	protected void addCurrentTokenToParseTree() {
 		if (inputState.guessing>0) {
 			return;
 		}
@@ -92,7 +92,7 @@ public class ParseTreeDebugParser extends LLkParser {
 	}
 
 	/** Create a rule node, add to current tree, and make it current root */
-	public void traceIn(String s) throws TokenStreamException {
+	public void traceIn(String s) {
 		if (inputState.guessing>0) {
 			return;
 		}
@@ -106,7 +106,7 @@ public class ParseTreeDebugParser extends LLkParser {
 	}
 
 	/** Pop current root; back to adding to old root */
-	public void traceOut(String s) throws TokenStreamException {
+	public void traceOut(String s) {
 		if (inputState.guessing>0) {
 			return;
 		}

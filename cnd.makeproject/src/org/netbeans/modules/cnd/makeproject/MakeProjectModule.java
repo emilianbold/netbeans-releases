@@ -27,8 +27,6 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.loaders.ExeLoader;
-import org.netbeans.modules.cnd.makeproject.api.actions.RunDialogAction;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
@@ -42,7 +40,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRoot
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileNodeProvider;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileProvider;
-import org.netbeans.modules.cnd.makeproject.ui.options.PredefinedPanel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.ErrorManager;
@@ -74,20 +71,8 @@ public class MakeProjectModule extends ModuleInstall {
 	profileCustomizerNode = new RunProfileNodeProvider().createProfileNode();
 	CustomizerRootNodeProvider.getInstance().addCustomizerNode(profileCustomizerNode);
 
-	//SystemAction runDialogAction = SystemAction.get(RunDialogAction.class);
-	ExeLoader.addAction(new RunDialogAction()); // Insert after run dialog
-	//ExeLoader.addAction(runWrapper = new RunWrapper()); // Insert at top
-	//ExeLoader.addAction(debugWrapper = new DebugWrapper()); // Insert after run dialog
-        
-        //see issue #64393
+	//see issue #64393
         DataLoaderPool.getDefault().addOperationListener(new L());
-    }
-
-    public void uninstalled() {
-	if (debugWrapper != null)
-	    ExeLoader.removeAction(debugWrapper);
-	if (runWrapper != null)
-	    ExeLoader.removeAction(runWrapper);
     }
     
     public void close() {

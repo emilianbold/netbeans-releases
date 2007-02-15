@@ -18,6 +18,7 @@
             <public-packages>
                 <package>org.netbeans.modules.cnd.repository.api</package>
                 <package>org.netbeans.modules.cnd.repository.spi</package>
+                <package>org.netbeans.modules.cnd.repository.testbench</package>
             </public-packages>
         </data>
     </configuration>

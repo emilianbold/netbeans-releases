@@ -19,13 +19,17 @@
 
 package org.netbeans.modules.cnd.discovery.wizard;
 
+import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
+import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -34,6 +38,8 @@ import org.openide.util.NbBundle;
 public final class SelectObjectFilesPanel extends JPanel {
     private SelectObjectFilesWizard wizard;
     private boolean ignoreEvent = false;
+    private int chooserMode = 0;
+    private String selectorID;
     
     /** Creates new form DiscoveryVisualPanel1 */
     public SelectObjectFilesPanel(SelectObjectFilesWizard wizard) {
@@ -59,24 +65,67 @@ public final class SelectObjectFilesPanel extends JPanel {
         rootFolder.getDocument().addDocumentListener(documentListener);
     }
     
-    private void initFields() {
+    private void initFields(String path) {
         // Set default values
-        rootFolder.setText(""); // NOI18N
+        if (path == null) {
+            rootFolder.setText(""); // NOI18N
+        } else {
+            if (Utilities.isWindows()) {
+                path = path.replace('/', File.separatorChar);
+            }
+            rootFolder.setText(path);
+        }
     }
 
-    void read(WizardDescriptor wizardDescriptor) {
-        initFields();
+    void read(DiscoveryDescriptor wizardDescriptor) {
+        String oldSelectorID = selectorID;
+        DiscoveryProvider provider = wizardDescriptor.getProvider();
+        for(String key : provider.getPropertyKeys()){
+            ProviderProperty property = provider.getProperty(key);
+            LabelForRoot.setText(property.getName());
+            instructionsTextArea.setText(property.getDescription());
+            selectorID = key;
+            switch (property.getKind()){
+                case BinaryFile:
+                    chooserMode = JFileChooser.FILES_ONLY;
+                    break;
+                case Folder:
+                    chooserMode = JFileChooser.DIRECTORIES_ONLY;
+                    break;
+                default:
+                    // unsuported UI
+                    continue;
+            }
+            break;
+        }
+        if (!selectorID.equals(oldSelectorID)) {
+            initFields(wizardDescriptor.getRootFolder());
+            wizard.stateChanged(null);
+        }
     }
     
-    void store(WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty("rootFolder", rootFolder.getText()); // NOI18N
+    void store(DiscoveryDescriptor wizardDescriptor) {
+        wizardDescriptor.getProvider().getProperty(selectorID).setValue(rootFolder.getText());
+        wizardDescriptor.setInvokeProvider(true);
     }
     
-    boolean valid(WizardDescriptor settings) {
-        if ( rootFolder.getText().length() == 0) {
+    boolean valid() {
+        String path = rootFolder.getText();
+        if ( path.length() == 0 || selectorID == null) {
             return false;
         }
-        return true;
+        if (chooserMode == JFileChooser.FILES_ONLY){
+            File file = new File(path);
+            if (file.exists() && file.isFile()) {
+                return true;
+            }
+        } else if (chooserMode == JFileChooser.DIRECTORIES_ONLY){
+            File file = new File(path);
+            if (file.exists() && file.isDirectory()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void update(DocumentEvent e) {
@@ -183,7 +232,7 @@ public final class SelectObjectFilesPanel extends JPanel {
         JFileChooser fileChooser = new FileChooser(
                 getString("ROOT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
                 getString("ROOT_DIR_BUTTON_TXT"), // NOI18N
-                JFileChooser.DIRECTORIES_ONLY,
+                chooserMode, false, 
                 null,
                 seed,
                 false
@@ -192,7 +241,7 @@ public final class SelectObjectFilesPanel extends JPanel {
         if (ret == JFileChooser.CANCEL_OPTION)
             return;
         String path = fileChooser.getSelectedFile().getPath();
-        path = FilePathAdaptor.normalize(path);
+        //path = FilePathAdaptor.normalize(path);
         rootFolder.setText(path);
     }//GEN-LAST:event_rootFolderButtonActionPerformed
 

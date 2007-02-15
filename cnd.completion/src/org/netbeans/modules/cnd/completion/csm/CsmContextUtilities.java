@@ -227,9 +227,10 @@ public class CsmContextUtilities {
                     }
                 } else if (!includeFunctionVars) {
                     assert (includeFileLocal);
-                    // we have sorted context entries => if we reached function =>
+                    // we have sorted context entries => if we reached function or class =>
                     // skip function and all others
-                    if (CsmKindUtilities.isFunctionDefinition(entry.getScope())) {
+                    if (CsmKindUtilities.isFunction(entry.getScope()) ||
+                            CsmKindUtilities.isClassifier(entry.getScope())) {
                         incAll = incAny = include = false;
                     } else {
                         include = true;

@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -35,10 +36,9 @@ import org.openide.util.NbBundle;
  */
 public class SelectObjectFilesWizard implements WizardDescriptor.Panel, ChangeListener {
     
-    private WizardDescriptor wizardDescriptor;
+    private DiscoveryDescriptor wizardDescriptor;
     private SelectObjectFilesPanel component;
     private String name;
-    private boolean initialized = false;
     
     /** Create the wizard panel descriptor. */
     public SelectObjectFilesWizard() {
@@ -53,10 +53,6 @@ public class SelectObjectFilesWizard implements WizardDescriptor.Panel, ChangeLi
         return component;
     }
 
-    public WizardDescriptor getWizardDescriptor() {
-	return wizardDescriptor;
-    } 
-    
     public HelpCtx getHelp() {
         // Show no Help button for this panel:
         return HelpCtx.DEFAULT_HELP;
@@ -65,9 +61,9 @@ public class SelectObjectFilesWizard implements WizardDescriptor.Panel, ChangeLi
     }
     
     public boolean isValid() {
-	boolean valid = ((SelectObjectFilesPanel)getComponent()).valid( wizardDescriptor);
+	boolean valid = ((SelectObjectFilesPanel)getComponent()).valid();
 	if (valid) {
-	    wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
+	    wizardDescriptor.setMessage(""); // NOI18N
         }
 	return valid;
     }
@@ -104,16 +100,12 @@ public class SelectObjectFilesWizard implements WizardDescriptor.Panel, ChangeLi
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(Object settings) {
-        if (initialized)
-            return;
-        wizardDescriptor = (WizardDescriptor)settings;        
+        wizardDescriptor = DiscoveryWizardDescriptor.adaptee(settings);
         component.read(wizardDescriptor);
-        initialized = true;
     }
     
     public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor)settings;
-        component.store(d);
+        component.store(DiscoveryWizardDescriptor.adaptee(settings));
     }
     
 }

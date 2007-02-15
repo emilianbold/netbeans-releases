@@ -19,21 +19,16 @@
 
 package org.netbeans.modules.cnd.loaders;
 
-import java.io.IOException;
-
-import org.openide.cookies.*;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.NbBundle;
+import javax.swing.Action;
+import org.openide.nodes.Children;
+import org.openide.nodes.Sheet;
 import org.openide.util.actions.SystemAction;
-import org.openide.actions.*;
+import org.openide.actions.OpenAction;
 
-import org.netbeans.modules.cnd.execution.*;
+import org.netbeans.modules.cnd.execution.ShellExecSupport;
 
-/** A node to represent a Shell data object.
- *
- */
-public class ShellDataNode extends CCFDataNode {
+/** A node to represent a Shell data object */
+public class ShellDataNode extends CndDataNode {
 
     /** We need this in several places */
     private ShellExecSupport mes;
@@ -70,7 +65,7 @@ public class ShellDataNode extends CCFDataNode {
 	return defaultSheet;
     }
 
-    public javax.swing.Action getPreferredAction() {
-	return SystemAction.get(org.openide.actions.OpenAction.class);
+    public Action getPreferredAction() {
+	return SystemAction.get(OpenAction.class);
     }
 }

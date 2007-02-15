@@ -30,6 +30,7 @@ import org.netbeans.modules.cnd.loaders.CCDataLoader;
 import org.netbeans.modules.cnd.loaders.CDataLoader;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.openide.loaders.ExtensionList;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -62,11 +63,17 @@ public class FileSystemFactory {
                             String suffix = name.substring(j+1);
                             if (sourceSuffixes.contains(suffix)){
                                 String path = ff[i].getAbsolutePath();
+                                if (Utilities.isWindows()) {
+                                    path = path.replace('\\', '/');
+                                }
                                 if (!used.contains(path)) {
                                     sources.add(path);
                                 }
                             } else if (headerSuffixes.contains(suffix)){
                                 String path = ff[i].getAbsolutePath();
+                                if (Utilities.isWindows()) {
+                                    path = path.replace('\\', '/');
+                                }
                                 if (!used.contains(path)) {
                                     headers.add(path);
                                 }
@@ -78,12 +85,18 @@ public class FileSystemFactory {
         }
         return list;
     }
-
+    
     private static void gatherSubFolders(File d, HashSet<String> set){
         if (d.isDirectory()){
             String path = d.getAbsolutePath();
+            if (Utilities.isWindows()) {
+                path = path.replace('\\', '/');
+            }
+            if (path.endsWith("/SCCS") || path.endsWith("/CVS")) {  // NOI18N
+                return;
+            }
             if (!set.contains(path)){
-                set.add(d.getAbsolutePath());
+                set.add(path);
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {
                     gatherSubFolders(ff[i], set);
@@ -98,7 +111,7 @@ public class FileSystemFactory {
         addSuffices(suffixes, CDataLoader.getInstance().getExtensions());
         return suffixes;
     }
-
+    
     private static Set<String> getHeaderSuffixes() {
         Set<String> suffixes = new HashSet<String>();
         addSuffices(suffixes, HDataLoader.getInstance().getExtensions());

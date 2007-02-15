@@ -34,7 +34,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.loaders.CCFSrcLoader;
 import org.netbeans.modules.cnd.api.utils.FortranParser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.loaders.FortranDataLoader;
@@ -1349,20 +1348,7 @@ public class MakefileGenerator {
 
     /** Check to see if file is a fortran file (just looking at the extension) */
     private boolean isFortranFile(String file) {
-	String[] extList = FortranDataLoader.getInstance().suffixes();
-	int pos = file.lastIndexOf('.');
-
-	if (pos > -1 && pos < file.length()) {
-	    String ext = file.substring(pos + 1);
-
-	    for (int i = 0; i < extList.length; i++) {
-		if (ext.equals(extList[i])) {
-		    return true;
-		}
-	    }
-	}
-
-	return false;
+        return FortranDataLoader.getInstance().getExtensions().isRegistered(file);
     }
 
 

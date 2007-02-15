@@ -32,6 +32,9 @@ public class MIMENames {
     /** C */
     public static final String C_MIME_TYPE = "text/x-c"; //NOI18N
 
+    /** C/C++ Header */
+    public static final String CHEADER_MIME_TYPE = "text/x-cheader"; //NOI18N
+
     /** Fortran */
     public static final String FORTRAN_MIME_TYPE = "text/x-fortran"; //NOI18N
 

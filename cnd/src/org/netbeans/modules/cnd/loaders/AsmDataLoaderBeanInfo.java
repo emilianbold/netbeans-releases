@@ -26,9 +26,9 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public class AsmDataLoaderBeanInfo extends CCFSrcLoaderBeanInfo {
+public class AsmDataLoaderBeanInfo extends CndAbstractDataLoaderBeanInfo {
 
     public Image getIcon(int type) {
-	return Utilities.loadImage("org/netbeans/modules/cnd/loaders/AssemSrcIcon.gif");   // NOI18N
+	return Utilities.loadImage("org/netbeans/modules/cnd/loaders/AsmIcon.gif");   // NOI18N
     }
 }

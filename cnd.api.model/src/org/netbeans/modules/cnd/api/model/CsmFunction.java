@@ -26,7 +26,7 @@ import java.util.List;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmFunction extends CsmOffsetableDeclaration {
+public interface CsmFunction<T> extends CsmOffsetableDeclaration<T> {
 
     /** Gets this function's declaration text */
     String getDeclarationText();

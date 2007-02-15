@@ -20,51 +20,58 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.MIMENames;
+
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
+
+import org.netbeans.modules.cnd.MIMENames;
 
 /**
  *
  * @author Alexander Simon
  */
-public class CCDataLoader extends CCFSrcLoader {
-    private static CCDataLoader instance = null;
+public class CCDataLoader extends CndAbstractDataLoader {
+    
+    private static CCDataLoader instance;
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975684L;
 
     /** The suffix list for C++ primary files */
     private static final String[] cppExtensions =
-				{ "cc", "cpp", "c++", "cxx", "C", "mm" };	// NOI18N
+				{ "cc", "cpp", "c++", "cxx", "C", "mm" }; // NOI18N
 
     protected CCDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.CCSrcObject");         // NOI18N
-	instance = this;
+	super(CCDataObject.class.getName());
+        instance = this;
         createExtentions(cppExtensions);
     }
 
     protected CCDataLoader(String representationClassName) {
 	super(representationClassName);
-	instance = this;
+        instance = this;
         createExtentions(cppExtensions);
     }
 
     protected CCDataLoader(Class representationClass) {
 	super(representationClass);
-	instance = this;
+        instance = this;
         createExtentions(cppExtensions);
     }
 
     public static CCDataLoader getInstance(){
+        if (instance == null) {
+            instance = (CCDataLoader) SharedClassObject.findObject(CCDataLoader.class, true);
+        }
         return instance;
     }
 
     /** set the default display name */
     protected String defaultDisplayName() {
-	return NbBundle.getMessage(CCFSrcLoader.class, "PROP_CCDataLoader_Name"); // NOI18N
+	return NbBundle.getMessage(CndAbstractDataLoader.class, "PROP_CCDataLoader_Name"); // NOI18N
     }
 
     protected String getMimeType(){
@@ -72,7 +79,7 @@ public class CCDataLoader extends CCFSrcLoader {
     }
 
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new CCSrcObject(primaryFile, this);
+        return new CCDataObject(primaryFile, this);
     }
     
 }

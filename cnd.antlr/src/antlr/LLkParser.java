@@ -40,19 +40,19 @@ public class LLkParser extends Parser {
 	 * For example, calling consume() 3 times when k=2, means that the first token
 	 * consumed will be overwritten with the 3rd.
 	 */
-	public void consume() throws TokenStreamException {
+	public final void consume() {
 		inputState.input.consume();
 	}
 
-	public int LA(int i) throws TokenStreamException {
+	public final int LA(int i) {
 		return inputState.input.LA(i);
 	}
 
-	public Token LT(int i) throws TokenStreamException {
+	public final Token LT(int i) {
 		return inputState.input.LT(i);
 	}
 
-	private void trace(String ee, String rname) throws TokenStreamException {
+	private void trace(String ee, String rname) {
 		traceIndent();
 		System.out.print(ee + rname + ((inputState.guessing > 0)?"; [guessing="+inputState.guessing+"]":"; "));
 		for (int i = 1; i <= k; i++) {
@@ -69,12 +69,12 @@ public class LLkParser extends Parser {
 		System.out.println("");
 	}
 
-	public void traceIn(String rname) throws TokenStreamException {
+	public void traceIn(String rname) {
 		traceDepth += 1;
 		trace("> ", rname);
 	}
 
-	public void traceOut(String rname) throws TokenStreamException {
+	public void traceOut(String rname) {
 		trace("< ", rname);
 		traceDepth -= 1;
 	}

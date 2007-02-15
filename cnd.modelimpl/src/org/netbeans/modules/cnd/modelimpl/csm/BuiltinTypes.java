@@ -25,6 +25,8 @@ import antlr.collections.AST;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.uid.ObjectBasedUID;
 
 /**
  * Implementation for built-in types
@@ -34,10 +36,16 @@ public class BuiltinTypes {
 
     private static class BuiltinImpl implements CsmBuiltIn {
 
-        private String name;
+        private final String name;
+        private final CsmUID<CsmBuiltIn> uid;
         
         private BuiltinImpl(String name) {
             this.name = TextCache.getString(name);
+            if (TraceFlags.USE_REPOSITORY) {
+                this.uid = new ObjectBasedUID<CsmBuiltIn>(this);
+            } else {
+                this.uid = null;
+            }
         }
         
         public String getQualifiedName() {
@@ -49,6 +57,7 @@ public class BuiltinTypes {
         }
         
         public String getName() {
+            assert name != null && name.length() > 0;
             return name;
         }
 
@@ -61,12 +70,27 @@ public class BuiltinTypes {
             return null;
         }
         
-        public CsmUID getUID() {
-            throw new UnsupportedOperationException("getUID is not yet supported in built-in type " + getName()); // NOI18N
+        public CsmUID<CsmBuiltIn> getUID() {
+            return uid;
+        }
+        
+        public int hashCode() {
+            return name.hashCode();
+        }
+
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }            
+            if (obj == null || obj.getClass() != this.getClass()) {
+                return false;
+            }
+            BuiltinImpl other = (BuiltinImpl)obj;
+            return name.equals(other.name);
         }
     }
     
-    private static Map types = new HashMap();
+    private static Map<String, CsmBuiltIn> types = new HashMap();
     
     public static CsmBuiltIn getBuiltIn(AST ast) {
         assert ast.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN;
@@ -89,4 +113,5 @@ public class BuiltinTypes {
         }
         return builtIn;
     }
+
 }

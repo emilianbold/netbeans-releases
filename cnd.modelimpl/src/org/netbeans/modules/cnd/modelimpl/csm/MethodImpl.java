@@ -30,7 +30,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  * CsmFunction + CsmMember implementation
  * @author Vladimir Kvashin
  */
-public class MethodImpl extends FunctionImpl implements CsmMethod {
+public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
 
     //private ClassImpl containingClass;
     private CsmVisibility visibility;

@@ -397,7 +397,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        println("import antlr.TokenStreamException;");
 	        println("import antlr.TokenStreamIOException;");
 	        println("import antlr.TokenStreamRecognitionException;");
-	        println("import antlr.CharStreamException;");
+	        //println("import antlr.CharStreamException;");
 	        println("import antlr.CharStreamIOException;");
 	        println("import antlr.ANTLRException;");
 	        println("import java.io.Reader;");
@@ -485,9 +485,9 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        println("public " + grammar.getClassName() + "(InputBuffer ib) {");
 	        tabs++;
 	        // if debugging, wrap the input buffer in a debugger
-	        if (grammar.debuggingOutput)
-	            println("this(new LexerSharedInputState(new antlr.debug.DebuggingInputBuffer(ib)));");
-	        else
+	        //if (grammar.debuggingOutput)
+	            //println("this(new LexerSharedInputState(new antlr.debug.DebuggingInputBuffer(ib)));");
+	        //else
 	            println("this(new LexerSharedInputState(ib));");
 	        tabs--;
 	        println("}");
@@ -716,7 +716,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	
 	        // Generate header for the parser
 	        println("import antlr.TokenBuffer;");
-	        println("import antlr.TokenStreamException;");
+	        //println("import antlr.TokenStreamException;");
 	        println("import antlr.TokenStreamIOException;");
 	        println("import antlr.ANTLRException;");
 	        println("import antlr." + grammar.getSuperClass() + ";");
@@ -2635,8 +2635,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        }
 	        println("resetText();");
 	
-	        println("try {   // for char stream error handling");
-	        tabs++;
+	        //println("try {   // for char stream error handling");
+	        //tabs++;
 	
 	        // Generate try around whole thing to trap scanner errors
                 if (MatchExceptionState.throwRecExceptions) {
@@ -2745,19 +2745,19 @@ public class JavaCodeGenerator extends CodeGenerator {
 	
                 //TODO: not always like this, need to copy above text
                 println("if (matchError) {");
-                println("throw new TokenStreamRecognitionException(matchException);");
+                println("\tthrow new TokenStreamRecognitionException(matchException);");
                 println("}");
 	        // close CharStreamException try
-	        tabs--;
-	        println("}");
-	        println("catch (CharStreamException cse) {");
-	        println("	if ( cse instanceof CharStreamIOException ) {");
-	        println("		throw new TokenStreamIOException(((CharStreamIOException)cse).io);");
-	        println("	}");
-	        println("	else {");
-	        println("		throw new TokenStreamException(cse.getMessage());");
-	        println("	}");
-	        println("}");
+	        //tabs--;
+	        //println("}");
+	        //println("catch (CharStreamException cse) {");
+	        //println("	if ( cse instanceof CharStreamIOException ) {");
+	        //println("		throw new TokenStreamIOException(((CharStreamIOException)cse).io);");
+	        //println("	}");
+	        //println("	else {");
+	        //println("		throw new TokenStreamException(cse.getMessage());");
+	        //println("	}");
+	        //println("}");
 	
 	        // close for-loop
 	        tabs--;
@@ -2913,13 +2913,14 @@ public class JavaCodeGenerator extends CodeGenerator {
                     if (!throwsStr.equals(throwConst)) {
                         throwsStr += ", ";
                     }
-                    throwsStr += "TokenStreamException";
+                    //throwsStr += "TokenStreamException";
 	        }
 	        else if (grammar instanceof LexerGrammar) {
                     if (!throwsStr.equals(throwConst)) {
                         throwsStr += ", ";
                     }
-	            throwsStr += "CharStreamException, TokenStreamException";
+	            //throwsStr += "CharStreamException, TokenStreamException";
+                    //throwsStr += "TokenStreamException";
 	        }
                 if (!throwsStr.equals(throwConst)) {
                     _print(throwsStr);
@@ -3601,7 +3602,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 		try {
 			defaultLine = NO_MAPPING;
 			println("");
-			println("protected AST createTokenASTByType(int type) {");
+			println("protected static AST createTokenASTByType(int type) {");
 	        // Generate a map.put("T","TNode") for each token
 			// if heterogeneous node known for that token T.
 	        tabs++;

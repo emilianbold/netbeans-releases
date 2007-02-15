@@ -65,6 +65,11 @@ public class LibProjectImpl extends ProjectBase {
         filled = false;
     }
     
+    /* package */ LibProjectImpl () {
+        
+    }
+    
+    
     //protected void parseAllIfNeed() {
     protected void ensureFilesCreated() {
         if( ! filled ) {
@@ -90,12 +95,13 @@ public class LibProjectImpl extends ProjectBase {
     }
     
     protected void createIfNeed(NativeFileItem file, boolean isSourceFile) {
+	// NB: for those who decide to implement this: don't forget to check the language
     }
     
     public FileImpl findFile(File srcFile, int fileType, APTPreprocState preprocState, boolean scheduleParseIfNeed) {
         FileImpl impl = (FileImpl) getFile(srcFile);
         if( impl == null ) {
-            synchronized( getFiles() ) {
+            synchronized( getFilesLock() ) {
                 if( impl == null ) {
                     impl = new FileImpl(ModelSupport.instance().getFileBuffer(srcFile), this, fileType, preprocState);
                     putFile(srcFile, impl);
@@ -163,5 +169,18 @@ public class LibProjectImpl extends ProjectBase {
             }
         }
         return null;
+    }
+    
+    public void write(DataOutput aStream) throws IOException, IllegalArgumentException {
+        super.write(aStream);
+        aStream.writeBoolean(filled);
+        aStream.writeUTF(includePath.getCanonicalPath());
+    }
+    
+    void read(DataInput aStream) throws IOException, IllegalArgumentException {
+        super.read(aStream);
+        filled = aStream.readBoolean();
+        includePath = new File (aStream.readUTF());
+        
     }
 }

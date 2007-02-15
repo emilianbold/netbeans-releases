@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.WeakList;
 import org.netbeans.modules.cnd.apt.support.APTPreprocState;
@@ -204,7 +205,7 @@ public class ParserQueue {
     
     // only one of projectData/projectDataOLD must be used (based on USE_REPOSITORY)
     private Map<ProjectBase, ProjectData> projectDataOLD = new HashMap<ProjectBase, ProjectData>();
-    private Map<CsmUID, ProjectData> projectData = new HashMap<CsmUID, ProjectData>();
+    private Map<CsmUID<CsmProject>, ProjectData> projectData = new HashMap<CsmUID<CsmProject>, ProjectData>();
     
     private Object lock = new Object();
     
@@ -224,9 +225,9 @@ public class ParserQueue {
      * (In the case it isn't already enqueued;
      * if it already is, does nothing)
      */
-    public void addLast(FileImpl file) {
-        addLast(file, file.getPreprocStateState());
-    }
+//    public void addLast(FileImpl file) {
+//        addLast(file, file.getPreprocStateState());
+//    }
     
     //    public void addLast(FileImpl file, APTPreprocState.State ppStateState, boolean onInclude) {
     //        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: addLast " + file.getName());
@@ -274,9 +275,9 @@ public class ParserQueue {
      * If file isn't yet enqueued, places it at the beginning of the queue,
      * otherwise moves it there
      */
-    public void addFirst(FileImpl file) {
-        addFirst(file, file.getPreprocStateState(), false);
-    }
+//    public void addFirst(FileImpl file) {
+//        addFirst(file, file.getPreprocStateState(), false);
+//    }
     
     public void addFirst(FileImpl file, APTPreprocState.State ppStateState, boolean onInclude) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: addFirst " + file.getAbsolutePath());
@@ -415,7 +416,7 @@ public class ParserQueue {
             state = State.OFF;
             queue.clear();
             if (TraceFlags.USE_REPOSITORY) {
-                for( Iterator<CsmUID> it = projectData.keySet().iterator(); it.hasNext(); ) {
+                for( Iterator<CsmUID<CsmProject>> it = projectData.keySet().iterator(); it.hasNext(); ) {
                     ProjectBase prj = null;
                     prj = (ProjectBase)UIDCsmConverter.UIDtoProject(it.next());
                     fireProjectParsingFinished( prj );
@@ -496,7 +497,7 @@ public class ParserQueue {
     private ProjectData getProjectData(ProjectBase project, boolean create) {
         ProjectData data;
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID key = project.getUID();
+            CsmUID<CsmProject> key = project.getUID();
             data = projectData.get(key);
             if( data == null && create) {
                 data = new ProjectData(false);

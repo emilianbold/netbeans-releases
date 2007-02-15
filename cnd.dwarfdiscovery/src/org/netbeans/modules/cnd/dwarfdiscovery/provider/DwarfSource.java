@@ -16,9 +16,9 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
+   
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
-
+                               
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -38,6 +38,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -46,6 +47,9 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 public class DwarfSource implements SourceFileProperties{
     private static boolean ourGatherMacros = true;
     private static boolean ourGatherIncludes = true;
+    private static final String CYG_DRIVE_UNIX = "/cygdrive/"; // NOI18N
+    private static final String CYG_DRIVE_WIN = "\\cygdrive\\"; // NOI18N
+    private String cygwinPath;
     
     private String compilePath;
     private String sourceName;
@@ -56,8 +60,8 @@ public class DwarfSource implements SourceFileProperties{
     private Map<String, String> userMacros;
     private Set<String> includedFiles;
     
-    DwarfSource(CompilationUnit cu){
-        init(cu);
+    DwarfSource(CompilationUnit cu, boolean isCPP){
+        init(cu, isCPP);
     }
     
     public String getCompilePath() {
@@ -95,14 +99,36 @@ public class DwarfSource implements SourceFileProperties{
     public ItemProperties.LanguageKind getLanguageKind() {
         return language;
     }
+   
     
-    private void init(CompilationUnit cu){
+    private String fixFileName(String fileName) {
+        if (Utilities.isWindows()) {
+            //replace /cygdrive/<something> prefix with <something>:/ prefix:
+            if (fileName.startsWith(CYG_DRIVE_UNIX)) {
+                fileName = fileName.substring(CYG_DRIVE_UNIX.length()); // NOI18N
+                fileName = "" + Character.toUpperCase(fileName.charAt(0)) + ':' + fileName.substring(1);
+                fileName = fileName.replace('\\', '/');
+                cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + ":/cygwin";
+            } else {
+                int i = fileName.indexOf(CYG_DRIVE_WIN);
+                if (i > 0) {
+                    //replace C:\cygdrive\c\<something> prefix with <something>:\ prefix:
+                    fileName = fileName.substring(0,i)+fileName.substring(i+CYG_DRIVE_UNIX.length()+1);
+                    fileName = fileName.replace('\\', '/');
+                    cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + ":/cygwin";
+                }
+            }
+        }
+        return fileName;
+    }
+
+    private void init(CompilationUnit cu, boolean isCPP){
         userIncludes = new ArrayList<String>();
         systemIncludes = new ArrayList<String>();
         userMacros = new HashMap<String,String>();
         includedFiles = new HashSet<String>();
-        fullName = cu.getSourceFileFullName();
-        compilePath = cu.getCompilationDir();
+        fullName = fixFileName(cu.getSourceFileFullName());
+        compilePath = fixFileName(cu.getCompilationDir());
         sourceName = cu.getSourceFileName();
         
         if (compilePath == null && sourceName.lastIndexOf('/')>0) {
@@ -110,14 +136,10 @@ public class DwarfSource implements SourceFileProperties{
             compilePath = sourceName.substring(0,i);
             sourceName = sourceName.substring(i+1);
         }
-        //if (sourceName.indexOf('/')>=0) {
-        //    System.out.println("Source file "+cu.getSourceFileFullName());
-        //    System.out.println("    was compiled in folder "+compilePath);
-        //    System.out.println("    with name "+sourceName);
-        //}
-        language = ItemProperties.LanguageKind.C;
-        if (LANG.DW_LANG_C_plus_plus.toString().equals(cu.getSourceLanguage())){
+        if (isCPP) {
             language = ItemProperties.LanguageKind.CPP;
+        } else {
+            language = ItemProperties.LanguageKind.C;
         }
         String line = cu.getCommandLine();
         if (line != null && line.length()>0){
@@ -125,10 +147,6 @@ public class DwarfSource implements SourceFileProperties{
             gatherIncludedFiles(cu);
         } else {
             gatherMacros(cu);
-            // TODO: this thile in MySQL has bad configuration because Backup.hpp has "/" in include
-            //if (sourceName.endsWith("Backup.hpp")) {
-            //    System.out.println(sourceName);
-            //}
             gatherIncludes(cu);
         }
     }
@@ -164,12 +182,22 @@ public class DwarfSource implements SourceFileProperties{
         for (Iterator<String> it = dwarfTable.getIncludeDirectories().iterator(); it.hasNext();) {
             String path = it.next();
             if (path.startsWith("/usr")) { // NOI18N
+                if (cygwinPath != null) {
+                    if (path.startsWith("/usr/lib/")){
+                        path = cygwinPath+path.substring(4);
+                    } else {
+                        path = cygwinPath+path;
+                    }
+                }
+                if (Utilities.isWindows()) {
+                    path = path.replace('\\', '/');
+                }
                 systemIncludes.add(path);
             } else {
                 userIncludes.add(path);
             }
         }
-        List<String> list = grepSourceFile(cu.getSourceFileFullName());
+        List<String> list = grepSourceFile(fullName);
         for(String path : list){
             if (path.indexOf(File.separatorChar)>0){
                 int n = path.lastIndexOf(File.separatorChar);
@@ -189,9 +217,22 @@ public class DwarfSource implements SourceFileProperties{
         for(String path :dwarfTable.getFilePaths()){
             String fullName = path;
             if (path.startsWith("./")) { // NOI18N
-                fullName = cu.getCompilationDir()+path.substring(1);
+                fullName = compilePath+path.substring(1);
             } else if (path.startsWith("../")) { // NOI18N
-                fullName = cu.getCompilationDir()+File.separator+path;
+                fullName = compilePath+File.separator+path;
+            } else if (!path.startsWith("/")){ // NOI18N
+                fullName = compilePath+File.separator+path;
+            } else {
+                if (cygwinPath != null && path.startsWith("/usr")) { // NOI18N
+                    if (path.startsWith("/usr/lib/")){
+                        fullName = cygwinPath+path.substring(4);
+                    } else {
+                        fullName = cygwinPath+path;
+                    }
+                }
+            }
+            if (Utilities.isWindows()) {
+                fullName = fullName.replace('\\', '/');
             }
             includedFiles.add(fullName);
         }
@@ -208,9 +249,12 @@ public class DwarfSource implements SourceFileProperties{
         for(String path :dwarfTable.getFilePaths()){
             String fullName = path;
             if (path.startsWith("./")) { // NOI18N
-                fullName = cu.getCompilationDir()+path.substring(1);
+                fullName = compilePath+path.substring(1);
             } else if (path.startsWith("../")) { // NOI18N
-                fullName = cu.getCompilationDir()+File.separator+path;
+                fullName = compilePath+File.separator+path;
+            }
+            if (Utilities.isWindows()) {
+                fullName = fullName.replace('\\', '/');
             }
             includedFiles.add(fullName);
         }

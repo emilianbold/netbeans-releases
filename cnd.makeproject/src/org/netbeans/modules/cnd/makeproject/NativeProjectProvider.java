@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.ExtensionList;
 
 final public class NativeProjectProvider implements NativeProject, PropertyChangeListener {
     private Project project;
@@ -101,25 +102,14 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     public List getAllHeaderFiles() {
         ArrayList list = new ArrayList();
         Item[] items = getMakeConfigurationDescriptor().getProjectItems();
+        ExtensionList hlist = HDataLoader.getInstance().getExtensions();
+        
         for (int i = 0; i < items.length; i++) {
-            String suffix = null;
-            int si = items[i].getPath().lastIndexOf("."); // NOI18N
-            if (si >= 0)
-                suffix = items[i].getPath().substring(si+1);
-            else
-                continue;
-            if (amongSuffixes(suffix, HDataLoader.getInstance().suffixes()))
+            if (hlist.isRegistered(items[i].getPath())) {
                 list.add(items[i]);
+            }
         }
         return list;
-    }
-    
-    private boolean amongSuffixes(String suffix, String[] suffixes) {
-        for (int i = 0; i < suffixes.length; i++) {
-            if (suffixes[i].equals(suffix))
-                return true;
-        }
-        return false;
     }
     
     public void addProjectItemsListener(NativeProjectItemsListener listener) {

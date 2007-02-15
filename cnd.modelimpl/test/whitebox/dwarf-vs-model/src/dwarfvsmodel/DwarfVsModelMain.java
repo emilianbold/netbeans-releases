@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import modeldump.ModelDump;
-import modelutils.Config;
 import java.io.PrintStream;
 import java.util.Collection;
 
@@ -43,18 +42,22 @@ import org.netbeans.modules.cnd.api.model.*;
 public class DwarfVsModelMain {
     
     private ModelDump modelDump;
-    private Config config;
     private File tempDir = null;
     boolean printToScreen = false;
+    private int verbosity = 1;
     
     public static void main(String[] args) {
-	Config config = new Config("l:c:i:d:b:t:sf", args); // NOI18N
-	new DwarfVsModelMain(config).main();
+	try {
+	    DMFlags.parse(args);
+	    new DwarfVsModelMain().main();
+	} catch (Config.WrongArgumentException ex) {
+	    //ex.printStackTrace();
+	    System.err.println(ex.getMessage());
+	}
     }
     
-    public DwarfVsModelMain(Config config) {
-	this.config = config;
-	 printToScreen = config.flagSet("-s"); // NOI18N
+    public DwarfVsModelMain() {
+	printToScreen = DMFlags.printToScreen.getValue();
     }
     
     public void main() {
@@ -62,7 +65,7 @@ public class DwarfVsModelMain {
         try {
 	    
 	    if( ! printToScreen ) {
-		tempDir = new File(config.getParameterFor("-t", "/tmp/whitebox"));    // NOI18N
+		tempDir = new File(DMFlags.tempDir.getValue());
 		if( tempDir.exists() ) {
 		    if( ! tempDir.isDirectory() ) {
 			System.err.println("File " + tempDir.getAbsolutePath() + " exists and it isn't directory"); // NOI18N
@@ -83,11 +86,11 @@ public class DwarfVsModelMain {
 	    
 	    PrintStream globalTraceLog = printToScreen ? System.out : DMUtils.createStream(tempDir, "_all", "trace"); // NOI18N
             
-            String logFile = config.getParameterFor("-l"); // NOI18N
+            String logFile = DMFlags.logFile.getValue();
             PrintStream resultLog = (logFile == null) ? System.out : new PrintStream(logFile);
 	    resultLog.println(""); // NOI18N
             
-            String configFileName = config.getParameterFor("-c"); // NOI18N
+            String configFileName = DMFlags.configFile.getValue();
             
             if (configFileName == null) {
                 return;
@@ -107,11 +110,16 @@ public class DwarfVsModelMain {
 		for (Iterator<FileInfo> i = filesToProcess.iterator(); i.hasNext(); ) {
 		    FileInfo file = i.next();
 		    PrintStream traceLog = getTraceStream(file, false);
+		    if( traceLog != System.out && verbosity > 0 ) {
+			System.out.println("Compiling file: " + file.getSrcFileName()); // NOI18N
+		    }
 		    compileFile(traceLog, file);
-		    traceLog.close();
+		    if( traceLog != System.out ) {
+			traceLog.close();
+		    }
 		}
-		printTime("Total parsing time:", time, resultLog);
-		printMemory("Total memory used by code model:", memo, resultLog);
+		printTime("\nTotal parsing time:", time, resultLog); // NOI18N
+		printMemory("Total memory used by code model:", memo, resultLog); // NOI18N
 		resultLog.println("");
 	    }
 	    
@@ -143,9 +151,9 @@ public class DwarfVsModelMain {
 		traceLog.println("Comparing file: " + file.getSrcFileName()); // NOI18N
 
 		ModelComparator comparator = new ModelComparator(codeModel, dwarfData, resultLog, traceLog);
-		comparator.setBidirectional(config.flagSet("-b")); // NOI18N
+		comparator.setBidirectional(DMFlags.bidirectional.getValue());
 		comparator.setPrintToScreen(printToScreen);
-		comparator.setCompareBodies(!config.flagSet("-f")); // NOI18N
+		comparator.setCompareBodies(!DMFlags.flat.getValue());
 		comparator.setTemp(tempDir);
 		//comparator.setDumpDwarf(true); // config.flagSet("-u")); // // NOI18N
 		try {
@@ -162,15 +170,14 @@ public class DwarfVsModelMain {
             result.dump(resultLog);
 	    
 	    if( DMFlags.COMPILE_ALL_FIRST ) {
-		printTime("Total comparison time:", time, resultLog);
-		printMemory("Total memory used by comparison:", memo, resultLog);
+		printTime("\nTotal comparison time:", time, resultLog); // NOI18N
+		printMemory("Total memory used by comparison:", memo, resultLog); // NOI18N
 	    }
 	    else {
-		printTime("Total processing time:", time, resultLog);
-		printMemory("Total memory used", memo, resultLog);
+		printTime("\nTotal processing time:", time, resultLog); // NOI18N
+		printMemory("Total memory used", memo, resultLog); // NOI18N
 	    }
-	    resultLog.println("");
-	    printMemory("Final memory footprint:", -1, resultLog);
+	    printMemory("\nFinal memory footprint:", -1, resultLog); // NOI18N
 	    resultLog.println("");
             
         } catch (Exception ex) {
@@ -187,7 +194,7 @@ public class DwarfVsModelMain {
 	traceLog.println("Compiling file: " + file.getSrcFileName()); // NOI18N
 	// Setup includes ...
 	ArrayList<String> includes = file.getQuoteIncludes();
-	List<String> cl_includes = config.getParametersFor("-i"); // NOI18N
+	List<String> cl_includes = DMFlags.userIncludes.getValue();
 	if (cl_includes != null) {
 	    includes.addAll(cl_includes);
 	}
@@ -197,7 +204,7 @@ public class DwarfVsModelMain {
 	
 	// Setup defines ...
 	ArrayList<String> defines = file.getDefines();
-	List<String> cl_defines = config.getParametersFor("-d"); // NOI18N
+	List<String> cl_defines = DMFlags.userDefines.getValue();
 	if (cl_defines != null) {
 	    defines.addAll(cl_defines);
 	}

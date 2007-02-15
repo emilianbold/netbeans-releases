@@ -83,9 +83,32 @@ public enum TAG {
     DW_TAG_imported_unit(0x3d),
     DW_TAG_condition(0x3f),
     DW_TAG_shared_type(0x40),
+    
     DW_TAG_lo_user(0x4080),
+
+    DW_TAG_MIPS_lo(0x4081),
+    DW_TAG_MIPS_loop(0x4081),
+    DW_TAG_MIPS_hi(0x4090),
+    
+    DW_TAG_SUN_lo(0x4201),
+    DW_TAG_SUN_function_template(0x4201),
     DW_TAG_SUN_class_template(0x4202),
+    DW_TAG_SUN_struct_template(0x4203),
+    DW_TAG_SUN_union_template(0x4204),
+    DW_TAG_SUN_virtual_inheritance(0x4205),
+    DW_TAG_SUN_codeflags(0x4206),
+    DW_TAG_SUN_memop_info(0x4207),
+    DW_TAG_SUN_omp_child_func(0x4208),
     DW_TAG_SUN_rtti_descriptor(0x4209),
+    DW_TAG_SUN_dtor_info(0x420a),
+    DW_TAG_SUN_dtor(0x420b),
+    DW_TAG_SUN_hi(0x42ff),
+
+    DW_TAG_upc_shared_type(0x8765),
+    DW_TAG_upc_strict_type(0x8766),
+    DW_TAG_upc_relaxed_type(0x8767),
+    
+    DW_TAG_unknown(0xfffe),
     DW_TAG_hi_user(0xffff);
     
     private final int value;
@@ -102,7 +125,8 @@ public enum TAG {
     }
     
     public static TAG get(int val) {
-        return hashmap.get(new Integer(val));
+        TAG kind = hashmap.get(new Integer(val));
+        return (kind != null) ? kind : DW_TAG_unknown;
     }
     
     public int value() {

@@ -21,25 +21,30 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-
-import org.netbeans.modules.cnd.modelimpl.platform.*;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 /**
  * Abstracr Base class for CsmOffsetable
  * @author Vladimir Kvashin
  */
 public class OffsetableBase implements CsmOffsetable, CsmObject {
-    private final CsmFile file;
-    //private final AST ast;
+    // only one of fileOLD/fileUID must be used (based on USE_REPOSITORY)
+    private final CsmFile fileOLD;
+    private final CsmUID<CsmFile> fileUID;
     
     private final Position startPosition;
     private final Position endPosition;
 
     public OffsetableBase(AST ast, CsmFile file) {
-        this.file = file;
+        if (TraceFlags.USE_REPOSITORY) {
+            this.fileUID = UIDCsmConverter.fileToUID(file);
+            this.fileOLD = null;// to prevent error with "final"
+        } else {
+            this.fileOLD = file;
+            this.fileUID = null;// to prevent error with "final"
+        }
         //this.ast = ast;
         CsmAST startAST = getStartAst(ast);
         startPosition = (startAST == null) ? 
@@ -108,10 +113,20 @@ public class OffsetableBase implements CsmOffsetable, CsmObject {
     }
     
     public CsmFile getContainingFile() {
-        return file;
+        return _getFile();
     }
 
     public String getText() {
         return getContainingFile().getText(getStartOffset(), getEndOffset());
+    }
+
+    private CsmFile _getFile() {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmFile file = UIDCsmConverter.UIDtoFile(fileUID);
+            assert file != null;
+            return file;
+        } else {
+            return fileOLD;
+        }
     }
 }

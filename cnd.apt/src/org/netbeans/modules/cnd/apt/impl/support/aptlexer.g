@@ -274,7 +274,7 @@ tokens {
         return APTUtils.createAPTToken(type);
     }
 
-    public void traceIn(String rname) throws CharStreamException {
+    public void traceIn(String rname) {
         traceDepth ++;
         traceIndent();
         char c = LA(1);
@@ -282,7 +282,7 @@ tokens {
         System.out.println("> lexer " + rname + "; c==" + ch); // NOI18N
     }
 
-    public void traceOut(String rname) throws CharStreamException {
+    public void traceOut(String rname) {
         traceIndent();
         char c = LA(1);
         Object ch = c == '\n' ? "\\n" : c == '\t' ? "\\t" : ("" + c); // NOI18N
@@ -434,7 +434,7 @@ tokens {
         tokenStartOffset = offset;
     }
 
-    public void consume() throws CharStreamException {
+    public void consume() {
         super.consume();
         if (inputState.guessing == 0) {
             offset++;
@@ -666,6 +666,8 @@ PREPROC_DIRECTIVE :
                     {isPreprocPending()}? {$setType(SHARP);}
                  |
                     {isPreprocPending()}? '#' {$setType(DBL_SHARP);}
+                 | 
+                    {!isPreprocPossible()}? {$setType(SHARP);}
                  |
                     {isPreprocPossible()}? 
                     {
@@ -818,7 +820,8 @@ NUMBER
 			|LongSuffix            //{type = LongDoubleConst;}
 			)?
 		| '*' {$setType(DOTMBR);}
-                | ".." {$setType(ELLIPSIS);} )
+                | {(LA(2)=='.')}? ".." {$setType(ELLIPSIS);}
+                )
 
 	|	'0' ('0'..'7')*            //{type = IntOctalConst;}
 		(LongSuffix                //{type = LongOctalConst;}

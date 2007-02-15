@@ -21,12 +21,15 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public abstract class OffsetableDeclarationBase extends OffsetableBase implements CsmDeclaration {
+public abstract class OffsetableDeclarationBase<T> extends OffsetableBase implements CsmOffsetableDeclaration<T>, Persistent {
     
     public static final char UNIQUE_NAME_SEPARATOR = ':';
     
@@ -46,7 +49,33 @@ public abstract class OffsetableDeclarationBase extends OffsetableBase implement
         return getQualifiedName();
     }
     
-    public CsmUID getUID() {
-        throw new UnsupportedOperationException("getUID is not yet supported in offsetable declaration " + this.getClass().getName()); // NOI18N
+    protected final CsmProject getProject() {
+        CsmFile file = this.getContainingFile();
+        assert file != null;
+        return file != null ? file.getProject() : null;
+    }    
+    
+    protected String getQualifiedNamePostfix() {
+        if (TraceFlags.SET_UNNAMED_QUALIFIED_NAME && (getName().length() == 0)) {
+            return getOffsetBasedName();
+        } else {
+            return getName();
+        }
     }
+    
+    private String getOffsetBasedName() {
+        return "[" + this.getContainingFile().getName() + ":" + this.getStartOffset() + "-" + this.getEndOffset() + "]"; // NOI18N
+    }   
+    
+    public CsmUID<T> getUID() {
+        if (uid == null) {
+            uid = UIDUtilities.createDeclarationUID(this);
+        }
+        return uid;
+    }
+    
+    protected void cleanUID() {
+        this.uid = null;
+    }
+    private CsmUID uid = null;       
 }

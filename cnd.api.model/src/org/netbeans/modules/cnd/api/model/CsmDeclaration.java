@@ -28,8 +28,8 @@ import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
 
 //TODO: FINISH!
 
-public interface CsmDeclaration extends CsmQualifiedNamedElement, 
-        CsmScopeElement, CsmIdentifiable {
+public interface CsmDeclaration<T> extends CsmQualifiedNamedElement, 
+        CsmScopeElement, CsmIdentifiable<T> {
 
     //TODO: fill in accordance to C++ standard
 

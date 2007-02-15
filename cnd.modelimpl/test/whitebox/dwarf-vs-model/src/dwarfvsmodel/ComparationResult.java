@@ -35,7 +35,7 @@ public class ComparationResult {
     private int errors;
 
     public ComparationResult(CsmFile file, int total, int matched) {
-	this(file.getName() + "  " + file.getAbsolutePath(), total, matched, 1);
+	this(file.getName() + "  " + file.getAbsolutePath(), total, matched, 1); // NOI18N
 	this.errors = (file instanceof  FileImpl) ? ((FileImpl) file).getErrorCount() : 0;
     }
 

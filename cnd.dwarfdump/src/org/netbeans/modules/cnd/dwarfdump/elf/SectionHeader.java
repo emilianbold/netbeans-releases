@@ -26,6 +26,7 @@ import java.io.PrintStream;
  * @author ak119685
  */
 public class SectionHeader {
+    public String name;            /* section name */
     public long sh_name = 0;       /* section name */
     public long sh_type = 0;       /* SHT_... */
     public long sh_flags = 0;      /* SHF_... */
@@ -48,7 +49,11 @@ public class SectionHeader {
     public long getSectionEntrySize() {
         return sh_entsize;
     }
-
+    
+    public String getSectionName(){
+        return name;
+    }
+    
     public void dump(PrintStream out) {
         out.println("Elf section header:"); // NOI18N
         out.printf("  %-20s %s\n", "Offset:", sh_offset); // NOI18N

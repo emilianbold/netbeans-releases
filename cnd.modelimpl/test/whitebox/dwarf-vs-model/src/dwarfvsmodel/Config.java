@@ -85,10 +85,15 @@ public class Config {
 	    for (int i = 0; i < switches.length; i++) {
 		if( switches[i].equals(sw) ) {
 		    usedSwitch = sw;
+		    used();
 		    return true;
 		}
 	    }
 	    return false;
+	}
+	
+	/** Is called when this option has been set */
+	protected void used() {
 	}
 	
 	/** Determines whether this option needs value or not */ 
@@ -119,7 +124,7 @@ public class Config {
      */
     public static class BooleanOption extends Option {
 	
-	boolean value;
+	private boolean value;
 	
 	public BooleanOption(String key, String description, boolean defaultValue, String ... switches) {
 	    super(key, description, switches);
@@ -139,7 +144,7 @@ public class Config {
 	}
 
 	protected boolean accept(String sw) {
-	    boolean reverse = sw.endsWith("-");
+	    boolean reverse = sw.endsWith("-"); // NOI18N
 	    if( reverse ) {
 		sw = sw.substring(0, sw.length()-1);
 	    }
@@ -151,13 +156,13 @@ public class Config {
 	}
 	
 	protected String getStringValue() {
-	    return value ? "yes" : "no";
+	    return value ? "yes" : "no"; // NOI18N
 	}
     }
     
     public static class StringOption extends Option {
 	
-	String value;
+	private String value;
 	
 	public StringOption(String key, String description, String defaultValue, String ... switches) {
 	    super(key, description, switches);
@@ -182,48 +187,197 @@ public class Config {
 	
     }
     
-    private Map<String, Option> options = new HashMap<String, Option>();
+    public static class StringListOption extends Option {
+	
+	private List<String> values = new ArrayList<String>();
+	
+	public StringListOption(String key, String description, String ... switches) {
+	    super(key, description, switches);
+	}
+
+	public boolean needsValue() {
+	    return true;
+	}
+	
+	public void  parseValue(String value) throws WrongArgumentException {
+	    this.values.add(value);
+	}
+	
+	public List<String> getValue() {
+	    return values;
+	}	
+	
+	protected String getStringValue() {
+	    return values.toString();
+	}
+	
+    }    
     
-    public void addBooleanOption(String key, String description, boolean defaultValue, String ... switches) {
-	addOption(new BooleanOption(key, description, defaultValue, switches));
+    /** Maps option keys to options */
+    private Map<String, Option> map = new HashMap<String, Option>();
+    
+    /** Holds a list of options in order they were added */
+    private List<Option> list = new ArrayList<Option>();
+    
+    private List<String> parameters = new ArrayList<String>();
+    
+    public BooleanOption addBooleanOption(String key, String description, boolean defaultValue, String ... switches) {
+	BooleanOption option = new BooleanOption(key, description, defaultValue, switches);
+	addOption(option);
+	return option;
     }
     
-    public void addStringOption(String key, String description, String defaultValue, String ... switches) {
-	addOption(new StringOption (key, description, defaultValue, switches));
+    public StringOption addStringOption(String key, String description, String defaultValue, String ... switches) {
+	StringOption option = new StringOption (key, description, defaultValue, switches);
+	addOption(option);
+	return option;
     }
     
-    public Collection<Option> getOtions() {
-	return options.values();
+    public StringListOption addStringListOption(String key, String description, String ... switches) {
+	StringListOption option = new StringListOption (key, description, switches);
+	addOption(option);
+	return option;
+    }
+    
+    /** Gets a list of options in order they were added */
+    public List<Option> getOptions() {
+	return list;
+    }
+    
+    public List<String> getParameters() {
+	return parameters;
     }
     
     private void addOption(Option option) {
-	for( Option curr : options.values() ) {
+	for( Option curr : map.values() ) {
 	    for (int i = 0; i < curr.switches.length; i++) {
 		for (int j = 0; j < option.switches.length; j++) {
 		    if( option.switches[j].equals(curr.switches[i]) ) {
-			throw new IllegalArgumentException("Duplicate option switches"); //NOI18N
+			throw new IllegalArgumentException("Duplicate option switches: " + // NOI18N
+				option.switches[j] + " and " + curr.switches[i]); //NOI18N
 		    }
 		}
 	    }
 	}
-	options.put(option.getKey(), option);
+	map.put(option.getKey(), option);
+	list.add(option);
+    }
+
+    private Option findOption(String sw) throws WrongArgumentException {
+	for( Option option : map.values() ) {
+	    if( option.accept(sw) ) {
+		return option;
+	    }
+	}
+	throw new WrongArgumentException("Unsupported option -" + sw); //NOI18N
+    }
+    
+
+    
+    private Iterator<String> convert(final String[] args) {
+	return new Iterator<String>() {
+	    private int cursor = 0;
+	    public boolean hasNext() {
+		return cursor < args.length;
+	    }
+	    public void remove() {
+		throw new UnsupportedOperationException();
+	    }
+
+	    public String next() {
+		return args[cursor++];
+	    }
+	    
+	};
+    }    
+    
+    private void parse(Option option, Iterator<String> it) throws WrongArgumentException {
+	if( option.needsValue() ) {
+	    if( it.hasNext() ) {
+		String value = it.next();
+		if( value.startsWith("-") ) { // NOI18N
+		    throwRequiresValue(option);
+		}
+		else {
+		    option.parseValue(value);
+		}
+	    }
+	    else {
+		throwRequiresValue(option);
+	    }
+	}
+    }
+    
+    private void throwRequiresValue(Option option) throws WrongArgumentException {
+	throw new WrongArgumentException("Option -" + option.getUsedSwitch() + " requires a value"); //NOI18N
     }
     
     public void parse(String[] args) throws WrongArgumentException {
-	for (int i = 0; i < args.length; i++) {
-	    for( Option option : options.values() ) {
-		if( option.accept(args[i]) ) {
-		    if( option.needsValue() && i < args.length) {
-			option.parseValue(args[++i]);
+
+	Iterator<String> it = convert(args);
+	while( it.hasNext() ) {
+	    String arg = it.next();
+	    if( arg.startsWith("--") ) { // NOI18N
+		parse(findOption(arg.substring(2)), it);
+	    }
+	    else if( arg.startsWith("-") ) { // NOI18N
+		Option option = findOption(arg.substring(1, 2));
+		if( arg.length() == 2 ) {
+		    // just one flag
+		    parse(option, it);
+		}
+		else {
+		    // several flags or value?
+		    if( option.needsValue() ) {
+			option.parseValue(arg.substring(2));
+		    }
+		    else {
+			for( int pos = 2; pos < arg.length(); pos++ ) {
+			    Option nextOption = findOption(arg.substring(pos, pos+1));
+			    if( nextOption.needsValue() ) {
+				throwRequiresValue(option);
+			    }
+			}
 		    }
 		}
+	    }
+	    else {
+		parameters.add(arg);
 	    }
 	}
     }
     
+    public void readProperties(Properties props) throws WrongArgumentException {
+	for( Map.Entry entry : props.entrySet() ) {
+	    Option option = map.get(entry.getKey());
+	    if( option != null ) {
+		option.used();
+		if( option.needsValue() ) {
+		    option.parseValue((String) entry.getValue());
+		}
+	    }
+	}
+    }
+        
+    public Option getOption(String key) {
+	Option option = map.get(key);
+	if( option == null ) {
+	    throw new IllegalArgumentException("No such option: " + key); //NOI18N
+	}
+	return option;
+    }
+    
+    public String getStringValue(String key) {
+	return getOption(key).getStringValue();
+    }
+        
     public void dump(PrintStream ps) {
-	for( Option option : options.values() ) {
-	    ps.println(option.getDescription() + " \t" + option.getStringValue());
+	for( Option option : getOptions() ) {
+	    ps.println(option.getDescription() + ": \t" + option.getStringValue()); // NOI18N
+	}
+	ps.println("Parameters:"); // NOI18N
+	for( String parameter : parameters ) {
+	    ps.println(parameter);
 	}
     }
 }

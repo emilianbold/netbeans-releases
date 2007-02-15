@@ -37,8 +37,23 @@ public enum LANG {
     DW_LANG_Fortran90(0x0008),
     DW_LANG_Pascal83(0x0009),
     DW_LANG_Modula2(0x000a),
+    DW_LANG_C99(0x000c),
     DW_LANG_lo_user(0x8000),
     DW_LANG_hi_user(0xffff);
+    
+/* What about dwarf 3.0 ?
+See http://dwarf.freestandards.org/Dwarf3Std.php
+Convenient definitions in http://www.arcknowledge.com/gmane.comp.compilers.llvm.cvs/2005-12/msg00423.html
+-  DW_LANG_Java = 0x000b,
+-  DW_LANG_C99 = 0x000c,
+-  DW_LANG_Ada95 = 0x000d,
+-  DW_LANG_Fortran95 = 0x000e,
+-  DW_LANG_PLI = 0x000f,
+-  DW_LANG_ObjC = 0x0010,
+-  DW_LANG_ObjC_plus_plus = 0x0011,
+-  DW_LANG_UPC = 0x0012,
+-  DW_LANG_D = 0x0013,
+ */    
     
     private final int value;
     static private final HashMap<Integer, LANG> hashmap = new HashMap<Integer, LANG>();
@@ -64,6 +79,7 @@ public enum LANG {
     public String toString() {
         switch(this) {
             case DW_LANG_C89: return "C 89"; // NOI18N
+            case DW_LANG_C99: return "C 99"; // NOI18N
             case DW_LANG_C: return "C"; // NOI18N
             case DW_LANG_Ada83: return "Ada 83"; // NOI18N
             case DW_LANG_C_plus_plus: return "C++";  // NOI18N

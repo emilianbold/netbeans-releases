@@ -20,18 +20,22 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.MIMENames;
+
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
+
+import org.netbeans.modules.cnd.MIMENames;
 
 /**
  *
  * @author Alexander Simon
  */
-public class FortranDataLoader extends CCFSrcLoader {
-    private static FortranDataLoader instance = null;
+public class FortranDataLoader extends CndAbstractDataLoader {
+    
+    private static FortranDataLoader instance;
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975686L;
@@ -41,30 +45,33 @@ public class FortranDataLoader extends CCFSrcLoader {
 	   { "f", "F", "f90", "F90", "f95", "F95", "for", "il", "mod" };// NOI18N
 
     protected FortranDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.FortranSrcObject");         // NOI18N
-	instance = this;
+	super(FortranDataObject.class.getName());
+        instance = this;
         createExtentions(fortranExtensions);
     }
 
     protected FortranDataLoader(String representationClassName) {
 	super(representationClassName);
-	instance = this;
+        instance = this;
         createExtentions(fortranExtensions);
     }
 
     protected FortranDataLoader(Class representationClass) {
 	super(representationClass);
-	instance = this;
+        instance = this;
         createExtentions(fortranExtensions);
     }
 
     public static FortranDataLoader getInstance(){
+        if (instance == null) {
+            instance = (FortranDataLoader) SharedClassObject.findObject(FortranDataLoader.class, true);
+        }
         return instance;
     }
 
     /** set the default display name */
     protected String defaultDisplayName() {
-	return NbBundle.getMessage(CCFSrcLoader.class, "PROP_FortranDataLoader_Name"); // NOI18N
+	return NbBundle.getMessage(CndAbstractDataLoader.class, "PROP_FortranDataLoader_Name"); // NOI18N
     }
 
     protected String getMimeType(){
@@ -72,6 +79,6 @@ public class FortranDataLoader extends CCFSrcLoader {
     }
 
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new FortranSrcObject(primaryFile, this);
+        return new FortranDataObject(primaryFile, this);
     }
 }

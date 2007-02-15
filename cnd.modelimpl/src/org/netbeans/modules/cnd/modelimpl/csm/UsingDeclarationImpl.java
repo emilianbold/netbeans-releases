@@ -29,7 +29,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  * Implements CsmUsingDeclaration
  * @author Vladimir Kvasihn
  */
-public class UsingDeclarationImpl extends OffsetableDeclarationBase implements CsmUsingDeclaration, RawNamable {
+public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDeclaration> implements CsmUsingDeclaration, RawNamable {
 
     private final String name;
     private final int startOffset;

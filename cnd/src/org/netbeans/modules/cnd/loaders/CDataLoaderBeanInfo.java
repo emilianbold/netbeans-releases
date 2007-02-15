@@ -26,7 +26,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public class CDataLoaderBeanInfo extends CCFSrcLoaderBeanInfo {
+public class CDataLoaderBeanInfo extends CndAbstractDataLoaderBeanInfo {
 
     public Image getIcon(int type) {
 	return Utilities.loadImage("org/netbeans/modules/cnd/loaders/CSrcIcon.gif");   // NOI18N

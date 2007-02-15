@@ -19,15 +19,21 @@
 
 package org.netbeans.modules.cnd.discovery.wizard.bridge;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -35,6 +41,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -42,24 +49,23 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
  */
 public class ProjectBridge {
     private String baseFolder;
-    private MakeConfiguration extConf;
     private MakeConfigurationDescriptor makeConfigurationDescriptor;
     private Set resultSet = new HashSet();
     
-    private ProjectBridge() {
+    public ProjectBridge(Project project) {
+        baseFolder = File.separator+project.getProjectDirectory().getPath();
+        resultSet.add(project);
+        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
     }
     
-    public ProjectBridge(String baseFolder) {
+    public ProjectBridge(String baseFolder) throws IOException{
         this.baseFolder = baseFolder;
-        extConf = new MakeConfiguration(baseFolder, "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
+        MakeConfiguration extConf = new MakeConfiguration(baseFolder, "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
         String workingDir = baseFolder;
         String workingDirRel = IpeUtils.toRelativePath(baseFolder, FilePathAdaptor.naturalize(workingDir));
         workingDirRel = FilePathAdaptor.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
-    }
-    
-    
-    public void createproject() throws IOException{
         Project project = ProjectGenerator.createBlankProject("DiscoveryProject", baseFolder, new MakeConfiguration[] {extConf}, true); // NOI18N
         resultSet.add(project);
         ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
@@ -71,20 +77,136 @@ public class ProjectBridge {
     }
     
     
+    /**
+     * Create new item. Path is converted to relative.
+     */
     public Item createItem(String path){
         return new Item(getRelativepath(path));
     }
     
+    /**
+     * Find project item by relative path.
+     */
+    public Item getProjectItem(String path){
+        return makeConfigurationDescriptor.findProjectItemByPath(path);
+    }
+
+    public Object getAuxObject(Item item){
+        MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+        ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        return itemConfiguration;
+    }
+
+    public void setAuxObject(Item item, Object pao){
+        if (pao instanceof ItemConfiguration) {
+            ItemConfiguration conf = (ItemConfiguration)pao;
+            MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+            ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+            itemConfiguration.setCCCompilerConfiguration(conf.getCCCompilerConfiguration());
+            itemConfiguration.setCCompilerConfiguration(conf.getCCompilerConfiguration());
+            itemConfiguration.setCustomToolConfiguration(conf.getCustomToolConfiguration());
+        }
+    }
+    
+    /**
+     * Convert absolute path to relative.
+     * Converter does some simplifications:
+     * /some/../ => /
+     * /./ => /
+     */
     public String getRelativepath(String path){
+        if (Utilities.isWindows()) {
+            path = path.replace('/', File.separatorChar);
+        }
         path = IpeUtils.toRelativePath(makeConfigurationDescriptor.getBaseDir(), path);
         path = FilePathAdaptor.mapToRemote(path);
+        path = cutLocalRelative(path);
         path = FilePathAdaptor.normalize(path);
         return path;
     }
     
+    private static final String PATTERN_1 = File.separator+"."+File.separator; // NOI18N
+    private static final String PATTERN_2 = File.separator+"."; // NOI18N
+    private static final String PATTERN_3 = File.separator+".."+File.separator; // NOI18N
+    private static final String PATTERN_4 = File.separator+".."; // NOI18N
+    private String cutLocalRelative(String path){
+        String pattern = PATTERN_1;
+        while(true) {
+            int i = path.indexOf(pattern);
+            if (i < 0){
+                break;
+            }
+            path = path.substring(0,i+1)+path.substring(i+pattern.length());
+        }
+        pattern = PATTERN_2;
+        if (path.endsWith(pattern)){
+            path = path.substring(0,path.length()-pattern.length());
+        }
+        pattern = PATTERN_3;
+        while(true) {
+            int i = path.indexOf(pattern);
+            if (i < 0){
+                break;
+            }
+            int k = -1;
+            for (int j = i-1; j >= 0; j-- ){
+                if ( path.charAt(j)==File.separatorChar){
+                    k = j;
+                    break;
+                }
+            }
+            if (k<0) {
+                break;
+            }
+            path = path.substring(0,k+1)+path.substring(i+pattern.length());
+        }
+        pattern = PATTERN_4;
+        if (path.endsWith(pattern)){
+            int k = -1;
+            for (int j = path.length()-pattern.length()-1; j >= 0; j-- ){
+                if ( path.charAt(j)==File.separatorChar){
+                    k = j;
+                    break;
+                }
+            }
+            if (k>0) {
+                path = path.substring(0,k);
+            }
+        }
+        return path;
+    }
+    
+    public Item[] getAllSources(){
+        return makeConfigurationDescriptor.getProjectItems();
+    }
     
     public Folder getRoot(){
-        return makeConfigurationDescriptor.getLogicalFolders();
+        Folder folder = makeConfigurationDescriptor.getLogicalFolders();
+        Vector sources = folder.getFolders();
+        List<Folder> roots = new ArrayList<Folder>();
+        for (Object o : sources){
+            Folder sub = (Folder)o;
+            if (sub.isProjectFiles()) {
+                if (MakeConfigurationDescriptor.SOURCE_FILES_FOLDER.equals(sub.getName())) {
+                    Vector v = sub.getFolders();
+                    for (Object e : v){
+                        Folder s = (Folder)e;
+                        if (s.isProjectFiles()) {
+                            roots.add(s);
+                        }
+                    }
+                } else if (MakeConfigurationDescriptor.HEADER_FILES_FOLDER.equals(sub.getName()) ||
+                        MakeConfigurationDescriptor.RESOURCE_FILES_FOLDER.equals(sub.getName())){
+                    // skip
+                } else {
+                    roots.add(sub);
+                }
+            }
+        }
+        if (roots.size()>0){
+            return roots.get(0);
+        }
+        return folder;
     }
     
     public Set getResult(){
@@ -92,12 +214,16 @@ public class ProjectBridge {
     }
     
     public void setupProject(Vector includes, String macros, boolean isCPP){
-        if (isCPP) {
-            extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includes);
-            extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
-        } else {
-            extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includes);
-            extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
+        Configuration c = makeConfigurationDescriptor.getConfs().getActive();
+        if (c instanceof MakeConfiguration) {
+            MakeConfiguration extConf = (MakeConfiguration)c;
+            if (isCPP) {
+                extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includes);
+                extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
+            } else {
+                extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includes);
+                extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
+            }
         }
     }
     

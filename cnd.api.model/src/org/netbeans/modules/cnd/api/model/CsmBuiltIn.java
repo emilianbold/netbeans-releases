@@ -23,5 +23,5 @@ package org.netbeans.modules.cnd.api.model;
  * Represents bult-in type (int, char, etc)
  * @author Vladimir Kvashin
  */
-public interface CsmBuiltIn extends CsmClassifier {
+public interface CsmBuiltIn extends CsmClassifier<CsmBuiltIn> {
 }

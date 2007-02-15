@@ -25,37 +25,26 @@ import java.io.Reader;
 //      stuff is in here
 
 public class CharBuffer extends InputBuffer {
-    // char source
-    public transient Reader input;
-
     /** Create a character buffer */
-    public CharBuffer(Reader input_) { // SAS: for proper text i/o
-        super();
-        input = input_;
-    }
-
-    public void fill() throws CharStreamException {
+    public CharBuffer(Reader input) { // SAS: for proper text i/o
         int readChunkSize = INITIAL_BUFFER_SIZE;
         try {
-                // alloc initial buffer size.
-                data = new char[INITIAL_BUFFER_SIZE];
-                int numRead=0;
-                int pos = 0;
-                do {
-                        if ( pos+readChunkSize > data.length ) { // overflow?
-                            resizeData(0);
-                        }
-                        numRead = input.read(data, pos, readChunkSize);
-                        pos += numRead;
-                } while (numRead==readChunkSize);
-                
-                if ( pos == data.length ) { //unable to append EOF
-                    resizeData(1);
-                }
-                data[pos] = CharScanner.EOF_CHAR; // Append EOF
-                p = 0; 
+            int numRead=0;
+            int pos = 0;
+            do {
+                    if ( pos+readChunkSize > data.length ) { // overflow?
+                        resizeData(0);
+                    }
+                    numRead = input.read(data, pos, readChunkSize);
+                    pos += numRead;
+            } while (numRead==readChunkSize);
+
+            if ( pos == data.length ) { //unable to append EOF
+                resizeData(1);
+            }
+            data[pos] = CharScanner.EOF_CHAR; // Append EOF
 	} catch (IOException io) {
-            throw new CharStreamIOException(io);
+            System.err.println("tmp error: can't load input: " + io);
         }
     }
 }

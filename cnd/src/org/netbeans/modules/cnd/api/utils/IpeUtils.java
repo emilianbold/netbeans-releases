@@ -30,7 +30,7 @@ import javax.swing.JButton;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
-import org.netbeans.modules.cnd.loaders.CSrcObject;
+import org.netbeans.modules.cnd.loaders.CDataObject;
 import org.netbeans.modules.cnd.loaders.CoreElfObject;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.openide.filesystems.FileObject;
@@ -617,7 +617,7 @@ public class IpeUtils {
     public static ExecutionSupport findExecutionSupport(DataNode executionNode) {
         if (executionNode == null)
             return null;
-        if (executionNode.getDataObject() instanceof CSrcObject)
+        if (executionNode.getDataObject() instanceof CDataObject)
             return null;
         if (executionNode.getDataObject() instanceof CoreElfObject)
             return null;

@@ -237,3 +237,14 @@ int class_enum_in_body() {
 }
 
 
+//===========================================
+int equal_names_in_body(bool b) {
+    if( b ) {
+	int x = 3;
+	return x;
+    }
+    else {
+	long x = 5;
+	return x;
+    }
+}

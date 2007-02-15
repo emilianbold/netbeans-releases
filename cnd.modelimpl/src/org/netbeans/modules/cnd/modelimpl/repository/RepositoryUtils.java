@@ -22,7 +22,6 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -40,19 +39,22 @@ public class RepositoryUtils {
     ////////////////////////////////////////////////////////////////////////////
     // repository access wrappers
     
-    public static CsmIdentifiable get(CsmUID uid) {
+    public static <T extends CsmIdentifiable> T get(CsmUID<T> uid) {
         Key key = UIDtoKey(uid);
+        assert key != null;
         Persistent out = RepositoryAccessor.getRepository().get(key);
         assert out == null || (out instanceof CsmIdentifiable);
-        return (CsmIdentifiable)out;
+        return (T)out;
     }
 
     public static void remove(CsmUID uid) {
         Key key = UIDtoKey(uid);
-        RepositoryAccessor.getRepository().remove(key);
+        if (key != null) {
+            RepositoryAccessor.getRepository().remove(key);
+        }
     }
 
-    public static void remove(Collection<CsmUID> uids) {
+    public static void remove(Collection<? extends CsmUID> uids) {
         if (uids != null) {
             for (CsmUID uid : uids) {
                 remove(uid);
@@ -64,20 +66,20 @@ public class RepositoryUtils {
         CsmUID uid = null;
         if (csmObj != null) {
             uid = csmObj.getUID();
+            assert uid != null;
             Key key = UIDtoKey(uid);
-            Persistent obj = (Persistent)csmObj;
-            assert key != null;
-            assert obj != null;
-            RepositoryAccessor.getRepository().put(key, obj);
+            if (key != null) {
+                RepositoryAccessor.getRepository().put(key, (Persistent)csmObj);
+            }
         }
         return uid;
     }
     
     ////////////////////////////////////////////////////////////////////////////
     // 
-    public static Key UIDtoKey(CsmUID uid) {
-        if (uid != null) {
-            return ((KeyBasedUID)uid).getKey();
+    private static Key UIDtoKey(CsmUID uid) {
+        if (uid instanceof KeyHolder) {
+            return ((KeyHolder)uid).getKey();
         } else {
             return null;
         }

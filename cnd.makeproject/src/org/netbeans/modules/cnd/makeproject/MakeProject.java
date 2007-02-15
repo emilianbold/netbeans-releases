@@ -23,6 +23,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.Icon;
@@ -41,6 +42,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -61,6 +63,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
+import org.openidex.search.SearchInfo;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -152,6 +155,7 @@ final class MakeProject implements Project, AntProjectListener {
             new NativeProjectProvider(this, projectDescriptorProvider),
 	    new RecommendedTemplatesImpl(),
             new MakeProjectOperations(this),
+            new FolderSearchInfo(projectDescriptorProvider)
         });
     }
 
@@ -463,4 +467,21 @@ final class MakeProject implements Project, AntProjectListener {
         }
     }
     
+    class FolderSearchInfo implements SearchInfo {
+        private ConfigurationDescriptorProvider projectDescriptorProvider;
+        
+        FolderSearchInfo(ConfigurationDescriptorProvider projectDescriptorProvider) {
+            this.projectDescriptorProvider = projectDescriptorProvider;
+        }
+        
+        public boolean canSearch() {
+            return true;
+        }
+        
+        public Iterator objectsToSearch() {
+            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor)projectDescriptorProvider.getConfigurationDescriptor();
+            Folder rootFolder = projectDescriptor.getLogicalFolders();
+            return rootFolder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
+        }
+    }
 }

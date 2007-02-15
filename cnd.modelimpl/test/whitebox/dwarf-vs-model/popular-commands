@@ -1,0 +1,111 @@
+clear; time ant -f build_cli.xml run  -Dargs="-c ${TEST_CODE}/_initdata/clucene/clucene-0.9.10.gcc  -t /tmp/clucene.1"  
+clear; time ant -f build_cli.xml run  -Dargs="-c ${TEST_CODE}/_initdata/clucene/1.gcc  -t /tmp/1" -Djvmargs="-Dtrace.counter=true"
+clear; time ant -f build_cli.xml run  -Dargs="-c ${TEST_CODE}/_initdata/boost/all.gcc  -t res/boost.1" -Djvmargs="-Dtrace.counter=true -Xmx1536M"
+RES=res/ddd; clear; time ant -f build_cli.xml run -Dargs="-c ${TEST_CODE}/_initdata/ddd/ddd-3.3.11.gcc -t ${RES}" -Djvmargs="-Dtrace.comparison=true -Dcompile.all.first=true" 2>&1 | tee ${RES}/_all_.log
+RES=res/mysql; clear; time ant -f build_cli.xml run -Dargs="-c ${TEST_CODE}/_initdata/mysql/mysql-5.0.18.gcc -t ${RES}" -Djvmargs="-Dtrace.comparison=true -Dcompile.all.first=true" 2>&1 | tee ${RES}/_all_.log
+
+-Djvmargs="-Dtrace.counter=true"
+-Djvmargs="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,address=5858,suspend=n"
+-Djvmargs="-Dtrace.comparison=true"
+
+clear; time ant -f build_cli.xml run  -Dargs="-c ${TEST_CODE}/_initdata/litesql/litesql-0.3.1.gcc -t /tmp/litesql.1"  
+
+########### LAUNCH ALL ####################
+TEST_CODE=${HOME}/_testcode
+RES_ROOT=${TEST_CODE}/_res
+dirs="ddd mico mysql python clucene boost"
+for PROJECT in ${dirs}; do \
+echo "======================================== ${PROJECT} ========================================"; \
+RES="${RES_ROOT}/${PROJECT}"; \
+mkdir -p ${RES} > /dev/null; \
+time ant -f build_cli.xml run -Dargs="-c ${TEST_CODE}/_initdata/${PROJECT}/all.gcc -t ${RES}" -Djvmargs="-Xmx1536M" 2>&1 | tee ${RES}/_all.log; \
+done
+############################################
+
+
+cat exampledatabase.cpp.diff | awk '{print $4}' > _ids
+for ID in `cat exampledatabase.cpp.diff | awk '{print $4}'`; do EG=`egrep "^${ID}" exampledatabase.cpp.model-list`; echo "${ID} => ${EG}"; done
+for ID in `cat exampledatabase.cpp.diff | awk '{print $4}'`; do EG=`egrep "^${ID}" exampledatabase.cpp.model-list`; echo "${ID} => ${EG}"; done | wc -l 
+for ID in `cat exampledatabase.cpp.diff | awk '{print $4}'`; do EG=`egrep "^${ID}" exampledatabase.cpp.model-list`; echo "${ID} => ${EG}"; done | grep "unresolved"| wc -l 
+
+cat *.diff | egrep "(DIFFER)|(DWARF)" | sort > _all_diffs_.txt 
+
+cat *.diff | grep "types differ" | grep -v "unresolved" | awk -F\| '{ v=sprintf(" const%s", $3); if( v = $5 ) print $0   }' | wc -l
+cat *.diff | grep "types differ" | grep -v "unresolved" | awk -F\| '{ v=sprintf(" const%s", $3); if( v != $5 ) print $0   }' | wc -l  
+
+for F in `ls *.diff`; do \
+C=`cat $F | grep "types differ" | grep -v "unresolved" | awk -F\| '{ v=sprintf(" const%s", $3); if( v = $5 ) print $0   }' | wc -l`;\
+echo "$F $C"  \ 
+done | sort -k2
+
+cat *.diff | grep "types differ" | grep -v "unresolved" | awk -F\| '{ v=sprintf(" const%s", $3); if( v = $5 ) print $0   }' | wc -l
+
+grep -c "unresolved" *.model-list | grep -v ":0" | sort -t: -k2
+grep -c "unresolved" *.diff | grep -v ":0" | sort -t: -k2
+
+for F in `ls *.diff | awk -F\. '{print $1 "."  $2}'`; do ls $F.diff; done
+
+for F in `ls *.diff | awk -F\. '{print $1 "."  $2}'`; do cnt_diff=`grep "unresolved" $F.diff | wc -l`; cnt_mod=`grep "unresolved" $F.model-list | wc -l`;  echo $F "diff:" $cnt_diff "mod:" $cnt_mod " delta:" `expr $cnt_mod - $cnt_diff` ; done | sort -k7  
+
+for F in `cat /tmp/_p1 | grep "parsing" | awk '{print $3}'`; do D=`dirname $F`; FN=`basename $F`; D2=`(cd $D; pwd)`; echo ${D2}/${FN}; done > /tmp/includes.1
+for F in `cat /tmp/_p2 | grep "parsing" | awk '{print $3}'`; do D=`dirname $F`; FN=`basename $F`; D2=`(cd $D; pwd)`; echo ${D2}/${FN}; done > /tmp/includes.2
+
+for F in `cat /tmp/_p1 | grep "parsing" | awk '{print $3}'`; do D=`dirname $F`; FN=`basename $F`; D2=`(cd $D; pwd)`; echo ${D2}/${FN}; done > /tmp/includes.1
+for F in `cat /tmp/_p2 | grep "parsing" | awk '{print $3}'`; do D=`dirname $F`; FN=`basename $F`; D2=`(cd $D; pwd)`; echo ${D2}/${FN}; done > /tmp/includes.2
+
+dirs="ddd mico mysql-2 python"
+dirs="clucene ddd mico python mysql boost"
+dirs="ddd mico mysql python clucene boost"
+
+#count files
+for D in ${dirs}; do cnt=`ls $D/*.diff | wc -l`; echo $D ${cnt}; done;
+
+#just a template
+for D in ${dirs}; do (cd $D; echo "processing $D"; ... ); done
+
+#merge and sort all diffs
+for D in ${dirs}; do (cd $D; echo "processing $D"; cat *.diff | egrep "(DIFFER)|(DWARF)" | sort > _all_diffs_.txt); done
+
+#create totals
+for D in ${dirs}; do (cd $D; echo "processing $D"; for F in `ls *.diff`; do tail -1 $F; done > _all_results_.txt ); done
+
+#total counters
+for D in ${dirs}; do (cd $D; echo "processing $D"; awk '{ matched+=$4; total+=$6; delta+=$8; err+=$10} END {print matched, "of", total, "delta", delta, "parser errors", err}' _all_results_.txt ); done
+
+#unresolved counters
+for D in ${dirs}; do (cd $D; diffs=`grep "unresolved" *.diff | wc -l`; lists=`grep "unresolved" *.model-list | wc -l`; echo $D ${diffs} ${lists}; ); done
+
+#types differ
+for D in ${dirs}; do (cd $D; diff=`grep "DIFFER|" *.diff | wc -l`; echo $D "Differ:" ${diff}; ); done
+
+#in dwarf only 
+for D in ${dirs}; do (cd $D; cnt=`grep "In DWARF only" *.diff | wc -l`; weight=`grep "In DWARF only" *.diff | awk '{cnt+=$NF} END {print cnt}'`; echo $D ${cnt} ${weight} ) done
+
+#the same by file
+for F in `ls *.diff`; do C=`grep "In DWARF only" $F  | wc -l`; printf "%05d %s\n" $C $F; done | sort
+
+#in dwarf only - operators
+for D in ${dirs}; do (cd $D; cnt=`grep "In DWARF only" *.diff | grep "operator" | wc -l`; weight=`grep "In DWARF only" *.diff | grep "operator" | awk '{cnt+=$NF} END {print cnt}'`; echo $D ${cnt} ${weight} ) done
+
+#the same by file
+for F in `ls *.diff`; do C=`grep "In DWARF only" $F  | grep "operator" | wc -l`; printf "%05d %s\n" $C $F; done | sort
+
+#L const differs (const char*)
+for D in ${dirs}; do (cd $D;  \
+cnt1=`cat *.diff | grep "types differ" | grep -v "unresolved" | awk -F\| '{ v=sprintf(" const%s", $3); if( v == $5 ) print $0   }' | wc -l`; \
+echo $D ${cnt1}) ;\
+done
+
+#R const differs (char* const)
+for D in ${dirs}; do (cd $D;  cnt1=`cat *.diff | grep "types differ" | grep -v "unresolved" | awk -F\| '{ v=sprintf("%sconst ", $3); if( v == $5 ) print $0   }' | wc -l`; echo $D ${cnt1}) ;done
+
+#the same by file
+for F in `ls *.diff`; do C=`cat $F | grep "types differ" | grep -v "unresolved" | awk -F\| '{ v=sprintf(" const%s", $3); if( v = $5 ) print $0 }' | wc -l`; printf "%05d %s\n" $C $F; done | sort
+
+#the rest
+for D in ${dirs}; do (cd $D;  \
+cat *.diff | grep -v "unresolved" | \
+grep -v "operator" | \
+grep -v "const" > \
+_rest_diff.txt \
+) done

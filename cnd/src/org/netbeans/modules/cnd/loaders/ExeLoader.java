@@ -21,12 +21,10 @@ package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
 
-import org.openide.actions.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.MIMENames;
@@ -40,9 +38,6 @@ public class ExeLoader extends UniFileLoader {
     /** Serial version number */
     static final long serialVersionUID = -602486606840357846L;
 
-    /** store the popup menu actions here */
-    protected static SystemAction[] standardActions;
-
     /** Single depth cache of last MIME type */
     private static String lastMime;
     
@@ -50,207 +45,28 @@ public class ExeLoader extends UniFileLoader {
     private static FileObject lastFo;
 
     private static final String KNOWN_EXEFILE_TYPE =
-	    "org.netbeans.modules.cnd.ExeLoader.KNOWN_EXEFILE_TYPE";	// NOI18N
-
-    private static ExeLoader DEFAULT = null;
+	    "org.netbeans.modules.cnd.ExeLoader.KNOWN_EXEFILE_TYPE"; // NOI18N
 
     public ExeLoader() {
-	super("org.netbeans.modules.cnd.loaders.ExeObject");            // NOI18N
-	DEFAULT = this;
+	super(ExeObject.class.getName());
     }
 
     public ExeLoader(Class recognizedClass) {
 	super(recognizedClass);
-	DEFAULT = this;
     }
 
     public ExeLoader(String representationClassName) {
 	super(representationClassName);
-	DEFAULT = this;
-    }
-
-    /** Keeps track of number of added actions. */
-    private static int additionalActions = 0;
-
-    // This method only inserts after the execute action
-    /*
-    public static synchronized void addAction(SystemAction a) {
-	if (a != null) {
-            SystemAction execAction = SystemAction.get(RunDialogAction.class);
-	    SystemAction[] currentActions = DEFAULT.getActions();
-	    int numActions = currentActions.length + 1;
-	    if (additionalActions == 0)
-		numActions++; // allow for adding a separator
-	    SystemAction[] newActions = new SystemAction[numActions];
-	    Boolean insertNewAction = Boolean.TRUE;
-	    int j = 0;
-	    
-	    for (int i = 0; i < currentActions.length; i++) {
-		newActions[j] = currentActions[i]; // save current action
-		if (currentActions[i] != null) {
-		    if (currentActions[i].equals(execAction) && 
-			insertNewAction == Boolean.TRUE) {
-			newActions[++j] = currentActions[++i]; // save null sep
-			newActions[++j] = a;                // insert new action
-			if (additionalActions == 0) { 
-			    // only add an ending separator once,
-			    // after the first action is added!
-			    newActions[++j] = null;
-			}
-			additionalActions++;
-			insertNewAction = Boolean.FALSE;
-		    }
-                }
-		j++;
-	    } // end for loop
-	    // Make sure we refresh the action list
-	    DEFAULT.setActions(newActions);
-	} // end if (a != null)
-    }
-    */
-
-    // Inserts action at top of action list
-    public static synchronized void addAction(SystemAction a) {
-	if (a != null) {
-	    SystemAction[] currentActions = DEFAULT.getActions();
-	    int numActions = currentActions.length + 1;
-	    SystemAction[] newActions = new SystemAction[numActions];
-
-	    newActions[0] = a;
-	    for (int i = 0; i < currentActions.length; i++) {
-		newActions[i+1] = currentActions[i];
-	    }
-	    // Make sure we refresh the action list
-	    DEFAULT.setActions(newActions);
-	} 
-    }
-
-    // Inserts action after a sepcified action
-    public static synchronized void addAction(SystemAction a, SystemAction after) {
-	if (a != null) {
-	    SystemAction[] currentActions = DEFAULT.getActions();
-	    SystemAction[] newActions = new SystemAction[currentActions.length + 1];
-
-	    int j = 0;
-	    for (int i = 0; i < currentActions.length; i++) {
-		newActions[j++] = currentActions[i];
-		if (currentActions[i] == after) {
-		    newActions[j++] = a;                // insert new action
-		}
-	    }
-	    // Make sure we refresh the action list
-	    DEFAULT.setActions(newActions);
-	} 
-    }
-
-    // Inserts action at a sepcified index
-    public static synchronized void addAction(SystemAction a, int index) {
-	if (a != null) {
-	    SystemAction[] currentActions = DEFAULT.getActions();
-	    if (currentActions.length >= index) {
-		SystemAction[] newActions = new SystemAction[currentActions.length + 1];
-
-		int j = 0;
-		for (int i = 0; i < currentActions.length; i++) {
-		    if (i == index) {
-			newActions[j++] = a;                // insert new action
-		    }
-		    newActions[j++] = currentActions[i];
-		}
-		// Make sure we refresh the action list
-		DEFAULT.setActions(newActions);
-	    }
-	} 
-    }
-
-    public static synchronized void removeAction(SystemAction a) {
-	if (a != null) {
-	    SystemAction[] currentActions = DEFAULT.getActions();
-	    int numActions = currentActions.length - 1;
-	    if (--additionalActions == 0)
-		numActions--;             // will be removing unneeded separator
-	    SystemAction[] newActions = new SystemAction[numActions];
-	    int j = 0;
-	    
-	    for (int i = 0; i < numActions; i++) {
-		if (currentActions[j] != null) {
-                    if (currentActions[j].equals(a)) {
-			j++;                          // skip this action
-			if (additionalActions == 0) { // if no additnl actions
-			    j++;                      // don't insert null sep
-			}
-		    }
-		}
-		newActions[i] = currentActions[j];    // save the action
-		j++;
-            }
-	    // Make sure we refresh the action list
-	    DEFAULT.setActions(newActions);
-	}
-    }
-
-    public static ExeLoader getDefaultExeLoader() {
-	return DEFAULT;
     }
     
-    /**
-     *  Defer creating the SystemAction array until its actually needed.
-     */
-    protected SystemAction[] createDefaultActions() {
-	int numActionEntries = 12;
-	
-	SystemAction[] act = new SystemAction[numActionEntries];
-
-	int j = 0;
-	act[j++] = null;
-	act[j++] = SystemAction.get(FileSystemAction.class);
-	act[j++] = null;
-	act[j++] = SystemAction.get(CutAction.class);
-	act[j++] = SystemAction.get(CopyAction.class);
-	act[j++] = SystemAction.get(PasteAction.class);
-	act[j++] = null;
-	act[j++] = SystemAction.get(DeleteAction.class);
-	act[j++] = SystemAction.get(RenameAction.class);
-	act[j++] = null;
-	act[j++] = SystemAction.get(ToolsAction.class);
-	act[j++] = SystemAction.get(PropertiesAction.class);
-
-	if (numActionEntries != j &&
-	    Boolean.getBoolean("netbeans.debug.exceptions")) {  // NOI18N
-	    Thread.dumpStack();
-	}
-	return act;
+    protected String actionsContext() {
+        return "Loaders/application/x-executable+elf/Actions/"; // NOI18N
     }
-
-
-    /**
-     *  Return the SystemAction[]s array. Create it and store it if needed.
-     *
-     *  @return The SystemAction[] array
-     */
-    protected SystemAction[] defaultActions() {
-    
-	if (standardActions != null) {
-	    return standardActions;
-	} else {
-	    synchronized(getClass()) {
-		if (standardActions == null) {
-		    standardActions = createDefaultActions();
-		}
-	    }
-	}
-
-	return standardActions;
-    }
-
 
     /** set the default display name */
     protected String defaultDisplayName() {
-	return NbBundle.getMessage(MakefileDataLoader.class,
-			    "PROP_ExeLoader_Name"); // NOI18N
+	return NbBundle.getMessage(MakefileDataLoader.class, "PROP_ExeLoader_Name"); // NOI18N
     }
-  
-  
 
     protected FileObject findPrimaryFile(FileObject fo) {
 	String mime;
@@ -264,22 +80,10 @@ public class ExeLoader extends UniFileLoader {
 	    mime = o.toString();
 	} else {
 	    mime = fo.getMIMEType();
-	    if (mime.equals("application/x-exe")) { // NOI18N
-		mime = MIMENames.EXE_MIME_TYPE;
-	    } else if (mime.equals("application/x-exe+dll")) { // NOI18N
-		mime = MIMENames.DLL_MIME_TYPE;
-	    } else if (mime.equals("application/x-executable+elf")) { // NOI18N
-		mime = MIMENames.ELF_EXE_MIME_TYPE;
-	    } else if (mime.equals("application/x-core+elf")) { // NOI18N
-		mime = MIMENames.ELF_CORE_MIME_TYPE;
-	    } else if (mime.equals("application/x-shobj+elf")) { // NOI18N
-		mime = MIMENames.ELF_SHOBJ_MIME_TYPE;
-	    } else if (mime.equals("application/x-object+elf")) { // NOI18N
-		mime = MIMENames.ELF_OBJECT_MIME_TYPE;
-	    } else if ("application/x-elf".equals(mime)) { // NOI18N
+	    if (MIMENames.ELF_GENERIC_MIME_TYPE.equals(mime)) {
 		// Fallback matching. We shouldn't see this anymore.
 		String name = fo.getNameExt();
-		if (name.startsWith("core") || name.endsWith(".core")) { // NOI18N
+		if (name.equals("core") || name.endsWith(".core")) { // NOI18N
 		    mime = MIMENames.ELF_CORE_MIME_TYPE;
 		} else if (name.endsWith(".o")) { // NOI18N
 		    mime = MIMENames.ELF_OBJECT_MIME_TYPE;

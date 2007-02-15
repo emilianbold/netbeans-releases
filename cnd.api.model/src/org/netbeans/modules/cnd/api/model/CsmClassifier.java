@@ -25,7 +25,7 @@ import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
  * Common ancestor for both fundamental (built-in) and compound types
  * @author Vladimir Kvashin
  */
-public interface CsmClassifier extends CsmDeclaration {
+public interface CsmClassifier<T> extends CsmDeclaration<T> {
 
 //    class Kind extends TypeSafeEnum {
 //

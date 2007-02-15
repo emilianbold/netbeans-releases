@@ -28,7 +28,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
  *  namespace CWLN = Company_with_very_long_name;
  * @author Vladimir Kvasihn
  */
-public interface CsmNamespaceAlias extends CsmOffsetableDeclaration {
+public interface CsmNamespaceAlias extends CsmOffsetableDeclaration<CsmNamespaceAlias> {
 
     // TODO: this is a candidate to derive from CsmReference
 

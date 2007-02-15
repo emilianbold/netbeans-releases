@@ -20,8 +20,12 @@
 package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.awt.Component;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -32,7 +36,7 @@ import org.openide.util.NbBundle;
  */
 public class SelectConfigurationWizard implements WizardDescriptor.Panel, ChangeListener {
     
-    private WizardDescriptor wizardDescriptor;
+    private DiscoveryDescriptor wizardDescriptor;
     private SelectConfigurationPanel component;
     private String name;
     
@@ -49,10 +53,6 @@ public class SelectConfigurationWizard implements WizardDescriptor.Panel, Change
         return component;
     }
 
-    public WizardDescriptor getWizardDescriptor() {
-	return wizardDescriptor;
-    } 
-    
     public HelpCtx getHelp() {
         // Show no Help button for this panel:
         return HelpCtx.DEFAULT_HELP;
@@ -70,9 +70,6 @@ public class SelectConfigurationWizard implements WizardDescriptor.Panel, Change
         // and uncomment the complicated stuff below.
     }
     
-    public final void addChangeListener(ChangeListener l) {}
-    public final void removeChangeListener(ChangeListener l) {}
-    /*
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
@@ -94,7 +91,6 @@ public class SelectConfigurationWizard implements WizardDescriptor.Panel, Change
             it.next().stateChanged(ev);
         }
     }
-     */
 
     public void stateChanged(ChangeEvent e) {
     }
@@ -104,13 +100,12 @@ public class SelectConfigurationWizard implements WizardDescriptor.Panel, Change
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor)settings;        
+        wizardDescriptor = DiscoveryWizardDescriptor.adaptee(settings);
         component.read(wizardDescriptor);
     }
     
     public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor)settings;
-        component.store(d);
+        component.store(DiscoveryWizardDescriptor.adaptee(settings));
     }
 
 }

@@ -20,6 +20,7 @@
 package dwarfvsmodel;
 
 import java.io.*;
+import java.util.LinkedList;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
@@ -484,6 +485,15 @@ public class ModelComparator {
     
     /** Compares two types. Does NOT print to diff, does NOT affect counters  */ 
     private boolean areTypesEqual(CsmType csmType, String dwarfType) {
+
+	int leftAngle = dwarfType.indexOf('<');
+	if( leftAngle >= 0 ) {
+	    int rightAngle = dwarfType.lastIndexOf('>');
+	    if( rightAngle > leftAngle ) {
+		dwarfType = dwarfType.substring(0, leftAngle) + dwarfType.substring(rightAngle+1);
+	    }
+	}
+	
 	if( "void".equals(dwarfType) ) { // NOI18N
 	    return csmType == null || ComparisonUtils.isEmpty(csmType.getText()) || "void".equals(csmType.getText()); // NOI18N
 	}
@@ -538,16 +548,21 @@ public class ModelComparator {
 	compareNodeLists(modelNode.getSubnodes(), dwarfNode.getSubnodes());
     }
     
-    private void compareDeclarationLists(Iterable<CsmDeclaration> modelDeclarations, Iterable<DwarfEntry> dwarfEntries) {
+    private void compareDeclarationLists(Iterable<CsmDeclaration> originalModelDeclarations, Iterable<DwarfEntry> dwarfEntries) {
 	
+	List<CsmDeclaration>  modelDeclarations = new LinkedList<CsmDeclaration>();
+	DMUtils.addAll(modelDeclarations, originalModelDeclarations);
+		
 	tracer.indent();
 	
 	//if( DMFlags.TRACE_COMPARISON ) tracer.print("DLC: dwarf --> model"); // NOI18N
 	for( DwarfEntry dwarfEntry : dwarfEntries ) {
 	    boolean found = false;
-	    for( CsmDeclaration modelDecl : modelDeclarations ) {
+	    for (Iterator it = modelDeclarations.iterator(); it.hasNext();) {
+		CsmDeclaration modelDecl = (CsmDeclaration) it.next();
 		if( areDeclarationNamesEqual(modelDecl, dwarfEntry) ) {
 		    found = true;
+		    it.remove();
 		    compareDeclarations(modelDecl, dwarfEntry);
 		    break;
 		}

@@ -60,6 +60,4 @@ public interface CsmType extends CsmObject, CsmOffsetable {
     // TODO: how to get from CsmType (int[][]) CsmType (int[]) ?
     
     // TODO: how to get from CsmType (int*) CsmType (int**) ?
-
-    String getText();
 }

@@ -20,8 +20,6 @@
 package org.netbeans.modules.cnd.api.utils;
 
 import java.util.Vector;
-import org.netbeans.modules.cnd.loaders.CCFSrcLoader;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.openide.util.NbBundle;
 
 public class AllFileFilter extends SourceFileFilter {

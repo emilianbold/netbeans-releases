@@ -89,7 +89,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     
     public State getState() {
         //Create new snapshot instance in the tree
-        active = makeSnapshot(active);
+        changeActiveSnapshotIfNeeded();
         return new FileStateImpl(active.parent, sysMacroMap);
     }
     

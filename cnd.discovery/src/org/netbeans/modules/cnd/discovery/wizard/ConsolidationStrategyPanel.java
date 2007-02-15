@@ -9,6 +9,7 @@ package org.netbeans.modules.cnd.discovery.wizard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
+import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.openide.WizardDescriptor;
 
 /**
@@ -47,15 +48,16 @@ public class ConsolidationStrategyPanel extends JPanel {
         });
     }
     
-    void read(WizardDescriptor wizardDescriptor) {
+    void read(DiscoveryDescriptor wizardDescriptor) {
     }
     
-    void store(WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty("consolidationLevel", level); // NOI18N
+    void store(DiscoveryDescriptor wizardDescriptor) {
+        wizardDescriptor.setLevel(level);
     }
     
-    boolean valid(WizardDescriptor settings) {
-        return true;
+    boolean valid(DiscoveryDescriptor settings) {
+        // TOD: remove when folder can be configured
+        return !FOLDER_LEVEL.equals(level);
     }
 
     private void update(String level) {

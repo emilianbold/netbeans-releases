@@ -45,9 +45,12 @@ public class CVUtil {
             CsmType type = par.getType();
             if( type != null ) {
                 sb.append(type.getText());
-                sb.append(' ');
+                //sb.append(' ');
+            } else if (par.isVarArgs()){
+                sb.append("..."); // NOI18N
             }
-            sb.append(par.getName());
+            // Signature should't contain parameter name
+            //sb.append(par.getName());
         }
         
         sb.append(')');

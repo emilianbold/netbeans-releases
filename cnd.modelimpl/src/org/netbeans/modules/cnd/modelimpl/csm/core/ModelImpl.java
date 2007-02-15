@@ -90,7 +90,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     
     private ProjectBase obj2Project(Object obj) {
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID prjUID = platf2csm.get(obj);
+            CsmUID<CsmProject> prjUID = platf2csm.get(obj);
             return (ProjectBase)UIDCsmConverter.UIDtoProject(prjUID);
         } else {
             return platf2csmOLD.get(obj);
@@ -169,8 +169,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
 
     private void putProject2Map(final Object id, final ProjectBase prj) {
         if (TraceFlags.USE_REPOSITORY) {
-            // remember in repository
-            CsmUID uid = RepositoryUtils.put(prj);
+            CsmUID<CsmProject> uid = UIDCsmConverter.projectToUID(prj);
             platf2csm.put(id,  uid);
         } else {
             platf2csmOLD.put(id,  prj);
@@ -190,13 +189,11 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         boolean cleanModel = false;
         synchronized( lock ) {
             if (TraceFlags.USE_REPOSITORY) {
-                CsmUID value = platf2csm.remove(platformProjectKey);
-                if (value != null) {
-                    prj = prj == null ? (ProjectBase)UIDCsmConverter.UIDtoProject((CsmUID)value) : prj;
-                    // update repository
-                    RepositoryUtils.remove(value);
-                }
+                CsmUID<CsmProject> uid = platf2csm.remove(platformProjectKey);
                 cleanModel = (platf2csm.size() == 0);                
+                if (uid != null) {
+                    prj = prj == null ? (ProjectBase)UIDCsmConverter.UIDtoProject(uid) : prj;
+                }            
             } else {
                 ProjectBase value = platf2csmOLD.remove(platformProjectKey);
                 if (value != null) {
@@ -206,9 +203,15 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             }
         }
         if( prj != null ) {
+            CsmUID<CsmProject> uid = UIDCsmConverter.projectToUID(prj);
+            assert uid != null;
             prj.setDisposed();
             fireProjectClosed(prj);
             prj.dispose();
+            if (uid != null) {
+                // update repository
+                RepositoryUtils.remove(uid);
+            }            
         }      
         if (cleanModel) {
             // time to clean everything
@@ -218,9 +221,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     
     public Collection/*<CsmProject>*/ projects() {
         if (TraceFlags.USE_REPOSITORY) {
-            Collection<CsmUID> vals = platf2csm.values();
+            Collection<CsmUID<CsmProject>> vals = platf2csm.values();
             Collection out = new ArrayList(vals.size());
-            for (CsmUID uid : vals) {
+            for (CsmUID<CsmProject> uid : vals) {
                 ProjectBase prj = (ProjectBase)UIDCsmConverter.UIDtoProject(uid);
                 assert prj != null;
                 out.add(prj);
@@ -294,36 +297,35 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     }
     
     protected ProjectBase getLibrary(String includePath) {
-        ProjectBase project = null;
+        ProjectBase library = null;
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID uid = libraries.get(includePath);
+            CsmUID<CsmProject> uid = libraries.get(includePath);
             if( uid == null ) {
                 synchronized( this ) {
                     uid = libraries.get(includePath);
                     if( uid == null ) {
-                        project = new LibProjectImpl(this, includePath);
-                        // update repository
-                        uid = RepositoryUtils.put(project);
+                        library = new LibProjectImpl(this, includePath);
+                        uid = UIDCsmConverter.projectToUID(library);
                         libraries.put(includePath,  uid);
                     }
                 }
             }
-            if (project == null && uid != null) {
-                project = (ProjectBase) UIDCsmConverter.UIDtoProject(uid);
+            if (library == null && uid != null) {
+                library = (ProjectBase) UIDCsmConverter.UIDtoProject(uid);
             }
         } else {
-            project = (ProjectBase) librariesOLD.get(includePath);
-            if( project == null ) {
+            library = (ProjectBase) librariesOLD.get(includePath);
+            if( library == null ) {
                 synchronized( this ) {
-                    project = librariesOLD.get(includePath);
-                    if( project == null ) {
-                        project = new LibProjectImpl(this, includePath);
-                        librariesOLD.put(includePath,  project);
+                    library = librariesOLD.get(includePath);
+                    if( library == null ) {
+                        library = new LibProjectImpl(this, includePath);
+                        librariesOLD.put(includePath,  library);
                     }
                 }
             }
         }
-        return project;
+        return library;
     }
    
     public void enqueue(Runnable task, String name) {
@@ -392,8 +394,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                 projectsColl.add(libIter.next());
             }
         }
-        Collection<CsmUID> prjUIDs = null;
-        Collection<CsmUID> libUIDs = null;
+        Collection<CsmUID<CsmProject>> prjUIDs = null;
+        Collection<CsmUID<CsmProject>> libUIDs = null;
 	synchronized( lock ) {
             if (TraceFlags.USE_REPOSITORY) {
                 prjUIDs = platf2csm.values();
@@ -406,17 +408,18 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             }
 	}
         
+        for (Iterator it = projectsColl.iterator(); it.hasNext();) {
+            ProjectBase project = (ProjectBase) it.next();
+            project.dispose();
+            fireProjectClosed(project);
+        }
+        
         // update repository
         if (TraceFlags.USE_REPOSITORY) {
             RepositoryUtils.remove(libUIDs);
             RepositoryUtils.remove(prjUIDs);
         }
         
-        for (Iterator it = projectsColl.iterator(); it.hasNext();) {
-            ProjectBase project = (ProjectBase) it.next();
-            project.dispose();
-            fireProjectClosed(project);
-        }
         setState(CsmModelState.OFF);
     }
     
@@ -541,8 +544,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     private void closeLibraries() {
         if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.closeLibraries: cleaning libs");
         if (TraceFlags.USE_REPOSITORY) {
-            Set<CsmUID> libs = new HashSet<CsmUID>(libraries.values());
-            for (Iterator<CsmUID> it = libs.iterator(); it.hasNext();) {
+            Set<CsmUID<CsmProject>> libs = new HashSet<CsmUID<CsmProject>>(libraries.values());
+            for (Iterator<CsmUID<CsmProject>> it = libs.iterator(); it.hasNext();) {
                 ProjectBase lib = (ProjectBase) UIDCsmConverter.UIDtoProject(it.next());
                 ParserQueue.instance().removeAll(lib);
                 fireProjectClosed(lib);
@@ -612,11 +615,11 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     /** maps platform project to project */
     // only one of platf2csmOLD/platf2csm must be used (based on USE_REPOSITORY)
     private Map<Object, ProjectBase> platf2csmOLD = new HashMap<Object, ProjectBase>();
-    private Map<Object, CsmUID> platf2csm = new HashMap<Object, CsmUID>();
+    private Map<Object, CsmUID<CsmProject>> platf2csm = new HashMap<Object, CsmUID<CsmProject>>();
 
     // only one of platf2csmOLD/platf2csm must be used (based on USE_REPOSITORY)
     private Map<String, ProjectBase> librariesOLD = new HashMap<String, ProjectBase>();
-    private Map<String, CsmUID> libraries = new HashMap<String, CsmUID>();
+    private Map<String, CsmUID<CsmProject>> libraries = new HashMap<String, CsmUID<CsmProject>>();
     
     private WeakList<CsmModelListener> modelListeners = new WeakList<CsmModelListener>();
     private WeakList<CsmModelStateListener> modelStateListeners = new WeakList<CsmModelStateListener>();

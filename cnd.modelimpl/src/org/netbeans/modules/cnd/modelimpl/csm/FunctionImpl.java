@@ -26,21 +26,27 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import antlr.collections.AST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-
-import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.uid.CsmObjectAccessor;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 /**
  *
  * @author Dmitriy Ivanov, Vladimir Kvashin
  */
-public class FunctionImpl extends OffsetableDeclarationBase implements CsmFunction, Disposable, RawNamable {
+public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements CsmFunction<T>, Disposable, RawNamable {
     
     private String name;
     private final CsmType returnType;
     private final List/*<CsmParameter>*/  parameters;
     private String signature;
-    private final CsmScope scope;
+    
+    // only one of scopeOLD/scopeAccessor must be used (based on USE_REPOSITORY)
+    private /*final*/ CsmScope scopeOLD;
+    private /*final*/ CsmObjectAccessor scopeAccessor;
+
     private final String[] rawName;
     
     /** see comments to isConst() */
@@ -54,7 +60,7 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
     
     public FunctionImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file);
-        this.scope = scope;
+        _setScope(scope);
         name = initName(ast);
         rawName = AstUtil.getRawNameInChildren(ast);
         _const = initConst(ast);
@@ -90,31 +96,35 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
     }*/
     
     private static String extractName(AST token){
-        int type = token.getType();
-        if( type == CPPTokenTypes.ID ) {
-            return token.getText();
-        } else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
-            AST last = AstUtil.getLastChild(token);
-            if( last != null) {
-                if( last.getType() == CPPTokenTypes.ID ) {
-                    return last.getText();
-                } else {
-                    AST first = token.getFirstChild();
-                    if( first.getType() == CPPTokenTypes.LITERAL_OPERATOR ) {
-                        StringBuffer sb = new StringBuffer(first.getText());
-                        sb.append(' ');
-                        AST next = first.getNextSibling();
-                        if( next != null ) {
-                            sb.append(next.getText());
-                        }
-                        return sb.toString();
-                    } else if (first.getType() == CPPTokenTypes.ID){
-                        return first.getText();
-                    }
-                }
-            }
-        }
-        return "";
+	int type = token.getType();
+	if( type == CPPTokenTypes.ID ) {
+	    return token.getText();
+	} else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+	    AST last = AstUtil.getLastChild(token);
+	    if( last != null) {
+		if( last.getType() == CPPTokenTypes.ID ) {
+		    return last.getText();
+		} else {
+//		    if( first.getType() == CPPTokenTypes.LITERAL_OPERATOR ) {
+		    AST operator = AstUtil.findChildOfType(token, CPPTokenTypes.LITERAL_OPERATOR);
+		    if( operator != null ) {
+			StringBuffer sb = new StringBuffer(operator.getText());
+			sb.append(' ');
+			AST next = operator.getNextSibling();
+			if( next != null ) {
+			    sb.append(next.getText());
+			}
+			return sb.toString();
+		    } else {
+			AST first = token.getFirstChild();
+			if (first.getType() == CPPTokenTypes.ID) {
+			    return first.getText();
+			}
+		    }
+		}
+	    }
+	}
+	return "";
     }
     
     private static String findFunctionName(AST ast) {
@@ -136,6 +146,7 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
         CsmProject project = getContainingFile().getProject();
         if( project instanceof ProjectBase ) {
             ((ProjectBase) project).unregisterDeclaration(this);
+            this.cleanUID();
         }
     }
 
@@ -154,7 +165,7 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) ) {
 	    String scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
 	    if( scopeQName != null && scopeQName.length() > 0 ) {
-		return scopeQName + "::" + getName(); // NOI18N
+		return scopeQName + "::" + getQualifiedNamePostfix(); // NOI18N
 	    }
 	    else {
 		return getName();
@@ -295,7 +306,7 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
     }
     
     public CsmScope getScope() {
-        return scope;
+        return _getScope();
     }
 
     public String getSignature() {
@@ -319,6 +330,8 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
                 if( iter.hasNext() ) {
                     sb.append(',');
                 }
+            } else if (param.isVarArgs()) {
+                sb.append("..."); // NOI18N
             }
         }
         sb.append(')');
@@ -329,6 +342,7 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
     }
     
     public void dispose() {
+        CsmScope scope = _getScope();
         if( scope instanceof MutableDeclarationsContainer ) {
             ((MutableDeclarationsContainer) scope).removeDeclaration(this);
         }
@@ -359,4 +373,24 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
     protected boolean isConst() {
         return _const > 0;
     }
+
+    private CsmScope _getScope() {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmScope scope = UIDCsmConverter.accessorToScope(this.scopeAccessor);
+            assert (scope != null || scopeAccessor == null);
+            return scope;
+        } else {
+            return scopeOLD;
+        }
+    }
+    
+    private void _setScope(CsmScope scope) {
+        if (TraceFlags.USE_REPOSITORY) {
+            this.scopeAccessor = UIDCsmConverter.scopeToAccessor(scope);
+            assert (scopeAccessor != null || scope == null);
+        } else {
+            this.scopeOLD = scope;
+        }
+    }
+    
 }

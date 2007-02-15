@@ -189,39 +189,77 @@ public class CsmImageLoader implements CsmImageName {
             boolean isMethod = (modifiers & CsmUtilities.MEMBER) != 0;
             boolean isGlobal = !(isMethod);
             boolean isConstructor = (modifiers & CsmUtilities.CONSTRUCTOR) != 0;
+            boolean isDestructor = (modifiers & CsmUtilities.DESTRUCTOR) != 0;
+            boolean isOperator =  (modifiers & CsmUtilities.OPERATOR) != 0;
             boolean isStatic = (modifiers & CsmUtilities.STATIC) != 0;
             int level = CsmUtilities.getLevel(modifiers);
             if (isGlobal) {
-                iconPath = FUNCTION_GLOBAL;
+                if (isOperator) {
+                    iconPath = OPERATOR_GLOBAL;
+                } else {
+                    iconPath = FUNCTION_GLOBAL;
+                }
                 if (isStatic) {
-                    iconPath = FUNCTION_ST_GLOBAL;
+                    if (isOperator) {
+                        iconPath = OPERATOR_ST_GLOBAL;
+                    } else {
+                        iconPath = FUNCTION_ST_GLOBAL;
+                    }
                 }
             }
             if (isMethod) {
-                iconPath = METHOD_PUBLIC;
+                if (isOperator) {
+                    iconPath = OPERATOR_PUBLIC;
+                } else {
+                    iconPath = METHOD_PUBLIC;
+                }
                 if (isStatic){
                     //static method
                     switch (level) {
                         case CsmUtilities.PRIVATE_LEVEL:
-                            iconPath = METHOD_ST_PRIVATE;
+                            if (isOperator) {
+                                iconPath = OPERATOR_ST_PRIVATE;
+                            } else {
+                                iconPath = METHOD_ST_PRIVATE;
+                            }
                             break;
                         case CsmUtilities.PROTECTED_LEVEL:
-                            iconPath = METHOD_ST_PROTECTED;
+                            if (isOperator) {
+                                iconPath = OPERATOR_ST_PROTECTED;
+                            } else {
+                                iconPath = METHOD_ST_PROTECTED;
+                            }
                             break;
                         case CsmUtilities.PUBLIC_LEVEL:
-                            iconPath = METHOD_ST_PUBLIC;
+                            if (isOperator) {
+                                iconPath = OPERATOR_ST_PUBLIC;
+                            } else {
+                                iconPath = METHOD_ST_PUBLIC;
+                            }
                             break;
                     }
                 }else{
                     switch (level) {
                         case CsmUtilities.PRIVATE_LEVEL:
-                            iconPath = METHOD_PRIVATE;
+                            if (isOperator) {
+                                iconPath = OPERATOR_PRIVATE;
+                            } else {
+                                iconPath = METHOD_PRIVATE;
+                            }
                             break;
                         case CsmUtilities.PROTECTED_LEVEL:
-                            iconPath = METHOD_PROTECTED;
+                            if (isOperator) {
+                                iconPath = OPERATOR_PROTECTED;
+                            } else {
+                                iconPath = METHOD_PROTECTED;
+                            }
                             break;
                         case CsmUtilities.PUBLIC_LEVEL:
-                            iconPath = METHOD_PUBLIC;
+                            if (isOperator) {
+                                iconPath = OPERATOR_PUBLIC;
+                            } else {
+                                iconPath = METHOD_PUBLIC;
+                            }
                             break;
                     }
                 }
@@ -240,9 +278,21 @@ public class CsmImageLoader implements CsmImageName {
                         break;
                 }
             }
+            if (isDestructor) {
+                iconPath = DESTRUCTOR_PUBLIC;
+                switch (level) {
+                    case CsmUtilities.PRIVATE_LEVEL:
+                        iconPath = DESTRUCTOR_PRIVATE;
+                        break;
+                    case CsmUtilities.PROTECTED_LEVEL:
+                        iconPath = DESTRUCTOR_PROTECTED;
+                        break;
+                    case CsmUtilities.PUBLIC_LEVEL:
+                        iconPath = DESTRUCTOR_PUBLIC;
+                        break;
+                }
+            }
          }
         return iconPath;
     }
-
-
 }

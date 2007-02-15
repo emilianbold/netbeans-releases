@@ -24,7 +24,7 @@ import java.util.List;
  * Represents a source file
  * @author Vladimir Kvashin
  */
-public interface CsmFile extends CsmNamedElement, CsmScope, CsmValidable, CsmIdentifiable {
+public interface CsmFile extends CsmNamedElement, CsmScope, CsmValidable, CsmIdentifiable<CsmFile> {
 
     /** Gets this file absolute path */
     String getAbsolutePath();

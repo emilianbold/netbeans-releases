@@ -336,10 +336,10 @@ public class Resolver3 implements Resolver {
             }
 	    if( result == null ) {
                 CsmClass cls = getContainingClass();
-                if( cls != null ) {
-                    String fqn = cls.getQualifiedName() + "::" + nameTokens[0]; // NOI18N
-                    result = findClassifier(fqn);
-                }
+		result = resolveInClass(cls, nameTokens[0]);
+		if( result == null ) {
+		    result = resolveInBaseClasses(cls, nameTokens[0]);
+		}
             }
 	    if( result == null ) {
                 CsmNamespace ns = getContainingNamespace();
@@ -460,5 +460,29 @@ public class Resolver3 implements Resolver {
     }
     
 
+    private CsmObject resolveInBaseClasses(CsmClass cls, String name) {
+	if( cls != null ) {
+	    for( CsmInheritance inh : (List<CsmInheritance>) cls.getBaseClasses() ) {
+		CsmClass base = inh.getCsmClass();
+		CsmObject result = resolveInClass(base, name);
+		if( result != null ) {
+		    return result;
+		}
+		result = resolveInBaseClasses(base, name);
+		if( result != null ) {
+		    return result;
+		}
+	    }
+	}
+	return null;
+    }
+    
+    private CsmObject resolveInClass(CsmClass cls, String name) {
+	if( cls != null ) {
+	    String fqn = cls.getQualifiedName() + "::" + name; // NOI18N
+	    return findClassifier(fqn);
+	}
+	return null;
+    }
     
 }

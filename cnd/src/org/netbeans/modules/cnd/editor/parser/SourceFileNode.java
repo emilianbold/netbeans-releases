@@ -20,9 +20,9 @@
 package  org.netbeans.modules.cnd.editor.parser;
 
 import org.openide.loaders.DataObject;
-import org.netbeans.modules.cnd.loaders.CSrcObject;
-import org.netbeans.modules.cnd.loaders.CCSrcObject;
-import org.netbeans.modules.cnd.loaders.FortranSrcObject;
+import org.netbeans.modules.cnd.loaders.CDataObject;
+import org.netbeans.modules.cnd.loaders.CCDataObject;
+import org.netbeans.modules.cnd.loaders.FortranDataObject;
 import org.netbeans.modules.cnd.loaders.HDataObject;
 
 public class SourceFileNode extends ViewNode {
@@ -30,16 +30,16 @@ public class SourceFileNode extends ViewNode {
     public SourceFileNode(DataObject dao, String name, int lineno,
 		char kind, String scope, int scopeCluster, int cluster) {
         super(name, dao, lineno, kind, scope, scopeCluster, cluster);
-        if (dao instanceof CSrcObject) {
+        if (dao instanceof CDataObject) {
             setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/CSrcIcon.gif"); // NOI18N
         }
-        else if (dao instanceof CCSrcObject) {
+        else if (dao instanceof CCDataObject) {
             setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); // NOI18N
         }
         else if (dao instanceof HDataObject) {
             setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/HDataIcon.gif"); // NOI18N
         }
-        else if (dao instanceof FortranSrcObject) {
+        else if (dao instanceof FortranDataObject) {
             setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/FortranSrcIcon.gif"); // NOI18N
         }
         else {

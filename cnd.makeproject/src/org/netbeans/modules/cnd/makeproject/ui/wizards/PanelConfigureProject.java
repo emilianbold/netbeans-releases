@@ -128,6 +128,6 @@ public class PanelConfigureProject implements WizardDescriptor.Panel, NewMakePro
     }
 
     public boolean isFinishPanel() {
-	return false;
+	return true;
     }
 }

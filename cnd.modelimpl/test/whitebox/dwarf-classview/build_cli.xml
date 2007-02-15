@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+
+<project name="DwarfDump" default="jar" basedir=".">
+	<property name="cnd.src.dir" value="../../../.."/>
+    <property name="project.dm-utils" value="${cnd.src.dir}/modelimpl/test/whitebox/dm-utils"/>
+    <property name="project.DwarfDump" value="${cnd.src.dir}/dwarfdump"/>
+
+    <property name="module-jar-name" value="DwarfClassView.jar"/>
+    <property name="src.dir" value="./src"/>
+    <property name="build.dir" value="./build"/>
+    <property name="dist.dir" value="./dist"/>
+    <property name="classes.dir" value="./build/classes"/>
+    <property name="build.compiler.debug" value="yes"/>
+
+
+    <property name="args" value=""/>
+    <property name="test.dir" value="."/>
+    <property name="main.class" value="test.dwarfdump.classview.ClassViewDumper"/>
+
+    <target name="deps-clean">
+        <ant target="clean" inheritall="false" antfile="${project.dm-utils}/build_cli.xml"/>
+        <ant target="clean" inheritall="false" antfile="${project.DwarfDump}/build_cli.xml"/>
+    </target>
+
+    <target name="clean" depends="deps-clean">
+        <delete dir="${classes.dir}"/>
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${dist.dir}"/>
+        <jar jarfile="${dist.dir}/${module-jar-name}"
+                        basedir="${src.dir}"
+                        compress="false"
+                        manifest="manifest_cli.mf" >
+                        <fileset dir="${build.dir}/classes" />
+                        <fileset dir="${src.dir}"
+                                includes="**/META-INF/**, **/resources/**, **/Bundle.properties, **/*.gif"
+                        />
+        </jar>
+    </target>
+
+    <target name="compile">
+                <mkdir dir="${classes.dir}" />
+                <javac  
+                        source="1.5"
+                        destdir="${classes.dir}"
+                        deprecation="${build.compiler.deprecation}"
+                        debug="${build.compiler.debug}"
+                        excludes="**/SCCS/*.java" >
+                        <src>
+                                <pathelement location="${project.DwarfDump}/src"/>
+                                <pathelement location="${project.dm-utils}/src"/>
+                                <pathelement location="${src.dir}"/>
+                        </src>
+                </javac>
+    </target>
+
+    <target name="run" depends="jar">
+        <echo message="Running ${main.class} with parameters ${args}"/>
+        <java
+            classname="${main.class}"
+            fork="true"
+            dir="${test.dir}">
+            <classpath>
+                <pathelement location="${dist.dir}/${module-jar-name}"/>
+            </classpath>
+            <arg line="${args}"/>
+        </java>
+    </target>
+
+
+</project>
+

@@ -504,57 +504,25 @@ final public class TargetData {
 
     /** Check if a file is a C++ file */
     public boolean isCppFile(String file) {
-	String[] cppExtensions = CCDataLoader.getInstance().suffixes();
-
-	for (int i = 0; i < cppExtensions.length; i++) {
-	    if (file.endsWith(cppExtensions[i])) {
-		return true;
-	    }
-	}
-
-	return false;
+        return CCDataLoader.getInstance().getExtensions().isRegistered(file);
     }
 
 
     /** Check if a file is a C file */
     public boolean isCFile(String file) {
-	String[] cExtensions = CDataLoader.getInstance().suffixes();
-
-	for (int i = 0; i < cExtensions.length; i++) {
-	    if (file.endsWith(cExtensions[i])) {
-		return true;
-	    }
-	}
-
-	return false;
+        return CDataLoader.getInstance().getExtensions().isRegistered(file);
     }
 
 
     /** Check if a file is a C/C++ header file */
     public boolean isHdrFile(String file) {
-	String[] hdrExtensions = HDataLoader.getInstance().suffixes();
-
-	for (int i = 0; i < hdrExtensions.length; i++) {
-	    if (file.endsWith(hdrExtensions[i])) {
-		return true;
-	    }
-	}
-
-	return false;
+        return HDataLoader.getInstance().getExtensions().isRegistered(file);
     }
 
 
     /** Check if a file is a Fortran file */
     public boolean isFortranFile(String file) {
-	String[] fortranExtensions = FortranDataLoader.getInstance().suffixes();
-
-	for (int i = 0; i < fortranExtensions.length; i++) {
-	    if (file.endsWith(fortranExtensions[i])) {
-		return true;
-	    }
-	}
-
-	return false;
+        return FortranDataLoader.getInstance().getExtensions().isRegistered(file);
     }
 
 
@@ -566,15 +534,7 @@ final public class TargetData {
 
     /** Check if a file is a Assembly file */
     public boolean isAssemblyFile(String file) {
-	String[] assemExtensions = AsmDataLoader.getInstance().suffixes();
-
-	for (int i = 0; i < assemExtensions.length; i++) {
-	    if (file.endsWith(assemExtensions[i])) {
-		return true;
-	    }
-	}
-
-	return false;
+        return AsmDataLoader.getInstance().getExtensions().isRegistered(file);
     }
 
 

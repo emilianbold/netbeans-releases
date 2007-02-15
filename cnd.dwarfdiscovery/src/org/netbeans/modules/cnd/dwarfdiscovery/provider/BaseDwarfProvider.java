@@ -31,6 +31,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 
 /**
@@ -91,19 +92,37 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         try{
             Dwarf dump = new Dwarf(objFileName);
             List <CompilationUnit> units = dump.getCompilationUnits();
-            if (units != null) {
-                for (Iterator<CompilationUnit> un = units.iterator(); un.hasNext();) {
-                    CompilationUnit cu = un.next();
-                    if (cu.getRoot() != null &&
-                            /*cu.getCompilationDir() != null &&*/
-                            cu.getSourceFileName() != null &&
-                            cu.getSourceLanguage() != null)
-                        list.add(new DwarfSource(cu));
+            if (units != null && units.size() > 0) {
+                for (CompilationUnit cu : units) {
+                    if (cu.getRoot() == null || cu.getSourceFileName() == null) {
+                        System.err.println("Compilation unit has broken name in file "+objFileName);
+                        continue;
+                    }
+                    String lang = cu.getSourceLanguage();
+                    if (lang == null) {
+                        System.err.println("Compilation unit has unresolved language in file "+objFileName);
+                        continue;
+                    }
+                    if (LANG.DW_LANG_C.toString().equals(lang) ||
+                        LANG.DW_LANG_C89.toString().equals(lang) ||
+                        LANG.DW_LANG_C99.toString().equals(lang)) {
+                        list.add(new DwarfSource(cu,false));
+                    } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
+                        list.add(new DwarfSource(cu,true));
+                    } else {
+                        // Ignore other languages
+                    }
                 }
+            } else {
+                System.err.println("There are no compilation units in file "+objFileName);
             }
         } catch (WrongFileFormatException ex) {
+            System.err.println("Unsuported format of file "+objFileName);
             // no trace
         } catch (IOException ex) {
+            System.err.println("Exception in file "+objFileName);
+            ex.printStackTrace();
+        } catch (Exception ex) {
             System.err.println("Exception in file "+objFileName);
             ex.printStackTrace();
         }

@@ -1,0 +1,72 @@
+body{
+	padding:0;
+	margin:0;
+}
+
+img{
+	vertical-align:top;
+	margin-right: 3px;
+}
+
+span.active{
+	text-decoration: underline;
+	cursor:pointer;
+}
+
+span.root{
+	text-decoration: none;
+	cursor:default;
+}
+
+div.root{
+	font-size:12px;
+}
+
+div.scope{
+	font-size:12px;
+}
+
+div.item{
+	height:16px;
+	font-size:12px;
+}
+
+span.dName {
+       font-size:12px;
+       color:black;
+}
+
+span.dName_absent {
+       font-size:12px;
+       color:red;
+}
+
+span.dName_extra {
+       font-size:12px;
+       color:green;
+}
+
+span.dName_changed {
+       font-size:12px;
+       color:blue;
+}
+
+span.info {
+       font-size:18px;
+       color:black;
+}
+
+span.info_absent {
+       font-size:18px;
+       color:red;
+}
+
+span.info_extra {
+       font-size:18px;
+       color:green;
+}
+
+span.info_changed {
+       font-size:18px;
+       color:blue;
+}

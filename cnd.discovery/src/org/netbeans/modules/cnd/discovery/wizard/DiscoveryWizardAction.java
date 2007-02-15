@@ -21,31 +21,59 @@ package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.Vector;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.ArrayIterator;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.Utilities;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Alexander Simon
  */
-public final class DiscoveryWizardAction extends CallableSystemAction {
+public final class DiscoveryWizardAction extends NodeAction {
     
-    private WizardDescriptor.Panel[] panels;
+    protected void performAction(Node[] activatedNodes) {
+        Collection<Project> projects = getMakeProjects(activatedNodes);
+        if( projects == null || projects.size() == 0) {
+            return;
+        }
+        invokeWizard(projects.iterator().next());
+    }
     
-    public void performAction() {
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
+    protected boolean enable(Node[] activatedNodes) {
+        Collection<Project> projects = getMakeProjects(activatedNodes);
+        if( projects == null || projects.size() == 0) {
+            return false;
+        }
+        return true;
+    }
+    
+    private void invokeWizard(Project project) {
+        DiscoveryWizardDescriptor wizardDescriptor = new DiscoveryWizardDescriptor(getPanels());
+        wizardDescriptor.setProject(project);
+        wizardDescriptor.setRootFolder(findSourceRoot(project));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(getString("WIZARD_TITLE_TXT")); // NOI18N
@@ -56,6 +84,92 @@ public final class DiscoveryWizardAction extends CallableSystemAction {
         if (!cancelled) {
             // do something
         }
+        dialog.dispose();
+    }
+    
+    private String findSourceRoot(Project project) {
+        String base = null;
+        if (Utilities.isWindows()){
+            base = project.getProjectDirectory().getPath();
+            base = base.replace('\\', '/');
+        } else {
+            base = File.separator+project.getProjectDirectory().getPath();
+        }
+        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        if (pdp!=null){
+            MakeConfigurationDescriptor make = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+            Folder folder = make.getLogicalFolders();
+            Vector sources = folder.getFolders();
+            List<String> roots = new ArrayList<String>();
+            for (Object o : sources){
+                Folder sub = (Folder)o;
+                if (sub.isProjectFiles()) {
+                    if (MakeConfigurationDescriptor.SOURCE_FILES_FOLDER.equals(sub.getName())) {
+                        Vector v = sub.getFolders();
+                        for (Object e : v){
+                            Folder s = (Folder)e;
+                            if (s.isProjectFiles()) {
+                                roots.add(s.getName());
+                            }
+                        }
+                    } else if (MakeConfigurationDescriptor.HEADER_FILES_FOLDER.equals(sub.getName()) ||
+                               MakeConfigurationDescriptor.RESOURCE_FILES_FOLDER.equals(sub.getName())){
+                        // skip
+                    } else {
+                        roots.add(sub.getName());
+                    }
+                }
+            }
+            if (roots.size()>0){
+                String rootName = roots.get(0);
+                Item[] items = make.getProjectItems();
+                if (items.length>0){
+                    String path =items[0].getPath();
+                    StringBuffer newBase = null;
+                    if (path.startsWith("..")){
+                        newBase = new StringBuffer(base);
+                    } else {
+                        newBase = new StringBuffer();
+                    }
+                    StringTokenizer st = new StringTokenizer(path, "/");
+                    while(st.hasMoreTokens()){
+                        String segment = st.nextToken();
+                        newBase.append(File.separator);
+                        newBase.append(segment);
+                        if (rootName.equals(segment) && st.hasMoreTokens()) {
+                            try {
+                                return new File(newBase.toString()).getCanonicalPath();
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return base;
+    }
+    
+    /**
+     * Gets the collection of native projects that correspond the given nodes.
+     * @return in the case all nodes correspond to native projects -
+     * collection of native projects; otherwise null
+     */
+    private Collection<Project> getMakeProjects(Node[] nodes) {
+        Collection<Project> projects = new ArrayList<Project>();
+        for (int i = 0; i < nodes.length; i++) {
+            Object o = nodes[i].getValue("Project"); // NOI18N
+            if( ! (o instanceof  Project) ) {
+                return null;
+            }
+            Project project = (Project)o;
+            ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+            if( pdp == null ) {
+                return null;
+            }
+            projects.add(project);
+        }
+        return projects;
     }
     
     /**
@@ -63,36 +177,35 @@ public final class DiscoveryWizardAction extends CallableSystemAction {
      * various properties for them influencing wizard appearance.
      */
     private InstantiatingIterator getPanels() {
-        if (panels == null) {
-            panels = new WizardDescriptor.Panel[] {
-                new SelectObjectFilesWizard(),
-                new ConsolidationStrategyWizard(),
-                new SelectConfigurationWizard(),
-                new RemoveUnusedWizard()
-            };
-            String[] steps = new String[panels.length];
-            for (int i = 0; i < panels.length; i++) {
-                Component c = panels[i].getComponent();
-                // Default step name to component name of panel. Mainly useful
-                // for getting the name of the target chooser to appear in the
-                // list of steps.
-                steps[i] = c.getName();
-                if (c instanceof JComponent) { // assume Swing components
-                    JComponent jc = (JComponent) c;
-                    // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
-                    // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
-                    // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-                    // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-                    // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
-                }
+        WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {
+            new SelectProviderWizard(),
+            new SelectObjectFilesWizard(),
+            new ConsolidationStrategyWizard(),
+            new SelectConfigurationWizard(),
+            new RemoveUnusedWizard()
+        };
+        String[] steps = new String[panels.length];
+        for (int i = 0; i < panels.length; i++) {
+            Component c = panels[i].getComponent();
+            // Default step name to component name of panel. Mainly useful
+            // for getting the name of the target chooser to appear in the
+            // list of steps.
+            steps[i] = c.getName();
+            if (c instanceof JComponent) { // assume Swing components
+                JComponent jc = (JComponent) c;
+                // Sets step number of a component
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                // Sets steps names for a panel
+                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                // Turn on subtitle creation on each step
+                jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
+                // Show steps on the left side with the image on the background
+                jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
+                // Turn on numbering of all steps
+                jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
             }
-            
         }
+        
         return new DiscoveryWizardIterator(panels);
     }
     
@@ -116,27 +229,66 @@ public final class DiscoveryWizardAction extends CallableSystemAction {
         return NbBundle.getBundle(DiscoveryWizardAction.class).getString(key);
     }
     
-    public class DiscoveryWizardIterator extends ArrayIterator implements InstantiatingIterator {
-        private WizardDescriptor wizard;
+    
+    public static class DiscoveryWizardIterator implements InstantiatingIterator {
+        private DiscoveryWizardDescriptor wizard;
+        private Panel[] panels ;
+        private int index = 0;
         /** Creates a new instance of DiscoveryWizardIterator */
         public DiscoveryWizardIterator(Panel[] panels ) {
-            super(panels);
+            this.panels = panels;
         }
         
         public Set instantiate() throws IOException {
-            return DiscoveryProjectGenerator.makeProject(wizard);
+            DiscoveryProjectGenerator generator = new DiscoveryProjectGenerator(wizard);
+            return generator.makeProject();
         }
         
         public void initialize(WizardDescriptor wizard) {
-            this.wizard = wizard;
+            this.wizard = (DiscoveryWizardDescriptor)wizard;
         }
         
         public void uninitialize(WizardDescriptor wizard) {
-            wizard.putProperty("rootFolder", null); // NOI18N
-            wizard.putProperty("consolidationLevel", null); // NOI18N
-            wizard.putProperty("configurations", null); // NOI18N
-            wizard.putProperty("included", null); // NOI18N
+            DiscoveryWizardDescriptor wiz = (DiscoveryWizardDescriptor)wizard;
+            wiz.clean();
+            wizard = null;
             panels = null;
+        }
+
+        public WizardDescriptor.Panel current() {
+            return panels[index];
+        }
+
+        public String name() {
+            return null;
+        }
+
+        public boolean hasNext() {
+            return index < (panels.length - 1);
+        }
+
+        public boolean hasPrevious() {
+            return index > 0;
+        }
+
+        public synchronized void nextPanel() {
+            if ((index + 1) == panels.length) {
+                throw new java.util.NoSuchElementException();
+            }
+            index++;
+        }
+
+        public synchronized void previousPanel() {
+            if (index == 0) {
+                throw new java.util.NoSuchElementException();
+            }
+            index--;
+        }
+
+        public void addChangeListener(ChangeListener l) {
+        }
+
+        public void removeChangeListener(ChangeListener l) {
         }
     }
 }

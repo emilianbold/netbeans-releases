@@ -25,7 +25,7 @@ import java.util.List;
  * Represents constructor
  * @author Vladimir Kvashin
  */
-public interface CsmConstructor extends CsmMethod {
+public interface CsmConstructor extends CsmMethod<CsmConstructor> {
 
     List/*<? ConstructorInitialiser>*/ getInitializerList();
 

@@ -426,12 +426,14 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     private static class BufAndProj {
-        public BufAndProj(FileBuffer buffer, ProjectBase project) {
+        public BufAndProj(FileBuffer buffer, ProjectBase project, NativeFileItem nativeFile) {
             this.buffer = buffer;
             this.project = project;
+	    this.nativeFile = nativeFile;
         }
         public FileBuffer buffer;
         public ProjectBase project;
+	public NativeFileItem nativeFile;
     }    
     
     private class FileChangeListener implements ChangeListener {
@@ -452,8 +454,8 @@ public class ModelSupport implements PropertyChangeListener {
                         EditorCookie editor = (EditorCookie) curObj.getCookie(EditorCookie.class);
                         Document doc = editor != null ? editor.getDocument() : null;
                         final FileBufferDoc buffer = new FileBufferDoc(file, doc);
-                        buffers.put(curObj, new BufAndProj(buffer, csmProject));
-                        csmProject.onFileEditStart(buffer);
+                        buffers.put(curObj, new BufAndProj(buffer, csmProject, nativeFile));
+                        csmProject.onFileEditStart(buffer, nativeFile);
                     }
                 }
             }
@@ -511,7 +513,7 @@ public class ModelSupport implements PropertyChangeListener {
                         final BufAndProj bufNP = (BufAndProj) buffers.get(dao);
                         if( bufNP != null ) {
                             // removing old doc buffer and creating new one
-                            bufNP.project.onFileEditEnd( getFileBuffer(bufNP.buffer.getFile()) );
+                            bufNP.project.onFileEditEnd( getFileBuffer(bufNP.buffer.getFile()), bufNP.nativeFile );
                         }
                         toDelete.add(dao);
                     }

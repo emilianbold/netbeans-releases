@@ -19,10 +19,17 @@
 
 package org.netbeans.modules.cnd.modelimpl.uid;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 
 /**
@@ -34,31 +41,161 @@ public class UIDCsmConverter {
     private UIDCsmConverter() {
     }
     
-    public static CsmFile UIDtoFile(CsmUID uid) {
-        return uid == null ? null : (CsmFile)uid.getObject();
+    ////////////////////////////////////////////////////////////////////////////
+    // UID -> Object
+    
+    public static CsmFile UIDtoFile(CsmUID<CsmFile> uid) {
+        return uid == null ? null : uid.getObject();
     }
     
     public static CsmObject UIDtoCsmObject(CsmUID uid) {
         return uid == null ? null : (CsmObject)uid.getObject();
     }    
 
-    public static CsmNamespace UIDtoNamespace(CsmUID uid) {
-        return uid == null ? null : (CsmNamespace)uid.getObject();
+    public static CsmNamespace UIDtoNamespace(CsmUID<CsmNamespace> uid) {
+        return uid == null ? null : uid.getObject();
     }    
 
-    public static CsmProject UIDtoProject(CsmUID uid) {
-        return uid == null ? null : (CsmProject)uid.getObject();
+    public static CsmProject UIDtoProject(CsmUID<CsmProject> uid) {
+        return uid == null ? null : uid.getObject();
     }   
     
-    public static CsmUID FileToUID(CsmFile file) {
-        return file == null ? null : ((CsmFile)file).getUID();
+//    public static <T extends CsmClassifier> T UIDtoClassifier(CsmUID<T> uid) {
+//        return uid == null ? null : uid.getObject();
+//    }       
+
+    public static <T extends CsmDeclaration> T UIDtoDeclaration(CsmUID<T> uid) {
+        return uid == null ? null : uid.getObject();
+    } 
+    
+    
+    public static <T extends CsmDeclaration> List<T> UIDsToDeclarations(Collection<CsmUID<T>> uids) {
+        List<T> out = new ArrayList<T>(uids.size());
+        for (CsmUID<T> uid : uids) {
+            assert uid != null;
+            T decl = UIDCsmConverter.UIDtoDeclaration(uid);
+            assert decl != null;
+            out.add(decl);
+        }
+        return out;
     }
     
-    public static CsmUID NamespaceToUID(CsmNamespace ns) {
-        return ns == null ? null : ((CsmNamespace)ns).getUID();
+    ////////////////////////////////////////////////////////////////////////////
+    // Object -> UID
+    
+    public static CsmUID<CsmFile> fileToUID(CsmFile file) {
+        return file == null ? null : file.getUID();
+    }
+    
+    public static CsmUID<CsmNamespace> namespaceToUID(CsmNamespace ns) {
+        return ns == null ? null : ns.getUID();
     }    
 
-    public static CsmUID ProjectToUID(CsmProject project) {
-        return project == null ? null : ((CsmProject)project).getUID();
+    public static CsmUID<CsmProject> projectToUID(CsmProject project) {
+        return project == null ? null : project.getUID();
+    }  
+    
+//    public static <T extends CsmClassifier> CsmUID<T> classifierToUID(T classifier) {
+//        return classifier == null ? null : classifier.getUID();
+//    }
+
+    public static <T extends CsmDeclaration> CsmUID<T> declarationToUID(T decl) {
+        return decl == null ? null : decl.getUID();
+    }
+    
+    private static <T extends CsmIdentifiable> CsmUID<T> identifiableToUID(CsmIdentifiable<T> obj) {
+        return obj == null ? null : obj.getUID();
+    }
+        
+    ////////////////////////////////////////////////////////////////////////////
+    // accessor <--> Object
+
+    public static CsmObjectAccessor objectToAccessor(CsmObject obj) {
+        CsmObjectAccessor accessor = null;
+        if (obj != null) {
+            if (isCsmObjectSupportUID(obj)) {
+                accessor = new UIDAccessorImpl((CsmIdentifiable)obj);
+            } else {
+                accessor = new ObjectAccessorImpl(obj);
+            }                
+        }
+        return accessor;
+    }    
+    
+    public static CsmObject accessorToObject(CsmObjectAccessor accessor) {
+        return accessor == null ? null : accessor.getObject();
+    }
+    
+    public static CsmObjectAccessor scopeToAccessor(CsmScope scope) {
+        return objectToAccessor(scope);
+    }
+    
+    public static CsmScope accessorToScope(CsmObjectAccessor accessor) {
+        try {
+            return accessor == null ? null : (CsmScope) accessor.getObject();
+        } catch (ClassCastException ex) {
+            return null;
+        }
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl details
+    
+    private static final class UIDAccessorImpl implements CsmObjectAccessor {
+        private CsmUID objUID;
+        public UIDAccessorImpl(CsmIdentifiable obj) {
+            _setObject(obj);
+        }
+        
+        public void _setObject(CsmIdentifiable obj) {
+            objUID = UIDCsmConverter.identifiableToUID(obj);
+        }
+        
+        public CsmObject _getObject() {
+            return UIDCsmConverter.UIDtoCsmObject(objUID);
+        }
+        
+        public CsmObject getObject() {
+            return _getObject();
+        }
+        
+        public String toString() {
+            String retValue;
+            
+            retValue = "UID-based Accessor for " + objUID; // NOI18N
+            return retValue;
+        }        
+    }
+    
+    private static final class ObjectAccessorImpl implements CsmObjectAccessor {
+        private final CsmObject obj;
+        public ObjectAccessorImpl(CsmObject obj) {
+            this.obj = obj;
+        }
+        
+        public CsmObject getObject() {
+            return obj;
+        }
+
+        public String toString() {
+            String retValue;
+            
+            retValue = "Object-based Accessor for " + obj; // NOI18N
+            return retValue;
+        }
+        
+        
+    }
+    
+    private static boolean isCsmObjectSupportUID(CsmObject obj) {
+        if (obj != null && obj instanceof CsmIdentifiable) {
+            // now we support only namespace and file
+            // + project
+            // + classifiers
+            if (obj instanceof CsmNamespace || obj instanceof CsmFile || obj instanceof CsmProject || obj instanceof CsmClassifier) {
+                return true;
+            }
+        }
+        return false;
     }    
 }

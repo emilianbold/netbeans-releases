@@ -124,7 +124,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
 
     /** Helper method. Adds save cookie to the data object. */
     private void addSaveCookie() {
-        CCFBaseObject obj = (CCFBaseObject) getDataObject();
+        CndDataObject obj = (CndDataObject) getDataObject();
 
         // Adds save cookie to the data object.
         if(obj.getCookie(SaveCookie.class) == null) {
@@ -134,7 +134,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
 
     /** Helper method. Removes save cookie from the data object. */
     private void removeSaveCookie() {
-        CCFBaseObject obj = (CCFBaseObject) getDataObject();
+        CndDataObject obj = (CndDataObject) getDataObject();
         
         // Remove save cookie from the data object.
         Cookie cookie = obj.getCookie(SaveCookie.class);
@@ -170,7 +170,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
 
         /** Implements abstract superclass method.*/
         protected FileLock takeLock() throws IOException {
-            return ((CCFBaseObject)getDataObject()).getPrimaryEntry().takeLock();
+            return ((CndDataObject)getDataObject()).getPrimaryEntry().takeLock();
         }
 
         /** 

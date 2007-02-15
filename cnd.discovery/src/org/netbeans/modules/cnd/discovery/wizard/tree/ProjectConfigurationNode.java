@@ -19,8 +19,11 @@
 
 package org.netbeans.modules.cnd.discovery.wizard.tree;
 
+import java.text.MessageFormat;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -28,23 +31,31 @@ import org.netbeans.modules.cnd.discovery.api.ItemProperties;
  */
 public class ProjectConfigurationNode extends DefaultMutableTreeNode {
     private ProjectConfigurationImpl project;
+    private int count;
     
     public ProjectConfigurationNode(ProjectConfigurationImpl project) {
         super(project);
         this.project = project;
+        count = project.getFiles().size();
         add(new FolderConfigurationNode((FolderConfigurationImpl) project.getRoot()));
     }
     
     public String toString() {
         if (getProject().getLanguageKind() == ItemProperties.LanguageKind.C){
-            return "C";  // NOI18N
+            return getString("ConfigurationLanguageC",""+count);  // NOI18N
         } else if (getProject().getLanguageKind() == ItemProperties.LanguageKind.CPP){
-            return "C++"; // NOI18N
+            return getString("ConfigurationLanguageCPP",""+count);  // NOI18N
         }
-        return "Unknown"; // NOI18N
+         return getString("ConfigurationLanguageUnknown",""+count);  // NOI18N
     }
     
     public ProjectConfigurationImpl getProject() {
         return project;
+    }
+
+    private String getString(String key, String files) {
+        String message = NbBundle.getBundle(SelectConfigurationPanel.class).getString(key);
+        return MessageFormat.format(message, new Object[]{files});
+        
     }
 }

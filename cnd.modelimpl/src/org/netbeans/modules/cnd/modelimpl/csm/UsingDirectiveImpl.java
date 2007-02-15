@@ -29,7 +29,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  * Implements CsmUsingDirective
  * @author Vladimir Kvasihn
  */
-public class UsingDirectiveImpl extends OffsetableDeclarationBase implements CsmUsingDirective, RawNamable {
+public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirective> implements CsmUsingDirective, RawNamable {
 
     private final String name;
     private final int startOffset;

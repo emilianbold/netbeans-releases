@@ -62,9 +62,9 @@ import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.windows.TopComponent;
 
-import org.netbeans.modules.cnd.loaders.CCFSrcObject;
+import org.netbeans.modules.cnd.loaders.CndDataObject;
 import org.netbeans.modules.cnd.loaders.HDataObject;
-import org.netbeans.modules.cnd.loaders.FortranSrcObject;
+import org.netbeans.modules.cnd.loaders.FortranDataObject;
 
 
 /**
@@ -392,7 +392,7 @@ public class NavigationView extends ChoiceView {
         DataObject dataObject = (DataObject)activeNode.getCookie(DataObject.class);
         if (dataObject == null)
             return; // Should not happen...
-        if (!(dataObject instanceof CCFSrcObject) && !(dataObject instanceof HDataObject))
+        if (!(dataObject instanceof CndDataObject) && !(dataObject instanceof HDataObject))
             return; // Should not happen...
         
         if (sourceObject == null || sourceObject != dataObject) {
@@ -547,7 +547,7 @@ public class NavigationView extends ChoiceView {
 	    String scope = ctagsTokenEvent.getScope();
 	    int scopeKind = ctagsTokenEvent.getScopeKind();
 
-	    if (sourceObject instanceof FortranSrcObject) {
+	    if (sourceObject instanceof FortranDataObject) {
 		int scopeCluster = findFortranScopeCluster(scope, scopeKind);
 		switch (ctagsTokenEvent.getKind()) {
 		case 'l':   // labels
@@ -625,7 +625,7 @@ public class NavigationView extends ChoiceView {
         }
         
         ViewNode[] getNodes() {
-	    if (!(sourceObject instanceof FortranSrcObject))
+	    if (!(sourceObject instanceof FortranDataObject))
 		fixupMissingScopes();
 	    Collections.sort(nodes, new NodesComparator());
 	    return (ViewNode[])nodes.toArray(new ViewNode[nodes.size()]);

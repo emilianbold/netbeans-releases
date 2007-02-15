@@ -56,7 +56,7 @@ public class ConfigurationFactory {
             }
         }
         // remove empty root
-        StringTokenizer st = new StringTokenizer(rootFolder,File.separator);
+        StringTokenizer st = new StringTokenizer(rootFolder,"/");
         StringBuffer currentName = new StringBuffer();
         while (st.hasMoreTokens()){
             st.nextToken();
@@ -71,11 +71,15 @@ public class ConfigurationFactory {
     
     private static FolderConfigurationImpl addChild(String child, FolderConfigurationImpl folder){
         FolderConfigurationImpl current = folder;
-        StringTokenizer st = new StringTokenizer(child,File.separator);
+        StringTokenizer st = new StringTokenizer(child,"/");
         StringBuffer currentName = new StringBuffer();
+        boolean first = true;
         while(st.hasMoreTokens()){
             String segment = st.nextToken();
-            currentName.append(File.separator);
+            if (!first || child.startsWith("/")) {
+                currentName.append("/");
+            }
+            first = false;
             currentName.append(segment);
             FolderConfigurationImpl found = current.getChild(segment);
             if (found == null) {

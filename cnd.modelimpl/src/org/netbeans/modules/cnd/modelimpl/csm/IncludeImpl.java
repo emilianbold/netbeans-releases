@@ -21,6 +21,8 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.LineColOffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 /**
  * Implements CsmInclude
@@ -32,7 +34,10 @@ public class IncludeImpl extends LineColOffsetableBase implements CsmInclude {
     private String text;
     private String name;
     private boolean system;
-    private CsmFile includeFile;
+    
+    // only one of includeFileOLD/includeFileUID must be used (based on USE_REPOSITORY)   
+    private CsmFile includeFileOLD;
+    private CsmUID<CsmFile> includeFileUID;
 
     public IncludeImpl(String name, boolean system, CsmFile includeFile) {
         this(name, system, includeFile, null, null);
@@ -50,11 +55,11 @@ public class IncludeImpl extends LineColOffsetableBase implements CsmInclude {
         super(containingFile, inclPos);
         this.name = name;
         this.system = system;
-        this.includeFile = includeFile;
+        this._setIncludeFile(includeFile);
     }
     
     public CsmFile getIncludeFile() {
-        return includeFile;
+        return _getIncludeFile();
     }
 
     public String getIncludeName() {
@@ -110,4 +115,23 @@ public class IncludeImpl extends LineColOffsetableBase implements CsmInclude {
 //        }
 //        return text;
 //    }
+
+    private CsmFile _getIncludeFile() {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmFile file = UIDCsmConverter.UIDtoFile(includeFileUID);
+            assert (file != null || includeFileUID == null);
+            return file;
+        } else {
+            return includeFileOLD;
+        }
+    }
+
+    private void _setIncludeFile(CsmFile includeFile) {
+        if (TraceFlags.USE_REPOSITORY) {
+            includeFileUID = UIDCsmConverter.fileToUID(includeFile);
+            assert (includeFileUID != null || includeFile == null);
+        } else {
+            this.includeFileOLD = includeFile;
+        }
+    }
 }

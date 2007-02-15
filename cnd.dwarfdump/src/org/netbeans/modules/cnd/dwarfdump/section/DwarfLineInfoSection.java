@@ -48,9 +48,9 @@ public class DwarfLineInfoSection extends ElfSection {
         
         DwarfStatementList stmt_list = new DwarfStatementList(offset);
         
-        stmt_list.total_length = reader.readInt();
+        stmt_list.total_length = reader.readDWlen();
         stmt_list.version = reader.readShort();
-        stmt_list.prologue_length = reader.readInt();
+        stmt_list.prologue_length = reader.read3264();
         stmt_list.minimum_instruction_length = reader.readByte();
         stmt_list.default_is_stmt = reader.readByte();
         stmt_list.line_base = reader.readByte();

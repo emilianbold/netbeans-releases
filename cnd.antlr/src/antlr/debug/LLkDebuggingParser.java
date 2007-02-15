@@ -51,12 +51,12 @@ public class LLkDebuggingParser extends LLkParser implements DebuggingParser {
 		parserEventSupport.addTraceListener(l);
 	}
 	/**Get another token object from the token stream */
-	public void consume() throws TokenStreamException {
+	/*public void consume() {
 		int la_1 = -99;
 		la_1 = LA(1);
 		super.consume();
 		parserEventSupport.fireConsume(la_1);
-	}
+	}*/
 	protected void fireEnterRule(int num,int data) {
 		if (isDebugMode())
 			parserEventSupport.fireEnterRule(num,inputState.guessing,data);
@@ -103,16 +103,16 @@ public class LLkDebuggingParser extends LLkParser implements DebuggingParser {
 	 * is the current token being examined by the parser (i.e., it
 	 * has not been matched yet).
 	 */
-	public int LA(int i) throws TokenStreamException {
+	/*public int LA(int i) {
 		int la = super.LA(i);
 		parserEventSupport.fireLA(i, la);
 		return la;
-	}
+	}*/
 	/**Make sure current lookahead symbol matches token type <tt>t</tt>.
 	 * Throw an exception upon mismatch, which is catch by either the
 	 * error handler or by the syntactic predicate.
 	 */
-	public void match(int t) throws MismatchedTokenException, TokenStreamException {
+	public void match(int t) throws MismatchedTokenException {
 		String text = LT(1).getText();
 		int la_1 = LA(1);
 		try {
@@ -129,7 +129,7 @@ public class LLkDebuggingParser extends LLkParser implements DebuggingParser {
 	 * Throw an exception upon mismatch, which is catch by either the
 	 * error handler or by the syntactic predicate.
 	 */
-	public void match(BitSet b) throws MismatchedTokenException, TokenStreamException {
+	public void match(BitSet b) throws MismatchedTokenException {
 		String text = LT(1).getText();
 		int la_1 = LA(1);
 		try {
@@ -142,7 +142,7 @@ public class LLkDebuggingParser extends LLkParser implements DebuggingParser {
 			throw e;
 		}
 	}
-	public void matchNot(int t) throws MismatchedTokenException, TokenStreamException {
+	public void matchNot(int t) throws MismatchedTokenException {
 		String text = LT(1).getText();
 		int la_1 = LA(1);
 		try {

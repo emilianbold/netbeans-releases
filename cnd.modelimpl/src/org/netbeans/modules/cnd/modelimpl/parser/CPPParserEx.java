@@ -97,13 +97,13 @@ public class CPPParserEx extends CPPParser {
     
     private boolean lazyCompound = TraceFlags.EXCLUDE_COMPOUND;
 
-    private class AstFactoryEx extends antlr.ASTFactory {
+    private static class AstFactoryEx extends antlr.ASTFactory {
 	
 	public AstFactoryEx(Hashtable tokenTypeToClassMap) {
 	    super(tokenTypeToClassMap);
 	}
 
-        public AST create(Token tok) {
+        public final AST create(Token tok) {
             AST t = createTokenASTByType(tok.getType());
             if (t == null) {
                 t = new CsmAST();
@@ -115,17 +115,17 @@ public class CPPParserEx extends CPPParser {
     
     //Change statementTrace from cppparser.g directly 
     //private final boolean trace = Boolean.getBoolean("cnd.parser.trace");
-    private TokenStreamSelector selector = new TokenStreamSelector();
+    //private TokenStreamSelector selector = new TokenStreamSelector();
     
     protected CPPParserEx(TokenStream stream) {
         super(stream);
     }    
     
-    protected boolean isLazyCompound() {
+    protected final boolean isLazyCompound() {
         return lazyCompound;
     }
     
-    public void setLazyCompound(boolean lazy) {
+    public final void setLazyCompound(boolean lazy) {
         this.lazyCompound = lazy;
     }
     
@@ -139,7 +139,7 @@ public class CPPParserEx extends CPPParser {
     }    
 
     
-    protected void init(String filename, int flags) {
+    protected final void init(String filename, int flags) {
         /*if( trace ) {
             flags |= CPPParser.CPP_STATEMENT_TRACE;
         }*/
@@ -148,12 +148,12 @@ public class CPPParserEx extends CPPParser {
         super.init(filename, flags);
     }
     
-    private int strcmp(String s1, String s2) {
+    private static int strcmp(String s1, String s2) {
         return (s1 == null) ? ( s2 == null ? 0 : -1) : s1.compareTo(s2);
     }
     
     // Shorthand for a string of (qualifiedItemIs()==xxx||...)
-    protected boolean qualifiedItemIsOneOf(/*QualifiedItem*/int qiFlags, int lookahead_offset) { 
+    protected final boolean qualifiedItemIsOneOf(/*QualifiedItem*/int qiFlags, int lookahead_offset) { 
 	/*QualifiedItem*/int qi = qualifiedItemIs(lookahead_offset); 
 	if (codeFoldingParse && (qiFlags & (qiType | qiCtor)) > 0) {
 	    qiFlags |= qiVar;
@@ -189,7 +189,7 @@ public class CPPParserEx extends CPPParser {
     // ::*, * yields qiInvalid
     // ::~T, ~T, A::~T yield qiDtor
     // ~a, ~A::a, A::~T::, ~T:: yield qiInvalid
-    protected /*QualifiedItem*/int qualifiedItemIs(int lookahead_offset) { 
+    protected final /*QualifiedItem*/int qualifiedItemIs(int lookahead_offset) { 
         try {
             return _qualifiedItemIs(lookahead_offset);
         }
@@ -199,7 +199,7 @@ public class CPPParserEx extends CPPParser {
         }
     }
         
-    protected /*QualifiedItem*/int _qualifiedItemIs(int lookahead_offset) throws TokenStreamException { 
+    protected final /*QualifiedItem*/int _qualifiedItemIs(int lookahead_offset) throws TokenStreamException { 
         
 	int tmp_k = lookahead_offset + 1;
         
@@ -447,7 +447,7 @@ public class CPPParserEx extends CPPParser {
     }
 
     // Return true if "::blah" or "fu::bar<args>::..." found.
-    protected boolean scopedItem(int tmp_k)  { 
+    protected final boolean scopedItem(int tmp_k)  { 
         try {
 	//printf("support.cpp scopedItem tmp_k %d\n",tmp_k);
 	return (LT(tmp_k).getType()==SCOPE ||
@@ -483,7 +483,7 @@ public class CPPParserEx extends CPPParser {
 	return (tok == null) ? 0 : tok.getType();
     }
   
-    protected boolean isTypeName(String s) { 
+    protected final boolean isTypeName(String s) { 
         return isValidIdentifier(s);
         /* TODO: revive the original code:
 	CPPSymbol *cs = (CPPSymbol *) symbols->lookup(s);
@@ -502,7 +502,7 @@ public class CPPParserEx extends CPPParser {
         */
     }
 
-    protected boolean isValidIdentifier(String id) { 
+    protected final boolean isValidIdentifier(String id) { 
         if( id != null && id.length() > 0 ) {
             if( Character.isJavaIdentifierStart(id.charAt(0)) ) {
                 for( int i = 1; i < id.length(); i++ ) {
@@ -533,12 +533,12 @@ public class CPPParserEx extends CPPParser {
         */
     }
     
-    protected void beginFunctionDefinition() {
-        functionDefinition = 1;
+    //protected void beginFunctionDefinition() {
+        //functionDefinition = 1;
         //super.beginFunctionDefinition();
-    }
+    //}
     
-    protected void endFunctionDefinition() {
+    //protected void endFunctionDefinition() {
         /* TODO: revive the original code:
 	// Remove parameter scope
 	symbols->dumpScope(stdout);
@@ -549,16 +549,16 @@ public class CPPParserEx extends CPPParser {
 	//printf("endFunctionDefinition restoreScope() now %d\n",
 	//		    symbols->getCurrentScopeIndex());
         */
-	functionDefinition = 0;
+	//functionDefinition = 0;
         //super.endFunctionDefinition(fi);
-    }
+    //}
     
-    protected void beginConstructorDefinition() {
-        functionDefinition = 1;
+    //protected void beginConstructorDefinition() {
+        //functionDefinition = 1;
         //super.beginConstructorDefinition();
-    }
+    //}
     
-    protected void endConstructorDefinition() {
+    //protected void endConstructorDefinition() {
         /* TODO: revive the original code:
 	symbols->dumpScope(stdout);
 	symbols->removeScope();
@@ -566,15 +566,15 @@ public class CPPParserEx extends CPPParser {
 	//printf("endConstructorDefinition restoreScope() now %d\n",
 	//		    symbols->getCurrentScopeIndex());
         */
-	functionDefinition = 0;
-    }
+	//functionDefinition = 0;
+    //}
     
-    protected void beginDestructorDefinition() {
-        functionDefinition = 1;
+   // protected void beginDestructorDefinition() {
+        //functionDefinition = 1;
         //super.beginConstructorDefinition();
-    }
+    //}
     
-    protected void endDestructorDefinition() {
+    //protected void endDestructorDefinition() {
         /* TODO: revive the original code:
 	symbols->dumpScope(stdout);
 	symbols->removeScope();
@@ -582,10 +582,10 @@ public class CPPParserEx extends CPPParser {
 	//printf("endDestructorDefinition restoreScope() now %d\n",
 	//		    symbols->getCurrentScopeIndex());
          */
-	functionDefinition = 0;
-    }
+	//functionDefinition = 0;
+   // }
 
-    protected void declarationSpecifier(boolean td, boolean fd, StorageClass sc, TypeQualifier tq,
+    protected final void declarationSpecifier(boolean td, boolean fd, StorageClass sc, TypeQualifier tq,
                          /*TypeSpecifier*/int ts, DeclSpecifier ds) {
 	//printf("support.cpp declarationSpecifier td %d, fd %d, sc %d, tq, "
 	//	"%d, ts %d, ds %d, qi %d\n", td,fd,sc,tq,ts,ds,qi);
@@ -603,7 +603,7 @@ public class CPPParserEx extends CPPParser {
      * The symbol is added to whatever the current scope is in the symbol table. 
      * See list of object types below.
      */
-    protected void declaratorID(String id, /*QualifiedItem*/int qi) {	// stores new symbol with type
+    protected final void declaratorID(String id, /*QualifiedItem*/int qi) {	// stores new symbol with type
         
 	CPPSymbol c;
 
@@ -656,15 +656,15 @@ public class CPPParserEx extends CPPParser {
 	}
     }
     
-    protected void declaratorParameterList(boolean def) {
+    //protected void declaratorParameterList(boolean def) {
         /* TODO: revive the original code:
 	symbols->saveScope();
          */
 	//printf("declaratorParameterList saveScope() now %d\n",
 	//			symbols->getCurrentScopeIndex());
-    }
+    //}
     
-    protected void declaratorEndParameterList(boolean def) {
+    //protected void declaratorEndParameterList(boolean def) {
         /* TODO: revive the original code:
 	if (!def) {
 	    symbols->dumpScope(stdout);
@@ -674,18 +674,18 @@ public class CPPParserEx extends CPPParser {
 	    //			symbols->getCurrentScopeIndex());
 	}
          */
-    }
+    //}
     
-    protected void functionParameterList() {
+    //protected void functionParameterList() {
         /* TODO: revive the original code:
 	symbols->saveScope();
          */
 	//printf("functionParameterList saveScope() now %d\n",symbols->getCurrentScopeIndex());
 	// DW 25/3/97 change flag from function to parameter list
-	functionDefinition = 2;
-    }
+	//functionDefinition = 2;
+    //}
     
-    protected void functionEndParameterList(boolean def) {
+    /*protected void functionEndParameterList(boolean def) {
 	// If this parameter list is not in a definition then this
 	if (!def) {
             /* TODO: revive the original code:
@@ -695,22 +695,22 @@ public class CPPParserEx extends CPPParser {
              */
 	    //printf("functionEndParameterList restoreScope() now %d\n",
 	    //		symbols->getCurrentScopeIndex());
-	} else {
+	/*} else {
 	    // Change flag from parameter list to body of definition
 	    functionDefinition = 3;   
 	}
 	/* Otherwise endFunctionDefinition removes the parameters from scope */
-    }
+    //}
     
-    protected void enterNewLocalScope() {
+    /*protected void enterNewLocalScope() {
     	//blockDepth++;
         /* TODO: revive the original code:
 	symbols->saveScope();
          */
 	//printf("enterNewLocalScope saveScope() now %d\n",symbols->getCurrentScopeIndex());
-}
+//}
     
-    protected void exitLocalScope() {
+    //protected void exitLocalScope() {
 	//blockDepth--;
         /* TODO: revive the original code:
 	symbols->dumpScope(stdout);
@@ -718,24 +718,24 @@ public class CPPParserEx extends CPPParser {
 	symbols->restoreScope();
          */
 	//printf("exitLocalScope restoreScope() now %d\n",symbols->getCurrentScopeIndex());
-    }
+    //}
     
-    protected void enterExternalScope() {
+    //protected void enterExternalScope() {
 	// Scope has been initialised to 1 in CPPParser.init() in CPPParser.h
 	// DW 25/3/97 initialise
-	functionDefinition = 0;
+	//functionDefinition = 0;
 	//classDefinition = 0;	DW 19/03/04 not used anywhere
-    }
+    //}
     
-    protected void exitExternalScope() {
+    //protected void exitExternalScope() {
         /* TODO: revive the original code:
 	symbols->dumpScope(stdout);
 	symbols->removeScope();	    // This just removes the symbols stored in the current scope
 	symbols->restoreScope();    // This just reduces the current scope by 1
          */
-    }
+    //}
     
-    protected void classForwardDeclaration(/*TypeSpecifier*/int ts, DeclSpecifier ds, String tag) {
+    protected final void classForwardDeclaration(/*TypeSpecifier*/int ts, DeclSpecifier ds, String tag) {
 
         CPPSymbol c = null;
 
@@ -796,7 +796,7 @@ public class CPPParserEx extends CPPParser {
     }
     
     
-    protected void beginClassDefinition(/*TypeSpecifier*/int ts, String tag) {
+    protected final void beginClassDefinition(/*TypeSpecifier*/int ts, String tag) {
 	CPPSymbol c;
 
         /* TODO: revive the original code:
@@ -853,7 +853,7 @@ public class CPPParserEx extends CPPParser {
          */
     }
     
-    protected void endClassDefinition() {
+    protected final void endClassDefinition() {
         /* TODO: revive the original code:
 	symbols->dumpScope(stdout);
 	symbols->removeScope();
@@ -879,7 +879,7 @@ public class CPPParserEx extends CPPParser {
         //super.endClassDefinition();
     }
 
-    protected void beginEnumDefinition(String e) {
+    protected final void beginEnumDefinition(String e) {
 	// DW 26/3/97 Set flag for new class
 	    
 	// Add all enum tags into the global scope (not correct, but
@@ -895,10 +895,10 @@ public class CPPParserEx extends CPPParser {
 	}
     }
     
-    protected void endEnumDefinition() {
+    protected final void endEnumDefinition() {
     }
     
-    protected void templateTypeParameter(String t) {
+    protected final void templateTypeParameter(String t) {
 	//DW 11/06/03 Symbol saved in templateParameterScope (0)
 	//  as a temporary measure until scope is implemented fully
 	// This symbol lives until the end of the file
@@ -913,10 +913,10 @@ public class CPPParserEx extends CPPParser {
 	}
     }
     
-    protected void beginTemplateDeclaration() {
-    }
+    //protected void beginTemplateDeclaration() {
+    //}
     
-    protected void endTemplateDeclaration() {
+    //protected void endTemplateDeclaration() {
         /* TODO: revive the original code:
 	// DW 30/05/03 Remove any template typenames from lower scope
 	symbols->saveScope();
@@ -927,23 +927,23 @@ public class CPPParserEx extends CPPParser {
 	//printf("endTemplateDeclaration restoreScope() now %d\n",
 	//		    symbols->getCurrentScopeIndex());
          */
-    }
+    //}
     
-    protected void beginTemplateParameterList() {
+    //protected void beginTemplateParameterList() {
         /* TODO: revive the original code:
 	// DW 26/05/03 To scope template parameters
 	symbols->saveScope();	// All this does is increase currentScope (lower level)
          */
-    }
+    //}
     
-    protected void endTemplateParameterList() {
+    //protected void endTemplateParameterList() {
         /* TODO: revive the original code:
 	// DW 26/05/03 To end scope template parameters
 	symbols->restoreScope();	// All this does is reduce currentScope (higher level)
          */
-    }
+    //}
 
-    protected void exceptionBeginHandler() {
+    /*protected void exceptionBeginHandler() {
     }
     
     protected void exceptionEndHandler() {
@@ -953,19 +953,13 @@ public class CPPParserEx extends CPPParser {
 	symbols->removeScope();
 	symbols->restoreScope();
          */
+    //}
+    
+    protected final boolean isCtor() { 
+        return _isCtor();
     }
     
-    protected boolean isCtor() { 
-        try {
-            return _isCtor();
-        }
-        catch( TokenStreamException e ) {
-            reportError(e.getMessage());
-            return false;
-        }
-    }
-    
-    protected boolean _isCtor() throws TokenStreamException  { 
+    protected final boolean _isCtor() { 
 	if (codeFoldingParse) {
             String lastID, refID;
 	    /*
@@ -991,65 +985,65 @@ public class CPPParserEx extends CPPParser {
     }
     
     
-    protected int getOffset() { 
-        try {
+    /*protected int getOffset() { 
+        //try {
             // TODO: correct either code or function name!!
             return LT(0).getColumn();
-        }
+        /*}
         catch( TokenStreamException e ) {
             reportError(e.getMessage());
             return 0;
         }
-    }
+    }*/
     
-    protected int getLine() { 
+    /*protected int getLine() { 
         return getLine(0);
-    }
+    }*/
     
-    protected int getLine(int k) { 
-        try {
+    protected final int getLine(int k) { 
+        //try {
             return LT(k).getLine();
-        }
+        /*}
         catch( TokenStreamException e ) {
             reportError(e.getMessage());
             return 0;
-        }
+        }*/
     }
     
     
-    protected void printf(String pattern, int i) { 
+    protected final void printf(String pattern, int i) { 
         Printf.printf(pattern, new Object[] { new Integer(i) });
     }
     
-    protected void printf(String pattern, Object o) { 
+    protected final void printf(String pattern, Object o) { 
         Printf.printf(pattern, new Object[] { o });
     }
     
-    protected void printf(String pattern, int i, Object o) { 
+    protected final void printf(String pattern, int i, Object o) { 
         Printf.printf(pattern, new Object[] { new Integer(i), o });
     }
     
-    protected void printf(String pattern, int i, Object o1, Object o2) { 
+    protected final void printf(String pattern, int i, Object o1, Object o2) { 
         Printf.printf(pattern, new Object[] { new Integer(i), o1, o2 });
     }
     
-    protected void printf(String pattern, int i1, int i2, boolean b1, Object o) { 
+    protected final void printf(String pattern, int i1, int i2, boolean b1, Object o) { 
         Printf.printf(pattern, new Object[] { new Integer(i1), new Integer(i2), Boolean.valueOf(b1), o });
     }
     
-    protected void printf (String pattern, int i1, Object o1, int i2, Object o2) {
+    protected final void printf (String pattern, int i1, Object o1, int i2, Object o2) {
         Printf.printf(pattern, new Object[] { new Integer(i1), o1, new Integer(i2), o2 });
     }
 
-    protected void printf (String pattern, int i1, int i2, int i3, Object o) {
+    protected final void printf (String pattern, int i1, int i2, int i3, Object o) {
         Printf.printf(pattern, new Object[] { new Integer(i1), new Integer(i2), new Integer(i3), o });
     }
     
-    protected void printf (String pattern, int i1, int i2, int i3, String s) {
+    protected final void printf (String pattern, int i1, int i2, int i3, String s) {
         Printf.printf(pattern, new Object[] { new Integer(i1), new Integer(i2), new Integer(i3), s });
     }
     
-    protected void printf(String pattern, int i1, int i2) {
+    protected final void printf(String pattern, int i1, int i2) {
         Printf.printf(pattern, new Object[] { new Integer(i1), new Integer(i2) });
     }
 
@@ -1060,7 +1054,7 @@ public class CPPParserEx extends CPPParser {
     
     
     /** overrides base implementation to make indentation 2 instead of 1 */
-    public void traceIndent() {
+    public final void traceIndent() {
         for (int i = 0; i < traceDepth; i++)
             System.out.print("  "); // NOI18N
     }    
@@ -1071,7 +1065,7 @@ public class CPPParserEx extends CPPParser {
      *
      * TODO: make it (optionally?) build AST. For now AST isn't built.
      */
-    protected void balanceBraces(int left, int right) throws RecognitionException, TokenStreamException { 
+    protected final void balanceBraces(int left, int right) throws RecognitionException, TokenStreamException { 
 	int depth = 0;
 	while( LA(1) != Token.EOF_TYPE ) { // && LA(1) != CPPTokenTypes.RPAREN ) {
 	    if( LA(1) == left ) {
@@ -1090,18 +1084,6 @@ public class CPPParserEx extends CPPParser {
 	    }
 	}
     }    
-
-    public void setFilename(String string) {
-        super.setFilename(string);
-    }
-
-    public String getFilename() {
-        String retValue;
-        
-        retValue = super.getFilename();
-        
-        return retValue;
-    }
     
     /**
      * Methods fireSyntacticPredicateStarted(), fireSyntacticPredicateSucceeded() 
@@ -1110,7 +1092,7 @@ public class CPPParserEx extends CPPParser {
      * This is made for analyzing time spent in guessing.
      * If we use an ordinary ANTLR (as in official CND), this code never works
      */
-    protected void syntacticPredicateStarted(int idx, int nestingLevel, int line) {
+    protected final void syntacticPredicateStarted(int idx, int nestingLevel, int line) {
         if( guessingCount[idx] == 0 ) {
             // first time - let's find a name
             StackTraceElement[] stack = Thread.currentThread().getStackTrace();
@@ -1126,7 +1108,7 @@ public class CPPParserEx extends CPPParser {
     }
 
     /** see syntacticPredicateFailed description */
-    protected void syntacticPredicateFailed(int idx, int nestingLevel) {
+    protected final void syntacticPredicateFailed(int idx, int nestingLevel) {
 	if( nestingLevel ==0 ) {
 	    guessingTimes[idx] += System.currentTimeMillis();
 	}
@@ -1134,7 +1116,7 @@ public class CPPParserEx extends CPPParser {
     }
 
     /** see syntacticPredicateStarted description */
-    protected void syntacticPredicateSucceeded(int idx, int nestingLevel) {
+    protected final void syntacticPredicateSucceeded(int idx, int nestingLevel) {
 	if( nestingLevel ==0 ) {
 	    guessingTimes[idx] += System.currentTimeMillis();
 	}

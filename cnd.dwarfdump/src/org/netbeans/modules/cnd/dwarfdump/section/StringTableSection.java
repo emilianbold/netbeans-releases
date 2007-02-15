@@ -22,6 +22,11 @@ public class StringTableSection extends ElfSection {
         super(reader, sectionIdx);
         read();
     }
+
+    public StringTableSection(ElfReader reader, byte[] stringtable) {
+        super(null, 0, null, null);
+        this.stringtable = stringtable;
+    }
     
     public StringTableSection read() {
         try {

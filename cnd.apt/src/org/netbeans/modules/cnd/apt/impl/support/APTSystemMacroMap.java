@@ -72,6 +72,7 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
     }
     
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
+        assert parent == null : "parent must be null";
         return new APTMacroMapSnapshot(false, parent);
     }
 }

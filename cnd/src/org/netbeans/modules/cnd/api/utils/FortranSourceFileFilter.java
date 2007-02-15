@@ -26,6 +26,8 @@ public class FortranSourceFileFilter extends SourceFileFilter{
     
     private static FortranSourceFileFilter instance = null;
     
+    private String[] suffixList = null;
+    
     public static FortranSourceFileFilter getInstance() {
         if (instance == null)
             instance = new FortranSourceFileFilter();
@@ -37,6 +39,9 @@ public class FortranSourceFileFilter extends SourceFileFilter{
     }
     
     public String[] getSuffixes() {
-        return FortranDataLoader.getInstance().suffixes();
+        if (suffixList == null) {
+            suffixList = getSuffixList(FortranDataLoader.getInstance().getExtensions());
+        }
+        return suffixList;
     }
 }

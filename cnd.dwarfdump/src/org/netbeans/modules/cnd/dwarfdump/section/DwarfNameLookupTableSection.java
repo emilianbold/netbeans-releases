@@ -10,8 +10,8 @@ package org.netbeans.modules.cnd.dwarfdump.section;
 
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
-import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfNameLookupEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfNameLookupTable;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -47,41 +47,34 @@ public class DwarfNameLookupTableSection extends ElfSection {
         long currPos = reader.getFilePointer();
         reader.seek(header.getSectionOffset());
 
-        DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)reader.getSection(".debug_info"); // NOI18N
+        DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)reader.getSection(SECTIONS.DEBUG_INFO);
 
         long bytesToRead = header.getSectionSize();
         
         while (bytesToRead > 0) {
             DwarfNameLookupTable table = new DwarfNameLookupTable();
             
-            table.unit_length = reader.readInt();
-            table.version = reader.readShort();
-            table.debug_info_offset = reader.readInt();
-            table.debug_info_length = reader.readInt();
-            
+            table.unit_length = reader.readDWlen();
             bytesToRead -= table.unit_length + 4; // 4 is a size of unit_length itself
+
+            table.version = reader.readShort();
+            table.debug_info_offset = reader.read3264();
+            table.debug_info_length = reader.read3264();
             
             CompilationUnit cu = debugInfo.getCompilationUnit(table.debug_info_offset);
             
-            if( cu == null ) {
+            if (cu == null) {
 		continue;
 	    }
 	    
             for (;;) {
-                int entryOffset = reader.readInt();
+                long entryOffset = reader.read3264();
                 
                 if (entryOffset == 0) {
                     break;
                 }
                 
-                String name = reader.readString();
-                table.entries.add(new DwarfNameLookupEntry(entryOffset, name));
-                
-		DwarfEntry entry = cu.getEntry(entryOffset);
-                
-		if (entry != null) {
-		    entry.setQualifiedName(name);
-		}
+                table.addEntry(entryOffset, reader.readString());
             }
 
             result.add(table);

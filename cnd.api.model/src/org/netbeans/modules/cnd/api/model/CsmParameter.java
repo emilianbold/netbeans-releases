@@ -31,7 +31,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmParameter extends CsmVariable {
+public interface CsmParameter extends CsmVariable<CsmParameter> {
 
     //TODO: create an interface to place getDeclarationText() in
     //String getDeclarationText();

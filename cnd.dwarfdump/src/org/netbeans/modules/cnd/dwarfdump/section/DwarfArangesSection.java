@@ -58,14 +58,17 @@ public class DwarfArangesSection extends ElfSection {
             
             //  The first tuple following the header in each set begins at an
             // offset that is a multiple of the size of a single tuple
+            int multTupleSize = addressRangeSet.address_size * 2;
+            int hLength = 12; /* header size */
             
-            int tupleSize = addressRangeSet.address_size * 2;
-            int alligment = addressRangeSet.address_size;
+            while (multTupleSize < hLength) {
+                multTupleSize <<= 1;
+            }
             
-            reader.skipBytes(alligment);
+            reader.skipBytes(multTupleSize - hLength);
             
             long address, length;
-            
+
             do {
                 address = reader.readNumber(addressRangeSet.address_size);
                 length = reader.readNumber(addressRangeSet.address_size);

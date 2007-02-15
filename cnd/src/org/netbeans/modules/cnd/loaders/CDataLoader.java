@@ -20,51 +20,57 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.MIMENames;
+
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
+
+import org.netbeans.modules.cnd.MIMENames;
 
 /**
  *
  * @author Alexander Simon
  */
-public class CDataLoader extends CCFSrcLoader {
-    private static CDataLoader instance = null;
+public class CDataLoader extends CndAbstractDataLoader {
+    
+    private static CDataLoader instance;
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975685L;
 
     /** The suffix list for C primary files */
-    private static final String[] cExtensions =
-				{ "c", "m" };	// NOI18N
+    private static final String[] cExtensions = { "c", "i", "m" }; // NOI18N
 
     protected CDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.CSrcObject");         // NOI18N
-	instance = this;
+	super(CDataObject.class.getName());
+        instance = this;
         createExtentions(cExtensions);
     }
 
     protected CDataLoader(String representationClassName) {
 	super(representationClassName);
-	instance = this;
+        instance = this;
         createExtentions(cExtensions);
     }
 
     protected CDataLoader(Class representationClass) {
 	super(representationClass);
-	instance = this;
+        instance = this;
         createExtentions(cExtensions);
     }
 
     public static CDataLoader getInstance(){
+        if (instance == null) {
+            instance = (CDataLoader) SharedClassObject.findObject(CDataLoader.class, true);
+        }
         return instance;
     }
 
     /** set the default display name */
     protected String defaultDisplayName() {
-	return NbBundle.getMessage(CCFSrcLoader.class, "PROP_CDataLoader_Name"); // NOI18N
+	return NbBundle.getMessage(CndAbstractDataLoader.class, "PROP_CDataLoader_Name"); // NOI18N
     }
 
     protected String getMimeType(){
@@ -72,6 +78,6 @@ public class CDataLoader extends CCFSrcLoader {
     }
 
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new CSrcObject(primaryFile, this);
+        return new CDataObject(primaryFile, this);
     }
 }

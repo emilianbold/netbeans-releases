@@ -34,6 +34,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -65,11 +66,11 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             }
         });
     }
-
+    
     public String getID() {
         return "dwarf-folder"; // NOI18N
     }
-
+    
     public String getName() {
         return i18n("Folder_Provider_Name"); // NOI18N
     }
@@ -103,6 +104,8 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                     Set<String> set = getObjectFiles((String)getProperty(FOLDER_KEY).getValue());
                     if (set.size() > 0) {
                         myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]));
+                    } else {
+                        myFileProperties = new ArrayList<SourceFileProperties>();
                     }
                 }
                 return myFileProperties;
@@ -134,7 +137,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         confs.add(conf);
         return confs;
     }
-
+    
     private static Set<String> getObjectFiles(String root){
         HashSet<String> set = new HashSet<String>();
         gatherSubFolders(new File(root), set);
@@ -147,7 +150,11 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                     if (ff[i].isFile()) {
                         String name = ff[i].getName();
                         if (name.endsWith(".o") || name.endsWith(".so") || name.endsWith(".a")){ // NOI18N
-                            map.add(ff[i].getAbsolutePath());
+                            String path = ff[i].getAbsolutePath();
+                            if (Utilities.isWindows()) {
+                                path = path.replace('\\', '/');
+                            }
+                            map.add(path);
                         }
                     }
                 }
@@ -159,8 +166,14 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     private static void gatherSubFolders(File d, HashSet<String> set){
         if (d.isDirectory()){
             String path = d.getAbsolutePath();
+            if (Utilities.isWindows()) {
+                path = path.replace('\\', '/');
+            }
+            if (path.endsWith("/SCCS") || path.endsWith("/CVS")) { // NOI18N
+                return;
+            }
             if (!set.contains(path)){
-                set.add(d.getAbsolutePath());
+                set.add(path);
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {
                     gatherSubFolders(ff[i], set);

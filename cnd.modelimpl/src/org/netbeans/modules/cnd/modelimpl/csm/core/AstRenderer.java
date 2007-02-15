@@ -98,9 +98,6 @@ public class AstRenderer {
                         FunctionDDImpl fddi = new FunctionDDImpl(token, file, currentNamespace);
 			//fddi.setScope(currentNamespace);
                         container.addDeclaration(fddi);
-                        if (currentNamespace == null) {
-                            currentNamespace = null;
-                        }
                         currentNamespace.addDeclaration(fddi);
                     }
                     break;
@@ -172,9 +169,10 @@ public class AstRenderer {
     protected void addTypedefs(CsmTypedef[] typedefs, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
         if( typedefs != null ) {
             for (int i = 0; i < typedefs.length; i++) {
+                // It could be important to register in project before add as member...
+                file.getProjectImpl().registerDeclaration(typedefs[i]);
                 container.addDeclaration(typedefs[i]);
                 currentNamespace.addDeclaration(typedefs[i]);
-                file.getProjectImpl().registerDeclaration(typedefs[i]);
             }
         }
     }
@@ -700,44 +698,11 @@ public class AstRenderer {
                 nextToken = nextToken.getNextSibling(); 
             }
             
-//            if( nextToken != null && 
-//                (nextToken.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION || 
-//                nextToken.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION) ) {
             if( nextToken == null || 
                 nextToken.getType() == CPPTokenTypes.LSQUARE ||
                 nextToken.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION || 
                 nextToken.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION ||
 		nextToken.getType() == CPPTokenTypes.ASSIGNEQUAL ) {
-                
-                /*
-                CsmClassifier classifier = null;
-                if( tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
-                    classifier = BuiltinTypes.getBuiltIn(tokType);
-                }
-                else { // tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
-                    try {
-                        Resolver resolver = new Resolver(file, ((CsmAST) tokType.getFirstChild()).getOffset());
-                        // gather name components into string array 
-                        // for example, for std::vector new String[] { "std", "vector" }
-                        List l = new ArrayList();
-                        for( AST namePart = tokType.getFirstChild(); namePart != null; namePart = namePart.getNextSibling() ) {
-                            if( namePart.getType() == CPPTokenTypes.ID ) {
-                                l.add(namePart.getText());
-                            }
-                            else {
-                                assert namePart.getType() == CPPTokenTypes.SCOPE;
-                            }
-                        }
-                        CsmObject o = resolver.resolve((String[]) l.toArray(new String[l.size()]));
-                        if( o instanceof CsmClassifier ) {
-                            classifier = (CsmClassifier) o;
-                        }
-                    }
-                    catch( Exception e ) {
-                        e.printStackTrace(System.err);
-                    }
-                }
-                */
                 
                 AST ptrOperator = null;
                 boolean theOnly = true;
@@ -783,16 +748,29 @@ public class AstRenderer {
         int arrayDepth = 0;
         String name = "";
         AST qn = null;
+	int inParamsLevel = 0;
         for( AST token = varAst.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
+		case CPPTokenTypes.LPAREN:
+		    inParamsLevel++;
+		    break;
+		case CPPTokenTypes.RPAREN:
+		    inParamsLevel--;
+		    break;
                 case CPPTokenTypes.LSQUARE:
-                    arrayDepth++;
+		    if( inParamsLevel == 0 ) {
+			arrayDepth++;
+		    }
                     break;
                 case CPPTokenTypes.CSM_QUALIFIED_ID:
-                    qn = token;
+		    if( inParamsLevel == 0 ) {
+			qn = token;
+		    }
                     // no break;
                 case CPPTokenTypes.ID:
-                    name = token.getText();
+		    if( inParamsLevel == 0 ) {
+			name = token.getText();
+		    }
                     break;
             }
         }
@@ -802,7 +780,7 @@ public class AstRenderer {
             // TODO What about global variable definitions:
             // extern int i; - declaration
             // int i; - definition
-            VarableDefinitionImpl var = new VarableDefinitionImpl(offsetAst, file, type, name);
+            VariableDefinitionImpl var = new VariableDefinitionImpl(offsetAst, file, type, name);
             var.setStatic(_static);
             if( container2 != null ) {
                 container2.addDeclaration(var);
@@ -842,24 +820,30 @@ public class AstRenderer {
     
     public static ParameterImpl renderParameter(AST ast, final CsmFile file) {
         AST firstChild = ast.getFirstChild();
-        if( firstChild != null && firstChild.getType() == CPPTokenTypes.ELLIPSIS ) {
-            return new ParameterImpl(ast.getFirstChild(), file, null, "..."); // NOI18N
+        if( firstChild != null ) {
+	    if( firstChild.getType() == CPPTokenTypes.ELLIPSIS ) {
+		return new ParameterImpl(ast.getFirstChild(), file, null, "..."); // NOI18N
+	    }
+	    if( firstChild.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN & firstChild.getNextSibling() == null ) {
+		AST grandChild = firstChild.getFirstChild();
+		if( grandChild != null && grandChild.getType() == CPPTokenTypes.LITERAL_void ) {
+		    return null;
+		}
+	    }
         }
-        else {
-            class AstRendererEx extends AstRenderer {
-                public ParameterImpl parameter;
-                public AstRendererEx() {
-                    super((FileImpl) file);
-                }
-                protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static) {
-                    parameter = new ParameterImpl(offsetAst, file, type, name);
-                    return parameter;
-                }
-            }
-            AstRendererEx renderer = new AstRendererEx();
-            renderer.renderVariable(ast, null, null);
-            return renderer.parameter;
-        }
+	class AstRendererEx extends AstRenderer {
+	    public ParameterImpl parameter;
+	    public AstRendererEx() {
+		super((FileImpl) file);
+	    }
+	    protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static) {
+		parameter = new ParameterImpl(offsetAst, file, type, name);
+		return parameter;
+	    }
+	}
+	AstRendererEx renderer = new AstRendererEx();
+	renderer.renderVariable(ast, null, null);
+	return renderer.parameter;
     }
     
     
@@ -950,10 +934,12 @@ public class AstRenderer {
     
     public static CsmCompoundStatement findCompoundStatement(AST ast, CsmFile file) {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
-            if( token.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT ||
-                    token.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY) {
-                return new CompoundStatementImpl(token, file);
-            }
+	    switch( token.getType() ) {
+		case CPPTokenTypes.CSM_COMPOUND_STATEMENT:
+		    return new CompoundStatementImpl(token, file);
+		case CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY:
+		    return new LazyCompoundStatementImpl(token, file);
+	    }
         }
         return null;
     }

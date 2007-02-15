@@ -26,6 +26,8 @@ public class HeaderSourceFileFilter extends SourceFileFilter{
     
     private static HeaderSourceFileFilter instance = null;
     
+    private String[] suffixList = null;
+    
     public static HeaderSourceFileFilter getInstance() {
         if (instance == null)
             instance = new HeaderSourceFileFilter();
@@ -37,6 +39,9 @@ public class HeaderSourceFileFilter extends SourceFileFilter{
     }
     
     public String[] getSuffixes() {
-        return HDataLoader.getInstance().suffixes();
+        if (suffixList == null) {
+            suffixList = getSuffixList(HDataLoader.getInstance().getExtensions());
+        }
+        return suffixList;
     }
 }

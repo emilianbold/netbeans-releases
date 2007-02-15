@@ -1681,11 +1681,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                         top2.addParameter(top);
                         top2.setExpID(CONSTRUCTOR);
                         reScan = true;
-                        break;
-                    case CPPINCLUDE:
-                        popExp();
-                        top2.addParameter(top);
-                        break;
+                        break;                    
                     case ANNOTATION:
                     case ANNOTATION_OPEN:
                     case CASE:

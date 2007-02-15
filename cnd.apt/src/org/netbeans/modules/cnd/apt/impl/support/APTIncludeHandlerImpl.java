@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 
 /**
  * implementation of include handler responsible for preventing recursive inclusion
@@ -50,7 +51,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     public APTIncludeHandlerImpl(String startFile, 
                                     List/*<String>*/ systemIncludePaths,
                                     List/*<String>*/ userIncludePaths) {
-        this.startFile = startFile;
+        this.startFile = FilePathCache.getString(startFile);
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;        
     }
@@ -202,7 +203,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return retValue;
         }
     }
-    
+      
     private String popIncludeImpl() {        
         assert (inclStack != null);
         assert (!inclStack.isEmpty());
@@ -243,7 +244,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     private static String includesStack2String(Stack/*IncludeInfo*/ inclStack) {
         StringBuffer retValue = new StringBuffer();
         if (inclStack == null) {
-            retValue.append("<not from #include>");
+            retValue.append("<not from #include>"); // NOI18N
         } else {
             for (Iterator it = inclStack.iterator(); it.hasNext();) {
                 IncludeInfo info = (IncludeInfo) it.next();

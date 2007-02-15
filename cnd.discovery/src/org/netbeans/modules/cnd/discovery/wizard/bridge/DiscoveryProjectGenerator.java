@@ -25,108 +25,205 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Vector;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.api.FolderConfiguration;
-import org.netbeans.modules.cnd.discovery.wizard.checkedtree.Root;
+import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
+import org.netbeans.modules.cnd.discovery.wizard.checkedtree.AbstractRoot;
 import org.netbeans.modules.cnd.discovery.wizard.checkedtree.UnusedFactory;
-import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.openide.WizardDescriptor;
 
 /**
  *
  * @author Alexander Simon
  */
 public class DiscoveryProjectGenerator {
+    private static boolean DEBUG = false;
+    private ProjectBridge projectBridge;
+    private DiscoveryDescriptor wizard;
+    private String baseFolder;
     
     /** Creates a new instance of PrjectGenerator */
-    private DiscoveryProjectGenerator() {
+    public DiscoveryProjectGenerator(DiscoveryDescriptor wizard) throws IOException {
+        this.wizard = wizard;
+        baseFolder = wizard.getRootFolder();
+        Project project = wizard.getProject();
+        if (project != null) {
+            //baseFolder = File.separator+project.getProjectDirectory().getPath();
+            projectBridge = new ProjectBridge(project);
+        } else {
+            projectBridge = new ProjectBridge(baseFolder);
+        }
     }
     
-    public static Set makeProject(WizardDescriptor wizard){
-        Set resultSet = new HashSet();
-        String baseFolder = (String)wizard.getProperty("rootFolder"); // NOI18N
-        ProjectBridge projectBridge = new ProjectBridge(baseFolder);
-        
-        List<ProjectConfigurationImpl> projectConfigurations = (List<ProjectConfigurationImpl>)wizard.getProperty("configurations"); // NOI18N
-        for (ProjectConfigurationImpl config: projectConfigurations){
-            setupCompilerConfiguration(config, projectBridge);
+    public Set makeProject(){
+        List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
+        Folder sourceRoot = projectBridge.getRoot();
+        for (ProjectConfiguration config: projectConfigurations){
+            setupCompilerConfiguration(config, wizard.getLevel());
+            FolderConfiguration folderConfig = config.getRoot();
+            addFolder(sourceRoot, folderConfig, config.getLanguageKind()==ItemProperties.LanguageKind.CPP, true);
         }
-        
-        try {
-            projectBridge.createproject();
-            Folder sourceRoot = projectBridge.getRoot();
-            for (ProjectConfigurationImpl config: projectConfigurations){
-                FolderConfiguration folderConfig = config.getRoot();
-                addFolder(sourceRoot, folderConfig, projectBridge, config.getLanguageKind()==ItemProperties.LanguageKind.CPP);
-            }
-            // add other files
-            addAdditional(sourceRoot, projectBridge, wizard, baseFolder);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        // add other files
+        addAdditional(sourceRoot, baseFolder);
         return projectBridge.getResult();
     }
     
-    private static void addAdditional(Folder folder, ProjectBridge projectBridge, WizardDescriptor wizard, String base){
-        Set<String> used = new HashSet();
-        List<String> list = (List<String>)wizard.getProperty("included");  // NOI18N
+    private void addAdditional(Folder folder, String base){
+        Set<String> used = new HashSet<String>();
+        List<String> list = wizard.getIncludedFiles();
         for (String name : list){
             if (name.startsWith(base)){
                 used.add(name);
             }
         }
-        list = (List<String>) wizard.getProperty("additionalFiles"); // NOI18N
+        list = wizard.getAdditionalFiles();
         for (String name : list){
             if (name.startsWith(base)){
                 used.add(name);
             }
         }
-        Root additional = UnusedFactory.createRoot(used);
-        addFolder(folder, additional, projectBridge);
+        AbstractRoot additional = UnusedFactory.createRoot(used);
+        if (used.size()>0) {
+            addFolder(folder, additional);
+        }
+        // remove unused
+        List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
+        for (ProjectConfiguration conf : projectConfigurations) {
+            for (FileConfiguration file : conf.getFiles()){
+                used.add(file.getFilePath());
+            }
+        }
+        Set<String> relatives = new HashSet<String>();
+        for (String name : used){
+            relatives.add(projectBridge.getRelativepath(name));
+        }
+        TreeMap<String,Item> sorted = new TreeMap<String,Item>();
+        for (Item item : projectBridge.getAllSources()){
+            sorted.put(item.getPath(),item);
+        }
+        for (Map.Entry<String,Item> entry : sorted.entrySet()){
+            String path = entry.getKey();
+            Item item = entry.getValue();
+            if (!relatives.contains(path)) {
+                // remove item;
+                Folder parent = item.getFolder();
+                if (DEBUG) System.out.println("Remove Item "+path); // NOI18N
+                parent.removeItem(item);
+                while (parent.getElements().size() == 0) {
+                    Folder parentFolder = parent.getParent();
+                    if (DEBUG) System.out.println("Remove Empty Folder "+parent.getName()); // NOI18N
+                    parentFolder.removeFolder(parent);
+                    parent = parentFolder;
+                    if (parent == folder) {
+                        break;
+                    }
+                }
+            }
+        }
     }
-
-    private static void addFolder(Folder folder, Root used, ProjectBridge projectBridge){
+    
+    private void addFolder(Folder folder, AbstractRoot used){
         String name = used.getName();
         Folder added = folder.findFolderByName(name);
         if (added == null) {
             added = projectBridge.createFolder(folder, name);
             folder.addFolder(added);
         }
-        for(Root sub : used.getChildren()){
-            addFolder(added, sub, projectBridge);
+        for(AbstractRoot sub : used.getChildren()){
+            addFolder(added, sub);
         }
-        for(String file : used.getFiles()){
-            if (added.findItemByPath(projectBridge.getRelativepath(file))==null){
-                Item item = projectBridge.createItem(file);
-                added.addItem(item);
+        List<String> files = used.getFiles();
+        if (files != null) {
+            for(String file : files){
+                String path = projectBridge.getRelativepath(file);
+                Item item = added.findItemByPath(path);
+                if (item==null){
+                    Item itemInAnotheFolder = projectBridge.getProjectItem(path);
+                    Object old = null;
+                    if (itemInAnotheFolder != null) {
+                        // TODO: What we should do? May remove item from folder and create in current folder?
+                        old = projectBridge.getAuxObject(itemInAnotheFolder);
+                        itemInAnotheFolder.getFolder().removeItem(itemInAnotheFolder);
+                        item = itemInAnotheFolder;
+                    } else {
+                        item = projectBridge.createItem(file);
+                    }
+                    item = added.addItem(item);
+                    if (old != null) {
+                        projectBridge.setAuxObject(item, old);
+                    }
+                }
             }
         }
     }
     
-    private static void addFolder(Folder folder, FolderConfiguration folderConfig, ProjectBridge projectBridge, boolean isCPP){
+    private void addFolder(Folder folder, FolderConfiguration folderConfig, boolean isCPP, boolean first){
         String name = folderConfig.getFolderName();
-        Folder added = folder.findFolderByName(name);
+        Folder added = null;
+        if (first && folder.getName().equals(name)) {
+            added = folder;
+        } else {
+            added = folder.findFolderByName(name);
+        }
         if (added == null) {
             added = projectBridge.createFolder(folder, name);
             folder.addFolder(added);
         }
-        setupFolder(folderConfig, added, isCPP, projectBridge);
+        setupFolder(folderConfig, added, isCPP);
         for(FolderConfiguration sub : folderConfig.getFolders()){
-            addFolder(added, sub, projectBridge, isCPP);
+            addFolder(added, sub, isCPP, false);
         }
         for(FileConfiguration file : folderConfig.getFiles()){
-            Item item = projectBridge.createItem(file.getFilePath());
-            added.addItem(item);
-            setupFile(file, item, projectBridge);
+            String path = projectBridge.getRelativepath(file.getFilePath());
+            Item item = added.findItemByPath(path);
+            if (item == null){
+                Item itemInAnotheFolder = projectBridge.getProjectItem(path);
+                Object old = null;
+                if (itemInAnotheFolder != null) {
+                    // TODO: What we should do? May remove item from folder and create in current folder?
+                    old = projectBridge.getAuxObject(itemInAnotheFolder);
+                    itemInAnotheFolder.getFolder().removeItem(itemInAnotheFolder);
+                    item = itemInAnotheFolder;
+                } else {
+                    item = projectBridge.createItem(file.getFilePath());
+                }
+                added.addItem(item);
+                if (old != null) {
+                    projectBridge.setAuxObject(item, old);
+                }
+            }
+            setupFile(file, item);
         }
     }
     
-    private static void setupCompilerConfiguration(ProjectConfigurationImpl config, ProjectBridge projectBridge){
-        Vector vector = new Vector(config.getUserInludePaths(false));
+    private void setupCompilerConfiguration(ProjectConfiguration config, String level){
+        // TODO: set relative path when project system will be support it.
+        //Vector vector = new Vector(config.getUserInludePaths(false));
+        Set<String> set = new HashSet<String>();
+        if ("project".equals(level)){ // NOI18N
+            for(FileConfiguration file : config.getFiles()){
+                String compilePath = file.getCompilePath();
+                for (String path : file.getUserInludePaths()){
+                    String name = null;
+                    if (path.startsWith(File.separator)) {
+                        name = path;
+                    } else {
+                        name = compilePath+File.separator+path;
+                    }
+                    set.add(projectBridge.getRelativepath(name));
+                }
+                if (isDifferentCompilePath(file.getFilePath(),compilePath)){
+                    set.add(projectBridge.getRelativepath(compilePath));
+                }
+            }
+        }
+        Vector vector = new Vector(set);
         StringBuffer buf = new StringBuffer();
         for(Map.Entry<String,String> entry : config.getUserMacros(false).entrySet()){
             buf.append(entry.getKey());
@@ -139,7 +236,7 @@ public class DiscoveryProjectGenerator {
         projectBridge.setupProject(vector, buf.toString(), config.getLanguageKind() == ItemProperties.LanguageKind.CPP);
     }
     
-    private static void setupFolder(FolderConfiguration config, Folder item, boolean isCPP, ProjectBridge projectBridge) {
+    private void setupFolder(FolderConfiguration config, Folder item, boolean isCPP) {
         Vector vector = new Vector(config.getUserInludePaths(false));
         StringBuffer buf = new StringBuffer();
         for(Map.Entry<String,String> entry : config.getUserMacros(false).entrySet()){
@@ -154,7 +251,7 @@ public class DiscoveryProjectGenerator {
                 buf.toString(), !config.overrideMacros(), isCPP, item);
     }
     
-    private static boolean isDifferentCompilePath(String name, String path){
+    private boolean isDifferentCompilePath(String name, String path){
         int i = name.lastIndexOf('/');
         if (i > 0) {
             name = name.substring(0,i);
@@ -165,7 +262,7 @@ public class DiscoveryProjectGenerator {
         return false;
     }
     
-    private static void setupFile(FileConfiguration config, Item item, ProjectBridge projectBridge) {
+    private void setupFile(FileConfiguration config, Item item) {
         String compilePath = config.getCompilePath();
         Vector vector = new Vector();
         for (String path : config.getUserInludePaths(false)){

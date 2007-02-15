@@ -24,7 +24,6 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.swing.AbstractListModel;
 import javax.swing.JPanel;
 import javax.swing.event.TreeSelectionEvent;
@@ -37,16 +36,15 @@ import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
+import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ConfigurationFactory;
 import org.netbeans.modules.cnd.discovery.wizard.tree.FileConfigurationNode;
-import org.netbeans.modules.cnd.discovery.wizard.tree.FileSystemFactory;
 import org.netbeans.modules.cnd.discovery.wizard.tree.FolderConfigurationNode;
 import org.netbeans.modules.cnd.discovery.wizard.tree.IncludesListModel;
 import org.netbeans.modules.cnd.discovery.wizard.tree.MacrosListModel;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationImpl;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationNode;
-import org.openide.WizardDescriptor;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,9 +53,8 @@ import org.openide.util.NbBundle;
  */
 public final class SelectConfigurationPanel extends JPanel {
     private SelectConfigurationWizard wizard;
-    private List<ProjectConfigurationImpl> projectConfigurations;
+    private List<ProjectConfiguration> projectConfigurations;
     private List<String> includedFiles;
-    private String oldRootPath;
     private String oldConsolidation;
     private boolean showResulting;
     
@@ -298,21 +295,20 @@ public final class SelectConfigurationPanel extends JPanel {
         return NbBundle.getBundle(SelectConfigurationPanel.class).getString(key);
     }
     
-    void read(WizardDescriptor wizardDescriptor) {
-        String consolidation = (String)wizardDescriptor.getProperty("consolidationLevel"); // NOI18N
+    void read(DiscoveryDescriptor wizardDescriptor) {
+        String consolidation = wizardDescriptor.getLevel();
         boolean changedConsolidation = false;
         if (!consolidation.equals(oldConsolidation)) {
             oldConsolidation = consolidation;
             changedConsolidation = true;
         }
-        String root = (String)wizardDescriptor.getProperty("rootFolder"); // NOI18N
-        if (!root.equals(oldRootPath)) {
-            buildModel(root);
-            oldRootPath = root;
-            oldConsolidation = null;
+        String root = wizardDescriptor.getRootFolder();
+        if (wizardDescriptor.isInvokeProvider()) {
+            buildModel(root, wizardDescriptor.getProvider());
+            wizardDescriptor.setInvokeProvider(false);
         } else if (changedConsolidation){
             if (projectConfigurations != null) {
-                for(ProjectConfigurationImpl project : projectConfigurations){
+                for(ProjectConfiguration project : projectConfigurations){
                     consolidateModel(project);
                 }
             }
@@ -320,30 +316,17 @@ public final class SelectConfigurationPanel extends JPanel {
         }
     }
     
-    private void consolidateModel(ProjectConfigurationImpl project){
+    private void consolidateModel(ProjectConfiguration project){
         if (ConsolidationStrategyPanel.PROJECT_LEVEL.equals(oldConsolidation)){
-            ConfigurationFactory.consolidateProject(project);
+            ConfigurationFactory.consolidateProject((ProjectConfigurationImpl)project);
         } else if (ConsolidationStrategyPanel.FOLDER_LEVEL.equals(oldConsolidation)){
-            ConfigurationFactory.consolidateFolder(project);
+            ConfigurationFactory.consolidateFolder((ProjectConfigurationImpl)project);
         } else if (ConsolidationStrategyPanel.FILE_LEVEL.equals(oldConsolidation)){
-            ConfigurationFactory.consolidateFile(project);
+            ConfigurationFactory.consolidateFile((ProjectConfigurationImpl)project);
         }
     }
     
-    private void buildModel(String rootFolder){
-        //DwarfProvider provider = new DwarfProvider();
-      	Lookup.Result providers = Lookup.getDefault().lookup(new Lookup.Template(DiscoveryProvider.class));
-        DiscoveryProvider provider = null;
-        for(Object p : providers.allInstances()){
-            provider = (DiscoveryProvider)p;
-            if ("dwarf-folder".equals(provider.getID())){
-                break;
-            }
-        }
-
-        //provider.getProperty(DwarfProvider.EXECUTABLES_KEY).setValue((String[])set.toArray(new String[set.size()]));
-        provider.getProperty("folder").setValue(rootFolder);
-        
+    private void buildModel(String rootFolder, DiscoveryProvider provider){
         List<Configuration> configs = provider.getConfigurations(new ProjectProxy() {
             public boolean createSubProjects() {
                 return false;
@@ -353,7 +336,7 @@ public final class SelectConfigurationPanel extends JPanel {
             }
         });
         ConfigurationTreeModel model = new ConfigurationTreeModel();
-        projectConfigurations = new ArrayList<ProjectConfigurationImpl>();
+        projectConfigurations = new ArrayList<ProjectConfiguration>();
         includedFiles = new ArrayList<String>();
 
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
@@ -371,9 +354,9 @@ public final class SelectConfigurationPanel extends JPanel {
         configurationTree.setModel(model);
     }
     
-    void store(WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty("configurations", projectConfigurations); // NOI18N
-        wizardDescriptor.putProperty("included", includedFiles); // NOI18N
+    void store(DiscoveryDescriptor wizardDescriptor) {
+        wizardDescriptor.setConfigurations(projectConfigurations);
+        wizardDescriptor.setIncludedFiles(includedFiles);
     }
     
     

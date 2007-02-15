@@ -26,8 +26,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 
 /**
@@ -36,7 +38,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
  */
 public class Unresolved {
     
-    public class UnresolvedClass extends ClassEnumBase implements CsmClass {
+    public class UnresolvedClass extends ClassEnumBase<CsmClass> implements CsmClass {
         public UnresolvedClass(String name) {
             super(name, unresolvedNamespace, unresolvedFile, null, null);
             register();
@@ -73,7 +75,7 @@ public class Unresolved {
         }
     }
     
-    private class UnresolvedFile implements CsmFile {
+    private class UnresolvedFile implements CsmFile, Persistent {
         public String getText(int start, int end) {
             return "";
         }
@@ -87,7 +89,7 @@ public class Unresolved {
             return _getProject();
         }
         public String getName() {
-            return "<unresolved>"; // NOI18N
+            return "<unresolved file>"; // NOI18N
         }
         public List getIncludes() {
             return Collections.EMPTY_LIST;
@@ -96,7 +98,7 @@ public class Unresolved {
             return Collections.EMPTY_LIST;
         }
         public String getAbsolutePath() {
-            return "<unresolved>"; // NOI18N
+            return "<unresolved file>"; // NOI18N
         }
         public boolean isValid() {
             return _getProject().isValid();
@@ -118,12 +120,12 @@ public class Unresolved {
         }
     };
     
-    private static CsmUID unresolvedFileUID = null;
-    private static CsmUID unresolvedClassUID = null;
+    private static CsmUID<CsmFile> unresolvedFileUID = null;
+    private static CsmUID<CsmFile> unresolvedClassUID = null;
     
     // only one of project/projectUID must be used 
     private ProjectBase project;
-    private CsmUID projectUID;
+    private CsmUID<CsmProject> projectUID;
     
     // doesn't need Repository Keys
     private CsmFile unresolvedFile;
@@ -140,11 +142,18 @@ public class Unresolved {
                 // do NOT register
             }
         };
+        if (TraceFlags.USE_REPOSITORY) {
+            RepositoryUtils.put(unresolvedFile);
+            assert (UIDCsmConverter.fileToUID(unresolvedFile) != null);
+            assert (UIDCsmConverter.UIDtoFile(UIDCsmConverter.fileToUID(unresolvedFile)) != null);
+            assert (UIDCsmConverter.namespaceToUID(unresolvedNamespace) != null);
+            assert (UIDCsmConverter.UIDtoNamespace(UIDCsmConverter.namespaceToUID(unresolvedNamespace)) != null);
+        }
     }
     
     private void _setProject(ProjectBase project) {
         if (TraceFlags.USE_REPOSITORY) {
-            this.projectUID = UIDCsmConverter.ProjectToUID(project);
+            this.projectUID = UIDCsmConverter.projectToUID(project);
         } else {
             this.project = project;
         }

@@ -19,20 +19,17 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-
-import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 /**
  *
  * @author Vladimir Kvasihn
  */
-public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase implements CsmClassForwardDeclaration {
+public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmClassForwardDeclaration> implements CsmClassForwardDeclaration {
     private final String name;
     private final String[] nameParts;
     

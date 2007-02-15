@@ -122,6 +122,14 @@ public class ByteStreamReader implements DataInput {
         }
     }
     
+    public long readDWlen() throws IOException {
+        long res = readInt();
+        if (res == -1) {
+            res = readLong();
+        }
+        return res;
+    }
+    
     public long readLong() throws IOException {
         return readNumber(8);
     }
@@ -255,6 +263,18 @@ public class ByteStreamReader implements DataInput {
         }
         
         return str.toString();
+    }
+    
+    public boolean is32Bit() {
+        return fileClass == ElfConstants.ELFCLASS32;
+    }
+    
+    public boolean is64Bit() {
+        return fileClass == ElfConstants.ELFCLASS64;
+    }
+    
+    public long read3264() throws IOException {
+        return (fileClass == ElfConstants.ELFCLASS32) ? readInt() : readLong();
     }
     
 }

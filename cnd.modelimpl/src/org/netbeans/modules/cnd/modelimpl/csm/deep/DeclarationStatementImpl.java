@@ -54,55 +54,126 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         }
         return declarators;
     }
-       
+    
     private void render() {
-        AstRenderer renderer = new AstRenderer((FileImpl) getContainingFile()) {
-            protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static) {
-                VariableImpl var = new VariableImpl(offsetAst, file, type, name, true);
-                var.setStatic(_static);
-                declarators.add(var);
-                return var;
-            }
-            
-            public void render(AST tree, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
-                if( tree != null ) {
-                    AST token = tree;
-                    switch( token.getType() ) {
-                        case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
-                        case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
-                            if (!renderVariable(token, currentNamespace, container)){
-                                render(token.getFirstChild(), currentNamespace, container);
-                            }
-                            break;
-                        case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                            declarators.add(new NamespaceAliasImpl(token, getContainingFile()));
-                            break;
-                        case CPPTokenTypes.CSM_USING_DIRECTIVE:
-                            declarators.add(new UsingDirectiveImpl(token, getContainingFile()));
-                            break;
-                        case CPPTokenTypes.CSM_USING_DECLARATION:
-                            declarators.add(new UsingDeclarationImpl(token, getContainingFile()));
-                            break;
-                            
-                        case CPPTokenTypes.CSM_CLASS_DECLARATION:
-                        {
-                            ClassImpl cls = new ClassImpl(token, null, getContainingFile());
-                            declarators.add(cls);
-                            addTypedefs(renderTypedef(token, cls, currentNamespace), currentNamespace, container);
-                            renderVariableInClassifier(token, cls, currentNamespace, container);
-                            break;
-                        }
-                        case CPPTokenTypes.CSM_ENUM_DECLARATION:
-                        {
-                            CsmEnum csmEnum = new EnumImpl(token, currentNamespace, getContainingFile());
-                            declarators.add(csmEnum);
-                            renderVariableInClassifier(token, csmEnum, currentNamespace, container);
-                            break;
-                        }
-                    }
-                }
-            }
-        };
+        AstRenderer renderer = new DSRenderer();
         renderer.render(getAst(), null, null);
     }
+    
+       
+    private class DSRenderer extends AstRenderer {
+	
+	public DSRenderer() {
+	    super((FileImpl) getContainingFile());
+	}
+	
+	protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static) {
+	    VariableImpl var = new VariableImpl<CsmVariable>(offsetAst, file, type, name, true);
+	    var.setStatic(_static);
+	    declarators.add(var);
+	    return var;
+	}
+
+	public void render(AST tree, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
+	    if( tree != null ) {
+		AST token = tree;
+		switch( token.getType() ) {
+		    case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
+		    case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
+			if (!renderVariable(token, currentNamespace, container)){
+			    render(token.getFirstChild(), currentNamespace, container);
+			}
+			break;
+		    case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
+			declarators.add(new NamespaceAliasImpl(token, getContainingFile()));
+			break;
+		    case CPPTokenTypes.CSM_USING_DIRECTIVE:
+			declarators.add(new UsingDirectiveImpl(token, getContainingFile()));
+			break;
+		    case CPPTokenTypes.CSM_USING_DECLARATION:
+			declarators.add(new UsingDeclarationImpl(token, getContainingFile()));
+			break;
+
+		    case CPPTokenTypes.CSM_CLASS_DECLARATION:
+		    {
+			ClassImpl cls = new ClassImpl(token, null, getContainingFile());
+			declarators.add(cls);
+			addTypedefs(renderTypedef(token, cls, currentNamespace), currentNamespace, container);
+			renderVariableInClassifier(token, cls, currentNamespace, container);
+			break;
+		    }
+		    case CPPTokenTypes.CSM_ENUM_DECLARATION:
+		    {
+			CsmEnum csmEnum = new EnumImpl(token, currentNamespace, getContainingFile());
+			declarators.add(csmEnum);
+			renderVariableInClassifier(token, csmEnum, currentNamespace, container);
+			break;
+		    }
+		    case CPPTokenTypes.CSM_TYPE_BUILTIN:
+		    case CPPTokenTypes.CSM_TYPE_COMPOUND:
+			AST typeToken = token;
+			AST next = token.getNextSibling();
+			if( next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+			    do {
+				TypeImpl type;
+				if( typeToken.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
+				    type = TypeImpl.createBuiltinType(typeToken.getText(), null, 0, typeToken, getContainingFile());
+				}
+				else {
+				    type = TypeImpl.createType(typeToken, getContainingFile(), null, 0);
+				}
+				String name = next.getText();
+				VariableImpl var = new VariableImpl<CsmVariable>(next, getContainingFile(), type, name, true);
+				// we ignore both currentNamespace and container
+				declarators.add(var);
+				// eat all tokens up to the comma that separates the next decl
+				next = next.getNextSibling();
+				if( next != null && next.getType() == CPPTokenTypes.CSM_PARMLIST ) {
+				    next = next.getNextSibling();
+				}
+				if( next != null && next.getType() == CPPTokenTypes.COMMA ) {
+				    next = next.getNextSibling();
+				}
+			    }
+			    while( next != null && next.getType() ==  CPPTokenTypes.CSM_QUALIFIED_ID );
+			}
+			break;
+		}
+	    }
+	}
+
+	/**
+	 * Creates a variable for declaration like int x(y);
+	 * Returns a token that follows this declaration or null
+	 */
+	private AST createVarWithCtor(AST token) {
+	    assert(token.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || token.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND);
+	    AST typeToken = token;
+	    AST next = token.getNextSibling();
+	    if( next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+		TypeImpl type;
+		if( typeToken.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
+		    type = TypeImpl.createBuiltinType(typeToken.getText(), null, 0, typeToken, getContainingFile());
+		}
+		else {
+		    type = TypeImpl.createType(typeToken, getContainingFile(), null, 0);
+		}
+		String name = next.getText();
+		VariableImpl var = new VariableImpl<CsmVariable>(next, getContainingFile(), type, name, true);
+		// we ignore both currentNamespace and container
+		declarators.add(var);
+		// eat all tokens up to the comma that separates the next decl
+		next = next.getNextSibling();
+		if( next != null && next.getType() == CPPTokenTypes.CSM_PARMLIST ) {
+		    next = next.getNextSibling();
+		}
+		if( next != null && next.getType() == CPPTokenTypes.COMMA ) {
+		    next = next.getNextSibling();
+		}
+		return next;
+	    }
+	    return null;
+	}
+    }
+	    
 }

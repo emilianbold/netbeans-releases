@@ -58,7 +58,10 @@ public class DwarfStatementList {
         ArrayList<String> result = new ArrayList<String>();
         
         for (int idx = 1; idx <= fileEntries.size(); idx++) {
-            result.add(getFilePath(idx));
+            String filepath = getFilePath(idx);
+            if (filepath != null) {
+                result.add(filepath);
+            }
         }
         
         return result;
@@ -143,7 +146,7 @@ public class DwarfStatementList {
     public String getFilePath(int idx) {
         FileEntry fileEntry = fileEntries.get(idx - 1);
         
-        if (fileEntry == null) {
+        if (fileEntry == null || fileEntry.fileName.equals("<internal>") || fileEntry.fileName.equals("<built-in>")) { // NOI18N
             return null;
         }
 

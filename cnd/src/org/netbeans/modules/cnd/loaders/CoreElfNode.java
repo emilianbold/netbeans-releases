@@ -19,20 +19,15 @@
 
 package org.netbeans.modules.cnd.loaders;
 
-import org.openide.loaders.*;
+import org.netbeans.modules.cnd.execution.BinaryExecSupport;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import org.openide.actions.*;
 
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 
-import org.netbeans.modules.cnd.execution.*;
 
-/** A node to represent an Elf core object.
- *
- */
-public class CoreElfNode extends CCFNode {
+/** A node to represent an Elf core object */
+public class CoreElfNode extends CndDataNode {
 
     public CoreElfNode(CoreElfObject obj) {
 	this(obj, Children.LEAF);
@@ -40,7 +35,7 @@ public class CoreElfNode extends CCFNode {
 
     public CoreElfNode(CoreElfObject obj, Children ch) {
 	super(obj, ch);
-	setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/CoreElfIcon.gif");	    // NOI18N
+	setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/CoreElfIcon.gif"); // NOI18N
     }
 
     protected Sheet createSheet() {
@@ -63,8 +58,8 @@ public class CoreElfNode extends CCFNode {
 	    // Trick from org/apache/tools/ant/module/nodes/AntProjectNode.java
 	    // Get rid of Arguments property and the Execution property;
 	    // corefiles can only be debugged.
-	    set.remove (ExecutionSupport.PROP_FILE_PARAMS);
-	    set.remove (ExecutionSupport.PROP_EXECUTION);
+	    set.remove(ExecutionSupport.PROP_FILE_PARAMS);
+	    set.remove(ExecutionSupport.PROP_EXECUTION);
 	    
 	    sheet.put(set);
 	}

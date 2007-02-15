@@ -65,7 +65,7 @@ public class LexerSharedInputState {
         return column;
     }
 
-    public void reset() {
+    /*public void reset() {
         column = 1;
         line = 1;
         tokenStartColumn = 1;
@@ -73,6 +73,6 @@ public class LexerSharedInputState {
         guessing = 0;
         filename = null;
         input.reset();
-    }
+    }*/
 }
 

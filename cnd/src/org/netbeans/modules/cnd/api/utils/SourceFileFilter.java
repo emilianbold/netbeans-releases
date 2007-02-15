@@ -20,7 +20,9 @@
 package org.netbeans.modules.cnd.api.utils;
 
 import java.io.File;
-import org.openide.util.NbBundle;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import org.openide.loaders.ExtensionList;
 
 public abstract class SourceFileFilter extends javax.swing.filechooser.FileFilter {
 
@@ -66,6 +68,16 @@ public abstract class SourceFileFilter extends javax.swing.filechooser.FileFilte
 		return true;
 	}
 	return false;
+    }
+    
+    protected String[] getSuffixList(ExtensionList elist) {
+        Enumeration<String> en = elist.extensions();
+        ArrayList<String> list = new ArrayList();
+        
+        while (en.hasMoreElements()) {
+            list.add(en.nextElement());
+        }
+        return list.toArray(new String[list.size()]);
     }
     
     public String toString() {

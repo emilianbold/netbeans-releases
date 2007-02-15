@@ -20,58 +20,66 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.MIMENames;
+
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.NbBundle;
 
+import org.netbeans.modules.cnd.MIMENames;
+import org.openide.util.SharedClassObject;
+
 /**
  *
  * @author Alexander Simon
  */
-public class AsmDataLoader extends CCFSrcLoader{
-    private static AsmDataLoader instance = null;
+public class AsmDataLoader extends CndAbstractDataLoader{
+    
+    private static AsmDataLoader instance;
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975683L;
 
     /** The suffix list for Asm primary files */
-    private static final String[] asmExtensions =
-				{ "s" };	// NOI18N
+    private static final String[] asmExtensions = { "s", "as", "asm" };	// NOI18N
 
     protected AsmDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.AssemSrcObject");         // NOI18N
-	instance = this;
+	super(AsmDataObject.class.getName());
+        instance = this;
         createExtentions(asmExtensions);
     }
 
     protected AsmDataLoader(String representationClassName) {
 	super(representationClassName);
-	instance = this;
+        instance = this;
         createExtentions(asmExtensions);
     }
 
     protected AsmDataLoader(Class representationClass) {
 	super(representationClass);
-	instance = this;
+        instance = this;
         createExtentions(asmExtensions);
     }
 
     public static AsmDataLoader getInstance(){
+        if (instance == null) {
+            instance = (AsmDataLoader) SharedClassObject.findObject(AsmDataLoader.class, true);
+        }
         return instance;
     }
     
     /** set the default display name */
     protected String defaultDisplayName() {
-	return NbBundle.getMessage(CCFSrcLoader.class, "PROP_AsmDataLoader_Name"); // NOI18N
+	return NbBundle.getMessage(CndAbstractDataLoader.class,
+		    "PROP_AsmDataLoader_Name"); // NOI18N
     }
 
     protected String getMimeType(){
         return MIMENames.ASM_MIME_TYPE;
     }
 
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new AssemSrcObject(primaryFile, this);
+    protected MultiDataObject createMultiObject(FileObject primaryFile)
+		    throws DataObjectExistsException, IOException {
+        return new AsmDataObject(primaryFile, this);
     }
 }

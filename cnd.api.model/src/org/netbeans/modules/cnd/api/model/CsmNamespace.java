@@ -29,7 +29,7 @@ import java.util.List;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmNamespace extends CsmQualifiedNamedElement, CsmScope, CsmIdentifiable {
+public interface CsmNamespace extends CsmQualifiedNamedElement, CsmScope, CsmIdentifiable<CsmNamespace> {
 
     CsmNamespace getParent();
     Collection/*<CsmNamespace>*/ getNestedNamespaces();

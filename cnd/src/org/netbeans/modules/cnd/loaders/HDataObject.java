@@ -20,25 +20,22 @@
 
 package org.netbeans.modules.cnd.loaders;
 
-import org.openide.cookies.*;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.Lookup;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject.Entry;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
 
 import org.netbeans.modules.cnd.execution.BinaryExecSupport;
 
-//import org.openide.debugger.Debugger;
-
 
 /** Represents a .h header object in the Repository */
-public class HDataObject extends CCFDataObject {
+public class HDataObject extends CndDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = 1858704627782172800L;
 
-    public HDataObject(FileObject pf, HDataLoader loader)
-			    throws DataObjectExistsException {
+    public HDataObject(FileObject pf, HDataLoader loader) throws DataObjectExistsException {
 	super(pf, loader);
 
     	CookieSet cookies = getCookieSet();

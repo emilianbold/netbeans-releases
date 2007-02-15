@@ -15,12 +15,14 @@
     <property name="test.dir" value="."/>
     <property name="main.class" value="modeldump.ModelDump"/>
 
-    <property name="nbdist.path" value="/net/yoho/export/home0/ide/mars/nightly/latest/latest-intel-Linux/netbeans-5.5_mars"/>
+    <property name="nbdist.path" value="/opt/netbeans/5.5"/>
     <property name="platform" value="platform6"/>
     <property name="ide" value="ide7"/>
     
+    <property name="cnddist.path" value="../../../../suite/build/cluster"/>
+    
     <path id="cnd.modules">
-        <fileset dir="${nbdist.path}/cnd1/modules">
+        <fileset dir="${cnddist.path}/modules">
             <include name="org-netbeans-modules-cnd-api-model.jar"/>
             <include name="org-netbeans-modules-cnd-modelimpl.jar"/>
             <include name="org-netbeans-modules-cnd-antlr.jar"/>

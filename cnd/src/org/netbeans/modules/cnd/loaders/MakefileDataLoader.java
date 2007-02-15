@@ -20,125 +20,111 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
-import java.io.File;
+import java.util.Enumeration;
 
-import org.openide.actions.*;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.FileEntry;
-import org.openide.util.actions.SystemAction;
+import org.openide.loaders.ExtensionList;
+import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
 
 import org.netbeans.modules.cnd.MIMENames;
-import org.netbeans.modules.cnd.actions.MakeAction;
-import org.netbeans.modules.cnd.actions.MakeCleanAction;
-import org.netbeans.modules.cnd.actions.MakeTargetAction;
 
-
-/**
- *  Recognizes single files in the Repository as being of a certain type.
- */
-public class MakefileDataLoader extends MultiFileLoader {
+/** Recognizes single files in the Repository as being of a certain type */
+public class MakefileDataLoader extends UniFileLoader {
 
     /** Serial version number */
     static final long serialVersionUID = -7148711275717543299L;
 
-    /** Count of files we've recognized. Only incremented for Unix files. */
-    private static int count = 0;
-
     /** Mark a file as a Makefile */
     public static final String PROP_MAKEFILE_TYPE = "MAKEFILE_TYPE";	// NOI18N
-
-    /** store the popup menu actions here */
-    protected static SystemAction[] standardActions;
     
-    /** a list of well known file extensions */
-    protected static String extensionsList[] = 
-                               { "cc", "c", "cpp", "h", "java",      // NOI18N
-                                 "c++", "gif", "xml", "ser",         // NOI18N
-                                 "html", "instance", "settings",     // NOI18N
-                                 "f", "f90", "f95", "for", };        // NOI18N
+    /** the list of well known extensions which are <b>not</b> Makefiles */
+    private ExtensionList wellKnownExtensionsList;
+    
+    /** list of suffixes which are <b>not</b> Makefiles and not cnd file types */
+    private String otherWellKnownExtensionsList[] = {
+        "java", "gif", "png", "xml", "properties", "html", "instance", "settings" // NOI18N
+    };
+    
+    private static MakefileDataLoader instance = null;
 
-    /**
-     *  Default constructor
-     */
     public MakefileDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.MakefileDataObject");   // NOI18N
+	super(MakefileDataObject.class.getName());
+        init();
     }
     
     public MakefileDataLoader(String recognizedClassName) {
 	super(recognizedClassName);
+        init();
     }
   
     public MakefileDataLoader(Class recognizedClass) {
 	super(recognizedClass);
+        init();
     }
-  
-
-    /**
-     *  Defer creating the SystemAction array until its actually needed.
-     */
-    protected SystemAction[] createDefaultActions() {
-	return new SystemAction[] {
-	    SystemAction.get(OpenAction.class),
-	    SystemAction.get(FileSystemAction.class),
-	    null,
-	    SystemAction.get(MakeAction.class),
-	    SystemAction.get(MakeCleanAction.class),
-	    SystemAction.get(MakeTargetAction.class),
-	    //SystemAction.get(RunTargetsAction.class),
-	    null,
-	    SystemAction.get(CutAction.class),
-	    SystemAction.get(CopyAction.class),
-	    SystemAction.get(PasteAction.class),
-	    null,
-	    SystemAction.get(DeleteAction.class),
-	    SystemAction.get(RenameAction.class),
-	    null,
-	    SystemAction.get(SaveAsTemplateAction.class),
-	    null,
-	    SystemAction.get(ToolsAction.class),
-	    SystemAction.get(PropertiesAction.class),
-	};
-    }
-
-
-    /**
-     *  Return the SystemAction[]s array. Create it and store it if needed.
-     *
-     *  @return The SystemAction[] array
-     */
-    protected SystemAction[] defaultActions() {
     
-	if (standardActions != null) {
-	    return standardActions;
-	} else {
-	    synchronized(getClass()) {
-		if (standardActions == null) {
-		    standardActions = createDefaultActions();
-		}
-	    }
-	}
+    /** Do various initializations */
+    private void init() {
+        Enumeration en;
+        
+        instance = this;
+        
+        /* initialize the extensions list */
+        ExtensionList extensionsList = new ExtensionList();
+        extensionsList.addExtension("mk"); // NOI18N
+        setExtensions(extensionsList);
+        
+        /* initialize the well known extensions list */
+        wellKnownExtensionsList = new ExtensionList();
 
-	return standardActions;
+        /* add C extensions */
+        en = CDataLoader.getInstance().getExtensions().extensions();
+        while (en.hasMoreElements()) {
+            wellKnownExtensionsList.addExtension((String) en.nextElement());
+        }
+        
+        /* add C++ extensions */
+        en = CCDataLoader.getInstance().getExtensions().extensions();
+        while (en.hasMoreElements()) {
+            wellKnownExtensionsList.addExtension((String) en.nextElement());
+        }
+        
+        /* add C/C++ Header extensions */
+        en = HDataLoader.getInstance().getExtensions().extensions();
+        while (en.hasMoreElements()) {
+            wellKnownExtensionsList.addExtension((String) en.nextElement());
+        }
+        
+        /* Add various miscelaneous suffixes to the list */
+        for (int i = 0; i < otherWellKnownExtensionsList.length; i++) {
+            wellKnownExtensionsList.addExtension(otherWellKnownExtensionsList[i]);
+        }
     }
 
+    public static MakefileDataLoader getInstance(){
+        if (instance == null) {
+            instance = (MakefileDataLoader)
+                            SharedClassObject.findObject(MakefileDataLoader.class, true);
+        }
+        return instance;
+    }
+    
+    protected String actionsContext () {
+        return "Loaders/text/x-make/Actions/"; // NOI18N
+    }
 
     /** set the default display name */
     protected String defaultDisplayName() {
 	return NbBundle.getMessage(MakefileDataLoader.class,
 			    "PROP_MakefileDataLoader_Name"); // NOI18N
     }
-  
 
-    /**
-     *  Create the DataObject.
-     */
+    /** Create the DataObject */
     protected MultiDataObject createMultiObject(FileObject primaryFile)
-	throws DataObjectExistsException, IOException {
+                throws DataObjectExistsException, IOException {
 	return new MakefileDataObject(primaryFile, this);
     }
   
@@ -148,44 +134,22 @@ public class MakefileDataLoader extends MultiFileLoader {
      */
     protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj,
 			    FileObject primaryFile) {
-	return new CCFSrcLoader.CCFFormat(obj, primaryFile);
-    }
-    
-
-    /**
-     *  Create a secondary Entry.
-     */
-    protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj,
-					FileObject secondaryFile) {
-	return new FileEntry.Numb(obj, secondaryFile);
+	return new CndAbstractDataLoader.CndFormat(obj, primaryFile);
     }
 
-
-    /**
-     *  Call the static method we use to find the primary file.
-     */
+    /** Find the primary file */
     protected FileObject findPrimaryFile(FileObject fo) {
-	return staticFindPrimaryFile(fo);
-    }
-    
 
-    /**
-     *  Find the primary file. This is static because we need to use this
-     *  during Makefile compilation but we don't have easy access to the
-     *  DataLoader object.
-     */
-    static public FileObject staticFindPrimaryFile(FileObject fo) {
-
-	if (fo.isFolder()) {
-	    return null;
+	/*
+	 * Some Makefiles don't follow standard Makefile naming conventions.
+	 * If they have a PROP_MAKEFILE_TYPE property we still recognise them
+	 * as a Makefile.
+	 */
+	if (fo.getAttribute(PROP_MAKEFILE_TYPE) != null) {
+	    return fo;
 	}
 
-	// Get name information
-	String name = fo.getName().toLowerCase();
-	String ext = fo.getExt();
-	String fullname = fo.getNameExt();
-        
-        if (isWellKnownExtension(ext)) {
+	if (wellKnownExtensionsList.isRegistered(fo)) {
             return null;
         }
 
@@ -195,113 +159,17 @@ public class MakefileDataLoader extends MultiFileLoader {
 		return null;
 	}
 
-	/*
-	 * Some Makefiles don't follow standard Makefile naming conventions.
-	 * If they have a PROP_MAKEFILE_TYPE property we still recognise them
-	 * as a Makefile.
-	 */
-	if (fo.getAttribute(PROP_MAKEFILE_TYPE) != null) {
-	    countFile();
-	    return fo;
-	}
-
-	// Check for a .make.state file. This is secondary to Makefile.
-	// 
-	// The following code is problematic for several reasons:
-	// 1) there is no one-to-one
-	// mapping between makefiles and make state files. Several different makefiles
-	// can use the same make state file. For instance makefiles in the same
-	// directory using .KEEP.STATE. does use the same make state file '.make.state'.
-	// Mapping it to one particular makefile can cause all kind of problems when you
-	// remove or move the makefiles.
-	// 2) the algoritme below is based on some assumtion that is not always true. 
-	// For instance if you use the output directory in the name of the make state file
-	// like '.make.state.myoutputdirectory', you can end up with the created output 
-	// directiory 'myoutputdirectory' is being marked as a makefile and cannot be
-	// accessed from the explorer (Hao's bug).
-	// 3) The algorithme will pair both 'make.state' and '.make.state.Makefile' to 
-	// the same makefile 'Makefile'. 
-	//
-	// I will disable this code for now.
-	//
-	/*if (fullname.startsWith(".make.state")) {			// NOI18N
-	    FileObject fm = null;
-
-	    if (fullname.length() == 11) {
-		fm = findMakefile(fo, "Makefile");			// NOI18N
-		if (fm == null) {
-		    fm = findMakefile(fo, "makefile");			// NOI18N
-		}
-	    } else if (fullname.length() > 12 && fullname.charAt(11) == '.') {
-		fm = findMakefile(fo, fullname.substring(12));
-	    }
-	    fo.setImportant(false);
-	    if (fm != null) {
-		fm.setImportant(true);
-	    }
-	    countFile();
-	    return fm;
-	} else */
 	// Check for various (somewhat) standard Makefile names.
-	if (ext.equals("mk") ||	      			        // NOI18N
-		name.startsWith("makefile") ||                      // NOI18N
-		name.endsWith("makefile") ||			// NOI18N
-		name.startsWith("gnumakefile")) {			// NOI18N
-	    countFile();
+	String name = fo.getName().toLowerCase();
+	if (name.startsWith("makefile") || name.endsWith("makefile") ||name.startsWith("gnumakefile")) { // NOI18N
 	    return fo;
 	}
-	return null;
+        
+	return super.findPrimaryFile(fo);
     }
 
-    /** Check a file extension to determine if it is a well known extension as
-     *  defined by the list of well known extensions in this class.
-     *  @param extension the file extension to verify.
-     *  @return true if the extension is in the list of well known extensions.
-     */
-    private static boolean isWellKnownExtension(String extension) {
-	if (extension != null && !extension.equals("")) {           // NOI18N
-	    String ext = extension.toLowerCase();
-	    for (int i = 0; i < extensionsList.length; i++) {
-		if (ext.equals(extensionsList[i])) {
-		    return true;
-		}
-	    }
-	}
-        return false;
-    }
-
-    /**
-     *  Count Unix files we've recognised. The class which wants this data is
-     *  the ElfTaster so we only count files on Unix systems. Not all Unix
-     *  systems run Elf but Elf only runs on Unix.
-     *  <P>
-     *  We check for Unix via comparison of File.separatorChar and '/' rather
-     *  than doing a string compare on os.name because its faster.
-     */
-    private static void countFile() {
-
-	if (File.separatorChar == '/') {
-	    count++;
-	}
-    }
-
-    public static int getMakefileCount() {
-	return count;
-    }
-
-
-    /** Find the Makefile associated with a .make.state* file */
-    private static FileObject findMakefile(FileObject fo, String name) {
-
-        if (fo == null) {
-	    return null;
-	}
-        FileObject parent = fo.getParent();
-        if (parent == null) {
-	    return null;
-	}
-
-        return parent.getFileObject(name);
+    protected String getMimeType(){
+        return MIMENames.MAKEFILE_MIME_TYPE;
     }
 }
 

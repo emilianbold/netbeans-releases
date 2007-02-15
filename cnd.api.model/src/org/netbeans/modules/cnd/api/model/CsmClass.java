@@ -20,7 +20,6 @@
 package org.netbeans.modules.cnd.api.model;
 
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
 
 /**
  * Represents class, struct, enum and union
@@ -28,7 +27,7 @@ import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
  *
  * TODO: think over how to represent built-in types
  */
-public interface CsmClass extends CsmCompoundClassifier {
+public interface CsmClass extends CsmCompoundClassifier<CsmClass> {
 
 //    public static class Kind extends TypeSafeEnum {
 //

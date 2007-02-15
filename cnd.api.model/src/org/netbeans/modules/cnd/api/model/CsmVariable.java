@@ -25,11 +25,13 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
  * Represents a variable
  * @author Vladimir Kvashin
  */
-public interface CsmVariable extends CsmOffsetableDeclaration {
+public interface CsmVariable<T> extends CsmOffsetableDeclaration<T> {
 
     /** Gets this variable type */
     CsmType getType();
 
+    //TODO: how to reflect declarations like int x(5); - 5 isn't initialValue, but rather constructor parameter
+    
     /** Gets this variable initial value */
     CsmExpression getInitialValue();
 

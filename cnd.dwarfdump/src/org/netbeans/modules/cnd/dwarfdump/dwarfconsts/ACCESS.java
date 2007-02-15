@@ -22,11 +22,11 @@ package org.netbeans.modules.cnd.dwarfdump.dwarfconsts;
 import java.util.HashMap;
 
 public enum ACCESS {
-
+    
     DW_ACCESS_public(0x1),
     DW_ACCESS_private(0x2),
     DW_ACCESS_protected(0x3);
-
+    
     private static final HashMap<Integer, ACCESS> hashmap = new HashMap<Integer, ACCESS>();
     private final int value;
     
@@ -46,5 +46,18 @@ public enum ACCESS {
     
     public int value() {
         return value;
+    }
+    
+    public String toString() {
+        switch (get(value)) {
+            case DW_ACCESS_public:
+                return "public"; // NOI18N
+            case DW_ACCESS_protected:
+                return "protected"; // NOI18N
+            case DW_ACCESS_private:
+                return "private"; // NOI18N
+        }
+        
+        return ""; // NOI18N
     }
 }

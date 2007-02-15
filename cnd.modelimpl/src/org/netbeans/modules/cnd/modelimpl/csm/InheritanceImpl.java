@@ -20,14 +20,12 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-
-import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 /**
  * CsmInheritance implementation
@@ -37,7 +35,11 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
 
     private CsmVisibility visibility;
     private boolean virtual;
-    private CsmClass ancestorCache;
+    
+    // only one of ancestorCacheOLD/ancestorCacheUID must be used (based on USE_REPOSITORY) 
+    private CsmClass ancestorCacheOLD;
+    private CsmUID<CsmClass> ancestorCacheUID;
+    
     private String ancestorName;
     
     public InheritanceImpl(AST ast, CsmFile file) {
@@ -54,9 +56,11 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     }
 
     public CsmClass getCsmClass() {
+        CsmClass ancestorCache = _getAncestorCache();
         if (ancestorCache == null || !ancestorCache.isValid())
         {
             ancestorCache = (CsmClass)getContainingFile().getProject().findClassifier(ancestorName);
+            _setAncestorCache(ancestorCache);
         }
         return ancestorCache;
     }
@@ -93,8 +97,8 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
                     //CsmObject o = ResolverFactory.createResolver(this).resolve(new String[] { token.getText() } );
                     CsmObject o = ResolverFactory.createResolver(this).resolve((String[]) l.toArray(new String[l.size()]));
                     if( o instanceof CsmClass ) {
-                        ancestorCache = (CsmClass)o;
-                        ancestorName = ancestorCache.getQualifiedName();
+                        _setAncestorCache((CsmClass)o);
+                        ancestorName = ((CsmClass)o).getQualifiedName();
                     }
                     else 
                     {
@@ -105,5 +109,24 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
                     //break;
             }
         }
+    }
+
+    public CsmClass _getAncestorCache() {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmClass ancestorCache = UIDCsmConverter.UIDtoDeclaration(ancestorCacheUID);
+            assert (ancestorCache != null || ancestorCacheUID == null);
+            return ancestorCache;            
+        } else {
+            return ancestorCacheOLD;
+        }        
+    }
+
+    public void _setAncestorCache(CsmClass ancestorCache) {
+        if (TraceFlags.USE_REPOSITORY) {
+            ancestorCacheUID = UIDCsmConverter.declarationToUID(ancestorCache);
+            assert (ancestorCacheUID != null || ancestorCache == null);
+        } else {
+            this.ancestorCacheOLD = ancestorCache;
+        }        
     }
 }

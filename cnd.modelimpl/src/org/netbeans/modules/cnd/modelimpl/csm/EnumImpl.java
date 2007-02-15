@@ -24,21 +24,26 @@ import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 /**
  * Implements CsmEnum
  * @author Vladimir Kvashin
  */
-public class EnumImpl extends ClassEnumBase  implements CsmEnum, CsmMember {
+public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMember<CsmEnum> {
     
-    private List/*CsmEnumerator*/ enumerators = Collections.EMPTY_LIST;
-
+    private List/*CsmEnumerator*/ enumeratorsOLD = Collections.EMPTY_LIST;
+    private List<CsmUID<CsmEnumerator>> enumerators = Collections.EMPTY_LIST;
+    
     public EnumImpl(AST ast, NamespaceImpl namespace, CsmFile file) {
         this(ast, namespace, file, null);
     }
     
     public EnumImpl(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
         super(AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file, containingClass, ast);
+        register();
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             if( token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
                 for( AST t = token.getFirstChild(); t != null; t = t.getNextSibling() ) {
@@ -48,18 +53,30 @@ public class EnumImpl extends ClassEnumBase  implements CsmEnum, CsmMember {
                 }
             }
         }
-        register();
     }
 
     public List getEnumerators() {
-        return enumerators;
+        if (TraceFlags.USE_REPOSITORY) {
+            List<CsmEnumerator> out = UIDCsmConverter.UIDsToDeclarations(new ArrayList<CsmUID<CsmEnumerator>>(enumerators));
+            return out;            
+        } else {
+            return enumeratorsOLD;
+        }
     }
     
     public void addEnumerator(CsmEnumerator enumerator) {
-        if( enumerators == Collections.EMPTY_LIST) {
-            enumerators = new ArrayList();
+        if (TraceFlags.USE_REPOSITORY) {
+            if(enumerators == Collections.EMPTY_LIST) {
+               enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
+            }
+            CsmUID<CsmEnumerator> uid = RepositoryUtils.put(enumerator);
+            enumerators.add(uid);
+        } else {
+            if(enumeratorsOLD == Collections.EMPTY_LIST) {
+               enumeratorsOLD = new ArrayList();
+            }
+            enumeratorsOLD.add(enumerator);
         }
-        enumerators.add(enumerator);
     }
 
     public List getScopeElements() {
@@ -68,5 +85,18 @@ public class EnumImpl extends ClassEnumBase  implements CsmEnum, CsmMember {
     
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.ENUM;
+    }
+    
+    public void dispose() {
+        _clearEnumerators();
+        super.dispose();
+    }    
+    
+    private void _clearEnumerators() {
+        if (TraceFlags.USE_REPOSITORY) {
+            RepositoryUtils.remove(enumerators);
+        } else {
+            enumeratorsOLD.clear();
+        }        
     }
 }

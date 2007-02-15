@@ -26,15 +26,17 @@ package org.netbeans.modules.cnd.dwarfdump.dwarf;
 public class DwarfDeclaration {
     public final String kind;
     public final String declarationString;
+    public final String declarationFile;    
     public final String declarationPosition;
             
-    public DwarfDeclaration(String kind, String declarationString, String declarationPosition) {
+    public DwarfDeclaration(String kind, String declarationString, String declarationFile, String declarationPosition) {
         this.kind = kind;
         this.declarationString = declarationString;
+        this.declarationFile = declarationFile;
         this.declarationPosition = declarationPosition;
     }
-
+    
     public String toString() {
-        return kind + " " + declarationString + " " + declarationPosition; // NOI18N
+        return kind + " " + declarationString + " " + declarationFile + ":" + declarationPosition; // NOI18N
     }
 }

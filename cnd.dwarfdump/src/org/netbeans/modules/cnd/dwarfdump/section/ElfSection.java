@@ -29,6 +29,13 @@ public class ElfSection {
         this.header = reader.getSectionHeader(sectionIdx);
         this.sectionName = reader.getSectionName(sectionIdx);
     }
+
+    public ElfSection(ElfReader reader, int sectionIdx, SectionHeader header, String sectionName) {
+        this.reader = reader;
+        this.sectionIdx = sectionIdx;
+        this.header = header;
+        this.sectionName = sectionName;
+    }
     
     public void dump(PrintStream out) {
         out.println("\n** Section " + sectionName); // NOI18N

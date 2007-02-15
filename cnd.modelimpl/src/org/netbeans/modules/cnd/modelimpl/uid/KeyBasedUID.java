@@ -19,8 +19,13 @@
 
 package org.netbeans.modules.cnd.modelimpl.uid;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyHolder;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
@@ -28,16 +33,20 @@ import org.netbeans.modules.cnd.repository.spi.Key;
  * help class for CsmUID based on repository Key
  * @author Vladimir Voskresensky
  */
-public class KeyBasedUID implements CsmUID {
-    private final Key key;
+public class KeyBasedUID<T extends CsmIdentifiable> implements CsmUID<T>, KeyHolder {
+    private /* final*/ Key key;
     
     public KeyBasedUID(Key key) {
         assert key != null;
         this.key = key;
     }
     
-    public CsmIdentifiable getObject() {
-        return RepositoryUtils.get(this);
+    /* package */ KeyBasedUID() {
+        
+    }
+    
+    public T getObject() {
+        return (T) RepositoryUtils.get(this);
     }
 
     public Key getKey() {
@@ -63,6 +72,14 @@ public class KeyBasedUID implements CsmUID {
         
         retValue = key.equals(obj);
         return retValue;
+    }
+
+    public void write(DataOutput aStream) throws IOException, IllegalArgumentException {
+        KeyObjectFactory.getDefaultFactory().write(key, aStream);
+    }
+
+    public void read(DataInput aStream) throws IOException, IllegalArgumentException {
+        key = KeyObjectFactory.getDefaultFactory().read(aStream);
     }
     
     

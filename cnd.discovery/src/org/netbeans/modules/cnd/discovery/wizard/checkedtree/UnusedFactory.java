@@ -33,33 +33,33 @@ public class UnusedFactory {
     private UnusedFactory() {
     }
 
-    public static Root createRoot(Set<String> set){
-        Root root = makeRoot(set);
+    public static AbstractRoot createRoot(Set<String> set){
+        AbstractRoot root = makeRoot(set);
         consolidateRoot(root);
         return root;
     }
     
-    private static List<String> consolidateRoot(Root root){
+    private static List<String> consolidateRoot(AbstractRoot root){
         List<String> files = root.getFiles();
-        for(Root current : root.getChildren()){
+        for(AbstractRoot current : root.getChildren()){
             List<String> fp = consolidateRoot(current);
             if (files == null) {
                 files = new ArrayList<String>();
-                root.setFiles(files);
+                ((Root)root).setFiles(files);
             }
         }
         return files;
     }
     
-    private static Root makeRoot(Set<String> set){
-        Root root = new Root("");
+    private static AbstractRoot makeRoot(Set<String> set){
+        AbstractRoot root = new Root("");
         for(String path : set){
-            root.addChild(path);
+            ((Root)root).addChild(path);
         }
         while(root.getFiles()== null){
-            Collection<Root> children = root.getChildren();
+            Collection<AbstractRoot> children = root.getChildren();
             if (children.size()==1){
-                Root child = children.iterator().next();
+                AbstractRoot child = children.iterator().next();
                 root = child;
                 continue;
             }

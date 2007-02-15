@@ -26,7 +26,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public class FortranDataLoaderBeanInfo extends CCFSrcLoaderBeanInfo {
+public class FortranDataLoaderBeanInfo extends CndAbstractDataLoaderBeanInfo {
 
     public Image getIcon(int type) {
 	return Utilities.loadImage("org/netbeans/modules/cnd/loaders/FortranSrcIcon.gif");   // NOI18N

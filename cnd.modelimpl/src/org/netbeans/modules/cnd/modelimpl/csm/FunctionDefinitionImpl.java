@@ -31,7 +31,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 /**
  * @author Vladimir Kvasihn
  */
-public class FunctionDefinitionImpl extends FunctionImpl implements CsmFunctionDefinition {
+public class FunctionDefinitionImpl extends FunctionImpl<CsmFunctionDefinition> implements CsmFunctionDefinition {
 
     private CsmFunction declaration;
     private String qualifiedName;
@@ -146,7 +146,7 @@ public class FunctionDefinitionImpl extends FunctionImpl implements CsmFunctionD
 	CsmObject owner = findOwner();
 	if( owner instanceof CsmQualifiedNamedElement  ) {
 	    qualifiedNameIsFake = false;
-	    return ((CsmQualifiedNamedElement) owner).getQualifiedName() + "::" + getName(); // NOI18N
+	    return ((CsmQualifiedNamedElement) owner).getQualifiedName() + "::" + getQualifiedNamePostfix(); // NOI18N
 	}
 	else {
 	    qualifiedNameIsFake = true;
@@ -168,7 +168,7 @@ public class FunctionDefinitionImpl extends FunctionImpl implements CsmFunctionD
 		sb.append("unknown>"); // NOI18N
 	    }
 	    sb.append("::"); // NOI18N
-	    sb.append(getName());
+	    sb.append(getQualifiedNamePostfix());
 	    return sb.toString();
 	}
     }
@@ -184,6 +184,7 @@ public class FunctionDefinitionImpl extends FunctionImpl implements CsmFunctionD
 	String newQname = findQualifiedName();
 	if( ! newQname.equals(qualifiedName) ) {
 	    ((FileImpl) getContainingFile()).getProjectImpl().unregisterDeclaration(this);
+            this.cleanUID();
 	    qualifiedName = newQname;
 	    ((FileImpl) getContainingFile()).getProjectImpl().registerDeclaration(this);
 	}

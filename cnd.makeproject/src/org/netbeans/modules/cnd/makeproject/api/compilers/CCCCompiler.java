@@ -21,6 +21,8 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 
 public class CCCCompiler extends BasicCompiler {
@@ -67,5 +69,27 @@ public class CCCCompiler extends BasicCompiler {
     
     // To be overridden
     protected void parseCompilerOutput(Platform platform, InputStream is) {
+    }
+    
+    /**
+     * Determines whether the given macro presents in the list
+     * @param macrosList list of macros strings (in the form "macro=value" or just "macro")
+     * @param macroToFind the name of the macro to search for
+     * @return true if macro with the given name is found, otherwise false
+     */
+    protected boolean containsMacro(List macrosList, String macroToFind) {
+	int len = macroToFind.length();
+	for (Iterator it = macrosList.iterator(); it.hasNext();) {
+	    String macro = (String) it.next();
+	    if (macro.startsWith(macroToFind) ) {
+		if( macro.length() == len ) {
+		    return true; // they are just equal
+		}
+		if( macro.charAt(len) == '=' ) {
+		    return true; // it presents in the form macro=value
+		}
+	    }
+	}
+	return false;
     }
 }

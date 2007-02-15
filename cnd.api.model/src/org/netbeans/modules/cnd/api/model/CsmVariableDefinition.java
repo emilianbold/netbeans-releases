@@ -26,7 +26,7 @@ import java.util.List;
  * Represents static varable definition
  * @author Alexander Simon
  */
-public interface CsmVariableDefinition extends CsmVariable {
+public interface CsmVariableDefinition extends CsmVariable<CsmVariableDefinition> {
 
     /** Returns this variable declaration */
     CsmVariable getDeclaration();

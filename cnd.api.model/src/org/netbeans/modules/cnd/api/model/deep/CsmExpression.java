@@ -169,12 +169,6 @@ public interface CsmExpression extends CsmOffsetable, CsmObject {
     
     
     /**
-     * Gets this expression text
-     * TODO: delete in the case we add getText to CsmOffsetable
-     */
-    String getText();
-    
-    /**
      * Gets parent expression or null if this is no parent expression
      */
     CsmExpression getParent();

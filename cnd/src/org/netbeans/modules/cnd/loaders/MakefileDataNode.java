@@ -19,21 +19,12 @@
 
 package org.netbeans.modules.cnd.loaders;
 
-import java.io.IOException;
+import org.netbeans.modules.cnd.builds.MakeExecSupport;
+import org.openide.nodes.Children;
+import org.openide.nodes.Sheet;
 
-import org.openide.cookies.*;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import org.openide.actions.*;
-
-import org.netbeans.modules.cnd.builds.*;
-
-/** A node to represent a Makefile data object.
- *
- */
-public class MakefileDataNode extends CCFDataNode {
+/** A node to represent a Makefile data object */
+public class MakefileDataNode extends CndDataNode {
 
     /** We need this in several places */
     private MakeExecSupport mes;
@@ -68,21 +59,6 @@ public class MakefileDataNode extends CCFDataNode {
         Sheet.Set defaultSet = defaultSheet.get(Sheet.PROPERTIES);
 	getSupport().addProperties(defaultSet);
 	return defaultSheet;
-	/*
-	// Add properties to a new "Building Tab"
-	Sheet sheet = super.createSheet();
-	Sheet.Set set = new Sheet.Set();
-	set.setName("PROP_Build_Options"); // NOI18N
-	set.setDisplayName(NbBundle.getBundle(MakefileDataNode.class).
-		    getString("PROP_Build_Options")); // NOI18N
-	set.setShortDescription(NbBundle.getBundle(MakefileDataNode.class).
-		    getString("HINT_Build_Options")); // NOI18N
-
-	getSupport().addProperties(set);
-	sheet.put(set);
-
-	return sheet;
-	*/
     }
 
     private static final String MakefileDataIcon =

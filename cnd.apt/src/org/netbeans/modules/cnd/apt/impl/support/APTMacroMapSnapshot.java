@@ -73,4 +73,8 @@ public class APTMacroMapSnapshot {
             out.remove(iter.next());
         }
     }    
+    
+    public boolean isEmtpy() {
+        return (defined_macros.size() + undefined_macros.size()) == 0;
+    }
 }

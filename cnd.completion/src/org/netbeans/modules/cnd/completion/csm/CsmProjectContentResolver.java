@@ -508,7 +508,7 @@ public class CsmProjectContentResolver {
 		 (!staticOnly || member.isStatic()) && 
                   matchVisibility(member, minVisibility) &&
 		  matchName(member.getName(), strPrefix, match)) {
-                if (CsmKindUtilities.isFunctionDeclaration(member)) {
+                if (CsmKindUtilities.isFunction(member)) {
                     res.put(((CsmFunction)member).getSignature(), member);
                 } else {
                     res.put(member.getQualifiedName(), member);

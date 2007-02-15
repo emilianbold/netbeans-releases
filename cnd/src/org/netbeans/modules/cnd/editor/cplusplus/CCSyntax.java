@@ -321,13 +321,11 @@ public class CCSyntax extends Syntax {
                 break;
 
             case ISA_INCLUDE:
-                if (Character.isWhitespace(actChar)) {
-                    state = ISA_INCLUDE_A_WS;
-                } else {
+                if (!(Character.isWhitespace(actChar) || actChar == '"' || actChar == '<')) {
                     state = INIT;
-                    return CCTokenContext.CPPINCLUDE;
-                }
-                break;
+                    return CCTokenContext.CPPINCLUDE;                                        
+                }                 
+                state = ISA_INCLUDE_A_WS; 
                 
             case ISA_INCLUDE_A_WS:
                 if (Character.isWhitespace(actChar)) {

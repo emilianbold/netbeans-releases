@@ -109,10 +109,10 @@ public abstract class Parser extends MatchExceptionState {
     }
 
     /**Get another token object from the token stream */
-    public abstract void consume() throws TokenStreamException;
+    public abstract void consume();
 
     /** Consume tokens until one matches the given token */
-    public void consumeUntil(int tokenType) throws TokenStreamException {
+    public void consumeUntil(int tokenType) {
         int LA1 = LA(1);
         while (LA1 != Token.EOF_TYPE && LA1 != tokenType) {
             consume();
@@ -121,7 +121,7 @@ public abstract class Parser extends MatchExceptionState {
     }
 
     /** Consume tokens until one matches the given token set */
-    public void consumeUntil(BitSet set) throws TokenStreamException {
+    public void consumeUntil(BitSet set) {
         int LA1 = LA(1);
         while (LA1 != Token.EOF_TYPE && !set.member(LA1)) {
             consume();
@@ -170,10 +170,10 @@ public abstract class Parser extends MatchExceptionState {
      * is the current token being examined by the parser (i.e., it
      * has not been matched yet).
      */
-    public abstract int LA(int i) throws TokenStreamException;
+    public abstract int LA(int i);
 
     /**Return the ith token of lookahead */
-    public abstract Token LT(int i) throws TokenStreamException;
+    public abstract Token LT(int i);
 
     // Forwarded to TokenBuffer
     public int mark() {
@@ -184,7 +184,7 @@ public abstract class Parser extends MatchExceptionState {
      * Throw an exception upon mismatch, which is catch by either the
      * error handler or by the syntactic predicate.
      */
-    public void match(int t) throws MismatchedTokenException, TokenStreamException {
+    public void match(int t) throws MismatchedTokenException {
         assert(matchError == false);
         if (LA(1) != t) {
 			matchError = true;
@@ -201,7 +201,7 @@ public abstract class Parser extends MatchExceptionState {
      * Throw an exception upon mismatch, which is catch by either the
      * error handler or by the syntactic predicate.
      */
-    public void match(BitSet b) throws MismatchedTokenException, TokenStreamException {
+    public void match(BitSet b) throws MismatchedTokenException {
         assert(matchError == false);
         if (!b.member(LA(1))) {
 			matchError = true;
@@ -214,7 +214,7 @@ public abstract class Parser extends MatchExceptionState {
 		}
 	}
 
-    public void matchNot(int t) throws MismatchedTokenException, TokenStreamException {
+    public void matchNot(int t) throws MismatchedTokenException {
         assert(matchError == false);
         if (LA(1) == t) {
         	// Throws inverted-sense exception
@@ -300,7 +300,7 @@ public abstract class Parser extends MatchExceptionState {
     }
 
 	public void recover(RecognitionException ex,
-						BitSet tokenSet) throws TokenStreamException {
+						BitSet tokenSet) {
 		consume();
 		consumeUntil(tokenSet);
 	}
@@ -352,14 +352,14 @@ public abstract class Parser extends MatchExceptionState {
             System.out.print(" ");
     }
 
-    public void traceIn(String rname) throws TokenStreamException {
+    public void traceIn(String rname) {
         traceDepth += 1;
         traceIndent();
         System.out.println("> " + rname + "; LA(1)==" + LT(1).getText() +
                            ((inputState.guessing > 0)?" [guessing="+inputState.guessing+"]":""));
     }
 
-    public void traceOut(String rname) throws TokenStreamException {
+    public void traceOut(String rname) {
         traceIndent();
         System.out.println("< " + rname + "; LA(1)==" + LT(1).getText() +
                            ((inputState.guessing > 0)?" [guessing="+inputState.guessing+"]":""));

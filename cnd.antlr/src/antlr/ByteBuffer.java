@@ -23,33 +23,21 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class ByteBuffer extends InputBuffer {
-
-    // char source
-    public transient InputStream input;
-
-
     /** Create a character buffer */
-    public ByteBuffer(InputStream input_) {
-        super();
-        input = input_;
-    }
-
-    public void fill() throws CharStreamException {
+    public ByteBuffer(InputStream input) {
         try {
-                data = new char[INITIAL_BUFFER_SIZE];
-                int pos = 0;
-                char curChar;
-                do {
-                    if (pos == data.length) {
-                        resizeData(0);
-                    }
-                    curChar = (char) input.read();
-                    data[pos] = curChar;
-                    pos++;
-                } while (curChar != CharScanner.EOF_CHAR);
-                p = 0;
+            int pos = 0;
+            char curChar;
+            do {
+                if (pos == data.length) {
+                    resizeData(0);
+                }
+                curChar = (char) input.read();
+                data[pos] = curChar;
+                pos++;
+            } while (curChar != CharScanner.EOF_CHAR);
 	} catch (IOException io) {
-            throw new CharStreamIOException(io);
+            System.err.println("tmp error: can't load input: " + io);
         }
     }
 }

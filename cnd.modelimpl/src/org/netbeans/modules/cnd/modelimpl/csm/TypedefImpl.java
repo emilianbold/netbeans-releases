@@ -35,23 +35,23 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.CsmObjectAccessor;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 /**
  * Implements CsmTypedef
  * @author vk155633
  */
-public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypedef, Disposable, CsmScopeElement {
+public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implements CsmTypedef, Disposable, CsmScopeElement {
     
     private final String name;
     private final CsmType type;
     
     // only one of containerOLD/containerUID must be used (based on USE_REPOSITORY)
     private CsmObject containerOLD;
-    private CsmUID    containerUID;
-    // but for now only namespace is under UID => class is handled as TEMP reference
-    private CsmObject    containerTEMP;
+    private CsmObjectAccessor    containerAccessor;
             
     public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name) {
         super(ast, file);
@@ -94,12 +94,12 @@ public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypede
     public String getQualifiedName() {
         CsmObject container = _getContainer();
         if( CsmKindUtilities.isClass(container) ) {
-	    return ((CsmClass) container).getQualifiedName() + "::" + getName(); // NOI18N
+	    return ((CsmClass) container).getQualifiedName() + "::" + getQualifiedNamePostfix(); // NOI18N
 	}
 	else if( CsmKindUtilities.isNamespace(container) ) {
 	    String nsName = ((CsmNamespace) container).getQualifiedName();
 	    if( nsName != null && nsName.length() > 0 ) {
-		return nsName + "::" + getName(); // NOI18N
+		return nsName + "::" + getQualifiedNamePostfix(); // NOI18N
 	    }
 	}
         return getName();
@@ -171,11 +171,9 @@ public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypede
 
     private CsmObject _getContainer() {
         if (TraceFlags.USE_REPOSITORY) {
-            if (containerUID != null) {
-                return UIDCsmConverter.UIDtoCsmObject(containerUID);
-            } else {
-                return containerTEMP;
-            }
+            CsmObject container = UIDCsmConverter.accessorToObject(this.containerAccessor);
+            assert (container != null || containerAccessor == null);
+            return container;
         } else {
             return containerOLD;
         }
@@ -183,16 +181,8 @@ public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypede
 
     private void _setContainer(CsmObject container) {
         if (TraceFlags.USE_REPOSITORY) {
-            containerTEMP = null;
-            if (containerUID != null) {
-                RepositoryUtils.remove(containerUID);
-                containerUID = null;
-            }
-            if (container instanceof CsmNamespace) {
-                containerUID = RepositoryUtils.put((CsmNamespace)container);
-            } else {
-                containerTEMP = container;
-            }
+            this.containerAccessor = UIDCsmConverter.objectToAccessor(container);
+            assert (containerAccessor != null || container == null);
         } else {
             this.containerOLD = container;
         }

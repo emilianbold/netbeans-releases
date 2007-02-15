@@ -115,21 +115,71 @@ public enum ATTR {
     DW_AT_elemental(0x66),
     DW_AT_pure(0x67),
     DW_AT_recursive(0x68),
+    
+    DW_AT_MIPS_lo(0x2001),
+    DW_AT_MIPS_fde(0x2001),
+    DW_AT_MIPS_loop_begin(0x2002),
+    DW_AT_MIPS_tail_loop_begin(0x2003),
+    DW_AT_MIPS_epilog_begin(0x2004),
+    DW_AT_MIPS_loop_unroll_factor(0x2005),
+    DW_AT_MIPS_software_pipeline_depth(0x2006),
     DW_AT_MIPS_linkage_name(0x2007),
+    DW_AT_MIPS_stride(0x2008),
+    DW_AT_MIPS_abstract_name(0x2009),
+    DW_AT_MIPS_clone_origin(0x200a),
+    DW_AT_MIPS_has_inlines(0x200b),
+    DW_AT_MIPS_stride_byte(0x200c),
+    DW_AT_MIPS_stride_elem(0x200d),
+    DW_AT_MIPS_ptr_dopetype(0x200e),
+    DW_AT_MIPS_allocatable_dopetype(0x200f),
+    DW_AT_MIPS_assumed_shape_dopetype(0x2010),
+    DW_AT_MIPS_assumed_size(0x2011),
+    DW_AT_MIPS_hi(0x2020),
+
+    DW_AT_GNU_lo(0x2101),
     DW_AT_sf_names(0x2101),
     DW_AT_src_info(0x2102),
     DW_AT_mac_info(0x2103),
     DW_AT_src_coords(0x2104),
     DW_AT_body_begin(0x2105),
     DW_AT_body_end(0x2106),
+    DW_AT_GNU_hi(0x2110),
+    
+    DW_AT_SUN_lo(0x2201),
     DW_AT_SUN_template(0x2201),
     DW_AT_SUN_alignment(0x2202),
+    DW_AT_SUN_vtable(0x2203),
+    DW_AT_SUN_count_guarantee(0x2204),
     DW_AT_SUN_command_line(0x2205),
+    DW_AT_SUN_vbase(0x2206),
     DW_AT_SUN_compile_options(0x2207),
     DW_AT_SUN_language(0x2208),
+    DW_AT_SUN_browser_file(0x2209),
+    DW_AT_SUN_vtable_abi(0x2210),
+    DW_AT_SUN_func_offsets(0x2211),
+    DW_AT_SUN_cf_kind(0x2212),
+    DW_AT_SUN_vtable_index(0x2213),
+    DW_AT_SUN_omp_tpriv_addr(0x2214),
+    DW_AT_SUN_omp_child_func(0x2215),
+    DW_AT_SUN_func_offset(0x2216),
+    DW_AT_SUN_memop_type_ref(0x2217),
+    DW_AT_SUN_profile_id(0x2218),
+    DW_AT_SUN_memop_signature(0x2219),
+    DW_AT_SUN_original_name(0x2222),
+    DW_AT_SUN_amd64_parmdump(0x2224),
     DW_AT_SUN_part_link_name(0x2225),
     DW_AT_SUN_link_name(0x2226),
+    DW_AT_SUN_pass_with_const(0x2227),
+    DW_AT_SUN_return_with_const(0x2228),
+    DW_AT_SUN_dtor_start(0x2231),
+    DW_AT_SUN_dtor_length(0x2232),
+    DW_AT_SUN_dtor_state_initial(0x2233),
+    DW_AT_SUN_dtor_state_final(0x2234),
+    DW_AT_SUN_dtor_state_deltas(0x2235),
+    DW_AT_SUN_hi(0x22ff),
+    
     DW_AT_lo_user(0x2000),
+    DW_AT_unknown(0x3ffe),
     DW_AT_hi_user(0x3fff),
     DW_AT_JDD_offset(0x3ffe);
     
@@ -147,7 +197,8 @@ public enum ATTR {
     }
     
     public static ATTR get(int val) {
-        return hashmap.get(new Integer(val));
+        ATTR attr = hashmap.get(new Integer(val));
+        return (attr != null) ? attr : DW_AT_unknown;
     }
     
     public int value() {

@@ -19,18 +19,10 @@
 
 package org.netbeans.modules.cnd.loaders;
 
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import org.openide.actions.*;
+import org.openide.nodes.Children;
 
-import org.netbeans.modules.cnd.execution.*;
-
-/** A node to represent an Elf shared library object.
- *
- */
-public class DllNode extends CCFNode {
+/** A node to represent an Elf shared library object */
+public class DllNode extends CndDataNode {
 
     public DllNode(DllObject obj) {
 	this(obj, Children.LEAF);

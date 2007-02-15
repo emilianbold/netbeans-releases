@@ -27,10 +27,12 @@ import javax.swing.filechooser.FileFilter;
 
 public class FileChooser extends JFileChooser {
     private static File currectChooserFile = null;
-    public FileChooser(String titleText, String buttonText, int mode, FileFilter[] filters, String feed, boolean useParent) {
+    public FileChooser(String titleText, String buttonText, int mode, boolean multiSelection,
+            FileFilter[] filters, String feed, boolean useParent) {
 	super();
 	setFileHidingEnabled(false);
 	setFileSelectionMode(mode);
+        setMultiSelectionEnabled(multiSelection);
 	setDialogTitle(titleText); // NOI18N
 	setApproveButtonText(buttonText); // NOI18N
 

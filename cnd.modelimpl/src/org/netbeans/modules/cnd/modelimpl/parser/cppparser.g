@@ -297,7 +297,7 @@ tokens {
 	_ts = tsInvalid;	// For TypeSpecifier
 	_ds = dsInvalid;	// For DeclSpecifier
 
-	functionDefinition = 0;
+	//functionDefinition = 0;
 	qualifierPrefix = new StringBuffer();
 	enclosingClass = "";
 	assign_stmt_RHS_found = 0;
@@ -421,7 +421,7 @@ tokens {
 	}
 	
 	protected boolean isCtor() { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected boolean isValidIdentifier(String id) { /*TODO: implement*/ throw new NotImplementedException(); }
+	//protected boolean isValidIdentifier(String id) { /*TODO: implement*/ throw new NotImplementedException(); }
 
 	protected
 	int lang;
@@ -429,11 +429,11 @@ tokens {
 	// Symbol table management stuff
 	//CPPDictionary *symbols;
 
-	protected
-	int templateParameterScope;
+	//protected
+	//int templateParameterScope;
 
-	protected
-	int externalScope;
+	//protected
+	//int externalScope;
 
 	protected
 	boolean _td;			// For typedef
@@ -453,11 +453,11 @@ tokens {
 	protected
 	DeclSpecifier _ds;	// For declaration specifier
 
-	protected
+	/*protected
 	int functionDefinition;	// 0 = Function definition not being parsed
 				// 1 = Parsing function name
 				// 2 = Parsing function parameter list
-				// 3 = Parsing function block
+				// 3 = Parsing function block*/
 
 	protected
 	StringBuffer qualifierPrefix = new StringBuffer();
@@ -524,14 +524,14 @@ tokens {
 	protected boolean isTypeName(String s) { /*TODO: implement*/ throw new NotImplementedException(); }
 	// isClassName is used in CPPParserEx only
 	//protected boolean isClassName(String  s) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void end_of_stmt() {}
+	//protected void end_of_stmt() {}
 
 
 	// Scoping stuff
-	protected void enterNewLocalScope() {}
-	protected void exitLocalScope() {}
-	protected void enterExternalScope() {}
-	protected void exitExternalScope() {}
+	//protected void enterNewLocalScope() {}
+	//protected void exitLocalScope() {}
+	//protected void enterExternalScope() {}
+	//protected void exitExternalScope() {}
 
 	// Aggregate stuff
 	protected void classForwardDeclaration(/*TypeSpecifier*/int ts, DeclSpecifier ds, String tag) {}
@@ -552,41 +552,41 @@ tokens {
 	protected void endDestructorDeclaration() {}
 	protected void beginParameterDeclaration() {}
 	protected void beginFieldDeclaration() {}
-	protected void beginFunctionDefinition() {}
-	protected void endFunctionDefinition() {}
-	protected void functionParameterList() {}
-	protected void functionEndParameterList(boolean def) {}
-	protected void beginConstructorDefinition() {}
-	protected void endConstructorDefinition() {}
-	protected void beginDestructorDefinition() {}
-	protected void endDestructorDefinition() {}
+	//protected void beginFunctionDefinition() {}
+	//protected void endFunctionDefinition() {}
+	//protected void functionParameterList() {}
+	//protected void functionEndParameterList(boolean def) {}
+	//protected void beginConstructorDefinition() {}
+	//protected void endConstructorDefinition() {}
+	//protected void beginDestructorDefinition() {}
+	//protected void endDestructorDefinition() {}
 
 	// Declarator stuff
 	protected void declaratorID(String s, /*QualifiedItem*/int qi) {}	// stores new symbol with type
 	protected void declaratorArray() {}
-	protected void declaratorParameterList(boolean def) {}
-	protected void declaratorEndParameterList(boolean def) {}
+	//protected void declaratorParameterList(boolean def) {}
+	//protected void declaratorEndParameterList(boolean def) {}
 
 	// template stuff
 	protected void templateTypeParameter(String s) {}
-	protected void beginTemplateDeclaration() {}
-	protected void endTemplateDeclaration() {}
+	//protected void beginTemplateDeclaration() {}
+	//protected void endTemplateDeclaration() {}
 	protected void beginTemplateDefinition() {}
 	protected void endTemplateDefinition() {}
-	protected void beginTemplateParameterList() {}
-	protected void endTemplateParameterList() {}
+	//protected void beginTemplateParameterList() {}
+	//protected void endTemplateParameterList() {}
 
 	// exception stuff
-	protected void exceptionBeginHandler() {}
-	protected void exceptionEndHandler() {}
+	//protected void exceptionBeginHandler() {}
+	//protected void exceptionEndHandler() {}
 	protected void panic(String s) {}
 
 	boolean reportErrors = true;
 
 	// myCode functions ready for overriding in MyCode subclass
 
-	protected int getOffset() { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected int getLine()	{ /*TODO: implement*/ throw new NotImplementedException(); }
+	//protected int getOffset() { /*TODO: implement*/ throw new NotImplementedException(); }
+	//protected int getLine()	{ /*TODO: implement*/ throw new NotImplementedException(); }
 
 	protected void printf(String pattern, int i) { /*TODO: implement*/ throw new NotImplementedException(); }
 	protected void printf(String pattern, Object o) { /*TODO: implement*/ throw new NotImplementedException(); }
@@ -601,9 +601,9 @@ tokens {
 }
 
 public translation_unit:
-		{enterExternalScope();}
+		//{enterExternalScope();}
 		(external_declaration)* EOF!
-		{exitExternalScope(); #translation_unit = #(#[CSM_TRANSLATION_UNIT, getFilename()], #translation_unit);}
+		{/*exitExternalScope();*/ #translation_unit = #(#[CSM_TRANSLATION_UNIT, getFilename()], #translation_unit);}
        ;
 
 external_declaration {String s; K_and_R = false;}
@@ -714,7 +714,7 @@ external_declaration {String s; K_and_R = false;}
                 {declarationSpecifier(true, false, scInvalid, tqInvalid, tsInvalid, dsInvalid);} 
                 enum_specifier 
                 //{ #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration);  }                            
-                (init_declarator_list)? SEMICOLON {end_of_stmt();}
+                (init_declarator_list)? SEMICOLON //{end_of_stmt();}
                 {  #external_declaration = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration); }                        		
 	|
   
@@ -724,7 +724,7 @@ external_declaration {String s; K_and_R = false;}
 			printf("external_declaration_3[%d]: Enum definition\n",
 				LT(1).getLine());
 		}
-		enum_specifier (init_declarator_list)? SEMICOLON! {end_of_stmt();}
+		enum_specifier (init_declarator_list)? SEMICOLON! //{end_of_stmt();}
 		{ #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
 
 	|  
@@ -802,15 +802,15 @@ external_declaration {String s; K_and_R = false;}
 		// templated forward class decl, init/decl of static member in template
 		{isCPlusPlus()}?
 		(template_head declaration_specifiers
-			(init_declarator_list)? SEMICOLON! {end_of_stmt();})=>
-		{beginTemplateDeclaration();
-		 if (statementTrace>=1) 
+			(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
+		//{beginTemplateDeclaration();}
+		{ if (statementTrace>=1) 
 			printf("external_declaration_10[%d]: Class template declaration\n",
 				LT(1).getLine());
 		}
 		template_head declaration_specifiers
-			(init_declarator_list)? SEMICOLON! {end_of_stmt();}
-		{endTemplateDeclaration(); #external_declaration = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration);}
+			(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
+		{/*endTemplateDeclaration();*/ #external_declaration = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration);}
 	|  
 		// Templated FUNCTIONS and CONSTRUCTORS matched here.
 		{isCPlusPlus()}?
@@ -902,7 +902,7 @@ external_declaration {String s; K_and_R = false;}
 		{if (statementTrace>=1) 
 			printf("external_declaration_14[%d]: Semicolon\n",LT(1).getLine());
 		}
-		SEMICOLON! {end_of_stmt();}
+		SEMICOLON! //{end_of_stmt();}
 	)
 	;	// end of external_declaration
 
@@ -920,9 +920,9 @@ decl_namespace
 			//	 }	// Used for diagnostic trigger
 			//}
 			LCURLY!
-			{enterNewLocalScope();}
+			//{enterNewLocalScope();}
 			((external_declaration)*)
-			{exitLocalScope();{ #decl_namespace = #(#[CSM_NAMESPACE_DECLARATION, name], #decl_namespace); }}
+			{/*exitLocalScope();*/{ #decl_namespace = #(#[CSM_NAMESPACE_DECLARATION, name], #decl_namespace); }}
 			RCURLY
 			// The following should be implemented to match the optional
 			// statement above
@@ -930,7 +930,7 @@ decl_namespace
 		|
 			ns2:ID{_td = true;name=ns2.getText();declaratorID((name),qiType);}
 			ASSIGNEQUAL qid = qualified_id SEMICOLON! 
-			{end_of_stmt();#decl_namespace = #(#[CSM_NAMESPACE_ALIAS, name], #decl_namespace);} 
+			{/*end_of_stmt();*/#decl_namespace = #(#[CSM_NAMESPACE_ALIAS, name], #decl_namespace);} 
 		)
 	;
 
@@ -956,7 +956,7 @@ member_declaration
 			printf("member_declaration_2[%d]: Enum definition\n",
 				LT(1).getLine());
 		}
-		enum_specifier (member_declarator_list)? SEMICOLON!	{end_of_stmt();}
+		enum_specifier (member_declarator_list)? SEMICOLON!	//{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #member_declaration); }
 	|
 		// Constructor declarator
@@ -974,7 +974,7 @@ member_declaration
                 // below is a workaround for know infinite loop bug in ANTLR 
                 // see http://www.jguru.com/faq/view.jsp?EID=271922
 		if( #cds != null ) { #cds.setNextSibling(null); }; 
-		#member_declaration = #(#[CSM_CTOR_DECLARATION, "CSM_CTOR_DECLARATION"], #cds, #cd); end_of_stmt();
+		#member_declaration = #(#[CSM_CTOR_DECLARATION, "CSM_CTOR_DECLARATION"], #cds, #cd); //end_of_stmt();
 		}
 		
 	|  
@@ -1003,7 +1003,7 @@ member_declaration
 			printf("member_declaration_5a[%d]: Destructor declaration\n",
 				LT(1).getLine());
 		}
-		dtor_head[false] (EOF!|SEMICOLON) {end_of_stmt();}	// Declaration
+		dtor_head[false] (EOF!|SEMICOLON) //{end_of_stmt();}	// Declaration
 		{ #member_declaration = #(#[CSM_DTOR_DECLARATION, "CSM_DTOR_DECLARATION"], #member_declaration); }
 	|
 		// No template_head allowed for dtor member
@@ -1051,7 +1051,7 @@ member_declaration
 			printf("member_declaration_9[%d]: Qualified ID\n",
 				LT(1).getLine());
 		}
-		q = qualified_id (EOF!|SEMICOLON) {end_of_stmt();}
+		q = qualified_id (EOF!|SEMICOLON) //{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_VISIBILITY_REDEF, "CSM_VISIBILITY_REDEF"], #member_declaration); }
 	|  
 		// Member with a type or just a type def
@@ -1062,7 +1062,7 @@ member_declaration
 			printf("member_declaration_10[%d]: Declaration(s)\n",
 				LT(1).getLine());
 		}
-		(LITERAL___extension__!)? declaration_specifiers (member_declarator_list)? (EOF!|SEMICOLON) {end_of_stmt();}
+		(LITERAL___extension__!)? declaration_specifiers (member_declarator_list)? (EOF!|SEMICOLON) //{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
 	|  
 		// Member without a type (I guess it can only be a function declaration
@@ -1076,7 +1076,7 @@ member_declaration
 			printf("member_declaration_11a[%d]: Function declaration\n",
 				LT(1).getLine());
 		}
-		function_declarator[false] (EOF!|SEMICOLON) {end_of_stmt();}
+		function_declarator[false] (EOF!|SEMICOLON) //{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
 	|
 		// Member without a type (I guess it can only be a function definition)
@@ -1089,7 +1089,7 @@ member_declaration
 				LT(1).getLine());
 		    }
 		}
-		function_declarator[true] compound_statement {endFunctionDefinition();}
+		function_declarator[true] compound_statement //{endFunctionDefinition();}
 		{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
 	|  
                 {isCPlusPlus()}?                
@@ -1104,15 +1104,15 @@ member_declaration
 		// templated forward class decl, init/decl of static member in template
 		{isCPlusPlus()}?
 		(template_head declaration_specifiers
-			(init_declarator_list)? SEMICOLON! {end_of_stmt();})=>
-		{beginTemplateDeclaration();
-		 if (statementTrace>=1) 
+			(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
+		//{beginTemplateDeclaration();}
+		{ if (statementTrace>=1) 
 			printf("member_declaration_12a[%d]: Class template declaration\n",
 				LT(1).getLine());
 		}
 		template_head declaration_specifiers
-			(init_declarator_list)? SEMICOLON! {end_of_stmt();}
-		{endTemplateDeclaration(); #member_declaration = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #member_declaration); } 		
+			(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
+		{/*endTemplateDeclaration();*/ #member_declaration = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #member_declaration); } 		
 	|  
 		// Templated FUNCTIONS and CONSTRUCTORS matched here.
 		// DW 27/06/03 Copied here from external_declaration since templates
@@ -1191,7 +1191,7 @@ member_declaration
 			printf("member_declaration_15[%d]: Semicolon\n",
 				LT(1).getLine());
 		}
-		SEMICOLON! {end_of_stmt();}
+		SEMICOLON! //{end_of_stmt();}
 	|	using_declaration
 	)
 	;	// end member_declaration
@@ -1199,7 +1199,7 @@ member_declaration
 // FIXUP: till qualifiedItemIsOneOf(qiType | qiCtor) is not correct in function_definition
 function_definition_no_ret_type
 	:	// don't want next action as an init-action due to (...)=> caller
-	{ beginFunctionDefinition(); }
+	//{ beginFunctionDefinition(); }
 	(	// Next line is equivalent to guarded predicate in PCCTS
 		function_declarator[true]
 		(	options{warnWhenFollowAmbig = false;}:
@@ -1209,7 +1209,7 @@ function_definition_no_ret_type
 		)?
 		compound_statement
 	)
-	{endFunctionDefinition();}
+	//{endFunctionDefinition();}
 	;
 
 protected
@@ -1228,7 +1228,7 @@ function_K_R_parameter
 
 function_definition
 	:	// don't want next action as an init-action due to (...)=> caller
-	{ beginFunctionDefinition(); }
+	//{ beginFunctionDefinition(); }
 	(	// Next line is equivalent to guarded predicate in PCCTS
 		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiType|qiCtor)>>?
 		{( !(LA(1)==SCOPE || LA(1)==ID) || qualifiedItemIsOneOf(qiType | qiCtor) )}?
@@ -1249,7 +1249,7 @@ function_definition
 		)?		    
                 compound_statement             
 	)
-	{endFunctionDefinition();}
+	//{endFunctionDefinition();}
 	;
 
 // rule for predicting "declaration"
@@ -1268,7 +1268,7 @@ declaration
 		// LL 31/1/97: added (COMMA) ? below. This allows variables to
 		// typedef'ed more than once. DW 18/08/03 ?
 		declaration_specifiers ((COMMA!)? init_declarator_list)? (EOF!|SEMICOLON)
-		{end_of_stmt();}
+		//{end_of_stmt();}
 		{endDeclaration();}
 	|	
 		using_declaration	// DW 19/04/04
@@ -1584,7 +1584,7 @@ conversion_function_decl_or_def
 		(tq = cv_qualifier)?
 		(exception_specification)?
 		(	compound_statement
-		|	SEMICOLON! {end_of_stmt();}
+		|	SEMICOLON! //{end_of_stmt();}
 		)
 	;
 
@@ -1623,9 +1623,9 @@ direct_declarator
 	        (idInBalanceParensHard LPAREN (RPAREN|parameter_list))=>                           
                 id = idInBalanceParensHard                                                     
 		{declaratorID(id, qiFun);}                
-		LPAREN! {declaratorParameterList(false);}
+		LPAREN! //{declaratorParameterList(false);}
 		(parameter_list)?
-		RPAREN! {declaratorEndParameterList(false);}                
+		RPAREN! //{declaratorEndParameterList(false);}                
 		(tq = cv_qualifier)*
 		(exception_specification)?
                 (options {greedy=true;} :function_attribute_specification)?
@@ -1684,9 +1684,9 @@ direct_declarator
 		{
                     if( reportOddWarnings ) printf("direct_declarator[%d]: Warning direct_declarator5 entered unexpectedly with %s\n", LT(1).getLine(),(dtor.getText()));
 		}
-		LPAREN {declaratorParameterList(false);}
+		LPAREN //{declaratorParameterList(false);}
 		(parameter_list)?
-		RPAREN {declaratorEndParameterList(false);}
+		RPAREN //{declaratorEndParameterList(false);}
 	|	
 		LPAREN declarator RPAREN declarator_suffixes
 
@@ -1706,9 +1706,9 @@ declarator_suffixes
 		 LSQUARE (constant_expression)? RSQUARE)+
 		{declaratorArray();}
 	|	{(!((LA(1)==LPAREN)&&(LA(2)==ID))||(qualifiedItemIsOneOf(qiType|qiCtor,1)))}?
-		LPAREN {declaratorParameterList(false);}
+		LPAREN //{declaratorParameterList(false);}
 		(parameter_list)?
-		RPAREN {declaratorEndParameterList(false);}
+		RPAREN //{declaratorEndParameterList(false);}
 		(tq = cv_qualifier)*
 		(exception_specification)?
 //	|	// DW 28/06/04 deleted Assume either following bracketed declaration
@@ -1750,7 +1750,7 @@ function_direct_declarator [boolean definition]
 
 		LPAREN 
 		{
-		    functionParameterList();
+		    //functionParameterList();
 		    if (K_and_R == false) {
 			    in_parameter_list = true;
 		    }
@@ -1767,7 +1767,7 @@ function_direct_declarator [boolean definition]
 		(options{warnWhenFollowAmbig = false;}:
 		 tq = cv_qualifier)*
 		(ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0             
-		{functionEndParameterList(definition);}
+		//{functionEndParameterList(definition);}
 		(exception_specification)?
 	;
 -----------------------------------------------------------------------------*/
@@ -1783,7 +1783,7 @@ function_direct_declarator [boolean definition]
 		(options{warnWhenFollowAmbig = false;}:
 		 tq = cv_qualifier)*                
 		(ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
-		{functionEndParameterList(definition);}
+		//{functionEndParameterList(definition);}
 		(exception_specification)?
                 (function_attribute_specification)?
                 (asm_block!)?
@@ -1812,7 +1812,7 @@ function_direct_declarator_2 [boolean definition]
 
 		LPAREN
 		{
-		    functionParameterList();
+		    //functionParameterList();
 		    if (K_and_R == false) {
 			    in_parameter_list = true;
 		    }
@@ -1832,7 +1832,7 @@ ctor_definition
 	:
 	ctor_head
 	ctor_body
-	{endConstructorDefinition();}
+	//{endConstructorDefinition();}
 	;
 
 ctor_head 
@@ -1853,9 +1853,9 @@ ctor_declarator[boolean definition]
 	q = qualified_ctor_id
         // VV: 06/06/06 handle constructor of class template explicite specialization
         (LESSTHAN template_argument_list GREATERTHAN)?
-	{declaratorParameterList(definition);}
+	//{declaratorParameterList(definition);}
 	LPAREN! (parameter_list)? RPAREN!
-	{declaratorEndParameterList(definition);}
+	//{declaratorEndParameterList(definition);}
 	(exception_specification)?
 	;
 
@@ -1917,10 +1917,10 @@ dtor_declarator[boolean definition]
 	:	
 	//({definition}? dtor_scope_override)
         dtor_scope_override	
-	{declaratorParameterList(definition);}
+	//{declaratorParameterList(definition);}
         // VV: /06/06/06 ~dtor(void) is valid construction
 	LPAREN (LITERAL_void)? RPAREN
-        {declaratorEndParameterList(definition);}
+        //{declaratorEndParameterList(definition);}
         (ASSIGNEQUAL OCTALINT)?	
 	(exception_specification)?        
 	;
@@ -1949,10 +1949,10 @@ dtor_declarator[boolean definition]
 	//({definition}? dtor_scope_override)
         dtor_scope_override
 	TILDE ID
-	{declaratorParameterList(definition);}
+	//{declaratorParameterList(definition);}
         // VV: /06/06/06 ~dtor(void) is valid construction
 	LPAREN (LITERAL_void)? RPAREN
-        {declaratorEndParameterList(definition);}
+        //{declaratorEndParameterList(definition);}
         (ASSIGNEQUAL OCTALINT)?	
 	(exception_specification)?        
 	;
@@ -1970,7 +1970,7 @@ dtor_scope_override
 dtor_body
 	:
 	compound_statement
-	{endDestructorDefinition();}
+	//{endDestructorDefinition();}
 	;
 
 parameter_list
@@ -2045,11 +2045,11 @@ abstract_declarator_suffix
 		{declaratorArray();}
 	|
 		LPAREN
-		{declaratorParameterList(false);}
+		//{declaratorParameterList(false);}
 		(parameter_list)?
 		RPAREN
 		cv_qualifier_seq
-		{declaratorEndParameterList(false);}
+		//{declaratorEndParameterList(false);}
 		(exception_specification)?
 	;
 
@@ -2141,9 +2141,9 @@ template_head
 
 template_parameter_list
 	:	
-		{beginTemplateParameterList();}
+		//{beginTemplateParameterList();}
 		template_parameter (COMMA template_parameter)*
-		{endTemplateParameterList();}
+		//{endTemplateParameterList();}
 	;
 
 /* Rule requires >2 lookahead tokens. The ambiguity is resolved 
@@ -2251,7 +2251,7 @@ statement
                 {if (statementTrace>=1) 
 			printf("statement_5[%d]: expression\n", LT(1).getLine());
 		}	
-                expression SEMICOLON! {end_of_stmt();#statement = #(#[CSM_EXPRESSION_STATEMENT, "CSM_EXPRESSION_STATEMENT"], #statement);}
+                expression SEMICOLON! {/*end_of_stmt();*/#statement = #(#[CSM_EXPRESSION_STATEMENT, "CSM_EXPRESSION_STATEMENT"], #statement);}
 	|
                 {if (statementTrace>=1) 
 			printf("statement_6[%d]: compound_statement\n", LT(1).getLine());
@@ -2276,7 +2276,7 @@ statement
                 {if (statementTrace>=1) 
 			printf("statement_10[%d]: SEMICOLON\n", LT(1).getLine());
 		}	
-                SEMICOLON! {end_of_stmt();}
+                SEMICOLON! //{end_of_stmt();}
 	|
                 {if (statementTrace>=1) 
 			printf("statement_11[%d]: try_block\n", LT(1).getLine());
@@ -2338,15 +2338,13 @@ compound_statement
         |   {!isLazyCompound()}?
             (
                 LCURLY
-		{
-		    end_of_stmt();
-		    enterNewLocalScope();
-		}
+		/*{
+		    //end_of_stmt();
+		    //enterNewLocalScope();
+		}*/
 		(statement_list)?
 		(EOF!|RCURLY)
-		{
-		    exitLocalScope();
-		}
+		//{exitLocalScope();}
 		{#compound_statement = #(#[CSM_COMPOUND_STATEMENT, "CSM_COMPOUND_STATEMENT"], #compound_statement);}
             )                      
 	;
@@ -2409,7 +2407,7 @@ do_while_statement
 		LITERAL_do 
 		statement LITERAL_while
 		LPAREN! expression RPAREN! 
-		(EOF!|SEMICOLON) {end_of_stmt();} 
+		(EOF!|SEMICOLON) //{end_of_stmt();} 
 		{#do_while_statement = #(#[CSM_DO_WHILE_STATEMENT, "CSM_DO_WHILE_STATEMENT"], #do_while_statement);}
 	;
 
@@ -2419,7 +2417,7 @@ for_statement
 		LITERAL_for LPAREN!
 		for_init_statement
 		(
-		(condition)? (EOF!|SEMICOLON) {end_of_stmt();}
+		(condition)? (EOF!|SEMICOLON) //{end_of_stmt();}
 		(expression)?
 		)?
 		RPAREN! statement	 
@@ -2430,17 +2428,17 @@ protected
 for_init_statement
 	:
 		(	(declaration)=> declaration 
-		|	expression (EOF!|SEMICOLON) {end_of_stmt();}
-		|	(EOF!|SEMICOLON) {end_of_stmt();} 
+		|	expression (EOF!|SEMICOLON) //{end_of_stmt();}
+		|	(EOF!|SEMICOLON) //{end_of_stmt();} 
 		)
 		{#for_init_statement = #(#[CSM_FOR_INIT_STATEMENT, "CSM_FOR_INIT_STATEMENT"], #for_init_statement);}
 	;
 
 jump_statement
 	:	
-	(	LITERAL_goto ID (EOF!|SEMICOLON) {end_of_stmt(); #jump_statement = #(#[CSM_GOTO_STATEMENT, "CSM_GOTO_STATEMENT"], #jump_statement);}
-	|	LITERAL_continue (EOF!|SEMICOLON) {end_of_stmt(); #jump_statement = #(#[CSM_CONTINUE_STATEMENT, "CSM_CONTINUE_STATEMENT"], #jump_statement);}
-	|	LITERAL_break (EOF!|SEMICOLON) {end_of_stmt(); #jump_statement = #(#[CSM_BREAK_STATEMENT, "CSM_BREAK_STATEMENT"], #jump_statement);}
+	(	LITERAL_goto ID (EOF!|SEMICOLON) {/*end_of_stmt();*/ #jump_statement = #(#[CSM_GOTO_STATEMENT, "CSM_GOTO_STATEMENT"], #jump_statement);}
+	|	LITERAL_continue (EOF!|SEMICOLON) {/*end_of_stmt();*/ #jump_statement = #(#[CSM_CONTINUE_STATEMENT, "CSM_CONTINUE_STATEMENT"], #jump_statement);}
+	|	LITERAL_break (EOF!|SEMICOLON) {/*end_of_stmt();*/ #jump_statement = #(#[CSM_BREAK_STATEMENT, "CSM_BREAK_STATEMENT"], #jump_statement);}
 		// DW 16/05/03 May be problem here if return is followed by a cast expression 
 	|	LITERAL_return {in_return = true;}
 		(	
@@ -2460,7 +2458,7 @@ jump_statement
 		|	expression 
 */
                 expression
-		)?	(EOF!|SEMICOLON) {in_return = false; end_of_stmt(); #jump_statement = #(#[CSM_RETURN_STATEMENT, "CSM_RETURN_STATEMENT"], #jump_statement);} 
+		)?	(EOF!|SEMICOLON) {in_return = false; /*end_of_stmt();*/ #jump_statement = #(#[CSM_RETURN_STATEMENT, "CSM_RETURN_STATEMENT"], #jump_statement);} 
 	)
 	;
 
@@ -2472,12 +2470,12 @@ try_block
 
 handler
 	:	LITERAL_catch
-		{exceptionBeginHandler();}
-		{declaratorParameterList(true);}
+		//{exceptionBeginHandler();}
+		//{declaratorParameterList(true);}
 		LPAREN exception_declaration RPAREN
-		{declaratorEndParameterList(true);}
+		//{declaratorEndParameterList(true);}
 		compound_statement
-		{exceptionEndHandler();{#handler = #(#[CSM_CATCH_CLAUSE, "CSM_CATCH_CLAUSE"], #handler);}}
+		{/*exceptionEndHandler();*/{#handler = #(#[CSM_CATCH_CLAUSE, "CSM_CATCH_CLAUSE"], #handler);}}
 	;
 
 exception_declaration
@@ -2489,7 +2487,7 @@ exception_declaration
  * as a statement also.
  */
 throw_statement
-	:	LITERAL_throw (assignment_expression) ? (EOF!|SEMICOLON) { end_of_stmt();}
+	:	LITERAL_throw (assignment_expression) ? (EOF!|SEMICOLON) //{ end_of_stmt();}
 		{#throw_statement = #(#[CSM_THROW_STATEMENT, "CSM_THROW_STATEMENT"], #throw_statement);}
 	;
 
@@ -2501,7 +2499,7 @@ using_declaration
 		|qid = qualified_id				// Using-declaration
 		    {#using_declaration = #[CSM_USING_DECLARATION, qid]; #using_declaration.addChild(#u);}
 		)
-		SEMICOLON! {end_of_stmt();}
+		SEMICOLON! //{end_of_stmt();}
 	;
 
 asm_block 	

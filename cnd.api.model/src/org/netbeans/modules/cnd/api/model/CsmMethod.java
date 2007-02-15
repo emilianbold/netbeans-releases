@@ -23,7 +23,7 @@ package org.netbeans.modules.cnd.api.model;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmMethod extends CsmMember, CsmFunction {
+public interface CsmMethod<T> extends CsmMember<T>, CsmFunction<T> {
 
     boolean isAbstract();
 

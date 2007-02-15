@@ -30,6 +30,7 @@ import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.CompletionView;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ListCompletionView;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
@@ -575,7 +576,7 @@ abstract public class CsmCompletion extends Completion {
             return null;
         }
 
-        public CsmUID getUID() {
+        public CsmUID<CsmClass> getUID() {
             if (clazz != null) {
                 return clazz.getUID();
             }

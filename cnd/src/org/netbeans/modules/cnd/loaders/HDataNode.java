@@ -21,19 +21,17 @@ package org.netbeans.modules.cnd.loaders;
 
 import org.openide.nodes.*;
 
-/** A node to represent this object.
- *
- */
-public class HDataNode extends CCFDataNode {
+/** A node to represent this object */
+public class HDataNode extends CndDataNode {
 
-    public HDataNode(CCFDataObject obj) {
+    public HDataNode(HDataObject obj) {
 	this(obj, Children.LEAF);
     }
 
-    public HDataNode(CCFDataObject obj, Children ch) {
+    public HDataNode(HDataObject obj, Children ch) {
 	super(obj, ch, HDataIcon);
     }
 
-    private static final String HDataIcon =
-		    "org/netbeans/modules/cnd/loaders/HDataIcon.gif";  // NOI18N
+    private static final
+            String HDataIcon = "org/netbeans/modules/cnd/loaders/HDataIcon.gif";  // NOI18N
 }

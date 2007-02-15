@@ -33,15 +33,17 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
  * Implements CsmNamespaceDefinition
  * @author Vladimir Kvasihn
  */
-public class NamespaceDefinitionImpl extends OffsetableDeclarationBase
+public class NamespaceDefinitionImpl extends OffsetableDeclarationBase<CsmNamespaceDefinition>
     implements CsmNamespaceDefinition, MutableDeclarationsContainer, Disposable {
 
-    private List declarations = Collections.synchronizedList(new ArrayList());
+    private List declarationsOLD = Collections.synchronizedList(new ArrayList());
+    private List<CsmUID<CsmDeclaration>> declarations = Collections.synchronizedList(new ArrayList<CsmUID<CsmDeclaration>>());
+    
     private String name;
     
     // only one of namespaceOLD/namespaceUID must be used (based on USE_REPOSITORY)
     private NamespaceImpl namespaceOLD;
-    private CsmUID namespaceUID;
+    private CsmUID<CsmNamespace> namespaceUID;
     
     public NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
         super(ast, file);
@@ -58,16 +60,35 @@ public class NamespaceDefinitionImpl extends OffsetableDeclarationBase
         return CsmDeclaration.Kind.NAMESPACE_DEFINITION;
     }
             
-    public List getDeclarations() {
-        return new ArrayList(declarations);
+    public List/*<CsmDeclaration>*/ getDeclarations() {
+        if (TraceFlags.USE_REPOSITORY) {
+            List<CsmDeclaration> decls = UIDCsmConverter.UIDsToDeclarations(declarations);
+            return decls;
+        } else {
+            return new ArrayList(declarationsOLD);
+        }
     }
     
     public void addDeclaration(CsmOffsetableDeclaration decl) {
-        declarations.add(decl);
+        if (TraceFlags.USE_REPOSITORY) {        
+            CsmUID<CsmDeclaration> uid = RepositoryUtils.put(decl);
+            assert uid != null;
+            declarations.add(uid);
+        } else {
+            declarationsOLD.add(decl);
+        }
     }
     
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {
-        declarations.remove(declaration);
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(declaration);
+            assert uid != null;
+            boolean res = declarations.remove(uid);
+            assert res;
+            if (true) RepositoryUtils.remove(uid);
+        } else {
+            declarationsOLD.remove(declaration);
+        }
     }
 
     public String getQualifiedName() {
@@ -99,26 +120,31 @@ public class NamespaceDefinitionImpl extends OffsetableDeclarationBase
                 ((Disposable) o).dispose();
             }
         }
-        declarations.clear();    
+        if (TraceFlags.USE_REPOSITORY) {
+            List<CsmUID<CsmDeclaration>> uids = new ArrayList(declarations);
+            declarations.clear();
+            if (false) RepositoryUtils.remove(uids);
+        } else {
+            declarationsOLD.clear();
+        }    
     }
 
     private NamespaceImpl _getNamespaceImpl() {
         if (TraceFlags.USE_REPOSITORY) {
-            return (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(namespaceUID);
+            NamespaceImpl impl = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(namespaceUID);
+            assert impl != null;
+            return impl;
         } else {
             return namespaceOLD;
         }
     }
 
-    private void _setNamespaceImpl(NamespaceImpl namespace) {
+    private void _setNamespaceImpl(NamespaceImpl ns) {
         if (TraceFlags.USE_REPOSITORY) {
-            if (namespaceUID != null) {
-                RepositoryUtils.remove(namespaceUID);
-                namespaceUID = null;
-            }
-            namespaceUID = RepositoryUtils.put(namespace);
+            namespaceUID = UIDCsmConverter.namespaceToUID(ns);
+            assert namespaceUID != null;
         } else {
-            this.namespaceOLD = namespace;
+            this.namespaceOLD = ns;
         }
     }
     

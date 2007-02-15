@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -35,7 +36,7 @@ import org.openide.util.NbBundle;
  */
 public class ConsolidationStrategyWizard implements WizardDescriptor.Panel, ChangeListener {
 
-    private WizardDescriptor wizardDescriptor;
+    private DiscoveryDescriptor wizardDescriptor;
     private ConsolidationStrategyPanel component;
     private String name;
     private boolean initialized = false;
@@ -53,10 +54,6 @@ public class ConsolidationStrategyWizard implements WizardDescriptor.Panel, Chan
         return component;
     }
 
-    public WizardDescriptor getWizardDescriptor() {
-	return wizardDescriptor;
-    } 
-    
     public HelpCtx getHelp() {
         // Show no Help button for this panel:
         return HelpCtx.DEFAULT_HELP;
@@ -67,7 +64,7 @@ public class ConsolidationStrategyWizard implements WizardDescriptor.Panel, Chan
     public boolean isValid() {
 	boolean valid = ((ConsolidationStrategyPanel)getComponent()).valid( wizardDescriptor);
 	if (valid) {
-	    wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
+	    wizardDescriptor.setMessage(""); // NOI18N
         }
 	return valid;
     }
@@ -106,14 +103,13 @@ public class ConsolidationStrategyWizard implements WizardDescriptor.Panel, Chan
     public void readSettings(Object settings) {
         if (initialized)
             return;
-        wizardDescriptor = (WizardDescriptor)settings;        
+        wizardDescriptor = DiscoveryWizardDescriptor.adaptee(settings);
         component.read(wizardDescriptor);
         initialized = true;
     }
     
     public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor)settings;
-        component.store(d);
+        component.store(DiscoveryWizardDescriptor.adaptee(settings));
     }
     
 }

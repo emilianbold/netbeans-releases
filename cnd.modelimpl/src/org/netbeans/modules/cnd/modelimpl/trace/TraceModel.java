@@ -141,7 +141,7 @@ public class TraceModel {
         
         // only one of project/projectUID must be used 
 	private ProjectBase project;
-        private CsmUID projectUID;
+        private CsmUID<CsmProject> projectUID;
         
 	private Cache cache;
 	
@@ -369,6 +369,15 @@ public class TraceModel {
 	}
 	
 	private void test(String[] args) {
+	    try {
+		test1(args);
+	    }
+	    finally {
+		model.shutdown();
+	    }
+	}
+	
+	private void test1(String[] args) {
 		long time = 0;
 		for( int i = 0; i < args.length; i++ ) {
 			if( args[i].startsWith("--") ) { // NOI18N
@@ -624,10 +633,6 @@ public class TraceModel {
 				ex.printStackTrace();
 			}
 		}
-                
-		model.shutdown();
-		
-                
 	}
 	
 	private void showMemoryUsage(long memUsed) {
@@ -820,89 +825,89 @@ public class TraceModel {
                     if ((Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0) {
                         // Solaris 10, amd x86
                         // gcc -x c++ -dM -E /dev/null | awk '{print "all.add(\"" $2 "=" $3 $4 $5 $6 $7 "\");" }'
-                        all.add("__DBL_MIN_EXP__=(-1021)");
-                        all.add("__EXTENSIONS__=1");
-                        all.add("__FLT_MIN__=1.17549435e-38F");
-                        all.add("__CHAR_BIT__=8");
-                        all.add("_XOPEN_SOURCE=500");
-                        all.add("__WCHAR_MAX__=2147483647");
-                        all.add("__DBL_DENORM_MIN__=4.9406564584124654e-324");
-                        all.add("__FLT_EVAL_METHOD__=2");
-                        all.add("__DBL_MIN_10_EXP__=(-307)");
-                        all.add("__FINITE_MATH_ONLY__=0");
-                        all.add("__GNUC_PATCHLEVEL__=3");
-                        all.add("__SHRT_MAX__=32767");
-                        all.add("__LDBL_MAX__=1.18973149535723176502e+4932L");
-                        all.add("__unix=1");
-                        all.add("__LDBL_MAX_EXP__=16384");
-                        all.add("__SCHAR_MAX__=127");
-                        all.add("__USER_LABEL_PREFIX__=");
-                        all.add("__STDC_HOSTED__=1");
-                        all.add("_LARGEFILE64_SOURCE=1");
-                        all.add("__LDBL_HAS_INFINITY__=1");
-                        all.add("__DBL_DIG__=15");
-                        all.add("__FLT_EPSILON__=1.19209290e-7F");
-                        all.add("__GXX_WEAK__=1");
-                        all.add("__LDBL_MIN__=3.36210314311209350626e-4932L");
-                        all.add("__unix__=1");
-                        all.add("__DECIMAL_DIG__=21");
-                        all.add("_LARGEFILE_SOURCE=1");
-                        all.add("__LDBL_HAS_QUIET_NAN__=1");
-                        all.add("__GNUC__=3");
-                        all.add("__DBL_MAX__=1.7976931348623157e+308");
-                        all.add("__DBL_HAS_INFINITY__=1");
-                        all.add("__SVR4=1");
-                        all.add("__cplusplus=1");
-                        all.add("__DEPRECATED=1");
-                        all.add("__DBL_MAX_EXP__=1024");
-                        all.add("__GNUG__=3");
-                        all.add("__LONG_LONG_MAX__=9223372036854775807LL");
-                        all.add("__GXX_ABI_VERSION=1002");
-                        all.add("__FLT_MIN_EXP__=(-125)");
-                        all.add("__DBL_MIN__=2.2250738585072014e-308");
-                        all.add("__FLT_MIN_10_EXP__=(-37)");
-                        all.add("__DBL_HAS_QUIET_NAN__=1");
-                        all.add("__tune_i386__=1");
-                        all.add("__sun=1");
-                        all.add("__REGISTER_PREFIX__=");
-                        all.add("__NO_INLINE__=1");
-                        all.add("__i386=1");
-                        all.add("__FLT_MANT_DIG__=24");
-                        all.add("__VERSION__=\"3.4.3(csl-sol210-3_4-branch+sol_rpath)\"");
-                        all.add("i386=1");
-                        all.add("sun=1");
-                        all.add("unix=1");
-                        all.add("__i386__=1");
-                        all.add("__SIZE_TYPE__=unsignedint");
-                        all.add("__ELF__=1");
-                        all.add("__FLT_RADIX__=2");
-                        all.add("__LDBL_EPSILON__=1.08420217248550443401e-19L");
-                        all.add("__FLT_HAS_QUIET_NAN__=1");
-                        all.add("__FLT_MAX_10_EXP__=38");
-                        all.add("__LONG_MAX__=2147483647L");
-                        all.add("__FLT_HAS_INFINITY__=1");
-                        all.add("__PRAGMA_REDEFINE_EXTNAME=1");
-                        all.add("__EXCEPTIONS=1");
-                        all.add("__LDBL_MANT_DIG__=64");
-                        all.add("__WCHAR_TYPE__=longint");
-                        all.add("__FLT_DIG__=6");
-                        all.add("__INT_MAX__=2147483647");
-                        all.add("__FLT_MAX_EXP__=128");
-                        all.add("__DBL_MANT_DIG__=53");
-                        all.add("__WINT_TYPE__=longint");
-                        all.add("__LDBL_MIN_EXP__=(-16381)");
-                        all.add("__LDBL_MAX_10_EXP__=4932");
-                        all.add("__DBL_EPSILON__=2.2204460492503131e-16");
-                        all.add("__sun__=1");
-                        all.add("__svr4__=1");
-                        all.add("__FLT_DENORM_MIN__=1.40129846e-45F");
-                        all.add("__FLT_MAX__=3.40282347e+38F");
-                        all.add("__GNUC_MINOR__=4");
-                        all.add("__DBL_MAX_10_EXP__=308");
-                        all.add("__LDBL_DENORM_MIN__=3.64519953188247460253e-4951L");
-                        all.add("__PTRDIFF_TYPE__=int");
-                        all.add("__LDBL_MIN_10_EXP__=(-4931)");
-                        all.add("__LDBL_DIG__=18");
+                        all.add("__DBL_MIN_EXP__=(-1021)"); // NOI18N
+                        all.add("__EXTENSIONS__=1"); // NOI18N
+                        all.add("__FLT_MIN__=1.17549435e-38F"); // NOI18N
+                        all.add("__CHAR_BIT__=8"); // NOI18N
+                        all.add("_XOPEN_SOURCE=500"); // NOI18N
+                        all.add("__WCHAR_MAX__=2147483647"); // NOI18N
+                        all.add("__DBL_DENORM_MIN__=4.9406564584124654e-324"); // NOI18N
+                        all.add("__FLT_EVAL_METHOD__=2"); // NOI18N
+                        all.add("__DBL_MIN_10_EXP__=(-307)"); // NOI18N
+                        all.add("__FINITE_MATH_ONLY__=0"); // NOI18N
+                        all.add("__GNUC_PATCHLEVEL__=3"); // NOI18N
+                        all.add("__SHRT_MAX__=32767"); // NOI18N
+                        all.add("__LDBL_MAX__=1.18973149535723176502e+4932L"); // NOI18N
+                        all.add("__unix=1"); // NOI18N
+                        all.add("__LDBL_MAX_EXP__=16384"); // NOI18N
+                        all.add("__SCHAR_MAX__=127"); // NOI18N
+                        all.add("__USER_LABEL_PREFIX__="); // NOI18N
+                        all.add("__STDC_HOSTED__=1"); // NOI18N
+                        all.add("_LARGEFILE64_SOURCE=1"); // NOI18N
+                        all.add("__LDBL_HAS_INFINITY__=1"); // NOI18N
+                        all.add("__DBL_DIG__=15"); // NOI18N
+                        all.add("__FLT_EPSILON__=1.19209290e-7F"); // NOI18N
+                        all.add("__GXX_WEAK__=1"); // NOI18N
+                        all.add("__LDBL_MIN__=3.36210314311209350626e-4932L"); // NOI18N
+                        all.add("__unix__=1"); // NOI18N
+                        all.add("__DECIMAL_DIG__=21"); // NOI18N
+                        all.add("_LARGEFILE_SOURCE=1"); // NOI18N
+                        all.add("__LDBL_HAS_QUIET_NAN__=1"); // NOI18N
+                        all.add("__GNUC__=3"); // NOI18N
+                        all.add("__DBL_MAX__=1.7976931348623157e+308"); // NOI18N
+                        all.add("__DBL_HAS_INFINITY__=1"); // NOI18N
+                        all.add("__SVR4=1"); // NOI18N
+                        all.add("__cplusplus=1"); // NOI18N
+                        all.add("__DEPRECATED=1"); // NOI18N
+                        all.add("__DBL_MAX_EXP__=1024"); // NOI18N
+                        all.add("__GNUG__=3"); // NOI18N
+                        all.add("__LONG_LONG_MAX__=9223372036854775807LL"); // NOI18N
+                        all.add("__GXX_ABI_VERSION=1002"); // NOI18N
+                        all.add("__FLT_MIN_EXP__=(-125)"); // NOI18N
+                        all.add("__DBL_MIN__=2.2250738585072014e-308"); // NOI18N
+                        all.add("__FLT_MIN_10_EXP__=(-37)"); // NOI18N
+                        all.add("__DBL_HAS_QUIET_NAN__=1"); // NOI18N
+                        all.add("__tune_i386__=1"); // NOI18N
+                        all.add("__sun=1"); // NOI18N
+                        all.add("__REGISTER_PREFIX__="); // NOI18N
+                        all.add("__NO_INLINE__=1"); // NOI18N
+                        all.add("__i386=1"); // NOI18N
+                        all.add("__FLT_MANT_DIG__=24"); // NOI18N
+                        all.add("__VERSION__=\"3.4.3(csl-sol210-3_4-branch+sol_rpath)\""); // NOI18N
+                        all.add("i386=1"); // NOI18N
+                        all.add("sun=1"); // NOI18N
+                        all.add("unix=1"); // NOI18N
+                        all.add("__i386__=1"); // NOI18N
+                        all.add("__SIZE_TYPE__=unsignedint"); // NOI18N
+                        all.add("__ELF__=1"); // NOI18N
+                        all.add("__FLT_RADIX__=2"); // NOI18N
+                        all.add("__LDBL_EPSILON__=1.08420217248550443401e-19L"); // NOI18N
+                        all.add("__FLT_HAS_QUIET_NAN__=1"); // NOI18N
+                        all.add("__FLT_MAX_10_EXP__=38"); // NOI18N
+                        all.add("__LONG_MAX__=2147483647L"); // NOI18N
+                        all.add("__FLT_HAS_INFINITY__=1"); // NOI18N
+                        all.add("__PRAGMA_REDEFINE_EXTNAME=1"); // NOI18N
+                        all.add("__EXCEPTIONS=1"); // NOI18N
+                        all.add("__LDBL_MANT_DIG__=64"); // NOI18N
+                        all.add("__WCHAR_TYPE__=longint"); // NOI18N
+                        all.add("__FLT_DIG__=6"); // NOI18N
+                        all.add("__INT_MAX__=2147483647"); // NOI18N
+                        all.add("__FLT_MAX_EXP__=128"); // NOI18N
+                        all.add("__DBL_MANT_DIG__=53"); // NOI18N
+                        all.add("__WINT_TYPE__=longint"); // NOI18N
+                        all.add("__LDBL_MIN_EXP__=(-16381)"); // NOI18N
+                        all.add("__LDBL_MAX_10_EXP__=4932"); // NOI18N
+                        all.add("__DBL_EPSILON__=2.2204460492503131e-16"); // NOI18N
+                        all.add("__sun__=1"); // NOI18N
+                        all.add("__svr4__=1"); // NOI18N
+                        all.add("__FLT_DENORM_MIN__=1.40129846e-45F"); // NOI18N
+                        all.add("__FLT_MAX__=3.40282347e+38F"); // NOI18N
+                        all.add("__GNUC_MINOR__=4"); // NOI18N
+                        all.add("__DBL_MAX_10_EXP__=308"); // NOI18N
+                        all.add("__LDBL_DENORM_MIN__=3.64519953188247460253e-4951L"); // NOI18N
+                        all.add("__PTRDIFF_TYPE__=int"); // NOI18N
+                        all.add("__LDBL_MIN_10_EXP__=(-4931)"); // NOI18N
+                        all.add("__LDBL_DIG__=18"); // NOI18N
                     } else {
 			// add generated by gcc 3.3.4 on SuSe 9.2
 			// #gcc -x c++ -dM -E - < /dev/null
@@ -1209,9 +1214,10 @@ public class TraceModel {
 		}
 		FileImpl fileImpl = null;
 		APTPreprocState preprocState = getPreprocState(file);
+                APTPreprocState.State state = preprocState.getState();
 		fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), preprocState);
 		try {
-			fileImpl.scheduleParsing(true);
+			fileImpl.scheduleParsing(true, state);
 		} catch( InterruptedException e ) {
 			// nothing to do
 			print("Interrupted parsing"); // NOI18N
@@ -1421,14 +1427,18 @@ public class TraceModel {
 		int errCount = 0;
 		
 		APTPreprocState preprocState = getPreprocState(file);
+                APTPreprocState.State state = preprocState.getState();
 		fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), preprocState);
 		try {
-			fileImpl.scheduleParsing(true);
+			fileImpl.scheduleParsing(true, state);
 			if( preprocState != null ) { // i.e. if TraceFlags.USE_APT
-				preprocState.setState(fileImpl.getPreprocStateState());
+				preprocState.setState(fileImpl.testGetPreprocStateState());
 			}
 			fileImpl.setPreprocState(null);
 			waitProjectParsed(false);
+			if( dumpAst || writeAst || showAstWindow ) {
+			    tree = fileImpl.parse(getPreprocState(file));
+			}
 		} catch( InterruptedException e ) {
 			// nothing to do
 		}

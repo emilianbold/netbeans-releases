@@ -97,6 +97,7 @@ public class ModelList {
     
     /** the same as getDeclarations, but creates a list */
     private List<CsmDeclaration> getList(String qualifiedName) {
+	qualifiedName = qualifiedName.replaceAll(" ", ""); // NOI18N
 	List<CsmDeclaration> result = map.get(qualifiedName);
 	if( result == null ) {
 	    result = new ArrayList<CsmDeclaration>();

@@ -137,22 +137,8 @@ shiftExpr returns [long r] : {long b;}  r=sumExpr (SHIFTLEFT^ b=sumExpr { r= r <
 sumExpr   returns [long r] : {long b;}  r=prodExpr (PLUS^ b=prodExpr { r= r + b; }
                                                    |MINUS^ b=prodExpr { r= r - b; })* ;
 prodExpr  returns [long r] : {long b;}  r=signExpr (STAR^ b=signExpr { r=r*b; }
-                                                   |DIVIDE^ b=signExpr
-                                                                     {
-                                                                        try {
-                                                                            r=r/b;
-                                                                        } catch (ArithmeticException ex) {
-                                                                            //System.err.println(ex);
-                                                                            r = 0;
-                                                                        }
-                                                                    }
-                                                   |MOD^ b=signExpr {
-                                                                        try {
-                                                                            r=r%b;
-                                                                        } catch (ArithmeticException ex) {
-                                                                            //System.err.println(ex);
-                                                                            r = 0;
-                                                                        }})* ;
+                                                   |DIVIDE^ b=signExpr { r=r/b; }
+                                                   |MOD^ b=signExpr { r=r%b; } )* ;
 signExpr  returns [long r] {r=0;}:   
                       m:MINUS^ /*{#m.setType(SIGN_MINUS);}*/ r=atom { r=-1*r; }
                     | p:PLUS^  /*{#p.setType(SIGN_PLUS);}*/ r=atom { r= (r<0) ? 0-r : r; }

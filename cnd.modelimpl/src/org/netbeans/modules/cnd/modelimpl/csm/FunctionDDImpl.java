@@ -35,7 +35,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  * for those cases, when they coinside (i.e. implivit inlines)
  * @author Vladimir Kvasihn
  */
-public class FunctionDDImpl extends FunctionImpl implements CsmFunctionDefinition {
+public class FunctionDDImpl extends FunctionImpl<CsmFunctionDefinition> implements CsmFunctionDefinition {
     
     private final CsmCompoundStatement body;
 

@@ -34,5 +34,14 @@ public class DebugUtils {
             result = Boolean.parseBoolean(text);
         }
         return result;
-    }      
+    } 
+    
+    public static final boolean STANDALONE;
+    static {
+        STANDALONE = initStandalone();
+    }
+    
+    private static boolean initStandalone() {
+        return ! DebugUtils.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
+    }    
 }

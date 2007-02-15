@@ -19,27 +19,10 @@
 
 package org.netbeans.modules.cnd.loaders;
 
-import java.io.IOException;
-import java.io.File;
-import java.io.*;
-
-import org.netbeans.modules.cnd.execution41.org.openide.actions.ExecuteAction;
-
-import org.openide.actions.*;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.UniFileLoader;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.FileEntry;
-import org.openide.loaders.ExtensionList;
 import org.openide.nodes.Node;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.cnd.api.utils.CppUtils;
-import org.netbeans.modules.cnd.MIMENames;
-
+import org.netbeans.modules.cnd.execution41.org.openide.actions.ExecuteAction;
 
 public class CppExecuteAction extends ExecuteAction {
     // Override only performAction and set compileBefore to false. If not set to false,

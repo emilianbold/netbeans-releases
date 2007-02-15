@@ -30,6 +30,7 @@ import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 /**
  *
@@ -46,17 +47,18 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     // FIX for lazy resolver calls
     private String[] qname = null;
     private int firstOffset;
-    private CsmClassifier classifier;
+    private CsmClassifier classifierOLD;
+    private CsmUID<CsmClassifier> classifierUID;
     
     private TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file) {
         super(ast, file);
-        this.classifier = classifier;
+        this._setClassifier(classifier);
         this.pointerDepth = pointerDepth;
         this.reference = reference;
         this.arrayDepth = arrayDepth;
         _const = initIsConst(ast);
-        if (this.classifier == null) {
-            this.classifier = initClassifier(ast);
+        if (classifier == null) {
+            this._setClassifier(initClassifier(ast));
             this.classifierText = initClassifierText(ast);
         } else {
             String typeName = classifier.getName();
@@ -75,7 +77,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         this.reference = reference;
         this.arrayDepth = arrayDepth;
         _const = initIsConst(classifier);
-        this.classifier = initClassifier(classifier);
+        this._setClassifier(initClassifier(classifier));
         this.classifierText = initClassifierText(classifier);
     }
     
@@ -157,6 +159,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     
     private String initClassifierText(AST node) {
         if( node == null ) {
+            CsmClassifier classifier = _getClassifier();
             return classifier == null ? "" : classifier.getName();
         }
         else {
@@ -180,10 +183,16 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     }
 
     public CsmClassifier getClassifier() {
-        if ((classifier == null) && (qname != null)) {
-            classifier = renderClassifier();
+        CsmClassifier classifier = _getClassifier();
+        if (classifier != null && (!(classifier instanceof CsmValidable) || (((CsmValidable)classifier).isValid()))) {
+            return classifier;
+        } else {
+            _setClassifier(null);
+            if (qname != null) {
+                _setClassifier(renderClassifier());
+            }
         }
-        return classifier;
+        return _getClassifier();
     }
     
     private CsmClassifier renderClassifier() {
@@ -363,6 +372,25 @@ public class TypeImpl extends OffsetableBase implements CsmType {
             ptrOperator = ptrOperator.getNextSibling();
         }
         return new TypeImpl(classifier, pointerDepth, refence, arrayDepth, ast, file);
+    }
+
+    private CsmClassifier _getClassifier() {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmClassifier classifier = UIDCsmConverter.UIDtoDeclaration(classifierUID);
+            assert (classifier != null || classifierUID == null);
+            return classifier;
+        } else {
+            return this.classifierOLD;
+        }     
+    }
+
+    private void _setClassifier(CsmClassifier classifier) {
+        if (TraceFlags.USE_REPOSITORY) {
+            this.classifierUID = UIDCsmConverter.declarationToUID(classifier);
+            assert (classifierUID != null || classifier == null);
+        } else {
+            this.classifierOLD = classifier;
+        }
     }
     
 }

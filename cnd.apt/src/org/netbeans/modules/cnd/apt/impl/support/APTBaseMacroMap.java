@@ -88,8 +88,18 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     
     public State getState() {
         //Create new snapshot instance in the tree
-        active = makeSnapshot(active);
+        changeActiveSnapshotIfNeeded();
         return new StateImpl(active.parent);
+    }
+    
+    protected void changeActiveSnapshotIfNeeded () {
+        // do not use isEmpty approach yet.
+        // not everything is clear yet, how clean of states is working in this case
+        // some memory could remain and it's not good.
+        // TODO: Needs additional investigation
+        if (true || !active.isEmtpy()) {
+            active = makeSnapshot(active);
+        }
     }
     
     public void setState(State state) {

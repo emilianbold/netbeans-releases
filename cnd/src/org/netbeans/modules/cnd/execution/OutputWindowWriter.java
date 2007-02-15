@@ -494,7 +494,8 @@ public class OutputWindowWriter extends Writer {
                 try {
                     String file = m.group(1);
                     Integer lineNumber = Integer.valueOf(m.group(2));
-                    FileObject fo = relativeTo.getFileObject(file);
+                    //FileObject fo = relativeTo.getFileObject(file);
+                    FileObject fo = resolveRelativePath(relativeTo, file);
                     
                     boolean important = m.pattern() == SUN_ERROR_SCANNER_CPP_ERROR || m.pattern() == SUN_ERROR_SCANNER_C_ERROR;
                     

@@ -42,7 +42,7 @@ public class LLkParserNoEx extends LLkParser {
         super(lexer, k_);
     }
     
-    public void match(int t) throws TokenStreamException {
+    public void match(int t) {
         if (LA(1) == t) {
             consume();
             //matchError=false;
@@ -54,7 +54,7 @@ public class LLkParserNoEx extends LLkParser {
         }
     }
 
-    public void match(BitSet b) throws TokenStreamException {
+    public void match(BitSet b) {
         if (b.member(LA(1))) {
             consume();
             //matchError=false;
@@ -66,7 +66,7 @@ public class LLkParserNoEx extends LLkParser {
         }
     }
 
-    public void matchNot(int t) throws TokenStreamException {
+    public void matchNot(int t) {
         if (LA(1) != t) {
             consume();
             //matchError=false;

@@ -31,8 +31,8 @@ import java.util.StringTokenizer;
  *
  * @author Alexander Simon
  */
-public class Root {
-    private Map<String,Root> children = new HashMap<String,Root>();
+public class Root implements AbstractRoot {
+    private Map<String,AbstractRoot> children = new HashMap<String,AbstractRoot>();
     private String name;
     private List<String> files;
     
@@ -40,7 +40,7 @@ public class Root {
         this.name = name;
     }
     
-    public Collection<Root> getChildren(){
+    public Collection<AbstractRoot> getChildren(){
         return children.values();
     }
     
@@ -49,7 +49,7 @@ public class Root {
     }
     
     private Root getChild(String child){
-        return children.get(child);
+        return (Root)children.get(child);
     }
     
     public List<String> getFiles(){
@@ -64,7 +64,7 @@ public class Root {
     
     public Root addChild(String child){
         Root current = this;
-        StringTokenizer st = new StringTokenizer(child,File.separator);
+        StringTokenizer st = new StringTokenizer(child,"/");
         while(st.hasMoreTokens()){
             String segment = st.nextToken();
             if (st.hasMoreTokens()) {

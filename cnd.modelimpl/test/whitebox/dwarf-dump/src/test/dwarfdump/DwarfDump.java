@@ -22,6 +22,7 @@ package test.dwarfdump;
 import java.util.TreeSet;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfArangesSection;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfDebugInfoSection;
@@ -100,15 +101,17 @@ public class DwarfDump {
     }
 
     public List<CompilationUnit> getCompilationUnits() {
-        DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)reader.getSection(".debug_info"); // NOI18N
+        DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)reader.getSection(SECTIONS.DEBUG_INFO);
         List<CompilationUnit> result = null;
         
-        if( debugInfo != null ) {
+        if (debugInfo != null) {
             try {
                 result = debugInfo.getCompilationUnits();
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
+        } else {
+            return new ArrayList<CompilationUnit>();
         }
         
         return result;
@@ -120,14 +123,17 @@ public class DwarfDump {
 //        ElfSection stringsSection = reader.getSection(".shstrtab");
 //        stringsSection.dump(out);
     
-        DwarfArangesSection aranges = (DwarfArangesSection) reader.getSection(".debug_aranges"); // NOI18N
+        DwarfArangesSection aranges = (DwarfArangesSection) reader.getSection(SECTIONS.DEBUG_ARANGES);
         
         if (aranges != null) {
             aranges.dump(out);
         }
         
-        for (CompilationUnit cu : getCompilationUnits()) {
-            cu.dump(out);
+        List<CompilationUnit> compUnits = getCompilationUnits();
+        if (compUnits != null) {
+            for (CompilationUnit cu : compUnits) {
+                cu.dump(out);
+            }
         }
     }
 

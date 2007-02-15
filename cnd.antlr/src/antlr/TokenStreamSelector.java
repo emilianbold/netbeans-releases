@@ -20,97 +20,44 @@ import antlr.collections.impl.LList;
  *	Or, you can have multiple instances of the same lexer handle
  *  multiple input streams; this works great for includes.
  */
-public class TokenStreamSelector implements TokenStream, IASDebugStream {
-    /** The set of inputs to the MUX */
-    protected Hashtable inputStreamNames;
-
+public class TokenStreamSelector implements TokenStream {
     /** The currently-selected token stream input */
-    protected TokenStream input;
+    protected TokenStream input = null;
 
     /** Used to track stack of input streams */
     protected Stack streamStack = new LList();
 
     public TokenStreamSelector() {
-        super();
-        inputStreamNames = new Hashtable();
-    }
-
-    public void addInputStream(TokenStream stream, String key) {
-        inputStreamNames.put(key, stream);
     }
 
     /** Return the stream from tokens are being pulled at
      *  the moment.
      */
-    public TokenStream getCurrentStream() {
+    /*public TokenStream getCurrentStream() {
         return input;
+    }*/
+
+    public final Token nextToken() throws TokenStreamException {
+        return input.nextToken();
     }
 
-    public TokenStream getStream(String sname) {
-        TokenStream stream = (TokenStream)inputStreamNames.get(sname);
-        if (stream == null) {
-            throw new IllegalArgumentException("TokenStream " + sname + " not found");
-        }
-        return stream;
-    }
-
-    public Token nextToken() throws TokenStreamException {
-        // return input.nextToken();
-        // keep looking for a token until you don't
-        // get a retry exception.
-        for (; ;) {
-            try {
-                return input.nextToken();
-            }
-            catch (TokenStreamRetryException r) {
-                // just retry "forever"
-            }
-        }
-    }
-
-    public TokenStream pop() {
+    public final TokenStream pop() {
         TokenStream stream = (TokenStream)streamStack.pop();
         select(stream);
         return stream;
     }
 
-    public void push(TokenStream stream) {
+    public final void push(TokenStream stream) {
         streamStack.push(input); // save current stream
         select(stream);
     }
-
-    public void push(String sname) {
-        streamStack.push(input);
-        select(sname);
-    }
-
-    /** Abort recognition of current Token and try again.
-     *  A stream can push a new stream (for include files
-     *  for example, and then retry(), which will cause
-     *  the current stream to abort back to this.nextToken().
-     *  this.nextToken() then asks for a token from the
-     *  current stream, which is the new "substream."
-     */
-    public void retry() throws TokenStreamRetryException {
-        throw new TokenStreamRetryException();
+    
+    public final boolean isEmpty() {
+        return streamStack.height() == 0;
     }
 
     /** Set the stream without pushing old stream */
-    public void select(TokenStream stream) {
+    public final void select(TokenStream stream) {
         input = stream;
-    }
-
-    public void select(String sname) throws IllegalArgumentException {
-        input = getStream(sname);
-    }
-
-    public String getEntireText()
-    {
-        return ASDebugStream.getEntireText(this.input);
-    }
-
-    public TokenOffsetInfo getOffsetInfo(Token token)
-    {
-        return ASDebugStream.getOffsetInfo(this.input, token);
     }
 }

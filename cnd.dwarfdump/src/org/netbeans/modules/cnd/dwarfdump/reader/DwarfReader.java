@@ -23,6 +23,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATE;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.FORM;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfAbbriviationTableSection;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfArangesSection;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfDebugInfoSection;
@@ -43,13 +44,13 @@ public class DwarfReader extends ElfReader {
     
     public DwarfReader(String fname) throws FileNotFoundException, IOException {
         super(fname);
-        getSection(".debug_str"); // NOI18N
+        getSection(SECTIONS.DEBUG_STR); 
     }
     
     public Object readAttrValue(DwarfAttribute attr) throws IOException {
         Object value = readForm(attr.valueForm);
         
-        if (attr.attrName.equals(ATTR.DW_AT_language)) {            
+        if (attr.attrName.equals(ATTR.DW_AT_language)) {
             return LANG.get(((Number)value).intValue());
         }
         
@@ -84,7 +85,9 @@ public class DwarfReader extends ElfReader {
             //return read(new byte[4]);
             return readInt();
         } else if (form.equals(FORM.DW_FORM_data8)) {
-            return read(new byte[8]);
+            //TODO: check on all architectures!
+            //return read(new byte[8]);
+            return readLong();
         } else if (form.equals(FORM.DW_FORM_string)) {
             return readString();
         } else if (form.equals(FORM.DW_FORM_block)) {
@@ -98,7 +101,7 @@ public class DwarfReader extends ElfReader {
         } else if (form.equals(FORM.DW_FORM_sdata)) {
             return readSignedLEB128();
         } else if (form.equals(FORM.DW_FORM_strp)) {
-            return ((StringTableSection)getSection(".debug_str")).getString(readInt()); // NOI18N
+            return ((StringTableSection)getSection(SECTIONS.DEBUG_STR)).getString(readInt()); 
         } else if (form.equals(FORM.DW_FORM_udata)) {
             return readUnsignedLEB128();
         } else if (form.equals(FORM.DW_FORM_ref_addr)) {
@@ -119,33 +122,33 @@ public class DwarfReader extends ElfReader {
             throw new IOException("unknown type " + form); // NOI18N
         }
     }
-
+    
     ElfSection initSection(Integer sectionIdx, String sectionName) {
-        if (sectionName.equals(".debug_str")) { // NOI18N
+        if (sectionName.equals(SECTIONS.DEBUG_STR)) {
             return new StringTableSection(this, sectionIdx);
         }
         
-        if (sectionName.equals(".debug_aranges")) { // NOI18N
+        if (sectionName.equals(SECTIONS.DEBUG_ARANGES)) {
             return new DwarfArangesSection(this, sectionIdx);
         }
         
-        if (sectionName.equals(".debug_info")) { // NOI18N
+        if (sectionName.equals(SECTIONS.DEBUG_INFO)) {
             return new DwarfDebugInfoSection(this, sectionIdx);
         }
         
-        if (sectionName.equals(".debug_abbrev")) { // NOI18N
+        if (sectionName.equals(SECTIONS.DEBUG_ABBREV)) {
             return new DwarfAbbriviationTableSection(this, sectionIdx);
         }
         
-        if (sectionName.equals(".debug_line")) { // NOI18N
+        if (sectionName.equals(SECTIONS.DEBUG_LINE)) {
             return new DwarfLineInfoSection(this, sectionIdx);
         }
         
-        if (sectionName.equals(".debug_macinfo")) { // NOI18N
+        if (sectionName.equals(SECTIONS.DEBUG_MACINFO)) {
             return new DwarfMacroInfoSection(this, sectionIdx);
         }
         
-        if (sectionName.equals(".debug_pubnames")) { // NOI18N
+        if (sectionName.equals(SECTIONS.DEBUG_PUBNAMES)) {
             return new DwarfNameLookupTableSection(this, sectionIdx);
         }
         

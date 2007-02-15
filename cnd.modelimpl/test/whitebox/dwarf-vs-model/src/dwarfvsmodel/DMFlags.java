@@ -25,6 +25,29 @@ package dwarfvsmodel;
  */
 public class DMFlags {
     
+    private static Config config = new Config();
+
+    public static Config.StringOption logFile = config.addStringOption("log.file", "Log file", null, "l"); // NOI18N
+
+    public static Config.StringOption tempDir = config.addStringOption("temp.dir", "Directory for details", "/tmp/whitebox", "t"); // NOI18N
+    
+    public static Config.StringOption configFile = config.addStringOption("config.file", "Configuration file", null,"c"); // NOI18N
+    
+    public static Config.BooleanOption bidirectional = config.addBooleanOption("comparison.bidirectional", "Bidirectional comparison", false, "b"); // NOI18N
+    
+    public static Config.BooleanOption flat = config.addBooleanOption("comparison.flat", "Don't compare bodies", false, "f"); // NOI18N
+    
+    public static Config.StringListOption userIncludes = config.addStringListOption("user.includes", "User include path", "I"); // NOI18N
+    
+    public static Config.StringListOption userDefines = config.addStringListOption("user.defines", "User defines", "D"); // NOI18N
+    
+    public static Config.BooleanOption printToScreen = config.addBooleanOption("print.to.screen", "Print to screen", false, "s"); // NOI18N
+    
+    
+    public static void parse(String[] args) throws Config.WrongArgumentException {
+	config.parse(args);
+    }
+        
     //public static final boolean TRACE_TREES = Boolean.getBoolean("trace.trees");
     
     public static final boolean TRACE_COMPARISON = getBoolean("trace.comparison");

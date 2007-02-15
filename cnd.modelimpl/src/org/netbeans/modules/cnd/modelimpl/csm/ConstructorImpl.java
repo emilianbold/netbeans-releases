@@ -28,7 +28,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * CsmConstructor implementation
  * @author Vladimir Kvasihn
  */
-public class ConstructorImpl extends MethodImpl implements CsmConstructor {
+public class ConstructorImpl extends MethodImpl<CsmConstructor> implements CsmConstructor {
 
     public ConstructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
         super(ast, cls, visibility);

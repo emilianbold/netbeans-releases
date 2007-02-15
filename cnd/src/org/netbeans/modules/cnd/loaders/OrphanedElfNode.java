@@ -19,22 +19,13 @@
 
 package org.netbeans.modules.cnd.loaders;
 
-import java.awt.Image;
-
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.actions.*;
-
-import org.netbeans.modules.cnd.execution.*;
+import org.openide.nodes.Children;
 
 /**
  *  A node to represent an orphaned Elf object file. An orphan is an object
  *  file without a matching source file.
  */
-public class OrphanedElfNode extends CCFNode {
+public class OrphanedElfNode extends CndDataNode {
 
     private static final String ICON_BASE = "org/netbeans/modules/cnd/loaders/"; // NOI18N
     private static final String ORPHAN_ICON = ICON_BASE + "OrphanedElfObject.gif"; // NOI18N

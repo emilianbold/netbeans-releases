@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
+import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 
 /**
  *
@@ -24,6 +26,10 @@ public class DwarfDebugInfoSection extends ElfSection {
     
     public DwarfDebugInfoSection(DwarfReader reader, int sectionIdx) {
         super(reader, sectionIdx);
+    }
+
+    public DwarfDebugInfoSection(ElfReader reader, int sectionIdx, SectionHeader header, String sectionName) {
+        super(reader, sectionIdx, header, sectionName);
     }
     
     public int getCompilationUnitsNumber() {
@@ -52,6 +58,10 @@ public class DwarfDebugInfoSection extends ElfSection {
         if (compilationUnits.size() == 0) {
             int cuOffset = 0;
             while (cuOffset != header.sh_size) {
+                ((DwarfReader)reader).seek(header.getSectionOffset() + cuOffset);
+                if (reader.readDWlen()==0) {
+                    break;
+                }
                 CompilationUnit unit = new CompilationUnit((DwarfReader)reader, header.getSectionOffset(), cuOffset);
                 compilationUnits.add(unit);
                 cuOffset += unit.getUnitTotalLength();

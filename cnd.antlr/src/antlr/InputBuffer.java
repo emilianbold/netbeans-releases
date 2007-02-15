@@ -33,15 +33,11 @@ public abstract class InputBuffer {
     protected int markerOffset = 0;
 
     // current position in the buffer
-    protected int p = -1;
+    protected int p = 0;
     
     // buffer data
-    protected char[] data = null;
     public static final int INITIAL_BUFFER_SIZE = 2048;
-
-    /** Create an input buffer */
-    public InputBuffer() {
-    }
+    protected char[] data = new char[INITIAL_BUFFER_SIZE];
 
     /** This method updates the state of the input buffer so that
      *  the text matched since the most recent mark() is no longer
@@ -49,18 +45,18 @@ public abstract class InputBuffer {
      *  failed predicate or mark/commit to keep on parsing without
      *  rewinding the input.
      */
-    public void commit() {
+    /*public final void commit() {
         nMarkers--;
-    }
+    }*/
 
     /** Mark another character for deferred consumption */
-    public void consume() {
+    public final void consume() {
         p++;
     }
 
     /** Ensure that the input buffer is sufficiently full */
     //public abstract void fill(int amount) throws CharStreamException;
-    public abstract void fill() throws CharStreamException;
+    //public abstract void fill() throws CharStreamException;
 
     // Not used
     /*public String getLAChars() {
@@ -78,23 +74,23 @@ public abstract class InputBuffer {
     }*/
     
     // if sizeIncrease == 0 then double size
-    protected void resizeData(int sizeIncrease) {
+    protected final void resizeData(int sizeIncrease) {
         int newLen = (sizeIncrease == 0) ? data.length*2 : data.length + sizeIncrease;
         char[] newdata = new char[newLen]; // resize
         System.arraycopy(data, 0, newdata, 0, data.length);
         data = newdata;
     }
 
-    public boolean isMarked() {
+    /*public final boolean isMarked() {
         return (nMarkers != 0);
-    }
+    }*/
 
     /** Get a lookahead character */
-    public char LA(int i) throws CharStreamException {
+    public final char LA(int i) {
         // fill buffer at the first LA call
-        if (p == -1) {
+        /*if (p == -1) {
             fill();
-        }
+        }*/
         
         // actually this should never happen
         if ( (p+i-1) >= data.length ) {
@@ -107,7 +103,7 @@ public abstract class InputBuffer {
     /**Return an integer marker that can be used to rewind the buffer to
      * its current state.
      */
-    public int mark() {
+    public final int mark() {
         nMarkers++;
         return p;
     }
@@ -115,17 +111,17 @@ public abstract class InputBuffer {
     /**Rewind the character buffer to a marker.
      * @param mark Marker returned previously from mark()
      */
-    public void rewind(int mark) {
+    public final void rewind(int mark) {
         p = mark;
         nMarkers--;
     }
 
     /** Reset the input buffer
      */
-    public void reset() {
+    /*public final void reset() {
         nMarkers = 0;
         markerOffset = 0;
-        p=-1;
-        data = null;
-    }
+        p=0;
+        //data = null;
+    }*/
 }

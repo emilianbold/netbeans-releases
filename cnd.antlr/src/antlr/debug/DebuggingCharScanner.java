@@ -42,10 +42,11 @@ public abstract class DebuggingCharScanner extends CharScanner implements Debugg
 	public void addTraceListener(TraceListener l) {
 		parserEventSupport.addTraceListener(l);
 	}
-	public void consume() throws CharStreamException {
+	public void consume() {
 		int la_1 = -99;
-		try {la_1 = LA(1);}	
-		catch (CharStreamException ignoreAnIOException) {}
+                //try
+		la_1 = LA(1);
+		//catch (CharStreamException ignoreAnIOException) {}
 		super.consume();
 		parserEventSupport.fireConsume(la_1);		
 	}
@@ -88,7 +89,7 @@ public abstract class DebuggingCharScanner extends CharScanner implements Debugg
 	public boolean isDebugMode() {
 		return !_notDebugMode;
 	}
-	public char LA(int i) throws CharStreamException {
+	public char LA(int i) {
 		char la = super.LA(i);
 		parserEventSupport.fireLA(i, la);
 		return la;
@@ -110,7 +111,7 @@ public abstract class DebuggingCharScanner extends CharScanner implements Debugg
 //		}
 		return super.makeToken(t);
 	}
-	public void match(char c) throws MismatchedCharException, CharStreamException {
+	public void match(char c) throws MismatchedCharException {
 		char la_1 = LA(1);
 		try {
 			super.match(c);
@@ -122,7 +123,7 @@ public abstract class DebuggingCharScanner extends CharScanner implements Debugg
 			throw e;
 		}
 	}
-	public void match(BitSet b) throws MismatchedCharException, CharStreamException {
+	public void match(BitSet b) throws MismatchedCharException {
 		String text = this.text.toString();
 		char la_1 = LA(1);
 		try {
@@ -135,7 +136,7 @@ public abstract class DebuggingCharScanner extends CharScanner implements Debugg
 			throw e;
 		}
 	}
-	public void match(String s) throws MismatchedCharException, CharStreamException {
+	public void match(String s) throws MismatchedCharException {
 		StringBuffer la_s = new StringBuffer("");
 		int len = s.length();
 		// peek at the next len worth of characters
@@ -157,7 +158,7 @@ public abstract class DebuggingCharScanner extends CharScanner implements Debugg
 		}
 
 	}
-	public void matchNot(char c) throws MismatchedCharException, CharStreamException {
+	public void matchNot(char c) throws MismatchedCharException {
 		char la_1 = LA(1);
 		try {
 			super.matchNot(c);
@@ -170,7 +171,7 @@ public abstract class DebuggingCharScanner extends CharScanner implements Debugg
 		}
 
 	}
-	public void matchRange(char c1, char c2) throws MismatchedCharException, CharStreamException {
+	public void matchRange(char c1, char c2) throws MismatchedCharException {
 		char la_1 = LA(1);
 		try {
 			super.matchRange(c1,c2);

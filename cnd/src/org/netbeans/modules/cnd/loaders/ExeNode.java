@@ -19,18 +19,14 @@
 
 package org.netbeans.modules.cnd.loaders;
 
-import org.openide.loaders.*;
-import org.openide.nodes.*;
+import org.openide.nodes.Children;
+import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import org.openide.actions.*;
 
-import org.netbeans.modules.cnd.execution.*;
+import org.netbeans.modules.cnd.execution.BinaryExecSupport;
 
-/**
- *  A node to represent an Elf executable object.
- */
-public class ExeNode extends CCFNode {
+/** A node to represent an Elf executable object */
+public class ExeNode extends CndDataNode {
 
     public ExeNode(ExeObject obj) {
 	this(obj, Children.LEAF);
@@ -64,24 +60,7 @@ public class ExeNode extends CCFNode {
 	    }
 	    sheet.put(set);
 	}
-
-	/*
-	set = sheet.get(CCFSrcNode.PROP_BUILD_OPTIONS);
-	if (set == null) {
-	    set = new Sheet.Set();
-	    set.setName(CCFSrcNode.PROP_BUILD_OPTIONS);
-	    set.setDisplayName(getString("PROP_Build_Options"));      // NOI18N
-	    set.setShortDescription(getString("HINT_Build_Options")); // NOI18N
-	    / *
-	    CCFCompilerSupport cs = (CCFCompilerSupport)
-			    getCookie(CCFCompilerSupport.class);
-	    if (cs != null) {
-		cs.addProperties(set);
-	    }
-	    * /
-	    sheet.put(set);
-	}
-	*/
+        
 	return sheet;
     }
 }

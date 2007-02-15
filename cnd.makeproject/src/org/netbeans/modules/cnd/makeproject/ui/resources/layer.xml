@@ -216,5 +216,22 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 -->
     </folder>
+    
+    <folder name="Loaders">
+        <folder name="application">
+            <folder name="x-executable+elf">
+                <folder name="Actions">
+                    <file name="RunDialogAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.RunDialogAction" />
+                    </file>
+                    <attr boolvalue="true" name="RunDialogAction.instance/Separator0.instance" />
+                    <file name="Separator0.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator0.instance/FileSystemAction.instance" />
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 
 </filesystem>

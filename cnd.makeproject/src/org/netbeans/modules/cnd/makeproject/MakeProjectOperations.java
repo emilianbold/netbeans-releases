@@ -73,6 +73,11 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
             if (metadataFiles.indexOf(children[i]) < 0)
                 files.add(children[i]);
         }
+        if (files.size() == 0) {
+            // FIXUP: Don't return empty list. If the list is empty, the "Also Delete Sources" checkbox in the dialog is disabled and the project dir cannot be deleted.
+            // IZ?????
+            files.add(projectDirectory);
+        }
         return files;
     }
     
