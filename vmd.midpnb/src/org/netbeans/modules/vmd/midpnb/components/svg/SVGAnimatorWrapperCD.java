@@ -22,7 +22,6 @@ package org.netbeans.modules.vmd.midpnb.components.svg;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
@@ -41,6 +40,9 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
@@ -147,10 +149,13 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
             for (DataFlavor dataFlavor : df) {
                 try {
                     if (dataFlavor.getMimeType().startsWith("text/uri-list")) { //NOI18N
-                        String path = (String) transferable.getTransferData(dataFlavor);
-                        
                         DesignComponent svgAnimWrapper = getComponent();
                         DesignDocument document = svgAnimWrapper.getDocument();
+                        DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
+                        Project project = ProjectUtils.getProject(context);
+
+                        String path = (String) transferable.getTransferData(dataFlavor);
+                        path = path.replace("file:/" + project.getProjectDirectory().getPath() + "/src", "");
                         
                         ComponentProducer producer = MidpDocumentSupport.getComponentProducer(SVGImageCD.TYPEID);
                         if (producer != null) {
