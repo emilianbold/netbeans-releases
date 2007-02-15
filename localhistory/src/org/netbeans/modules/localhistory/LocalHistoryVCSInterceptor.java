@@ -64,6 +64,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     
     private Set<File> toBeDeleted = new HashSet<File>(); 
     private Set<File> toBeCreated = new HashSet<File>(); 
+    private Set<File> wasJustCreated = new HashSet<File>(); 
         
     /** Creates a new instance of LocalHistoryVCSInterceptor */
     public LocalHistoryVCSInterceptor() {
@@ -147,10 +148,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // ==================================================================================================
 
     public boolean beforeCreate(File file, boolean isDirectory) {  
-        if(!accept(file)) {
-            return false;
-        }
-        toBeCreated.add(file);        
+        toBeCreated.add(file);
         return false;                
     }
 
@@ -158,12 +156,12 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         // do nothing  
     }
 
-    public void afterCreate(File file) { 
-        if(!accept(file) || file.length() == 0) {
-            return;
-        }                
-        
+    public void afterCreate(File file) {         
         toBeCreated.remove(file);
+        wasJustCreated.add(file);
+        if(!accept(file)) {
+            return;
+        }                                
         
         String key = file.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {
@@ -184,9 +182,12 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // ==================================================================================================
     
     public void beforeChange(File file) {                    
-        if(toBeCreated.contains(file)) {
+        if(toBeCreated.contains(file) || 
+           wasJustCreated.remove(file)) 
+        {
             // ignore change events 
             // if they happen in scope of a create
+            // or just after a create
             return;
         }
         // XXX file.exists() is a hack
@@ -196,7 +197,9 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         storeFile(file);
     }
     
-    public void afterChange(File file) {           
+    public void afterChange(File file) {  
+        // just in case
+        wasJustCreated.remove(file);
         // XXX since we have beforeChange - reconsider if there is any situation when after create would make sense 
 //        if(toBeCreated.contains(file)) {
 //            // ignore change events 
