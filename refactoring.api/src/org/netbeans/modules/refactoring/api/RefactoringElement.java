@@ -100,6 +100,7 @@ public final class RefactoringElement {
     }
     
     /** Returns position bounds of the text to be affected by this refactoring element.
+     * @return position bounds
      */
     public PositionBounds getPosition() {
         return impl.getPosition();
