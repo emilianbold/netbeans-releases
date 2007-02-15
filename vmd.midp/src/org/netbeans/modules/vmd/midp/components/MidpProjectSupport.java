@@ -20,19 +20,16 @@
 package org.netbeans.modules.vmd.midp.components;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -235,11 +232,19 @@ public final class MidpProjectSupport {
      */
     private static List<ClassPath> getClassPath (Project project, FileObject fileObject) {
         ArrayList<ClassPath> classPathList = new ArrayList<ClassPath>();
-        ClassPathProvider cpp = (ClassPathProvider) project.getLookup().lookup(ClassPathProvider.class);
+        ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
         classPathList.add(cpp.findClassPath(fileObject, ClassPath.BOOT));
         classPathList.add(cpp.findClassPath(fileObject, ClassPath.COMPILE));
         classPathList.add(cpp.findClassPath(fileObject, ClassPath.SOURCE));
         return classPathList;
+    }
+
+    public static ClasspathInfo getClasspathInfo (Project project) {
+        SourceGroup[] sourceGroups = org.netbeans.api.project.ProjectUtils.getSources (project).getSourceGroups (Sources.TYPE_GENERIC);
+        if (sourceGroups == null || sourceGroups.length < 1)
+            return null;
+        FileObject fileObject = sourceGroups[0].getRootFolder ();
+        return ClasspathInfo.create (fileObject);
     }
 
 }

@@ -20,38 +20,37 @@
 package org.netbeans.modules.vmd.midp.palette.wizard;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author David Kaspar
  */
 public class AddToPaletteWizardPanel1 implements WizardDescriptor.Panel {
-    
+
     private AddToPaletteVisualPanel1 component;
-    
+
     public Component getComponent() {
         if (component == null) {
             component = new AddToPaletteVisualPanel1();
         }
         return component;
     }
-    
+
     public HelpCtx getHelp() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     public boolean isValid() {
         return component.getActiveProject () != null;
     }
-    
+
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     public final void addChangeListener(ChangeListener l) {
@@ -74,15 +73,18 @@ public class AddToPaletteWizardPanel1 implements WizardDescriptor.Panel {
             it.next().stateChanged(ev);
         }
     }
-    
+
     public void readSettings(Object settings) {
         getComponent();
         component.reload ((Project) ((WizardDescriptor) settings).getProperty ("project")); // NOI18N
-            
+
     }
     public void storeSettings(Object settings) {
         getComponent();
-        ((WizardDescriptor) settings).putProperty ("project", component.getActiveProject ());
+        Project project = component.getActiveProject ();
+        ((WizardDescriptor) settings).putProperty ("project", project); // NOI18N
+        Map<String, ComponentDescriptor> descriptors = ComponentInstaller.search (project);
+        ((WizardDescriptor) settings).putProperty ("descriptors", descriptors); // NOI18N
     }
-    
+
 }
