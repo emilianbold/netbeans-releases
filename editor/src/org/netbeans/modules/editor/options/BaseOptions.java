@@ -573,7 +573,7 @@ public class BaseOptions extends OptionSupport {
         
         MIMEOptionFile file = mof.getFile(AbbrevsMIMEProcessor.class, false);
         if ((file!=null) && (!file.isLoaded())) {
-            file.loadSettings(false);
+            file.loadSettings();
             defaultAbbrevsMap = new HashMap(file.getAllProperties());
         }
     }
