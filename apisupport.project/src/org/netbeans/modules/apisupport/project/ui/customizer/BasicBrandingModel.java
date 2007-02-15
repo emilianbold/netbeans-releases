@@ -35,6 +35,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
+import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BrandedFile;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
@@ -67,6 +68,7 @@ public class BasicBrandingModel {
     private String name;
     private String title;
     private BrandingSupport.BrandedFile icon = null;
+    private BrandingSupport.BrandedFile icon16 = null;    
     
     /** representation of bundle keys depending on app.title */
     private BrandingSupport.BundleKey productInformation = null;
@@ -205,7 +207,13 @@ public class BasicBrandingModel {
             getBranding().brandBundleKey(mainWindowTitleNoProject);
             getBranding().brandBundleKey(currentVersion);
             
-            getBranding().brandFile(icon, getScaleAndStoreIconTask());
+            getBranding().brandFile(icon, 
+                    getScaleAndStoreIconTask(icon, BasicBrandingModel.ICON_WIDTH,BasicBrandingModel.ICON_HEIGHT));
+            
+            icon16.setBrandingSource(icon.getBrandingSource());
+            getBranding().brandFile(icon16, 
+                    getScaleAndStoreIconTask(icon16, 16,16));
+                                    
             getBranding().brandBundleKeys(splashKeys);
             getBranding().brandFile(splash);                        
         } else {
@@ -216,18 +224,18 @@ public class BasicBrandingModel {
         }
     }
     
-    private Runnable getScaleAndStoreIconTask() throws IOException {
+    private static Runnable getScaleAndStoreIconTask(final BrandedFile icon, final int width, final int height) throws IOException {
         return new Runnable() {
             public void run() {
                 BufferedImage bi = new BufferedImage(
-                        BasicBrandingModel.ICON_WIDTH,
-                        BasicBrandingModel.ICON_HEIGHT,
+                        width,
+                        height,
                         BufferedImage.TYPE_INT_RGB);
                 
                 Graphics2D g2 = bi.createGraphics();
                 ImageIcon image = new ImageIcon(icon.getBrandingSource());
                 g2.drawImage(image.getImage(),0, 0, 
-                        BasicBrandingModel.ICON_WIDTH, BasicBrandingModel.ICON_HEIGHT, 
+                        width, height, 
                         Color.LIGHT_GRAY,null);//NOI18N
                 
                 g2.dispose();
@@ -330,6 +338,10 @@ public class BasicBrandingModel {
         icon = getBranding().getBrandedFile(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/frame48.gif");//NOI18N
+
+        icon16 = getBranding().getBrandedFile(
+                "org.netbeans.core.startup",//NOI18N
+                "org/netbeans/core/startup/frame.gif");//NOI18N               
         
         splash = getBranding().getBrandedFile(
                 "org.netbeans.core.startup",//NOI18N
