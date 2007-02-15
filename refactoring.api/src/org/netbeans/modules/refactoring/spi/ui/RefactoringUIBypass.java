@@ -22,7 +22,6 @@ package org.netbeans.modules.refactoring.spi.ui;
 import java.io.IOException;
 
 /**
- * @author Jan Becicka
  * This was historicaly intended to enhance RefactoringUI.
  * RefactoringUI must support "bypass" of refactoring for common 
  * operations Copy/Move/Rename for users to be able to do 
@@ -35,6 +34,8 @@ import java.io.IOException;
  * isRefactoringBypassRequired() should return true if and only if
  * this checkbox is checked.
  * doRefactoringBypass() implementation does only regular file rename
+ *
+ * @author Jan Becicka
  * 
  */
 public interface RefactoringUIBypass {
