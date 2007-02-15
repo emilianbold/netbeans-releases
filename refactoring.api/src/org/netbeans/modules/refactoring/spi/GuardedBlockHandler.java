@@ -35,7 +35,7 @@ public interface GuardedBlockHandler {
      * @param replacements Empty collection where the method implementation should add the
      * replacement RefactoringElementImplementations if this GuardedBlockHandler can handle changes in the
      * guarded block the original RefactoringElementImplementation affects.
-     * @param replacement collection of Transactions. 
+     * @param transaction collection of Transactions. 
      *
      * @return Problems found or null (if no problems were identified)
      */

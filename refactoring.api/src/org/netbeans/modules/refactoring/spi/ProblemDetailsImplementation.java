@@ -44,6 +44,7 @@ public interface ProblemDetailsImplementation {
     /**
      * Message that will be displayed in parameters panel as a hint to suggest user,
      * that there are more details available.
+     * @return string representation of details hint
      */
     String getDetailsHint();
     

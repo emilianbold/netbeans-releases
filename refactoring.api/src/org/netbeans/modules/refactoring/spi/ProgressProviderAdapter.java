@@ -31,6 +31,9 @@ public class ProgressProviderAdapter implements ProgressProvider {
 
     private ProgressSupport progressSupport;
 
+    /**
+     * Default constructor
+     */
     protected ProgressProviderAdapter() {
     }
     

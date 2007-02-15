@@ -46,6 +46,7 @@ public interface ReadOnlyFilesHandler {
      * </pre>
      * @param files Collection of FileObjects
      * @param session current refactoring session
+     * @return Problem with ProblemDetails, which can handle read only files.
      * @see ProblemDetailsImplementation
      */
     public Problem createProblem(RefactoringSession session, Collection files); 

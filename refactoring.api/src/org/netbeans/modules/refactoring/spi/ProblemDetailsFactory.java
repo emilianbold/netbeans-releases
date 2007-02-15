@@ -34,6 +34,8 @@ public class ProblemDetailsFactory {
     /**
      * Factory method for creating API instances of ProblemDetails from SPI instances
      * of ProblemDetailsImplementation
+     * @param pdi implementation class
+     * @return ProblemDetails instance created by this factory method
      * @see ProblemDetails
      * @see ProblemDetailsImplementation
      */

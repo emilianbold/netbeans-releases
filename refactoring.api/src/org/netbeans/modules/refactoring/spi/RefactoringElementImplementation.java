@@ -104,6 +104,7 @@ public interface RefactoringElementImplementation {
     FileObject getParentFile();
     
     /** Returns position bounds of the text to be affected by this refactoring element.
+     * @return position bounds
      */
     PositionBounds getPosition();
     

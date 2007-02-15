@@ -125,6 +125,10 @@ public final class RefactoringElementsBag {
     }
     
     
+    /**
+     * 
+     * @return RefactoringSession associated with this RefactoringElementsBag
+     */
     public RefactoringSession getSession() {
         return session;
     }
@@ -135,6 +139,7 @@ public final class RefactoringElementsBag {
     
     /**
      * commits are called after all changes are performed
+     * @param commit Transaction to commit
      * @see Transaction
      * @see BackupFacilty
      */
@@ -147,6 +152,7 @@ public final class RefactoringElementsBag {
     
     /**
      * fileChanges are performed after all element changes
+     * @param changes changes to be performed
      * @see Transaction
      * @see BackupFacilty
      */
