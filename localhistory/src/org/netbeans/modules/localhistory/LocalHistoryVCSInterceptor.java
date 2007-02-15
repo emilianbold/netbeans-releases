@@ -61,7 +61,8 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
     
     private Map<String, StorageMoveHandler> moveHandlerMap;
-    
+
+    // XXX reconsider this. is there realy no other way? is it robust enough?
     private Set<File> toBeDeleted = new HashSet<File>(); 
     private Set<File> toBeCreated = new HashSet<File>(); 
     private Set<File> wasJustCreated = new HashSet<File>(); 
@@ -88,7 +89,11 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     public void afterDelete(File file) {      
-        toBeDeleted.remove(file);                
+        if(!toBeDeleted.remove(file)) {
+            // do nothing if the file wasn't marked 
+            // as to be deleted
+            return;
+        }                 
         
         String key = file.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {
@@ -125,11 +130,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         // do nothing
     }
 
-    public void afterMove(File from, File to) {       
-        if(!accept(from)) {
-            return;
-        }
-        
+    public void afterMove(File from, File to) {               
         String key = to.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
@@ -147,7 +148,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // CREATE
     // ==================================================================================================
 
-    public boolean beforeCreate(File file, boolean isDirectory) {  
+    public boolean beforeCreate(File file, boolean isDirectory) {          
         toBeCreated.add(file);
         return false;                
     }
@@ -156,24 +157,18 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         // do nothing  
     }
 
-    public void afterCreate(File file) {         
+    public void afterCreate(File file) {             
         toBeCreated.remove(file);
-        wasJustCreated.add(file);
-        if(!accept(file)) {
-            return;
-        }                                
+        wasJustCreated.add(file);                
         
         String key = file.getAbsolutePath();
-        if(getMoveHandlerMap().containsKey(key)) {
+        if(getMoveHandlerMap().containsKey(key)) {                                
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
             try {
                 handler.create();
             } finally {
                 getMoveHandlerMap().remove(key);
             }            
-        } else {
-            // XXX since we have beforeChange - reconsider if there is any situation when after create would make sense 
-            //getStore().fileCreate(file, file.lastModified());            
         }               
     }
     
@@ -189,9 +184,8 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
             // if they happen in scope of a create
             // or just after a create
             return;
-        }
-        // XXX file.exists() is a hack
-        if(file.exists() && !accept(file)) {
+        }        
+        if(!accept(file)) {
             return;
         }        
         storeFile(file);
@@ -200,16 +194,6 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     public void afterChange(File file) {  
         // just in case
         wasJustCreated.remove(file);
-        // XXX since we have beforeChange - reconsider if there is any situation when after create would make sense 
-//        if(toBeCreated.contains(file)) {
-//            // ignore change events 
-//            // if they happen in scope of a create
-//            return;
-//        }        
-//        if(!accept(file)) {
-//            return;
-//        }        
-//        storeFile(file);
     }
     
     private void storeFile(File file) {        
