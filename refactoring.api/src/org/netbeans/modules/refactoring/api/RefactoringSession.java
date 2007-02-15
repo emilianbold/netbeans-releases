@@ -33,7 +33,7 @@ import org.netbeans.modules.refactoring.spi.impl.UndoManager;
 import org.openide.LifecycleManager;
 
 
-/** Singleton class used to invoke refactorings.
+/** Class used to invoke refactorings.
  *
  * @author Martin Matula, Daniel Prusa, Jan Becicka
  */
@@ -55,6 +55,8 @@ public final class RefactoringSession {
     
     /** 
      * Creates a new refactoring session.
+     * @param description textual description of this session
+     * @return instance of RefactoringSession
      */
     public static RefactoringSession create(String description) {
         return new RefactoringSession(description);
@@ -65,6 +67,8 @@ public final class RefactoringSession {
      * process all elements from elements bags,
      * do all fileChanges
      * and call all commits
+     * @param saveAfterDone save all if true
+     * @return instance of Problem or null, if everything is OK
      */
     public Problem doRefactoring(boolean saveAfterDone) {
         Iterator it = internalList.iterator();
@@ -107,6 +111,8 @@ public final class RefactoringSession {
     
     /**
      * do undo of previous doRefactoring()
+     * @param saveAfterDone save all if true
+     * @return instance of Problem or null, if everything is OK
      */
     public Problem undoRefactoring(boolean saveAfterDone) {
         try {
@@ -140,11 +146,16 @@ public final class RefactoringSession {
     
     /**
      * get elements from session
+     * @return collection of RefactoringElements
      */
     public Collection<RefactoringElement> getRefactoringElements() {
         return refactoringElements;
     }
     
+    /**
+     *  Adds progress listener to this RefactoringSession
+     * @param listener to add
+     */
     public synchronized void addProgressListener(ProgressListener listener) {
         if (progressSupport == null ) {
             progressSupport = new ProgressSupport();
@@ -152,6 +163,10 @@ public final class RefactoringSession {
         progressSupport.addProgressListener(listener);
     }
 
+    /**
+     * Remove progress listener from this RefactoringSession
+     * @param listener to remove
+     */
     public synchronized void removeProgressListener(ProgressListener listener) {
         if (progressSupport != null ) {
             progressSupport.removeProgressListener(listener); 
