@@ -52,8 +52,7 @@ public class FlowDataSerializer implements DataSerializer {
     public Node serializeData (DataObjectContext context, DesignDocument document, Document file) {
         FlowAccessController accessController = document.getListenerManager ().getAccessController (FlowAccessController.class);
         FlowScene scene = accessController.getScene ();
-        Node node = file.createElement (FLOW_DOCUMENT_NODE);
-        setAttribute (file, node, VERSION_ATTR, VERSION_VALUE_1); // NOI18N
+        Node node = null;
 
         Set<?> objects = scene.getObjects ();
         for (Object o : objects) {
@@ -63,6 +62,12 @@ public class FlowDataSerializer implements DataSerializer {
                 if (widget != null) {
                     Point location = widget.getPreferredLocation ();
                     if (location != null) {
+
+                        if (node == null) {
+                            node = file.createElement (FLOW_DOCUMENT_NODE);
+                            setAttribute (file, node, VERSION_ATTR, VERSION_VALUE_1); // NOI18N
+                        }
+
                         Node data = file.createElement (NODE_NODE);
                         setAttribute (file, data, COMPONENTID_ATTR, Long.toString (descriptor.getRepresentedComponent ().getComponentID ()));
                         setAttribute (file, data, DESCRIPTORID_ATTR, descriptor.getDescriptorID ());
