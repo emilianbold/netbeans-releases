@@ -81,6 +81,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new BodyStatementTest("testRenameInTypeNewArr"));
 //        suite.addTest(new BodyStatementTest("testRenameInTypeTest"));
 //        suite.addTest(new BodyStatementTest("testRenameInTypeTestII"));
+//        suite.addTest(new BodyStatementTest("testChangeLiteral"));
         return suite;
     }
     
@@ -1879,6 +1880,55 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    /**
+     * Changing literal test - #95614
+     */
+    public void testChangeLiteral() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(Object o) {\n" +
+            "        System.err.println(\"Karel\");\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class RenamedTest {\n" +
+            "    public Object method(Object o) {\n" +
+            "        System.err.println(\"Hrebejk\");\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                workingCopy.rewrite(clazz, make.setLabel(clazz, "RenamedTest"));
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                // body rename
+                BlockTree block = method.getBody();
+                ExpressionStatementTree expr = (ExpressionStatementTree) block.getStatements().get(0);
+                MethodInvocationTree invocation = (MethodInvocationTree) expr.getExpression();
+                LiteralTree literal = (LiteralTree) invocation.getArguments().get(0);
+                workingCopy.rewrite(literal, make.Literal("Hrebejk"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     // methods not used in this test.
     String getGoldenPckg() {
         return "";
