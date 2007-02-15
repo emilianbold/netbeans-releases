@@ -27,11 +27,13 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
+import java.util.ArrayList;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.openide.*;
 import org.openide.util.*;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -210,10 +212,15 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 TreeMaker make = workingCopy.getTreeMaker();
                 
                 String idFieldName = "id"; // NO18N
-                
                 TypeMirror type = workingCopy.getTreeUtilities().parseType(primaryKeyClassName, genUtils.getTypeElement());
                 Tree typeTree = make.Type(type);
                 
+                Set<Modifier> serialVersionUIDModifiers = new HashSet<Modifier>();
+                serialVersionUIDModifiers.add(Modifier.PRIVATE);
+                serialVersionUIDModifiers.add(Modifier.STATIC);
+                serialVersionUIDModifiers.add(Modifier.FINAL);
+                
+                VariableTree serialVersionUID = make.Variable(make.Modifiers(serialVersionUIDModifiers), "serialVersionUID", genUtils.createType("long"), make.Literal(Long.valueOf("1"))); //NO18N
                 VariableTree idField = make.Variable(genUtils.createModifiers(Modifier.PRIVATE), idFieldName, typeTree, null);
                 ModifiersTree idMethodModifiers = genUtils.createModifiers(Modifier.PUBLIC);
                 MethodTree idGetter = genUtils.createPropertyGetterMethod(idMethodModifiers, idFieldName, typeTree);
@@ -230,7 +237,10 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                     idGetter = genUtils.addAnnotation(idGetter, generatedValueAnnotation);
                 }
                 
-                modifiedClazz = genUtils.addClassFields(clazz, Collections.singletonList(idField));
+                List<VariableTree> classFields = new ArrayList<VariableTree>();
+                classFields.add(serialVersionUID);
+                classFields.add(idField);
+                modifiedClazz = genUtils.addClassFields(clazz, classFields);
                 modifiedClazz = make.addClassMember(modifiedClazz, idSetter);
                 modifiedClazz = make.addClassMember(modifiedClazz, idGetter);
                 modifiedClazz = genUtils.addImplementsClause(modifiedClazz, "java.io.Serializable");
