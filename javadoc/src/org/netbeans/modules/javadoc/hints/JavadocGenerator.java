@@ -64,7 +64,7 @@ public final class JavadocGenerator {
             }
         }
         
-        if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0 ||
+        if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0 &&
                 JavadocUtilities.isDeprecated(javac, clazz)) {
             builder.append(" * @deprecated\n"); // NOI18N
         }
@@ -85,7 +85,7 @@ public final class JavadocGenerator {
         }
         
         if (method.getReturnType().getKind() != TypeKind.VOID) {
-            builder.append(" * @return \n");
+            builder.append(" * @return \n"); // NOI18N
         }
         
         for (TypeMirror exceptionType : method.getThrownTypes()) {
@@ -93,7 +93,7 @@ public final class JavadocGenerator {
             builder.append(" * @throws ").append(exception.getQualifiedName().toString()).append(" \n"); // NOI18N
         }
         
-        if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0 ||
+        if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0 &&
                 JavadocUtilities.isDeprecated(javac, method)) {
             builder.append(" * @deprecated\n"); // NOI18N
         }
@@ -109,7 +109,7 @@ public final class JavadocGenerator {
                 " * \n" // NOI18N
                 );
         
-        if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0 ||
+        if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0 &&
                 JavadocUtilities.isDeprecated(javac, field)) {
             builder.append(" * @deprecated\n"); // NOI18N
         }
@@ -125,6 +125,7 @@ public final class JavadocGenerator {
             case CLASS:
             case ENUM:
             case INTERFACE:
+            case ANNOTATION_TYPE:
                 return generateComment((TypeElement) elm, javac);
             case CONSTRUCTOR:
             case METHOD:
@@ -133,12 +134,13 @@ public final class JavadocGenerator {
             case ENUM_CONSTANT:
                 return generateComment((VariableElement) elm, javac);
             default:
-                throw new UnsupportedOperationException(elm.getClass() + ": " + elm.toString());
+                throw new UnsupportedOperationException(elm.getKind() +
+                        ", " + elm.getClass() + ": " + elm.toString()); // NOI18N
         }
     }
     
     public String generateInheritComment() {
-        return "/** {@inheritDoc} */";
+        return "/** {@inheritDoc} */"; //NOI18N
     }
     
     public static String indentJavadoc(String jdoc, String tab) {
