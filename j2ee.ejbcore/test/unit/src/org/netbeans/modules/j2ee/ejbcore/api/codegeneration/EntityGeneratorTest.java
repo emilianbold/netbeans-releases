@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,7 +26,6 @@ import java.util.HashSet;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
@@ -36,15 +34,8 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
-import org.netbeans.modules.j2ee.ejbcore.test.ClassPathProviderImpl;
-import org.netbeans.modules.j2ee.ejbcore.test.EjbJarProviderImpl;
-import org.netbeans.modules.j2ee.ejbcore.test.FakeJavaDataLoaderPool;
-import org.netbeans.modules.j2ee.ejbcore.test.FileOwnerQueryImpl;
-import org.netbeans.modules.j2ee.ejbcore.test.ProjectImpl;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
-import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -52,53 +43,23 @@ import org.openide.filesystems.FileUtil;
  */
 public class EntityGeneratorTest extends TestBase {
     
-    private EjbJarProviderImpl ejbJarProvider;
-    private ClassPathProviderImpl classPathProvider;
-    private FileOwnerQueryImpl fileOwnerQuery;
-    
-    private FileObject dataDir;
-
     public EntityGeneratorTest(String testName) {
         super(testName);
     }
-    
-    protected void setUp() throws IOException {
-        clearWorkDir();
-        File file = new File(getWorkDir(),"cache");	//NOI18N
-        file.mkdirs();
-        IndexUtil.setCacheFolder(file);
-        ejbJarProvider = new EjbJarProviderImpl();
-        classPathProvider = new ClassPathProviderImpl();
-        fileOwnerQuery = new FileOwnerQueryImpl();
-        setLookups(
-                ejbJarProvider, 
-                classPathProvider, 
-                fileOwnerQuery,
-                new FakeJavaDataLoaderPool()
-                );
-        dataDir = FileUtil.toFileObject(getDataDir());
-    }
 
     public void testGenerate() throws Exception {
-        FileObject ddFileObject = dataDir.getFileObject("EJBModule1/src/conf/ejb-jar.xml");
-        FileObject[] sources = new FileObject[] {dataDir.getFileObject("EJBModule1/src/java")};
-        ejbJarProvider.setEjbModule(EjbProjectConstants.J2EE_14_LEVEL, ddFileObject, sources);
-        classPathProvider.setClassPath(sources);
-        ProjectImpl projectImpl = new ProjectImpl("2.1");
-        projectImpl.setProjectDirectory(dataDir.getFileObject("EJBModule1"));
-        fileOwnerQuery.setProject(projectImpl);
-        
         // Session EJB 2.1
-        FileObject pkg = sources[0].getFileObject("entityEjb21");
+        TestModule testModule = ejb14();
+        FileObject pkg = testModule.getSources()[0].getFileObject("entityEjb21");
         if (pkg != null) {
             pkg.delete();
         }
-        pkg = sources[0].createFolder("entityEjb21");
+        pkg = testModule.getSources()[0].createFolder("entityEjb21");
         assertNotNull(pkg);
         // CMP with remote and local interfaces
-        checkEJB21("CmpEJB21RL", pkg, ddFileObject, true, true, true, "java.lang.Long");
+        checkEJB21("CmpEJB21RL", pkg, testModule.getDeploymentDescriptor(), true, true, true, "java.lang.Long");
         // BMP with remote and local interface
-        checkEJB21("BmpEjb21RL", pkg, ddFileObject, true, true, false, "java.lang.Long");
+        checkEJB21("BmpEjb21RL", pkg, testModule.getDeploymentDescriptor(), true, true, false, "java.lang.Long");
     }
     
     private void checkEJB21(String name, FileObject pkg, FileObject ddFileObject,

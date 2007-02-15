@@ -19,15 +19,10 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import java.io.File;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
-import org.netbeans.modules.j2ee.ejbcore.test.ClassPathProviderImpl;
-import org.netbeans.modules.j2ee.ejbcore.test.EjbJarProviderImpl;
+import java.io.IOException;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
 import org.netbeans.modules.j2ee.ejbcore.test.TestUtilities;
-import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -39,27 +34,14 @@ import org.openide.util.lookup.Lookups;
  */
 public class EjbActionGroupTest extends TestBase {
     
-    private EjbJarProviderImpl ejbJarProvider;
-    private ClassPathProviderImpl classPathProvider;
-    private FileObject dataDir;
-    private FileObject testFO;
     private EJBActionGroup ejbActionGroup;
     
     public EjbActionGroupTest(String testName) {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
-        clearWorkDir();
-        File file = new File(getWorkDir(),"cache");	//NOI18N
-        file.mkdirs();
-        IndexUtil.setCacheFolder(file);
-        ejbJarProvider = new EjbJarProviderImpl();
-        classPathProvider = new ClassPathProviderImpl();
-        setLookups(ejbJarProvider, classPathProvider);
-        dataDir = FileUtil.toFileObject(getDataDir());
-        FileObject workDir = FileUtil.toFileObject(getWorkDir());
-        testFO = workDir.createData("TestClass.java");
+    protected void setUp() throws IOException {
+        super.setUp();
         ejbActionGroup = new EJBActionGroup();
     }
     
@@ -75,12 +57,8 @@ public class EjbActionGroupTest extends TestBase {
         Node node = new AbstractNode(Children.LEAF, Lookups.singleton(testFO));
         assertFalse(ejbActionGroup.enable(new Node[] {node}));
 
-        FileObject beanClass = dataDir.getFileObject("EJBModule1/src/java/foo/NewSessionBean.java");
-        FileObject ddFileObject = dataDir.getFileObject("EJBModule1/src/conf/ejb-jar.xml");
-        FileObject[] sources = new FileObject[] {dataDir.getFileObject("EJBModule1/src/java")};
-        ejbJarProvider.setEjbModule(EjbProjectConstants.J2EE_14_LEVEL, ddFileObject, sources);
-        classPathProvider.setClassPath(sources);
-        
+        TestModule testModule = ejb14();
+        FileObject beanClass = testModule.getSources()[0].getFileObject("statelesslr/StatelessLRBean.java");
         node = new AbstractNode(Children.LEAF, Lookups.singleton(beanClass));
         assertTrue(ejbActionGroup.enable(new Node[] {node}));
     }

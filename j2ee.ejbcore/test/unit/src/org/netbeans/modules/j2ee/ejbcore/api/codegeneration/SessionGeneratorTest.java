@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,7 +26,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
@@ -35,15 +33,8 @@ import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
-import org.netbeans.modules.j2ee.ejbcore.test.ClassPathProviderImpl;
-import org.netbeans.modules.j2ee.ejbcore.test.EjbJarProviderImpl;
-import org.netbeans.modules.j2ee.ejbcore.test.FakeJavaDataLoaderPool;
-import org.netbeans.modules.j2ee.ejbcore.test.FileOwnerQueryImpl;
-import org.netbeans.modules.j2ee.ejbcore.test.ProjectImpl;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
-import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -51,52 +42,23 @@ import org.openide.filesystems.FileUtil;
  */
 public class SessionGeneratorTest extends TestBase {
     
-    private EjbJarProviderImpl ejbJarProvider;
-    private ClassPathProviderImpl classPathProvider;
-    private FileOwnerQueryImpl fileOwnerQuery;
-    private FileObject dataDir;
-
     public SessionGeneratorTest(String testName) {
         super(testName);
     }
     
-    protected void setUp() throws IOException {
-        clearWorkDir();
-        File file = new File(getWorkDir(), "cache");	//NOI18N
-        file.mkdirs();
-        IndexUtil.setCacheFolder(file);
-        ejbJarProvider = new EjbJarProviderImpl();
-        classPathProvider = new ClassPathProviderImpl();
-        fileOwnerQuery = new FileOwnerQueryImpl();
-        setLookups(
-                ejbJarProvider, 
-                classPathProvider, 
-                fileOwnerQuery,
-                new FakeJavaDataLoaderPool()
-                );
-        dataDir = FileUtil.toFileObject(getDataDir());
-    }
-
     public void testGenerate() throws IOException {
-        FileObject ddFileObject = dataDir.getFileObject("EJBModule1/src/conf/ejb-jar.xml");
-        FileObject[] sources = new FileObject[] {dataDir.getFileObject("EJBModule1/src/java")};
-        ejbJarProvider.setEjbModule(EjbProjectConstants.J2EE_14_LEVEL, ddFileObject, sources);
-        classPathProvider.setClassPath(sources);
-        ProjectImpl projectImpl = new ProjectImpl("2.1");
-        projectImpl.setProjectDirectory(dataDir.getFileObject("EJBModule1"));
-        fileOwnerQuery.setProject(projectImpl);
-        
         // Session EJB 2.1
+        TestModule testModule = ejb14();
         String packageName = "ejb21";
-        FileObject pkg = sources[0].getFileObject(packageName);
+        FileObject pkg = testModule.getSources()[0].getFileObject(packageName);
         if (pkg != null) {
             pkg.delete();
         }
-        pkg = sources[0].createFolder(packageName);
+        pkg = testModule.getSources()[0].createFolder(packageName);
         // stateless with remote and local interfaces
-        checkEJB21("StatelessEJB21RL", pkg, ddFileObject, true, true, false);
+        checkEJB21("StatelessEJB21RL", pkg, testModule.getDeploymentDescriptor(), true, true, false);
         // stateful with remote interface
-        checkEJB21("StatefulEJB21R", pkg, ddFileObject, true, false, true);
+        checkEJB21("StatefulEJB21R", pkg, testModule.getDeploymentDescriptor(), true, false, true);
         
         // Session EJB 3.0
     }

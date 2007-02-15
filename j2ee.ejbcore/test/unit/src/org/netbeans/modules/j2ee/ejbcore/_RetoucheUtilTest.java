@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -36,12 +35,9 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
-import org.netbeans.modules.j2ee.ejbcore.test.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
 import org.netbeans.modules.j2ee.ejbcore.test.TestUtilities;
-import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -49,24 +45,10 @@ import org.openide.filesystems.FileUtil;
  */
 public class _RetoucheUtilTest extends TestBase{
     
-    private FileObject testFO;
-    private ClassPathProviderImpl classPathProvider;
-
     public _RetoucheUtilTest(String testName) {
         super(testName);
     }
 
-    protected void setUp() throws IOException {
-        clearWorkDir();
-        File file = new File(getWorkDir(), "cache");	//NOI18N
-        file.mkdirs();
-        IndexUtil.setCacheFolder(file);
-        FileObject workDir = FileUtil.toFileObject(getWorkDir());
-        testFO = workDir.createData("TestClass.java");
-        classPathProvider = new ClassPathProviderImpl();
-        setLookups(classPathProvider);
-    }
-    
     public void testGenerateInjectedField() throws IOException {
         // creates and tests following field:
         // @javax.annotation.Resource(name="MyJndiName")

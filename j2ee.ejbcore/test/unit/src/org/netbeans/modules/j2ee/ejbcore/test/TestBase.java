@@ -19,7 +19,13 @@
 
 package org.netbeans.modules.j2ee.ejbcore.test;
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -29,8 +35,19 @@ import org.openide.util.lookup.ProxyLookup;
  * Common ancestor for all test classes.
  *
  * @author Andrei Badea
+ * @author Martin Adamek
  */
 public class TestBase extends NbTestCase {
+
+    private EjbJarProviderImpl ejbJarProvider;
+    private ClassPathProviderImpl classPathProvider;
+    private FileOwnerQueryImpl fileOwnerQuery;
+    
+    protected FileObject dataDir;
+    protected FileObject testFO;
+    
+    private TestModule testModuleEJB14;
+    private TestModule testModuleEJB50;
 
     static {
         // set the lookup which will be returned by Lookup.getDefault()
@@ -45,6 +62,41 @@ public class TestBase extends NbTestCase {
         super(name);
     }
     
+    public TestModule ejb14() {
+        if (testModuleEJB14 == null) {
+            testModuleEJB14 = new TestModule(dataDir.getFileObject("EJBModule_1_4"), EjbProjectConstants.J2EE_14_LEVEL);
+        }
+        activate(testModuleEJB14);
+        return testModuleEJB14;
+    }
+    
+    public TestModule ejb50() {
+        if (testModuleEJB50 == null) {
+            testModuleEJB50 = new TestModule(dataDir.getFileObject("EJBModule_5_0"), EjbProjectConstants.JAVA_EE_5_LEVEL);
+        }
+        activate(testModuleEJB50);
+        return testModuleEJB50;
+    }
+    
+    protected void setUp() throws IOException {
+        clearWorkDir();
+        File file = new File(getWorkDir(),"cache");	//NOI18N
+        file.mkdirs();
+        IndexUtil.setCacheFolder(file);
+        ejbJarProvider = new EjbJarProviderImpl();
+        classPathProvider = new ClassPathProviderImpl();
+        fileOwnerQuery = new FileOwnerQueryImpl();
+        setLookups(
+                ejbJarProvider, 
+                classPathProvider, 
+                fileOwnerQuery,
+                new FakeJavaDataLoaderPool()
+                );
+        dataDir = FileUtil.toFileObject(getDataDir());
+        FileObject workDir = FileUtil.toFileObject(getWorkDir());
+        testFO = workDir.createData("TestClass.java");
+    }
+
     public static void setLookups(Object... lookups) {
         ((Lkp)Lookup.getDefault()).setProxyLookups(Lookups.fixed(lookups));
     }
@@ -66,6 +118,32 @@ public class TestBase extends NbTestCase {
             allLookups[allLookups.length - 1] = Lookups.metaInfServices(classLoader);
             setLookups(allLookups);
         }
+        
+    }
+    
+    private void activate(TestModule testModule) {
+        fileOwnerQuery.setProject(testModule.project);
+        ejbJarProvider.setEjbModule(testModule.javaeeLevel, testModule.deploymentDescriptor, testModule.sources);
+        classPathProvider.setClassPath(testModule.sources);
+    }
+    
+    protected static class TestModule {
+        
+        private final String javaeeLevel;
+        private final FileObject deploymentDescriptor;
+        private final FileObject[] sources;
+        private final ProjectImpl project;
+        
+        public TestModule(FileObject projectDir, String javaeeLevel) {
+            this.javaeeLevel = javaeeLevel;
+            this.deploymentDescriptor = projectDir.getFileObject("src/conf/ejb-jar.xml");
+            this.sources = new FileObject[] {projectDir.getFileObject("src/java")};
+            this.project = new ProjectImpl("2.1");
+            project.setProjectDirectory(projectDir);
+        }
+     
+        public FileObject getDeploymentDescriptor() { return deploymentDescriptor; }
+        public FileObject[] getSources() { return sources; }
         
     }
     
