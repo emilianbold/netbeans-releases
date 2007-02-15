@@ -183,11 +183,13 @@ public final class SendJMSGenerator {
         StringBuffer destBuff = new StringBuffer(destName);
         destBuff.setCharAt(0, Character.toUpperCase(destBuff.charAt(0)));
 
+        boolean namingException = false;
         String body = null;
         if (supportsInjection){
             body = getSendJMSCodeWithInjectedFields(connectionFactoryFieldName, destinationFieldName, sendMethodName);
         } else if (slStrategy == null) {
             body = getSendJMSCode(connectionFactoryName, destinationName, sendMethodName);
+            namingException = true;
         } else {
             body = getSendJMSCode(connectionFactoryName, destinationName, sendMethodName, slStrategy, fileObject, className);
         }
@@ -197,7 +199,7 @@ public final class SendJMSGenerator {
                 "void",
                 body,
                 Collections.singletonList(MethodModel.Variable.create(Object.class.getName(), "messageData")),
-                Collections.singletonList("javax.jms.JMSException"),
+                namingException ? Arrays.asList("javax.naming.NamingException", "javax.jms.JMSException") : Collections.singletonList("javax.jms.JMSException"),
                 Collections.singleton(Modifier.PRIVATE)
                 );
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
