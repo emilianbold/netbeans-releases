@@ -13,18 +13,29 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.windows.view.ui.toolbars;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Insets;
+import java.awt.LayoutManager2;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+
 import org.openide.awt.ToolbarPool;
 import org.openide.windows.WindowManager;
 
-import java.awt.*;
-import java.util.*;
 
 /**
  * ToolbarLayout is a LayoutManager2 that should be used on a toolbar panel to
@@ -163,9 +174,13 @@ public class ToolbarLayout implements LayoutManager2, java.io.Serializable {
             //Insets insets = parent.getInsets();
             //int maxPosition = parent.getWidth() - (insets.left + insets.right) - HGAP;
             Insets insets = WindowManager.getDefault().getMainWindow().getInsets();
-            int maxPosition = Toolkit.getDefaultToolkit().getScreenSize().width - 
-                              (insets.left + insets.right) - HGAP;
-
+            int maxPosition;
+            Frame f = WindowManager.getDefault().getMainWindow();
+            if ((f.getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH) {
+                maxPosition = f.getWidth() - HGAP;
+            } else {
+                maxPosition = f.getWidth() - (insets.left + insets.right) - HGAP;
+            }
             Component comp;
             ToolbarConstraints constr;
 
@@ -207,7 +222,6 @@ public class ToolbarLayout implements LayoutManager2, java.io.Serializable {
 
             /* ToolbarConstraints has component bounds prepared. */
             bounds = constr.getBounds();
-
             if ((bounds.x < maxPosition) &&                 // If component starts on visible position ...
                 (bounds.x + bounds.width > maxPosition)) {  // ... but with width it is over visible area ...
                 bounds.width = maxPosition - bounds.x;      // ... so width is cropped to max possible.
