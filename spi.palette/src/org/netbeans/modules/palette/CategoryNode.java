@@ -72,7 +72,7 @@ class CategoryNode extends FilterNode {
             FileObject fob = folder.getPrimaryFile();
             Object catName = fob.getAttribute( CAT_NAME );
             if (catName instanceof String)
-                setName((String)catName, false);
+                setDisplayName((String)catName);
         }
         content.add( this );
     }
@@ -81,7 +81,17 @@ class CategoryNode extends FilterNode {
 
     public String getDisplayName() {
 
-        String retValue = super.getDisplayName();
+        String retValue = null;
+        DataFolder folder = (DataFolder)getCookie( DataFolder.class );
+        if( null != folder ) {
+            FileObject fob = folder.getPrimaryFile();
+            Object catName = fob.getAttribute( CAT_NAME );
+            if (catName instanceof String)
+                retValue = catName.toString();
+        } 
+        if( null == retValue ) {
+            retValue = super.getDisplayName();
+        }
         // XXX poor impl; should not depend on org.openide.loaders.Bundle#FMT_shadowName:
         if( null != retValue && retValue.indexOf("\u2192") > 0 ) {
             DataShadow shadow = (DataShadow)getCookie( DataShadow.class );
@@ -98,32 +108,19 @@ class CategoryNode extends FilterNode {
         return retValue;
     }
 
-    public void setName(String name) {
-        setName(name, true);
-    }
-
-    public void setName(String name, boolean rename) {
-        if (rename) {
-            if( !checkCategoryName( getParentNode(), name, this ) )
-                return; // invalid name
-            try {
-                DataFolder folder = (DataFolder)getCookie( DataFolder.class );
-                if( null != folder ) {
-                    FileObject fo = folder.getPrimaryFile();
-                    String folderName = convertCategoryToFolderName( fo.getParent(), name, fo.getName());
-                    fo.setAttribute( CAT_NAME, null );
-                    folder.rename(folderName);
-                    if (!folderName.equals(name))
-                        fo.setAttribute( CAT_NAME, name );
-                }
+    public void setDisplayName( String displayName ) {
+        try {
+            DataFolder folder = (DataFolder)getCookie( DataFolder.class );
+            if( null != folder ) {
+                FileObject fo = folder.getPrimaryFile();
+                fo.setAttribute( CAT_NAME, displayName );
             }
-            catch (java.io.IOException ex) {
-                RuntimeException e = new IllegalArgumentException();
-                org.openide.ErrorManager.getDefault().annotate(e, ex);
-                throw e;
-            }
+        } catch (java.io.IOException ex) {
+            RuntimeException e = new IllegalArgumentException();
+            org.openide.ErrorManager.getDefault().annotate(e, ex);
+            throw e;
         }
-        super.setName(name);
+        super.setDisplayName( displayName );
     }
 
     public String getShortDescription() {

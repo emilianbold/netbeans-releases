@@ -355,14 +355,14 @@ public final class Utils {
             NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(
                 getBundleString("CTL_NewName"), // NOI18N
                 getBundleString("CTL_Rename")); // NOI18N
-            desc.setInputText(categoryNode.getName());
+            desc.setInputText(categoryNode.getDisplayName());
 
             if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(desc))) {
                 String newName;
                 try {
                     newName = desc.getInputText();
                     if (!"".equals(newName)) // NOI18N
-                    categoryNode.setName(newName);
+                    categoryNode.setDisplayName(newName);
                 } catch (IllegalArgumentException e) {
                     ERR.log( Level.INFO, e.getLocalizedMessage(), e );
                 }
