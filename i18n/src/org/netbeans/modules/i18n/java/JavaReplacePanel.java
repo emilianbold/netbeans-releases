@@ -121,9 +121,6 @@ public class JavaReplacePanel extends JPanel {
     
     private void initAccessibility() {
         this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_JavaReplacePanel"));
-        identifierLabel.setDisplayedMnemonic((bundle.getString("LBL_Identifier_Mnem")).charAt(0));
-        initLabel.setDisplayedMnemonic((bundle.getString("LBL_InitFormat_Mnem")).charAt(0));
-        fieldLabel.setDisplayedMnemonic((bundle.getString("LBL_Field_Mnem")).charAt(0));        
         fieldTextField.selectAll();
         initTextField.selectAll();
         staticCheck.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_staticCheck"));
@@ -169,9 +166,8 @@ public class JavaReplacePanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        generateCheck.setMnemonic(Util.getChar("CTL_GenerateField_Mnem"));
         generateCheck.setSelected(true);
-        generateCheck.setText(bundle.getString("CTL_GenerateField")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(generateCheck, bundle.getString("CTL_GenerateField")); // NOI18N
         generateCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 generateCheckActionPerformed(evt);
@@ -302,7 +298,7 @@ public class JavaReplacePanel extends JPanel {
         add(transientCheck, gridBagConstraints);
 
         identifierLabel.setLabelFor(identifierTextField);
-        identifierLabel.setText(bundle.getString("LBL_Identifier")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(identifierLabel, bundle.getString("LBL_Identifier")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -330,7 +326,7 @@ public class JavaReplacePanel extends JPanel {
         add(identifierTextField, gridBagConstraints);
 
         initLabel.setLabelFor(initTextField);
-        initLabel.setText(bundle.getString("LBL_InitFormat")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(initLabel, bundle.getString("LBL_InitFormat")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -354,7 +350,7 @@ public class JavaReplacePanel extends JPanel {
         add(initTextField, gridBagConstraints);
 
         fieldLabel.setLabelFor(fieldTextField);
-        fieldLabel.setText(bundle.getString("LBL_Field")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(fieldLabel, bundle.getString("LBL_Field")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -377,8 +373,7 @@ public class JavaReplacePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(fieldTextField, gridBagConstraints);
 
-        initButton.setMnemonic(Util.getChar("CTL_Format_mne"));
-        initButton.setText(bundle.getString("CTL_Format")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(initButton, bundle.getString("CTL_Format")); // NOI18N
         initButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 initButtonActionPerformed(evt);
@@ -409,7 +404,6 @@ public class JavaReplacePanel extends JPanel {
                                                     I18nUtil.getInitFormatItems(),
                                                     I18nUtil.getInitHelpItems(),
                                                     Util.getString("LBL_InitCodeFormat"),
-                                                    Util.getChar("LBL_InitCodeFormat_mne"),
                                                     I18nUtil.PE_BUNDLE_CODE_HELP_ID);
 
         DialogDescriptor dd = new DialogDescriptor(

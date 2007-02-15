@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -282,6 +282,7 @@ public class PropertyPanel extends JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         commentLabel = new javax.swing.JLabel();
         commentScroll = new javax.swing.JScrollPane();
         commentText = new javax.swing.JTextArea();
@@ -299,8 +300,7 @@ public class PropertyPanel extends JPanel {
         browseButton = new javax.swing.JButton();
 
         commentLabel.setLabelFor(commentText);
-        commentLabel.setText(I18nUtil.getBundle().getString("LBL_Comment"));
-        commentLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Comment_Mnem")).charAt(0));
+        org.openide.awt.Mnemonics.setLocalizedText(commentLabel, I18nUtil.getBundle().getString("LBL_Comment")); // NOI18N
 
         commentText.setColumns(40);
         commentText.setRows(2);
@@ -309,16 +309,13 @@ public class PropertyPanel extends JPanel {
                 commentTextFocusLost(evt);
             }
         });
-
         commentScroll.setViewportView(commentText);
 
         keyLabel.setLabelFor(keyBundleCombo);
-        keyLabel.setText(I18nUtil.getBundle().getString("LBL_Key"));
-        keyLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Key_Mnem")).charAt(0));
+        org.openide.awt.Mnemonics.setLocalizedText(keyLabel, I18nUtil.getBundle().getString("LBL_Key")); // NOI18N
 
         valueLabel.setLabelFor(valueText);
-        valueLabel.setText(I18nUtil.getBundle().getString("LBL_Value"));
-        valueLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Value_Mnem")).charAt(0));
+        org.openide.awt.Mnemonics.setLocalizedText(valueLabel, I18nUtil.getBundle().getString("LBL_Value")); // NOI18N
 
         valueText.setColumns(40);
         valueText.setRows(2);
@@ -327,7 +324,6 @@ public class PropertyPanel extends JPanel {
                 valueTextFocusLost(evt);
             }
         });
-
         valueScroll.setViewportView(valueText);
 
         keyBundleCombo.setEditable(true);
@@ -347,11 +343,9 @@ public class PropertyPanel extends JPanel {
         });
 
         replaceFormatLabel.setLabelFor(replaceFormatTextField);
-        replaceFormatLabel.setText(I18nUtil.getBundle().getString("LBL_ReplaceFormat"));
-        replaceFormatLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_ReplaceFormat_Mnem")).charAt(0));
+        org.openide.awt.Mnemonics.setLocalizedText(replaceFormatLabel, I18nUtil.getBundle().getString("LBL_ReplaceFormat")); // NOI18N
 
-        replaceFormatButton.setMnemonic((I18nUtil.getBundle().getString("CTL_Format_Mnem")).charAt(0));
-        replaceFormatButton.setText(I18nUtil.getBundle().getString("CTL_Format"));
+        org.openide.awt.Mnemonics.setLocalizedText(replaceFormatButton, I18nUtil.getBundle().getString("CTL_Format")); // NOI18N
         replaceFormatButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 replaceFormatButtonActionPerformed(evt);
@@ -359,11 +353,11 @@ public class PropertyPanel extends JPanel {
         });
 
         jLabel1.setLabelFor(resourceText);
-        jLabel1.setText(I18nUtil.getBundle().getString("LBL_BundleName"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, I18nUtil.getBundle().getString("LBL_BundleName")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(argumentsButton, I18nUtil.getBundle().getString("CTL_Arguments"));
+        org.openide.awt.Mnemonics.setLocalizedText(argumentsButton, I18nUtil.getBundle().getString("CTL_Arguments")); // NOI18N
 
-        browseButton.setText(I18nUtil.getBundle().getString("CTL_BrowseButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, I18nUtil.getBundle().getString("CTL_BrowseButton")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -387,7 +381,7 @@ public class PropertyPanel extends JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(resourceText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
+                                .add(resourceText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(browseButton))
                             .add(keyBundleCombo, 0, 414, Short.MAX_VALUE)
@@ -462,7 +456,6 @@ public class PropertyPanel extends JPanel {
                                                         I18nUtil.getReplaceFormatItems(),
                                                         I18nUtil.getReplaceHelpItems(),
                                                         I18nUtil.getBundle().getString("LBL_ReplaceCodeFormat"),
-                                                        Util.getChar("LBL_ReplaceCodeFormat_mne"),
                                                         I18nUtil.PE_REPLACE_CODE_HELP_ID);
 
         DialogDescriptor dd = new DialogDescriptor(

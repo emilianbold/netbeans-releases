@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -296,7 +296,6 @@ public class I18nPanel extends JPanel {
         contentsPanelPlaceholder = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -307,30 +306,24 @@ public class I18nPanel extends JPanel {
 
         buttonsPanel.setLayout(new java.awt.GridLayout(1, 5, 5, 0));
 
-        replaceButton.setMnemonic(Util.getChar("CTL_ReplaceButton_Mnem"));
-        replaceButton.setText(bundle.getString("CTL_ReplaceButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(replaceButton, bundle.getString("CTL_ReplaceButton")); // NOI18N
         buttonsPanel.add(replaceButton);
 
-        skipButton.setMnemonic(Util.getChar("CTL_SkipButton_Mnem"));
-        skipButton.setText(bundle.getString("CTL_SkipButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(skipButton, bundle.getString("CTL_SkipButton")); // NOI18N
         buttonsPanel.add(skipButton);
 
-        infoButton.setMnemonic(Util.getChar("CTL_InfoButton_Mnem"));
-        infoButton.setText(bundle.getString("CTL_InfoButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(infoButton, bundle.getString("CTL_InfoButton")); // NOI18N
         buttonsPanel.add(infoButton);
 
-        cancelButton.setMnemonic(Util.getChar("CTL_CloseButton_mne"));
-        cancelButton.setText(bundle.getString("CTL_CloseButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, bundle.getString("CTL_CloseButton")); // NOI18N
         buttonsPanel.add(cancelButton);
 
-        helpButton.setMnemonic(Util.getChar("CTL_HelpButton_Mnem"));
-        helpButton.setText(bundle.getString("CTL_HelpButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(helpButton, bundle.getString("CTL_HelpButton")); // NOI18N
         helpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpButtonActionPerformed(evt);
             }
         });
-
         buttonsPanel.add(helpButton);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -343,7 +336,6 @@ public class I18nPanel extends JPanel {
         add(buttonsPanel, gridBagConstraints);
 
         contentsPanelPlaceholder.setLayout(new javax.swing.BoxLayout(contentsPanelPlaceholder, javax.swing.BoxLayout.Y_AXIS));
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -352,7 +344,6 @@ public class I18nPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(contentsPanelPlaceholder, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void myInitComponents() {

@@ -26,7 +26,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="resourceText" pref="327" max="32767" attributes="0"/>
+                              <Component id="resourceText" pref="365" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="browseButton" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -96,7 +96,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="commentLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString(&quot;LBL_Comment_Mnem&quot;)).charAt(0)); "/>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
     <Container class="javax.swing.JScrollPane" name="commentScroll">
@@ -125,7 +125,7 @@
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value=""/>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="keyLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString(&quot;LBL_Key_Mnem&quot;)).charAt(0));"/>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="valueLabel">
@@ -138,7 +138,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="valueLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString(&quot;LBL_Value_Mnem&quot;)).charAt(0)); "/>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
     <Container class="javax.swing.JScrollPane" name="valueScroll">
@@ -186,14 +186,11 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="replaceFormatLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString(&quot;LBL_ReplaceFormat_Mnem&quot;)).charAt(0));&#xa;"/>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JButton" name="replaceFormatButton">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="(I18nUtil.getBundle().getString(&quot;CTL_Format_Mnem&quot;)).charAt(0)" type="code"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_Format" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
         </Property>
@@ -203,6 +200,7 @@
       </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value=""/>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
@@ -214,6 +212,9 @@
           <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_BundleName" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="resourceText">
     </Component>
@@ -237,6 +238,9 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseButtonActionPerformed"/>
       </Events>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

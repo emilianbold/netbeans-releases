@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,9 +30,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.BadLocationException;
-
 import org.netbeans.beaninfo.editors.StringEditor;
-
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.ErrorManager;
@@ -48,9 +47,10 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
     /** Creates new form CodeCustomEditor.
      * @param value value to be customized 
      * @param items for sleecteing in combo box
-     * @param help patterns described in list
+     * @param helpItems patterns described in list
+     * @param comboText label for the combo-box, optionally with an ampersand marking the mnemonic character
      */
-    public HelpStringCustomEditor(String value, List items, List helpItems, String comboText, char comboMnemonic, String helpID) {
+    public HelpStringCustomEditor(String value, List items, List helpItems, String comboText, String helpID) {
         initComponents();
         
         combo.setModel(new DefaultComboBoxModel(items.toArray()));
@@ -60,10 +60,8 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         list.setBackground(javax.swing.UIManager.getDefaults().getColor("TextField..disabledBackground")); // NOI18N
 //        list.setBackground(new Color(SystemColor.window.getRGB()));
         
-        comboLabel.setText(comboText);
-        comboLabel.setDisplayedMnemonic(comboMnemonic);
-        listLabel.setText(I18nUtil.getBundle().getString("LBL_Arguments"));
-        listLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Arguments_Mnem")).charAt(0));
+        Mnemonics.setLocalizedText(comboLabel, comboText);
+        Mnemonics.setLocalizedText(listLabel, I18nUtil.getBundle().getString("LBL_Arguments"));
         
         initAccessibility ();     
         
@@ -202,7 +200,6 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
                 I18nUtil.getInitFormatItems(), 
                 I18nUtil.getInitHelpItems(),
                 I18nUtil.getBundle().getString("LBL_InitCodeFormat"),
-                Util.getChar("LBL_InitCodeFormat_mne"),
                 I18nUtil.PE_BUNDLE_CODE_HELP_ID
             );
         }
@@ -218,7 +215,6 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
                 I18nUtil.getReplaceFormatItems(),
                 I18nUtil.getReplaceHelpItems(),
                 I18nUtil.getBundle().getString("LBL_ReplaceCodeFormat"),
-                Util.getChar("LBL_ReplaceCodeFormat_mne"),
                 I18nUtil.PE_REPLACE_CODE_HELP_ID
             );
         }
@@ -234,7 +230,6 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
                 I18nUtil.getRegExpItems(),
                 I18nUtil.getRegExpHelpItems(),
                 I18nUtil.getBundle().getString("LBL_NonI18nRegExpFormat"),
-                Util.getChar("LBL_NonI18nRegExpFormat_mne"),
                 I18nUtil.PE_I18N_REGEXP_HELP_ID
             );
         }
@@ -250,7 +245,6 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
                 I18nUtil.getI18nRegExpItems(), 
                 I18nUtil.getRegExpHelpItems(),
                 I18nUtil.getBundle().getString("LBL_I18nRegExpFormat"),
-                Util.getChar("LBL_I18nRegExpFormat_mne"),
                 I18nUtil.PE_TEST_REGEXP_HELP_ID
             );
         }

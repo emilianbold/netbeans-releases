@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -46,6 +46,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import java.net.URL;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.openide.awt.Mnemonics;
 
 
 
@@ -343,11 +344,11 @@ public class SelectorUtils {
             
       // label and text field with mnemonic
       String labelText = I18nUtil.getBundle().getString ("LBL_TemplateName");
-      JLabel label = new JLabel(labelText.replace('&', ' '));
+      JLabel label = new JLabel();
+      Mnemonics.setLocalizedText(label, labelText);
       text = new JTextField();
       text.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString ("ACS_TEXT_ObjectNameInputPanel"));
             
-      label.setDisplayedMnemonic(labelText.charAt(labelText.indexOf('&') + 1));
       label.setLabelFor(text);
             
       add(BorderLayout.WEST, label);

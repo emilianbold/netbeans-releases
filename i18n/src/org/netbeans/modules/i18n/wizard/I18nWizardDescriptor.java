@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -33,7 +33,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
-
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -42,6 +41,7 @@ import org.openide.WizardDescriptor;
 import org.openide.DialogDisplayer;
 import org.netbeans.api.project.Project;
 import java.util.Map;
+import org.openide.awt.Mnemonics;
 
 
 /**
@@ -81,13 +81,13 @@ final class I18nWizardDescriptor extends WizardDescriptor {
         Listener listener = new Listener();
 
         // Button init.
-        nextButton.setText(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Next"));        
+        Mnemonics.setLocalizedText(nextButton, NbBundle.getMessage(I18nWizardDescriptor.class, "CTL_Next"));
         nextButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(I18nWizardDescriptor.class).getString("ACSD_NEXT"));
-        previousButton.setText(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Previous"));
+        Mnemonics.setLocalizedText(previousButton, NbBundle.getMessage(I18nWizardDescriptor.class, "CTL_Previous"));
         previousButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(I18nWizardDescriptor.class).getString("ACSD_PREVIOUS"));
-        finishButton.setText(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Finish"));
+        Mnemonics.setLocalizedText(finishButton, NbBundle.getMessage(I18nWizardDescriptor.class, "CTL_Finish"));
         finishButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(I18nWizardDescriptor.class).getString("ACSD_FINISH"));
-        cancelButton.setText(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Cancel"));
+        Mnemonics.setLocalizedText(cancelButton, NbBundle.getMessage(I18nWizardDescriptor.class, "CTL_Cancel"));
         cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(I18nWizardDescriptor.class).getString("ACSD_CANCEL"));
         
         nextButton.addActionListener(listener);
@@ -95,9 +95,6 @@ final class I18nWizardDescriptor extends WizardDescriptor {
         finishButton.addActionListener(listener);
         cancelButton.addActionListener(listener);
         
-        nextButton.setMnemonic(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Next_Mnem").charAt(0));
-        previousButton.setMnemonic(NbBundle.getBundle(I18nWizardDescriptor.class).getString("CTL_Previous_Mnem").charAt(0));
-
         setOptions(new Object[] { previousButton, nextButton, finishButton, cancelButton });
         setClosingOptions(new Object[] { cancelButton });
 
