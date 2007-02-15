@@ -22,20 +22,16 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import java.io.IOException;
 import java.util.Collections;
-import javax.lang.model.element.Modifier;
 import java.util.Collections;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import com.sun.source.tree.*;
 import junit.textui.TestRunner;
-import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.*;
+import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Tests indentation of newly generated body text in method.
@@ -139,28 +135,35 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
     }
     
     public void testCreateReturnBooleanBodyText() throws java.io.IOException, FileStateInvalidException {
-        process(
-            new MutableTransformer<Void, Object>() {
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    StringBuffer body = new StringBuffer();
-                    body.append("{ return false; }");
-                    MethodTree method = Method(
-                            make.Modifiers(Collections.singleton(Modifier.PUBLIC)),
-                            "equals",
-                            make.PrimitiveType(TypeKind.BOOLEAN),
-                            Collections.EMPTY_LIST,
-                            Collections.EMPTY_LIST,
-                            Collections.EMPTY_LIST,
-                            body.toString(),
-                            null
-                            );
-                    ClassTree clazz = make.addClassMember(node, method);
-                    changes.rewrite(node, clazz);
-                    return null;
-                }
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree node  = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                StringBuffer body = new StringBuffer();
+                body.append("{ return false; }");
+                MethodTree method = make.Method(
+                        make.Modifiers(Collections.singleton(Modifier.PUBLIC)),
+                        "equals",
+                        make.PrimitiveType(TypeKind.BOOLEAN),
+                        Collections.EMPTY_LIST,
+                        Collections.EMPTY_LIST,
+                        Collections.EMPTY_LIST,
+                        body.toString(),
+                        null
+                        );
+                ClassTree clazz = make.addClassMember(node, method);
+                workingCopy.rewrite(node, clazz);
             }
-        );
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         // there is "return 0" instead
         String result = TestUtilities.copyFileToString(testFile);
         System.err.println(result);
