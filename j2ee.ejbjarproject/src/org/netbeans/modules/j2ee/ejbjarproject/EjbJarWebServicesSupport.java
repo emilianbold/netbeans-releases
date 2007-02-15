@@ -167,6 +167,12 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
             throw new RuntimeException(e.getMessage());
         }
         
+        if (ejbJar == null) {
+            ErrorManager.getDefault().log(ErrorManager.USER,
+                    NbBundle.getMessage(EjbJarWebServicesSupport.class, "MSG_MissingMetadata"));
+            return;
+        }
+        
         EjbJarProvider pwm = (EjbJarProvider) project.getLookup().lookup(EjbJarProvider.class);
         pwm.getConfigSupport().ensureConfigurationReady();
         EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
