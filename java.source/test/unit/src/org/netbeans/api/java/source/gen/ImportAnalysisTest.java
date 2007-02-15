@@ -32,14 +32,18 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -599,111 +603,141 @@ public class ImportAnalysisTest extends GeneratorTest {
     }
     
     public void testAddImportThroughMethod1() throws IOException {
-        process(
-            new MutableTransformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    if ("<init>".contentEquals(node.getName())) {
-                        WorkingCopy wc = getWorkingCopy();
-                        int offset = (int) (wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), node) + 1);
-                        TreePath context = wc.getTreeUtilities().pathFor(offset);
-                        try {
-                            assertEquals("List", SourceUtils.resolveImport(wc, context, "java.util.List"));
-                            assertEquals("java.awt.List", SourceUtils.resolveImport(wc, context, "java.awt.List"));
-                        } catch (IOException e) {
-                            throw new IllegalStateException(e);
-                        }
-                    }
-                    return null;
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree node = (MethodTree) clazz.getMembers().get(0);
+                int offset = (int) (workingCopy.getTrees().getSourcePositions().getStartPosition(workingCopy.getCompilationUnit(), node) + 1);
+                TreePath context = workingCopy.getTreeUtilities().pathFor(offset);
+                try {
+                    assertEquals("List", SourceUtils.resolveImport(workingCopy, context, "java.util.List"));
+                    assertEquals("java.awt.List", SourceUtils.resolveImport(workingCopy, context, "java.awt.List"));
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
                 }
             }
-        );
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testAddImportThroughMethod1.pass");
     }
     
     public void testAddImportThroughMethod2() throws IOException {
-        process(
-            new MutableTransformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    if ("<init>".contentEquals(node.getName())) {
-                        WorkingCopy wc = getWorkingCopy();
-                        int offset = (int) (wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), node) + 1);
-                        TreePath context = wc.getTreeUtilities().pathFor(offset);
-                        try {
-                            assertEquals("List", SourceUtils.resolveImport(wc, context, "java.util.List"));
-                            assertEquals("java.awt.List", SourceUtils.resolveImport(wc, context, "java.awt.List"));
-                        } catch (IOException e) {
-                            throw new IllegalStateException(e);
-                        }
-                    }
-                    return null;
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree node = (MethodTree) clazz.getMembers().get(0);
+                int offset = (int) (workingCopy.getTrees().getSourcePositions().getStartPosition(workingCopy.getCompilationUnit(), node) + 1);
+                TreePath context = workingCopy.getTreeUtilities().pathFor(offset);
+                try {
+                    assertEquals("List", SourceUtils.resolveImport(workingCopy, context, "java.util.List"));
+                    assertEquals("java.awt.List", SourceUtils.resolveImport(workingCopy, context, "java.awt.List"));
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
                 }
             }
-        );
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testAddImportThroughMethod2.pass");
     }
     
     public void testAddImportThroughMethod3() throws IOException {
-        process(
-            new MutableTransformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    if ("<init>".contentEquals(node.getName())) {
-                        WorkingCopy wc = getWorkingCopy();
-                        int offset = (int) (wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), node) + 1);
-                        TreePath context = wc.getTreeUtilities().pathFor(offset);
-                        try {
-                            assertEquals("List", SourceUtils.resolveImport(wc, context, "java.util.List"));
-                            assertEquals("Map", SourceUtils.resolveImport(wc, context, "java.util.Map"));
-                            assertEquals("java.awt.List", SourceUtils.resolveImport(wc, context, "java.awt.List"));
-                        } catch (IOException e) {
-                            throw new IllegalStateException(e);
-                        }
-                    }
-                    return null;
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree node = (MethodTree) clazz.getMembers().get(0);
+                int offset = (int) (workingCopy.getTrees().getSourcePositions().getStartPosition(workingCopy.getCompilationUnit(), node) + 1);
+                TreePath context = workingCopy.getTreeUtilities().pathFor(offset);
+                try {
+                    assertEquals("List", SourceUtils.resolveImport(workingCopy, context, "java.util.List"));
+                    assertEquals("Map", SourceUtils.resolveImport(workingCopy, context, "java.util.Map"));
+                    assertEquals("java.awt.List", SourceUtils.resolveImport(workingCopy, context, "java.awt.List"));
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
                 }
             }
-        );
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testAddImportThroughMethod3.pass");
     }
     
     public void testAddImportThroughMethod4() throws IOException {
-        process(
-            new MutableTransformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    if ("<init>".contentEquals(node.getName())) {
-                        WorkingCopy wc = getWorkingCopy();
-                        int offset = (int) (wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), node) + 1);
-                        TreePath context = wc.getTreeUtilities().pathFor(offset);
-                        try {
-                            assertEquals("SuperClassTest", SourceUtils.resolveImport(wc, context, "org.netbeans.test.codegen.SuperClassTest"));
-                        } catch (IOException e) {
-                            throw new IllegalStateException(e);
-                        }
-                    }
-                    return null;
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree node = (MethodTree) clazz.getMembers().get(0);
+                int offset = (int) (workingCopy.getTrees().getSourcePositions().getStartPosition(workingCopy.getCompilationUnit(), node) + 1);
+                TreePath context = workingCopy.getTreeUtilities().pathFor(offset);
+                try {
+                    assertEquals("SuperClassTest", SourceUtils.resolveImport(workingCopy, context, "org.netbeans.test.codegen.SuperClassTest"));
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
                 }
             }
-        );
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testAddImportThroughMethod4.pass");
     }
 
     public void testAddImportThroughMethod5() throws IOException {
-        process(
-            new MutableTransformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    if ("<init>".contentEquals(node.getName())) {
-                        WorkingCopy wc = getWorkingCopy();
-                        int offset = (int) (wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), node) + 1);
-                        TreePath context = wc.getTreeUtilities().pathFor(offset);
-                        try {
-                            assertEquals("SuperClassTest.FirstInnerClass", SourceUtils.resolveImport(wc, context, "org.netbeans.test.codegen.SuperClassTest.FirstInnerClass"));
-                        } catch (IOException e) {
-                            throw new IllegalStateException(e);
-                        }
-                    }
-                    return null;
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree node = (MethodTree) clazz.getMembers().get(0);
+                int offset = (int) (workingCopy.getTrees().getSourcePositions().getStartPosition(workingCopy.getCompilationUnit(), node) + 1);
+                TreePath context = workingCopy.getTreeUtilities().pathFor(offset);
+                try {
+                    assertEquals("SuperClassTest.FirstInnerClass", SourceUtils.resolveImport(workingCopy, context, "org.netbeans.test.codegen.SuperClassTest.FirstInnerClass"));
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
                 }
             }
-        );
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testAddImportThroughMethod4.pass");
     }
     
