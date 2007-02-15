@@ -269,9 +269,14 @@ public abstract class WizardComponent {
         }
         
         public JComponent getDefaultFocusOwner() {
-            return null;
+            if (getDefaultEnterButton() != null) {
+                return getDefaultEnterButton();
+            } else {
+                return null;
+            }
         }
         
+        // protected ////////////////////////////////////////////////////////////////
         protected void initializeContainer() {
             // set up the help button
             container.getHelpButton().setVisible(false);

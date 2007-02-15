@@ -25,11 +25,16 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -47,6 +52,8 @@ import org.netbeans.installer.wizard.ui.WizardUi;
  * @author Kirill Sorokin
  */
 public class SwingFrameContainer extends NbiFrame implements SwingContainer {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
     private SwingUi           currentUi;
     private WizardContentPane contentPane;
     
@@ -178,7 +185,9 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         });
     }
     
-    public class WizardContentPane extends NbiFrameContentPane {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    public static class WizardContentPane extends NbiFrameContentPane {
         private NbiLabel titleLabel;
         private NbiTextPane descriptionPane;
         private NbiPanel titlePanel;
@@ -250,14 +259,15 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             return cancelButton;
         }
         
+        // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
             // titleLabel ///////////////////////////////////////////////////////////
             titleLabel = new NbiLabel();
+            titleLabel.setFocusable(true);
             titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
             
             // descriptionPane //////////////////////////////////////////////////////
             descriptionPane = new NbiTextPane();
-            descriptionPane.setOpaque(false);
             
             // titlePanel ///////////////////////////////////////////////////////////
             titlePanel = new NbiPanel();
@@ -383,6 +393,18 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     GridBagConstraints.BOTH,          // fill
                     new Insets(0, 0, 0, 0),           // padding
                     0, 0));                           // padx, pady - ???
+            
+            // debugging plug ///////////////////////////////////////////////////////
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().
+                    addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent event) {
+                    if (event.getPropertyName().equals("focusOwner")) {
+                        if (event.getNewValue() != null) {
+                            System.out.println(event.getNewValue());
+                        }
+                    }
+                }
+            });
         }
     }
 }

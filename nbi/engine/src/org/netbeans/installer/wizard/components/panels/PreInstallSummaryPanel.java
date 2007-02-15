@@ -44,69 +44,6 @@ import org.netbeans.installer.wizard.containers.SwingContainer;
  */
 public class PreInstallSummaryPanel extends WizardPanel {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String MESSAGE_TEXT_PROPERTY = 
-            "message.text";
-    public static final String MESSAGE_CONTENT_TYPE_PROPERTY = 
-            "message.content.type";
-    public static final String COMPONENTS_TO_INSTALL_LABEL_TEXT_PROPERTY = 
-            "components.to.install.label.text";
-    public static final String COMPONENTS_TO_INSTALL_TEXT_PROPERTY = 
-            "components.to.install.text";
-    public static final String COMPONENTS_TO_INSTALL_CONTENT_TYPE_PROPERTY = 
-            "components.to.install.content.type";
-    public static final String COMPONENTS_TO_UNINSTALL_LABEL_TEXT_PROPERTY = 
-            "components.to.uninstall.label.text";
-    public static final String COMPONENTS_TO_UNINSTALL_TEXT_PROPERTY = 
-            "components.to.uninstall.text";
-    public static final String COMPONENTS_TO_UNINSTALL_CONTENT_TYPE_PROPERTY = 
-            "components.to.uninstall.content.type";
-    public static final String COMPONENTS_LIST_SEPARATOR_PROPERTY = 
-            "components.list.separator";
-    public static final String DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY = 
-            "download.size.label.text";
-    public static final String REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY = 
-            "required.disk.space.label.text";
-    
-    public static final String DEFAULT_MESSAGE_TEXT = 
-            ResourceUtils.getString(PreInstallSummaryPanel.class, 
-            "PrISP.message.text");
-    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = 
-            ResourceUtils.getString(PreInstallSummaryPanel.class, 
-            "PrISP.message.content.type");
-    public static final String DEFAULT_COMPONENTS_TO_INSTALL_LABEL_TEXT = 
-            ResourceUtils.getString(PreInstallSummaryPanel.class, 
-            "PrISP.components.to.install.label.text");
-    public static final String DEFAULT_COMPONENTS_TO_INSTALL_TEXT = 
-            ResourceUtils.getString(PreInstallSummaryPanel.class, 
-            "PrISP.components.to.install.text");
-    public static final String DEFAULT_COMPONENTS_TO_INSTALL_CONTENT_TYPE = 
-            ResourceUtils.getString(PreInstallSummaryPanel.class, 
-            "PrISP.components.to.install.content.type");
-    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_LABEL_TEXT = 
-            ResourceUtils.getString(PreInstallSummaryPanel.class, 
-            "PrISP.components.to.uninstall.label.text");
-    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_TEXT = 
-            ResourceUtils.getString(PreInstallSummaryPanel.class, 
-            "PrISP.components.to.uninstall.text");
-    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_CONTENT_TYPE = 
-            ResourceUtils.getString(PreInstallSummaryPanel.class, 
-            "PrISP.components.to.uninstall.content.type");
-    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = 
-            ResourceUtils.getString(PreInstallSummaryPanel.class, 
-            "PrISP.components.list.separator");
-    public static final String DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT = 
-            ResourceUtils.getString(PreInstallSummaryPanel.class, 
-            "PrISP.download.size.label.text");
-    public static final String DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT = 
-            ResourceUtils.getString(PreInstallSummaryPanel.class, 
-            "PrISP.required.disk.space.label.text");
-    
-    public static final String DEFAULT_DIALOG_TITLE = 
-            ResourceUtils.getString(PreInstallSummaryPanel.class, 
-            "PrISP.dialog.title");
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public PreInstallSummaryPanel() {
         setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
@@ -124,16 +61,19 @@ public class PreInstallSummaryPanel extends WizardPanel {
         setProperty(TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
     }
     
+    @Override
     public boolean canExecuteForward() {
         return Registry.getInstance().getProductsToInstall().size() +
                 Registry.getInstance().getProductsToUninstall().size() > 0;
     }
     
+    @Override
     public boolean canExecuteBackward() {
         return Registry.getInstance().getProductsToInstall().size() +
                 Registry.getInstance().getProductsToUninstall().size() > 0;
     }
     
+    @Override
     public WizardUi getWizardUi() {
         if (wizardUi == null) {
             wizardUi = new PreInstallSummaryPanelUi(this);
@@ -153,7 +93,7 @@ public class PreInstallSummaryPanel extends WizardPanel {
             this.component = component;
         }
         
-        // swing ui specific ////////////////////////////////////////////////////////
+        @Override
         public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new PreInstallSummaryPanelSwingUi(component, container);
@@ -186,10 +126,13 @@ public class PreInstallSummaryPanel extends WizardPanel {
             initComponents();
         }
         
+        // protected ////////////////////////////////////////////////////////////////
+        @Override
         protected void initializeContainer() {
             container.getNextButton().setText("&Install");
         }
         
+        @Override
         protected void initialize() {
             final String messageContentType = component.getProperty(MESSAGE_CONTENT_TYPE_PROPERTY);
             messagePane.setContentType(messageContentType);
@@ -255,37 +198,164 @@ public class PreInstallSummaryPanel extends WizardPanel {
             }
         }
         
+        // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
+            // messagePane //////////////////////////////////////////////////////////
             messagePane = new NbiTextPane();
             
-            componentsToUninstallLabel = new NbiLabel();
-            
+            // componentsToUninstallPane ////////////////////////////////////////////
             componentsToUninstallPane = new NbiTextPane();
-            componentsToUninstallPane.setOpaque(false);
-            componentsToUninstallPane.setEditable(false);
-            componentsToUninstallPane.setBorder(new EmptyBorder(0, 0, 0, 0));
             
-            componentsToInstallLabel = new NbiLabel();
+            // componentsToUninstallLabel ///////////////////////////////////////////
+            componentsToUninstallLabel = new NbiLabel();
+            componentsToUninstallLabel.setLabelFor(componentsToUninstallPane);
             
+            // componentsToInstallPane //////////////////////////////////////////////
             componentsToInstallPane = new NbiTextPane();
-            componentsToInstallPane.setOpaque(false);
-            componentsToInstallPane.setEditable(false);
-            componentsToInstallPane.setBorder(new EmptyBorder(0, 0, 0, 0));
             
+            // componentsToInstallLabel /////////////////////////////////////////////
+            componentsToInstallLabel = new NbiLabel();
+            componentsToInstallLabel.setLabelFor(componentsToInstallPane);
+            
+            // downloadSizeLabel ////////////////////////////////////////////////////
             downloadSizeLabel = new NbiLabel();
+            downloadSizeLabel.setFocusable(true);
             
+            // requiredDiskSpaceLabel ///////////////////////////////////////////////
             requiredDiskSpaceLabel = new NbiLabel();
-            
+            requiredDiskSpaceLabel.setFocusable(true);
+                    
+            // spacer ///////////////////////////////////////////////////////////////
             spacer = new NbiPanel();
             
-            add(messagePane, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
-            add(componentsToUninstallLabel, new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
-            add(componentsToUninstallPane, new GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-            add(componentsToInstallLabel, new GridBagConstraints(0, 3, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
-            add(componentsToInstallPane, new GridBagConstraints(0, 4, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-            add(downloadSizeLabel, new GridBagConstraints(0, 5, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(25, 11, 0, 11), 0, 0));
-            add(requiredDiskSpaceLabel, new GridBagConstraints(0, 6, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-            add(spacer, new GridBagConstraints(0, 7, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 11, 11, 11), 0, 0));
+            // this /////////////////////////////////////////////////////////////////
+            add(messagePane, new GridBagConstraints(
+                    0, 0,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(11, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsToUninstallLabel, new GridBagConstraints(
+                    0, 1,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(15, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsToUninstallPane, new GridBagConstraints(
+                    0, 2,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(3, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsToInstallLabel, new GridBagConstraints(
+                    0, 3,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(15, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsToInstallPane, new GridBagConstraints(
+                    0, 4,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(3, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(downloadSizeLabel, new GridBagConstraints(
+                    0, 5,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(25, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(requiredDiskSpaceLabel, new GridBagConstraints(
+                    0, 6,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(3, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(spacer, new GridBagConstraints(
+                    0, 7,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 11, 11, 11),        // padding
+                    0, 0));                           // padx, pady - ???
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String MESSAGE_TEXT_PROPERTY =
+            "message.text";
+    public static final String MESSAGE_CONTENT_TYPE_PROPERTY =
+            "message.content.type";
+    public static final String COMPONENTS_TO_INSTALL_LABEL_TEXT_PROPERTY =
+            "components.to.install.label.text";
+    public static final String COMPONENTS_TO_INSTALL_TEXT_PROPERTY =
+            "components.to.install.text";
+    public static final String COMPONENTS_TO_INSTALL_CONTENT_TYPE_PROPERTY =
+            "components.to.install.content.type";
+    public static final String COMPONENTS_TO_UNINSTALL_LABEL_TEXT_PROPERTY =
+            "components.to.uninstall.label.text";
+    public static final String COMPONENTS_TO_UNINSTALL_TEXT_PROPERTY =
+            "components.to.uninstall.text";
+    public static final String COMPONENTS_TO_UNINSTALL_CONTENT_TYPE_PROPERTY =
+            "components.to.uninstall.content.type";
+    public static final String COMPONENTS_LIST_SEPARATOR_PROPERTY =
+            "components.list.separator";
+    public static final String DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY =
+            "download.size.label.text";
+    public static final String REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY =
+            "required.disk.space.label.text";
+    
+    public static final String DEFAULT_MESSAGE_TEXT =
+            ResourceUtils.getString(PreInstallSummaryPanel.class,
+            "PrISP.message.text");
+    public static final String DEFAULT_MESSAGE_CONTENT_TYPE =
+            ResourceUtils.getString(PreInstallSummaryPanel.class,
+            "PrISP.message.content.type");
+    public static final String DEFAULT_COMPONENTS_TO_INSTALL_LABEL_TEXT =
+            ResourceUtils.getString(PreInstallSummaryPanel.class,
+            "PrISP.components.to.install.label.text");
+    public static final String DEFAULT_COMPONENTS_TO_INSTALL_TEXT =
+            ResourceUtils.getString(PreInstallSummaryPanel.class,
+            "PrISP.components.to.install.text");
+    public static final String DEFAULT_COMPONENTS_TO_INSTALL_CONTENT_TYPE =
+            ResourceUtils.getString(PreInstallSummaryPanel.class,
+            "PrISP.components.to.install.content.type");
+    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_LABEL_TEXT =
+            ResourceUtils.getString(PreInstallSummaryPanel.class,
+            "PrISP.components.to.uninstall.label.text");
+    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_TEXT =
+            ResourceUtils.getString(PreInstallSummaryPanel.class,
+            "PrISP.components.to.uninstall.text");
+    public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_CONTENT_TYPE =
+            ResourceUtils.getString(PreInstallSummaryPanel.class,
+            "PrISP.components.to.uninstall.content.type");
+    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR =
+            ResourceUtils.getString(PreInstallSummaryPanel.class,
+            "PrISP.components.list.separator");
+    public static final String DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT =
+            ResourceUtils.getString(PreInstallSummaryPanel.class,
+            "PrISP.download.size.label.text");
+    public static final String DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT =
+            ResourceUtils.getString(PreInstallSummaryPanel.class,
+            "PrISP.required.disk.space.label.text");
+    
+    public static final String DEFAULT_DIALOG_TITLE =
+            ResourceUtils.getString(PreInstallSummaryPanel.class,
+            "PrISP.dialog.title");
 }

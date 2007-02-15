@@ -50,6 +50,11 @@ public class NbiLabel extends JLabel {
         this.collapsePaths = collapsePaths;
     }
     
+    public void clearText() {
+        setText(null);
+    }
+    
+    @Override
     public void setText(final String text) {
         if ((text == null) || text.equals("")) {
             this.text = DEFAULT_TEXT;
@@ -64,6 +69,7 @@ public class NbiLabel extends JLabel {
         }
     }
     
+    @Override
     protected void paintComponent(Graphics graphics) {
         if (collapsePaths && !text.equals(DEFAULT_TEXT)) {
             final String string = StringUtils.stripMnemonic(text);

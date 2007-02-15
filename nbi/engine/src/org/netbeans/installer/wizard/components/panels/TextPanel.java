@@ -37,13 +37,17 @@ import org.netbeans.installer.wizard.containers.SwingContainer;
 public class TextPanel extends WizardPanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String TEXT_PROPERTY         = "text";
-    public static final String CONTENT_TYPE_PROPERTY = "content.type";
+    public static final String TEXT_PROPERTY =
+            "text"; // NOI18N
+    public static final String CONTENT_TYPE_PROPERTY =
+            "content.type"; // NOI18N
     
     public static final String DEFAULT_TEXT =
-            ResourceUtils.getString(TextPanel.class, "TP.text");
+            ResourceUtils.getString(TextPanel.class,
+            "TP.text"); // NOI18N
     public static final String DEFAULT_CONTENT_TYPE =
-            ResourceUtils.getString(TextPanel.class, "TP.content.type");
+            ResourceUtils.getString(TextPanel.class,
+            "TP.content.type"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -52,6 +56,7 @@ public class TextPanel extends WizardPanel {
         setProperty(CONTENT_TYPE_PROPERTY, DEFAULT_CONTENT_TYPE);
     }
     
+    @Override
     public WizardUi getWizardUi() {
         if (wizardUi == null) {
             wizardUi = new TextPanelUi(this);
@@ -63,7 +68,7 @@ public class TextPanel extends WizardPanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     public static class TextPanelUi extends WizardPanelUi {
-        protected TextPanel        component;
+        protected TextPanel component;
         
         public TextPanelUi(TextPanel component) {
             super(component);
@@ -71,7 +76,6 @@ public class TextPanel extends WizardPanel {
             this.component = component;
         }
         
-        // swing ui specific ////////////////////////////////////////////////////////
         public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new TextPanelSwingUi(component, container);
@@ -87,7 +91,7 @@ public class TextPanel extends WizardPanel {
         private NbiTextPane textPane;
         
         public TextPanelSwingUi(
-                final TextPanel component, 
+                final TextPanel component,
                 final SwingContainer container) {
             super(component, container);
             
@@ -96,10 +100,12 @@ public class TextPanel extends WizardPanel {
             initComponents();
         }
         
+        @Override
         public boolean hasTitle() {
             return false;
         }
         
+        @Override
         protected void initialize() {
             textPane.setContentType(
                     component.getProperty(CONTENT_TYPE_PROPERTY));
@@ -108,9 +114,10 @@ public class TextPanel extends WizardPanel {
         }
         
         private void initComponents() {
+            // textPane /////////////////////////////////////////////////////////////
             textPane = new NbiTextPane();
-            textPane.setOpaque(false);
-                    
+            
+            // this /////////////////////////////////////////////////////////////////
             add(textPane, new GridBagConstraints(
                     0, 0,                             // x, y
                     1, 1,                             // width, height

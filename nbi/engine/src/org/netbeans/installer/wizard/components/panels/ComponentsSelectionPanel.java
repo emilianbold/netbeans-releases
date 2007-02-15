@@ -118,6 +118,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_REQUIREMENT_UNINSTALL);
     }
     
+    @Override
     public WizardUi getWizardUi() {
         if (wizardUi == null) {
             wizardUi = new ComponentsSelectionPanelUi(this);
@@ -126,14 +127,17 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         return wizardUi;
     }
     
+    @Override
     public boolean canExecuteForward() {
         return canExecute();
     }
     
+    @Override
     public boolean canExecuteBackward() {
         return canExecute();
     }
     
+    @Override
     public void initialize() {
         if (!isThereAnythingVisibleToInstall()) {
             setProperty(
@@ -211,7 +215,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         private ComponentsSelectionPanel component;
         
         private NbiTree       componentsTree;
-        private NbiScrollPane componentsTreeScrollPane;
+        private NbiScrollPane componentsScrollPane;
         
         private NbiTextPane   descriptionPane;
         private NbiScrollPane descriptionScrollPane;
@@ -341,9 +345,14 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             return null;
         }
         
+        @Override
+        public JComponent getDefaultFocusOwner() {
+            return componentsTree;
+        }
+        
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
-            // componentsTree
+            // componentsTree ///////////////////////////////////////////////////////
             componentsTree = new NbiTree();
             componentsTree.setModel(
                     new ComponentsTreeModel());
@@ -398,27 +407,27 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, false),
                     "checkbox.update");
             
-            // componentsTreeScrollPane
-            componentsTreeScrollPane = new NbiScrollPane(componentsTree);
+            // componentsScrollPane /////////////////////////////////////////////////
+            componentsScrollPane = new NbiScrollPane(componentsTree);
             
-            // descriptionPane
+            // descriptionPane //////////////////////////////////////////////////////
             descriptionPane = new NbiTextPane();
-            descriptionPane.setOpaque(false);
             descriptionPane.setBorder(
                     new EmptyBorder(5, 5, 5, 5));
             
-            // descriptionPane scrollPane
+            // descriptionScrollPane ////////////////////////////////////////////////
             descriptionScrollPane = new NbiScrollPane(descriptionPane);
             descriptionScrollPane.setVerticalScrollBarPolicy(
                     NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
             descriptionScrollPane.setBorder(
                     new TitledBorder("Feature Description"));
             
-            // sizesLabel
+            // sizesLabel ///////////////////////////////////////////////////////////
             sizesLabel = new NbiLabel();
+            sizesLabel.setFocusable(true);
             
-            // add the components
-            add(componentsTreeScrollPane, new GridBagConstraints(
+            // this /////////////////////////////////////////////////////////////////
+            add(componentsScrollPane, new GridBagConstraints(
                     0, 0,                             // x, y
                     1, 1,                             // width, height
                     0.7, 1.0,                         // weight-x, weight-y
@@ -451,10 +460,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 }
             }
             
-            // L&F-specific tweaks
+            // l&f-specific tweaks
             if (UIManager.getLookAndFeel().getID().equals("GTK")) {
-                componentsTreeScrollPane.setViewportBorder(null);
-                
                 descriptionPane.setOpaque(true);
             }
         }
@@ -881,7 +888,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 checkBox.setVisible(false);
             }
             
-            // L&F-specific tweaks
+            // l&f-specific tweaks
             if (UIManager.getLookAndFeel().getID().equals("GTK")) {
                 panel.setOpaque(false);
             }

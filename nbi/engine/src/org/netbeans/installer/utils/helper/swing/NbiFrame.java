@@ -34,6 +34,8 @@ import javax.swing.JFrame;
  * @author Kirill Sorokin
  */
 public class NbiFrame extends JFrame {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
     private int frameWidth;
     private int frameHeight;
     private URL frameIcon;
@@ -86,9 +88,12 @@ public class NbiFrame extends JFrame {
         setContentPane(contentPane);
     }
     
-    public class NbiFrameContentPane extends NbiPanel {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    public static class NbiFrameContentPane extends NbiPanel {
         private Image backgroundImage;
         
+        @Override
         protected void paintComponent(Graphics graphics) {
             super.paintComponent(graphics);
             
@@ -118,6 +123,8 @@ public class NbiFrame extends JFrame {
         }
     }
     
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
     public static final int DEFAULT_FRAME_WIDTH  = 650;
     public static final int DEFAULT_FRAME_HEIGHT = 500;
     public static final URL DEFAULT_FRAME_ICON   = NbiFrame.class.

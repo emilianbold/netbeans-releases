@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.JComponent;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.product.components.Product;
@@ -36,11 +37,6 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import static java.awt.GridBagConstraints.BOTH;
-import static java.awt.GridBagConstraints.CENTER;
-import static java.awt.GridBagConstraints.HORIZONTAL;
-import static java.awt.GridBagConstraints.NONE;
-import static java.awt.GridBagConstraints.WEST;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
@@ -53,20 +49,26 @@ public class LicensesPanel extends WizardPanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public LicensesPanel() {
-        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
-        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+        setProperty(TITLE_PROPERTY, 
+                DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY, 
+                DEFAULT_DESCRIPTION);
         
-        setProperty(ACCEPT_CHECKBOX_TEXT_PROPERTY, DEFAULT_ACCEPT_CHECKBOX_TEXT);
+        setProperty(ACCEPT_CHECKBOX_TEXT_PROPERTY, 
+                DEFAULT_ACCEPT_CHECKBOX_TEXT);
     }
     
+    @Override
     public boolean canExecuteForward() {
         return Registry.getInstance().getProductsToInstall().size()  > 0;
     }
     
+    @Override
     public boolean canExecuteBackward() {
         return Registry.getInstance().getProductsToInstall().size()  > 0;
     }
     
+    @Override
     public WizardUi getWizardUi() {
         if (wizardUi == null) {
             wizardUi = new LicensesPanelUi(this);
@@ -86,7 +88,7 @@ public class LicensesPanel extends WizardPanel {
             this.component = component;
         }
         
-        // swing ui specific ////////////////////////////////////////////////////////
+        @Override
         public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new LicensesPanelSwingUi(component, container);
@@ -101,10 +103,10 @@ public class LicensesPanel extends WizardPanel {
         
         private List<Product> products;
         
-        private NbiTextPane   licensePane;
+        private NbiTextPane licensePane;
         private NbiScrollPane licenseScrollPane;
         
-        private NbiCheckBox   acceptCheckBox;
+        private NbiCheckBox acceptCheckBox;
         
         public LicensesPanelSwingUi(
                 final LicensesPanel component,
@@ -117,6 +119,13 @@ public class LicensesPanel extends WizardPanel {
             initComponents();
         }
         
+        @Override
+        public JComponent getDefaultFocusOwner() {
+            return acceptCheckBox;
+        }
+        
+        // protected ////////////////////////////////////////////////////////////////
+        @Override
         protected void initialize() {
             acceptCheckBox.setText(
                     component.getProperty(ACCEPT_CHECKBOX_TEXT_PROPERTY));
@@ -156,11 +165,15 @@ public class LicensesPanel extends WizardPanel {
         
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
+            // licensePane //////////////////////////////////////////////////////////
             licensePane = new NbiTextPane();
+            licensePane.setOpaque(true);
             licensePane.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
             
+            // licenseScrollPane ////////////////////////////////////////////////////
             licenseScrollPane = new NbiScrollPane(licensePane);
             
+            // acceptCheckBox ///////////////////////////////////////////////////////
             acceptCheckBox = new NbiCheckBox();
             acceptCheckBox.setSelected(false);
             acceptCheckBox.addActionListener(new ActionListener() {
@@ -169,6 +182,7 @@ public class LicensesPanel extends WizardPanel {
                 }
             });
             
+            // this /////////////////////////////////////////////////////////////////
             add(licenseScrollPane, new GridBagConstraints(
                     0, 0,                             // x, y
                     1, 1,                             // width, height
@@ -186,7 +200,7 @@ public class LicensesPanel extends WizardPanel {
                     new Insets(7, 11, 11, 11),        // padding
                     0, 0));                           // padx, pady - ???
             
-            // L&F-specific tweaks
+            // l&f-specific tweaks
             if (UIManager.getLookAndFeel().getID().equals("GTK")) {
                 licenseScrollPane.setViewportBorder(null);
             }

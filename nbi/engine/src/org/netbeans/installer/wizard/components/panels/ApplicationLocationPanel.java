@@ -28,12 +28,12 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -89,6 +89,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     
     public abstract void setLocation(File location);
     
+    @Override
     public WizardUi getWizardUi() {
         if (wizardUi == null) {
             wizardUi = new ApplicationLocationPanelUi(this);
@@ -120,16 +121,15 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     public static class ApplicationLocationPanelSwingUi extends ErrorMessagePanelSwingUi {
         private ApplicationLocationPanel component;
         
-        private NbiLabel       locationLabel;
-        private NbiTextField   locationField;
-        private NbiButton      locationButton;
+        private NbiLabel locationLabel;
+        private NbiTextField locationField;
+        private NbiButton locationButton;
         
-        private NbiLabel       listLabel;
-        private NbiList        list;
-        private NbiScrollPane  listScrollPane;
+        private NbiLabel locationsLabel;
+        private NbiList locationsList;
+        private NbiScrollPane locationsScrollPane;
         
-        private NbiPanel       spacer;
-        private NbiPanel       listReplacement;
+        private NbiPanel locationsListReplacement;
         
         private JFileChooser fileChooser;
         
@@ -143,17 +143,24 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             initComponents();
         }
         
+        @Override
+        public JComponent getDefaultFocusOwner() {
+            return locationField;
+        }
+
+        // protected ////////////////////////////////////////////////////////////////
+        @Override
         protected void initialize() {
             super.initialize();
             
             locationLabel.setText(component.getProperty(LOCATION_LABEL_TEXT_PROPERTY));
             locationButton.setText(component.getProperty(LOCATION_BUTTON_TEXT_PROPERTY));
-            listLabel.setText(component.getProperty(LIST_LABEL_TEXT_PROPERTY));
+            locationsLabel.setText(component.getProperty(LIST_LABEL_TEXT_PROPERTY));
             
             LocationsListModel model = new LocationsListModel(
                     component.getLocations(),
                     component.getLabels());
-            list.setModel(model);
+            locationsList.setModel(model);
             
             File selectedLocation = component.getSelectedLocation();
             if (model.getSize() > 0) {
@@ -163,9 +170,9 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                     locationField.setText(model.getLocationAt(0).getAbsolutePath());
                 }
                 
-                listLabel.setVisible(true);
-                listScrollPane.setVisible(true);
-                listReplacement.setVisible(false);
+                locationsLabel.setVisible(true);
+                locationsScrollPane.setVisible(true);
+                locationsListReplacement.setVisible(false);
             } else {
                 if (selectedLocation != null) {
                     locationField.setText(selectedLocation.getAbsolutePath());
@@ -173,41 +180,47 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                     locationField.setText(SystemUtils.parsePath(DEFAULT_LOCATION).getAbsolutePath());
                 }
                 
-                listLabel.setVisible(false);
-                listScrollPane.setVisible(false);
-                listReplacement.setVisible(true);
+                locationsLabel.setVisible(false);
+                locationsScrollPane.setVisible(false);
+                locationsListReplacement.setVisible(true);
             }
             
             updateErrorMessage();
         }
         
+        @Override
         protected void saveInput() {
             component.setLocation(new File(locationField.getText().trim()));
         }
         
+        @Override
         protected String validateInput() {
             return component.validateLocation(locationField.getText().trim());
         }
         
+        // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
+            // locationField ////////////////////////////////////////////////////////
             locationField = new NbiTextField();
             locationField.getDocument().addDocumentListener(new DocumentListener() {
-                public void changedUpdate(DocumentEvent event) {
+                public void changedUpdate(final DocumentEvent event) {
                     locationChanged();
                 }
                 
-                public void insertUpdate(DocumentEvent event) {
+                public void insertUpdate(final DocumentEvent event) {
                     locationChanged();
                 }
                 
-                public void removeUpdate(DocumentEvent event) {
+                public void removeUpdate(final DocumentEvent event) {
                     locationChanged();
                 }
             });
             
+            // locationLabel ////////////////////////////////////////////////////////
             locationLabel = new NbiLabel();
             locationLabel.setLabelFor(locationField);
             
+            // locationButton ///////////////////////////////////////////////////////
             locationButton = new NbiButton();
             locationButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
@@ -215,12 +228,11 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                 }
             });
             
-            spacer = new NbiPanel();
-            
-            list = new NbiList();
-            list.setBorder(new EmptyBorder(0, 0, 0, 0));
-            list.setCellRenderer(new LocationsListCellRenderer());
-            list.addListSelectionListener(new ListSelectionListener() {
+            // locationsList ////////////////////////////////////////////////////////
+            locationsList = new NbiList();
+            locationsList.setBorder(new EmptyBorder(0, 0, 0, 0));
+            locationsList.setCellRenderer(new LocationsListCellRenderer());
+            locationsList.addListSelectionListener(new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent event) {
                     if (!event.getValueIsAdjusting()) {
                         listSelectionChanged();
@@ -228,17 +240,22 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                 }
             });
             
-            listScrollPane = new NbiScrollPane(list);
+            // locationsScrollPane //////////////////////////////////////////////////
+            locationsScrollPane = new NbiScrollPane(locationsList);
             
-            listLabel = new NbiLabel();
-            listLabel.setLabelFor(list);
+            // locationsLabel ///////////////////////////////////////////////////////
+            locationsLabel = new NbiLabel();
+            locationsLabel.setLabelFor(locationsList);
             
-            listReplacement = new NbiPanel();
+            // locationsListReplacement /////////////////////////////////////////////
+            locationsListReplacement = new NbiPanel();
             
+            // fileChooser //////////////////////////////////////////////////////////
             fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.setMultiSelectionEnabled(false);
             
+            // this /////////////////////////////////////////////////////////////////
             add(locationLabel, new GridBagConstraints(
                     0, 1,                             // x, y
                     2, 1,                             // width, height
@@ -263,7 +280,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                     GridBagConstraints.NONE,          // fill
                     new Insets(4, 0, 0, 11),          // padding
                     0, 0));                           // padx, pady - ???
-            add(listLabel, new GridBagConstraints(
+            add(locationsLabel, new GridBagConstraints(
                     0, 3,                             // x, y
                     2, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
@@ -271,7 +288,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(11, 11, 0, 11),        // padding
                     0, 0));                           // padx, pady - ???
-            add(listScrollPane, new GridBagConstraints(
+            add(locationsScrollPane, new GridBagConstraints(
                     0, 4,                             // x, y
                     2, 1,                             // width, height
                     1.0, 1.0,                         // weight-x, weight-y
@@ -279,7 +296,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                     GridBagConstraints.BOTH,          // fill
                     new Insets(4, 11, 0, 11),         // padding
                     0, 0));                           // padx, pady - ???
-            add(listReplacement, new GridBagConstraints(
+            add(locationsListReplacement, new GridBagConstraints(
                     0, 5,                             // x, y
                     2, 1,                             // width, height
                     1.0, 1.0,                         // weight-x, weight-y
@@ -287,11 +304,6 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                     GridBagConstraints.BOTH,          // fill
                     new Insets(4, 11, 0, 11),         // padding
                     0, 0));                           // padx, pady - ???
-            
-            // L&F-specific tweaks
-            if (UIManager.getLookAndFeel().getID().equals("GTK")) {
-                listScrollPane.setViewportBorder(null);
-            }
         }
         
         private void browseButtonPressed() {
@@ -303,9 +315,9 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
         }
         
         private void listSelectionChanged() {
-            final LocationsListModel model = (LocationsListModel) list.getModel();
+            final LocationsListModel model = (LocationsListModel) locationsList.getModel();
             
-            final int index = list.getSelectedIndex();
+            final int index = locationsList.getSelectedIndex();
             if (index != -1) {
                 String location = model.getLocationAt(index).getAbsolutePath();
                 if (!location.equals(locationField.getText())) {
@@ -317,19 +329,19 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
         private void locationChanged() {
             updateErrorMessage();
             
-            final LocationsListModel model = (LocationsListModel) list.getModel();
+            final LocationsListModel model = (LocationsListModel) locationsList.getModel();
             final String value = locationField.getText().trim();
             
             for (int i = 0; i < model.getSize(); i++) {
                 final String element = (String) model.getLocationAt(i).getAbsolutePath();
                 
                 if (value.equals(element)) {
-                    list.setSelectedIndex(i);
+                    locationsList.setSelectedIndex(i);
                     return;
                 }
             }
             
-            list.clearSelection();
+            locationsList.clearSelection();
         }
     }
     

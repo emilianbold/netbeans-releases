@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -81,6 +82,7 @@ public class DestinationPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_NOT_EMPTY);
     }
     
+    @Override
     public WizardUi getWizardUi() {
         if (wizardUi == null) {
             wizardUi = new DestinationPanelUi(this);
@@ -128,6 +130,13 @@ public class DestinationPanel extends ErrorMessagePanel {
             initComponents();
         }
         
+        @Override
+        public JComponent getDefaultFocusOwner() {
+            return destinationField;
+        }
+        
+        // protected ////////////////////////////////////////////////////////////////
+        @Override
         protected void initialize() {
             destinationLabel.setText(
                     component.getProperty(DESTINATION_LABEL_TEXT_PROPERTY));
@@ -178,6 +187,7 @@ public class DestinationPanel extends ErrorMessagePanel {
             super.initialize();
         }
         
+        @Override
         protected void saveInput() {
             try {
                 String value = destinationField.getText().trim();
@@ -193,6 +203,7 @@ public class DestinationPanel extends ErrorMessagePanel {
             }
         }
         
+        @Override
         protected String validateInput() {
             final String string = destinationField.getText().trim();
             final Product product = (Product) component.
@@ -201,7 +212,7 @@ public class DestinationPanel extends ErrorMessagePanel {
                     get(Product.class);
             
             try {
-                if (string.equals("")) {
+                if (string.equals(StringUtils.EMPTY_STRING)) {
                     return StringUtils.format(
                             component.getProperty(ERROR_NULL_PROPERTY),
                             string);
@@ -275,7 +286,9 @@ public class DestinationPanel extends ErrorMessagePanel {
             return null;
         }
         
+        // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
+            // destinationField /////////////////////////////////////////////////////
             destinationField = new NbiTextField();
             destinationField.getDocument().addDocumentListener(new DocumentListener() {
                 public void changedUpdate(DocumentEvent e) {
@@ -289,9 +302,11 @@ public class DestinationPanel extends ErrorMessagePanel {
                 }
             });
             
+            // destinationLabel /////////////////////////////////////////////////////
             destinationLabel = new NbiLabel();
             destinationLabel.setLabelFor(destinationField);
             
+            // destinationButton ////////////////////////////////////////////////////
             destinationButton = new NbiButton();
             destinationButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
@@ -299,10 +314,12 @@ public class DestinationPanel extends ErrorMessagePanel {
                 }
             });
             
+            // fileChooser //////////////////////////////////////////////////////////
             fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.setMultiSelectionEnabled(false);
             
+            // this /////////////////////////////////////////////////////////////////
             add(destinationLabel, new GridBagConstraints(
                     0, 0,                             // x, y
                     2, 1,                             // width, height

@@ -28,7 +28,6 @@ import java.util.List;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -55,38 +54,6 @@ import static org.netbeans.installer.utils.helper.DetailedStatus.FAILED_TO_UNINS
  */
 public class PostCreateBundleSummaryPanel extends WizardPanel {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String MESSAGE_SUCCESS_TEXT_PROPERTY = "message.success.text";
-    public static final String MESSAGE_SUCCESS_CONTENT_TYPE_PROPERTY = "message.success.content.type";
-    public static final String MESSAGE_ERRORS_TEXT_PROPERTY = "message.errors.text";
-    public static final String MESSAGE_ERRORS_CONTENT_TYPE_PROPERTY = "message.errors.content.type";
-    public static final String SUCCESSFULLY_BUNDLED_COMPONENTS_LABEL_TEXT_PROPERTY = "successfully.bundled.components.label.text";
-    public static final String SUCCESSFULLY_BUNDLED_COMPONENTS_TEXT_PROPERTY = "successfully.bundled.components.text";
-    public static final String SUCCESSFULLY_BUNDLED_COMPONENTS_CONTENT_TYPE_PROPERTY = "successfully.bundled.components.content.type";
-    public static final String COMPONENTS_FAILED_TO_BUNDLE_LABEL_TEXT_PROPERTY = "components.failed.to.bundle.label.text";
-    public static final String COMPONENTS_FAILED_TO_BUNDLE_TEXT_PROPERTY = "components.failed.to.bundle.text";
-    public static final String COMPONENTS_FAILED_TO_BUNDLE_CONTENT_TYPE_PROPERTY = "components.failed.to.bundle.content.type";
-    public static final String VIEW_LOG_BUTTON_TEXT_PROPERTY = "view.log.button.text";
-    public static final String SEND_LOG_BUTTON_TEXT_PROPERTY = "send.log.button.text";
-    public static final String COMPONENTS_LIST_SEPARATOR_PROPERTY = "components.list.separator";
-    
-    public static final String DEFAULT_MESSAGE_SUCCESS_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PoCBSP.message.success.text");
-    public static final String DEFAULT_MESSAGE_SUCCESS_CONTENT_TYPE = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PoCBSP.message.success.content.type");
-    public static final String DEFAULT_MESSAGE_ERRORS_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PoCBSP.message.errors.text");
-    public static final String DEFAULT_MESSAGE_ERRORS_CONTENT_TYPE = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PoCBSP.message.errors.content.type");
-    public static final String DEFAULT_SUCCESSFULLY_BUNDLED_COMPONENTS_LABEL_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PoCBSP.successfully.bundled.components.label.text");
-    public static final String DEFAULT_SUCCESSFULLY_BUNDLED_COMPONENTS_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PoCBSP.successfully.bundled.components.text");
-    public static final String DEFAULT_SUCCESSFULLY_BUNDLED_COMPONENTS_CONTENT_TYPE = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PoCBSP.successfully.bundled.components.content.type");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_BUNDLE_LABEL_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PoCBSP.components.failed.to.bundle.label.text");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_BUNDLE_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PoCBSP.components.failed.to.bundle.text");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_BUNDLE_CONTENT_TYPE = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PoCBSP.components.failed.to.bundle.content.type");
-    public static final String DEFAULT_VIEW_LOG_BUTTON_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PoCBSP.view.log.button.text");
-    public static final String DEFAULT_SEND_LOG_BUTTON_TEXT = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PoCBSP.send.log.button.text");
-    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PoCBSP.components.list.separator");
-    
-    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(PostCreateBundleSummaryPanel.class, "PoCBSP.dialog.title");
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public PostCreateBundleSummaryPanel() {
         setProperty(MESSAGE_SUCCESS_TEXT_PROPERTY, DEFAULT_MESSAGE_SUCCESS_TEXT);
@@ -103,9 +70,10 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
         setProperty(SEND_LOG_BUTTON_TEXT_PROPERTY, DEFAULT_SEND_LOG_BUTTON_TEXT);
         setProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY, DEFAULT_COMPONENTS_LIST_SEPARATOR);
         
-        setProperty(TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
+        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
     }
     
+    @Override
     public WizardUi getWizardUi() {
         if (wizardUi == null) {
             wizardUi = new PostCreateBundleSummaryPanelUi(this);
@@ -125,7 +93,7 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
             this.component = component;
         }
         
-        // swing ui specific ////////////////////////////////////////////////////////
+        @Override
         public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new PostCreateBundleSummaryPanelSwingUi(component, container);
@@ -140,17 +108,17 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
         
         private NbiTextPane messagePane;
         
-        private NbiLabel    successfullyBundledComponentsLabel;
+        private NbiLabel successfullyBundledComponentsLabel;
         private NbiTextPane successfullyBundledComponentsPane;
-        private NbiLabel    componentsFailedToBundleLabel;
+        private NbiLabel componentsFailedToBundleLabel;
         private NbiTextPane componentsFailedToBundlePane;
         
-        private NbiButton   viewLogButton;
-        private NbiButton   sendLogButton;
+        private NbiButton viewLogButton;
+        private NbiButton sendLogButton;
         
-        private NbiPanel    spacer;
+        private NbiPanel spacer;
         
-        private InstallationLogDialog     logDialog;
+        private InstallationLogDialog logDialog;
         
         public PostCreateBundleSummaryPanelSwingUi(
                 final PostCreateBundleSummaryPanel component,
@@ -162,6 +130,8 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
             initComponents();
         }
         
+        // protected ////////////////////////////////////////////////////////////////
+        @Override
         protected void initializeContainer() {
             super.initializeContainer();
             
@@ -176,11 +146,12 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
             container.getCancelButton().setEnabled(false);
         }
         
+        @Override
         protected void initialize() {
             final Registry registry = Registry.getInstance();
             
-            final boolean errorsEncountered = 
-                    registry.getProducts(FAILED_TO_INSTALL).size() > 0 && 
+            final boolean errorsEncountered =
+                    registry.getProducts(FAILED_TO_INSTALL).size() > 0 &&
                     registry.getProducts(FAILED_TO_UNINSTALL).size() > 0;
             
             if (errorsEncountered) {
@@ -223,23 +194,27 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
             sendLogButton.setText(component.getProperty(SEND_LOG_BUTTON_TEXT_PROPERTY));
         }
         
+        // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
+            // messagePane //////////////////////////////////////////////////////////
             messagePane = new NbiTextPane();
             
-            successfullyBundledComponentsLabel = new NbiLabel();
-            
+            // successfullyBundledComponentsPane ////////////////////////////////////
             successfullyBundledComponentsPane = new NbiTextPane();
-            successfullyBundledComponentsPane.setOpaque(false);
-            successfullyBundledComponentsPane.setEditable(false);
-            successfullyBundledComponentsPane.setBorder(new EmptyBorder(0, 0, 0, 0));
             
-            componentsFailedToBundleLabel = new NbiLabel();
+            // successfullyBundledComponentsLabel ///////////////////////////////////
+            successfullyBundledComponentsLabel = new NbiLabel();
+            successfullyBundledComponentsLabel.setLabelFor(
+                    successfullyBundledComponentsPane);
             
+            // componentsFailedToBundlePane /////////////////////////////////////////
             componentsFailedToBundlePane = new NbiTextPane();
-            componentsFailedToBundlePane.setOpaque(false);
-            componentsFailedToBundlePane.setEditable(false);
-            componentsFailedToBundlePane.setBorder(new EmptyBorder(0, 0, 0, 0));
             
+            // componentsFailedToBundleLabel ////////////////////////////////////////
+            componentsFailedToBundleLabel = new NbiLabel();
+            componentsFailedToBundleLabel.setLabelFor(componentsFailedToBundlePane);
+            
+            // viewLogButton ////////////////////////////////////////////////////////
             viewLogButton = new NbiButton();
             viewLogButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
@@ -247,6 +222,7 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
                 }
             });
             
+            // sendLogButton ////////////////////////////////////////////////////////
             sendLogButton = new NbiButton();
             sendLogButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
@@ -255,16 +231,74 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
             });
             sendLogButton.setEnabled(false);
             
+            // spacer ///////////////////////////////////////////////////////////////
             spacer = new NbiPanel();
             
-            add(messagePane, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
-            add(successfullyBundledComponentsLabel, new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
-            add(successfullyBundledComponentsPane, new GridBagConstraints(0, 2, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-            add(componentsFailedToBundleLabel, new GridBagConstraints(0, 3, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
-            add(componentsFailedToBundlePane, new GridBagConstraints(0, 4, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-            add(spacer, new GridBagConstraints(0, 5, 2, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 11, 0, 11), 0, 0));
-            add(viewLogButton, new GridBagConstraints(0, 6, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(3, 11, 11, 0), 0, 0));
-            add(sendLogButton, new GridBagConstraints(1, 6, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 6, 11, 11), 0, 0));
+            // this /////////////////////////////////////////////////////////////////
+            add(messagePane, new GridBagConstraints(
+                    0, 0,                             // x, y
+                    2, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(11, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(successfullyBundledComponentsLabel, new GridBagConstraints(
+                    0, 1,                             // x, y
+                    2, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(15, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(successfullyBundledComponentsPane, new GridBagConstraints(
+                    0, 2,                             // x, y
+                    2, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(3, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsFailedToBundleLabel, new GridBagConstraints(
+                    0, 3,                             // x, y
+                    2, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(15, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsFailedToBundlePane, new GridBagConstraints(
+                    0, 4,                             // x, y
+                    2, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(3, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(spacer, new GridBagConstraints(
+                    0, 5,                             // x, y
+                    2, 1,                             // width, height
+                    1.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(viewLogButton, new GridBagConstraints(
+                    0, 6,                             // x, y
+                    1, 1,                             // width, height
+                    0.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.NONE,          // fill
+                    new Insets(3, 11, 11, 0),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(sendLogButton, new GridBagConstraints(
+                    1, 6,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.WEST,          // anchor
+                    GridBagConstraints.NONE,          // fill
+                    new Insets(3, 6, 11, 11),         // padding
+                    0, 0));                           // padx, pady - ???
         }
         
         private void viewLogButtonClicked() {
@@ -275,7 +309,7 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
                 logDialog.setVisible(true);
                 logDialog.loadLogFile();
             } else {
-                ErrorManager.notify(ErrorLevel.ERROR, "Log file is not available.");
+                ErrorManager.notifyError("Log file is not available.");
             }
         }
         
@@ -283,4 +317,77 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
             // does nothing
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String MESSAGE_SUCCESS_TEXT_PROPERTY =
+            "message.success.text"; // NOI18N
+    public static final String MESSAGE_SUCCESS_CONTENT_TYPE_PROPERTY =
+            "message.success.content.type"; // NOI18N
+    public static final String MESSAGE_ERRORS_TEXT_PROPERTY =
+            "message.errors.text"; // NOI18N
+    public static final String MESSAGE_ERRORS_CONTENT_TYPE_PROPERTY =
+            "message.errors.content.type"; // NOI18N
+    public static final String SUCCESSFULLY_BUNDLED_COMPONENTS_LABEL_TEXT_PROPERTY =
+            "successfully.bundled.components.label.text"; // NOI18N
+    public static final String SUCCESSFULLY_BUNDLED_COMPONENTS_TEXT_PROPERTY =
+            "successfully.bundled.components.text"; // NOI18N
+    public static final String SUCCESSFULLY_BUNDLED_COMPONENTS_CONTENT_TYPE_PROPERTY =
+            "successfully.bundled.components.content.type"; // NOI18N
+    public static final String COMPONENTS_FAILED_TO_BUNDLE_LABEL_TEXT_PROPERTY =
+            "components.failed.to.bundle.label.text"; // NOI18N
+    public static final String COMPONENTS_FAILED_TO_BUNDLE_TEXT_PROPERTY =
+            "components.failed.to.bundle.text"; // NOI18N
+    public static final String COMPONENTS_FAILED_TO_BUNDLE_CONTENT_TYPE_PROPERTY =
+            "components.failed.to.bundle.content.type"; // NOI18N
+    public static final String VIEW_LOG_BUTTON_TEXT_PROPERTY =
+            "view.log.button.text"; // NOI18N
+    public static final String SEND_LOG_BUTTON_TEXT_PROPERTY =
+            "send.log.button.text"; // NOI18N
+    public static final String COMPONENTS_LIST_SEPARATOR_PROPERTY =
+            "components.list.separator"; // NOI18N
+    
+    public static final String DEFAULT_MESSAGE_SUCCESS_TEXT =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.message.success.text"); // NOI18N
+    public static final String DEFAULT_MESSAGE_SUCCESS_CONTENT_TYPE =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.message.success.content.type"); // NOI18N
+    public static final String DEFAULT_MESSAGE_ERRORS_TEXT =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.message.errors.text"); // NOI18N
+    public static final String DEFAULT_MESSAGE_ERRORS_CONTENT_TYPE =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.message.errors.content.type"); // NOI18N
+    public static final String DEFAULT_SUCCESSFULLY_BUNDLED_COMPONENTS_LABEL_TEXT =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.successfully.bundled.components.label.text"); // NOI18N
+    public static final String DEFAULT_SUCCESSFULLY_BUNDLED_COMPONENTS_TEXT =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.successfully.bundled.components.text"); // NOI18N
+    public static final String DEFAULT_SUCCESSFULLY_BUNDLED_COMPONENTS_CONTENT_TYPE =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.successfully.bundled.components.content.type"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_BUNDLE_LABEL_TEXT =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.components.failed.to.bundle.label.text"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_BUNDLE_TEXT =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.components.failed.to.bundle.text"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_BUNDLE_CONTENT_TYPE =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.components.failed.to.bundle.content.type"); // NOI18N
+    public static final String DEFAULT_VIEW_LOG_BUTTON_TEXT =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.view.log.button.text"); // NOI18N
+    public static final String DEFAULT_SEND_LOG_BUTTON_TEXT =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.send.log.button.text"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.components.list.separator"); // NOI18N
+    
+    public static final String DEFAULT_TITLE =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.dialog.title"); // NOI18N
 }

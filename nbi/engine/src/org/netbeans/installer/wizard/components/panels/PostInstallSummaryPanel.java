@@ -58,68 +58,6 @@ import static org.netbeans.installer.utils.helper.DetailedStatus.FAILED_TO_UNINS
  */
 public class PostInstallSummaryPanel extends WizardPanel {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String MESSAGE_SUCCESS_TEXT_PROPERTY = "message.success.text";
-    public static final String MESSAGE_SUCCESS_CONTENT_TYPE_PROPERTY = "message.success.content.type";
-    public static final String MESSAGE_WARNINGS_TEXT_PROPERTY = "message.warnings.text";
-    public static final String MESSAGE_WARNINGS_CONTENT_TYPE_PROPERTY = "message.warnings.content.type";
-    public static final String MESSAGE_ERRORS_TEXT_PROPERTY = "message.errors.text";
-    public static final String MESSAGE_ERRORS_CONTENT_TYPE_PROPERTY = "message.errors.content.type";
-    public static final String SUCCESSFULLY_INSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY = "successfully.installed.components.label.text";
-    public static final String SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT_PROPERTY = "successfully.installed.components.text";
-    public static final String SUCCESSFULLY_INSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY = "successfully.installed.components.content.type";
-    public static final String COMPONENTS_INSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY = "components.installed.with.warnings.label.text";
-    public static final String COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT_PROPERTY = "components.installed.with.warnings.text";
-    public static final String COMPONENTS_INSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY = "components.installed.with.warnings.content.type";
-    public static final String COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT_PROPERTY = "components.failed.to.install.label.text";
-    public static final String COMPONENTS_FAILED_TO_INSTALL_TEXT_PROPERTY = "components.failed.to.install.text";
-    public static final String COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE_PROPERTY = "components.failed.to.install.content.type";
-    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY = "successfully.uninstalled.components.label.text";
-    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT_PROPERTY = "successfully.uninstalled.components.text";
-    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY = "successfully.uninstalled.components.content.type";
-    public static final String COMPONENTS_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY = "components.uninstalled.with.warnings.label.text";
-    public static final String COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT_PROPERTY = "components.uninstalled.with.warnings.text";
-    public static final String COMPONENTS_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY = "components.uninstalled.with.warnings.content.type";
-    public static final String COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT_PROPERTY = "components.failed.to.uninstall.label.text";
-    public static final String COMPONENTS_FAILED_TO_UNINSTALL_TEXT_PROPERTY = "components.failed.to.uninstall.text";
-    public static final String COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE_PROPERTY = "components.failed.to.uninstall.content.type";
-    public static final String VIEW_DETAILS_BUTTON_TEXT_PROPERTY = "view.details.button.text";
-    public static final String VIEW_LOG_BUTTON_TEXT_PROPERTY = "view.log.button.text";
-    public static final String SEND_LOG_BUTTON_TEXT_PROPERTY = "send.log.button.text";
-    public static final String COMPONENTS_LIST_SEPARATOR_PROPERTY = "components.list.separator";
-    
-    public static final String DEFAULT_MESSAGE_SUCCESS_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.message.success.text");
-    public static final String DEFAULT_MESSAGE_SUCCESS_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.message.success.content.type");
-    public static final String DEFAULT_MESSAGE_WARNINGS_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.message.warnings.text");
-    public static final String DEFAULT_MESSAGE_WARNINGS_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.message.warnings.content.type");
-    public static final String DEFAULT_MESSAGE_ERRORS_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.message.errors.text");
-    public static final String DEFAULT_MESSAGE_ERRORS_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.message.errors.content.type");
-    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_LABEL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.successfully.installed.components.label.text");
-    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.successfully.installed.components.text");
-    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.successfully.installed.components.content.type");
-    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_LABEL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.components.installed.with.warnings.label.text");
-    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.components.installed.with.warnings.text");
-    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.components.installed.with.warnings.content.type");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.components.failed.to.install.label.text");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.components.failed.to.install.text");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.components.failed.to.install.content.type");
-    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.successfully.uninstalled.components.label.text");
-    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.successfully.uninstalled.components.text");
-    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.successfully.uninstalled.components.content.type");
-    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.components.uninstalled.with.warnings.label.text");
-    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.components.uninstalled.with.warnings.text");
-    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.components.uninstalled.with.warnings.content.type");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.components.failed.to.uninstall.label.text");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.components.failed.to.uninstall.text");
-    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.components.failed.to.uninstall.content.type");
-    public static final String DEFAULT_VIEW_DETAILS_BUTTON_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.view.details.button.text");
-    public static final String DEFAULT_VIEW_LOG_BUTTON_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.view.log.button.text");
-    public static final String DEFAULT_SEND_LOG_BUTTON_TEXT = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.send.log.button.text");
-    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.components.list.separator");
-    
-    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(PostInstallSummaryPanel.class, "PoISP.dialog.title");
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public PostInstallSummaryPanel() {
         setProperty(MESSAGE_SUCCESS_TEXT_PROPERTY, DEFAULT_MESSAGE_SUCCESS_TEXT);
@@ -154,6 +92,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
         setProperty(TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
     }
     
+    @Override
     public WizardUi getWizardUi() {
         if (wizardUi == null) {
             wizardUi = new PostInstallSummaryPanelUi(this);
@@ -173,7 +112,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
             this.component = component;
         }
         
-        // swing ui specific ////////////////////////////////////////////////////////
+        @Override
         public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new PostInstallSummaryPanelSwingUi(component, container);
@@ -188,25 +127,25 @@ public class PostInstallSummaryPanel extends WizardPanel {
         
         private NbiTextPane messagePane;
         
-        private NbiLabel    successfullyInstalledComponentsLabel;
+        private NbiLabel successfullyInstalledComponentsLabel;
         private NbiTextPane successfullyInstalledComponentsPane;
-        private NbiLabel    componentsInstalledWithWarningsLabel;
+        private NbiLabel componentsInstalledWithWarningsLabel;
         private NbiTextPane componentsInstalledWithWarningsPane;
-        private NbiLabel    componentsFailedToInstallLabel;
+        private NbiLabel componentsFailedToInstallLabel;
         private NbiTextPane componentsFailedToInstallPane;
         
-        private NbiLabel    successfullyUninstalledComponentsLabel;
+        private NbiLabel successfullyUninstalledComponentsLabel;
         private NbiTextPane successfullyUninstalledComponentsPane;
-        private NbiLabel    componentsUninstalledWithWarningsLabel;
+        private NbiLabel componentsUninstalledWithWarningsLabel;
         private NbiTextPane componentsUninstalledWithWarningsPane;
-        private NbiLabel    componentsFailedToUninstallLabel;
+        private NbiLabel componentsFailedToUninstallLabel;
         private NbiTextPane componentsFailedToUninstallPane;
         
-        private NbiButton   viewDetailsButton;
-        private NbiButton   viewLogButton;
-        private NbiButton   sendLogButton;
+        private NbiButton viewDetailsButton;
+        private NbiButton viewLogButton;
+        private NbiButton  sendLogButton;
         
-        private NbiPanel    spacer;
+        private NbiPanel spacer;
         
         private InstallationDetailsDialog detailsDialog;
         private InstallationLogDialog     logDialog;
@@ -221,6 +160,8 @@ public class PostInstallSummaryPanel extends WizardPanel {
             initComponents();
         }
         
+        // protected ////////////////////////////////////////////////////////////////
+        @Override
         protected void initializeContainer() {
             super.initializeContainer();
             
@@ -235,14 +176,15 @@ public class PostInstallSummaryPanel extends WizardPanel {
             container.getCancelButton().setEnabled(false);
         }
         
+        @Override
         protected void initialize() {
             final Registry registry = Registry.getInstance();
             
-            final boolean errorsEncountered = 
-                    registry.getProducts(FAILED_TO_INSTALL).size() > 0 && 
+            final boolean errorsEncountered =
+                    registry.getProducts(FAILED_TO_INSTALL).size() > 0 &&
                     registry.getProducts(FAILED_TO_UNINSTALL).size() > 0;
-            final boolean warningsEncountered = 
-                    registry.getProducts(INSTALLED_WITH_WARNINGS).size() > 0 && 
+            final boolean warningsEncountered =
+                    registry.getProducts(INSTALLED_WITH_WARNINGS).size() > 0 &&
                     registry.getProducts(UNINSTALLED_WITH_WARNINGS).size() > 0;
             
             if (errorsEncountered) {
@@ -349,51 +291,60 @@ public class PostInstallSummaryPanel extends WizardPanel {
             sendLogButton.setMnemonic(StringUtils.fetchMnemonic(sendLogButtonText));
         }
         
+        // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
+            // messagePane //////////////////////////////////////////////////////////
             messagePane = new NbiTextPane();
             
-            successfullyInstalledComponentsLabel = new NbiLabel();
-            
+            // successfullyInstalledComponentsPane //////////////////////////////////
             successfullyInstalledComponentsPane = new NbiTextPane();
-            successfullyInstalledComponentsPane.setOpaque(false);
-            successfullyInstalledComponentsPane.setEditable(false);
-            successfullyInstalledComponentsPane.setBorder(new EmptyBorder(0, 0, 0, 0));
             
-            componentsInstalledWithWarningsLabel = new NbiLabel();
+            // successfullyInstalledComponentsLabel /////////////////////////////////
+            successfullyInstalledComponentsLabel = new NbiLabel();
+            successfullyInstalledComponentsLabel.setLabelFor(
+                    successfullyInstalledComponentsPane);
             
+            // componentsInstalledWithWarningsPane //////////////////////////////////
             componentsInstalledWithWarningsPane = new NbiTextPane();
-            componentsInstalledWithWarningsPane.setOpaque(false);
-            componentsInstalledWithWarningsPane.setEditable(false);
-            componentsInstalledWithWarningsPane.setBorder(new EmptyBorder(0, 0, 0, 0));
             
-            componentsFailedToInstallLabel = new NbiLabel();
+            // componentsInstalledWithWarningsLabel /////////////////////////////////
+            componentsInstalledWithWarningsLabel = new NbiLabel();
+            componentsInstalledWithWarningsLabel.setLabelFor(
+                    componentsInstalledWithWarningsPane);
             
+            // componentsFailedToInstallPane ////////////////////////////////////////
             componentsFailedToInstallPane = new NbiTextPane();
-            componentsFailedToInstallPane.setOpaque(false);
-            componentsFailedToInstallPane.setEditable(false);
-            componentsFailedToInstallPane.setBorder(new EmptyBorder(0, 0, 0, 0));
             
-            successfullyUninstalledComponentsLabel = new NbiLabel();
+            // componentsFailedToInstallLabel ///////////////////////////////////////
+            componentsFailedToInstallLabel = new NbiLabel();
+            componentsFailedToInstallLabel.setLabelFor(
+                    componentsFailedToInstallPane);
             
+            // successfullyUninstalledComponentsPane ////////////////////////////////
             successfullyUninstalledComponentsPane = new NbiTextPane();
-            successfullyUninstalledComponentsPane.setOpaque(false);
-            successfullyUninstalledComponentsPane.setEditable(false);
-            successfullyUninstalledComponentsPane.setBorder(new EmptyBorder(0, 0, 0, 0));
             
-            componentsUninstalledWithWarningsLabel = new NbiLabel();
+            // successfullyUninstalledComponentsLabel ///////////////////////////////
+            successfullyUninstalledComponentsLabel = new NbiLabel();
+            successfullyUninstalledComponentsLabel.setLabelFor(
+                    successfullyUninstalledComponentsPane);
             
+            // componentsUninstalledWithWarningsPane ////////////////////////////////
             componentsUninstalledWithWarningsPane = new NbiTextPane();
-            componentsUninstalledWithWarningsPane.setOpaque(false);
-            componentsUninstalledWithWarningsPane.setEditable(false);
-            componentsUninstalledWithWarningsPane.setBorder(new EmptyBorder(0, 0, 0, 0));
             
-            componentsFailedToUninstallLabel = new NbiLabel();
-            
+            // componentsUninstalledWithWarningsLabel ///////////////////////////////
+            componentsUninstalledWithWarningsLabel = new NbiLabel();
+            componentsUninstalledWithWarningsLabel.setLabelFor(
+                    componentsUninstalledWithWarningsPane);
+                    
+            // componentsFailedToUninstallPane //////////////////////////////////////
             componentsFailedToUninstallPane = new NbiTextPane();
-            componentsFailedToUninstallPane.setOpaque(false);
-            componentsFailedToUninstallPane.setEditable(false);
-            componentsFailedToUninstallPane.setBorder(new EmptyBorder(0, 0, 0, 0));
             
+            // componentsFailedToUninstallLabel /////////////////////////////////////
+            componentsFailedToUninstallLabel = new NbiLabel();
+            componentsFailedToUninstallLabel.setLabelFor(
+                    componentsFailedToUninstallPane);
+            
+            // viewDetailsButton ////////////////////////////////////////////////////
             viewDetailsButton = new NbiButton();
             viewDetailsButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
@@ -401,6 +352,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 }
             });
             
+            // viewLogButton ////////////////////////////////////////////////////////
             viewLogButton = new NbiButton();
             viewLogButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
@@ -408,6 +360,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 }
             });
             
+            // sendLogButton ////////////////////////////////////////////////////////
             sendLogButton = new NbiButton();
             sendLogButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
@@ -416,25 +369,146 @@ public class PostInstallSummaryPanel extends WizardPanel {
             });
             sendLogButton.setEnabled(false);
             
+            // spacer ///////////////////////////////////////////////////////////////
             spacer = new NbiPanel();
             
-            add(messagePane, new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
-            add(successfullyInstalledComponentsLabel, new GridBagConstraints(0, 1, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
-            add(successfullyInstalledComponentsPane, new GridBagConstraints(0, 2, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-            add(componentsInstalledWithWarningsLabel, new GridBagConstraints(0, 3, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
-            add(componentsInstalledWithWarningsPane, new GridBagConstraints(0, 4, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-            add(componentsFailedToInstallLabel, new GridBagConstraints(0, 5, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
-            add(componentsFailedToInstallPane, new GridBagConstraints(0, 6, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-            add(successfullyUninstalledComponentsLabel, new GridBagConstraints(0, 7, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
-            add(successfullyUninstalledComponentsPane, new GridBagConstraints(0, 8, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-            add(componentsUninstalledWithWarningsLabel, new GridBagConstraints(0, 9, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
-            add(componentsUninstalledWithWarningsPane, new GridBagConstraints(0, 10, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-            add(componentsFailedToUninstallLabel, new GridBagConstraints(0, 11, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
-            add(componentsFailedToUninstallPane, new GridBagConstraints(0, 12, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-            add(spacer, new GridBagConstraints(0, 13, 3, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 11, 0, 11), 0, 0));
-            add(viewDetailsButton, new GridBagConstraints(0, 14, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(3, 11, 11, 0), 0, 0));
-            add(viewLogButton, new GridBagConstraints(1, 14, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(3, 6, 11, 0), 0, 0));
-            add(sendLogButton, new GridBagConstraints(2, 14, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 6, 11, 11), 0, 0));
+            // this /////////////////////////////////////////////////////////////////
+            add(messagePane, new GridBagConstraints(
+                    0, 0,                             // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(11, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(successfullyInstalledComponentsLabel, new GridBagConstraints(
+                    0, 1,                             // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(15, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(successfullyInstalledComponentsPane, new GridBagConstraints(
+                    0, 2,                             // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(3, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsInstalledWithWarningsLabel, new GridBagConstraints(
+                    0, 3,                             // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(15, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsInstalledWithWarningsPane, new GridBagConstraints(
+                    0, 4,                             // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(3, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsFailedToInstallLabel, new GridBagConstraints(
+                    0, 5,                             // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(15, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsFailedToInstallPane, new GridBagConstraints(
+                    0, 6,                             // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(3, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(successfullyUninstalledComponentsLabel, new GridBagConstraints(
+                    0, 7,                             // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(15, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(successfullyUninstalledComponentsPane, new GridBagConstraints(
+                    0, 8,                             // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(3, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsUninstalledWithWarningsLabel, new GridBagConstraints(
+                    0, 9,                             // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(15, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsUninstalledWithWarningsPane, new GridBagConstraints(
+                    0, 10,                            // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(3, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsFailedToUninstallLabel, new GridBagConstraints(
+                    0, 11,                            // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(15, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsFailedToUninstallPane, new GridBagConstraints(
+                    0, 12,                            // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(3, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(spacer, new GridBagConstraints(
+                    0, 13,                            // x, y
+                    3, 1,                             // width, height
+                    1.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(viewDetailsButton, new GridBagConstraints(
+                    0, 14,                            // x, y
+                    1, 1,                             // width, height
+                    0.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.NONE,          // fill
+                    new Insets(3, 11, 11, 0),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(viewLogButton, new GridBagConstraints(
+                    1, 14,                            // x, y
+                    1, 1,                             // width, height
+                    0.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.NONE,          // fill
+                    new Insets(3, 6, 11, 0),          // padding
+                    0, 0));                           // padx, pady - ???
+            add(sendLogButton, new GridBagConstraints(
+                    2, 14,                            // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.WEST,          // anchor
+                    GridBagConstraints.NONE,          // fill
+                    new Insets(3, 6, 11, 11),         // padding
+                    0, 0));                           // padx, pady - ???
         }
         
         private void viewDetailsButtonClicked() {
@@ -460,4 +534,152 @@ public class PostInstallSummaryPanel extends WizardPanel {
             // does nothing
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String MESSAGE_SUCCESS_TEXT_PROPERTY =
+            "message.success.text"; // NOI18N
+    public static final String MESSAGE_SUCCESS_CONTENT_TYPE_PROPERTY =
+            "message.success.content.type"; // NOI18N
+    public static final String MESSAGE_WARNINGS_TEXT_PROPERTY =
+            "message.warnings.text"; // NOI18N
+    public static final String MESSAGE_WARNINGS_CONTENT_TYPE_PROPERTY =
+            "message.warnings.content.type"; // NOI18N
+    public static final String MESSAGE_ERRORS_TEXT_PROPERTY =
+            "message.errors.text"; // NOI18N
+    public static final String MESSAGE_ERRORS_CONTENT_TYPE_PROPERTY =
+            "message.errors.content.type"; // NOI18N
+    public static final String SUCCESSFULLY_INSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY =
+            "successfully.installed.components.label.text"; // NOI18N
+    public static final String SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT_PROPERTY =
+            "successfully.installed.components.text"; // NOI18N
+    public static final String SUCCESSFULLY_INSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY =
+            "successfully.installed.components.content.type"; // NOI18N
+    public static final String COMPONENTS_INSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY =
+            "components.installed.with.warnings.label.text"; // NOI18N
+    public static final String COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT_PROPERTY =
+            "components.installed.with.warnings.text"; // NOI18N
+    public static final String COMPONENTS_INSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY =
+            "components.installed.with.warnings.content.type"; // NOI18N
+    public static final String COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT_PROPERTY =
+            "components.failed.to.install.label.text"; // NOI18N
+    public static final String COMPONENTS_FAILED_TO_INSTALL_TEXT_PROPERTY =
+            "components.failed.to.install.text"; // NOI18N
+    public static final String COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE_PROPERTY =
+            "components.failed.to.install.content.type"; // NOI18N
+    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY =
+            "successfully.uninstalled.components.label.text"; // NOI18N
+    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT_PROPERTY =
+            "successfully.uninstalled.components.text"; // NOI18N
+    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY =
+            "successfully.uninstalled.components.content.type"; // NOI18N
+    public static final String COMPONENTS_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY =
+            "components.uninstalled.with.warnings.label.text"; // NOI18N
+    public static final String COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT_PROPERTY =
+            "components.uninstalled.with.warnings.text"; // NOI18N
+    public static final String COMPONENTS_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY =
+            "components.uninstalled.with.warnings.content.type"; // NOI18N
+    public static final String COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT_PROPERTY =
+            "components.failed.to.uninstall.label.text"; // NOI18N
+    public static final String COMPONENTS_FAILED_TO_UNINSTALL_TEXT_PROPERTY =
+            "components.failed.to.uninstall.text"; // NOI18N
+    public static final String COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE_PROPERTY =
+            "components.failed.to.uninstall.content.type"; // NOI18N
+    public static final String VIEW_DETAILS_BUTTON_TEXT_PROPERTY =
+            "view.details.button.text"; // NOI18N
+    public static final String VIEW_LOG_BUTTON_TEXT_PROPERTY =
+            "view.log.button.text"; // NOI18N
+    public static final String SEND_LOG_BUTTON_TEXT_PROPERTY =
+            "send.log.button.text"; // NOI18N
+    public static final String COMPONENTS_LIST_SEPARATOR_PROPERTY =
+            "components.list.separator"; // NOI18N
+    
+    public static final String DEFAULT_MESSAGE_SUCCESS_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.message.success.text"); // NOI18N
+    public static final String DEFAULT_MESSAGE_SUCCESS_CONTENT_TYPE =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.message.success.content.type"); // NOI18N
+    public static final String DEFAULT_MESSAGE_WARNINGS_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.message.warnings.text"); // NOI18N
+    public static final String DEFAULT_MESSAGE_WARNINGS_CONTENT_TYPE =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.message.warnings.content.type"); // NOI18N
+    public static final String DEFAULT_MESSAGE_ERRORS_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.message.errors.text"); // NOI18N
+    public static final String DEFAULT_MESSAGE_ERRORS_CONTENT_TYPE =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.message.errors.content.type"); // NOI18N
+    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_LABEL_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.successfully.installed.components.label.text"); // NOI18N
+    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.successfully.installed.components.text"); // NOI18N
+    public static final String DEFAULT_SUCCESSFULLY_INSTALLED_COMPONENTS_CONTENT_TYPE =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.successfully.installed.components.content.type"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_LABEL_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.components.installed.with.warnings.label.text"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.components.installed.with.warnings.text"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_INSTALLED_WITH_WARNINGS_CONTENT_TYPE =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.components.installed.with.warnings.content.type"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.components.failed.to.install.label.text"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.components.failed.to.install.text"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.components.failed.to.install.content.type"); // NOI18N
+    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.successfully.uninstalled.components.label.text"); // NOI18N
+    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.successfully.uninstalled.components.text"); // NOI18N
+    public static final String DEFAULT_SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.successfully.uninstalled.components.content.type"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.components.uninstalled.with.warnings.label.text"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.components.uninstalled.with.warnings.text"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.components.uninstalled.with.warnings.content.type"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.components.failed.to.uninstall.label.text"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.components.failed.to.uninstall.text"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.components.failed.to.uninstall.content.type"); // NOI18N
+    public static final String DEFAULT_VIEW_DETAILS_BUTTON_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.view.details.button.text"); // NOI18N
+    public static final String DEFAULT_VIEW_LOG_BUTTON_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.view.log.button.text"); // NOI18N
+    public static final String DEFAULT_SEND_LOG_BUTTON_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.send.log.button.text"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.components.list.separator"); // NOI18N
+    
+    public static final String DEFAULT_DIALOG_TITLE =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.dialog.title"); // NOI18N
 }

@@ -23,6 +23,7 @@ package org.netbeans.installer.utils.helper.swing;
 import java.awt.Insets;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.utils.SystemUtils;
 
@@ -31,13 +32,18 @@ import org.netbeans.installer.utils.SystemUtils;
  * @author Kirill Sorokin
  */
 public class NbiScrollPane extends JScrollPane {
-    public NbiScrollPane(JComponent component) {
+    public NbiScrollPane(final JComponent component) {
         super(component);
         
-        setViewportBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
+        setFocusable(true);
         
         setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        
+        // l&f-specific tweaks
+        if (!UIManager.getLookAndFeel().getID().equals("GTK")) {
+            setViewportBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
+        }
         
         // system-specific tweaks
         if (SystemUtils.isMacOS()) {

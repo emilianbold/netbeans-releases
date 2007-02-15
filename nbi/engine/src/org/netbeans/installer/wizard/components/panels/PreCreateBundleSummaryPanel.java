@@ -44,28 +44,6 @@ import org.netbeans.installer.wizard.containers.SwingContainer;
  */
 public class PreCreateBundleSummaryPanel extends WizardPanel {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String MESSAGE_TEXT_PROPERTY = "message.text";
-    public static final String MESSAGE_CONTENT_TYPE_PROPERTY = "message.content.type";
-    public static final String COMPONENTS_TO_BUNDLE_LABEL_TEXT_PROPERTY = "components.to.bundle.label.text";
-    public static final String COMPONENTS_TO_BUNDLE_TEXT_PROPERTY = "components.to.bundle.text";
-    public static final String COMPONENTS_TO_BUNDLE_CONTENT_TYPE_PROPERTY = "components.to.bundle.content.type";
-    public static final String COMPONENTS_LIST_SEPARATOR_PROPERTY = "components.list.separator";
-    public static final String DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY = "download.size.label.text";
-    public static final String REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY = "required.disk.space.label.text";
-    
-    public static final String DEFAULT_MESSAGE_TEXT = ResourceUtils.getString(PreCreateBundleSummaryPanel.class, "PrCBSPmessage.text");
-    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = ResourceUtils.getString(PreCreateBundleSummaryPanel.class, "PrCBSPmessage.content.type");
-    public static final String DEFAULT_COMPONENTS_TO_BUNDLE_LABEL_TEXT = ResourceUtils.getString(PreCreateBundleSummaryPanel.class, "PrCBSPcomponents.to.bundle.label.text");
-    public static final String DEFAULT_COMPONENTS_TO_BUNDLE_TEXT = ResourceUtils.getString(PreCreateBundleSummaryPanel.class, "PrCBSPcomponents.to.bundle.text");
-    public static final String DEFAULT_COMPONENTS_TO_BUNDLE_CONTENT_TYPE = ResourceUtils.getString(PreCreateBundleSummaryPanel.class, "PrCBSPcomponents.to.bundle.content.type");
-    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = ResourceUtils.getString(PreCreateBundleSummaryPanel.class, "PrCBSPcomponents.list.separator");
-    public static final String DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT = ResourceUtils.getString(PreCreateBundleSummaryPanel.class, "PrCBSPdownload.size.label.text");
-    public static final String DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT = ResourceUtils.getString(PreCreateBundleSummaryPanel.class, "PrCBSPrequired.disk.space.label.text");
-    
-    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(PreCreateBundleSummaryPanel.class, "PrCBSPdialog.title");
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public PreCreateBundleSummaryPanel() {
         setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
@@ -77,17 +55,20 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
         setProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY, DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT);
         setProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY, DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT);
         
-        setProperty(TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
+        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
     }
     
+    @Override
     public boolean canExecuteForward() {
         return Registry.getInstance().getProductsToInstall().size() > 0;
     }
     
+    @Override
     public boolean canExecuteBackward() {
         return Registry.getInstance().getProductsToInstall().size() > 0;
     }
     
+    @Override
     public WizardUi getWizardUi() {
         if (wizardUi == null) {
             wizardUi = new PreCreateBundleSummaryPanelUi(this);
@@ -107,7 +88,7 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
             this.component = component;
         }
         
-        // swing ui specific ////////////////////////////////////////////////////////
+        @Override
         public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new PreCreateBundleSummaryPanelSwingUi(component, container);
@@ -120,13 +101,13 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
     public static class PreCreateBundleSummaryPanelSwingUi extends WizardPanelSwingUi {
         protected PreCreateBundleSummaryPanel component;
         
-        private NbiTextPane   messagePane;
-        private NbiLabel      componentsToBundleLabel;
-        private NbiTextPane   componentsToBundlePane;
-        private NbiLabel      downloadSizeLabel;
-        private NbiLabel      requiredDiskSpaceLabel;
+        private NbiTextPane messagePane;
+        private NbiLabel componentsToBundleLabel;
+        private NbiTextPane componentsToBundlePane;
+        private NbiLabel downloadSizeLabel;
+        private NbiLabel requiredDiskSpaceLabel;
         
-        private NbiPanel      spacer;
+        private NbiPanel spacer;
         
         public PreCreateBundleSummaryPanelSwingUi(
                 final PreCreateBundleSummaryPanel component,
@@ -138,10 +119,13 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
             initComponents();
         }
         
+        // protected ////////////////////////////////////////////////////////////////
+        @Override
         protected void initializeContainer() {
             container.getNextButton().setText("&Install");
         }
         
+        @Override
         protected void initialize() {
             final String messageContentType = component.getProperty(MESSAGE_CONTENT_TYPE_PROPERTY);
             messagePane.setContentType(messageContentType);
@@ -182,28 +166,126 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
             requiredDiskSpaceLabel.setText(requiredDiskSpaceLabelText);
         }
         
+        // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
+            // messagePane //////////////////////////////////////////////////////////
             messagePane = new NbiTextPane();
             
-            componentsToBundleLabel = new NbiLabel();
-            
+            // componentsToBundlePane ///////////////////////////////////////////////
             componentsToBundlePane = new NbiTextPane();
-            componentsToBundlePane.setOpaque(false);
-            componentsToBundlePane.setEditable(false);
-            componentsToBundlePane.setBorder(new EmptyBorder(0, 0, 0, 0));
             
+            // componentsToBundleLabel //////////////////////////////////////////////
+            componentsToBundleLabel = new NbiLabel();
+            componentsToBundleLabel.setLabelFor(componentsToBundlePane);
+            
+            // downloadSizeLabel ////////////////////////////////////////////////////
             downloadSizeLabel = new NbiLabel();
+            downloadSizeLabel.setFocusable(true);
             
+            // requiredDiskSpaceLabel ///////////////////////////////////////////////
             requiredDiskSpaceLabel = new NbiLabel();
+            requiredDiskSpaceLabel.setFocusable(true);
             
+            // spacer ///////////////////////////////////////////////////////////////
             spacer = new NbiPanel();
             
-            add(messagePane, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
-            add(componentsToBundleLabel, new GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));
-            add(componentsToBundlePane, new GridBagConstraints(0, 3, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-            add(downloadSizeLabel, new GridBagConstraints(0, 4, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(25, 11, 0, 11), 0, 0));
-            add(requiredDiskSpaceLabel, new GridBagConstraints(0, 5, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 11, 0, 11), 0, 0));
-            add(spacer, new GridBagConstraints(0, 6, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 11, 11, 11), 0, 0));
+            // this /////////////////////////////////////////////////////////////////
+            add(messagePane, new GridBagConstraints(
+                    0, 0,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(11, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsToBundleLabel, new GridBagConstraints(
+                    0, 2,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(15, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(componentsToBundlePane, new GridBagConstraints(
+                    0, 3,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(3, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(downloadSizeLabel, new GridBagConstraints(
+                    0, 4,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(25, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(requiredDiskSpaceLabel, new GridBagConstraints(
+                    0, 5,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(3, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(spacer, new GridBagConstraints(
+                    0, 6,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 11, 11, 11),        // padding
+                    0, 0));                           // padx, pady - ???
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String MESSAGE_TEXT_PROPERTY =
+            "message.text"; // NOI18N
+    public static final String MESSAGE_CONTENT_TYPE_PROPERTY =
+            "message.content.type"; // NOI18N
+    public static final String COMPONENTS_TO_BUNDLE_LABEL_TEXT_PROPERTY =
+            "components.to.bundle.label.text"; // NOI18N
+    public static final String COMPONENTS_TO_BUNDLE_TEXT_PROPERTY =
+            "components.to.bundle.text"; // NOI18N
+    public static final String COMPONENTS_TO_BUNDLE_CONTENT_TYPE_PROPERTY =
+            "components.to.bundle.content.type"; // NOI18N
+    public static final String COMPONENTS_LIST_SEPARATOR_PROPERTY =
+            "components.list.separator"; // NOI18N
+    public static final String DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY =
+            "download.size.label.text"; // NOI18N
+    public static final String REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY =
+            "required.disk.space.label.text"; // NOI18N
+    
+    public static final String DEFAULT_MESSAGE_TEXT =
+            ResourceUtils.getString(PreCreateBundleSummaryPanel.class,
+            "PrCBSPmessage.text"); // NOI18N
+    public static final String DEFAULT_MESSAGE_CONTENT_TYPE =
+            ResourceUtils.getString(PreCreateBundleSummaryPanel.class,
+            "PrCBSPmessage.content.type"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_TO_BUNDLE_LABEL_TEXT =
+            ResourceUtils.getString(PreCreateBundleSummaryPanel.class,
+            "PrCBSPcomponents.to.bundle.label.text"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_TO_BUNDLE_TEXT =
+            ResourceUtils.getString(PreCreateBundleSummaryPanel.class,
+            "PrCBSPcomponents.to.bundle.text"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_TO_BUNDLE_CONTENT_TYPE =
+            ResourceUtils.getString(PreCreateBundleSummaryPanel.class,
+            "PrCBSPcomponents.to.bundle.content.type"); // NOI18N
+    public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR =
+            ResourceUtils.getString(PreCreateBundleSummaryPanel.class,
+            "PrCBSPcomponents.list.separator"); // NOI18N
+    public static final String DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT =
+            ResourceUtils.getString(PreCreateBundleSummaryPanel.class,
+            "PrCBSPdownload.size.label.text"); // NOI18N
+    public static final String DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT =
+            ResourceUtils.getString(PreCreateBundleSummaryPanel.class,
+            "PrCBSPrequired.disk.space.label.text"); // NOI18N
+    
+    public static final String DEFAULT_TITLE =
+            ResourceUtils.getString(PreCreateBundleSummaryPanel.class,
+            "PrCBSPdialog.title"); // NOI18N
 }

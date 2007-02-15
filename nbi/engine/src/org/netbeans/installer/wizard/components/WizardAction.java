@@ -44,8 +44,8 @@ public abstract class WizardAction extends WizardComponent {
     // Instance
     protected WizardUi wizardUi;
     
-    protected boolean  finished = false;
-    protected boolean  canceled = false;
+    protected boolean finished = false;
+    protected boolean canceled = false;
     
     protected WizardAction() {
         // does nothing
@@ -53,6 +53,7 @@ public abstract class WizardAction extends WizardComponent {
     
     public final void executeForward() {
         new NbiThread() {
+            @Override
             public void run() {
                 finished = false;
                 execute();
@@ -69,6 +70,7 @@ public abstract class WizardAction extends WizardComponent {
         // does nothing
     }
     
+    @Override
     public final boolean canExecuteBackward() {
         return false;
     }
@@ -117,6 +119,7 @@ public abstract class WizardAction extends WizardComponent {
             this.component = component;
         }
         
+        @Override
         public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new WizardActionSwingUi(component, container);
@@ -159,6 +162,7 @@ public abstract class WizardAction extends WizardComponent {
             initComponents();
         }
         
+        @Override
         public void initializeContainer() {
             super.initializeContainer();
             
@@ -179,6 +183,7 @@ public abstract class WizardAction extends WizardComponent {
             container.getCancelButton().setEnabled(component.isCancellable());
         }
         
+        @Override
         public void evaluateCancelButtonClick() {
             if (component.isCancellable()) {
                 if (!UiUtils.showYesNoDialog(
@@ -199,11 +204,12 @@ public abstract class WizardAction extends WizardComponent {
             }
         }
         
-        public NbiButton getDefaultButton() {
+        @Override
+        public NbiButton getDefaultEnterButton() {
             return container.getCancelButton();
         }
         
-        public void progressUpdated(Progress progress) {
+        public void progressUpdated(final Progress progress) {
             if (titleLabel != null) {
                 titleLabel.setText(progress.getTitle());
             }
@@ -217,15 +223,18 @@ public abstract class WizardAction extends WizardComponent {
             }
         }
         
+        // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
             // titleLabel ///////////////////////////////////////////////////////////
-            titleLabel  = new NbiLabel();
+            titleLabel = new NbiLabel();
+            titleLabel.setFocusable(true);
             
             // progressBar //////////////////////////////////////////////////////////
             progressBar = new NbiProgressBar();
             
             // detailLabel //////////////////////////////////////////////////////////
             detailLabel = new NbiLabel(true);
+            detailLabel.setFocusable(true);
             
             // this /////////////////////////////////////////////////////////////////
             add(titleLabel, new GridBagConstraints(

@@ -49,6 +49,7 @@ public class ErrorMessagePanel extends WizardPanel {
         // does nothing
     }
     
+    @Override
     public WizardUi getWizardUi() {
         if (wizardUi == null) {
             wizardUi = new ErrorMessagePanelUi(this);
@@ -111,6 +112,7 @@ public class ErrorMessagePanel extends WizardPanel {
             initComponents();
         }
         
+        @Override
         public void evaluateBackButtonClick() {
             if (validatingThread != null) {
                 validatingThread.pause();
@@ -119,6 +121,7 @@ public class ErrorMessagePanel extends WizardPanel {
             super.evaluateBackButtonClick();
         }
         
+        @Override
         public void evaluateNextButtonClick() {
             if (validatingThread != null) {
                 validatingThread.pause();
@@ -137,6 +140,7 @@ public class ErrorMessagePanel extends WizardPanel {
             }
         }
         
+        @Override
         public void evaluateCancelButtonClick() {
             if (validatingThread != null) {
                 validatingThread.pause();
@@ -154,6 +158,8 @@ public class ErrorMessagePanel extends WizardPanel {
             component.getWizard().getFinishHandler().cancel();
         }
         
+        // protected ////////////////////////////////////////////////////////////////
+        @Override
         protected void initialize() {
             updateErrorMessage();
             
@@ -165,7 +171,7 @@ public class ErrorMessagePanel extends WizardPanel {
             }
         }
         
-        protected synchronized void updateErrorMessage() {
+        protected synchronized final void updateErrorMessage() {
             String errorMessage;
             
             try {
@@ -173,11 +179,18 @@ public class ErrorMessagePanel extends WizardPanel {
                 
                 if (errorMessage == null) {
                     errorLabel.setIcon(emptyIcon);
-                    errorLabel.setText(" ");
+                    errorLabel.clearText();
                     container.getNextButton().setEnabled(true);
+                    
                     return;
                 }
             } catch (Exception e) {
+                // we have a good reason to catch Exception here, as most of the 
+                // code that is called is not under the engine's control 
+                // (validateInput() is component-specific) and we do not want to 
+                // propagate unexcpected exceptions that could otherwise be handled
+                // normally
+                
                 ErrorManager.notifyDebug("Failed to verify input", e);
                 errorMessage = "Unknown error: " + e.getMessage();
             }
@@ -187,9 +200,13 @@ public class ErrorMessagePanel extends WizardPanel {
             container.getNextButton().setEnabled(false);
         }
         
+        // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
+            // errorLabel ///////////////////////////////////////////////////////////
             errorLabel = new NbiLabel();
+            errorLabel.setFocusable(true);
             
+            // this /////////////////////////////////////////////////////////////////
             add(errorLabel, new GridBagConstraints(
                     0, 99,                             // x, y
                     99, 1,                             // width, height

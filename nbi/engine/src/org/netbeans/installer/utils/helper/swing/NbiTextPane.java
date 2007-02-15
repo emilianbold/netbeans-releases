@@ -33,12 +33,14 @@ public class NbiTextPane extends JTextPane {
     public NbiTextPane() {
         super();
         
+        setOpaque(false);
         setEditable(false);
         setBorder(new EmptyBorder(0, 0, 0, 0));
         
         putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, true);
     }
     
+    @Override
     public void setText(String text) {
         if ((text == null) || text.equals("")) {
             if (getContentType().equals("text/plain")) {
