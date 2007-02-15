@@ -549,7 +549,7 @@ void ErrorExit(LPTSTR lpszMessage, LPTSTR lpszFunction)
     ExitProcess( (dw != 0)? dw: 1); 
 }
 
-/* Looks for modules/ext/jaxws20/api directory in enterprise cluster and if it 
+/* Looks for modules/ext/jaxws21/api directory in ideX cluster and if it 
  * exists returns string that will init java.endorsed.dirs property to this directory
  * If the directory does not exist or pOptions defines this property empty string 
  * is returned.
