@@ -41,6 +41,7 @@ public final class UI {
 
     /**
      * Open Refactoring UI for specified RefactoringUI
+     * @param ui 
      * @see RefactoringUI
      */
     public static void openRefactoringUI(RefactoringUI ui) {
@@ -50,6 +51,8 @@ public final class UI {
     /**
      * Open Refactoring UI for specufied RefactoringUI from specified TopComponent. 
      * callerTC will get focus when refactoring is finished.
+     * @param ui 
+     * @param callerTC 
      * @see RefactoringUI
      */
     public static void openRefactoringUI(RefactoringUI ui, TopComponent callerTC) {
@@ -72,6 +75,7 @@ public final class UI {
     /**
      * use this method from RefactoringElementImplementation.showPreview
      * @param component is set as a preview component of RefactoringPanel
+     * @return component was successfuly set
      */ 
     public static boolean setComponentForRefactoringPreview(Component component) {
         TopComponent activated = TopComponent.getRegistry().getActivated();

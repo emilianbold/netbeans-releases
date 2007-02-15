@@ -67,11 +67,14 @@ public interface RefactoringUI {
     
     /**
      * check parameters of refactoring
+     * @return Chain of problems returned from the underlying refactoring object
+     * when trying to check its parameters.
      */
     Problem checkParameters();
     
     /**
      * true, if refactoring has parameters
+     * @return false if this UI does not require any parameters. True otherwise.
      */
     boolean hasParameters();
     

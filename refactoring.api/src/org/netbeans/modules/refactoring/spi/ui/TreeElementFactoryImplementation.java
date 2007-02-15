@@ -42,12 +42,14 @@ package org.netbeans.modules.refactoring.spi.ui;
  * @author Jan Becicka
  */
 public interface TreeElementFactoryImplementation {
-    /*
+   /**
      * returns TreeElement for given object if possible. Otherwise returns null.
+     * @param o 
+     * @return 
      */
     public TreeElement getTreeElement(Object o);
 
-    /*
+    /**
      * clears internal structures
      */
     public void cleanUp();

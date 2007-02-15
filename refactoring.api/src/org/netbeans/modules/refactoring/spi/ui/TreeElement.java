@@ -31,6 +31,7 @@ import javax.swing.Icon;
  */
 public interface TreeElement {
     /**
+     * @param isLogical true if parent in lagical view is requested.
      * @return parent of this TreeElement
      */
     public TreeElement getParent(boolean isLogical);
@@ -40,6 +41,7 @@ public interface TreeElement {
      */
     public Icon getIcon();
     /**
+     * @param isLogical true if logical description is requested
      * @return text of this TreeElement
      */
     public String getText(boolean isLogical);

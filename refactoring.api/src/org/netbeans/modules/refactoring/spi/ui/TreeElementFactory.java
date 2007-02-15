@@ -35,6 +35,7 @@ public final class TreeElementFactory {
     private TreeElementFactory() {}
 
     /**
+     * @param object
      * @return TreeElement for given object
      */
     public static TreeElement getTreeElement(Object object) {

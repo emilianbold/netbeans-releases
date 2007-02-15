@@ -51,20 +51,23 @@ import org.openide.util.Lookup;
 public abstract class ActionsImplementationProvider {
     
     /**
+     * @param lookup current context
      * @return true if provider can handle rename
      */
-    public boolean canRename(Lookup node) {
+    public boolean canRename(Lookup lookup) {
         return false;
     }
 
     /**
+     * @param lookup current context
      * @return implementation of Rename Action
      */
-    public Runnable renameImpl(Lookup selectedNodes) {
+    public Runnable renameImpl(Lookup lookup) {
         return null;
     }
 
     /**
+     * @param lookup current context
      * @return true if provider can handle find usages
      */
     public boolean canFindUsages(Lookup lookup) {
@@ -72,6 +75,7 @@ public abstract class ActionsImplementationProvider {
     }
 
     /**
+     * @param lookup current context
      * @return implementation of Find Usages Action
      */
     public Runnable findUsagesImpl(Lookup lookup) {
@@ -79,6 +83,7 @@ public abstract class ActionsImplementationProvider {
     }
 
     /**
+     * @param lookup current context
      * @return true if provider can handle delete
      */
     public boolean canDelete(Lookup lookup) {
@@ -86,6 +91,7 @@ public abstract class ActionsImplementationProvider {
     }
     
     /**
+     * @param lookup current context
      * @return implementation of Delete Action
      */
     public Runnable deleteImpl(Lookup lookup) {
@@ -93,6 +99,7 @@ public abstract class ActionsImplementationProvider {
     }
 
     /**
+     * @param lookup current context
      * @return true if provider can handle move
      */
     public boolean canMove(Lookup lookup) {
@@ -100,6 +107,7 @@ public abstract class ActionsImplementationProvider {
     }
 
     /**
+     * @param lookup current context
      * @return implementation of Move Action
      */
     public Runnable moveImpl(Lookup lookup) {
@@ -107,6 +115,7 @@ public abstract class ActionsImplementationProvider {
     }
 
     /**
+     * @param lookup current context
      * @return true if provider can handle copy
      */
     public boolean canCopy(Lookup lookup) {
@@ -114,6 +123,7 @@ public abstract class ActionsImplementationProvider {
     }
 
     /**
+     * @param lookup current context
      * @return implementation of Copy Action
      */
     public Runnable copyImpl(Lookup lookup) {
