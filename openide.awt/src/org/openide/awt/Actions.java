@@ -40,9 +40,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -52,7 +52,6 @@ import java.util.WeakHashMap;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Icon;
-
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -143,12 +142,22 @@ public class Actions extends Object {
     }
 
     /** Attaches menu item to an action.
+     * You can supply an alternative implementation
+     * for this method by implementing method
+     * {@link ButtonActionConnector#connect(JMenuItem, Action, boolean)} and
+     * registering an instance of {@link ButtonActionConnector} in the
+     * default lookup.
      * @param item menu item
      * @param action action
      * @param popup create popup or menu item
      * @since 3.29
      */
     public static void connect(JMenuItem item, Action action, boolean popup) {
+        for (ButtonActionConnector bac : Lookup.getDefault().lookupAll(ButtonActionConnector.class)) {
+            if (bac.connect(item, action, popup)) {
+                return;
+            }
+        }
         Bridge b = new MenuBridge(item, action, popup);
 
         if (item instanceof Actions.MenuItem) {
@@ -246,11 +255,21 @@ public class Actions extends Object {
      * "com/mycompany/myIcon_rollover.gif" for setRolloverIcon. SystemAction has
      * special support for iconBase - please check {@link SystemAction#iconResource}
      * for more details.
+     * You can supply an alternative implementation
+     * for this method by implementing method
+     * {@link ButtonActionConnector#connect(AbstractButton, Action)} and
+     * registering an instance of {@link ButtonActionConnector} in the
+     * default lookup.
      * @param button the button
      * @param action the action
      * @since 3.29
      */
     public static void connect(AbstractButton button, Action action) {
+        for (ButtonActionConnector bac : Lookup.getDefault().lookupAll(ButtonActionConnector.class)) {
+            if (bac.connect(button, action)) {
+                return;
+            }
+        }
         Bridge b = new ButtonBridge(button, action);
         b.updateState(null);
     }
@@ -1301,6 +1320,30 @@ public class Actions extends Object {
         
     }
 
+    /**
+     * SPI for being able to supply alternative implementation of
+     * connection between actions and the presenters. The implementations
+     * of this interface are being looked up in the default lookup.
+     * If there is no implemenation in the lookup the default implementation
+     * is used.
+     * @see org.openide.util.Lookup#getDefault()
+     */
+    public static interface ButtonActionConnector {
+        /**
+         * Connects the action to the supplied button.
+         * @return true if the connection was successful and no
+         *    further actions are needed. If false is returned the
+         *    default connect implementation is called
+         */
+        public boolean connect(AbstractButton button, Action action);
+        /**
+         * Connects the action to the supplied JMenuItem.
+         * @return true if the connection was successful and no
+         *    further actions are needed. If false is returned the
+         *    default connect implementation is called
+         */
+        public boolean connect(JMenuItem item, Action action, boolean popup);
+    }
 
     private static class DisabledButtonFilter extends RGBImageFilter {
         DisabledButtonFilter() {

@@ -23,6 +23,23 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="Actions.ButtonActionConnector-added">
+      <api name="awt"/>
+      <summary>Actions.ButtonActionConnector interface added</summary>
+      <version major="6" minor="9"/>
+      <date day="1" month="2" year="2007"/>
+      <author login="dstrupl"/>
+      <compatibility addition="yes" modification="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
+      <description>
+          The addition enables to plug in additional logic for action enabling and disabling
+          based on for example authorization information. The added SPI interface is being
+          looked up in the default lookup. If there is no implementation the original behaviour
+          is preserverd.
+      </description>
+      <class package="org.openide.awt" name="Actions"/>
+      <issue number="93519"/>
+    </change>    
+
     <change id="DynamicMenuContent-added">
       <api name="awt"/>
       <summary>DynamicMenuContent interface added</summary>

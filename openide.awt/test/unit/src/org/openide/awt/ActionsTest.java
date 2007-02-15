@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -90,7 +91,7 @@ public class ActionsTest extends NbTestCase {
     }
     
     protected void setUp() {
-        MockServices.setServices(new Class[] {TestKeymap.class});
+        MockServices.setServices(new Class[] {TestKeymap.class, TestConnector.class});
         assertNotNull("Keymap has to be in lookup", Lookup.getDefault().lookup(Keymap.class));
     }
     
@@ -330,6 +331,26 @@ public class ActionsTest extends NbTestCase {
         
         f.setVisible(false);
     }
+
+    /**
+     * Tests whether the ButtonActionConnector is being called. The testing
+     * implementation is set to "active" only for this test - so the other
+     * tests should retain the behaviour like running without the
+     * ButtonActionConnector.
+     */
+    public void testButtonActionConnector() throws Exception {
+        TestConnector tc = Lookup.getDefault().lookup(TestConnector.class);
+        tc.setActive(true);
+        Action action = new ActionsTest.TestAction();
+        JButton button = new JButton();
+        Actions.connect(button, action);
+        assertEquals(1, tc.getConnectCalled());
+        JMenuItem jmi = new JMenuItem();
+        Actions.connect(jmi, action, false);
+        assertEquals(3, tc.getConnectCalled());
+        tc.setActive(false);
+    }
+    
     
     protected boolean runInEQ() {
         return true;
@@ -480,6 +501,38 @@ public class ActionsTest extends NbTestCase {
             // ignore
         }
         
+    }
+    
+    public static final class TestConnector implements Actions.ButtonActionConnector {
+        
+        private int called = 0;
+        private boolean active = false;
+        
+        public TestConnector() {}
+        
+        public boolean connect(AbstractButton button, Action action) {
+            if (!active) {
+                return false;
+            }
+            called +=1;
+            return true;
+        }
+
+        public boolean connect(JMenuItem item, Action action, boolean popup) {
+            if (!active) {
+                return false;
+            }
+            called += 2;
+            return true;
+        }
+        
+        public int getConnectCalled() {
+            return called;
+        }
+        public void setActive(boolean a) {
+            called = 0;
+            active = a;
+        }
     }
     
 }
