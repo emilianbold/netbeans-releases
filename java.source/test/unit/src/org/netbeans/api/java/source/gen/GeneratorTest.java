@@ -111,10 +111,6 @@ public abstract class GeneratorTest extends NbTestCase {
             }
             public void run(WorkingCopy wc) throws IOException {
                 wc.toPhase(Phase.RESOLVED);
-                if (transformer instanceof MutableTransformer) {
-                    MutableTransformer mutable = (MutableTransformer) transformer;
-                    mutable.setWorkingCopy(wc);
-                }
                 SourceUtilsTestUtil2.run(wc, transformer);
             }
         }).commit();
