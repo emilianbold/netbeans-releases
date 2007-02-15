@@ -41,6 +41,7 @@ public final class ProblemDetails {
      * It is fully upon clients, how this component will be implemented.
      * @param rerunRefactoringAction this action is passed to client component
      * to allow clients to invoke refactoring once the Problem is fixed.
+     * @param parent component, which can be cancelled
      * @see ProblemDetailsImplementation
      */
     public void showDetails(Action rerunRefactoringAction, Cancellable parent) {
@@ -50,6 +51,7 @@ public final class ProblemDetails {
     /**
      * Message that will be displayed in parameters panel as a hint to suggest user,
      * that there are more details available.
+     * @return string representation of hint
      */
     public String getDetailsHint() {
         return pdi.getDetailsHint();
