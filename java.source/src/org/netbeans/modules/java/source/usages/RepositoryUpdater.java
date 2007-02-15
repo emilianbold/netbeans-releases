@@ -383,7 +383,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         for (File root : roots) {
             final FileObject fo = FileUtil.toFileObject (root);
             if (fo == null) {
-                Logger.getLogger(RepositoryUpdater.class.getName()).warning("No MasterFS for file system root: " + root.getAbsolutePath());          // NOI18N
+                LOGGER.warning("No MasterFS for file system root: " + root.getAbsolutePath());          // NOI18N
             }
             else {
                 try {
@@ -405,7 +405,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         for (File root : roots) {
             final FileObject fo = FileUtil.toFileObject (root);
             if (fo == null) {
-                Logger.getLogger(RepositoryUpdater.class.getName()).warning("No MasterFS for file system root: " + root.getAbsolutePath());          // NOI18N
+                LOGGER.warning("No MasterFS for file system root: " + root.getAbsolutePath());          // NOI18N
             }
             else {
                 try {
@@ -929,7 +929,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 return;
             }            
             if (!rootFo.isFolder()) {
-                Logger.getLogger("global").warning("Source root has to be a folder: " +  FileUtil.getFileDisplayName(rootFo)); // NOI18N
+                LOGGER.warning("Source root has to be a folder: " +  FileUtil.getFileDisplayName(rootFo)); // NOI18N
                 return;
             }            
             final ClassPath sourcePath = ClassPath.getClassPath(rootFo,ClassPath.SOURCE);
@@ -937,7 +937,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);            
             final boolean isInitialCompilation = folder.equals(root);            
             if (sourcePath == null || bootPath == null || compilePath == null) {
-                Logger.getLogger("global").warning("Ignoring root with no ClassPath: " + FileUtil.getFileDisplayName(rootFo));    // NOI18N
+                LOGGER.warning("Ignoring root with no ClassPath: " + FileUtil.getFileDisplayName(rootFo));    // NOI18N
                 return;
             }
             if (!clean && isInitialCompilation) {
@@ -1532,7 +1532,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     }
                 }
                 if (state == 1) {
-                    Logger.getLogger("global").warning("Not enough memory to compile folder: " + FileUtil.getFileDisplayName(rootFo));    // NOI18N
+                    LOGGER.warning("Not enough memory to compile folder: " + FileUtil.getFileDisplayName(rootFo));    // NOI18N
                 }
             } finally {
                 if (jt != null) {
@@ -1795,13 +1795,13 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     dumpSucceeded = true;
                 }
             } catch (IOException ioe) {
-                Logger.getLogger("global").log(Level.INFO, "Error when writing coupling dump file!", ioe); // NOI18N
+                LOGGER.log(Level.INFO, "Error when writing coupling dump file!", ioe); // NOI18N
             }
         }
         if (dumpSucceeded) {
-            Logger.getLogger("global").log(Level.SEVERE, "Coupling error: class file {0}, source file {1}", new Object[] {uri, source.toUri().toASCIIString()});
+            LOGGER.log(Level.SEVERE, "Coupling error: class file {0}, source file {1}", new Object[] {uri, source.toUri().toASCIIString()});
         } else {
-            Logger.getLogger("global").log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Dump could not be written. Either dump file could not " + // NOI18N
                     "be created or all dump files were already used. Please " + // NOI18N
                     "check that you have write permission to '" + dumpDir + "' and " + // NOI18N
