@@ -105,7 +105,7 @@ readEndorsedDirs() {
 netbeans_endorsed_dirs=`grep -- -J-Djava\.endorsed\.dirs= <<EOF
 ${netbeans_default_options}
 EOF`
-if [ ! -z "netbeans_endorsed_dirs" ] ; then
+if [ -z "${netbeans_endorsed_dirs}" ] ; then
     netbeans_endorsed_dirs=`readEndorsedDirs`
 else
     netbeans_endorsed_dirs=""
