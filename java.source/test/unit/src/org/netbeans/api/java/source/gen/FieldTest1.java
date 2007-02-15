@@ -18,6 +18,7 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PrimitiveTypeTree;
@@ -28,8 +29,11 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import junit.textui.TestRunner;
+import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Test the field generator.
@@ -113,18 +117,23 @@ public class FieldTest1 extends GeneratorTestMDRCompat {
      */
     public void testFieldName() throws IOException {
         System.err.println("testFieldName");
-        process(
-            new MutableTransformer<Void, Object>() {
-                public Void visitVariable(VariableTree node, Object p) {
-                    super.visitVariable(node, p);
-                    if ("noveJmenoField".contentEquals(node.getName())) {
-                        VariableTree vetecko = setLabel(node, "thisIsTheNewName");
-                        changes.rewrite(node, vetecko);
-                    }
-                    return null;
-                }
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                VariableTree var = (VariableTree) clazz.getMembers().get(3);
+                workingCopy.rewrite(var, make.setLabel(var, "thisIsTheNewName"));
             }
-        );
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testFieldName.pass");
     }
     
