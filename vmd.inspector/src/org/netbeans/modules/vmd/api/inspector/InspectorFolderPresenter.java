@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.api.inspector;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.Action;
@@ -31,6 +32,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEvent;
 import org.netbeans.modules.vmd.api.model.DesignEventFilter;
 import org.netbeans.modules.vmd.api.model.DynamicPresenter;
+import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PresenterEvent;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
@@ -92,10 +94,10 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
     }
     
     public static InspectorFolderPresenter create(final String displayName,
-        final TypeID typeID,
-        final Image icon,
-        final TypeID[] filtersTypeID,
-        final InspectorOrderingController... orderingControllers) {
+            final TypeID typeID,
+            final Image icon,
+            final TypeID[] filtersTypeID,
+            final InspectorOrderingController... orderingControllers) {
         
         return new InspectorFolderPresenter() {
             private CategoryFolder folder;
@@ -132,6 +134,7 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
         private Image icon;
         private boolean canRename;
         private String name;
+        private List<InspectorOrderingController> ocs;
         
         public ComponentFolder(boolean canRename) {
             this.canRename = canRename;
@@ -206,15 +209,22 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
         }
         
         public InspectorOrderingController[] getOrderingControllers() {
-            if (getComponent().getPresenters(InspectorOrderingPresenter.class) == null
-                || getComponent().getPresenters(InspectorOrderingPresenter.class).isEmpty() )
+            getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
+                public void run() {
+                    Collection<? extends InspectorOrderingPresenter> presenters = getComponent().getPresenters(InspectorOrderingPresenter.class);
+                    if (presenters == null || presenters.isEmpty() ) {
+                        ocs = null;
+                        return;
+                    }
+                    ocs = new ArrayList<InspectorOrderingController>();
+                    for (InspectorOrderingPresenter presenter : presenters){
+                        ocs.addAll(Arrays.asList(presenter.getFolderOrderingControllers()));
+                    }
+                }
+            });
+            
+            if (ocs == null)
                 return null;
-            
-            List<InspectorOrderingController> ocs = new ArrayList<InspectorOrderingController>();
-            
-            for (InspectorOrderingPresenter presenter : getComponent().getPresenters(InspectorOrderingPresenter.class)){
-                ocs.addAll(Arrays.asList(presenter.getFolderOrderingControllers()));
-            }
             
             return ocs.toArray(new InspectorOrderingController[ocs.size()]);
             
@@ -234,10 +244,10 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
         private TypeID[] filtersTypeID;
         
         public CategoryFolder(String displayName,
-            TypeID typeID,
-            Image icon,
-            TypeID[] filtersTypeID,
-            InspectorOrderingController[] orderingControllers ) {
+                TypeID typeID,
+                Image icon,
+                TypeID[] filtersTypeID,
+                InspectorOrderingController[] orderingControllers ) {
             if (typeID == null)
                 throw new IllegalArgumentException("TypeID cant be null InspectorFolderPresenter: "+ getComponent()); //NOI18N
             
