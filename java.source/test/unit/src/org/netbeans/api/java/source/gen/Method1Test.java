@@ -22,10 +22,11 @@ import com.sun.source.tree.*;
 import java.util.*;
 import java.io.IOException;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.type.TypeKind;
-import org.netbeans.api.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 import junit.textui.TestRunner;
+import org.netbeans.api.java.source.*;
+import static org.netbeans.api.java.source.JavaSource.*;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Tests the method generator.
@@ -65,21 +66,27 @@ public class Method1Test extends GeneratorTestMDRCompat {
      */
     public void testMethodModifiers() throws IOException {
         System.err.println("testMethodModifiers");
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("firstMethod".contentEquals(node.getName())) {
-                        ModifiersTree origMods = node.getModifiers();
-                        Set<Modifier> njuMods = new HashSet<Modifier>();
-                        njuMods.add(Modifier.PRIVATE);
-                        njuMods.add(Modifier.STATIC);
-                        changes.rewrite(origMods, make.Modifiers(njuMods));
-                    }
-                    return null;
-                }
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ModifiersTree origMods = method.getModifiers();
+                Set<Modifier> njuMods = new HashSet<Modifier>();
+                njuMods.add(Modifier.PRIVATE);
+                njuMods.add(Modifier.STATIC);
+                workingCopy.rewrite(origMods, make.Modifiers(njuMods));
             }
-        );
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testMethodModifiers.pass");
     }
     
@@ -88,18 +95,23 @@ public class Method1Test extends GeneratorTestMDRCompat {
      */
     public void testMethodName() throws IOException {
         System.err.println("testMethodName");
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("secondMethod".contentEquals(node.getName())) {
-                        MethodTree njuMethod = make.setLabel(node, "druhaMetoda");
-                        changes.rewrite(node, njuMethod);
-                    }
-                    return null;
-                }
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(2);
+                workingCopy.rewrite(method, make.setLabel(method, "druhaMetoda"));
             }
-        );
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testMethodName.pass");
     }
     
@@ -108,20 +120,27 @@ public class Method1Test extends GeneratorTestMDRCompat {
      */
     public void testMethodParameters() throws IOException {
         System.err.println("testMethodParameters");
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("thirdMethod".contentEquals(node.getName())) {
-                        VariableTree vt = node.getParameters().get(0);
-                        //VariableTree vtCopy = make.Variable(vt.getModifiers(), vt.getName(), vt.getType(), vt.getInitializer());
-                        MethodTree njuMethod = make.removeMethodParameter(node, 0);
-                        njuMethod = make.addMethodParameter(njuMethod, vt);
-                        changes.rewrite(node, njuMethod);
-                    }
-                    return null;
-                }
-        });
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(3);
+                VariableTree vt = method.getParameters().get(0);
+                VariableTree vtCopy = make.Variable(vt.getModifiers(), vt.getName(), vt.getType(), vt.getInitializer());
+                MethodTree njuMethod = make.removeMethodParameter(method, 0);
+                njuMethod = make.addMethodParameter(njuMethod, vt);
+                workingCopy.rewrite(method, njuMethod);
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testMethodParameters.pass");
     }
     
@@ -130,24 +149,31 @@ public class Method1Test extends GeneratorTestMDRCompat {
      */
     public void testMethodParameterChange() throws IOException {
         System.err.println("testMethodParameters");
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("fourthMethod".contentEquals(node.getName())) {
-                        List<? extends VariableTree> parameters = node.getParameters();
-                        VariableTree vt = parameters.get(0);
-                        MethodTree njuMethod = make.removeMethodParameter(node, 0);
-                        VariableTree njuParameter = make.setLabel(vt, "aParNewName");
-                        changes.rewrite(vt, njuParameter);
-                        // is this really needed? -- Probably bug, setting label for varTree
-                        // should be enough.
-                        njuMethod = make.insertMethodParameter(njuMethod, 0, njuParameter);
-                        changes.rewrite(node, njuMethod);
-                    }
-                    return null;
-                }
-        });
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(4);
+                List<? extends VariableTree> parameters = method.getParameters();
+                VariableTree vt = parameters.get(0);
+                MethodTree njuMethod = make.removeMethodParameter(method, 0);
+                VariableTree njuParameter = make.setLabel(vt, "aParNewName");
+                workingCopy.rewrite(vt, njuParameter);
+                // is this really needed? -- Probably bug, setting label for varTree
+                // should be enough.
+                njuMethod = make.insertMethodParameter(njuMethod, 0, njuParameter);
+                workingCopy.rewrite(method, njuMethod);
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testMethodParameterChange.pass");
     }
 
@@ -156,21 +182,26 @@ public class Method1Test extends GeneratorTestMDRCompat {
      */
     public void testMethodThrows() throws IOException {
         System.err.println("testMethodThrows");
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("fifthMethod".contentEquals(node.getName())) {
-                        List<? extends ExpressionTree> exceptions = new ArrayList<ExpressionTree>(1);
-                        ExpressionTree ident = make.Identifier("java.lang.IllegalMonitorStateException");
-                        MethodTree njuMethod = make.removeMethodThrows(node, 0);
-                        njuMethod = make.addMethodThrows(njuMethod, ident);
-                        changes.rewrite(node, njuMethod);
-                    }
-                    return null;
-                }
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(5);
+                ExpressionTree ident = make.Identifier("java.lang.IllegalMonitorStateException");
+                MethodTree njuMethod = make.removeMethodThrows(method, 0);
+                njuMethod = make.addMethodThrows(njuMethod, ident);
+                workingCopy.rewrite(method, njuMethod);
             }
-        );
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testMethodThrows.pass");
     }
     
@@ -179,193 +210,198 @@ public class Method1Test extends GeneratorTestMDRCompat {
      */
     public void testMethodReturnType() throws IOException {
         System.err.println("testMethodReturnType");
-        process(
-            new MutableTransformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("sixthMethod".contentEquals(node.getName())) {
-                        Tree returnType = node.getReturnType();
-                        IdentifierTree identifier = make.Identifier("String");
-                        changes.rewrite(returnType, identifier);
-                        MethodTree njuMethod = changeSubNode(node, node.getReturnType(), make.Identifier("String"));
-                        changes.rewrite(node, njuMethod);
-                    }
-                    return null;
-                }
-        });
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(6);
+                Tree returnType = method.getReturnType();
+                IdentifierTree identifier = make.Identifier("String");
+                workingCopy.rewrite(returnType, identifier);
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testMethodReturnType.pass");
     }
     
     /**
      * Tests method body.
      */
-    public void testMethodBody() throws IOException {
-        System.err.println("testMethodBody");
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("seventhMethod".contentEquals(node.getName())) {
-                        Set<Modifier> njuMods = new HashSet<Modifier>();
-                        njuMods.add(Modifier.PUBLIC);
-                        MethodTree njuMethod = make.Method(
-                            make.Modifiers(njuMods),
-                            node.getName(),
-                            (ExpressionTree) node.getReturnType(),
-                            node.getTypeParameters(),
-                            node.getParameters(),
-                            node.getThrows(),
-                            make.Block(Collections.EMPTY_LIST, false),
-                            (ExpressionTree) node.getDefaultValue()
-                        );
-                        changes.rewrite(node, njuMethod);
-                    } else if ("eighthMethod".contentEquals(node.getName())) {
-                        Set<Modifier> njuMods = new HashSet<Modifier>();
-                        njuMods.add(Modifier.PUBLIC);
-                        njuMods.add(Modifier.ABSTRACT);
-                        MethodTree njuMethod = make.Method(
-                            make.Modifiers(njuMods),
-                            node.getName(),
-                            (ExpressionTree) node.getReturnType(),
-                            node.getTypeParameters(),
-                            node.getParameters(),
-                            node.getThrows(),
-                            null,
-                            (ExpressionTree) node.getDefaultValue()
-                        );
-                        changes.rewrite(node, njuMethod);
-                    }
-                    else if ("interfaceMethod".contentEquals(node.getName())) {
-                        Set<Modifier> njuMods = new HashSet<Modifier>();
-                        njuMods.add(Modifier.PUBLIC);
-                        njuMods.add(Modifier.ABSTRACT);
-                        ExpressionTree ident = make.Identifier("java.io.IOException");
-                        MethodTree njuMethod = make.Method(
-                            make.Modifiers(njuMods),
-                            node.getName(),
-                            (ExpressionTree) node.getReturnType(),
-                            node.getTypeParameters(),
-                            node.getParameters(),
-                            Collections.<ExpressionTree>singletonList(ident),
-                            null,
-                            (ExpressionTree) node.getDefaultValue()
-                        );
-                        changes.rewrite(node, njuMethod);
-                    }
-                    return null;
-                }
-        });
-        assertFiles("testMethodBody.pass");
-    }
-
-    public void testCreateNewMethod() throws IOException {
-        System.err.println("testCreateNewMethod");
-        process(new Transformer<Void, Object>() {
-            public Void visitClass(ClassTree node, Object p) {
-                super.visitClass(node, p);
-                if ("TestInterface".equals(node.getSimpleName().toString())) {
-                    return null; // do it just for outer class
-                }
-                // create method modifiers
-                ModifiersTree parMods = make.Modifiers(Collections.EMPTY_SET, Collections.EMPTY_LIST);
-                // create parameters
-                VariableTree par1 = make.Variable(parMods, "a", make.PrimitiveType(TypeKind.INT), null);
-                VariableTree par2 = make.Variable(parMods, "b", make.PrimitiveType(TypeKind.FLOAT), null);
-                List<VariableTree> parList = new ArrayList<VariableTree>(2);
-                parList.add(par1);
-                parList.add(par2);
-                // create method
-                MethodTree newMethod = make.Method(
-                    make.Modifiers(
-                        Collections.singleton(Modifier.PUBLIC), // modifiers
-                        Collections.EMPTY_LIST // annotations
-                    ), // modifiers and annotations
-                    "newlyCreatedMethod", // name
-                    make.PrimitiveType(TypeKind.VOID), // return type
-                    Collections.EMPTY_LIST, // type parameters for parameters
-                    parList, // parameters
-                    Collections.singletonList(make.Identifier("java.io.IOException")), // throws 
-                    make.Block(Collections.EMPTY_LIST, false), // empty statement block
-                    null // default value - not applicable here, used by annotations
-                );
-                changes.rewrite(node, make.addClassMember(node, newMethod));
-                return null;
-            }
-        });
-        assertFiles("testCreateNewMethod.pass");
-    }
-        
-    public void testParameterizedMethod() throws IOException {
-        //Transformer tm; tm.
-        System.err.println("testParameterizedMethod");
-        process(new MutableTransformer<Void, Object>() {
-            public Void visitClass(ClassTree node, Object p) {
-                super.visitClass(node, p);
-                if ("TestInterface".equals(node.getSimpleName().toString())) {
-                    return null; // do it just for outer class
-                }
-                // create method modifiers
-                ModifiersTree parMods = make.Modifiers(Collections.EMPTY_SET, Collections.EMPTY_LIST);
-                // create type params/parameters
-                TypeParameterTree tpt = make.TypeParameter("T", Collections.<ExpressionTree>emptyList());
-                VariableTree par1 = make.Variable(parMods, "cl", make.Identifier("T"), null);
-                // create method
-                MethodTree newMethod = Method( // remove mutable transformer
-                    make.Modifiers(
-                        Collections.singleton(Modifier.PUBLIC), // modifiers
-                        Collections.EMPTY_LIST // annotations
-                    ), // modifiers and annotations
-                    "getIt", // name
-                    make.Identifier("T"), // return type
-                    Collections.<TypeParameterTree>singletonList(tpt), // type parameters for parameters
-                    Collections.<VariableTree>singletonList(par1), // parameters
-                    Collections.<ExpressionTree>emptyList(), // throws 
-                    "{ return null; }",
-                    null // default value - not applicable here, used by annotations
-                );
-                attach(newMethod, "New method.");
-                changes.rewrite(node, make.addClassMember(node, newMethod));
-                return null;
-            }
-        });
-        assertFiles("testParameterizedMethod.pass");
-    }
-    
-    public void testAddRemoveInOneTrans() throws IOException {
-        System.err.println("testAddRemoveInOneTrans");
-        process(new MutableTransformer<Void, Object>() {
-            public Void visitClass(ClassTree node, Object p) {
-                super.visitClass(node, p);
-                if ("TestInterface".equals(node.getSimpleName().toString())) {
-                    return null; // do it just for outer class
-                }
-                // create method modifiers
-                ModifiersTree parMods = make.Modifiers(Collections.EMPTY_SET, Collections.EMPTY_LIST);
-                TypeParameterTree typePar = make.TypeParameter("T2", Collections.<ExpressionTree>emptyList());
-                // create parameter "T newPar"
-                VariableTree param = make.Variable(parMods, "newPar", make.Identifier("T2"), null);
-                // create the method
-                MethodTree method = Method(
-                    make.Modifiers(
-                        Collections.singleton(Modifier.PUBLIC), // modifiers
-                        Collections.EMPTY_LIST // annotations
-                    ), // modifiers and annotations
-                    "setIt",
-                    make.Identifier("T2"),
-                    Collections.<TypeParameterTree>singletonList(typePar), // type params
-                    Collections.<VariableTree>singletonList(param), // parameters
-                    Collections.<ExpressionTree>emptyList(), // exceptions
-                    "{ return null; }",
-                    null
-                );
-                ClassTree newClass = make.removeClassMember(node, node.getMembers().size()-1);
-                newClass = make.addClassMember(newClass, method);
-                changes.rewrite(node, newClass);
-                return null;
-            }
-        });
-        assertFiles("testAddRemoveInOneTrans.pass");
-    }
+//    public void testMethodBody() throws IOException {
+//        System.err.println("testMethodBody");
+//        process(
+//            new Transformer<Void, Object>() {
+//                public Void visitMethod(MethodTree node, Object p) {
+//                    super.visitMethod(node, p);
+//                    if ("seventhMethod".contentEquals(node.getName())) {
+//                        Set<Modifier> njuMods = new HashSet<Modifier>();
+//                        njuMods.add(Modifier.PUBLIC);
+//                        MethodTree njuMethod = make.Method(
+//                            make.Modifiers(njuMods),
+//                            node.getName(),
+//                            (ExpressionTree) node.getReturnType(),
+//                            node.getTypeParameters(),
+//                            node.getParameters(),
+//                            node.getThrows(),
+//                            make.Block(Collections.EMPTY_LIST, false),
+//                            (ExpressionTree) node.getDefaultValue()
+//                        );
+//                        changes.rewrite(node, njuMethod);
+//                    } else if ("eighthMethod".contentEquals(node.getName())) {
+//                        Set<Modifier> njuMods = new HashSet<Modifier>();
+//                        njuMods.add(Modifier.PUBLIC);
+//                        njuMods.add(Modifier.ABSTRACT);
+//                        MethodTree njuMethod = make.Method(
+//                            make.Modifiers(njuMods),
+//                            node.getName(),
+//                            (ExpressionTree) node.getReturnType(),
+//                            node.getTypeParameters(),
+//                            node.getParameters(),
+//                            node.getThrows(),
+//                            null,
+//                            (ExpressionTree) node.getDefaultValue()
+//                        );
+//                        changes.rewrite(node, njuMethod);
+//                    }
+//                    else if ("interfaceMethod".contentEquals(node.getName())) {
+//                        Set<Modifier> njuMods = new HashSet<Modifier>();
+//                        njuMods.add(Modifier.PUBLIC);
+//                        njuMods.add(Modifier.ABSTRACT);
+//                        ExpressionTree ident = make.Identifier("java.io.IOException");
+//                        MethodTree njuMethod = make.Method(
+//                            make.Modifiers(njuMods),
+//                            node.getName(),
+//                            (ExpressionTree) node.getReturnType(),
+//                            node.getTypeParameters(),
+//                            node.getParameters(),
+//                            Collections.<ExpressionTree>singletonList(ident),
+//                            null,
+//                            (ExpressionTree) node.getDefaultValue()
+//                        );
+//                        changes.rewrite(node, njuMethod);
+//                    }
+//                    return null;
+//                }
+//        });
+//        assertFiles("testMethodBody.pass");
+//    }
+//
+//    public void testCreateNewMethod() throws IOException {
+//        System.err.println("testCreateNewMethod");
+//        process(new Transformer<Void, Object>() {
+//            public Void visitClass(ClassTree node, Object p) {
+//                super.visitClass(node, p);
+//                if ("TestInterface".equals(node.getSimpleName().toString())) {
+//                    return null; // do it just for outer class
+//                }
+//                // create method modifiers
+//                ModifiersTree parMods = make.Modifiers(Collections.EMPTY_SET, Collections.EMPTY_LIST);
+//                // create parameters
+//                VariableTree par1 = make.Variable(parMods, "a", make.PrimitiveType(TypeKind.INT), null);
+//                VariableTree par2 = make.Variable(parMods, "b", make.PrimitiveType(TypeKind.FLOAT), null);
+//                List<VariableTree> parList = new ArrayList<VariableTree>(2);
+//                parList.add(par1);
+//                parList.add(par2);
+//                // create method
+//                MethodTree newMethod = make.Method(
+//                    make.Modifiers(
+//                        Collections.singleton(Modifier.PUBLIC), // modifiers
+//                        Collections.EMPTY_LIST // annotations
+//                    ), // modifiers and annotations
+//                    "newlyCreatedMethod", // name
+//                    make.PrimitiveType(TypeKind.VOID), // return type
+//                    Collections.EMPTY_LIST, // type parameters for parameters
+//                    parList, // parameters
+//                    Collections.singletonList(make.Identifier("java.io.IOException")), // throws 
+//                    make.Block(Collections.EMPTY_LIST, false), // empty statement block
+//                    null // default value - not applicable here, used by annotations
+//                );
+//                changes.rewrite(node, make.addClassMember(node, newMethod));
+//                return null;
+//            }
+//        });
+//        assertFiles("testCreateNewMethod.pass");
+//    }
+//        
+//    public void testParameterizedMethod() throws IOException {
+//        //Transformer tm; tm.
+//        System.err.println("testParameterizedMethod");
+//        process(new MutableTransformer<Void, Object>() {
+//            public Void visitClass(ClassTree node, Object p) {
+//                super.visitClass(node, p);
+//                if ("TestInterface".equals(node.getSimpleName().toString())) {
+//                    return null; // do it just for outer class
+//                }
+//                // create method modifiers
+//                ModifiersTree parMods = make.Modifiers(Collections.EMPTY_SET, Collections.EMPTY_LIST);
+//                // create type params/parameters
+//                TypeParameterTree tpt = make.TypeParameter("T", Collections.<ExpressionTree>emptyList());
+//                VariableTree par1 = make.Variable(parMods, "cl", make.Identifier("T"), null);
+//                // create method
+//                MethodTree newMethod = Method( // remove mutable transformer
+//                    make.Modifiers(
+//                        Collections.singleton(Modifier.PUBLIC), // modifiers
+//                        Collections.EMPTY_LIST // annotations
+//                    ), // modifiers and annotations
+//                    "getIt", // name
+//                    make.Identifier("T"), // return type
+//                    Collections.<TypeParameterTree>singletonList(tpt), // type parameters for parameters
+//                    Collections.<VariableTree>singletonList(par1), // parameters
+//                    Collections.<ExpressionTree>emptyList(), // throws 
+//                    "{ return null; }",
+//                    null // default value - not applicable here, used by annotations
+//                );
+//                attach(newMethod, "New method.");
+//                changes.rewrite(node, make.addClassMember(node, newMethod));
+//                return null;
+//            }
+//        });
+//        assertFiles("testParameterizedMethod.pass");
+//    }
+//    
+//    public void testAddRemoveInOneTrans() throws IOException {
+//        System.err.println("testAddRemoveInOneTrans");
+//        process(new MutableTransformer<Void, Object>() {
+//            public Void visitClass(ClassTree node, Object p) {
+//                super.visitClass(node, p);
+//                if ("TestInterface".equals(node.getSimpleName().toString())) {
+//                    return null; // do it just for outer class
+//                }
+//                // create method modifiers
+//                ModifiersTree parMods = make.Modifiers(Collections.EMPTY_SET, Collections.EMPTY_LIST);
+//                TypeParameterTree typePar = make.TypeParameter("T2", Collections.<ExpressionTree>emptyList());
+//                // create parameter "T newPar"
+//                VariableTree param = make.Variable(parMods, "newPar", make.Identifier("T2"), null);
+//                // create the method
+//                MethodTree method = Method(
+//                    make.Modifiers(
+//                        Collections.singleton(Modifier.PUBLIC), // modifiers
+//                        Collections.EMPTY_LIST // annotations
+//                    ), // modifiers and annotations
+//                    "setIt",
+//                    make.Identifier("T2"),
+//                    Collections.<TypeParameterTree>singletonList(typePar), // type params
+//                    Collections.<VariableTree>singletonList(param), // parameters
+//                    Collections.<ExpressionTree>emptyList(), // exceptions
+//                    "{ return null; }",
+//                    null
+//                );
+//                ClassTree newClass = make.removeClassMember(node, node.getMembers().size()-1);
+//                newClass = make.addClassMember(newClass, method);
+//                changes.rewrite(node, newClass);
+//                return null;
+//            }
+//        });
+//        assertFiles("testAddRemoveInOneTrans.pass");
+//    }
 
     ////////////////////////////////////////////////////////////////////////////
     /**
