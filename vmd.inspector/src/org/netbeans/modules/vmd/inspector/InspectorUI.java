@@ -207,6 +207,9 @@ final class InspectorUI  extends JPanel implements ExplorerManager.Provider,
     }
     
     private Collection<Node> getSelectedNodes(final InspectorFolderWrapper parentFolder) {
+        if (parentFolder == null || parentFolder.getChildren() == null)
+            return null;
+        
         final Collection<Node> selectedNodes = new HashSet<Node>();
         
         if (document.getSelectedComponents().isEmpty())
