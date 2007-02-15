@@ -233,7 +233,7 @@ public abstract class NbTopManager {
             for (int i = 0; i < _listeners.length; i++) {
                 _listeners[i].stateChanged(e);
             }
-            Logger.getLogger(NbStatusDisplayer.class.getName()).fine("Status text updated: "+text);
+            Logger.getLogger(NbStatusDisplayer.class.getName()).log(Level.FINE, "Status text updated: {0}", text);
         }
         public synchronized String getStatusText() {
             return text;
