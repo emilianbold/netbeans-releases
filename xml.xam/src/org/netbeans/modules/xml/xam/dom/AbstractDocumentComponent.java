@@ -570,8 +570,9 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
             if (prefix == null) {
                 prefix = "ns"; //NOI18N
             }
-            ensureUnique(prefix, newComponentNS);
+            prefix = ensureUnique(prefix, newComponentNS);
             ((AbstractDocumentComponent)getModel().getRootComponent()).addPrefix(prefix, newComponentNS);
+            newComponentElement.setPrefix(prefix);
         } else {
             newComponentElement.setPrefix(existingPrefix);
         }
@@ -630,6 +631,9 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
     }
     
     protected void verifyWrite() {
+        if (getModel() == null) {
+            throw new IllegalStateException("Cannot mutate a component already removed from model.");
+        }
         if (isInDocumentModel()) {
             getModel().validateWrite();
         }

@@ -857,6 +857,20 @@ public class AbstractComponentTest extends TestCase {
         assertEquals("<a index='1'>CharDataString</a>", result);
     }
     
+    public void testAddComponentDoFixupOnChildDefaultPrefix() throws Exception {
+        TestModel model = Util.loadModel("resources/test1_prefix.xml");
+        TestComponent root = model.getRootComponent();
+        assertEquals(root.getNamespaceURI(), root.lookupNamespaceURI("ns"));
+        TestComponent.Aa aa = model.createAa(root);
+        model.startTransaction();
+        root.appendChild("testAddComponentDoFixupDefaultPrefix", aa);
+        model.endTransaction();
+        TestComponent.A a = root.getChild(TestComponent.A.class);
+        assertEquals(TestComponent.NS_URI, a.getNamespaceURI());
+        assertEquals(TestComponent.NS2_URI, aa.getNamespaceURI());
+        assertEquals("ns1", aa.getPeer().getPrefix());
+    }
+    
     // TODO support PI inside normal element
     public void FIXME_testProcessingInstruction() throws Exception {
         model = Util.loadModel("resources/PI_after_prolog.xml");
