@@ -46,7 +46,7 @@ import java.lang.ref.Reference;
  */
 public final class VCSContext {
     
-    public static final VCSContext Empty = new VCSContext(new Node[0], emptySet(), emptySet() );
+    public static final VCSContext Empty = new VCSContext(null, emptySet(), emptySet() );
 
     /**
      * Caching of current context for performance reasons, also see #72006.
@@ -59,20 +59,37 @@ public final class VCSContext {
     private final Set<File> rootFiles;
     private final Set<File> exclusions;
 
+    /**
+     * Constructs a VCSContext out of a Lookup, basically taking all Nodes inside. 
+     * Nodes are converted to Files based on their nature. 
+     * For example Project Nodes are queried for their SourceRoots and those roots become the root files of this context.
+     * 
+     * @param lookup a lookup
+     * @return VCSContext containing nodes from Lookup
+     */ 
     public static VCSContext forLookup(Lookup lookup) {
         Lookup.Result<Node> result = lookup.lookup(new Lookup.Template<Node>(Node.class));
         Collection<? extends Node> nodes = result.allInstances();
         return VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
     }
     
+    /**
+     * Constructs a VCSContext out of a set of files. These files are later available via getRootFiles().
+     * 
+     * @param rootFiles set of Files
+     * @return VCSContext a context representing supplied set of Files
+     */ 
     public static VCSContext forFiles(Set<File> rootFiles) {
         return new VCSContext(null, Collections.unmodifiableSet(new HashSet<File>(rootFiles)), emptySet());
     }
 
     /**
      * Initializes the context from array of nodes (typically currently activated nodes).
+     * Nodes are converted to Files based on their nature. 
+     * For example Project Nodes are queried for their SourceRoots and those roots become the root files of this context.
      * 
      * @param nodes array of Nodes
+     * @return VCSContext containing nodes and corresponding files they represent
      */
     public synchronized static VCSContext forNodes(Node[] nodes) {
         if (Arrays.equals(contextNodesCached.get(), nodes)) return contextCached;
@@ -100,6 +117,54 @@ public final class VCSContext {
         return contextCached;
     }
     
+    /**
+     * Retrieves Nodes that were originally used to construct this context object.
+     * 
+     * @return Node[] array of Nodes this context represents or null if this context was not originally created from Nodes 
+     */ 
+    public Node[] getNodes() {
+        return nodes;
+    }
+
+    /**
+     * Retrieves set of files/folders that represent this context.
+     * 
+     * @return Set<File> set of Files this context represents
+     */ 
+    public Set<File> getRootFiles() {
+        return rootFiles;
+    }
+
+    /**
+     * Retrieves set of files/folders that are excluded from this context.
+     * 
+     * @return Set<File> set of Files that are not part of (are excluded from) this context
+     */ 
+    public Set<File> getExclusions() {
+        return exclusions;
+    }
+
+    /**
+     * Determines whether the supplied File is contained in this context. In other words, the file must be either a root file
+     * or be a child under some root file and also must NOT be a child of some excluded file. 
+     * 
+     * @param file a File to test
+     * @return true if this context contains the supplied file, false otherwise 
+     */ 
+    public boolean contains(File file) {
+        outter : for (File root : rootFiles) {
+            if (Utils.isParentOrEqual(root, file)) {
+                for (File excluded : exclusions) {
+                    if (Utils.isParentOrEqual(excluded, file)) {
+                        continue outter;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+        
     private static void addProjectFiles(Collection<File> rootFiles, Collection<File> rootFilesExclusions, Project project) {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
@@ -121,7 +186,7 @@ public final class VCSContext {
     }
     
     private static void addFileObjects(Node node, Set<File> files, Set<File> rootFiles) {
-        Collection<NonRecursiveFolder> folders = node.getLookup().lookup(new Lookup.Template(NonRecursiveFolder.class)).allInstances();
+        Collection<? extends NonRecursiveFolder> folders = node.getLookup().lookup(new Lookup.Template<NonRecursiveFolder>(NonRecursiveFolder.class)).allInstances();
         List<File> nodeFiles = new ArrayList<File>();
         if (folders.size() > 0) {
             for (Iterator j = folders.iterator(); j.hasNext();) {
@@ -129,7 +194,7 @@ public final class VCSContext {
                 nodeFiles.add(new FlatFolder(FileUtil.toFile(nonRecursiveFolder.getFolder()).getAbsolutePath()));
             }
         } else {
-            Collection<FileObject> fileObjects = node.getLookup().lookup(new Lookup.Template(FileObject.class)).allInstances();
+            Collection<? extends FileObject> fileObjects = node.getLookup().lookup(new Lookup.Template<FileObject>(FileObject.class)).allInstances();
             if (fileObjects.size() > 0) {
                 nodeFiles.addAll(toFileCollection(fileObjects));
             } else {
@@ -147,7 +212,7 @@ public final class VCSContext {
         rootFiles.addAll(nodeFiles);
     }
     
-    private static Collection<File> toFileCollection(Collection<FileObject> fileObjects) {
+    private static Collection<File> toFileCollection(Collection<? extends FileObject> fileObjects) {
         Set<File> files = new HashSet<File>(fileObjects.size()*4/3+1);
         for (FileObject fo : fileObjects) {
             files.add(FileUtil.toFile(fo));
@@ -157,37 +222,11 @@ public final class VCSContext {
     }    
 
     private VCSContext(Node [] nodes, Set<File> rootFiles, Set<File> exclusions) {
-        this.nodes = nodes; // TODO: construct artificial nodes
+        this.nodes = nodes; // TODO: construct artificial nodes in case nodes == null ?
         this.rootFiles = Collections.unmodifiableSet(new HashSet<File>(rootFiles));
         this.exclusions = Collections.unmodifiableSet(new HashSet<File>(exclusions));
     }
 
-    public Node[] getNodes() {
-        return nodes;
-    }
-    
-    public Set<File> getRootFiles() {
-        return rootFiles;
-    }
-
-    public Set<File> getExclusions() {
-        return exclusions;
-    }
-
-    public boolean contains(File file) {
-        outter : for (File root : rootFiles) {
-            if (Utils.isParentOrEqual(root, file)) {
-                for (File excluded : exclusions) {
-                    if (Utils.isParentOrEqual(excluded, file)) {
-                        continue outter;
-                    }
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-    
     private static final Set<File> emptySet() {
         return Collections.emptySet();
     }
