@@ -298,7 +298,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                     if (--createJavadocHintCounter <= 0) {
                         ErrorDescription warning = ErrorDescriptionFactory.createErrorDescription(
                                 Severity.WARNING,
-                                NbBundle.getMessage(JavadocHintProvider.class, "OUT_OF_MISSING_JD_LIMIT_DESC", FIX_JAVADOC_HINT_LIMIT), // NOI18N
+                                NbBundle.getMessage(JavadocHintProvider.class, "OUT_OF_MISSING_JD_LIMIT_DESC", CREATE_JAVADOC_HINT_LIMIT), // NOI18N
                                 doc,
                                 positions[0],
                                 positions[1]);
@@ -314,18 +314,12 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                 
                 try {
                     Doc jDoc = javac.getElementUtilities().javaDocFor(elm);
-                    if (jDoc.isMethod()) {
-                        MethodDoc methDoc = (MethodDoc) jDoc;
-                        ExecutableElement methodEl = (ExecutableElement) elm;
-                        MethodTree methodTree = (MethodTree) node;
-                        processParameters(methodEl, methodTree, methDoc, errors);
-                        processThrows(methodEl, methodTree, methDoc, errors);
-                        processReturn(methodEl, methodTree, methDoc, errors);
-                    } else if (jDoc.isConstructor()) {
+                    if (jDoc.isMethod() || jDoc.isConstructor()) {
                         ExecutableMemberDoc methDoc = (ExecutableMemberDoc) jDoc;
                         ExecutableElement methodEl = (ExecutableElement) elm;
                         MethodTree methodTree = (MethodTree) node;
                         processParameters(methodEl, methodTree, methDoc, errors);
+                        processReturn(methodEl, methodTree, methDoc, errors);
                         processThrows(methodEl, methodTree, methDoc, errors);
                     } else if(jDoc.isClass() || jDoc.isInterface()) {
                         TypeElement classEl = (TypeElement) elm;
@@ -410,30 +404,34 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             }
         }
         
-        private void processReturn(ExecutableElement exec, MethodTree node, MethodDoc jdoc, List<ErrorDescription> errors) {
+        private void processReturn(ExecutableElement exec, MethodTree node, ExecutableMemberDoc jdoc, List<ErrorDescription> errors) {
             final TypeMirror returnType = exec.getReturnType();
             final Tree returnTree = node.getReturnType();
             final Tag[] tags = jdoc.tags("@return"); // NOI18N
             
-            for (int i = 0; i < tags.length; i++) {
-                // check duplicate @return
-                Tag tag = tags[i];
-                if (i > 0) {
+            if (returnType.getKind() == TypeKind.VOID) {
+                // void has @return
+                for (int i = 0; i < tags.length; i++) {
+                    Tag tag = tags[i];
                     addRemoveTagFix(tag,
-                            NbBundle.getMessage(JavadocHintProvider.class, "DUPLICATE_RETURN_DESC"), // NOI18N
+                            NbBundle.getMessage(JavadocHintProvider.class,
+                                jdoc.isMethod()? "WRONG_RETURN_DESC": "WRONG_CONSTRUCTOR_RETURN_DESC"), // NOI18N
                             exec, errors);
+                }
+            } else {
+                for (int i = 0; i < tags.length; i++) {
+                    // check duplicate @return
+                    Tag tag = tags[i];
+                    if (i > 0) {
+                        addRemoveTagFix(tag,
+                                NbBundle.getMessage(JavadocHintProvider.class, "DUPLICATE_RETURN_DESC"), // NOI18N
+                                exec, errors);
+                    }
                 }
             }
             
-            if (returnType.getKind() == TypeKind.VOID && tags.length > 0) {
-                // void has @return
-                addRemoveTagFix(tags[0],
-                        NbBundle.getMessage(JavadocHintProvider.class, "WRONG_RETURN_DESC"), // NOI18N
-                        exec, errors);
-            }
-            
             if (returnType.getKind() != TypeKind.VOID && tags.length == 0 &&
-                    JavadocUtilities.findReturnTag(jdoc, true) == null) {
+                    JavadocUtilities.findReturnTag((MethodDoc) jdoc, true) == null) {
                 // missing @return
                 try {
                     Position[] poss = createPositions(returnTree);
@@ -481,8 +479,8 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                 Element el = javac.getTrees().getElement(path);
                 TypeElement tel = (TypeElement) el;
                 boolean exists = tagNames.remove(tel.getQualifiedName().toString()) != null;
-                if (!exists && jdoc.isMethod() &&
-                        JavadocUtilities.findThrowsTag((MethodDoc) jdoc, tel.getQualifiedName().toString(), true) == null) {
+                if (!exists && (jdoc.isConstructor() ||
+                        jdoc.isMethod() && JavadocUtilities.findThrowsTag((MethodDoc) jdoc, tel.getQualifiedName().toString(), true) == null)) {
                     // missing @throws
                     try {
                         Position[] poss = createPositions(throwTree);
@@ -578,8 +576,8 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             // resolve existing and missing tags
             for (VariableTree param : params) {
                 boolean exists = tagNames.remove(param.getName().toString()) != null;
-                if (!exists && jdoc.isMethod() &&
-                        JavadocUtilities.findParamTag((MethodDoc) jdoc, param.getName().toString(), true) == null) {
+                if (!exists && (jdoc.isConstructor() ||
+                        jdoc.isMethod() && JavadocUtilities.findParamTag((MethodDoc) jdoc, param.getName().toString(), true) == null)) {
                     // missing @param
                     try {
                         Position[] poss = createPositions(param);
