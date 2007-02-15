@@ -51,7 +51,7 @@ abstract class TestBaseWeb extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        egdir = FileUtil.normalizeFile(new File(System.getProperty("test.data.dir"), "example-projects"));
+        egdir = FileUtil.normalizeFile(new File(getDataDir(), "example-projects"));
         assertTrue("example dir " + egdir + " exists", egdir.exists());
         FileObject jakartaDir = FileUtil.toFileObject(egdir).getFileObject("web_jakarta");
         assertNotNull("found projdir", jakartaDir);
