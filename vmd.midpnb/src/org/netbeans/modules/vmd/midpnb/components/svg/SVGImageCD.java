@@ -100,9 +100,9 @@ public class SVGImageCD extends ComponentDescriptor {
                 } else {
                     writer.write("try {\n"); // NOI18N
                     writer.write(CodeReferencePresenter.generateDirectAccessCode(component)).write(" = "); // NOI18N
-                    writer.write("(SVGImage) javax.microedition.m2g.ScalableImage.createImage (");
+                    writer.write("(SVGImage) SVGImage.createImage (getClass ().getResourceAsStream(");
                     MidpCodeSupport.generateCodeForPropertyValue(writer, pathValue);
-                    writer.write(", null);\n"); // NOI18N
+                    writer.write("), null);\n"); // NOI18N
                     
                     writer.write("} catch (java.io.IOException e) {\n").commit(); // NOI18N
                     section.switchToEditable(component.getComponentID() + "-@java.io.IOException"); // NOI18N
