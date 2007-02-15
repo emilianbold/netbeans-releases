@@ -641,8 +641,9 @@ public final class XSLGrammarQuery implements GrammarQuery{
 
                 // At this point we need to consult transformed document or
                 // its grammar.
-
-                Object selScenarioObj = scenarioCookie.getModel().getSelectedItem();
+// [93792] +
+//              Object selScenarioObj = scenarioCookie.getModel().getSelectedItem();
+// [93792] -
                 /*
                 if (selScenarioObj instanceof XSLScenario) {
                     XSLScenario scenario = (XSLScenario)selScenarioObj;
@@ -914,8 +915,8 @@ public final class XSLGrammarQuery implements GrammarQuery{
                     String curDoctypeSystem = outputEl.getAttribute("doctype-system"); // NOI18N
 
                     if ("html".equals(outputMethod)  // NOI18N
-                    	&& (curDoctypePublic == null || curDoctypePublic.length() == 0)
-                    	&& (curDoctypeSystem == null || curDoctypeSystem.length() == 0)) {                          // NOI18N
+                        && (curDoctypePublic == null || curDoctypePublic.length() == 0)
+                        && (curDoctypeSystem == null || curDoctypeSystem.length() == 0)) {                          // NOI18N
                         // html is special case that can be emulated using XHTML
                         curDoctypePublic = XHTML_PUBLIC_ID;
                         curDoctypeSystem = XHTML_SYSTEM_ID;
