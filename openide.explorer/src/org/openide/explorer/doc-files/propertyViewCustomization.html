@@ -323,7 +323,7 @@ type) the custom parameter is ignored.
            <TD> String[] </TD>
            <TD> Should contain an array of two internationalized strings to be used for user
                 displayable text for the boolean values, in the order
-                false, true - for example, <code>new String[] {"off","on"}</code>.</TD
+            false, true - for example, <code>new String[] {"off","on"}</code>.</TD>
         </TR>
     </TABLE>
 
@@ -349,7 +349,7 @@ bound to one editor.
         </TR>
 
         <TR>
-            <TD rowspan='6'>property sheet</TD>
+            <TD rowspan='10'>property sheet</TD>
             <TD><code>inplaceEditor</code></TD>
             <TD><code>org.openide.explorer. propertysheet.InplaceEditor</code></TD>
             <TD> Allows a property editor to supply an instance of the
@@ -421,6 +421,30 @@ bound to one editor.
             </TD>
         </TR>
         
+		<TR>
+            <TD>nodeDescription</TD>
+            <TD><code>java.lang.String</code></TD>
+            <TD> When it is set the property contains the text to be shown in the description area of the property sheet. Node.getShortDescription() is used when this property is not set.</TD>
+        </TR>
+        
+		<TR>
+            <TD>valueIcon</TD>
+            <TD><code>javax.swing.Icon</code></TD>
+            <TD> An icon to be displayed in front of the property value.</TD>
+        </TR>
+		
+		<TR>
+            <TD>nameIcon</TD>
+            <TD><code>javax.swing.Icon</code></TD>
+            <TD> An icon to be displayed in front of the property label.</TD>
+        </TR>
+		
+		<TR>
+            <TD>propertiesHelpID</TD>
+            <TD><code>java.lang.String</code></TD>
+            <TD> Help ID for the property sheet window. </TD>
+        </TR>
+		
         <TR>
             <TD rowspan='2'>custom property editor display</TD>
             <TD><code>title</code></TD>
