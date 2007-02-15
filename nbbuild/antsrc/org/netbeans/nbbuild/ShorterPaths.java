@@ -148,6 +148,10 @@ public class ShorterPaths extends Task {
                 for (Iterator it = properties.keySet().iterator(); it.hasNext();) {
                     String name = (String) it.next();
                     if (name.startsWith(extraProp)) {
+                        if (name.equals("test-unit-sys-prop.xtest.data")) {
+                            // ignore overring xtest.data.dir, data.zip placed to standard location
+                            continue;
+                        }
                        //  
                        outProp.setLength(0);
                        StringTokenizer tokenizer = new StringTokenizer(properties.get(name).toString(), ":;");

@@ -301,6 +301,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="test-init" depends="init,test-preinit,test-lib-init">
         <property name="test.unit.dir" location="test/unit"/>
         <property name="test.unit.src.dir" location="${test.unit.dir}/src"/>
+        <property name="test.unit.data.dir" location="${test.unit.dir}/data"/>
         <property name="build.test.unit.dir" location="build/test/unit"/>
         <property name="build.test.unit.classes.dir" location="${build.test.unit.dir}/classes"/>
         <property name="build.test.unit.results.dir" location="${build.test.unit.dir}/results"/>
@@ -374,7 +375,7 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </copy>
         
-        <available file="${test.unit.dir}/data" type="dir" property="exists.test.data"/>
+        <available file="${test.unit.data.dir}" type="dir" property="exists.test.data"/>
         <!-- test distribution -->
            <mkdir dir="${test.dist.dir}/extralibs"/>
            <mkdir dir="${test.unit.out.folder}"/>
@@ -401,7 +402,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="test-build-datajar" depends="do-test-build" if="exists.test.data">
-           <zip destfile="${test.unit.out.folder}/data.zip" basedir="${test.unit.dir}/data"/> 
+           <zip destfile="${test.unit.out.folder}/data.zip" basedir="${test.unit.data.dir}"/> 
     </target>
 
     
