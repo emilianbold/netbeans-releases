@@ -35,9 +35,9 @@
 
 <%-- completion for String object inside scriptlets --%>
 <%--CC
-<% "Hello World !".conc|
+<% "Hello World !".o|
 ...
-<% "Hello World !".concat(arg0)
+<% "Hello World !".offsetByCodePoints(arg0, arg1)
 --%>
 
     </body>
