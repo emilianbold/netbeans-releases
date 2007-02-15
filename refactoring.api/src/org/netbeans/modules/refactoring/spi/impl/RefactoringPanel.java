@@ -857,7 +857,12 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                 else
                     collapseAll();
             } else if (o == refreshButton) {
-                refresh(true);
+                if (callback!=null) {
+                    close();
+                    callback.actionPerformed(event);
+                } else {
+                    refresh(true);
+                }
             } else if (o == physicalViewButton) {
                 switchToPhysicalView();
             } else if (o == logicalViewButton) {
