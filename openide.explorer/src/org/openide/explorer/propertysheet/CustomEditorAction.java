@@ -187,8 +187,9 @@ class CustomEditorAction extends AbstractAction {
                 NbBundle.getMessage(CustomEditorAction.class, "FMT_CUSTOM_DLG_NOPROPNAME_TITLE",
                 fdName == null ? invoker.getBeanName() : fdName
             )
-            : NbBundle.getMessage(CustomEditorAction.class, "FMT_CUSTOM_DLG_TITLE",
-                invoker.getBeanName(), fd.getDisplayName()
+            : ((fd.getDisplayName().equals(invoker.getBeanName())) ? invoker.getBeanName() : 
+                NbBundle.getMessage(CustomEditorAction.class, "FMT_CUSTOM_DLG_TITLE",
+                invoker.getBeanName(), fd.getDisplayName())
             )) : suppliedTitle; //NOI18N
 
         final PropertyDialogManager pdm = new PropertyDialogManager(
