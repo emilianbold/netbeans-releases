@@ -39,7 +39,7 @@ import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -246,20 +246,24 @@ public class CategoryList extends JList implements Autoscroll {
 
     static class ItemRenderer implements ListCellRenderer {
 
+        /** toolbar containing the button, null for GTK L&F */
+        private JToolBar toolbar;
+        /** toggle button used as renderer component */ 
         private JToggleButton button;
-        private Border defaultBorder;
 
         ItemRenderer () {
             if (button == null) {
                 button = new JToggleButton ();
-
                 button.setMargin (new Insets (1, 1, 1, 0));
-                JToolBar toolbar = new JToolBar ();
-                toolbar.setRollover (true);
-                toolbar.setFloatable (false);
-                toolbar.setLayout (new BorderLayout (0, 0));
-                toolbar.setBorder (new EmptyBorder (0, 0, 0, 0));
-                toolbar.add (button);
+                
+                if (!CategoryButton.isGTK) {
+                    toolbar = new JToolBar ();
+                    toolbar.setRollover (true);
+                    toolbar.setFloatable (false);
+                    toolbar.setLayout (new BorderLayout (0, 0));
+                    toolbar.setBorder (BorderFactory.createEmptyBorder());
+                    toolbar.add (button);
+                }
             }
         }
 
@@ -271,9 +275,8 @@ public class CategoryList extends JList implements Autoscroll {
             CategoryList categoryList = (CategoryList) list;
             boolean showNames = categoryList.getShowNames ();
             int iconSize = categoryList.getIconSize ();
-
-            JComponent rendererComponent = defaultBorder == null ?
-                    (JComponent) button.getParent () : button;
+            
+            JComponent rendererComponent = toolbar != null ? toolbar : button;
 
             Item item = (Item) value;
             Image icon = item.getIcon (iconSize);
@@ -285,12 +288,12 @@ public class CategoryList extends JList implements Autoscroll {
             rendererComponent.setToolTipText( item.getShortDescription() ); // NOI18N
 
             button.setSelected (isSelected);
-            if (defaultBorder == null) { // Windows or Metal
+            //if (defaultBorder == null) { // Windows or Metal
                 // let the toolbar UI render the button according to "rollover"
                 button.getModel ().setRollover (index == categoryList.rolloverIndex && !isSelected);
-            } else { // Mac OS X and others - set the border explicitly
+            /*} else { // Mac OS X and others - set the border explicitly
                 button.setBorder (defaultBorder);
-            }
+            }*/
             button.setBorderPainted ((index == categoryList.rolloverIndex) || isSelected);
 
             button.setHorizontalAlignment (showNames ? SwingConstants.LEFT : SwingConstants.CENTER);

@@ -45,7 +45,7 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     private static final Color GTK_BK_COLOR = new Color( 184,207,229 );
     private static final Color AQUA_BK_COLOR = new Color(225, 235, 240);
     
-    private static final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() );
+    static final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() );
     private static final boolean isAqua = "Aqua".equals( UIManager.getLookAndFeel().getID() );
 
     private CategoryDescriptor descriptor;
@@ -71,6 +71,12 @@ class CategoryButton extends JCheckBox implements Autoscroll {
         setVerticalTextPosition( SwingConstants.CENTER );
 
         updateProperties();
+        
+        /* perhaps set at least a border around category button if we can't affect background on GTK
+         if (isGTK) {
+            setBorderPainted(true);
+            setBorder(BorderFactory.createLineBorder(UIManager.getColor( "PropSheet.setBackground" ))); //NOI18N
+        }*/
 
         if( getBorder() instanceof CompoundBorder ) { // from BasicLookAndFeel
             Dimension pref = getPreferredSize();

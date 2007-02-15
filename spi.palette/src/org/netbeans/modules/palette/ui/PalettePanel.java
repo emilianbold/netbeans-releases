@@ -102,6 +102,8 @@ public class PalettePanel extends JPanel implements Scrollable {
             scrollPane.setBorder( BorderFactory.createEmptyBorder() );
             scrollPane.addMouseListener( mouseListener() );
             scrollPane.getViewport().setBackground( UIManager.getColor ("Panel.background") );
+            // GTK L&F paints extra border around viewport, get rid of it
+            scrollPane.setViewportBorder(null);
         }
         return scrollPane;
     }
