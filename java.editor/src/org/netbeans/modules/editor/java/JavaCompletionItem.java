@@ -1450,16 +1450,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     add = null;
                 }
             }
-            Position position = null;
             doc.atomicLock();
             try {
-                position = doc.createPosition(offset);
+                Position position = doc.createPosition(offset);
                 doc.remove(offset, len);
                 doc.insertString(position.getOffset(), text, null);
             } catch (BadLocationException e) {
             } finally {
                 doc.atomicUnlock();
             }
+            Position position = null;
             if (isAbstract && text.length() > 3) {
                 try {
                     JavaSource js = JavaSource.forDocument(doc);
