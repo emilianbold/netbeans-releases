@@ -91,6 +91,7 @@ public final class BackupFacility {
      * does beckup
      * @param file to backup
      * @return id of backup file
+     * @throws java.io.IOException if backup failed
      */ 
     public long backup(FileObject file) throws IOException {
         BackupEntry entry = new BackupEntry();
@@ -105,6 +106,7 @@ public final class BackupFacility {
     /**
      * restore file, which was stored by backup(file)
      * @param id identification of backup transaction
+     * @throws java.io.IOException if restore failed.
      */
     public void restore(long id) throws IOException {
         BackupEntry entry = map.get(id);
