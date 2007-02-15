@@ -111,7 +111,7 @@ public class MoveTransformer extends SearchVisitor {
     private int index;
     private boolean isElementMoving(Element el) {
         index=0;
-        for (ElementHandle handle:move.classes) {
+        for (ElementHandle handle:move.classes.values()) {
             if (handle.signatureEquals(el)) {
                 return true;
             }

@@ -43,7 +43,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     private Map packagePostfix = new HashMap();
     private AbstractRefactoring refactoring;
     ArrayList<FileObject> filesToMove = new ArrayList();
-    ArrayList<ElementHandle> classes;
+    HashMap<FileObject,ElementHandle> classes;
     Map<FileObject, Set<FileObject>> whoReferences = new HashMap();
     private FileObject[] origFilesToMove;
     public MoveRefactoringPlugin(MoveRefactoring move) {
@@ -76,11 +76,11 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
         ClassIndex idx = cpInfo.getClassIndex();
         Set<FileObject> set = new HashSet<FileObject>();
-        for (int i=0; i<classes.size(); i++) {
+        for (Map.Entry<FileObject, ElementHandle> entry : classes.entrySet()) {
             //set.add(SourceUtils.getFile(el, cpInfo));
-            Set<FileObject> files = idx.getResources(classes.get(i), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
+            Set<FileObject> files = idx.getResources(entry.getValue(), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
             set.addAll(files);
-            whoReferences.put(filesToMove.get(i), files);
+            whoReferences.put(entry.getKey(), files);
         }
         set.addAll(filesToMove);
         return set;
@@ -94,7 +94,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     private void initClasses() {
-        classes = new ArrayList();
+        classes = new HashMap();
         for (int i=0;i<filesToMove.size();i++) {
             final int j = i;
             try {
@@ -112,7 +112,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                         for (Tree t: trees) {
                             if (t.getKind() == Tree.Kind.CLASS) {
                                 if (((ClassTree) t).getSimpleName().toString().equals(filesToMove.get(j).getName())) {
-                                    classes.add(j, ElementHandle.create(parameter.getTrees().getElement(TreePath.getPath(parameter.getCompilationUnit(), t))));
+                                    classes.put(filesToMove.get(j), ElementHandle.create(parameter.getTrees().getElement(TreePath.getPath(parameter.getCompilationUnit(), t))));
                                     return ;
                                 }
                             }
