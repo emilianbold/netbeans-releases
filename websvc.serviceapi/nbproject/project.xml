@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.xml.serviceapi</code-name-base>
+            <code-name-base>org.netbeans.modules.websvc.serviceapi</code-name-base>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
@@ -48,7 +48,14 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.j2ee.clientproject</friend>
+                <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
+                <friend>org.netbeans.modules.java.j2seproject</friend>
+                <friend>org.netbeans.modules.web.project</friend>
+                <package>org.netbeans.modules.serviceapi</package>
+                <package>org.netbeans.modules.serviceapi.wsdl</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

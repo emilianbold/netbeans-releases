@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.xml.serviceapi
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/serviceapi/Bundle.properties
+OpenIDE-Module: org.netbeans.modules.websvc.serviceapi
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/serviceapi/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 
