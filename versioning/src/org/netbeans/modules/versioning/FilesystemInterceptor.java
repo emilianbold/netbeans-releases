@@ -133,11 +133,6 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         dic.beforeCreate();
     }
 
-    public void createSuccess(FileObject fo) {
-        DelegatingInterceptor dic = getCreateInterceptor(fo);
-        dic.beforeCreate();
-    }
-
     public void fileFolderCreated(FileEvent fe) {
         removeFromDeletedFiles(fe.getFile());
         getInterceptor(fe).afterCreate();
@@ -203,11 +198,6 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         }
     }
 
-    private DelegatingInterceptor getCreateInterceptor(FileObject fo) {
-        if (fo == null) return nullDelegatingInterceptor;
-        return getInterceptor(FileUtil.toFile(fo), fo.isFolder());
-    }
-    
     private DelegatingInterceptor getInterceptor(File file, boolean isDirectory) {
         if (file == null) return nullDelegatingInterceptor;
         
