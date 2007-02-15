@@ -87,7 +87,7 @@ public abstract class AbstractRefactoring {
     private ProgressListener progressListener = new ProgressL();
     
     private ProgressSupport progressSupport;
-    protected AbstractRefactoring caller;
+    AbstractRefactoring caller;
     
     private Collection getPlugins() {
         if (plugins == null) {
