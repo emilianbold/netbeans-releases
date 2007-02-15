@@ -13,15 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.commit;
 
 import java.util.prefs.PreferenceChangeEvent;
-import javax.swing.*;
-import javax.swing.text.BadLocationException;
 
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
@@ -140,9 +138,7 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
     
     private void init() {
         initComponents();
-        errorLabel.setMinimumSize(new JLabel("Layout placeholder").getPreferredSize());  // NOI18N
         errorLabel.setText(""); // NOI18N
-        messageErrorLabel.setMinimumSize(new JLabel("Layout placeholder").getPreferredSize());  // NOI18N
         messageErrorLabel.setText(""); // NOI18N
         jScrollPane1.setMinimumSize(jScrollPane1.getPreferredSize());
         commitTable = new CommitTable(jLabel3);
@@ -231,6 +227,7 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
 
     void setErrorLabel(String htmlErrorLabel) {
         errorLabel.setText(htmlErrorLabel);
+        revalidate();
     }
     
     /** This method is called from within the constructor to
