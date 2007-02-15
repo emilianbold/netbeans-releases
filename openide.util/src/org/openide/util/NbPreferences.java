@@ -79,12 +79,16 @@ public final class NbPreferences {
                        return Preferences.userRoot();
                   }                         
              };
-             // Avoid warning in case it is set (e.g. from NbTestCase).
-             Logger logger = Logger.getLogger(NbPreferences.class.getName());
-             ByteArrayOutputStream bos = new ByteArrayOutputStream(); 
-             new Exception().printStackTrace(new PrintStream(bos));
-             logger.log(System.getProperty("java.util.prefs.PreferencesFactory") == null ? Level.WARNING : Level.FINE,
-                     "NetBeans implementation of Preferences not found: " + bos.toString() );
+             // Avoided warning in case it is set 
+             //(e.g. from NbTestCase - org.netbeans.junit.internal.MemoryPreferencesFactory).
+             String prefsFactory = System.getProperty("java.util.prefs.PreferencesFactory");//NOI18N
+             if (!"org.netbeans.junit.internal.MemoryPreferencesFactory".equals(prefsFactory)) {//NOI18N
+                 Logger logger = Logger.getLogger(NbPreferences.class.getName());
+                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                 new Exception().printStackTrace(new PrintStream(bos));
+                 logger.log(prefsFactory == null ? Level.WARNING : Level.FINE,
+                         "NetBeans implementation of Preferences not found: " + bos.toString() );//NOI18N
+             } 
         }
         return retval;
     }    
