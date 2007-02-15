@@ -33,9 +33,9 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComb
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.openide.util.NbBundle;
-
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 
 /**
  * @author Karol Harezlak
@@ -87,7 +87,9 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
             // properties
             createPropertiesPresenter (),
             // code
-            createSetterPresenter ()
+            createSetterPresenter (),
+            // delete
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_TASK)
         );
     }
     

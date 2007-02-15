@@ -32,9 +32,9 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComb
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.openide.util.NbBundle;
-
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 
 /**
  * @author Karol Harezlak
@@ -63,7 +63,7 @@ public final class WaitScreenCD extends ComponentDescriptor {
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_TASK, SimpleCancellableTaskCD.TYPEID, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2)
+                new PropertyDescriptor(PROP_TASK, SimpleCancellableTaskCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
         );
     }
     
@@ -87,7 +87,9 @@ public final class WaitScreenCD extends ComponentDescriptor {
             //properties
             createPropertiesPresenter(),
             // code
-            createSetterPresenter ()
+            createSetterPresenter (),
+            // delete
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_TASK)
         );
     }
 

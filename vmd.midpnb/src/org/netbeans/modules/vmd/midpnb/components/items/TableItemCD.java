@@ -39,9 +39,9 @@ import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.openide.util.NbBundle;
-
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 
 /**
  *
@@ -117,7 +117,9 @@ public class TableItemCD extends ComponentDescriptor {
             createPropertiesPresenter(),
             // code
             createSetterPresenter (),
-            MidpCustomCodePresenterSupport.createAddImportPresenter ()
+            MidpCustomCodePresenterSupport.createAddImportPresenter (),
+            // delete
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_MODEL)
         );
     }
     

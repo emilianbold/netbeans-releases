@@ -44,6 +44,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
@@ -84,7 +85,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_SVG_IMAGE, SVGImageCD.TYPEID, PropertyValue.createNull(), false, true, Versionable.FOREVER),
+                new PropertyDescriptor(PROP_SVG_IMAGE, SVGImageCD.TYPEID, PropertyValue.createNull(), true, true, Versionable.FOREVER),
                 new PropertyDescriptor(PROP_START_ANIM_IMMEDEATELY, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(false), false, true, Versionable.FOREVER),
                 new PropertyDescriptor(PROP_TIME_INCREMENT, MidpTypes.TYPEID_FLOAT, MidpTypes.createFloatValue(0.1f), false, true, Versionable.FOREVER),
                 new PropertyDescriptor(PROP_RESET_ANIMATION_WHEN_STOPPED, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(false), false, true, Versionable.FOREVER)
@@ -118,7 +119,9 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                 new AcceptSVGFilesPresenter(),
                 // code
                 createSetterPresenter(),
-                MidpCustomCodePresenterSupport.createAddImportPresenter()
+                MidpCustomCodePresenterSupport.createAddImportPresenter(),
+                // delete
+                DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SVG_IMAGE)
                 );
     }
     
@@ -155,7 +158,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                         Project project = ProjectUtils.getProject(context);
 
                         String path = (String) transferable.getTransferData(dataFlavor);
-                        path = path.replace("file:/" + project.getProjectDirectory().getPath() + "/src", "");
+                        path = path.replace("file:/" + project.getProjectDirectory().getPath() + "/src", ""); //NOI18N
                         
                         ComponentProducer producer = MidpDocumentSupport.getComponentProducer(SVGImageCD.TYPEID);
                         if (producer != null) {

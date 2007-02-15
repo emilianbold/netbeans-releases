@@ -29,7 +29,6 @@ import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerPinBadgePresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 import org.openide.util.Utilities;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -42,8 +41,6 @@ public class SVGMenuEventHandlerCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#SVGMenuEventHandler"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_menu_16.png"; // NOI18N
-
-    public static final String PROP_LIST = "list"; // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (EventHandlerCD.TYPEID, TYPEID, true, false);
