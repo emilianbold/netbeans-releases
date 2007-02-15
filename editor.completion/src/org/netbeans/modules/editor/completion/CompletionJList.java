@@ -62,6 +62,7 @@ public class CompletionJList extends JList {
         setLayoutOrientation(JList.VERTICAL);
         setFixedCellHeight(fixedItemHeight = Math.max(CompletionLayout.COMPLETION_ITEM_HEIGHT, getFontMetrics(getFont()).getHeight()));
         setModel(new Model(Collections.EMPTY_LIST));
+        setFocusable(false);
 
         renderComponent = new RenderComponent();
         setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);

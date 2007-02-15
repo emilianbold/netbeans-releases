@@ -98,6 +98,7 @@ public class DocumentationScrollPane extends JScrollPane {
         
         installTitleComponent();
         installKeybindings(editorComponent);
+        setFocusable(false);
     }
     
     public void setPreferredSize(Dimension preferredSize) {
@@ -132,6 +133,7 @@ public class DocumentationScrollPane extends JScrollPane {
             bBack = new BrowserButton(icon);
             bBack.addMouseListener(new MouseEventListener(bBack));
             bBack.setEnabled(false);
+            bBack.setFocusable(false);
             bBack.setContentAreaFilled(false);
             bBack.setMargin(new Insets(0, 0, 0, 0));
             bBack.setToolTipText(NbBundle.getMessage(DocumentationScrollPane.class, "HINT_doc_browser_back_button")); //NOI18N
@@ -146,6 +148,7 @@ public class DocumentationScrollPane extends JScrollPane {
             bForward = new BrowserButton(icon);
             bForward.addMouseListener(new MouseEventListener(bForward));
             bForward.setEnabled(false);
+            bForward.setFocusable(false);
             bForward.setContentAreaFilled(false);
             bForward.setToolTipText(NbBundle.getMessage(DocumentationScrollPane.class, "HINT_doc_browser_forward_button")); //NOI18N
             bForward.setMargin(new Insets(0, 0, 0, 0));
@@ -160,6 +163,7 @@ public class DocumentationScrollPane extends JScrollPane {
             bShowWeb = new BrowserButton(icon);
             bShowWeb.addMouseListener(new MouseEventListener(bShowWeb));
             bShowWeb.setEnabled(false);
+            bShowWeb.setFocusable(false);
             bShowWeb.setContentAreaFilled(false);
             bShowWeb.setMargin(new Insets(0, 0, 0, 0));
             bShowWeb.setToolTipText(NbBundle.getMessage(DocumentationScrollPane.class, "HINT_doc_browser_show_web_button")); //NOI18N
@@ -175,6 +179,7 @@ public class DocumentationScrollPane extends JScrollPane {
             bGoToSource = new BrowserButton(icon);
             bGoToSource.addMouseListener(new MouseEventListener(bGoToSource));
             bGoToSource.setEnabled(false);
+            bGoToSource.setFocusable(false);
             bGoToSource.setContentAreaFilled(false);
             bGoToSource.setMargin(new Insets(0, 0, 0, 0));
             bGoToSource.setToolTipText(NbBundle.getMessage(DocumentationScrollPane.class, "HINT_doc_browser_goto_source_button")); //NOI18N

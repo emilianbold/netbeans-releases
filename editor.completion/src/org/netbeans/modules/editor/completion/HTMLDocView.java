@@ -48,6 +48,7 @@ public class HTMLDocView extends JEditorPane {
     /** Creates a new instance of HTMLJavaDocView */
     public HTMLDocView(Color bgColor) {
         setEditable(false);
+        setFocusable(false);
         setBackground(bgColor);
         setMargin(new Insets(0,3,3,3));
     }

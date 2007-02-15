@@ -251,8 +251,7 @@ abstract class CompletionLayoutPopup {
         showRetainedPreferredSize = newPrefSize.equals(origPrefSize);
 
         PopupFactory factory = PopupFactory.getSharedInstance();
-        // Create popup without explicit parent window
-        popup = factory.getPopup(null, contComp,
+        popup = factory.getPopup(layout.getEditorComponent(), contComp,
                 popupBounds.x, popupBounds.y);
         popup.show();
 
