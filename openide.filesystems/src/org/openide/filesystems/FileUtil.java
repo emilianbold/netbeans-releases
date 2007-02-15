@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.SyncFailedException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -48,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileSystemView;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -1281,15 +1283,47 @@ public final class FileUtil extends Object {
         return (retVal != null) ? retVal : file.getAbsoluteFile();
     }
 
+    private static FileSystemView fileSystemView;
+    private static float javaSpecVersion;
     private static boolean canBeCanonicalizedOnWindows(final File file) {
-        /*Flopy and empty CD-drives can't be canonicalized*/
+        /*#4089199, #95031 - Flopy and empty CD-drives can't be canonicalized*/
         boolean canBeCanonizalized = true;
-
-        if (file.getParent() == null) { //for File.listRoots should be true
-            canBeCanonizalized = !FileSystemView.getFileSystemView().isFloppyDrive(file) && file.exists();
+        if (file.getParent() == null && is4089199()) {//NOI18N
+            FileSystemView fsv = getFileSystemView();
+            canBeCanonizalized = (fsv != null) ? !fsv.isFloppyDrive(file) && file.exists() : false;
         }
-
+        
         return canBeCanonizalized;
+    }
+    
+    private static boolean is4089199() {
+        return getJavaSpecVersion() < 1.6;
+    }
+    
+    private static float getJavaSpecVersion() {
+        synchronized(FileUtil.class) {
+            if (javaSpecVersion == 0) {
+                javaSpecVersion = Float.valueOf(System.getProperty("java.specification.version"));//NOI18N
+            }
+        }
+        return javaSpecVersion;
+    }
+    
+    private static FileSystemView getFileSystemView() {
+        if (is4089199() && fileSystemView == null) {
+            synchronized(FileUtil.class) {
+                try {
+                    SwingUtilities.invokeAndWait(new java.lang.Runnable() {
+                        public void run() {
+                            fileSystemView = javax.swing.filechooser.FileSystemView.getFileSystemView();
+                        }
+                    });
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                } catch (InvocationTargetException ex) {}                
+            }
+        }
+        return fileSystemView;
     }
 
     /**
