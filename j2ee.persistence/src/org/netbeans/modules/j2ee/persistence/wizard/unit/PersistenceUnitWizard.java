@@ -39,6 +39,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Adamek
  */
+
 public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIterator {
     
     private WizardDescriptor.Panel[] panels;
@@ -101,11 +102,13 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
         PersistenceUnit punit = null;
         if (descriptor.isContainerManaged()) {
             punit = new PersistenceUnit();
-            if (descriptor.isJTA()) {
-                punit.setJtaDataSource(descriptor.getDatasource());
-            } else {
-                punit.setNonJtaDataSource(descriptor.getDatasource());
-                punit.setTransactionType("RESOURCE_LOCAL");
+            if (descriptor.getDatasource() != null && !"".equals(descriptor.getDatasource())){
+                if (descriptor.isJTA()) {
+                    punit.setJtaDataSource(descriptor.getDatasource());
+                } else {
+                    punit.setNonJtaDataSource(descriptor.getDatasource());
+                    punit.setTransactionType("RESOURCE_LOCAL");
+                }
             }
             if (descriptor.isNonDefaultProviderEnabled()) {
                 punit.setProvider(descriptor.getNonDefaultProvider());

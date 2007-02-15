@@ -174,9 +174,6 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
     }
     
     public boolean isValidPanel() {
-        if (isEmptyOrNull(getDatasource())){
-            return false;
-        }
         try{
             if (!isNameValid()){
                 return false;

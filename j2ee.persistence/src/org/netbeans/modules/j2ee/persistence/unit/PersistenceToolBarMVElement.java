@@ -257,11 +257,13 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                 
                 if (isContainer) {
                     PersistenceUnitWizardPanelDS puPanel = (PersistenceUnitWizardPanelDS) panel;
-                    if (puPanel.isJTA()) {
-                        punit.setJtaDataSource(puPanel.getDatasource());
-                    } else {
-                        punit.setNonJtaDataSource(puPanel.getDatasource());
-                        punit.setTransactionType("RESOURCE_LOCAL");
+                    if (puPanel.getDatasource() != null && !"".equals(puPanel.getDatasource().trim())){
+                        if (puPanel.isJTA()) {
+                            punit.setJtaDataSource(puPanel.getDatasource());
+                        } else {
+                            punit.setNonJtaDataSource(puPanel.getDatasource());
+                            punit.setTransactionType("RESOURCE_LOCAL");
+                        }
                     }
                     if (puPanel.isNonDefaultProviderEnabled()) {
                         punit.setProvider(puPanel.getNonDefaultProvider());

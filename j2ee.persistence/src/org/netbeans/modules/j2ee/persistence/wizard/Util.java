@@ -406,13 +406,15 @@ public class Util {
             PersistenceUnit punit = new PersistenceUnit();
             if (isContainer) {
                 PersistenceUnitWizardPanelDS puPanel = (PersistenceUnitWizardPanelDS) panel;
-                if (puPanel.isJTA()) {
-                    punit.setJtaDataSource(puPanel.getDatasource());
-                } else {
-                    if (puPanel.isNonDefaultProviderEnabled()) {
-                        punit.setNonJtaDataSource(puPanel.getDatasource());
+                if (puPanel.getDatasource() != null && !"".equals(puPanel.getDatasource().trim())){
+                    if (puPanel.isJTA()) {
+                        punit.setJtaDataSource(puPanel.getDatasource());
+                    } else {
+                        if (puPanel.isNonDefaultProviderEnabled()) {
+                            punit.setNonJtaDataSource(puPanel.getDatasource());
+                        }
+                        punit.setTransactionType("RESOURCE_LOCAL");
                     }
-                    punit.setTransactionType("RESOURCE_LOCAL");
                 }
                 if (puPanel.isNonDefaultProviderEnabled()) {
                     punit.setProvider(puPanel.getNonDefaultProvider());
@@ -432,22 +434,22 @@ public class Util {
         return null;
         
     }
-    
+
     /**
-     * Creates a persistence unit using the PU wizard and adds the created 
+     * Creates a persistence unit using the PU wizard and adds the created
      * persistence unit to the given project's <code>PUDataObject</code> and saves it.
-     * 
+     *
      * @param project the project to which the created persistence unit is to be created.
      * @param preselectedDB the name of the db connection that should be preselected, or null if none needs
      * to be preselected.
      * @param tableGeneration the table generation strategy for the persistence unit.
-     * 
+     *
      * @return true if the creation of the persistence unit was successful, false otherwise.
-     * 
-     * @throws InvalidPersistenceXmlException if the persistence.xml file in the given 
-     * project is not valid. 
-     * 
-     */ 
+     *
+     * @throws InvalidPersistenceXmlException if the persistence.xml file in the given
+     * project is not valid.
+     *
+     */
     public static boolean createPersistenceUnitUsingWizard(Project project,
             String preselectedDB, TableGeneration tableGeneration) throws InvalidPersistenceXmlException {
         
@@ -462,23 +464,23 @@ public class Util {
     }
     
     /**
-     * Creates a persistence unit with the default table generation strategy using the PU wizard and adds the created 
+     * Creates a persistence unit with the default table generation strategy using the PU wizard and adds the created
      * persistence unit to the given project's <code>PUDataObject</code> and saves it.
-     * 
+     *
      * @param project the project to which the created persistence unit is to be created.
      * @param preselectedDB the name of the db connection that should be preselected, or null if none needs
      * to be preselected.
-     * 
+     *
      * @return true if the creation of the persistence unit was successful, false otherwise.
-     * 
-     * @throws InvalidPersistenceXmlException if the persistence.xml file in the given 
-     * project is not valid. 
-     * 
-     */ 
+     *
+     * @throws InvalidPersistenceXmlException if the persistence.xml file in the given
+     * project is not valid.
+     *
+     */
     public static boolean createPersistenceUnitUsingWizard(Project project, String preselectedDB) throws InvalidPersistenceXmlException {
         return createPersistenceUnitUsingWizard(project, preselectedDB, TableGeneration.CREATE);
     }
-
+    
     public static void addLibraryToProject(Project project, Library library) {
         ProjectClassPathExtender pcpe = (ProjectClassPathExtender) project.getLookup().lookup(ProjectClassPathExtender.class);
         if (pcpe != null) {
