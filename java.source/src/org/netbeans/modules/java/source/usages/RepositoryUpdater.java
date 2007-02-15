@@ -383,7 +383,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         for (File root : roots) {
             final FileObject fo = FileUtil.toFileObject (root);
             if (fo == null) {
-                Logger.getLogger("global").warning("No MasterFS for file system root: " + root.getAbsolutePath());          // NOI18N
+                Logger.getLogger(RepositoryUpdater.class.getName()).warning("No MasterFS for file system root: " + root.getAbsolutePath());          // NOI18N
             }
             else {
                 try {
@@ -405,7 +405,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         for (File root : roots) {
             final FileObject fo = FileUtil.toFileObject (root);
             if (fo == null) {
-                Logger.getLogger("global").warning("No MasterFS for file system root: " + root.getAbsolutePath());          // NOI18N
+                Logger.getLogger(RepositoryUpdater.class.getName()).warning("No MasterFS for file system root: " + root.getAbsolutePath());          // NOI18N
             }
             else {
                 try {
