@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -304,7 +304,7 @@ public class ImageViewer extends CloneableTopComponent {
             outButton.setToolTipText (NbBundle.getBundle(ImageViewer.class).getString("LBL_ZoomOut"));
             outButton.setMnemonic(NbBundle.getBundle(ImageViewer.class).getString("ACS_Out_BTN_Mnem").charAt(0));
             outButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACSD_Out_BTN"));
-            outButton.setLabel("");
+            outButton.setText("");
         toolBar.add(outButton);       
         toolbarButtons.add(outButton);
         toolBar.addSeparator(new Dimension(2,2));
@@ -312,7 +312,7 @@ public class ImageViewer extends CloneableTopComponent {
             inButton.setToolTipText (NbBundle.getBundle(ImageViewer.class).getString("LBL_ZoomIn"));
             inButton.setMnemonic(NbBundle.getBundle(ImageViewer.class).getString("ACS_In_BTN_Mnem").charAt(0));
             inButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACSD_In_BTN"));
-            inButton.setLabel("");
+            inButton.setText("");
         toolBar.add(inButton);
         toolbarButtons.add(inButton);
         toolBar.addSeparator(new Dimension(11,2));
