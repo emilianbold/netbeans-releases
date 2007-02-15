@@ -48,15 +48,15 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     private FileObject[] origFilesToMove;
     public MoveRefactoringPlugin(MoveRefactoring move) {
         this.refactoring = move;
-        setup(Arrays.asList(move.getRefactoredObjects()), "");
+        setup(Arrays.asList(move.getRefactoredObjects()), "", true);
     }
     
     public MoveRefactoringPlugin(RenameRefactoring rename) {
         this.refactoring = rename;
         if (rename.getRefactoredObject() instanceof FileObject) {
-            setup(Collections.singletonList((FileObject)rename.getRefactoredObject()), "");
+            setup(Collections.singletonList((FileObject)rename.getRefactoredObject()), "", true);
         } else {
-            setup(Collections.singletonList(((NonRecursiveFolder)rename.getRefactoredObject()).getFolder()), "");
+            setup(Collections.singletonList(((NonRecursiveFolder)rename.getRefactoredObject()).getFolder()), "", false);
         }
     }
     
@@ -186,7 +186,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
             return getNewPackageName();
     }
     
-    private void setup(Collection fileObjects, String postfix) {
+    private void setup(Collection fileObjects, String postfix, boolean recursively) {
         for (Iterator i = fileObjects.iterator(); i.hasNext(); ) {
             FileObject fo = (FileObject) i.next();
             if (RetoucheUtils.isJavaFile(fo)) {
@@ -202,7 +202,8 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                 for (FileObject fo2: fo.getChildren()) {
                     col.add(fo2);
                 }
-                setup(col, postfix +(addDot?".":"") +fo.getName()); // NOI18N
+                if (recursively)
+                    setup(col, postfix +(addDot?".":"") +fo.getName(), true); // NOI18N
             }
         }
     }
