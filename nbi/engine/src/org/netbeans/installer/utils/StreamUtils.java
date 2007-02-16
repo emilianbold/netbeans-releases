@@ -30,13 +30,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 
 /**
- * @author Danila_Dugurov
- *
+ * @author Danila Dugurov
+ * @author Kirill Sorokin
  */
 public class StreamUtils {
     private static final int BUFFER_SIZE = 4096;
@@ -46,6 +47,27 @@ public class StreamUtils {
         int length = 0;
         while ((length = in.read(buffer)) != -1) {
             out.write(buffer, 0, length);
+        }
+        out.flush();
+    }
+    
+    public static void transferData(RandomAccessFile in, OutputStream out) throws IOException {
+        final byte[] buffer = new byte[BUFFER_SIZE];
+        int length = 0;
+        while ((length = in.read(buffer)) != -1) {
+            out.write(buffer, 0, length);
+        }
+        out.flush();
+    }
+    
+    public static void transferData(RandomAccessFile in, OutputStream out, long maxLength) throws IOException {
+        final byte[] buffer = new byte[BUFFER_SIZE];
+        
+        long totalLength = 0;
+        int  length = 0;
+        while (((length = in.read(buffer)) != -1) && (totalLength < maxLength)) {
+            totalLength += length;
+            out.write(buffer, 0, (int) (totalLength > maxLength ? length : totalLength - maxLength));
         }
         out.flush();
     }
