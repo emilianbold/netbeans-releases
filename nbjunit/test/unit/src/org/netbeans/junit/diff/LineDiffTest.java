@@ -225,11 +225,24 @@ public class LineDiffTest extends NbTestCase {
         File test2 = new File(getWorkDir(), "test2");
         File test3 = new File(getWorkDir(), "test3");
         
-        doOutputToFile(test1, "a\ne\nf\nb\nc\nd\n");
-        doOutputToFile(test2, "a\nb\nc\nd\n");
+        doOutputToFile(test1, "a\nx\nc\nd\nb\nf\n");
+        doOutputToFile(test2, "a\nb\nc\nd\nb\nf\n");
         
         LineDiff diff = new LineDiff();
         assertTrue(diff.diff(test1, test2, test3));
-        assertEquals(" 1   a\n   + e\n   + f\n 2   b\n 3   c\n 4   d\n", getFileContent(test3));
+        assertEquals(" 1   a\n   + x\n 2 - b\n 3   c\n 4   d\n 5   b\n", getFileContent(test3));
+    }
+    
+    public void testDiff10() throws Exception {
+        File test1 = new File(getWorkDir(), "test1");
+        File test2 = new File(getWorkDir(), "test2");
+        File test3 = new File(getWorkDir(), "test3");
+        
+        doOutputToFile(test1, "a\nx\nc\nd\nx\ny\n");
+        doOutputToFile(test2, "a\nb\nc\nd\nx\ny\n");
+        
+        LineDiff diff = new LineDiff();
+        assertTrue(diff.diff(test1, test2, test3));
+        assertEquals(" 1   a\n 2 - b\n   + x\n 3   c\n 4   d\n 5   x\n", getFileContent(test3));
     }
 }

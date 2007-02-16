@@ -141,6 +141,7 @@ public class LineDiff implements Diff {
     private List<Result> findDifferences(String[] passLines, String[] refLines) {
         int stepLeft = 0;
         int stepRight = 0;
+        boolean jump = false;
         //test is left, pass is right
         List<Result> results = new ArrayList<Result>(64);
         //start right
@@ -158,7 +159,8 @@ public class LineDiff implements Diff {
                 int found = find(v, refLines, stepLeft);
                 if (found >= 0) {
                     if (found > stepLeft) {
-                        if (found-stepLeft >= 2) { //could be wrong jump - try tp skip left
+                        if (!jump && found-stepLeft >= 2) { //could be wrong jump - try tp skip left
+                            jump = true;
                             right=false;
                             continue;
                         } else {
@@ -182,17 +184,24 @@ public class LineDiff implements Diff {
                 String v = refLines[stepLeft];
                 int found = find(v, passLines, stepRight);
                 if (found >= 0) {
+                    if (!jump && found - stepRight >= 2) { //eliminate wrong jumps
+                        jump = true;
+                        right = true;
+                        continue;
+                    }
                     if (found > stepRight) {
                         results.add(new Result(stepRight, found, false));  //add missing lines
                     }
                     stepRight=found+1;
+                    //switch to right
+                    right=true;
                 } else {
                     results.add(new Result(stepLeft, stepLeft+1, stepRight, true));  //add one new
-                    //switch to right
                     right=true;
                 }
                 stepLeft++;
             }
+            jump = false;
         }
         return results;
     }
