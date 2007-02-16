@@ -61,7 +61,9 @@ public final class _RetoucheUtil {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                result[0] = sourceUtils.getTypeElement().getQualifiedName().toString();
+                if (sourceUtils != null) {
+                    result[0] = sourceUtils.getTypeElement().getQualifiedName().toString();
+                }
             }
         }, true);
         return result[0];
@@ -94,8 +96,11 @@ public final class _RetoucheUtil {
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
-                result.add(ElementHandle.create(typeElement));
+                SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+                if (sourceUtils != null) {
+                    TypeElement typeElement = sourceUtils.getTypeElement();
+                    result.add(ElementHandle.create(typeElement));
+                }
             }
         }, true);
         return result.get(0);

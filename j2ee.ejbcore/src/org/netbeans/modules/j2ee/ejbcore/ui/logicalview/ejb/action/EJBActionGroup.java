@@ -108,14 +108,20 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
                 public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     //TODO: RETOUCHE get selected class from Node
-                    TypeElement typeElement = SourceUtils.newInstance(workingCopy).getTypeElement();
-                    className[0] = typeElement.getQualifiedName().toString();
+                    SourceUtils sourceUtils = SourceUtils.newInstance(workingCopy);
+                    if (sourceUtils != null) {
+                        TypeElement typeElement = sourceUtils.getTypeElement();
+                        className[0] = typeElement.getQualifiedName().toString();
+                    }
                 }
             });
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
-        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className[0]);
+        EjbMethodController ejbMethodController = null;
+        if (className[0] != null) {
+             ejbMethodController = EjbMethodController.createFromClass(fileObject, className[0]);
+        }
         return ejbMethodController != null;
     }
     
