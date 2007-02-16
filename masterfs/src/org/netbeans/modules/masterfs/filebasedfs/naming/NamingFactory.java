@@ -86,17 +86,27 @@ public final class NamingFactory {
         for (Iterator iterator = nameMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry entry = (Map.Entry) iterator.next();
             Integer id = (Integer)entry.getKey();
-            //TODO: handle possible List            
-            FileNaming fN = (FileNaming)((Reference)entry.getValue()).get(); 
-            if (fN == null) continue;
-            Integer computedId = NamingFactory.createID(fN.getFile()); 
-                    
-
-            boolean isRenamed = (!computedId.equals (id));
-            if (isRenamed) {
-                toRename.put(id, fN);
+            
+            List list = new ArrayList();
+            
+            //handle possible List
+            Object value = entry.getValue();
+            if (value instanceof Reference) {
+                list.add(value);
+            } else if (value instanceof List) {
+                list.addAll((List) value);
             }
-
+            
+            for (int i = 0; i < list.size(); i++) {
+                FileNaming fN = (FileNaming)((Reference) list.get(i)).get();
+                if (fN == null) continue;
+                Integer computedId = NamingFactory.createID(fN.getFile());
+                
+                boolean isRenamed = (!computedId.equals(id));
+                if (isRenamed) {
+                    toRename.put(id, fN);
+                }        
+            }
         }
         
         for (Iterator iterator = toRename.entrySet().iterator(); iterator.hasNext();) {
