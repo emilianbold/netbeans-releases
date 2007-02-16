@@ -63,6 +63,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CancellableTask;
@@ -275,6 +277,8 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             if (elm == null) {
                 Logger.getLogger(JavadocHintProvider.class.getName()).log(
                         Level.INFO, "Cannot resolve element for " + node + " in " + file); // NOI18N
+                return;
+            } else if (isGuarded(node)) {
                 return;
             }
             
@@ -713,6 +717,28 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             if (blex[0] != null)
                 throw (BadLocationException) new BadLocationException(blex[0].getMessage(), blex[0].offsetRequested()).initCause(blex[0]);
             return pos;
+        }
+        
+        private boolean isGuarded(Tree node) {
+            GuardedSectionManager guards = GuardedSectionManager.getInstance((StyledDocument) doc);
+            if (guards != null) {
+                try {
+                    final int startOff = (int) javac.getTrees().getSourcePositions().
+                            getStartPosition(javac.getCompilationUnit(), node);
+                    final Position startPos = doc.createPosition(startOff);
+
+                    for (GuardedSection guard : guards.getGuardedSections()) {
+                        if (guard.contains(startPos, false)) {
+                            return true;
+                        }
+                    }
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                    // consider it as guarded
+                    return true;
+                }
+            }
+            return false;
         }
         
         private void addRemoveTagFix(Tag tag, String description, Element elm, List<ErrorDescription> errors) {
