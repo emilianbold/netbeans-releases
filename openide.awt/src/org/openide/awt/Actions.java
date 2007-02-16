@@ -1321,28 +1321,29 @@ public class Actions extends Object {
     }
 
     /**
-     * SPI for being able to supply alternative implementation of
-     * connection between actions and the presenters. The implementations
+     * SPI for supplying alternative implementation of connection between actions and presenters.
+     * The implementations
      * of this interface are being looked up in the default lookup.
      * If there is no implemenation in the lookup the default implementation
      * is used.
-     * @see org.openide.util.Lookup#getDefault()
+     * @see Lookup#getDefault()
+     * @since org.openide.awt 6.9
      */
-    public static interface ButtonActionConnector {
+    public interface ButtonActionConnector {
         /**
          * Connects the action to the supplied button.
          * @return true if the connection was successful and no
          *    further actions are needed. If false is returned the
          *    default connect implementation is called
          */
-        public boolean connect(AbstractButton button, Action action);
+        boolean connect(AbstractButton button, Action action);
         /**
          * Connects the action to the supplied JMenuItem.
          * @return true if the connection was successful and no
          *    further actions are needed. If false is returned the
          *    default connect implementation is called
          */
-        public boolean connect(JMenuItem item, Action action, boolean popup);
+        boolean connect(JMenuItem item, Action action, boolean popup);
     }
 
     private static class DisabledButtonFilter extends RGBImageFilter {
