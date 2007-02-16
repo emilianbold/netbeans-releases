@@ -48,7 +48,7 @@ public class RepositoryImpl extends Repository {
         private static FileSystem[] createFileSystems() {
             try {
                 FileSystem j2eeserverFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/j2ee/deployment/impl/layer.xml"));
-                FileSystem ejbCoreFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/j2ee/ejbcore/resources/layer.xml"));
+                FileSystem ejbCoreFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("layer.xml"));
                 return new FileSystem[] { j2eeserverFs, ejbCoreFs };
             } catch (SAXException e) {
                 AssertionError assertionError = new AssertionError(e.getMessage());
