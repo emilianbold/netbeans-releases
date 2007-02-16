@@ -2070,6 +2070,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (smartTypes == null || smartTypes.isEmpty())
                     return;
                 for (TypeMirror st : smartTypes) {
+                    if (st.getKind() == TypeKind.BOOLEAN) {
+                        if (Utilities.startsWith(FALSE_KEYWORD, prefix))
+                            results.add(JavaCompletionItem.createKeywordItem(FALSE_KEYWORD, null, offset));
+                        if (Utilities.startsWith(TRUE_KEYWORD, prefix))
+                            results.add(JavaCompletionItem.createKeywordItem(TRUE_KEYWORD, null, offset));
+                    }
                     if (st.getKind().isPrimitive())
                         st = types.boxedClass((PrimitiveType)st).asType();
                     if (st.getKind() == TypeKind.DECLARED) {
@@ -2099,6 +2105,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                     }
                 }
+            } else {
+                if (Utilities.startsWith(FALSE_KEYWORD, prefix))
+                    results.add(JavaCompletionItem.createKeywordItem(FALSE_KEYWORD, null, offset));
+                if (Utilities.startsWith(TRUE_KEYWORD, prefix))
+                    results.add(JavaCompletionItem.createKeywordItem(TRUE_KEYWORD, null, offset));
             }
             final TypeElement enclClass = scope.getEnclosingClass();
             final boolean isStatic = enclClass == null ? false :
