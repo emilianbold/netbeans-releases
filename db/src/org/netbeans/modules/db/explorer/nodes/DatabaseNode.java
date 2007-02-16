@@ -176,17 +176,14 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
     }
 
     public Action[] getActions(boolean context) {
-        Action[] retacts, sysacts = NodeOp.getDefaultActions();
+        if (context) {
+            return getContextActions();
+        }
         Vector actions = info.getActions();
         if (actions.size() > 0) {
-            Action[] myacts = (Action[]) actions.toArray(new Action[actions.size()]);
-            retacts = new Action[sysacts.length + myacts.length];
-            System.arraycopy((Object) myacts, 0, (Object) retacts, 0, myacts.length);
-            System.arraycopy((Object)sysacts, 0, (Object)retacts, myacts.length, sysacts.length);
-        } else
-            retacts = sysacts;
-
-        return retacts;
+            return (Action[]) actions.toArray(new Action[actions.size()]);
+        }
+        return new Action[0];
     }
 
     protected Map createProperty(String name)
