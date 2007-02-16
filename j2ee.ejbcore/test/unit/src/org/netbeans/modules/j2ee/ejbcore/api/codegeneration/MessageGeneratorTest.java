@@ -62,9 +62,6 @@ public class MessageGeneratorTest extends TestBase {
         assertEquals("javax.jms.Queue", messageDriven.getMessageDestinationType());
         assertEquals("TestMDBBeanDestination", messageDriven.getMessageDestinationLink());
         assertEquals("Container", messageDriven.getTransactionType());
-        assertEquals("Container", messageDriven.getTransactionType());
-        assertEquals("Container", messageDriven.getTransactionType());
-        assertEquals("Container", messageDriven.getTransactionType());
         assertFile(
                 FileUtil.toFile(packageFileObject.getFileObject("TestMDBBean.java")), 
                 getGoldenFile("TestMDBBean.java"), 
