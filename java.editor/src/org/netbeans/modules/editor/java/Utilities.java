@@ -338,8 +338,7 @@ public class Utilities {
             if (Character.isUpperCase(c)) {
                 char lc = Character.toLowerCase(c);
                 sb.append(lc);
-            } else if (sb.length() > 0) {
-                sb.append(name.subSequence(i, name.length()));
+                sb.append(name.subSequence(i + 1, name.length()));
                 break;
             }
         }

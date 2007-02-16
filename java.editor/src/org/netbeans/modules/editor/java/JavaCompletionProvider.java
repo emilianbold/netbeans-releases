@@ -883,6 +883,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                         addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null, null);
                     }
                 }
+            } else if (retType != null && headerText.trim().length() == 0) {
+                insideExpression(env, new TreePath(path, retType));
             }
         }
         
