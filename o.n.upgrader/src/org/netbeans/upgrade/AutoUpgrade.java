@@ -28,10 +28,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import javax.swing.JOptionPane;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
 import org.netbeans.upgrade.systemoptions.Importer;
 
 import org.netbeans.util.Util;
@@ -133,60 +130,7 @@ public final class AutoUpgrade {
     }
     
     static void doUpgrade (File source, String oldVersion) 
-    throws java.io.IOException, java.beans.PropertyVetoException {
-        
-/*
-        if ("3.6".equals (oldVersion) || "jstudio_6me_user".equals (oldVersion)) { // NOI18N
-            File userdir = new File(System.getProperty ("netbeans.user", "")); // NOI18N
-
-            Reader r = new InputStreamReader (
-                AutoUpgrade.class.getResourceAsStream ("copy"+oldVersion), // NOI18N
-                "utf-8"
-            );
-            java.util.Set includeExclude = IncludeExclude.create (r);
-            r.close ();
-
-
-            ErrorManager.getDefault ().log (
-                ErrorManager.USER, "Import: Old version: " // NOI18N
-                + oldVersion + ". Importing from " + source + " to " + userdir // NOI18N
-            );
-
-            File oldConfig = new File (source, "system"); // NOI18N
-            org.openide.filesystems.FileSystem old;
-            {
-                LocalFileSystem lfs = new LocalFileSystem ();
-                lfs.setRootDirectory (oldConfig);
-                old = new org.openide.filesystems.MultiFileSystem (
-                    new org.openide.filesystems.FileSystem[] { lfs }
-                );
-            }
-            org.openide.filesystems.FileSystem mine = Repository.getDefault ().getDefaultFileSystem ();
-            
-            FileObject defaultProject = old.findResource ("Projects/Default/system"); // NOI18N
-            if (defaultProject != null) {
-                // first copy content from default project
-                Copy.copyDeep (defaultProject, mine.getRoot (), includeExclude);
-            }
-            
-            FileObject projects = old.findResource ("Projects"); // NOI18N
-            if (projects != null) {
-                FileObject[] allProjects = projects.getChildren ();
-                for (int i = 0; i < allProjects.length; i++) {
-                    // content from projects is prefered
-                    FileObject otherProject = allProjects[i].getFileObject ("system"); // NOI18N
-                    if (otherProject != null) {
-                        Copy.copyDeep (otherProject, mine.getRoot (), includeExclude);
-                    }
-                }
-            }
-            
-
-            Copy.copyDeep (old.getRoot (), mine.getRoot (), includeExclude);
-            return;
-        }
-*/
-
+    throws java.io.IOException, java.beans.PropertyVetoException {        
         File userdir = new File(System.getProperty ("netbeans.user", "")); // NOI18N
         
         java.util.Set includeExclude;
@@ -244,14 +188,6 @@ public final class AutoUpgrade {
         };
         return old;
     }
-
-    private static void mergeAttributes (Map m1, String n1, Map m2, String n2) {
-        SimpleAttributeSet a1 = (SimpleAttributeSet) m1.get (n1);
-        SimpleAttributeSet a2 = (SimpleAttributeSet) m2.get (n2);
-        if (a2 == null || a1 == null) return;
-        a1.addAttributes (a2);
-        a1.addAttribute (StyleConstants.NameAttribute, n1);
-    }
     
     private static List<FileObject> getFiles (
         FileObject      folder,
@@ -295,6 +231,3 @@ public final class AutoUpgrade {
         }
     }
 }
-
-
-
