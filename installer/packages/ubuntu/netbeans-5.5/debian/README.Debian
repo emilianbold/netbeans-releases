@@ -1,0 +1,16 @@
+README for Debian
+-----------------
+
+Please NOTE:
+
+The following Windows are indeed intended in this architecture
+neutral package because NetBeans users can create Windows installers
+from any platform, including GNU/Linux:
+
+/usr/share/netbeans/5.5/harness/launchers/app_w.exe
+/usr/share/netbeans/5.5/harness/launchers/app.exe
+/usr/share/netbeans/5.5/platform6/lib/nbexec.cmd
+/usr/share/netbeans/5.5/platform6/lib/nbexec.exe
+
+
+ -- Tom Marble <tom.marble@sun.com>, Thu, 15 Feb 2007 23:21:34 -0600
