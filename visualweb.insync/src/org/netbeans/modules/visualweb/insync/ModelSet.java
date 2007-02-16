@@ -982,6 +982,7 @@ public abstract class ModelSet implements FileChangeListener {
 /*//NB6.0
         MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(new Runnable() {
             public void run() {
+ */
                 ModelCreateVisitor visitor = new ModelCreateVisitor();
                 visitor.visit(fileObject);
                 Collection modelsAdded = visitor.getModelsAdded();
@@ -1000,6 +1001,7 @@ public abstract class ModelSet implements FileChangeListener {
                         model = null;
                     }
                 }
+/*
             }
         });
 //*/
@@ -1023,12 +1025,14 @@ public abstract class ModelSet implements FileChangeListener {
 /*//NB6.0
         MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(new Runnable() {
             public void run() {
+*/
                 // There are some elements that get refreshed that assume they are on UI thread
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         removeModel(finalModel);
                     }
                 });
+/*
             }
         });
  //*/
@@ -1047,6 +1051,7 @@ public abstract class ModelSet implements FileChangeListener {
 /*//NB6.0
         MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(new Runnable() {
             public void run() {
+*/ 
                 for (int i=0; i < models.length; i++) {
                     Model model = models[i];
                     model.fileRenamed(oldName, newName, extension, fileObject, needToRemove);
@@ -1055,6 +1060,7 @@ public abstract class ModelSet implements FileChangeListener {
                     Model model = configModels[i];
                     model.fileRenamed(oldName, newName, extension, fileObject, needToRemove);
                 }
+/*
             }
         });
 //*/

@@ -55,7 +55,9 @@ public class ReadTaskWrapper implements CancellableTask<CompilationController> {
         ReadTaskWrapper taskWrapper = new ReadTaskWrapper(task);
         JavaSource js = JavaSource.forFileObject(fObj);
         try {
-            js.runUserActionTask(taskWrapper, true);
+			// Temporarily do not share the Javac. This is to get around the issue of cached
+			// source text in JavaSource
+            js.runUserActionTask(taskWrapper, false);
         } catch (IOException ex) {
             ex.printStackTrace();
         }

@@ -173,9 +173,11 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
             	// do not set the source dirty. The changes to the model will be flushed
             	// at the end of refactoring.
             	if (!MdrInSyncSynchronizer.get().isRefactoringSessionInProgress()) {
-            		setSourceDirty();
-            	}
- //*/
+*/
+                setSourceDirty();
+/*
+                }
+//*/
                 releaseDocument();
             }
             if ((event.getNewValue() != null) && (event.getOldValue() == null)){
