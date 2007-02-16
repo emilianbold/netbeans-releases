@@ -68,6 +68,12 @@ public final class JMeterRunAction extends CookieAction {
       return retValue;
     
     DataObject c = (DataObject) node[0].getCookie(DataObject.class);
+    
+    /* according to http://www.netbeans.org/issues/show_bug.cgi?id=94823 
+     * using "c" without checking for NULL causes NPE randomly; this check should prevent NPE
+     */
+    if (c == null || c.getPrimaryFile() == null) return false; 
+    
     try {
       File script = FileUtil.toFile(c.getPrimaryFile());
 //      JMeterIntegrationEngine.getDefault().runTestPlan(script.getCanonicalPath());
