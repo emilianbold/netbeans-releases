@@ -520,7 +520,7 @@ public class StorageBeanFactory {
     
     public WebserviceEndpoint createEjbHostedWebserviceEndpoint() {
 //        return ejb.newWebserviceEndpoint();
-        WebserviceEndpoint endpoint = servlet.newWebserviceEndpoint();
+        WebserviceEndpoint endpoint = ejb.newWebserviceEndpoint();
 //        System.out.println("New WebserviceEndpoint(EJB-JAR): " + endpoint.getClass().getSimpleName());
 //        Thread.currentThread().dumpStack();
         return endpoint;
