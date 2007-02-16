@@ -1105,6 +1105,7 @@ abstract class BaseTable extends JTable implements FocusListener {
         paintSelectionRow();
     }
 
+    WL parentListener;
     public void addNotify() {
         super.addNotify();
 
@@ -1112,14 +1113,25 @@ abstract class BaseTable extends JTable implements FocusListener {
         Container top = getTopLevelAncestor();
 
         if (top instanceof Window) {
-            ((Window) top).addWindowListener(
-                new WindowAdapter() {
-                    public void windowDeactivated(java.awt.event.WindowEvent we) {
-                        doFocusLost(we.getOppositeWindow());
-                    }
-                }
-            );
+            ((Window) top).addWindowListener(parentListener = new WL());
         }
+    }
+    
+    private class WL extends WindowAdapter {
+        public void windowDeactivated(java.awt.event.WindowEvent we) {
+            doFocusLost(we.getOppositeWindow());
+        }
+    }
+    
+    public void removeNotify() {
+        // #57560: properties should always save changes
+        Container top = getTopLevelAncestor();
+
+        if (top instanceof Window && parentListener != null) {
+            ((Window) top).removeWindowListener(parentListener);
+            parentListener = null;
+        }
+        super.removeNotify();
     }
 
     private class SearchField extends JTextField implements ActionListener, FocusListener {
