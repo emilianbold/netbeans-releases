@@ -283,7 +283,8 @@ class PropertySetModelImpl implements PropertySetModel, Runnable {
 
         int setIndex = lookupSet(fd);
         int eventType = expanded[setIndex] ? PropertySetModelEvent.TYPE_INSERT : PropertySetModelEvent.TYPE_REMOVE;
-        int len = ((PropertySet) fd).getProperties().length;
+        List <? extends FeatureDescriptor> props = propsToList(sets[setIndex].getProperties());
+        int len = props.size();
 
         expanded[setIndex] = !expanded[setIndex];
 
@@ -296,7 +297,7 @@ class PropertySetModelImpl implements PropertySetModel, Runnable {
         }
 
         if (expanded[setIndex]) {
-            fds.addAll(index + 1, Arrays.asList(sets[setIndex].getProperties()));
+            fds.addAll(index + 1, props);
         } else {
             for (int i = index + len; i > index; i--) {
                 fds.remove(i);
