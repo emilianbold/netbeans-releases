@@ -28,16 +28,15 @@ import java.io.SequenceInputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.io.OutputStreamWriter;
-
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.ext.html.HTMLSyntax;
-import org.netbeans.editor.ext.html.HTMLTokenContext;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.palette.HTMLPaletteFactory;
 import org.netbeans.spi.palette.PaletteController;
-
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -55,7 +54,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
 
@@ -69,6 +67,11 @@ import org.openide.windows.CloneableOpenSupport;
  */
 public final class HtmlEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie {
 
+    //constants used when finding html document content type
+    private static final String CHARSET_DECL = "CHARSET="; //NOI18N
+    private static final String HEAD_END_TAG_NAME = "</HEAD>"; //NOI18N
+        
+    
     /** SaveCookie for this support instance. The cookie is adding/removing 
      * data object's cookie set depending on if modification flag was set/unset. */
     private final SaveCookie saveCookie = new SaveCookie() {
@@ -218,22 +221,29 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
      * @return the encoding or null if no has been found
      */
     private static String findEncoding (String txt) {
-        String CHARSET_DECL = "CHARSET="; //NOI18N
-        HTMLSyntax syntax = new HTMLSyntax();
-        int headEndOffset = txt.indexOf ("</HEAD>"); // NOI18N
+        int headEndOffset = txt.indexOf (HEAD_END_TAG_NAME); // NOI18N
+        headEndOffset = headEndOffset == -1 ? txt.indexOf(HEAD_END_TAG_NAME.toLowerCase()) : headEndOffset;
+        
         if (headEndOffset == -1){
             return null;
         }
         
-        char buffer[] = txt.toCharArray();
-        syntax.load(null, buffer, 0, headEndOffset, false, -1);
-        
-        for (TokenID tokenId = syntax.nextToken(); tokenId != null; tokenId = syntax.nextToken()){
-            if (tokenId == HTMLTokenContext.VALUE){
-                String tokenImage = txt.substring(syntax.getTokenOffset(),
-                        syntax.getTokenLength() + syntax.getTokenOffset());
-                
+        TokenHierarchy hi = TokenHierarchy.create(txt, HTMLTokenId.language());
+        TokenSequence ts = hi.tokenSequence();
+        ts.moveStart();
+        while(ts.moveNext()) {
+            Token token = ts.token();
+            
+            //test we do not overlap </head>
+            if(token.offset(hi) >= headEndOffset) {
+                break;
+            }
+            
+            if(token.id() == HTMLTokenId.VALUE) {
+                String tokenImage = token.text().toString();
                 int charsetOffset = tokenImage.indexOf(CHARSET_DECL);
+                charsetOffset = charsetOffset == -1 ? tokenImage.indexOf(CHARSET_DECL.toLowerCase()) : charsetOffset;
+                
                 int charsetEndOffset = charsetOffset + CHARSET_DECL.length();
                 if (charsetOffset != -1){ 
                     int endOffset = tokenImage.indexOf('"', charsetEndOffset);
@@ -256,7 +266,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
             }
         }
         
-        return null;
+        return null; // no token in token sequence or encoding not found
     }
     
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
