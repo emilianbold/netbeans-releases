@@ -237,7 +237,10 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
                 );
         }
 
-        assert (ch == null) || !ch.list.contains(null) : ch.list + " from " + node;
+        if (LOG.isLoggable(Level.FINER)) {
+            // this assert is too expensive during the performance tests:
+            assert (ch == null) || !ch.list.contains(null) : ch.list + " from " + node; 
+        }
 
         return (ch == null) ? Collections.<VisualizerNode>emptyList() : ch.list;
     }

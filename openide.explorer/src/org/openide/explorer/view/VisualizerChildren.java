@@ -33,7 +33,7 @@ final class VisualizerChildren extends Object {
     public final VisualizerNode parent;
 
     /** list of all objects here (VisualizerNode) */
-    public final List<VisualizerNode> list = new LinkedList<VisualizerNode>();
+public final List<VisualizerNode> list = new ArrayList<VisualizerNode>();
 
     /** Creates new VisualizerChildren.
     * Can be called only from EventQueue.
