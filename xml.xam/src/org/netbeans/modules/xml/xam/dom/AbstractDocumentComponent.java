@@ -200,9 +200,13 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
                 prefix = "ns"; //NOI18N
             }
             if (prefix.length() > 0) {
-                prefix = ensureUnique(prefix, namespace);
+                prefix = root.ensureUnique(prefix, namespace);
             }
-            root.addPrefix(prefix, namespace);
+            if (isInDocumentModel()) {
+                root.addPrefix(prefix, namespace);
+            } else {
+                addPrefix(prefix, namespace);
+            }
         }
         
         if (prefix != null && prefix.length() > 0) {

@@ -99,7 +99,7 @@ public class TestModel extends AbstractDocumentModel<TestComponent> implements D
     }
     
     public static ModelSource createModelSource(Document doc) {
-        Lookup lookup = Lookups.fixed(new Object[] { doc } );
+        Lookup lookup = Lookups.fixed(new Object[] { doc } ); //maybe later a simple catalog
         return new ModelSource(lookup, true);
     }
     

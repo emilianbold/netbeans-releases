@@ -198,6 +198,9 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
             return (TestComponent) super.getParent();
         }
         public String getEffectiveNamespace() {
+            if (getReferenced() != null) {
+                return getReferenced().getModel().getRootComponent().getTargetNamespace();
+            }
             return getParent().getModel().getRootComponent().getTargetNamespace();
         }
 
@@ -245,12 +248,13 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
         setAttribute(TestAttribute.TNS.getName(), TestAttribute.NAME, v);
     }
     
-    public TestComponentReference<TestComponent> getRef() {
+    public <T extends TestComponent> TestComponentReference<T> getRef(Class<T> type) {
         String v = getAttribute(TestAttribute.REF);
-        return v == null ? null : new TestComponentReference<TestComponent>(TestComponent.class, this, v);
+        return v == null ? null : new TestComponentReference<T>(type, this, v);
     }
     
-    public void getRef(TestComponentReference<TestComponent> ref) {
+    public <T extends TestComponent> void setRef(T referenced, Class<T> type) {
+        TestComponentReference<T> ref = new TestComponentReference<T>(referenced, type, this);
         super.setAttribute(TestAttribute.REF.getName(), TestAttribute.REF, ref);
     }
     

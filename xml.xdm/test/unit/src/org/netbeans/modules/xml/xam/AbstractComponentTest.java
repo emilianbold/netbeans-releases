@@ -671,7 +671,7 @@ public class AbstractComponentTest extends TestCase {
         assertEquals("myTargetNS", copyChild.lookupNamespaceURI("tns"));
         B copyGrandChild = copyChild.getChild(B.class);
         assertEquals("tns", aa1GrandChild.lookupPrefix("myTargetNS"));
-        TestComponentReference<TestComponent> ref = copyGrandChild.getRef();
+        TestComponentReference<TestComponent> ref = copyGrandChild.getRef(TestComponent.class);
         assertEquals("tns:a1", ref.getRefString());
         
         try {
@@ -869,6 +869,53 @@ public class AbstractComponentTest extends TestCase {
         assertEquals(TestComponent.NS_URI, a.getNamespaceURI());
         assertEquals(TestComponent.NS2_URI, aa.getNamespaceURI());
         assertEquals("ns1", aa.getPeer().getPrefix());
+    }
+    
+    public void testAdd_ToStandalone_ComponentDoFixupOnChildDefaultPrefix() throws Exception {
+        TestModel model = Util.loadModel("resources/test1_prefix.xml");
+        TestComponent root = model.getRootComponent();
+        assertEquals(root.getNamespaceURI(), root.lookupNamespaceURI("ns"));
+        TestComponent.Aa aa = model.createAa(root);
+        TestComponent.Aa aaChild = model.createAa(aa);
+        aa.appendChild("appendToStandAloneAa", aaChild);
+        model.startTransaction();
+        root.appendChild("testAddComponentDoFixupDefaultPrefix", aa);
+        model.endTransaction();
+        TestComponent.A a = root.getChild(TestComponent.A.class);
+        assertEquals(TestComponent.NS_URI, a.getNamespaceURI());
+        assertEquals(TestComponent.NS2_URI, aa.getNamespaceURI());
+        assertEquals(TestComponent.NS2_URI, aaChild.getNamespaceURI());
+        assertEquals("ns1", aa.getPeer().getPrefix());
+        assertEquals("ns1", aaChild.getPeer().getPrefix());
+    }
+    
+    public void testSetRefOnStandAlone() throws Exception {
+        model = Util.loadModel("resources/test4_reference.xml");
+        p = model.getRootComponent();
+        TestComponent.A aa = model.createA(p);
+        TestModel model2 = Util.loadModel("resources/test4.xml");
+        TestComponent root2 = model2.getRootComponent();
+        A a1 = root2.getChild(A.class);
+        model.startTransaction();
+        aa.setRef(a1, A.class);
+        p.appendChild("testSetRefOnStandAlone", aa);
+        model.endTransaction();
+        assertEquals(root2.getTargetNamespace(), p.lookupNamespaceURI("ns1"));
+        assertEquals("myTargetNS3", p.lookupNamespaceURI("ns"));
+    }
+    
+    public void testAddComponentDoFixupOnRefDefaultPrefix() throws Exception {
+        model = Util.loadModel("resources/test4_reference.xml");
+        p = model.getRootComponent();
+        B b1 = p.getChild(B.class);
+        TestModel model2 = Util.loadModel("resources/test4.xml");
+        TestComponent root2 = model2.getRootComponent();
+        A a1 = root2.getChild(A.class);
+        model.startTransaction();
+        b1.setRef(a1, A.class);
+        model.endTransaction();
+        assertEquals(root2.getTargetNamespace(), p.lookupNamespaceURI("ns1"));
+        assertEquals("myTargetNS3", p.lookupNamespaceURI("ns"));
     }
     
     // TODO support PI inside normal element
