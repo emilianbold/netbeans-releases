@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,8 +37,6 @@ import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.awt.Dialog;
 import java.io.File;
 import java.io.FileWriter;
@@ -68,20 +66,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
     }
 
     public void performCvsAction(final Node[] nodes) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                switchBranch(nodes);
-            }
-        });
-    }
-
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    private void switchBranch(Node[] nodes) {
-        Context context = getContext(nodes);
-
+        final Context context = getContext(nodes);
         String title = MessageFormat.format(NbBundle.getBundle(SwitchBranchAction.class).getString("CTL_SwitchBranchDialog_Title"), 
                                          new Object[] { getContextDisplayName(nodes) });
         
@@ -107,6 +92,19 @@ public class SwitchBranchAction extends AbstractSystemAction {
 
         settings.saveSettings();
         
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                switchBranch(nodes, context, settings);
+            }
+        });
+    }
+
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    private void switchBranch(Node [] nodes, Context context, final SwitchBranchPanel settings) {
+        
         List newFolders = new ArrayList();
         List others = new ArrayList();
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
@@ -129,7 +127,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
 
             GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
             if (context.getExclusions().size() > 0) {
-                options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
+                options.setExclusions(context.getExclusions().toArray(new File[context.getExclusions().size()]));
             }
 
             group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options));
@@ -183,7 +181,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
 
                 GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
                 if (context.getExclusions().size() > 0) {
-                    options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
+                    options.setExclusions(context.getExclusions().toArray(new File[context.getExclusions().size()]));
                 }
 
                 group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options));
