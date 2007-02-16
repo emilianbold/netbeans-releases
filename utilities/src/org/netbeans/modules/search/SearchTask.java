@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -142,10 +142,10 @@ final class SearchTask implements Runnable, Cancellable {
         } catch (RuntimeException ex) {
             resultModel.searchException(ex);
             ex.printStackTrace();
+        } finally {
+            finished = true;
+            progressHandle.finish();
         }
-        finished = true;
-        
-        progressHandle.finish();
     }
     
     SearchTask createNewGeneration() {
