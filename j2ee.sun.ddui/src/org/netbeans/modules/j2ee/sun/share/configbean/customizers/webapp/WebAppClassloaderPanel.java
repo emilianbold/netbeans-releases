@@ -351,6 +351,7 @@ public class WebAppClassloaderPanel extends javax.swing.JPanel implements TableM
 				Object eventSource = e.getSource();
 				if(eventSource == classloaderPropertiesModel) {
 					bean.setClassLoaderProperties(classloaderPropertiesModel.getData());
+					bean.firePropertyChange("classloaderProperties", null, classloaderPropertiesModel.getData());
 				}
 			} catch(PropertyVetoException ex) {
 				// FIXME undo whatever changed... how?

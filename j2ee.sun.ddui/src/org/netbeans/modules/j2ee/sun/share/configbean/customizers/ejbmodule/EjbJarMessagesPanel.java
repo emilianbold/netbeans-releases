@@ -191,8 +191,10 @@ public class EjbJarMessagesPanel extends javax.swing.JPanel implements TableMode
 				Object eventSource = e.getSource();
 				if(eventSource == messageDestinationModel) {
 					bean.setMessageDestinations(messageDestinationModel.getData());
+					bean.firePropertyChange("messageDestination", null, messageDestinationModel.getData());
 //				} else if(eventSource == messageDestinationRefModel) {
 //					bean.setMessageDestinationRefs(messageDestinationRefModel.getData());
+//					bean.firePropertyChange("messageDestinationRef", null, messageDestinationRefModel.getData());
 				}
 			} catch(PropertyVetoException ex) {
 				// FIXME undo whatever changed... how?
