@@ -20,7 +20,9 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
 
 public class BodyTagHandler extends BodyTagSupport {
     
-    /** Creates new instance of tag handler */
+    /** 
+    * Creates new instance of tag handler 
+    */
     public BodyTagHandler() {
         super();
     }
