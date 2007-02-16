@@ -126,11 +126,12 @@ final class J2SEConfigurationProvider implements ProjectConfigurationProvider<J2
     private final FileChangeListener fclWeak;
     private FileObject configDir;
     private Map<String,Config> configs;
-
+    private FileObject nbp;
+    
     public J2SEConfigurationProvider(J2SEProject p) {
         this.p = p;
         fclWeak = FileUtil.weakFileChangeListener(fcl, null);
-        FileObject nbp = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+        nbp = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
         if (nbp != null) {
             nbp.addFileChangeListener(fclWeak);
             LOGGER.log(Level.FINEST, "Added listener to {0}", nbp);
