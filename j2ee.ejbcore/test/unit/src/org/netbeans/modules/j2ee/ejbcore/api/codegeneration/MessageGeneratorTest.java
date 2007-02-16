@@ -20,7 +20,13 @@
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig;
+import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfigProperty;
+import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
@@ -41,32 +47,121 @@ public class MessageGeneratorTest extends TestBase {
     
     public void testGenerateJavaEE14() throws IOException, VersionNotSupportedException {
         TestModule testModule = ejb14();
-        String packageName = "testGenerateJavaEE14";
         FileObject sourceRoot = testModule.getSources()[0];
-        FileObject packageFileObject = sourceRoot.getFileObject(packageName);
-        if (packageFileObject == null) {
-            packageFileObject = sourceRoot.createFolder(packageName);
+        FileObject packageFileObject = sourceRoot.getFileObject("testGenerateJavaEE14");
+        if (packageFileObject != null) {
+            packageFileObject.delete();
         }
-        MessageGenerator generator = MessageGenerator.create("TestMDB", packageFileObject, true, false, true);
+        packageFileObject = sourceRoot.createFolder("testGenerateJavaEE14");
+
+        // Queue based MessageDriven EJB in Java EE 1.4
+        
+        MessageGenerator generator = MessageGenerator.create("TestMDBQueue", packageFileObject, true, false, true);
         generator.generate();
         
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
         MessageDriven messageDriven = (MessageDriven) enterpriseBeans.findBeanByName(
-                EnterpriseBeans.MESSAGE_DRIVEN, MessageDriven.EJB_NAME, "TestMDBBean");
+                EnterpriseBeans.MESSAGE_DRIVEN, MessageDriven.EJB_NAME, "TestMDBQueueBean");
         assertNotNull(messageDriven);
-        assertEquals("TestMDBMDB", messageDriven.getDefaultDisplayName());
-        assertEquals("TestMDBBean", messageDriven.getEjbName());
-        assertEquals("testGenerateJavaEE14.TestMDBBean", messageDriven.getEjbClass());
+        assertEquals("TestMDBQueueMDB", messageDriven.getDefaultDisplayName());
+        assertEquals("TestMDBQueueBean", messageDriven.getEjbName());
+        assertEquals("testGenerateJavaEE14.TestMDBQueueBean", messageDriven.getEjbClass());
         assertEquals("Container", messageDriven.getTransactionType());
         assertEquals("javax.jms.Queue", messageDriven.getMessageDestinationType());
-        assertEquals("TestMDBBeanDestination", messageDriven.getMessageDestinationLink());
-        assertEquals("Container", messageDriven.getTransactionType());
+        assertEquals("TestMDBQueueBeanDestination", messageDriven.getMessageDestinationLink());
+        ActivationConfig activationConfig = messageDriven.getActivationConfig();
+        assertEquals(2, activationConfig.getActivationConfigProperty().length);
+        ActivationConfigProperty acProperty = activationConfig.getActivationConfigProperty()[0];
+        assertEquals("acknowledgeMode", acProperty.getActivationConfigPropertyName());
+        assertEquals("Auto-acknowledge", acProperty.getActivationConfigPropertyValue());
+        acProperty = activationConfig.getActivationConfigProperty()[1];
+        assertEquals("destinationType", acProperty.getActivationConfigPropertyName());
+        assertEquals("javax.jms.Queue", acProperty.getActivationConfigPropertyValue());
         assertFile(
-                FileUtil.toFile(packageFileObject.getFileObject("TestMDBBean.java")), 
-                getGoldenFile("TestMDBBean.java"), 
+                FileUtil.toFile(packageFileObject.getFileObject("TestMDBQueueBean.java")), 
+                getGoldenFile("testGenerateJavaEE14/TestMDBQueueBean.java"), 
+                FileUtil.toFile(packageFileObject)
+                );
+
+        // Topic based MessageDriven EJB in Java EE 1.4
+        
+        generator = MessageGenerator.create("TestMDBTopic", packageFileObject, false, false, true);
+        generator.generate();
+        
+        messageDriven = (MessageDriven) enterpriseBeans.findBeanByName(
+                EnterpriseBeans.MESSAGE_DRIVEN, MessageDriven.EJB_NAME, "TestMDBTopicBean");
+        assertNotNull(messageDriven);
+        assertEquals("TestMDBTopicMDB", messageDriven.getDefaultDisplayName());
+        assertEquals("TestMDBTopicBean", messageDriven.getEjbName());
+        assertEquals("testGenerateJavaEE14.TestMDBTopicBean", messageDriven.getEjbClass());
+        assertEquals("Container", messageDriven.getTransactionType());
+        assertEquals("javax.jms.Topic", messageDriven.getMessageDestinationType());
+        assertEquals("TestMDBTopicBeanDestination", messageDriven.getMessageDestinationLink());
+        activationConfig = messageDriven.getActivationConfig();
+        assertEquals(5, activationConfig.getActivationConfigProperty().length);
+        acProperty = activationConfig.getActivationConfigProperty()[0];
+        assertEquals("acknowledgeMode", acProperty.getActivationConfigPropertyName());
+        assertEquals("Auto-acknowledge", acProperty.getActivationConfigPropertyValue());
+        acProperty = activationConfig.getActivationConfigProperty()[1];
+        assertEquals("subscriptionDurability", acProperty.getActivationConfigPropertyName());
+        assertEquals("Durable", acProperty.getActivationConfigPropertyValue());
+        acProperty = activationConfig.getActivationConfigProperty()[2];
+        assertEquals("clientId", acProperty.getActivationConfigPropertyName());
+        assertEquals("TestMDBTopicBean", acProperty.getActivationConfigPropertyValue());
+        acProperty = activationConfig.getActivationConfigProperty()[3];
+        assertEquals("subscriptionName", acProperty.getActivationConfigPropertyName());
+        assertEquals("TestMDBTopicBean", acProperty.getActivationConfigPropertyValue());
+        acProperty = activationConfig.getActivationConfigProperty()[4];
+        assertEquals("destinationType", acProperty.getActivationConfigPropertyName());
+        assertEquals("javax.jms.Topic", acProperty.getActivationConfigPropertyValue());
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestMDBTopicBean.java")), 
+                getGoldenFile("testGenerateJavaEE14/TestMDBTopicBean.java"), 
+                FileUtil.toFile(packageFileObject)
+                );
+
+        // added by both previous generators
+        
+        AssemblyDescriptor assemblyDescriptor = ejbJar.getSingleAssemblyDescriptor();
+        List<String> messageDestinationNames = new ArrayList<String>();
+        for (MessageDestination messageDestination : assemblyDescriptor.getMessageDestination()) {
+            messageDestinationNames.add(messageDestination.getMessageDestinationName());
+        }
+        assertTrue(messageDestinationNames.contains("TestMDBQueueBeanDestination"));
+        assertTrue(messageDestinationNames.contains("TestMDBTopicBeanDestination"));
+    }
+    
+    public void testGenerateJavaEE50() throws IOException {
+        TestModule testModule = ejb14();
+        FileObject sourceRoot = testModule.getSources()[0];
+        FileObject packageFileObject = sourceRoot.getFileObject("testGenerateJavaEE50");
+        if (packageFileObject != null) {
+            packageFileObject.delete();
+        }
+        packageFileObject = sourceRoot.createFolder("testGenerateJavaEE50");
+        
+        // Queue based MessageDriven EJB in Java EE 5 defined in annotation
+        
+        MessageGenerator generator = MessageGenerator.create("TestMDBQueue", packageFileObject, true, true, false);
+        generator.generate();
+        
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestMDBQueueBean.java")), 
+                getGoldenFile("testGenerateJavaEE50/TestMDBQueueBean.java"), 
+                FileUtil.toFile(packageFileObject)
+                );
+
+        // Topic based MessageDriven EJB in Java EE 5 defined in annotation
+        
+        generator = MessageGenerator.create("TestMDBTopic", packageFileObject, false, true, false);
+        generator.generate();
+        
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestMDBQueueBean.java")), 
+                getGoldenFile("testGenerateJavaEE50/TestMDBQueueBean.java"), 
                 FileUtil.toFile(packageFileObject)
                 );
     }
-    
+
 }
