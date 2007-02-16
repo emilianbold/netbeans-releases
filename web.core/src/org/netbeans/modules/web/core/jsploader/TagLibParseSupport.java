@@ -182,7 +182,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
         //debug #49300: print out current stacktrace when the editor support is not initialized yet
         if(!wasAnEditorPaneChangeEvent) 
             ErrorManager.getDefault().annotate(new IllegalStateException(), 
-            "The TagLibParseSupport.parseObject() is called before editor supoort is created!"); //NOI18N
+            "The TagLibParseSupport.parseObject() is called before editor support is created!"); //NOI18N
         
         synchronized (parseResultLock) {
             RequestProcessor.Task t = parsingTask;
