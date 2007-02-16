@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,6 +29,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 
@@ -157,13 +158,11 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
             
             // Cell is a properties key.
             if(isKeyCell) {
-                valueLabel.setText(NbBundle.getBundle(PropertyPanel.class).getString("LBL_KeyLabel"));
-                valueLabel.setDisplayedMnemonic((NbBundle.getBundle(BundleEditPanel.class).getString("LBL_KeyLabel_Mnem")).charAt(0));
+                Mnemonics.setLocalizedText(valueLabel, NbBundle.getBundle(PropertyPanel.class).getString("LBL_KeyLabel"));
             }
             // Cell is a properties value.
             else {
-                valueLabel.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel"));
-                valueLabel.setDisplayedMnemonic((NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel_Mnem")).charAt(0));
+                Mnemonics.setLocalizedText(valueLabel, NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel"));
             }
             
             // the cell is a properties key 

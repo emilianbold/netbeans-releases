@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -212,13 +212,10 @@ public class LocalePanel extends JPanel {
     private void initComponents() {
 
         languageLabel = new javax.swing.JLabel();
-        languageLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString("CTL_LanguageCode_Mnem")).charAt(0));
         languageCombo = new JComboBox(Locale.getISOLanguages());
         countryLabel = new javax.swing.JLabel();
-        countryLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString("CTL_CountryCode_Mnem")).charAt(0));
         countryCombo = new JComboBox(Locale.getISOCountries());
         variantLabel = new javax.swing.JLabel();
-        variantLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString("CTL_Variant_Mnem")).charAt(0));
         variantCombo = new JComboBox(new String[] {
             "B", // Bokmal // NOI18N
             "EURO", // EURO // NOI18N
@@ -226,15 +223,13 @@ public class LocalePanel extends JPanel {
         });
         ;
         supportedLabel = new javax.swing.JLabel();
-        supportedLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString("CTL_SupportedLocales_Mnem")).charAt(0));
         jScrollPane1 = new javax.swing.JScrollPane();
         supportedList = new JList(supportedLocales);
         localeLabel = new javax.swing.JLabel();
-        localeLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString("CTL_LocaleLabel_Mnem")).charAt(0));
         localeText = new javax.swing.JTextField();
 
         languageLabel.setLabelFor(languageCombo);
-        languageLabel.setText(NbBundle.getBundle(LocalePanel.class).getString("CTL_LanguageCode")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(languageLabel, NbBundle.getBundle(LocalePanel.class).getString("CTL_LanguageCode")); // NOI18N
 
         languageCombo.setEditable(true);
         languageCombo.setRenderer(new NbBasicComboBoxRenderer() {
@@ -265,7 +260,7 @@ public class LocalePanel extends JPanel {
         });
 
         countryLabel.setLabelFor(countryCombo);
-        countryLabel.setText(NbBundle.getBundle(LocalePanel.class).getString("CTL_CountryCode")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(countryLabel, NbBundle.getBundle(LocalePanel.class).getString("CTL_CountryCode")); // NOI18N
 
         countryCombo.setEditable(true);
         countryCombo.setRenderer(new NbBasicComboBoxRenderer() {
@@ -296,7 +291,7 @@ public class LocalePanel extends JPanel {
         });
 
         variantLabel.setLabelFor(variantCombo);
-        variantLabel.setText(NbBundle.getBundle(LocalePanel.class).getString("CTL_Variant")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(variantLabel, NbBundle.getBundle(LocalePanel.class).getString("CTL_Variant")); // NOI18N
 
         variantCombo.setEditable(true);
         variantCombo.setRenderer(new NbBasicComboBoxRenderer() {
@@ -327,7 +322,7 @@ public class LocalePanel extends JPanel {
         });
 
         supportedLabel.setLabelFor(supportedList);
-        supportedLabel.setText(NbBundle.getBundle(LocalePanel.class).getString("CTL_SupportedLocales")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(supportedLabel, NbBundle.getBundle(LocalePanel.class).getString("CTL_SupportedLocales")); // NOI18N
 
         supportedList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         supportedList.setCellRenderer(new DefaultListCellRenderer() {
@@ -359,7 +354,7 @@ public class LocalePanel extends JPanel {
         jScrollPane1.setViewportView(supportedList);
 
         localeLabel.setLabelFor(localeText);
-        localeLabel.setText(org.openide.util.NbBundle.getMessage(LocalePanel.class, "CTL_Locale")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(localeLabel, org.openide.util.NbBundle.getMessage(LocalePanel.class, "CTL_Locale")); // NOI18N
 
         localeText.setEditable(false);
         localeText.selectAll();

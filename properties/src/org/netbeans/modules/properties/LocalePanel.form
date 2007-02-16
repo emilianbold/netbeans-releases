@@ -80,7 +80,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="languageLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString(&quot;CTL_LanguageCode_Mnem&quot;)).charAt(0));"/>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="languageCombo">
@@ -108,7 +108,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="countryLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString(&quot;CTL_CountryCode_Mnem&quot;)).charAt(0)); "/>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="countryCombo">
@@ -136,7 +136,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="variantLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString(&quot;CTL_Variant_Mnem&quot;)).charAt(0));"/>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="variantCombo">
@@ -164,7 +164,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="supportedLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString(&quot;CTL_SupportedLocales_Mnem&quot;)).charAt(0));"/>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
@@ -197,7 +197,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="localeLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString(&quot;CTL_LocaleLabel_Mnem&quot;)).charAt(0));"/>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="localeText">
