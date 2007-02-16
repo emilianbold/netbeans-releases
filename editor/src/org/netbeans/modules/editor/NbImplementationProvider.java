@@ -21,20 +21,11 @@ package org.netbeans.modules.editor;
 
 import java.util.ResourceBundle;
 import java.awt.*;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.editor.ImplementationProvider;
-
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.editor.BaseKit;
+import org.netbeans.modules.editor.impl.GlyphGutterActionsProvider;
 import org.netbeans.modules.editor.impl.NbEditorImplementationProvider;
-import org.netbeans.modules.editor.options.BaseOptions;
-import org.openide.cookies.InstanceCookie;
-import org.openide.loaders.DataObject;
 
 /** This is NetBeans specific provider of functionality.
  * See base class for detailed comments.
@@ -46,7 +37,7 @@ import org.openide.loaders.DataObject;
 public class NbImplementationProvider extends ImplementationProvider {
 
     public static final String GLYPH_GUTTER_ACTIONS_FOLDER_NAME = 
-        NbEditorImplementationProvider.GLYPH_GUTTER_ACTIONS_FOLDER_NAME;
+        GlyphGutterActionsProvider.GLYPH_GUTTER_ACTIONS_FOLDER_NAME;
     
     private transient NbEditorImplementationProvider provider;
     
@@ -66,41 +57,4 @@ public class NbImplementationProvider extends ImplementationProvider {
     public boolean activateComponent(JTextComponent c) {
         return provider.activateComponent(c);
     }
-
-    
-    private List getInstanceCookiesPerKitClass(Class kitClass){
-        ArrayList retList = new ArrayList();   
-        if (kitClass==null) return retList;
-        BaseKit kit = BaseKit.getKit(kitClass);
-        String mimeType = kit.getContentType();
-        if (mimeType == null) {
-            return retList; //empty
-        }
-
-        BaseOptions bo = (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
-        if (bo==null) return retList; //empty
-
-        List files = bo.getOrderedMultiPropertyFolderFiles(GLYPH_GUTTER_ACTIONS_FOLDER_NAME);
-
-        for (int i=0; i<files.size(); i++){
-            if (!(files.get(i) instanceof DataObject)) continue;
-
-            DataObject dob = (DataObject) files.get(i);
-            InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
-            if (ic!=null){
-                try{
-                    if (Action.class.isAssignableFrom(ic.instanceClass() )){
-                        retList.add(ic);
-                    }
-                }catch(IOException ioe){
-                    ioe.printStackTrace();
-                }catch(ClassNotFoundException cnfe){
-                    cnfe.printStackTrace();
-                }
-            }
-        }
-        return retList;
-    }
-    
-    
 }

@@ -21,21 +21,13 @@ package org.netbeans.modules.editor.impl;
 
 import java.util.ResourceBundle;
 import java.awt.*;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-
+import java.util.List;
 import org.openide.util.NbBundle;
-
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.EditorImplementationProvider;
-import org.openide.cookies.InstanceCookie;
-import org.openide.loaders.DataObject;
-
 import org.openide.windows.TopComponent;
 
 /** 
@@ -44,8 +36,8 @@ import org.openide.windows.TopComponent;
  */
 public final class NbEditorImplementationProvider implements EditorImplementationProvider {
 
-    public static final String GLYPH_GUTTER_ACTIONS_FOLDER_NAME = "GlyphGutterActions"; //NOI18N    
-
+    private static final Action [] NO_ACTIONS = new Action[0];
+    
     public NbEditorImplementationProvider() {
         
     }
@@ -56,25 +48,13 @@ public final class NbEditorImplementationProvider implements EditorImplementatio
     }
     
     public Action[] getGlyphGutterActions(JTextComponent target) {
-        Class kitClass = Utilities.getKitClass(target);
-        List retList = new ArrayList();
-        List icList = getInstanceCookiesPerKitClass(kitClass);
-        try{
-            for (int i = 0; i<icList.size(); i++){
-                InstanceCookie ic = (InstanceCookie)icList.get(i);
-                Object obj = ic.instanceCreate();
-                retList.add(obj);
-            }
-        }catch(IOException ioe){
-            ioe.printStackTrace();
-        }catch(ClassNotFoundException cnfe){
-            cnfe.printStackTrace();
+        String mimeType = NbEditorUtilities.getMimeType(target);
+        if (mimeType != null) {
+            List actions = GlyphGutterActionsProvider.getGlyphGutterActions(mimeType);
+            return (Action []) actions.toArray(new Action [actions.size()]);
+        } else {
+            return NO_ACTIONS;
         }
-        
-        Action ret[] = new Action[retList.size()];
-        retList.toArray(ret);
-        return ret;
-        
     }
     
     public boolean activateComponent(JTextComponent c) {
@@ -84,39 +64,5 @@ public final class NbEditorImplementationProvider implements EditorImplementatio
             return true;
         }
         return false;
-    }
-    
-    private List getInstanceCookiesPerKitClass(Class kitClass){
-        ArrayList retList = new ArrayList();   
-        if (kitClass==null) return retList;
-        BaseKit kit = BaseKit.getKit(kitClass);
-        String name = kit.getContentType();
-        if (name == null) {
-            return retList; //empty
-        }
-
-        BaseOptions bo = BaseOptions.getOptions(kitClass);
-        if (bo==null) return retList; //empty
-
-        List files = bo.getOrderedMultiPropertyFolderFiles(GLYPH_GUTTER_ACTIONS_FOLDER_NAME);
-
-        for (int i=0; i<files.size(); i++){
-            if (!(files.get(i) instanceof DataObject)) continue;
-
-            DataObject dob = (DataObject) files.get(i);
-            InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
-            if (ic!=null){
-                try{
-                    if (Action.class.isAssignableFrom(ic.instanceClass() )){
-                        retList.add(ic);
-                    }
-                }catch(IOException ioe){
-                    ioe.printStackTrace();
-                }catch(ClassNotFoundException cnfe){
-                    cnfe.printStackTrace();
-                }
-            }
-        }
-        return retList;
     }
 }

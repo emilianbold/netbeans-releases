@@ -242,24 +242,38 @@ public class NbEditorUtilities {
         return ret;
     }
 
-    /** Get mime type of the given document. */
+    /**
+     * Gets the mime type of a document. If the mime type can't be determined
+     * this method will return <code>null</code>. This method should work reliably
+     * for Netbeans documents that have their mime type stored in a special
+     * property. For any other documents it will probably just return <code>null</code>.
+     * 
+     * @param doc The document to get the mime type for.
+     * 
+     * @return The mime type of the document or <code>null</code>.
+     * @see NbEditorDocument#MIME_TYPE_PROP
+     */
     public static String getMimeType(Document doc) {
         return (String)doc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
     }
 
     /**
-     * Gets the mime type of a document in the <code>JTextComponent</code>. If
+     * Gets the mime type of a document in <code>JTextComponent</code>. If
      * the mime type can't be determined this method will return <code>null</code>.
+     * It tries to determine the document's mime type first and if that does not
+     * work it uses mime type from the <code>EditorKit</code> attached to the
+     * component.
      * 
-     * @param c The component to get the mime type for.
+     * @param component The component to get the mime type for.
      * 
-     * @return The conponent's mime type or <code>null</code>.
+     * @return The mime type of a document opened in the component or <code>null</code>.
+     * @since 1.29
      */
-    /* package */ static String getMimeType(JTextComponent c) {
-        Document doc = c.getDocument();
+    public static String getMimeType(JTextComponent component) {
+        Document doc = component.getDocument();
         String mimeType = getMimeType(doc);
         if (mimeType == null) {
-            EditorKit kit = c.getUI().getEditorKit(c);
+            EditorKit kit = component.getUI().getEditorKit(component);
             if (kit != null) {
                 mimeType = kit.getContentType();
             }

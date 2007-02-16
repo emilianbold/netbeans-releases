@@ -84,6 +84,23 @@ is the proper place.
 
         <change>
             <api name="editor"/>
+            <summary>Adding NbEditorUtilities.getMimeType(JTextComponent)</summary>
+            <version major="1" minor="29"/>
+            <date day="16" month="2" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility source="compatible" semantic="compatible" binary="compatible" modification="no" addition="yes" deletion="no" deprecation="no" />
+            <description>
+            <p>
+                Adding <code>NbEditorUtilities.getMimeType(JTextComponent)</code>
+                as a standard way of determining a mime type of a Netbeans
+                document loaded in <code>JTextComponent</code>. It complements
+                the <code>NbEditorUtilities.getMimeType(Document)</code> method.
+            </p>
+            </description>
+        </change>
+        
+        <change>
+            <api name="editor"/>
             <summary>Deprecating AllOptionsFolder.loadMimeOption methods</summary>
             <version major="1" minor="28"/>
             <date day="16" month="1" year="2007"/>
