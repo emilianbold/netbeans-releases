@@ -79,7 +79,8 @@ public class DelegateMethodGenerator implements CodeGenerator {
         }
         
         public Iterable<? extends CodeGenerator> create(CompilationController controller, TreePath path) throws IOException {
-            if (Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) == null)
+            path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
+            if (path == null)
                 return Collections.emptySet();
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             Elements elements = controller.getElements();
