@@ -1160,13 +1160,14 @@ class JsfForm {
 //                InSyncServiceProvider.get().doOutsideOfRefactoringSession(new Runnable() {
                 MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(new Runnable() {
                     public void run() {
-                        // Do the stuff on UI thread as some stuff gets updated that requires to be on UI thread
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                jsfForm.replaceFacesModel((FileObject)evt.getOldValue(), (FileObject)evt.getNewValue());
-                            }
-                        });
+ */
+                // Do the stuff on UI thread as some stuff gets updated that requires to be on UI thread
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        jsfForm.replaceFacesModel((FileObject)evt.getOldValue(), (FileObject)evt.getNewValue());
                     }
+                });
+/*                  }
                 });
 //*/
             }
