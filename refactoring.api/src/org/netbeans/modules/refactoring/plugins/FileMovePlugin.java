@@ -27,6 +27,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -92,6 +93,9 @@ public class FileMovePlugin implements RefactoringPlugin {
                     try {
                         FileObject target = FileHandlingFactory.getOrCreateFolder((URL) refactoring.getTarget());
                         DataFolder targetFolder = DataFolder.findFolder(target);
+                        if (!fo.isValid()) {
+                            fo = FileUtil.toFileObject(FileUtil.toFile(fo));
+                        }
                         source = DataObject.find(fo);
                         sourceFolder = source.getFolder();
                         source.move(targetFolder);
