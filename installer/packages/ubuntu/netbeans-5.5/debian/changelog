@@ -1,4 +1,20 @@
-netbeans5.5 (5.5-0.50) java-test; urgency=low
+netbeans5.5 (5.5-0.51) feisty; urgency=low
+
+  * Note for reviewers: netbeans5.5.prerm removes the alternative for
+    /usr/bin/netbeans (which is used so that a future netbeans6.0 package 
+    could co-exist with a netbeans5.5 package).
+  * Certain unnecessary *.dll files were removed
+  * Certain unnecessary *.zip files were removed
+  * The manpage should be fixed
+  * Worked around an apparent cdbs bug to clean *.cdbs-config_list files
+  * Added note in README.Debian to explain why certain *.exe files are needed
+  * Changed release in changelog to feisty
+  * The new netbeans5.5-doc package has been added
+  * Added upstream doc source to copyright (PKG_PREAMBLE)
+
+ -- Tom Marble <tom.marble@sun.com>  Thu, 15 Feb 2007 23:21:18 -0600
+
+netbeans5.5 (5.5-0.50) feisty; urgency=low
 
   * Move netbeans.conf to /etc/netbeans5.5. Symlink to /etc/netbeans5.5/netbeans.conf
     is created at original netbeans.conf location at /usr/share/netbeans/5.5/etc.
@@ -7,7 +23,7 @@ netbeans5.5 (5.5-0.50) java-test; urgency=low
 
  -- Marek Slama <mslama@netbeans.org>  Wed, 14 Feb 2007 13:10:00 +0100
 
-netbeans5.5 (5.5-0.49) java-test; urgency=low
+netbeans5.5 (5.5-0.49) feisty; urgency=low
 
   [ Marek Slama ]
 
@@ -21,7 +37,7 @@ netbeans5.5 (5.5-0.49) java-test; urgency=low
 
  -- Tom Marble <tom.marble@sun.com>  Sat, 10 Feb 2007 18:10:09 -0600
 
-netbeans5.5 (5.5-0.48) java-test; urgency=low
+netbeans5.5 (5.5-0.48) feisty; urgency=low
 
   * Removed some debugging information from rules
   * Changed target distribution to feisty for REVU
@@ -34,7 +50,7 @@ netbeans5.5 (5.5-0.48) java-test; urgency=low
 
  -- Tom Marble <tom.marble@sun.com>  Thu,  8 Feb 2007 00:32:32 -0600
 
-netbeans5.5 (5.5-0.47) java-test; urgency=low
+netbeans5.5 (5.5-0.47) feisty; urgency=low
 
   * Added rsync to Build-Depends:
   * Fixed IDE localization packages (missing many files)
@@ -42,7 +58,7 @@ netbeans5.5 (5.5-0.47) java-test; urgency=low
 
  -- Tom Marble <tom.marble@sun.com>  Thu,  8 Feb 2007 00:15:14 -0600
 
-netbeans5.5 (5.5-0.46) java-test; urgency=low
+netbeans5.5 (5.5-0.46) feisty; urgency=low
 
   * Insure platform script harness/launchers/app.sh is executable
   * Corrected placement of DISTRIBUTION.txt for the platform package
@@ -50,14 +66,14 @@ netbeans5.5 (5.5-0.46) java-test; urgency=low
 
  -- Tom Marble <tom.marble@sun.com>  Wed,  7 Feb 2007 23:52:32 -0600
 
-netbeans5.5 (5.5-0.45) java-test; urgency=low
+netbeans5.5 (5.5-0.45) feisty; urgency=low
 
   * Created lists of files to move (instead of copying/deleting)
   * Began separation of localized files
 
  -- Tom Marble <tom.marble@sun.com>  Wed,  7 Feb 2007 23:13:27 -0600
 
-netbeans5.5 (5.5-0.44) java-test; urgency=low
+netbeans5.5 (5.5-0.44) feisty; urgency=low
 
   * Included tarball.mk to unpack the upstream tarballs
   * Included simple-patchsys.mk to fix spelling error as a patch
@@ -69,20 +85,20 @@ netbeans5.5 (5.5-0.44) java-test; urgency=low
 
  -- Tom Marble <tom.marble@sun.com>  Wed,  7 Feb 2007 16:31:41 -0600
 
-netbeans5.5 (5.5-0.43) java-test; urgency=low
+netbeans5.5 (5.5-0.43) feisty; urgency=low
 
   * Concentrated debian/copyright work in debian/copyright-files
   * Migrate to cdbs
   
  -- Tom Marble <tom.marble@sun.com>  Wed,  7 Feb 2007 06:33:52 -0600
 
-netbeans5.5 (5.5-0.42) java-test; urgency=low
+netbeans5.5 (5.5-0.42) feisty; urgency=low
 
   * Included upstream tarballs in orig file
 
  -- Tom Marble <tom.marble@sun.com>  Tue,  6 Feb 2007 15:35:59 -0600
 
-netbeans5.5 (5.5-0.41) java-test; urgency=low
+netbeans5.5 (5.5-0.41) feisty; urgency=low
 
   * removed netbeans5.5-platform.postinst which is no longer necessary
   * fixed upstream spelling error in copyright file (removed override)
@@ -90,14 +106,14 @@ netbeans5.5 (5.5-0.41) java-test; urgency=low
   
  -- Tom Marble <tom.marble@sun.com>  Tue, 30 Jan 2007 13:58:21 -0600
 
-netbeans5.5 (5.5-0.4) java-test; urgency=low
+netbeans5.5 (5.5-0.4) feisty; urgency=low
 
   * Fix alternatives - man page is installed using alternatives. netbeans.desktop is added
     to alternatives.
 
  -- Marek Slama <mslama@netbeans.org>  Tue, 30 Jan 2007 14:11:00 +0100
 
-netbeans5.5 (5.5-0.3) java-test; urgency=low
+netbeans5.5 (5.5-0.3) feisty; urgency=low
 
   * Remove --verbose from netbeans5.5.postinst and netbeans5.5.postrm in command
     update-alternatives.
@@ -108,14 +124,14 @@ netbeans5.5 (5.5-0.3) java-test; urgency=low
 
  -- Marek Slama <mslama@netbeans.org>  Fri, 26 Jan 2007 16:50:00 +0100
 
-netbeans5.5 (5.5-0.2) java-test; urgency=low
+netbeans5.5 (5.5-0.2) feisty; urgency=low
 
   * Non-maintainer upload
   * Fixed dependency bugs in control
 
  -- Tom Marble <tom.marble@sun.com>  Thu, 25 Jan 2007 14:23:27 -0600
 
-netbeans5.5 (5.5-0.1) java-test; urgency=low
+netbeans5.5 (5.5-0.1) feisty; urgency=low
 
   [ Trung Duc Tran ]
   
