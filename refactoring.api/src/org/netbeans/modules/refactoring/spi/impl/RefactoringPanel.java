@@ -714,13 +714,15 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                                 splitPane.setDividerLocation(0.3);
                                 if (elements.size() < MAX_ROWS) {
                                     expandAll();
-                                    selectNextUsage();
+                                    if (!isQuery)
+                                        selectNextUsage();
                                 } else
                                     expandButton.setSelected(false);
                             } else {
                                 if (expandButton.isSelected()) {
                                     expandAll();
-                                    selectNextUsage();
+                                    if (!isQuery)
+                                        selectNextUsage();
                                 } else
                                     expandButton.setSelected(false);
                             }
