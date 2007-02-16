@@ -273,197 +273,203 @@ public final class SyntaxParser {
     }
     
     SyntaxElement getNextElement(int offset) throws javax.swing.text.BadLocationException {
-        TokenSequence ts = tokenSequence(hi, offset);
-        if(ts == null) {
-            return null;
-        }
-        
-        ts.move(offset);
-        if (!ts.moveNext())
-            return null;
-        org.netbeans.api.lexer.Token item = ts.token();
-        int lastOffset = getTokenEnd(hi, item);
-        
-        if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.BLOCK_COMMENT) {
-            do {
-                lastOffset = getTokenEnd(hi, ts.token());
-            } while (ts.token().id() ==
-                    org.netbeans.api.html.lexer.HTMLTokenId.BLOCK_COMMENT &&
-                    ts.moveNext());
-            return new SyntaxElement(this, offset, lastOffset,
-                    SyntaxElement.TYPE_COMMENT);
-        }
-        if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.DECLARATION) {
-            java.lang.StringBuffer sb = new java.lang.StringBuffer(item.text());
-            
-            while (item.id() ==
-                    org.netbeans.api.html.lexer.HTMLTokenId.DECLARATION ||
-                    item.id() ==
-                    org.netbeans.api.html.lexer.HTMLTokenId.SGML_COMMENT) {
-                lastOffset = getTokenEnd(hi, item);
-                if (!ts.moveNext()) {
-                    break;
-                }
-                item = ts.token();
-                if (item.id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.DECLARATION)
-                    sb.append(item.text().toString());
+        ((BaseDocument)doc).readLock();
+        try {
+            TokenSequence ts = tokenSequence(hi, offset);
+            if(ts == null) {
+                return null;
             }
-            java.lang.String image = sb.toString();
             
-            if (!image.startsWith("<!DOCTYPE"))
-                return new org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration(this,
-                        offset,
-                        lastOffset,
-                        null,
-                        null,
-                        null);
-            image = image.substring(9).trim();
-            int index = image.indexOf(' ');
+            ts.move(offset);
+            if (!ts.moveNext())
+                return null;
+            org.netbeans.api.lexer.Token item = ts.token();
+            int lastOffset = getTokenEnd(hi, item);
             
-            if (index < 0)
-                return new org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration(this,
-                        offset,
-                        lastOffset,
-                        null,
-                        null,
-                        null);
-            java.lang.String rootElem = image.substring(0, index);
-            
-            image = image.substring(index).trim();
-            if (image.startsWith("PUBLIC")) {
-                image = image.substring(6).trim();
-                sb = new java.lang.StringBuffer(image);
-                java.lang.String pi = getQuotedString(sb);
+            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.BLOCK_COMMENT) {
+                do {
+                    lastOffset = getTokenEnd(hi, ts.token());
+                } while (ts.token().id() ==
+                        org.netbeans.api.html.lexer.HTMLTokenId.BLOCK_COMMENT &&
+                        ts.moveNext());
+                return new SyntaxElement(this, offset, lastOffset,
+                        SyntaxElement.TYPE_COMMENT);
+            }
+            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.DECLARATION) {
+                java.lang.StringBuffer sb = new java.lang.StringBuffer(item.text());
                 
-                if (pi != null) {
+                while (item.id() ==
+                        org.netbeans.api.html.lexer.HTMLTokenId.DECLARATION ||
+                        item.id() ==
+                        org.netbeans.api.html.lexer.HTMLTokenId.SGML_COMMENT) {
+                    lastOffset = getTokenEnd(hi, item);
+                    if (!ts.moveNext()) {
+                        break;
+                    }
+                    item = ts.token();
+                    if (item.id() ==
+                            org.netbeans.api.html.lexer.HTMLTokenId.DECLARATION)
+                        sb.append(item.text().toString());
+                }
+                java.lang.String image = sb.toString();
+                
+                if (!image.startsWith("<!DOCTYPE"))
+                    return new org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration(this,
+                            offset,
+                            lastOffset,
+                            null,
+                            null,
+                            null);
+                image = image.substring(9).trim();
+                int index = image.indexOf(' ');
+                
+                if (index < 0)
+                    return new org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration(this,
+                            offset,
+                            lastOffset,
+                            null,
+                            null,
+                            null);
+                java.lang.String rootElem = image.substring(0, index);
+                
+                image = image.substring(index).trim();
+                if (image.startsWith("PUBLIC")) {
+                    image = image.substring(6).trim();
+                    sb = new java.lang.StringBuffer(image);
+                    java.lang.String pi = getQuotedString(sb);
+                    
+                    if (pi != null) {
+                        java.lang.String si = getQuotedString(sb);
+                        
+                        return new org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration(this,
+                                offset,
+                                lastOffset,
+                                rootElem,
+                                pi,
+                                si);
+                    }
+                } else if (image.startsWith("SYSTEM")) {
+                    image = image.substring(6).trim();
+                    sb = new java.lang.StringBuffer(image);
                     java.lang.String si = getQuotedString(sb);
                     
-                    return new org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration(this,
-                            offset,
-                            lastOffset,
-                            rootElem,
-                            pi,
-                            si);
+                    if (si != null) {
+                        return new org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration(this,
+                                offset,
+                                lastOffset,
+                                rootElem,
+                                null,
+                                si);
+                    }
                 }
-            } else if (image.startsWith("SYSTEM")) {
-                image = image.substring(6).trim();
-                sb = new java.lang.StringBuffer(image);
-                java.lang.String si = getQuotedString(sb);
+                return new org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration(this,
+                        offset,
+                        lastOffset,
+                        null,
+                        null,
+                        null);
+            }
+            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.ERROR)
+                return new SyntaxElement(this, item.offset(hi), lastOffset,
+                        SyntaxElement.TYPE_ERROR);
+            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TEXT ||
+                    item.id() == org.netbeans.api.html.lexer.HTMLTokenId.CHARACTER) {
+                do {
+                    lastOffset = getTokenEnd(hi, item);
+                    item = ts.token();
+                } while (ts.moveNext() &&
+                        (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TEXT ||
+                        item.id() ==
+                        org.netbeans.api.html.lexer.HTMLTokenId.CHARACTER));
+                return new SyntaxElement(this, offset, lastOffset,
+                        SyntaxElement.TYPE_TEXT);
+            }
+            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.SCRIPT) {
+                return new SyntaxElement(this, offset, getTokenEnd(hi, item),
+                        SyntaxElement.TYPE_SCRIPT);
+            }
+            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE || (item.id() ==
+                    org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL &&
+                    item.text().toString().equals("</"))) {
+                java.lang.String name = item.text().toString();
                 
-                if (si != null) {
-                    return new org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration(this,
+                if (item.id() ==
+                        org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL) {
+                    ts.moveNext();
+                    name = ts.token().text().toString();
+                }
+                ts.moveNext();
+                item = ts.token();
+                do {
+                    item = ts.token();
+                    lastOffset = getTokenEnd(hi, item);
+                } while (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.WS &&
+                        ts.moveNext());
+                if (item.id() ==
+                        org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE_SYMBOL) {
+                    return new org.netbeans.editor.ext.html.parser.SyntaxElement.Named(this,
+                            offset,
+                            getTokenEnd(hi,
+                            item),
+                            SyntaxElement.TYPE_ENDTAG,
+                            name);
+                } else {
+                    return new org.netbeans.editor.ext.html.parser.SyntaxElement.Named(this,
                             offset,
                             lastOffset,
-                            rootElem,
-                            null,
-                            si);
+                            SyntaxElement.TYPE_ENDTAG,
+                            name);
                 }
             }
-            return new org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration(this,
-                    offset,
-                    lastOffset,
-                    null,
-                    null,
-                    null);
-        }
-        if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.ERROR)
-            return new SyntaxElement(this, item.offset(hi), lastOffset,
-                    SyntaxElement.TYPE_ERROR);
-        if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TEXT ||
-                item.id() == org.netbeans.api.html.lexer.HTMLTokenId.CHARACTER) {
-            do {
-                lastOffset = getTokenEnd(hi, item);
-                item = ts.token();
-            } while (ts.moveNext() &&
-                    (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TEXT ||
-                    item.id() ==
-                    org.netbeans.api.html.lexer.HTMLTokenId.CHARACTER));
-            return new SyntaxElement(this, offset, lastOffset,
-                    SyntaxElement.TYPE_TEXT);
-        }
-        if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.SCRIPT) {
-            return new SyntaxElement(this, offset, getTokenEnd(hi, item),
-                    SyntaxElement.TYPE_SCRIPT);
-        }
-        if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE || (item.id() ==
-                org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL &&
-                item.text().toString().equals("</"))) {
-            java.lang.String name = item.text().toString();
-            
-            if (item.id() ==
-                    org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL) {
-                ts.moveNext();
-                name = ts.token().text().toString();
-            }
-            ts.moveNext();
-            item = ts.token();
-            do {
-                item = ts.token();
-                lastOffset = getTokenEnd(hi, item);
-            } while (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.WS &&
-                    ts.moveNext());
-            if (item.id() ==
-                    org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE_SYMBOL) {
-                return new org.netbeans.editor.ext.html.parser.SyntaxElement.Named(this,
-                        offset,
-                        getTokenEnd(hi,
-                        item),
-                        SyntaxElement.TYPE_ENDTAG,
-                        name);
-            } else {
-                return new org.netbeans.editor.ext.html.parser.SyntaxElement.Named(this,
-                        offset,
-                        lastOffset,
-                        SyntaxElement.TYPE_ENDTAG,
-                        name);
-            }
-        }
-        if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN ||
-                (item.id() ==
-                org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL &&
-                !item.text().toString().equals("</"))) {
-            java.lang.String name = item.text().toString();
-            java.util.ArrayList attrs = new java.util.ArrayList();
-            
-            if (item.id() ==
-                    org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL) {
-                ts.moveNext();
-                name = ts.token().text().toString();
-            }
-            ts.moveNext();
-            item = ts.token();
-            do {
-                item = ts.token();
+            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN ||
+                    (item.id() ==
+                    org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL &&
+                    !item.text().toString().equals("</"))) {
+                java.lang.String name = item.text().toString();
+                java.util.ArrayList attrs = new java.util.ArrayList();
+                
                 if (item.id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.ARGUMENT)
-                    attrs.add(item.text().toString());
-                lastOffset = getTokenEnd(hi, item);
-            } while ((item.id() == org.netbeans.api.html.lexer.HTMLTokenId.WS ||
-                    item.id() ==
-                    org.netbeans.api.html.lexer.HTMLTokenId.ARGUMENT ||
-                    item.id() ==
-                    org.netbeans.api.html.lexer.HTMLTokenId.OPERATOR ||
-                    item.id() == org.netbeans.api.html.lexer.HTMLTokenId.VALUE ||
-                    item.id() ==
-                    org.netbeans.api.html.lexer.HTMLTokenId.CHARACTER) &&
-                    ts.moveNext());
-            if (item.id() ==
-                    org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE_SYMBOL) {
-                return new org.netbeans.editor.ext.html.parser.SyntaxElement.Tag(this,
-                        offset,
-                        getTokenEnd(hi,
-                        item),
-                        name,
-                        attrs,
-                        item.text().toString().equals("/>"));
-            } else {
-                return new org.netbeans.editor.ext.html.parser.SyntaxElement.Tag(this,
-                        offset,
-                        lastOffset,
-                        name,
-                        attrs);
+                        org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL) {
+                    ts.moveNext();
+                    name = ts.token().text().toString();
+                }
+                ts.moveNext();
+                item = ts.token();
+                do {
+                    item = ts.token();
+                    if (item.id() ==
+                            org.netbeans.api.html.lexer.HTMLTokenId.ARGUMENT)
+                        attrs.add(item.text().toString());
+                    lastOffset = getTokenEnd(hi, item);
+                } while ((item.id() == org.netbeans.api.html.lexer.HTMLTokenId.WS ||
+                        item.id() ==
+                        org.netbeans.api.html.lexer.HTMLTokenId.ARGUMENT ||
+                        item.id() ==
+                        org.netbeans.api.html.lexer.HTMLTokenId.OPERATOR ||
+                        item.id() == org.netbeans.api.html.lexer.HTMLTokenId.VALUE ||
+                        item.id() ==
+                        org.netbeans.api.html.lexer.HTMLTokenId.CHARACTER) &&
+                        ts.moveNext());
+                if (item.id() ==
+                        org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE_SYMBOL) {
+                    return new org.netbeans.editor.ext.html.parser.SyntaxElement.Tag(this,
+                            offset,
+                            getTokenEnd(hi,
+                            item),
+                            name,
+                            attrs,
+                            item.text().toString().equals("/>"));
+                } else {
+                    return new org.netbeans.editor.ext.html.parser.SyntaxElement.Tag(this,
+                            offset,
+                            lastOffset,
+                            name,
+                            attrs);
+                }
             }
+            
+        } finally {
+            ((BaseDocument)doc).readUnlock();
         }
         return null;
     }
