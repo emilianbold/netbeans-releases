@@ -416,7 +416,7 @@ public class PluginProperties  {
             
         }
         
-        File ff = new File(Installer.ideHomeLocation);
+        File ff = new File(System.getProperty("netbeans.home"));
         
         File f3 = new File(ff.getParentFile(),COBUNDLE_DEFAULT_INSTALL_PATH);
         if ((f3!=null)&&(f3.exists())){

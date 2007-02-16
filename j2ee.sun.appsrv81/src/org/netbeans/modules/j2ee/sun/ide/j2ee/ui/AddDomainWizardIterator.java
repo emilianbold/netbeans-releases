@@ -276,7 +276,7 @@ public final class AddDomainWizardIterator implements
         }
     }
     
-    public InstanceProperties createInstance(){
+    InstanceProperties createInstance(){
         InstanceProperties retVal = null;
         try {
             if (isValidHost((String) wizard.getProperty(HOST))) {
