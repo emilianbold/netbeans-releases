@@ -47,6 +47,7 @@ import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 
@@ -66,6 +67,8 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
     public static final String PROP_TIME_INCREMENT = "animationTimeIncrement"; //NOI18N
     public static final String PROP_RESET_ANIMATION_WHEN_STOPPED = "resetAnimationWhenStopped"; //NOI18N
     
+    public static final String[] MIDP_NB_SVG_LIBRARY = {"nb_svg_midp_components"}; //NOI18N
+
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
@@ -81,6 +84,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
     public void postInitialize(DesignComponent component) {
         component.writeProperty(PROP_START_ANIM_IMMEDEATELY, MidpTypes.createBooleanValue(true));
         component.writeProperty(PROP_RESET_ANIMATION_WHEN_STOPPED, MidpTypes.createBooleanValue(true));
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), MIDP_NB_SVG_LIBRARY);
     }
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {

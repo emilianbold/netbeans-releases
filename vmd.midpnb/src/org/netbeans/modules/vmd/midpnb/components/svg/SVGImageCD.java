@@ -34,11 +34,11 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.imagechooser.PropertyEditorImageChooser;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 
 /**
  *
@@ -56,6 +56,10 @@ public class SVGImageCD extends ComponentDescriptor {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
     
+    public void postInitialize (DesignComponent component) {
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), SVGAnimatorWrapperCD.MIDP_NB_SVG_LIBRARY);
+    }
+
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
     }

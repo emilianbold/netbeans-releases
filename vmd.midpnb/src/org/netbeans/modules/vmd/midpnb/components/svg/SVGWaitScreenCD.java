@@ -36,6 +36,7 @@ import org.openide.util.NbBundle;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 
 /**
  * @author Karol Harezlak
@@ -54,6 +55,10 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
     
+    public void postInitialize (DesignComponent component) {
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), SVGAnimatorWrapperCD.MIDP_NB_SVG_LIBRARY);
+    }
+
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(SVGAnimatorWrapperCD.TYPEID, TYPEID, true, true);
     }

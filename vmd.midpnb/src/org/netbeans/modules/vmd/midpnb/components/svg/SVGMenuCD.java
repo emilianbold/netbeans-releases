@@ -34,9 +34,9 @@ import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.flow.FlowSVGMenuElementPinOrderPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
-
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 
 /**
  *
@@ -54,6 +54,10 @@ public class SVGMenuCD extends ComponentDescriptor {
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
+    }
+
+    public void postInitialize (DesignComponent component) {
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), SVGAnimatorWrapperCD.MIDP_NB_SVG_LIBRARY);
     }
 
     public TypeDescriptor getTypeDescriptor() {

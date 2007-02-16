@@ -32,9 +32,9 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInteger;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
-
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 
 /**
  *
@@ -52,6 +52,10 @@ public class SVGSplashScreenCD extends ComponentDescriptor {
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
+    }
+
+    public void postInitialize (DesignComponent component) {
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), SVGAnimatorWrapperCD.MIDP_NB_SVG_LIBRARY);
     }
 
     public TypeDescriptor getTypeDescriptor() {
