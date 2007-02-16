@@ -182,12 +182,10 @@ public class FileProxy {
         } catch (DownloadException e) {
             if (UiMode.getCurrentUiMode() == UiMode.SWING) {
                 new ProxySettingsDialog().execute();
-                getFile(url, progress, deleteOnExit);
+                return getFile(url, progress, deleteOnExit);
             } else {
                 throw e;
             }
         }
-        
-        return null;
     }
 }
