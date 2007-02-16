@@ -84,6 +84,10 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
         return (testedString != null) && (testedString.length() > 0);
     }
     
+    public static boolean strEmpty(String testedString) {
+        return testedString == null || testedString.length() == 0;
+    }
+    
     public static boolean strEquals(String one, String two) {
         boolean result = false;
         
@@ -96,6 +100,18 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
                 result = one.equals(two);
             }
         }
+        return result;
+    }
+    
+    public static boolean strEquivalent(String one, String two) {
+        boolean result = false;
+        
+        if(strEmpty(one) && strEmpty(two)) {
+            result = true;
+        } else if(one != null && two != null) {
+            result = one.equals(two);
+        }
+        
         return result;
     }
     

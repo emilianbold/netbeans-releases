@@ -397,18 +397,18 @@ public class SelectedEndpointPanel extends javax.swing.JPanel {
     private void jTxtRealmKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtRealmKeyReleased
         if(!selectedEndpointSetup && jRBnLoginConfig.isSelected() && jRBnLoginConfig.isVisible()) {
             String newRealm = jTxtRealm.getText();
-            if(Utils.notEmpty(newRealm)) {
-                try {
-                    String oldRealm = loginConfig.getRealm();
-                    newRealm = newRealm.trim();
-                    if(!Utils.strEquals(newRealm, oldRealm)) {
-                        loginConfig.setRealm(newRealm);
-                        selectedEndpoint.getLoginConfig().setRealm(newRealm);
-                        masterPanel.getBean().firePropertyChange("loginConfig-realm", oldRealm, newRealm);
-                    }
-                } catch(VersionNotSupportedException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            if(newRealm != null) {
+                newRealm = newRealm.trim();
+            }
+            try {
+                String oldRealm = loginConfig.getRealm();
+                if(!Utils.strEquivalent(newRealm, oldRealm)) {
+                    loginConfig.setRealm(newRealm);
+                    selectedEndpoint.getLoginConfig().setRealm(newRealm);
+                    masterPanel.getBean().firePropertyChange("loginConfig-realm", oldRealm, newRealm);
                 }
+            } catch(VersionNotSupportedException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
     }//GEN-LAST:event_jTxtRealmKeyReleased
