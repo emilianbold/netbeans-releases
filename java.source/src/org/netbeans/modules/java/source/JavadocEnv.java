@@ -38,6 +38,7 @@ import com.sun.tools.javadoc.AnnotationTypeElementDocImpl;
 import com.sun.tools.javadoc.ClassDocImpl;
 import com.sun.tools.javadoc.ConstructorDocImpl;
 import com.sun.tools.javadoc.DocEnv;
+import com.sun.tools.javadoc.ExecutableMemberDocImpl;
 import com.sun.tools.javadoc.FieldDocImpl;
 import com.sun.tools.javadoc.MethodDocImpl;
 import com.sun.tools.javadoc.ModifierFilter;
@@ -133,7 +134,10 @@ public class JavadocEnv extends DocEnv {
 
     @Override
     public MethodDocImpl getMethodDoc(MethodSymbol meth) {
-        MethodDocImpl result = (MethodDocImpl)methodMap.get(meth);
+        ExecutableMemberDocImpl docImpl = methodMap.get(meth);
+        if (docImpl != null && !docImpl.isMethod())
+            return null;
+        MethodDocImpl result = (MethodDocImpl)docImpl;
         if (result != null) return result;
         result = new JavadocMethod(this, meth);
         methodMap.put(meth, result);
