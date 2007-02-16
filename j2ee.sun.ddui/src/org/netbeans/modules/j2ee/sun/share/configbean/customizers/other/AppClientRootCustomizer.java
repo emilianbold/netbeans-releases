@@ -201,15 +201,15 @@ public class AppClientRootCustomizer extends BaseCustomizer implements TableMode
     private void jTxtVendorKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtVendorKeyReleased
         if(!setup && jTxtVendor.isVisible() && theBean != null) {
             String newVendor = jTxtVendor.getText();
-            if(Utils.notEmpty(newVendor)) {
-                String oldVendor = theBean.getVendor();
+            if(newVendor != null) {
                 newVendor = newVendor.trim();
-                if(!Utils.strEquals(newVendor, oldVendor)) {
-                    try {
-                        theBean.setVendor(newVendor);
-                    } catch(java.beans.PropertyVetoException exception) {
-                        jTxtVendor.setText(oldVendor);
-                    }
+            }
+            String oldVendor = theBean.getVendor();
+            if(!Utils.strEquivalent(newVendor, oldVendor)) {
+                try {
+                    theBean.setVendor(newVendor);
+                } catch(java.beans.PropertyVetoException exception) {
+                    jTxtVendor.setText(oldVendor);
                 }
             }
         }
@@ -218,16 +218,16 @@ public class AppClientRootCustomizer extends BaseCustomizer implements TableMode
     private void jTxtContextRootKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtContextRootKeyReleased
         if(!setup && jTxtContextRoot.isVisible() && theBean != null) {
             String newContextRoot = jTxtContextRoot.getText();
-            if(Utils.notEmpty(newContextRoot)) {
-                String oldContextRoot = theBean.getVendor();
+            if(newContextRoot != null) {
                 newContextRoot = newContextRoot.trim();
-                if(!Utils.strEquals(newContextRoot, oldContextRoot)) {
-                    try {
-                        theBean.setContextRoot(newContextRoot);
-//                        theBean.validateField(AppClientRoot.FIELD_JWSA_CONTEXT_ROOT);
-                    } catch(java.beans.PropertyVetoException exception) {
-                        jTxtContextRoot.setText(oldContextRoot);
-                    }
+            }
+            String oldContextRoot = theBean.getContextRoot();
+            if(!Utils.strEquivalent(newContextRoot, oldContextRoot)) {
+                try {
+                    theBean.setContextRoot(newContextRoot);
+//                    theBean.validateField(AppClientRoot.FIELD_JWSA_CONTEXT_ROOT);
+                } catch(java.beans.PropertyVetoException exception) {
+                    jTxtContextRoot.setText(oldContextRoot);
                 }
             }
         }
@@ -370,8 +370,10 @@ public class AppClientRootCustomizer extends BaseCustomizer implements TableMode
                 Object eventSource = e.getSource();
                 if(eventSource == messageDestinationModel) {
                     theBean.setMessageDestinations(messageDestinationModel.getData());
+                    theBean.firePropertyChange("messageDestination", null, messageDestinationModel.getData());
 //                } else if(eventSource == messageDestinationRefModel) {
 //                    theBean.setMessageDestinationRefs(messageDestinationRefModel.getData());
+//                    theBean.firePropertyChange("messageDestinationRef", null, messageDestinationRefModel.getData());
                 }
             } catch(PropertyVetoException ex) {
                 // FIXME undo whatever changed... how?
