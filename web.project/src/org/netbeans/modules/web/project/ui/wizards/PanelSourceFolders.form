@@ -83,7 +83,7 @@
           <ResourceString bundle="org/netbeans/modules/web/project/ui/wizards/Bundle.properties" key="LBL_WebPagesFolder_MNE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/project/ui/wizards/Bundle.properties" key="LBL_NWP1_BrowseLocation_Button" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/project/ui/wizards/Bundle.properties" key="LBL_BrowseWebPagesLocation_Button" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
@@ -133,10 +133,10 @@
     <Component class="javax.swing.JButton" name="jButtonLibraries">
       <Properties>
         <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/web/project/ui/wizards/Bundle.properties" key="LBL_BrowseProjectFolder_MNE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/project/ui/wizards/Bundle.properties" key="MNE_BrowseLibrariesLocation" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/project/ui/wizards/Bundle.properties" key="LBL_NWP1_BrowseLocation_Button" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/project/ui/wizards/Bundle.properties" key="LBL_BrowseLibrariesLocation_Button" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AccessibilityProperties>

@@ -357,7 +357,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelSrcLocationDesc, NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationSrcDesc"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelSrcLocationDesc, NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationSrcDesc")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -368,7 +368,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         jLabelSrcLocation.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_ImportLocation_LabelMnemonic").charAt(0));
         jLabelSrcLocation.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelSrcLocation.setLabelFor(moduleLocationTextField);
-        jLabelSrcLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationSrc_Label"));
+        jLabelSrcLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationSrc_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -376,7 +376,6 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabelSrcLocation, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -384,25 +383,25 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(moduleLocationTextField, gridBagConstraints);
-        moduleLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocation_A11YDesc"));
+        moduleLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocation_A11YDesc")); // NOI18N
 
         jButtonSrcLocation.setMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_BrowseLocation_MNE").charAt(0));
-        jButtonSrcLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        jButtonSrcLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button")); // NOI18N
         jButtonSrcLocation.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonSrcLocationActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonSrcLocation, gridBagConstraints);
-        jButtonSrcLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocationBrowse_A11YDesc"));
+        jButtonSrcLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocationBrowse_A11YDesc")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelPrjLocationDesc, NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationPrjDesc"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelPrjLocationDesc, NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationPrjDesc")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -415,7 +414,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         jLabelPrjName.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectName_LabelMnemonic").charAt(0));
         jLabelPrjName.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelPrjName.setLabelFor(projectNameTextField);
-        jLabelPrjName.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectName_Label"));
+        jLabelPrjName.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectName_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -423,19 +422,18 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         add(jLabelPrjName, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         add(projectNameTextField, gridBagConstraints);
-        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_ProjectName_A11YDesc"));
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_ProjectName_A11YDesc")); // NOI18N
 
         jLabelPrjLocation.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectLocation_LabelMnemonic").charAt(0));
         jLabelPrjLocation.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelPrjLocation.setLabelFor(projectLocationTextField);
-        jLabelPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
+        jLabelPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -449,30 +447,29 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
                 projectLocationTextFieldKeyReleased(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(projectLocationTextField, gridBagConstraints);
-        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc"));
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc")); // NOI18N
 
         jButtonPrjLocation.setMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_BrowseProjectFolder_MNE").charAt(0));
-        jButtonPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        jButtonPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_BrowseProjectLocation_Button")); // NOI18N
         jButtonPrjLocation.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonPrjLocationActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonPrjLocation, gridBagConstraints);
-        jButtonPrjLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_BrowseLocation_A11YDesc"));
+        jButtonPrjLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_BrowseLocation_A11YDesc")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -486,27 +483,26 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         jPanelOptions.setLayout(new java.awt.GridBagLayout());
 
         jLabelEnterprise.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_AddToEnterprise_LabelMnemonic").charAt(0));
-        jLabelEnterprise.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_AddToEnterprise_Label"));
+        jLabelEnterprise.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_AddToEnterprise_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         jPanelOptions.add(jLabelEnterprise, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         jPanelOptions.add(jComboBoxEnterprise, gridBagConstraints);
-        jComboBoxEnterprise.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc"));
+        jComboBoxEnterprise.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc")); // NOI18N
 
         setAsMainCheckBox.setMnemonic(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
         setAsMainCheckBox.setSelected(true);
-        setAsMainCheckBox.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_SetAsMain_CheckBox"));
+        setAsMainCheckBox.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -519,13 +515,13 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         jPanelOptions.add(setAsMainCheckBox, gridBagConstraints);
-        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc"));
+        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc")); // NOI18N
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         serverInstanceLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_Server_LabelMnemonic").charAt(0));
         serverInstanceLabel.setLabelFor(serverInstanceComboBox);
-        serverInstanceLabel.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_Server"));
+        serverInstanceLabel.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_Server")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -540,7 +536,6 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
                 serverInstanceComboBoxActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -550,11 +545,11 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel1.add(serverInstanceComboBox, gridBagConstraints);
         serverInstanceComboBox.getAccessibleContext().setAccessibleName("Server");
-        serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_NWP1_Server_ComboBox_A11YDesc"));
+        serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_NWP1_Server_ComboBox_A11YDesc")); // NOI18N
 
         j2eeSpecLabel.setDisplayedMnemonic(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_J2EESpecLevel_CheckBoxMnemonic").charAt(0));
         j2eeSpecLabel.setLabelFor(j2eeSpecComboBox);
-        j2eeSpecLabel.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_J2EESpecLevel_Label"));
+        j2eeSpecLabel.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_J2EESpecLevel_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -569,7 +564,6 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
                 j2eeSpecComboBoxActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -577,11 +571,11 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel1.add(j2eeSpecComboBox, gridBagConstraints);
         j2eeSpecComboBox.getAccessibleContext().setAccessibleName("J2EE Version");
-        j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NPW1_J2EESpecLevel_A11YDesc"));
+        j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NPW1_J2EESpecLevel_A11YDesc")); // NOI18N
 
         jLabelContextPath.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ContextPath_CheckBoxMnemonic").charAt(0));
         jLabelContextPath.setLabelFor(jTextFieldContextPath);
-        jLabelContextPath.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ContextPath_Label"));
+        jLabelContextPath.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ContextPath_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -595,7 +589,6 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
                 jTextFieldContextPathKeyReleased(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -606,15 +599,14 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         jPanel1.add(jTextFieldContextPath, gridBagConstraints);
-        jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_ContextPath_A11YDesc"));
+        jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_ContextPath_A11YDesc")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(manageServersButton, org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_ManageServers"));
+        org.openide.awt.Mnemonics.setLocalizedText(manageServersButton, org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_ManageServers")); // NOI18N
         manageServersButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageServersButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -632,7 +624,6 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         jPanelOptions.add(jPanel1, gridBagConstraints);
 
         warningPlaceHolderPanel.setLayout(new java.awt.BorderLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -649,7 +640,6 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanelOptions, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed

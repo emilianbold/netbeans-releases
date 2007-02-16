@@ -310,12 +310,10 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         testsPanel = new FolderList (NbBundle.getMessage(PanelSourceFolders.class,"CTL_TestRoots"), NbBundle.getMessage(PanelSourceFolders.class,"MNE_TestRoots").charAt(0),NbBundle.getMessage(PanelSourceFolders.class,"AD_TestRoots"), NbBundle.getMessage(PanelSourceFolders.class,"CTL_AddTestRoot"),
             NbBundle.getMessage(PanelSourceFolders.class,"MNE_AddTestFolder").charAt(0), NbBundle.getMessage(PanelSourceFolders.class,"AD_AddTestFolder"),NbBundle.getMessage(PanelSourceFolders.class,"MNE_RemoveTestFolder").charAt(0), NbBundle.getMessage(PanelSourceFolders.class,"AD_RemoveTestFolder"));
 
+        setPreferredSize(new java.awt.Dimension(500, 340));
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(500, 340));
-        getAccessibleContext().setAccessibleName(null);
-        getAccessibleContext().setAccessibleDescription(null);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_LocationDesc_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_LocationDesc_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -328,14 +326,13 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
         jLabelWebPages.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_WebPagesLocation_LabelMnemonic").charAt(0));
         jLabelWebPages.setLabelFor(jTextFieldWebPages);
-        jLabelWebPages.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_WebPagesLocation_Label"));
+        jLabelWebPages.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_WebPagesLocation_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         add(jLabelWebPages, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -343,34 +340,32 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         add(jTextFieldWebPages, gridBagConstraints);
-        jTextFieldWebPages.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_WebPagesFolder"));
+        jTextFieldWebPages.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_WebPagesFolder")); // NOI18N
 
         jButtonWebpagesLocation.setMnemonic(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_WebPagesFolder_MNE").charAt(0));
-        jButtonWebpagesLocation.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_NWP1_BrowseLocation_Button"));
+        jButtonWebpagesLocation.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_BrowseWebPagesLocation_Button")); // NOI18N
         jButtonWebpagesLocation.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonWebpagesLocationActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jButtonWebpagesLocation, gridBagConstraints);
-        jButtonWebpagesLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_BrowseWebPageFolder"));
+        jButtonWebpagesLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_BrowseWebPageFolder")); // NOI18N
 
         jLabelLibraries.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_LibrariesLocation_LabelMnemonic").charAt(0));
         jLabelLibraries.setLabelFor(jTextFieldLibraries);
-        jLabelLibraries.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_LibrariesLocation_Label"));
+        jLabelLibraries.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_LibrariesLocation_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabelLibraries, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -378,23 +373,22 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jTextFieldLibraries, gridBagConstraints);
-        jTextFieldLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_LibrariesFolder"));
+        jTextFieldLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_LibrariesFolder")); // NOI18N
 
-        jButtonLibraries.setMnemonic(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_BrowseProjectFolder_MNE").charAt(0));
-        jButtonLibraries.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_NWP1_BrowseLocation_Button"));
+        jButtonLibraries.setMnemonic(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "MNE_BrowseLibrariesLocation").charAt(0));
+        jButtonLibraries.setText(NbBundle.getMessage(PanelSourceFolders.class, "LBL_BrowseLibrariesLocation_Button")); // NOI18N
         jButtonLibraries.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonLibrariesActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonLibraries, gridBagConstraints);
-        jButtonLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_BrowseLibrariesFolder"));
+        jButtonLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_BrowseLibrariesFolder")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
@@ -405,7 +399,6 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.weighty = 0.45;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(sourcePanel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -417,6 +410,8 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(testsPanel, gridBagConstraints);
 
+        getAccessibleContext().setAccessibleName(null);
+        getAccessibleContext().setAccessibleDescription(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLibrariesActionPerformed
