@@ -141,15 +141,16 @@ public final class EmbeddingContainer<T extends TokenId> {
     public static <T extends TokenId, ET extends TokenId> boolean createEmbedding(
     TokenList<T> tokenList, int index, Language<ET> embeddedLanguage,
     int startSkipLength, int endSkipLength, boolean joinSections) {
-        synchronized (tokenList.root()) {
-            TokenHierarchyOperation<?,?> tokenHierarchyOperation = tokenList.tokenHierarchyOperation();
-            // Only create embedddings for valid operations so not e.g. for removed token list
-            if (tokenHierarchyOperation == null) {
-                return false;
-            }
-            Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
-            EmbeddingContainer<T> ec;
-            AbstractToken<T> token;
+        TokenHierarchyOperation<?,?> tokenHierarchyOperation = tokenList.tokenHierarchyOperation();
+        if (tokenHierarchyOperation == null) {
+            return false;
+        }
+        TokenList<? extends TokenId> root = tokenList.root();
+        // Only create embedddings for valid operations so not e.g. for removed token list
+        Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
+        AbstractToken<T> token;
+        EmbeddingContainer<T> ec;
+        synchronized (root) {
             if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
                 // Embedding container exists
                 @SuppressWarnings("unchecked")
@@ -173,49 +174,55 @@ public final class EmbeddingContainer<T extends TokenId> {
                 ec = new EmbeddingContainer<T>(token);
                 tokenList.wrapToken(index, ec);
             }
+        }
+        
+        // Token is now wrapped with the EmbeddingContainer and the embedding can be added
 
+        EmbeddedTokenList<ET> etl;
+        LanguageEmbedding<ET> embedding;
+        synchronized (root) {
             if (startSkipLength + endSkipLength > token.length()) // Check for appropriate size
                 return false;
             // Add the new embedding as the first one in the single-linked list
-            LanguageEmbedding<ET> embedding = LanguageEmbedding.create(embeddedLanguage,
+            embedding = LanguageEmbedding.create(embeddedLanguage,
                 startSkipLength, endSkipLength, joinSections);
             LanguagePath languagePath = tokenList.languagePath();
             LanguagePath embeddedLanguagePath = LanguagePath.get(languagePath, embeddedLanguage);
             // Make the embedded token list to be the first in the list
-            EmbeddedTokenList<ET> etl = new EmbeddedTokenList<ET>(
+            etl = new EmbeddedTokenList<ET>(
                     ec, embeddedLanguagePath, embedding, ec.firstEmbedding());
             ec.setFirstEmbedding(etl);
             // Increment mod count? - not in this case
-
-            // Fire the embedding creation to the clients
-            // Threading model may need to be changed if necessary
-            int aOffset = ec.tokenStartOffset();
-            TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
-                    tokenHierarchyOperation,
-                    TokenHierarchyEventType.EMBEDDING,
-                    aOffset, 0, "", 0
-            );
-            eventInfo.setAffectedStartOffset(aOffset);
-            eventInfo.setAffectedEndOffset(aOffset + token.length());
-            // Construct outer token change info
-            TokenChangeInfo<T> info = new TokenChangeInfo<T>(tokenList);
-            info.setIndex(index);
-            info.setOffset(aOffset);
-            //info.setAddedTokenCount(0);
-            eventInfo.setTokenChangeInfo(info);
-            
-            TokenChangeInfo<ET> embeddedInfo = new TokenChangeInfo<ET>(etl);
-            embeddedInfo.setIndex(0);
-            embeddedInfo.setOffset(aOffset + embedding.startSkipLength());
-            // Should set number of added tokens directly?
-            //  - would prevent further lazy embedded lexing so leave to zero for now
-            //info.setAddedTokenCount(0);
-            info.addEmbeddedChange(embeddedInfo);
-            
-            // Fire the change
-            tokenHierarchyOperation.fireTokenHierarchyChanged(
-                        LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
         }
+
+        // Fire the embedding creation to the clients
+        // Threading model may need to be changed if necessary
+        int aOffset = ec.tokenStartOffset();
+        TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
+                tokenHierarchyOperation,
+                TokenHierarchyEventType.EMBEDDING,
+                aOffset, 0, "", 0
+        );
+        eventInfo.setAffectedStartOffset(aOffset);
+        eventInfo.setAffectedEndOffset(aOffset + token.length());
+        // Construct outer token change info
+        TokenChangeInfo<T> info = new TokenChangeInfo<T>(tokenList);
+        info.setIndex(index);
+        info.setOffset(aOffset);
+        //info.setAddedTokenCount(0);
+        eventInfo.setTokenChangeInfo(info);
+
+        TokenChangeInfo<ET> embeddedInfo = new TokenChangeInfo<ET>(etl);
+        embeddedInfo.setIndex(0);
+        embeddedInfo.setOffset(aOffset + embedding.startSkipLength());
+        // Should set number of added tokens directly?
+        //  - would prevent further lazy embedded lexing so leave to zero for now
+        //info.setAddedTokenCount(0);
+        info.addEmbeddedChange(embeddedInfo);
+
+        // Fire the change
+        tokenHierarchyOperation.fireTokenHierarchyChanged(
+                    LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
         return true;
     }
 
