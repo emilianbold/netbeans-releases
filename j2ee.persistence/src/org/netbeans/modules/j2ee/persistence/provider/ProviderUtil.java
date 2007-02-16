@@ -44,6 +44,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -92,10 +93,10 @@ public class ProviderUtil {
      * If the given class was empty or null, will return the default persistence provider
      * of the given project's target server, or null if a default provider is not supported
      * in the given project.
-     * 
+     *
      * @param providerClass the FQN of the class that specifies the persistence provider.
-     * 
-     * @return the provider that the given providerClass represents or null if it was 
+     *
+     * @return the provider that the given providerClass represents or null if it was
      * an empty string and the project doesn't suppport a default (container managed)
      * persistence provider.
      */
@@ -117,19 +118,19 @@ public class ProviderUtil {
     
     
     /*
-     * Gets the default persistence provider of the target server 
-     * of the given <code>project</code>. 
-     * 
-     * @return the default container managed provider for the given project or <code>null</code> 
+     * Gets the default persistence provider of the target server
+     * of the given <code>project</code>.
+     *
+     * @return the default container managed provider for the given project or <code>null</code>
      * no default provider could be resolved.
-     * 
+     *
      * @throws NullPointerException if the given project was null.
      */
     private static Provider getContainerManagedProvider(Project project){
         
         PersistenceProviderSupplier providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
-
-        if (providerSupplier == null 
+        
+        if (providerSupplier == null
                 || !providerSupplier.supportsDefaultProvider()
                 || providerSupplier.getSupportedProviders().isEmpty()){
             
@@ -537,11 +538,20 @@ public class ProviderUtil {
             // must create the file using AtomicAction, see #72058
             persistenceLocation.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() {
+                    FileLock lock = null;
                     try {
+                        // need to create with a different extension and then rename due to issue 95675
+                        // should be removed when that issue gets resolved
                         dd[0] = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(
-                                "org-netbeans-modules-j2ee-persistence/persistence-1.0.xml"), persistenceLocation, "persistence"); //NOI18N
+                                "org-netbeans-modules-j2ee-persistence/persistence-1.0.xml"), persistenceLocation, "persistence", "xml-jpa"); //NOI18N
+                        lock = dd[0].lock();
+                        dd[0].rename(lock, "persistence", "xml"); //NO18N
                     } catch (IOException ex) {
                         ErrorManager.getDefault().notify(ex);
+                    } finally{
+                        if (lock != null){
+                            lock.releaseLock();
+                        }
                     }
                 }
             });

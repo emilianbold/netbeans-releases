@@ -32,6 +32,10 @@ import org.openide.util.NbBundle;
 public class PUDataLoader extends UniFileLoader {
     
     public static final String REQUIRED_MIME = "text/x-persistence1.0";
+    /**
+     * A workaround for issue 95675.
+     */
+    private static final String REQUIRED_EXTENSION = "xml-jpa";
     
     public PUDataLoader() {
         super(PUDataLoader.class.getName());
@@ -40,6 +44,7 @@ public class PUDataLoader extends UniFileLoader {
     protected void initialize() {
         super.initialize();
         getExtensions().addMimeType(REQUIRED_MIME);
+        getExtensions().addExtension(REQUIRED_EXTENSION);
     }
     
     protected String defaultDisplayName() {
@@ -47,7 +52,9 @@ public class PUDataLoader extends UniFileLoader {
     }
     
     protected MultiDataObject createMultiObject(FileObject pf) throws IOException {
-        return new PUDataObject(pf, this);
+        // a workaround for issue 95675 
+        boolean parse = !REQUIRED_EXTENSION.equals(pf.getExt());
+        return new PUDataObject(pf, this, parse);
     }
     
     protected String actionsContext() {

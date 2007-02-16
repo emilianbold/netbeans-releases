@@ -73,7 +73,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
     /**
      * Creates a new instance of PUDataObject.
      */
-    public PUDataObject(FileObject pf, PUDataLoader loader) throws DataObjectExistsException {
+    public PUDataObject(FileObject pf, PUDataLoader loader, boolean parse) throws DataObjectExistsException {
         super(pf, loader);
         modelSynchronizer = new ModelSynchronizer(this);
         org.xml.sax.InputSource in = DataObjectAdapters.inputSource(this);
@@ -81,7 +81,9 @@ public class PUDataObject extends XmlMultiViewDataObject {
         getCookieSet().add(checkCookie);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         getCookieSet().add(validateCookie);
-        parseDocument();
+        if(parse){
+            parseDocument();
+        }
     }
     
     protected Node createNodeDelegate() {
