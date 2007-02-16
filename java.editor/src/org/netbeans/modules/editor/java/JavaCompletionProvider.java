@@ -449,8 +449,20 @@ public class JavaCompletionProvider implements CompletionProvider {
         private void resolveDocumentation(CompilationController controller) throws IOException {            
             controller.toPhase(Phase.RESOLVED);
             Element el = element != null ? element.resolve(controller) : controller.getTrees().getElement(getCompletionEnvironment(controller, false).getPath());
-            if (el != null && (!el.getKind().isClass() && !el.getKind().isInterface() || el.asType().getKind() != TypeKind.ERROR)) {
-                documentation = JavaCompletionDoc.create(controller, el);
+            if (el != null) {
+                switch (el.getKind()) {
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    if (el.asType().getKind() == TypeKind.ERROR)
+                        break;
+                case CONSTRUCTOR:
+                case ENUM_CONSTANT:
+                case FIELD:
+                case METHOD:
+                    documentation = JavaCompletionDoc.create(controller, el);
+                }
             }
         }
         
