@@ -3481,23 +3481,35 @@ public class JavaCompletionProvider implements CompletionProvider {
             List<List<String>> ret = new ArrayList<List<String>>();
             for (Element e : elements) {
                 if ((e.getKind() == CONSTRUCTOR || e.getKind() == METHOD) && name.contentEquals(e.getSimpleName())) {
-                    int i = 0;
                     List<? extends VariableElement> params = ((ExecutableElement)e).getParameters();
-                    if (params.size() < argTypes.length) {
+                    int parSize = params.size();
+                    boolean varArgs = ((ExecutableElement)e).isVarArgs();
+                    if (!varArgs && (parSize < argTypes.length)) {
                         continue;
                     }
-                    if (params.size() == 0) {
+                    if (parSize == 0) {
                         ret.add(Collections.<String>singletonList(NbBundle.getMessage(JavaCompletionProvider.class, "JCP-no-parameters")));
                     } else {
                         ExecutableType eType = (ExecutableType)asMemberOf(e, type, types);
-                        for (TypeMirror param : eType.getParameterTypes()) {
+                        Iterator<? extends TypeMirror> parIt = eType.getParameterTypes().iterator();
+                        TypeMirror param = null;
+                        for (int i = 0; i <= argTypes.length; i++) {
+                            if (parIt.hasNext()) {
+                                param = parIt.next();
+                                if (!parIt.hasNext() && param.getKind() == TypeKind.ARRAY)
+                                    param = ((ArrayType)param).getComponentType();
+                            } else if (!varArgs) {
+                                break;
+                            }
                             if (i == argTypes.length) {
-                                List<String> paramStrings = new ArrayList<String>(params.size());
+                                List<String> paramStrings = new ArrayList<String>(parSize);
                                 Iterator<? extends TypeMirror> tIt = eType.getParameterTypes().iterator();
                                 for (Iterator<? extends VariableElement> it = params.iterator(); it.hasNext();) {
                                     VariableElement ve = it.next();
                                     StringBuffer sb = new StringBuffer();
                                     sb.append(Utilities.getTypeName(tIt.next(), false));
+                                    if (varArgs && !tIt.hasNext())
+                                        sb.delete(sb.length() - 2, sb.length()).append("..."); //NOI18N
                                     CharSequence veName = ve.getSimpleName();
                                     if (veName != null && veName.length() > 0) {
                                         sb.append(" "); // NOI18N
@@ -3511,7 +3523,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 ret.add(paramStrings);
                                 break;
                             }
-                            if (!types.isAssignable(argTypes[i++], param))
+                            if (!types.isAssignable(argTypes[i], param))
                                 break;
                         }
                     }

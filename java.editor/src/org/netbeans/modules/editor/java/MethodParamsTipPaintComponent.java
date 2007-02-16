@@ -76,14 +76,16 @@ public class MethodParamsTipPaintComponent extends JToolTip {
         drawWidth = drawX;
         for (List<String> p : params) {
             int i = 0;
+            int plen = p.size() - 1;
             for (String s : p) {
-                if (getWidth(s, i == idx ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont()) + drawX > screenWidth) {
+                if (getWidth(s, i == idx || i == plen && idx > plen ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont()) + drawX > screenWidth) {
                     drawY += fontHeight;
                     drawX = startX + getWidth("        ", drawFont); //NOI18N
                 }
-                drawString(g, s, i++ == idx ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont());
+                drawString(g, s, i == idx || i == plen && idx > plen ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont());
                 if (drawWidth < drawX)
                     drawWidth = drawX;
+                i++;
             }
             drawY += fontHeight;
             drawX = startX;
