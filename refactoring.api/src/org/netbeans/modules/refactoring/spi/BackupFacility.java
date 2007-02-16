@@ -116,9 +116,7 @@ public final class BackupFacility {
         File backup = File.createTempFile("nbbackup", null); //NOI18N
         backup.deleteOnExit();
         File f = new File(entry.path);
-        if (!f.exists()) {
-            f.createNewFile();
-        } else {
+        if (createNewFile(f)) {
             backup.createNewFile();
             copy(f,backup);
         }
@@ -130,6 +128,18 @@ public final class BackupFacility {
         } else {
             map.remove(id);
         }
+    }
+    
+    /**
+     * workaround for #93390
+     */
+    private boolean createNewFile(File f) throws IOException {
+        if (f.exists())
+            return true;
+        createNewFile(f.getParentFile());
+        f.createNewFile();
+        return false;
+        
     }
     
     private void copy(File a, File b) throws IOException {
