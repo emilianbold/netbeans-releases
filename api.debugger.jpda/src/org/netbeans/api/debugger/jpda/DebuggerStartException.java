@@ -46,6 +46,7 @@ public class DebuggerStartException extends Exception {
      */
     public DebuggerStartException (Throwable t) {
         super (t.getMessage ());
+        initCause(t);
         throwable = t;
     }
     
