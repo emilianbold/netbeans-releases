@@ -643,8 +643,9 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
             saveAllNamedBeans(beanGraph);
             
             // handle ejb's separately since they are embedded in enterprise-beans
-            saveNamedBeans(EnterpriseBeans.EJB, org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb.EJB_NAME, eb.getEjb());
-            
+            if(eb != null) {
+                saveNamedBeans(EnterpriseBeans.EJB, org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb.EJB_NAME, eb.getEjb());
+            }
         } else {
             setDefaultProperties();
         }
