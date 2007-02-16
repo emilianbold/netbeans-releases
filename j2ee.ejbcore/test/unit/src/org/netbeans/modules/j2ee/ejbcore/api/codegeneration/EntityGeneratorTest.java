@@ -20,22 +20,13 @@
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -47,259 +38,98 @@ public class EntityGeneratorTest extends TestBase {
         super(testName);
     }
 
-    public void testGenerate() throws Exception {
-        // Session EJB 2.1
+    public void testGenerateJavaEE14() throws IOException {
         TestModule testModule = ejb14();
-        FileObject pkg = testModule.getSources()[0].getFileObject("entityEjb21");
-        if (pkg != null) {
-            pkg.delete();
+        FileObject sourceRoot = testModule.getSources()[0];
+        FileObject packageFileObject = sourceRoot.getFileObject("testGenerateJavaEE14");
+        if (packageFileObject != null) {
+            packageFileObject.delete();
         }
-        pkg = testModule.getSources()[0].createFolder("entityEjb21");
-        assertNotNull(pkg);
-        // CMP with remote and local interfaces
-        checkEJB21("CmpEJB21RL", pkg, testModule.getDeploymentDescriptor(), true, true, true, "java.lang.Long");
-        // BMP with remote and local interface
-        checkEJB21("BmpEjb21RL", pkg, testModule.getDeploymentDescriptor(), true, true, false, "java.lang.Long");
-    }
-    
-    private void checkEJB21(String name, FileObject pkg, FileObject ddFileObject,
-            boolean hasRemote, boolean hasLocal, boolean isCMP, String primaryKeyClassName) throws IOException {
-        EntityGenerator entityGenerator = EntityGenerator.create(name, pkg, hasRemote, hasLocal, isCMP, primaryKeyClassName);
+        packageFileObject = sourceRoot.createFolder("testGenerateJavaEE14");
+
+        // CMP Entity EJB in Java EE 1.4
+        
+        EntityGenerator entityGenerator = EntityGenerator.create("TestCmp", packageFileObject, true, true, true, "java.lang.Long");
         entityGenerator.generate();
-        EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFileObject);
-        checkXml(ejbJar, EjbGenerationUtil.getSelectedPackageName(pkg) + ".", name, hasRemote, hasLocal, isCMP, primaryKeyClassName);
+        EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
-        String ejbName = name + "Bean";
-        Entity entity = (Entity) enterpriseBeans.findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_NAME, ejbName);
-        final String JAVA = "java";
+        Entity entity = (Entity) enterpriseBeans.findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_NAME, "TestCmpBean");
 
-        FileObject ejbClass = pkg.getFileObject(name + "Bean", JAVA);
-        assertNotNull(ejbClass);
-        if (isCMP) {
-            checkCmpEjbClass(ejbClass, name, entity);
-        } else {
-            checkBmpEjbClass(ejbClass, name, entity);
-        }
-        
-        FileObject remote = pkg.getFileObject(name + "Remote", JAVA);
-        FileObject remoteHome = pkg.getFileObject(name + "RemoteHome", JAVA);
-        if (hasRemote) {
-            assertNotNull(remote);
-            if (isCMP) {
-                checkCmpRemote(remote, name, entity);
-            } else {
-                checkBmpRemote(remote, name, entity);
-            }
-            assertNotNull(remoteHome);
-            if (isCMP) {
-                checkCmpRemoteHome(remoteHome, name, entity);
-            } else {
-                checkBmpRemoteHome(remoteHome, name, entity);
-            }
-        } else {
-            assertNull(remote);
-            assertNull(entity.getRemote());
-            assertNull(remoteHome);
-            assertNull(entity.getHome());
-        }
-        
-        FileObject local = pkg.getFileObject(name + "Local", JAVA);
-        FileObject localHome = pkg.getFileObject(name + "LocalHome", JAVA);
-        if (hasLocal) {
-            assertNotNull(local);
-            if (isCMP) {
-                checkCmpLocal(local, name, entity);
-            } else {
-                checkBmpLocal(local, name, entity);
-            }
-            assertNotNull(localHome);
-            if (isCMP) {
-                checkCmpLocalHome(localHome, name, entity);
-            } else {
-                checkBmpLocalHome(localHome, name, entity);
-            }
-        } else {
-            assertNull(local);
-            assertNull(entity.getLocal());
-            assertNull(localHome);
-            assertNull(entity.getLocalHome());
-        }
-        
-    }
-    
-    private void checkCmpEjbClass(final FileObject ejbClass, final String name, final Entity entity) throws IOException {
-        Util.runUserActionTask(ejbClass, new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                final String VOID = "void";
-                final String LONG = "java.lang.Long";
-                SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(name + "Bean"));
-                assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EntityBean"}));
-                assertTrue(Util.contains(controller, clazz, MethodModel.create(
-                            "getKey", LONG, null, 
-                            Collections.<MethodModel.Variable>emptyList(), 
-                            Collections.<String>emptyList(), 
-                            new HashSet<Modifier>(Arrays.asList(new Modifier[] { Modifier.PUBLIC, Modifier.ABSTRACT }))
-                            )));
-                assertTrue(Util.contains(controller, clazz, MethodModel.create(
-                            "setKey", VOID, null, 
-                            Collections.singletonList(MethodModel.Variable.create(LONG, "key")), 
-                            Collections.<String>emptyList(), 
-                            new HashSet<Modifier>(Arrays.asList(new Modifier[] { Modifier.PUBLIC, Modifier.ABSTRACT }))
-                            )));
-                assertTrue(Util.contains(controller, clazz, MethodModel.create(
-                            "ejbCreate", LONG, 
-                            "{" +
-                            "if (key == null) {\n" +
-                            "    throw new CreateException(\"The field \\\"key\\\" must not be null\");\n" +
-                            "}\n\n" +
-                            "// TODO add additional validation code, throw CreateException if data is not valid\n" +
-                            "setKey(key);\n\n" +
-                            "return null;" + 
-                            "}",
-                            Collections.singletonList(MethodModel.Variable.create(LONG, "key")), 
-                            Collections.singletonList("javax.ejb.CreateException"),
-                            Collections.singleton(Modifier.PUBLIC)
-                            )));
-                assertTrue(Util.contains(controller, clazz, MethodModel.create(
-                            "ejbPostCreate", VOID,
-                            "{" +
-                            "// TODO populate relationships here if appropriate" +
-                            "}",
-                            Collections.singletonList(MethodModel.Variable.create(LONG, "key")),
-                            Collections.<String>emptyList(), 
-                            Collections.singleton(Modifier.PUBLIC)
-                            )));
-                assertTrue(clazz.getQualifiedName().contentEquals(entity.getEjbClass()));
-            }
-        });
-    }
-    
-    private void checkBmpEjbClass(final FileObject ejbClass, final String name, final Entity entity) throws IOException {
-        
-    }
-    
-    private void checkCmpRemote(final FileObject remote, final String name, final Entity entity) throws IOException {
-        Util.runUserActionTask(remote, new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(name + "Remote"));
-                assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBObject"}));
-                assertEquals(1, clazz.getEnclosedElements().size());
-                assertTrue(Util.contains(controller, clazz, MethodModel.create(
-                            "getKey", "java.lang.Long", null,
-                            Collections.<MethodModel.Variable>emptyList(), 
-                            Collections.<String>emptyList(), 
-                            Collections.<Modifier>emptySet()
-                            )));
-                assertTrue(clazz.getQualifiedName().contentEquals(entity.getRemote()));
-            }
-        });
-    }
-    
-    private void checkBmpRemote(final FileObject remote, final String name, final Entity entity) throws IOException {
-        
-    }
-
-    private void checkCmpRemoteHome(final FileObject remote, final String name, final Entity entity) throws IOException {
-        Util.runUserActionTask(remote, new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(name + "RemoteHome"));
-                assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBHome"}));
-                assertEquals(2, clazz.getEnclosedElements().size());
-                assertTrue(Util.contains(controller, clazz, MethodModel.create(
-                            "findByPrimaryKey", entity.getRemote(), null,
-                            Collections.singletonList(MethodModel.Variable.create("java.lang.Long", "key")),
-                            Arrays.asList(new String[] { "javax.ejb.FinderException", "java.rmi.RemoteException" }),
-                            Collections.<Modifier>emptySet()
-                            )));
-                assertTrue(Util.contains(controller, clazz, MethodModel.create(
-                            "create", entity.getRemote(), null,
-                            Collections.singletonList(MethodModel.Variable.create("java.lang.Long", "key")),
-                            Arrays.asList(new String[] { "javax.ejb.CreateException", "java.rmi.RemoteException" }),
-                            Collections.<Modifier>emptySet()
-                            )));
-                assertTrue(clazz.getQualifiedName().contentEquals(entity.getHome()));
-            }
-        });
-    }
-    
-    private void checkBmpRemoteHome(final FileObject remote, final String name, final Entity entity) throws IOException {
-        
-    }
-
-    private void checkCmpLocal(final FileObject remote, final String name, final Entity entity) throws IOException {
-        Util.runUserActionTask(remote, new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(name + "Local"));
-                assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalObject"}));
-                assertEquals(1, clazz.getEnclosedElements().size());
-                assertTrue(Util.contains(controller, clazz, MethodModel.create(
-                            "getKey", "java.lang.Long", null,
-                            Collections.<MethodModel.Variable>emptyList(), 
-                            Collections.<String>emptyList(), 
-                            Collections.<Modifier>emptySet()
-                            )));
-                assertTrue(clazz.getQualifiedName().contentEquals(entity.getLocal()));
-            }
-        });
-    }
-    
-    private void checkBmpLocal(final FileObject remote, final String name, final Entity entity) throws IOException {
-        
-    }
-    
-    private void checkCmpLocalHome(final FileObject remote, final String name, final Entity entity) throws IOException {
-        Util.runUserActionTask(remote, new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                TypeElement clazz = sourceUtils.getTypeElement();
-                assertTrue(clazz.getSimpleName().contentEquals(name + "LocalHome"));
-                assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalHome"}));
-                assertEquals(2, clazz.getEnclosedElements().size());
-                assertTrue(Util.contains(controller, clazz, MethodModel.create(
-                            "findByPrimaryKey", entity.getLocal(), null,
-                            Collections.singletonList(MethodModel.Variable.create("java.lang.Long", "key")),
-                            Collections.singletonList("javax.ejb.FinderException"),
-                            Collections.<Modifier>emptySet()
-                            )));
-                assertTrue(Util.contains(controller, clazz, MethodModel.create(
-                            "create", entity.getLocal(), null,
-                            Collections.singletonList(MethodModel.Variable.create("java.lang.Long", "key")),
-                            Collections.singletonList("javax.ejb.CreateException"),
-                            Collections.<Modifier>emptySet()
-                            )));
-                assertTrue(clazz.getQualifiedName().contentEquals(entity.getLocalHome()));
-            }
-        });
-    }
-
-    private void checkBmpLocalHome(final FileObject remote, final String name, final Entity entity) throws IOException {
-        
-    }
-    
-    private void checkXml(EjbJar ejbJar, String pkgWithDot, String name, boolean hasRemote, boolean hasLocal, boolean isCMP, String primaryKeyClassName) {
-        String ejbName = name + "Bean";
-        EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
-        Entity entity = (Entity) enterpriseBeans.findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_NAME, ejbName);
         assertNotNull(entity);
-        assertEquals(entity.getEjbName(), ejbName);
-        assertEquals(entity.getPrimKeyClass(), primaryKeyClassName);
-        assertEquals(entity.getEjbClass(), pkgWithDot + name + "Bean");
-        if (hasLocal) {
-            assertEquals(entity.getLocal(), pkgWithDot + name + "Local");
-            assertEquals(entity.getLocalHome(), pkgWithDot + name + "LocalHome");
-        }
-        if (hasRemote) {
-            assertEquals(entity.getRemote(), pkgWithDot + name + "Remote");
-            assertEquals(entity.getHome(), pkgWithDot + name + "RemoteHome");
-        }
+        assertEquals("TestCmpEB", entity.getDefaultDisplayName());
+        assertEquals("TestCmpBean", entity.getEjbName());
+        assertEquals("testGenerateJavaEE14.TestCmpRemoteHome", entity.getHome());
+        assertEquals("testGenerateJavaEE14.TestCmpRemote", entity.getRemote());
+        assertEquals("testGenerateJavaEE14.TestCmpLocalHome", entity.getLocalHome());
+        assertEquals("testGenerateJavaEE14.TestCmpLocal", entity.getLocal());
+        assertEquals("testGenerateJavaEE14.TestCmpBean", entity.getEjbClass());
+        assertEquals("Container", entity.getPersistenceType());
+        assertEquals("java.lang.Long", entity.getPrimKeyClass());
+        assertFalse(entity.isReentrant());
+        assertEquals("TestCmp", entity.getAbstractSchemaName());
+        assertEquals(1, entity.getCmpField().length);
+        assertEquals("key", entity.getCmpField()[0].getFieldName());
+        assertEquals("key", entity.getPrimkeyField());
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestCmpBean.java")), 
+                getGoldenFile("testGenerateJavaEE14/TestCmpBean.java"), 
+                FileUtil.toFile(packageFileObject)
+                );
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestCmpLocal.java")), 
+                getGoldenFile("testGenerateJavaEE14/TestCmpLocal.java"), 
+                FileUtil.toFile(packageFileObject)
+                );
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestCmpLocalHome.java")), 
+                getGoldenFile("testGenerateJavaEE14/TestCmpLocalHome.java"), 
+                FileUtil.toFile(packageFileObject)
+                );
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestCmpRemote.java")), 
+                getGoldenFile("testGenerateJavaEE14/TestCmpRemote.java"), 
+                FileUtil.toFile(packageFileObject)
+                );
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestCmpRemoteHome.java")), 
+                getGoldenFile("testGenerateJavaEE14/TestCmpRemoteHome.java"), 
+                FileUtil.toFile(packageFileObject)
+                );
+
+        // BMP Entity EJB in Java EE 1.4
+        
+        entityGenerator = EntityGenerator.create("TestBmp", packageFileObject, false, true, false, "java.lang.Long");
+        entityGenerator.generate();
+        entity = (Entity) enterpriseBeans.findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_NAME, "TestBmpBean");
+
+        assertNotNull(entity);
+        assertEquals("TestBmpEB", entity.getDefaultDisplayName());
+        assertEquals("TestBmpBean", entity.getEjbName());
+        assertNull(entity.getHome());
+        assertNull(entity.getRemote());
+        assertEquals("testGenerateJavaEE14.TestBmpLocalHome", entity.getLocalHome());
+        assertEquals("testGenerateJavaEE14.TestBmpLocal", entity.getLocal());
+        assertEquals("testGenerateJavaEE14.TestBmpBean", entity.getEjbClass());
+        assertEquals("Bean", entity.getPersistenceType());
+        assertEquals("java.lang.Long", entity.getPrimKeyClass());
+        assertFalse(entity.isReentrant());
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestBmpBean.java")), 
+                getGoldenFile("testGenerateJavaEE14/TestBmpBean.java"), 
+                FileUtil.toFile(packageFileObject)
+                );
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestBmpLocal.java")), 
+                getGoldenFile("testGenerateJavaEE14/TestBmpLocal.java"), 
+                FileUtil.toFile(packageFileObject)
+                );
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestBmpLocalHome.java")), 
+                getGoldenFile("testGenerateJavaEE14/TestBmpLocalHome.java"), 
+                FileUtil.toFile(packageFileObject)
+                );
+        assertNull(packageFileObject.getFileObject("TestBmpRemote.java"));
+        assertNull(packageFileObject.getFileObject("TestBmpRemoteHome.java"));
     }
     
 }

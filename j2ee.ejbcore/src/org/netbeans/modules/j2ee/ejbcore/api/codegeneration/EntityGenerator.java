@@ -27,6 +27,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
+import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
@@ -60,6 +61,7 @@ public class EntityGenerator {
     private final boolean hasLocal;
     private final boolean isCMP;
     private final String primaryKeyClassName;
+    private final String wizardTargetName;
     
     // EJB naming options
     private final EJBNameOptions ejbNameOptions;
@@ -88,6 +90,7 @@ public class EntityGenerator {
         this.hasLocal = hasLocal;
         this.isCMP = isCMP;
         this.primaryKeyClassName = primaryKeyClassName;
+        this.wizardTargetName = wizardTargetName;
         this.ejbNameOptions = new EJBNameOptions();
         this.ejbName = ejbNameOptions.getEntityEjbNamePrefix() + wizardTargetName + ejbNameOptions.getEntityEjbNameSuffix();
         this.ejbClassName = ejbNameOptions.getEntityEjbClassPrefix() + wizardTargetName + ejbNameOptions.getEntityEjbClassSuffix();
@@ -174,6 +177,16 @@ public class EntityGenerator {
         if (hasLocal) {
             entity.setLocal(packageNameWithDot + localName);
             entity.setLocalHome(packageNameWithDot + localHomeName);
+        }
+        if (isCMP) {
+            entity.setPersistenceType(Entity.PERSISTENCE_TYPE_CONTAINER);
+            entity.setAbstractSchemaName(wizardTargetName);
+            CmpField cmpField = entity.newCmpField();
+            cmpField.setFieldName("key");
+            entity.addCmpField(cmpField);
+            entity.setPrimkeyField("key");
+        } else {
+            entity.setPersistenceType(Entity.PERSISTENCE_TYPE_BEAN);
         }
         enterpriseBeans.addEntity(entity);
         // add transaction requirements
