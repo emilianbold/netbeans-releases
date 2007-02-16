@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -38,6 +38,7 @@ import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.InvalidRequestStateException;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -509,6 +510,23 @@ public class JPDADebuggerImpl extends JPDADebugger {
         updateCurrentCallStackFrame (thread);
     }
 
+    /**
+     * Set the current thread and call stack, but do not fire changes.
+     * @return The PropertyChangeEvent associated with this change, it can have
+     *         attached other PropertyChangeEvents as a propagation ID.
+     */
+    private PropertyChangeEvent setCurrentThreadNoFire(JPDAThread thread) {
+        Object oldT = currentThread;
+        currentThread = (JPDAThreadImpl) thread;
+        PropertyChangeEvent evt = null;
+        if (thread != oldT)
+            evt = new PropertyChangeEvent(this, PROP_CURRENT_THREAD, oldT, currentThread);
+        PropertyChangeEvent evt2 = updateCurrentCallStackFrameNoFire(thread);
+        if (evt == null) evt = evt2;
+        else if (evt2 != null) evt.setPropagationId(evt2);
+        return evt;
+    }
+
     public void setCurrentCallStackFrame (CallStackFrame callStackFrame) {
         CallStackFrame old = setCurrentCallStackFrameNoFire(callStackFrame);
         if (old == callStackFrame) return ;
@@ -843,13 +861,27 @@ public class JPDADebuggerImpl extends JPDADebugger {
     * Performs stop action.
     */
     public void setStoppedState (ThreadReference thread) {
+        PropertyChangeEvent evt;
         synchronized (LOCK) {
             // this method can be called in stopped state to switch 
             // the current thread only
             JPDAThread t = getThread (thread);
             checkJSR45Languages (t);
-            setCurrentThread (t);
-            setState (STATE_STOPPED);
+            evt = setCurrentThreadNoFire(t);
+            PropertyChangeEvent evt2 = setStateNoFire(STATE_STOPPED);
+            
+            if (evt == null) evt = evt2;
+            else if (evt2 != null) {
+                PropertyChangeEvent evt3 = evt;
+                while(evt3.getPropagationId() != null) evt3 = (PropertyChangeEvent) evt3.getPropagationId();
+                evt3.setPropagationId(evt2);
+            }
+        }
+        if (evt != null) {
+            do {
+                firePropertyChange(evt);
+                evt = (PropertyChangeEvent) evt.getPropagationId();
+            } while (evt != null);
         }
     }
     
@@ -857,15 +889,34 @@ public class JPDADebuggerImpl extends JPDADebugger {
     * Performs stop action and disable a next call to resume()
     */
     public void setStoppedStateNoContinue (ThreadReference thread) {
+        PropertyChangeEvent evt;
         synchronized (LOCK) {
             // this method can be called in stopped state to switch 
             // the current thread only
-            setState (STATE_RUNNING);
+            evt = setStateNoFire(STATE_RUNNING);
             JPDAThread t = getThread (thread);
             checkJSR45Languages (t);
-            setCurrentThread (t);
-            setState (STATE_STOPPED);
+            PropertyChangeEvent evt2 = setCurrentThreadNoFire(t);
+            
+            if (evt == null) evt = evt2;
+            else if (evt2 != null) evt.setPropagationId(evt2);
+            
+            evt2 = setStateNoFire(STATE_STOPPED);
+            
+            if (evt == null) evt = evt2;
+            else if (evt2 != null) {
+                PropertyChangeEvent evt3 = evt;
+                while(evt3.getPropagationId() != null) evt3 = (PropertyChangeEvent) evt3.getPropagationId();
+                evt3.setPropagationId(evt2);
+            }
+            
             doContinue = false;
+        }
+        if (evt != null) {
+            do {
+                firePropertyChange(evt);
+                evt = (PropertyChangeEvent) evt.getPropagationId();
+            } while (evt != null);
         }
     }
     
@@ -1069,24 +1120,37 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
     
-    private void setState (int state) {
-        if (state == this.state) return;
+    private PropertyChangeEvent setStateNoFire (int state) {
+        if (state == this.state) return null;
         int o = this.state;
         this.state = state;
-        firePropertyChange (PROP_STATE, new Integer (o), new Integer (state));
-        
         //PENDING HACK see issue 46287
         System.setProperty(
             "org.openide.awt.SwingBrowserImpl.do-not-block-awt",
             String.valueOf (state != STATE_DISCONNECTED)
         );
+        return new PropertyChangeEvent(this, PROP_STATE, new Integer (o), new Integer (state));
+    }
+
+    private void setState (int state) {
+        PropertyChangeEvent evt = setStateNoFire(state);
+        if (evt != null) {
+            firePropertyChange(evt);
+        }
     }
 
     /**
-    * Fires property change.
-    */
+     * Fires property change.
+     */
     private void firePropertyChange (String name, Object o, Object n) {
         pcs.firePropertyChange (name, o, n);
+    }
+
+    /**
+     * Fires property change.
+     */
+    private void firePropertyChange (PropertyChangeEvent evt) {
+        pcs.firePropertyChange (evt);
     }
 
     private SourcePath engineContext;
@@ -1137,6 +1201,27 @@ public class JPDADebuggerImpl extends JPDADebugger {
         } catch (AbsentInformationException e) {
             setCurrentCallStackFrame (null);
         }
+    }
+
+    /**
+     * @param thread The thread to take the top frame from
+     * @return A PropertyChangeEvent or <code>null</code>.
+     */
+    private PropertyChangeEvent updateCurrentCallStackFrameNoFire(JPDAThread thread) {
+        CallStackFrame old;
+        CallStackFrame callStackFrame;
+        if ( (thread == null) ||
+             (thread.getStackDepth () < 1))
+            old = setCurrentCallStackFrameNoFire(callStackFrame = null);
+        else
+        try {
+            old = setCurrentCallStackFrameNoFire(callStackFrame = thread.getCallStack (0, 1) [0]);
+        } catch (AbsentInformationException e) {
+            old = setCurrentCallStackFrameNoFire(callStackFrame = null);
+        }
+        if (old == callStackFrame) return null;
+        else return new PropertyChangeEvent(this, PROP_CURRENT_CALL_STACK_FRAME,
+                                            old, callStackFrame);
     }
     
     private List<EventRequest> disableAllBreakpoints () {

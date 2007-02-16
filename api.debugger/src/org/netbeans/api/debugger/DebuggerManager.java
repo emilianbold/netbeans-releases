@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,7 +24,6 @@ import java.util.*;
 import java.util.HashMap;
 
 import org.openide.util.Cancellable;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 
 import org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider;
@@ -1150,12 +1149,10 @@ public final class DebuggerManager {
     private void removeSession (Session session) {
         Session[] oldSessions;
         Session[] newSessions;
-        DebuggerEngine oldEngine;
-        DebuggerEngine newEngine;
+        Session nCurrentSesson = null;
         synchronized (sessions) {
             oldSessions = getSessions();
             // find index of given debugger and new instance of currentDebugger
-            Session nCurrentSesson = null;
             int i, k = oldSessions.length;
             for (i = 0; i < k; i++) {
                 if (oldSessions[i] == session) {
@@ -1170,7 +1167,8 @@ public final class DebuggerManager {
             if (session == getCurrentSession ()) {
                 if ((nCurrentSesson == null) && (k > 1))
                     nCurrentSesson = oldSessions[1];
-                setCurrentSession (nCurrentSesson);
+            } else {
+                nCurrentSesson = getCurrentSession();
             }
             
             newSessions = new Session [oldSessions.length - 1];
@@ -1182,16 +1180,9 @@ public final class DebuggerManager {
             sessions.remove(i);
             
             session.removePropertyChangeListener (sessionListener);
-            
-            oldEngine = currentEngine;
-            newEngine = null;
-            if (getCurrentSession () != null)
-                newEngine = getCurrentSession ().getCurrentEngine ();
-            currentEngine = newEngine;
+            // The current engine is set in setCurrentSession().
         }
-        if (oldEngine != newEngine) {
-            firePropertyChange (PROP_CURRENT_ENGINE, oldEngine, newEngine);
-        }
+        setCurrentSession (nCurrentSesson);
         fireSessionRemoved (session, oldSessions, newSessions);
     }
     
