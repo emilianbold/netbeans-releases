@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.source;
@@ -22,6 +22,7 @@ import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -39,10 +40,16 @@ public final class JavaSourceTaskFactoryManager {
     
     /** Creates a new instance of JavaSourceTaskFactoryManager */
     private JavaSourceTaskFactoryManager() {
+        final RequestProcessor.Task updateTask = new RequestProcessor("JavaSourceTaskFactoryManager Worker", 1).create(new Runnable() {
+            public void run() {
+                update();
+            }
+        });
+        
         factories = Lookup.getDefault().lookupResult(JavaSourceTaskFactory.class);
         factories.addLookupListener(new LookupListener() {
             public void resultChanged(LookupEvent ev) {
-                update();
+                updateTask.schedule(0);
             }
         });
         
