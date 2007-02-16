@@ -27,7 +27,11 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -344,30 +348,112 @@ public class JavadocUtilities {
     
     public static MethodDoc findInheritedDoc(CompilationInfo javac, Element elm) {
         if (elm.getKind() == ElementKind.METHOD) {
-            Doc jDoc = javac.getElementUtilities().javaDocFor(elm);
-            if (jDoc != null) {
-                MethodDoc overridden = ((MethodDoc) jDoc).overriddenMethod();
-                if (overridden != null) {
-                    // check if really contains javadoc
-                    Element overMeth = javac.getElementUtilities().elementFor(overridden);
-                    if (overMeth != null && javac.getElements().getDocComment(overMeth) != null) {
-                        return overridden;
-                    }
+            TypeElement clazz = (TypeElement) elm.getEnclosingElement();
+            return searchInInterfaces(javac, clazz, clazz,
+                    (ExecutableElement) elm, new HashSet<TypeElement>());
+        }
+        return null;
+    }
+    
+    /**
+     * <a href="http://java.sun.com/javase/6/docs/technotes/tools/solaris/javadoc.html#inheritingcomments">
+     * Algorithm for Inheriting Method Comments
+     * </a>
+     * <p>Do not use MethodDoc.overriddenMethod() instead since it fails for
+     * interfaces!
+     */
+    private static MethodDoc searchInInterfaces(
+            CompilationInfo javac, TypeElement class2query, TypeElement overriderClass,
+            ExecutableElement overrider, Set<TypeElement> exclude) {
+        
+        // Step 1
+        for (TypeMirror ifceMirror : class2query.getInterfaces()) {
+            if (ifceMirror.getKind() == TypeKind.DECLARED) {
+                TypeElement ifceEl = (TypeElement) ((DeclaredType) ifceMirror).asElement();
+                if (exclude.contains(ifceEl)) {
+                    continue;
                 }
+                // check methods
+                MethodDoc jdoc = searchInMethods(javac, ifceEl, overriderClass, overrider);
+                if (jdoc != null) {
+                    return jdoc;
+                }
+                exclude.add(ifceEl);
+            }
+        }
+        // Step 2
+        for (TypeMirror ifceMirror : class2query.getInterfaces()) {
+            if (ifceMirror.getKind() == TypeKind.DECLARED) {
+                TypeElement ifceEl = (TypeElement) ((DeclaredType) ifceMirror).asElement();
+                MethodDoc jdoc = searchInInterfaces(javac, ifceEl, overriderClass, overrider, exclude);
+                if (jdoc != null) {
+                    return jdoc;
+                }
+            }
+        }
+        // Step 3
+        return searchInSuperclass(javac, class2query, overriderClass, overrider, exclude);
+    }
+    
+    private static MethodDoc searchInSuperclass(
+            CompilationInfo javac, TypeElement class2query, TypeElement overriderClass,
+            ExecutableElement overrider, Set<TypeElement> exclude) {
+        
+        // Step 3a
+        TypeMirror superclassMirror = class2query.getSuperclass();
+        if (superclassMirror.getKind() != TypeKind.DECLARED) {
+            return null;
+        }
+        TypeElement superclass = (TypeElement) ((DeclaredType) superclassMirror).asElement();
+        // check methods
+        MethodDoc jdoc = searchInMethods(javac, superclass, overriderClass, overrider);
+        if (jdoc != null) {
+            return jdoc;
+        }
+        
+        // Step 3b
+        return searchInInterfaces(javac, superclass, overriderClass, overrider, exclude);
+    }
+    
+    private static MethodDoc searchInMethods(
+            CompilationInfo javac, TypeElement class2query,
+            TypeElement overriderClass, ExecutableElement overrider) {
+        
+        for (Element elm : class2query.getEnclosedElements()) {
+            if (elm.getKind() == ElementKind.METHOD &&
+                    javac.getElements().overrides(overrider, (ExecutableElement) elm, overriderClass)) {
+                Doc jdoc = javac.getElementUtilities().javaDocFor(elm);
+                return (jdoc != null && jdoc.getRawCommentText().length() > 0)?
+                    (MethodDoc) jdoc: null;
             }
         }
         return null;
     }
     
-    public static ParamTag findParamTag(MethodDoc doc, String paramName, boolean inherited) {
+    public static ParamTag findParamTag(CompilationInfo javac, MethodDoc doc, String paramName, boolean inherited) {
+        ExecutableElement overrider = (ExecutableElement) javac.getElementUtilities().elementFor(doc);
+        TypeElement overriderClass = (TypeElement) overrider.getEnclosingElement();
+        TypeElement class2query = null;
+        Set<TypeElement> exclude = null;
         while (doc != null) {
             for (ParamTag paramTag : doc.paramTags()) {
-                if (paramTag.equals(paramName)) {
+                if (paramName.equals(paramTag.parameterName())) {
                     return paramTag;
                 }
             }
             if (inherited) {
-                doc = doc.overriddenMethod();
+                if (exclude == null) {
+                    exclude = new HashSet<TypeElement>();
+                }
+                
+                if (class2query == null) {
+                    class2query = overriderClass;
+                } else {
+                    Element melm = javac.getElementUtilities().elementFor(doc);
+                    class2query = (TypeElement) melm.getEnclosingElement();
+                }
+                
+                doc = searchInInterfaces(javac, class2query, overriderClass, overrider, exclude);
             } else {
                 break;
             }
@@ -375,7 +461,11 @@ public class JavadocUtilities {
         return null;
     }
     
-    public static ThrowsTag findThrowsTag(MethodDoc doc, String fqn, boolean inherited) {
+    public static ThrowsTag findThrowsTag(CompilationInfo javac, MethodDoc doc, String fqn, boolean inherited) {
+        ExecutableElement overrider = (ExecutableElement) javac.getElementUtilities().elementFor(doc);
+        TypeElement overriderClass = (TypeElement) overrider.getEnclosingElement();
+        TypeElement class2query = null;
+        Set<TypeElement> exclude = null;
         while (doc != null) {
             for (ThrowsTag throwsTag : doc.throwsTags()) {
                 com.sun.javadoc.Type tagType = throwsTag.exceptionType();
@@ -390,7 +480,18 @@ public class JavadocUtilities {
                 }
             }
             if (inherited) {
-                doc = doc.overriddenMethod();
+                if (exclude == null) {
+                    exclude = new HashSet<TypeElement>();
+                }
+                
+                if (class2query == null) {
+                    class2query = overriderClass;
+                } else {
+                    Element melm = javac.getElementUtilities().elementFor(doc);
+                    class2query = (TypeElement) melm.getEnclosingElement();
+                }
+                
+                doc = searchInInterfaces(javac, class2query, overriderClass, overrider, exclude);
             } else {
                 break;
             }
@@ -398,14 +499,29 @@ public class JavadocUtilities {
         return null;
     }
     
-    public static Tag findReturnTag(MethodDoc doc, boolean inherited) {
+    public static Tag findReturnTag(CompilationInfo javac, MethodDoc doc, boolean inherited) {
+        ExecutableElement overrider = (ExecutableElement) javac.getElementUtilities().elementFor(doc);
+        TypeElement overriderClass = (TypeElement) overrider.getEnclosingElement();
+        TypeElement class2query = null;
+        Set<TypeElement> exclude = null;
         while (doc != null) {
             Tag[] tags = doc.tags("@return"); // NOI18N
             if (tags.length > 0) {
                 return tags[0];
             }
             if (inherited) {
-                doc = doc.overriddenMethod();
+                if (exclude == null) {
+                    exclude = new HashSet<TypeElement>();
+                }
+                
+                if (class2query == null) {
+                    class2query = overriderClass;
+                } else {
+                    Element melm = javac.getElementUtilities().elementFor(doc);
+                    class2query = (TypeElement) melm.getEnclosingElement();
+                }
+                
+                doc = searchInInterfaces(javac, class2query, overriderClass, overrider, exclude);
             } else {
                 break;
             }

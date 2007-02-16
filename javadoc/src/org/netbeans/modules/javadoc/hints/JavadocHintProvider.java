@@ -431,7 +431,7 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             }
             
             if (returnType.getKind() != TypeKind.VOID && tags.length == 0 &&
-                    JavadocUtilities.findReturnTag((MethodDoc) jdoc, true) == null) {
+                    JavadocUtilities.findReturnTag(javac, (MethodDoc) jdoc, true) == null) {
                 // missing @return
                 try {
                     Position[] poss = createPositions(returnTree);
@@ -480,7 +480,8 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
                 TypeElement tel = (TypeElement) el;
                 boolean exists = tagNames.remove(tel.getQualifiedName().toString()) != null;
                 if (!exists && (jdoc.isConstructor() ||
-                        jdoc.isMethod() && JavadocUtilities.findThrowsTag((MethodDoc) jdoc, tel.getQualifiedName().toString(), true) == null)) {
+                        jdoc.isMethod() && 
+                        JavadocUtilities.findThrowsTag(javac, (MethodDoc) jdoc, tel.getQualifiedName().toString(), true) == null)) {
                     // missing @throws
                     try {
                         Position[] poss = createPositions(throwTree);
@@ -577,7 +578,8 @@ public final class JavadocHintProvider implements CancellableTask<CompilationInf
             for (VariableTree param : params) {
                 boolean exists = tagNames.remove(param.getName().toString()) != null;
                 if (!exists && (jdoc.isConstructor() ||
-                        jdoc.isMethod() && JavadocUtilities.findParamTag((MethodDoc) jdoc, param.getName().toString(), true) == null)) {
+                        jdoc.isMethod() &&
+                        JavadocUtilities.findParamTag(javac, (MethodDoc) jdoc, param.getName().toString(), true) == null)) {
                     // missing @param
                     try {
                         Position[] poss = createPositions(param);
