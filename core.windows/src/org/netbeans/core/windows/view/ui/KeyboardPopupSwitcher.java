@@ -353,9 +353,13 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
     /** Changes table selection and sets status bar appropriately */
     private void changeTableSelection(int row, int col) {
         pTable.changeSelection(row, col, false, false);
-        String statusText = pTable.getSelectedItem().getDescription();
-        StatusDisplayer.getDefault().setStatusText(
-                statusText != null ? statusText : "");
+        // #95111: Defense agaist random selection failure
+        SwitcherTableItem item = pTable.getSelectedItem();
+        if (item != null) {
+            String statusText = item.getDescription();
+            StatusDisplayer.getDefault().setStatusText(
+                    statusText != null ? statusText : "");
+        }
     }
     
     /**
