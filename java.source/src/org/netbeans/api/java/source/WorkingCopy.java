@@ -180,6 +180,12 @@ public class WorkingCopy extends CompilationController {
         if (afterCommit)
             throw new IllegalStateException("The commit method can be called only once on a WorkingCopy instance");   //NOI18N
         afterCommit = true;
+        
+        if (changes == null) {
+            //may happen when the modification task does not call toPhase at all.
+            return null;
+        }
+        
         try {
             RootTree newRoot = changes.commit((RootTree)ce.getRootNode());
             
