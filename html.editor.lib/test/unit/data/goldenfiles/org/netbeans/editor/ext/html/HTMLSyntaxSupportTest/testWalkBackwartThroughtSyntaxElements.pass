@@ -68,9 +68,11 @@ Element(text)[509,518] "
     
     
 Element(endtag)[500,508] " - "script"
-Element(script)[491,499] "
+Element(text)[491,499] "
+        
 Element(comment)[379,499] "
-Element(script)[378,378] "
+Element(text)[378,378] "
+
 Element(tag)[325,377] " - "script" - {language, type, }
 Element(text)[316,324] "
         

@@ -686,7 +686,8 @@
 375:Element(tag)[326,377] " - "script" - {language, type, }
 376:Element(tag)[326,377] " - "script" - {language, type, }
 377:Element(tag)[325,377] " - "script" - {language, type, }
-378:Element(script)[378,378] "
+378:Element(text)[378,378] "
+
 379:Element(comment)[379,499] "
 380:Element(comment)[379,499] "
 381:Element(comment)[379,499] "
@@ -799,15 +800,24 @@
 488:Element(comment)[379,499] "
 489:Element(comment)[379,499] "
 490:Element(comment)[379,499] "
-491:Element(script)[491,499] "
-492:Element(script)[491,499] "
-493:Element(script)[491,499] "
-494:Element(script)[491,499] "
-495:Element(script)[491,499] "
-496:Element(script)[491,499] "
-497:Element(script)[491,499] "
-498:Element(script)[491,499] "
-499:Element(script)[491,499] "
+491:Element(text)[491,499] "
+        
+492:Element(text)[491,499] "
+        
+493:Element(text)[491,499] "
+        
+494:Element(text)[491,499] "
+        
+495:Element(text)[491,499] "
+        
+496:Element(text)[491,499] "
+        
+497:Element(text)[491,499] "
+        
+498:Element(text)[491,499] "
+        
+499:Element(text)[491,499] "
+        
 500:Element(endtag)[500,508] " - "script"
 501:Element(endtag)[500,508] " - "script"
 502:Element(endtag)[500,508] " - "script"
