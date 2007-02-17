@@ -181,7 +181,7 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
         private Node createWaitNode() {
             AbstractNode node = new AbstractNode(Children.LEAF);
             node.setName(NbBundle.getMessage(InstanceTargetXNode.class, "LBL_WaitNode_DisplayName"));
-            node.setIconBaseWithExtension("org/openide/src/resources/wait.gif"); // NOI18N
+            node.setIconBaseWithExtension("org/netbeans/modules/j2ee/deployment/impl/ui/resources/wait.gif"); // NOI18N
             
             Children.Array children = new Children.Array();
             children.add(new Node[]{node});
