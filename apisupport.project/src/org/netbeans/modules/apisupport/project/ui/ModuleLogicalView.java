@@ -22,46 +22,24 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.apisupport.project.metainf.ServiceNodeHandler;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.layers.LayerNode;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
+import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -70,8 +48,6 @@ import org.openide.util.lookup.Lookups;
  */
 public final class ModuleLogicalView implements LogicalViewProvider {
     
-    /** Package private for unit tests only. */
-    static final RequestProcessor RP = new RequestProcessor();
     
     private final NbModuleProject project;
     
@@ -113,7 +89,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                 return found;
             }
             // For Important Files node:
-            if (rootChildren[i].getName().equals(IMPORTANT_FILES_NAME)) {
+            if (rootChildren[i].getName().equals(ImportantFilesNodeFactory.IMPORTANT_FILES_NAME)) {
                 Node[] ifChildren = rootChildren[i].getChildren().getNodes(true);
                 for (int j = 0; j < ifChildren.length; j++) {
                     if (ifChildren[j].getCookie(DataObject.class) == file) {
@@ -133,7 +109,8 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         public RootNode(NbModuleProject project) {
             
             // XXX add a NodePathResolver impl to lookup
-            super(new RootChildren(project), Lookups.fixed(new Object[] {project}));
+            super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-apisupport-project/Nodes"), 
+                  Lookups.fixed(new Object[] {project}));
             this.project = project;
             setForceAnnotation(true);
             setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
@@ -199,344 +176,4 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         }
         
     }
-    
-    /** Package private for unit tests. */
-    static final String IMPORTANT_FILES_NAME = "important.files"; // NOI18N
-    
-    /** Accessor for SuiteLogicalView to create its important node which shall
-     * be as similar as module's project one
-     */
-    static Node createImportantFilesNode(Children ch) {
-        return new ImportantFilesNode(ch);
-    }
-    
-    private static final class RootChildren extends Children.Keys implements ChangeListener {
-        
-        private static final String[] SOURCE_GROUP_TYPES = {
-            JavaProjectConstants.SOURCES_TYPE_JAVA,
-            NbModuleProject.SOURCES_TYPE_JAVAHELP,
-        };
-        
-        private final NbModuleProject project;
-        
-        RootChildren(NbModuleProject project) {
-            this.project = project;
-        }
-        
-        protected void addNotify() {
-            super.addNotify();
-            refreshKeys();
-            ProjectUtils.getSources(project).addChangeListener(this);
-        }
-        
-        private void refreshKeys() {
-            List l = new ArrayList();
-            Sources s = ProjectUtils.getSources(project);
-            for (int i = 0; i < SOURCE_GROUP_TYPES.length; i++) {
-                SourceGroup[] groups = s.getSourceGroups(SOURCE_GROUP_TYPES[i]);
-                l.addAll(Arrays.asList(groups));
-            }
-            SourceGroup javadocDocfiles = makeJavadocDocfilesSourceGroup();
-            if (javadocDocfiles != null) {
-                l.add(javadocDocfiles);
-            }
-            l.add(IMPORTANT_FILES_NAME);
-            l.add(LibrariesNode.LIBRARIES_NAME);
-            if(resolveFileObjectFromProperty("test.unit.src.dir") != null) { //NOI18N
-                l.add(UnitTestLibrariesNode.UNIT_TEST_LIBRARIES_NAME);
-            }
-            setKeys(l);
-        }
-        
-        private FileObject resolveFileObjectFromProperty(String property){
-            String filename = project.evaluator().getProperty(property);
-            if (filename == null) {
-                return null;
-            }
-            return project.getHelper().resolveFileObject(filename);
-        }
-
-        protected void removeNotify() {
-            ProjectUtils.getSources(project).removeChangeListener(this);
-            setKeys(Collections.EMPTY_SET);
-            super.removeNotify();
-        }
-        
-        protected Node[] createNodes(Object key) {
-            Node n;
-            if (key instanceof SourceGroup) {
-                n = PackageView.createPackageView((SourceGroup) key);
-            } else if (key == IMPORTANT_FILES_NAME) {
-                n = new ImportantFilesNode(project);
-            } else if (key == LibrariesNode.LIBRARIES_NAME) {
-                n = new LibrariesNode(project);
-            } else if (key == UnitTestLibrariesNode.UNIT_TEST_LIBRARIES_NAME) {
-                n = new UnitTestLibrariesNode(project);
-            } else {
-                throw new AssertionError("Unknown key: " + key);
-            }
-            return new Node[] {n};
-        }
-        
-       
-        private SourceGroup makeJavadocDocfilesSourceGroup() {
-            String propname = "javadoc.docfiles"; // NOI18N
-            FileObject root = resolveFileObjectFromProperty(propname);
-            if(root == null) {
-                return null;
-            }
-            return GenericSources.group(project, root, propname, NbBundle.getMessage(ModuleLogicalView.class, "LBL_extra_javadoc_files"), null, null);
-        }
-
-        public void stateChanged(ChangeEvent e) {
-            refreshKeys();
-        }
-        
-    }
-    
-    /**
-     * Show node "Important Files" with various config and docs files beneath it.
-     */
-    static final class ImportantFilesNode extends AnnotatedNode {
-        
-        public ImportantFilesNode(NbModuleProject project) {
-            super(new ImportantFilesChildren(project));
-        }
-        
-        ImportantFilesNode(Children ch) {
-            super(ch);
-        }
-        
-        public String getName() {
-            return IMPORTANT_FILES_NAME;
-        }
-        
-        private Image getIcon(boolean opened) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/apisupport/project/resources/config-badge.gif", true);
-            return Utilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 8, 8);
-        }
-        
-        private static final String DISPLAY_NAME = NbBundle.getMessage(ModuleLogicalView.class, "LBL_important_files");
-        
-        public String getDisplayName() {
-            return annotateName(DISPLAY_NAME);
-        }
-        
-        public String getHtmlDisplayName() {
-            return computeAnnotatedHtmlDisplayName(DISPLAY_NAME, getFiles());
-        }
-        
-        public Image getIcon(int type) {
-            return annotateIcon(getIcon(false), type);
-        }
-        
-        public Image getOpenedIcon(int type) {
-            return annotateIcon(getIcon(true), type);
-        }
-        
-    }
-    
-    /**
-     * Actual list of important files.
-     */
-    private static final class ImportantFilesChildren extends Children.Keys {
-        
-        private List visibleFiles = new ArrayList();
-        private FileChangeListener fcl;
-        
-        /** Abstract location to display name. */
-        private static final java.util.Map<String,String> FILES = new LinkedHashMap();
-        static {
-            FILES.put("${manifest.mf}", NbBundle.getMessage(ModuleLogicalView.class, "LBL_module_manifest"));
-            FILES.put("${javadoc.arch}", NbBundle.getMessage(ModuleLogicalView.class, "LBL_arch_desc"));
-            FILES.put("${javadoc.apichanges}", NbBundle.getMessage(ModuleLogicalView.class, "LBL_api_changes"));
-            FILES.put("${javadoc.overview}", NbBundle.getMessage(ModuleLogicalView.class, "LBL_javadoc_overview"));
-            FILES.put("build.xml", NbBundle.getMessage(ModuleLogicalView.class, "LBL_build.xml"));
-            FILES.put("nbproject/project.xml", NbBundle.getMessage(ModuleLogicalView.class, "LBL_project.xml"));
-            FILES.put("nbproject/project.properties", NbBundle.getMessage(ModuleLogicalView.class, "LBL_project.properties"));
-            FILES.put("nbproject/private/private.properties", NbBundle.getMessage(ModuleLogicalView.class, "LBL_private.properties"));
-            FILES.put("nbproject/suite.properties", NbBundle.getMessage(ModuleLogicalView.class, "LBL_suite.properties"));
-            FILES.put("nbproject/private/suite-private.properties", NbBundle.getMessage(ModuleLogicalView.class, "LBL_suite-private.properties"));
-            FILES.put("nbproject/platform.properties", NbBundle.getMessage(ModuleLogicalView.class, "LBL_platform.properties"));
-            FILES.put("nbproject/private/platform-private.properties", NbBundle.getMessage(ModuleLogicalView.class, "LBL_platform-private.properties"));
-        }
-        
-        private final NbModuleProject project;
-        
-        public ImportantFilesChildren(NbModuleProject project) {
-            this.project = project;
-        }
-        
-        protected void addNotify() {
-            super.addNotify();
-            attachListeners();
-            refreshKeys();
-        }
-        
-        protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
-            removeListeners();
-            super.removeNotify();
-        }
-        
-        protected Node[] createNodes(Object key) {
-            if (key instanceof String) {
-                String loc = (String) key;
-                String locEval = project.evaluator().evaluate(loc);
-                FileObject file = project.getHelper().resolveFileObject(locEval);
-                try {
-                    Node orig = DataObject.find(file).getNodeDelegate();
-                    return new Node[] {new SpecialFileNode(orig, (String) FILES.get(loc))};
-                } catch (DataObjectNotFoundException e) {
-                    throw new AssertionError(e);
-                }
-            } else if (key instanceof LayerUtils.LayerHandle) {
-                return new Node[] {/* #68240 */ new SpecialFileNode(new LayerNode((LayerUtils.LayerHandle) key), null)};
-            } else if (key instanceof ServiceNodeHandler) {
-                return new Node[]{((ServiceNodeHandler)key).createServiceRootNode()};
-            } else {
-                throw new AssertionError(key);
-            } 
-        }
-        
-        private void refreshKeys() {
-            Set<FileObject> files = new HashSet();
-            List newVisibleFiles = new ArrayList();
-            LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
-            FileObject layerFile = handle.getLayerFile();
-            if (layerFile != null) {
-                newVisibleFiles.add(handle);
-                files.add(layerFile);
-            }
-            Iterator it = FILES.keySet().iterator();
-            while (it.hasNext()) {
-                String loc = (String) it.next();
-                String locEval = project.evaluator().evaluate(loc);
-                if (locEval == null) {
-                    newVisibleFiles.remove(loc); // XXX why?
-                    continue;
-                }
-                FileObject file = project.getHelper().resolveFileObject(locEval);
-                if (file != null) {
-                    newVisibleFiles.add(loc);
-                    files.add(file);
-                }
-            }
-            if (!isInitialized() || !newVisibleFiles.equals(visibleFiles)) {
-                visibleFiles = newVisibleFiles;
-                visibleFiles.add(project.getLookup().lookup(ServiceNodeHandler.class));
-                RP.post(new Runnable() { // #72471
-                    public void run() {
-                        setKeys(visibleFiles);
-                    }
-                });
-                ((ImportantFilesNode) getNode()).setFiles(files);
-            }
-        }
-        
-        private void attachListeners() {
-            try {
-                if (fcl == null) {
-                    fcl = new FileChangeAdapter() {
-                        public void fileDataCreated(FileEvent fe) {
-                            refreshKeys();
-                        }
-                        public void fileDeleted(FileEvent fe) {
-                            refreshKeys();
-                        }
-                    };
-                    project.getProjectDirectory().getFileSystem().addFileChangeListener(fcl);
-                }
-            } catch (FileStateInvalidException e) {
-                assert false : e;
-            }
-        }
-        
-        private void removeListeners() {
-            if (fcl != null) {
-                try {
-                    project.getProjectDirectory().getFileSystem().removeFileChangeListener(fcl);
-                } catch (FileStateInvalidException e) {
-                    assert false : e;
-                }
-                fcl = null;
-            }
-        }
-        
-    }
-    
-    /**
-     * Node to represent some special file in a project.
-     * Mostly just a wrapper around the normal data node.
-     */
-    static final class SpecialFileNode extends FilterNode {
-        
-        private final String displayName;
-        
-        public SpecialFileNode(Node orig, String displayName) {
-            super(orig);
-            this.displayName = displayName;
-        }
-        
-        public String getDisplayName() {
-            if (displayName != null) {
-                return displayName;
-            } else {
-                return super.getDisplayName();
-            }
-        }
-        
-        public boolean canRename() {
-            return false;
-        }
-        
-        public boolean canDestroy() {
-            return false;
-        }
-        
-        public boolean canCut() {
-            return false;
-        }
-        
-        public String getHtmlDisplayName() {
-            String result = null;
-            DataObject dob = (DataObject) getLookup().lookup(DataObject.class);
-            if (dob != null) {
-                Set files = dob.files();
-                result = computeAnnotatedHtmlDisplayName(getDisplayName(), files);
-            }
-            return result;
-        }
-        
-    }
-    
-    /**
-     * Annotates <code>htmlDisplayName</code>, if it is needed, and returns the
-     * result; <code>null</code> otherwise.
-     */
-    private static String computeAnnotatedHtmlDisplayName(
-            final String htmlDisplayName, final Set files) {
-        
-        String result = null;
-        if (files != null && files.iterator().hasNext()) {
-            try {
-                FileObject fo = (FileObject) files.iterator().next();
-                FileSystem.Status stat = fo.getFileSystem().getStatus();
-                if (stat instanceof FileSystem.HtmlStatus) {
-                    FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
-                    
-                    String annotated = hstat.annotateNameHtml(htmlDisplayName, files);
-                    
-                    // Make sure the super string was really modified (XXX why?)
-                    if (!htmlDisplayName.equals(annotated)) {
-                        result = annotated;
-                    }
-                }
-            } catch (FileStateInvalidException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-        }
-        return result;
-    }
-    
 }

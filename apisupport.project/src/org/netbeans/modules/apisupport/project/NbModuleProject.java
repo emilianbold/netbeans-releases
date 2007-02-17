@@ -85,7 +85,9 @@ import org.netbeans.modules.apisupport.project.ui.ModuleActions;
 import org.netbeans.modules.apisupport.project.ui.ModuleLogicalView;
 import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 
 /**
  * A NetBeans module project.
@@ -103,7 +105,7 @@ public final class NbModuleProject implements Project {
     
     private final AntProjectHelper helper;
     private final Evaluator eval;
-    private final Lookup lookup;
+    private Lookup lookup;
     private Map<FileObject,Element> extraCompilationUnits;
     private final GeneratedFilesHelper genFilesHelper;
     private final NbModuleTypeProviderImpl typeProvider;
@@ -190,6 +192,7 @@ public final class NbModuleProject implements Project {
             }
         });
         lookup = Lookups.fixed(new Object[] {
+            this,
             new Info(),
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
@@ -209,7 +212,7 @@ public final class NbModuleProject implements Project {
                 // currently these are hardcoded
                 "build", // NOI18N
             }),
-            sourcesHelper.createSources(),
+            sourcesHelper.createSources(),                    
             new AntArtifactProviderImpl(this, helper, evaluator()),
             new CustomizerProviderImpl(this, getHelper(), evaluator()),
             new SuiteProviderImpl(),
@@ -218,8 +221,13 @@ public final class NbModuleProject implements Project {
             new ModuleProjectClassPathExtender(this),
             new LocalizedBundleInfoProvider(),
             new ModuleOperations(this),
-            new ServiceNodeHandler(this)
+            new ServiceNodeHandler(this),
+            LookupProviderSupport.createSourcesMerger(),
+            UILookupMergerSupport.createPrivilegedTemplatesMerger(),
+            UILookupMergerSupport.createRecommendedTemplatesMerger(),
+
         });
+        lookup = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-apisupport-project/Lookup"); //NOI18N
     }
     
     public String toString() {
@@ -627,7 +635,7 @@ public final class NbModuleProject implements Project {
     public void setRunInAtomicAction(boolean runInAtomicAction) {
         eval.setRunInAtomicAction(runInAtomicAction);
     }
-    
+        
     private final class Info implements ProjectInformation, PropertyChangeListener {
         
         private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
@@ -764,7 +772,7 @@ public final class NbModuleProject implements Project {
     public void notifyDeleting() {
         eval.removeListeners();
     }
-    
+        
     private final class SavedHook extends ProjectXmlSavedHook {
         
         SavedHook() {}

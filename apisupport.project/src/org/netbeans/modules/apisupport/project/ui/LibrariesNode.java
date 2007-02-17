@@ -43,6 +43,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.ui.ModulesNodeFactory.AddNewLibraryWrapperAction;
 import org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel;
 import org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
@@ -100,7 +101,7 @@ final class LibrariesNode extends AbstractNode {
         if (Util.getModuleType(project) == NbModuleTypeProvider.SUITE_COMPONENT) {
             actions = new Action[] {
                 new AddModuleDependencyAction(project),
-                new SuiteLogicalView.AddNewLibraryWrapperAction(project, project)
+                new AddNewLibraryWrapperAction(project, project)
             };
         } else {
             actions = new Action[] {

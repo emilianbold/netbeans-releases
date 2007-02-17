@@ -175,6 +175,24 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Projects" >
+        <folder name="org-netbeans-modules-apisupport-project">
+            <folder name="Lookup"/>
+            <folder name="Nodes">
+                <file name="org-netbeans-modules-apisupport-project-ui-SourcesNodeFactory.instance"/>
+                <attr name="org-netbeans-modules-apisupport-project-ui-SourcesNodeFactory.instance/org-netbeans-modules-apisupport-project-ui-ImportantFilesNodeFactory.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-apisupport-project-ui-ImportantFilesNodeFactory.instance"/>
+                <attr name="org-netbeans-modules-apisupport-project-ui-ImportantFilesNodeFactory.instance/org-netbeans-modules-apisupport-project-ui-LibrariesNodeFactory.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-apisupport-project-ui-LibrariesNodeFactory.instance"/>
+            </folder>
+         </folder>
+        <folder name="org-netbeans-modules-apisupport-project-suite">
+            <folder name="Lookup"/>
+            <folder name="Nodes">
+                <file name="org-netbeans-modules-apisupport-project-ui-ModulesNodeFactory.instance"/>
+                <attr name="org-netbeans-modules-apisupport-project-ui-ModulesNodeFactory.instance/org-netbeans-modules-apisupport-project-ui-ImportantFilesNodeFactory.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-apisupport-project-ui-ImportantFilesNodeFactory.instance"/>
+            </folder>
+        </folder>
         <folder name="Actions" >
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-ProjectCvsMenuItem.instance/org-netbeans-modules-apisupport-project-ui-XTestProjectMenuItem.instance" boolvalue="true" />
             <!-- Adds XTest sub menu to project root node -->

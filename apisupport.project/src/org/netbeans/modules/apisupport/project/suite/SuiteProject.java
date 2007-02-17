@@ -42,6 +42,7 @@ import org.netbeans.modules.apisupport.project.ui.SuiteOperations;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -54,6 +55,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -73,7 +75,7 @@ public final class SuiteProject implements Project {
             "org/netbeans/modules/apisupport/project/suite/resources/suite.gif"; // NOI18N
     
     private final AntProjectHelper helper;
-    private final Lookup lookup;
+    private Lookup lookup;
     private final PropertyEvaluator eval;
     private final GeneratedFilesHelper genFilesHelper;
     
@@ -83,6 +85,7 @@ public final class SuiteProject implements Project {
         genFilesHelper = new GeneratedFilesHelper(helper);
         Util.err.log("Loading suite project in " + getProjectDirectory());
         lookup = Lookups.fixed(new Object[] {
+            this, 
             new Info(),
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
@@ -97,6 +100,7 @@ public final class SuiteProject implements Project {
             new PrivilegedTemplatesImpl(),
             new SuiteOperations(this),
         });
+        lookup = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-apisupport-project-suite/Lookup");
     }
     
     public String toString() {
