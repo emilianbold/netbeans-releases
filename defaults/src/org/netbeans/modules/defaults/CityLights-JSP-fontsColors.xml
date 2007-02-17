@@ -20,66 +20,14 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="jsp-el-EOL" default="whitespace"/>
-    <fontcolor name="jsp-el-char-literal" default="char"/>
-    <fontcolor name="jsp-el-el-delimiter" default="whitespace"/>
-    <fontcolor name="jsp-el-errors" default="error"/>
-    <fontcolor name="jsp-el-identifier" default="identifier"/>
-    <fontcolor name="jsp-el-keywords" default="keyword"/>
-    <fontcolor name="jsp-el-layer-method" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-el-numeric-literals" default="number"/>
-    <fontcolor name="jsp-el-operators" default="operator"/>
-    <fontcolor name="jsp-el-string" default="string"/>
-    <fontcolor name="jsp-el-tag-lib-prefix" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-el-whitespace" default="whitespace"/>
-    <fontcolor name="jsp-error" default="error"/>
-    <fontcolor name="jsp-format-text" default="default"/>
-    <fontcolor name="jsp-html-argument" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-html-block-comment" default="comment"/>
-    <fontcolor name="jsp-html-character" default="char"/>
-    <fontcolor name="jsp-html-error" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-html-operator" default="operator"/>
-    <fontcolor name="jsp-html-sgml-comment" default="comment"/>
-    <fontcolor name="jsp-html-sgml-declaration" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-html-tag" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-html-text" default="default"/>
-    <fontcolor name="jsp-html-value" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-html-ws" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-java-layer-method" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-java-annotation" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-java-block-comment" default="comment"/>
-    <fontcolor name="jsp-java-char-literal" default="char"/>
-    <fontcolor name="jsp-java-errors" default="error"/>
-    <fontcolor name="jsp-java-identifier" default="identifier"/>
-    <fontcolor name="jsp-java-keywords" default="keyword"/>
-    <fontcolor name="jsp-java-line-comment" default="comment"/>
-    <fontcolor name="jsp-java-numeric-literals" default="number"/>
-    <fontcolor name="jsp-java-operators" default="operator"/>
-    <fontcolor name="jsp-java-string-literal" default="string"/>
-    <fontcolor name="jsp-java-whitespace" default="whitespace"/>
-    <fontcolor name="jsp-jsptag-attribute-name" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-jsptag-attribute-value" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-jsptag-comment" default="comment"/>
-    <fontcolor name="jsp-jsptag-error" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-jsptag-scriptlet-delimiter" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-jsptag-symbol" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-jsptag-tag-directive" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-jsptag-text" default="default"/>
-    <fontcolor name="jsp-jsptag-whitespace" default="whitespace"/>
-    <fontcolor name="jsp-xml-EOL" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-xml-attribute" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-xml-cdata-section" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-xml-comment" default="comment"/>
-    <fontcolor name="jsp-xml-doctype" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-xml-error" default="error"/>
-    <fontcolor name="jsp-xml-operator" default="operator"/>
-    <fontcolor name="jsp-xml-pi-content" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-xml-pi-end" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-xml-pi-start" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-xml-pi-target" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-xml-ref" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-xml-tag" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-xml-text" default="default"/>
-    <fontcolor name="jsp-xml-value" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="jsp-xml-ws" foreColor="green" bgColor="black" default="default"/>
+    <fontcolor name="attribute-name" foreColor="green" bgColor="black" default="default"/>
+    <fontcolor name="attribute-value" foreColor="green" bgColor="black" default="default"/>
+    <fontcolor name="comment" default="comment"/>
+    <fontcolor name="error" foreColor="green" bgColor="black" default="default"/>
+    <fontcolor name="scriptlet-delimiter" foreColor="green" bgColor="black" default="default"/>
+    <fontcolor name="symbol" foreColor="green" bgColor="black" default="default"/>
+    <fontcolor name="tag-directive" foreColor="green" bgColor="black" default="default"/>
+    <fontcolor name="jsp-whitespace" default="whitespace"/>
+    <fontcolor name="scriptlet" default="default"/>
+    <fontcolor name="expression-language" default="whitespace"/>
 </fontscolors>

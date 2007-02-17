@@ -966,6 +966,15 @@ Microsystems, Inc. All Rights Reserved.
                     </folder>
                 </folder>
             </folder>
+            <folder name="x-el">
+                <folder name="CityLights">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="CityLights-EL-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
             <folder name="xml">
                 <folder name="CityLights">
                     <folder name="Defaults">
