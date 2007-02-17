@@ -85,7 +85,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             Elements elements = controller.getElements();
             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-            if (typeElement.getKind() != ElementKind.CLASS)
+            if (!typeElement.getKind().isClass())
                 return Collections.emptySet();
             Trees trees = controller.getTrees();
             Scope scope = trees.getScope(path);

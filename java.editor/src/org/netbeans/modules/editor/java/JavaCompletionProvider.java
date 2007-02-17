@@ -2980,7 +2980,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             final Trees trees = controller.getTrees();
             TypeElement te = (TypeElement)trees.getElement(clsPath);            
-            if (te == null || te.getKind() != CLASS)
+            if (te == null || !te.getKind().isClass())
                 return;
             int offset = env.getOffset();
             String prefix = env.getPrefix();

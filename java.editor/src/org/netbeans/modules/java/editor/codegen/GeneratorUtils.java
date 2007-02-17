@@ -226,6 +226,7 @@ public class GeneratorUtils {
 
     public static void generateConstructor(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, ExecutableElement inheritedConstructor, int index) {
         TreeMaker make = wc.getTreeMaker();
+        ClassTree clazz = (ClassTree)path.getLeaf();
         List<VariableTree> parameters = new ArrayList<VariableTree>();
         List<StatementTree> statements = new ArrayList<StatementTree>();
         ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));        
@@ -242,7 +243,7 @@ public class GeneratorUtils {
             statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
         }
         BlockTree body = make.Block(statements, false);
-        ClassTree decl = make.insertClassMember((ClassTree)path.getLeaf(), index, make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)), "<init>", null, Collections.<TypeParameterTree> emptyList(), parameters, Collections.<ExpressionTree>emptyList(), body, null)); //NOI18N
+        ClassTree decl = make.insertClassMember(clazz, index, make.Method(make.Modifiers(EnumSet.of(wc.getTreeUtilities().isEnum(clazz) ? Modifier.PRIVATE : Modifier.PUBLIC)), "<init>", null, Collections.<TypeParameterTree> emptyList(), parameters, Collections.<ExpressionTree>emptyList(), body, null)); //NOI18N
         wc.rewrite(path.getLeaf(), decl);
     }
     

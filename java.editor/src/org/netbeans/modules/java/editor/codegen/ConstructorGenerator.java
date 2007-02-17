@@ -67,7 +67,7 @@ public class ConstructorGenerator implements CodeGenerator {
                 return Collections.emptySet();
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-            if (typeElement.getKind() != ElementKind.CLASS)
+            if (!typeElement.getKind().isClass())
                 return Collections.emptySet();
             final Set<VariableElement> initializedFields = new LinkedHashSet<VariableElement>();
             final Set<VariableElement> uninitializedFields = new LinkedHashSet<VariableElement>();
@@ -80,7 +80,7 @@ public class ConstructorGenerator implements CodeGenerator {
             GeneratorUtils.scanForFieldsAndConstructors(controller, path, initializedFields, uninitializedFields, constructors);
             ElementHandle<? extends Element> constructorHandle = null;
             ElementNode.Description constructorDescription = null;
-            if (inheritedConstructors.size() == 1) {
+            if (typeElement.getKind() != ElementKind.ENUM && inheritedConstructors.size() == 1) {
                 constructorHandle = ElementHandle.create(inheritedConstructors.get(0));
             } else if (inheritedConstructors.size() > 1) {
                 List<ElementNode.Description> constructorDescriptions = new ArrayList<ElementNode.Description>();

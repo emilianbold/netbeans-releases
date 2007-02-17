@@ -70,7 +70,7 @@ public class GetterSetterGenerator implements CodeGenerator {
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             Elements elements = controller.getElements();
             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-            if (typeElement.getKind() != ElementKind.CLASS)
+            if (!typeElement.getKind().isClass())
                 return ret;
             Map<String, List<ExecutableElement>> methods = new HashMap<String, List<ExecutableElement>>();
             for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(typeElement))) {

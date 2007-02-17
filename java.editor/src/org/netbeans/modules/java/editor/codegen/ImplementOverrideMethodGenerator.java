@@ -65,7 +65,7 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                 return ret;
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-            if (typeElement.getKind() != ElementKind.CLASS)
+            if (!typeElement.getKind().isClass())
                 return Collections.emptySet();
             Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<Element, List<ElementNode.Description>>();
             for (ExecutableElement method : GeneratorUtils.findUndefs(controller, typeElement)) {
