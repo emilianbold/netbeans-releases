@@ -1,0 +1,6 @@
+#!/bin/sh
+rm -rf nbbuild/netbeans/
+unzip -d nbbuild/ ../../trunk/lastSuccessful/archive/nbbuild/NetBeans-hudson-trunk-*.zip
+mkdir core
+ant -f scripting/ruby/build.xml clean build-zip && \
+     mv scripting/ruby/netbeans-ruby.zip scripting/ruby/netbeans-ruby-hudson-${BUILD_NUMBER}.zip
