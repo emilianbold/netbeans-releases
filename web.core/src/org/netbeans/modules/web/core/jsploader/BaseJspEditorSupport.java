@@ -308,10 +308,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
      * @return JSP page encoding.
      */
     protected String getObjectEncoding(boolean useEditor, boolean useCache) {
-        return useCache ? 
-            ((TagLibParseSupport)getDataObject().getCookie(TagLibParseSupport.class)).getCachedOpenInfo(false, useEditor).getEncoding()
-            :
-            ((JspDataObject)getDataObject()).getFileEncoding( useEditor).trim();
+            return ((JspDataObject)getDataObject()).getFileEncoding(!useCache, useEditor).trim();
     }
     
     /** Save the document in this thread and start reparsing it.

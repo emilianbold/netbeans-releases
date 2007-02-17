@@ -40,25 +40,25 @@ import org.netbeans.modules.web.core.QueryStringCookie;
 import org.netbeans.modules.web.core.WebExecSupport;
 
 /** Object that provides main functionality for internet data loader.
-*
-* @author Petr Jiricka
-*/
+ *
+ * @author Petr Jiricka
+ */
 public class JspDataObject extends MultiDataObject implements QueryStringCookie {
-
+    
     public static final String EA_JSP_ERRORPAGE = "jsp_errorpage"; // NOI18N
     // property for the servlet dataobject corresponding to this page
     public static final String PROP_SERVLET_DATAOBJECT = "servlet_do"; // NOI18N
     public static final String PROP_CONTENT_LANGUAGE   = "contentLanguage"; // NOI18N
     public static final String PROP_SCRIPTING_LANGUAGE = "scriptingLanguage"; // NOI18N
-//    public static final String PROP_ENCODING = "encoding"; // NOI18N
+    public static final String PROP_ENCODING = "encoding"; // NOI18N
     public static final String PROP_SERVER_CHANGE = "PROP_SERVER_CHANGE";// NOI18N
     public static final String PROP_REQUEST_PARAMS = "PROP_REQUEST_PARAMS"; //NOI18N
-
+    
     static final String ATTR_FILE_ENCODING = "Content-Encoding"; // NOI18N
-
+    
     transient private EditorCookie servletEdit;
     transient protected JspServletDataObject servletDataObject;
-    // it is guaranteed that if servletDataObject != null, then this is its 
+    // it is guaranteed that if servletDataObject != null, then this is its
     // last modified date at the time of last refresh
     transient private Date servletDataObjectDate;
     transient private CompileData compileData;
@@ -66,17 +66,17 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     transient private Listener listener;
     transient private BaseJspEditorSupport editorSupport;
     transient final private static boolean debug = false;
-        
-    public JspDataObject (FileObject pf, final UniFileLoader l) throws DataObjectExistsException {
-        super (pf, l);
+    
+    public JspDataObject(FileObject pf, final UniFileLoader l) throws DataObjectExistsException {
+        super(pf, l);
         CookieSet cookies = getCookieSet();
         initialize();
     }
     
     // Public accessibility for e.g. JakartaServerPlugin.
     // [PENDING] Handle this more nicely.
-    public org.openide.nodes.CookieSet getCookieSet0 () {
-        return super.getCookieSet ();
+    public org.openide.nodes.CookieSet getCookieSet0() {
+        return super.getCookieSet();
     }
     
     public Node.Cookie getCookie(Class type) {
@@ -86,74 +86,88 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return super.getCookie(type);
     }
     
-    protected org.openide.nodes.Node createNodeDelegate () {
-        return new JspNode (this);
+    protected org.openide.nodes.Node createNodeDelegate() {
+        return new JspNode(this);
     }
-
+    
     private synchronized BaseJspEditorSupport getJspEditorSupport() {
         if (editorSupport == null) {
             editorSupport = new BaseJspEditorSupport(this);
         }
         return editorSupport;
     }
-
+    
     protected EditorCookie createServletEditor() {
         return new ServletEditor(this);
     }
-
+    
     public synchronized CompileData getPlugin() {
         if (compileData == null) {
             if ( firstStart ) {
                 firstStart=false;
             }
             compileData = new CompileData(this);
-       	    checkRefreshServlet();
+            checkRefreshServlet();
         }
         return compileData;
     }
     
     /** Invalidates the current copy of server plugin for this JSP.
-    * @param reload true if the new version of the plugin should be loaded.
-    */
+     * @param reload true if the new version of the plugin should be loaded.
+     */
     public synchronized void refreshPlugin(boolean reload) {
-//System.out.println("REFRESHING PLUGIN " + reload);
+        //System.out.println("REFRESHING PLUGIN " + reload);
         compileData = null;
         if (reload)
             getPlugin();
     }
-
+    
     public void refreshPlugin() {
         refreshPlugin(true);
     }
-
+    
     public JspServletDataObject getServletDataObject() {
         // force registering the servlet
         getPlugin();
         return servletDataObject;
     }
-
-    /** Returns the MIME type of the content language for this page set in this file's attributes. 
+    
+    /** Returns the MIME type of the content language for this page set in this file's attributes.
      * If nothing is set, defaults to 'text/html'.
      */
     public String getContentLanguage() {
         return "text/html"; // NOI18N
     }
     
-    /** Returns the MIME type of the scripting language for this page set in this file's attributes. 
+    /** Returns the MIME type of the scripting language for this page set in this file's attributes.
      * If nothing is set, defaults to 'text/x-java'.
      */
     public String getScriptingLanguage() {
         return "text/x-java"; // NOI18N
     }
-        
-    public String getFileEncoding(boolean useEditor) {
-        String enc;
-        TagLibParseSupport tlps = null;
-        tlps = (TagLibParseSupport)getCookie(TagLibParseSupport.class);
-        enc = tlps.getCachedOpenInfo(true, useEditor).getEncoding();
-        return enc;
+    
+    public String getFileEncoding(boolean forceParse, boolean useEditor) {
+        //read the encoding property and if not empty return it
+        String encoding = (String)getPrimaryFile().getAttribute(PROP_ENCODING);
+        if(encoding != null) {
+            return encoding;
+        } else {
+            TagLibParseSupport tlps = (TagLibParseSupport)getCookie(TagLibParseSupport.class);
+            return tlps.getCachedOpenInfo(forceParse, useEditor).getEncoding();
+        }
     }
     
+    public void setFileEncoding(String encoding) {
+        encoding = encoding.trim();
+        if(encoding.length() == 0) {
+            encoding = null; //clear the property
+        }
+        try {
+            getPrimaryFile().setAttribute(PROP_ENCODING, encoding);
+        } catch(IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+        }
+    }
     
     private static final String CORRECT_WINDOWS_31J = "windows-31j";
     private static final String CORRECT_EUC_JP = "EUC-JP";
@@ -189,36 +203,36 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         if (encodingAlias.equalsIgnoreCase("EUC-TW")) {
             return CORRECT_BIG5;
         }
-
+        
         return encodingAlias;
     }
-
+    
     private void initialize() {
-    	firstStart = true;
+        firstStart = true;
         listener = new Listener();
-        listener.register (getPrimaryFile());
+        listener.register(getPrimaryFile());
         refreshPlugin(false);
     }
     
-    /** Updates classFileData, servletDataObject, servletEdit 
+    /** Updates classFileData, servletDataObject, servletEdit
      * This does not need to be synchronized, because the calling method
      * getPlugin() is synchronized.
      */
     private void checkRefreshServlet() {
-
+        
         final DataObject oldServlet = servletDataObject;
         if (debug)
             System.out.println("refreshing servlet, old = " + oldServlet); // NOI18N
-
+        
         // dataobject
         try {
             FileObject servletFileObject = updateServletFileObject();
             if(debug) System.out.println("refreshing servlet, new servletFile = " + servletFileObject); // NOI18N
             if (servletFileObject != null) {
                 // if the file has not changed, just return
-                if ((oldServlet != null) && 
-                    (oldServlet.getPrimaryFile() == servletFileObject) &&
-                    (servletFileObject.lastModified().equals(servletDataObjectDate)))
+                if ((oldServlet != null) &&
+                        (oldServlet.getPrimaryFile() == servletFileObject) &&
+                        (servletFileObject.lastModified().equals(servletDataObjectDate)))
                     return; // performance
                 
                 // set the origin JSP page
@@ -232,8 +246,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 DataObject dObj= DataObject.find(servletFileObject);
                 if (debug) {
                     System.out.println("checkRefr::servletDObj=" +  // NOI18N
-                        ((dObj == null) ? "null" : dObj.getClass().getName()) + // NOI18N
-                        "/" + dObj); // NOI18N
+                            ((dObj == null) ? "null" : dObj.getClass().getName()) + // NOI18N
+                            "/" + dObj); // NOI18N
                 }
                 /*if (!(dObj instanceof JspServletDataObject)) {
                     // need to re-recognize
@@ -251,8 +265,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                             Charset.forName(encoding);
                         } catch (IllegalArgumentException ex) {
                             IOException t = new IOException(
-                                NbBundle.getMessage(JspDataObject.class, "FMT_UnsupportedEncoding", encoding)
-                            );
+                                    NbBundle.getMessage(JspDataObject.class, "FMT_UnsupportedEncoding", encoding)
+                                    );
                             ErrorManager.getDefault().annotate(t, ex);
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
                         }
@@ -265,36 +279,34 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
-            }
-            else
+            } else
                 servletDataObject = null;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             servletDataObject = null;
         }
-
+        
         // editor
         if ((oldServlet == null)/*&&(servletDataObject != null)*/) {
         } else {
             RequestProcessor.postRequest(
-                new Runnable() {
-                    public void run() {
-                        updateServletEditor();
-                        // Bugfix 31143: oldValue must be null, since if oldValue == newValue, no change will be fired
-                        JspDataObject.this.firePropertyChange0(PROP_SERVLET_DATAOBJECT, null, getServletDataObject());
-                        // the state of some CookieActions may need to be updated
-                        JspDataObject.this.firePropertyChange0(PROP_COOKIE, null, null);
-                    }
+                    new Runnable() {
+                public void run() {
+                    updateServletEditor();
+                    // Bugfix 31143: oldValue must be null, since if oldValue == newValue, no change will be fired
+                    JspDataObject.this.firePropertyChange0(PROP_SERVLET_DATAOBJECT, null, getServletDataObject());
+                    // the state of some CookieActions may need to be updated
+                    JspDataObject.this.firePropertyChange0(PROP_COOKIE, null, null);
                 }
+            }
             );
         }
     }
     
     /** This method causes a DataObject to be re-recognized by the loader system.
-    *  This is a poor practice and should not be normally used, as it uses reflection 
-    *  to call a protected method DataObject.dispose().
-    */
+     *  This is a poor practice and should not be normally used, as it uses reflection
+     *  to call a protected method DataObject.dispose().
+     */
    /* private DataObject rerecognize(DataObject dObj) {
         // invalidate the object so it can be rerecognized
         FileObject prim = dObj.getPrimaryFile();
@@ -316,7 +328,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         super.firePropertyChange(propertyName, oldValue, newValue);
     }
     
-    /** Returns an editor for the servlet. Architecturally, a better solution would be to attach a cookie for 
+    /** Returns an editor for the servlet. Architecturally, a better solution would be to attach a cookie for
      * editing the servlet, but we choose this approach for performance reasons - this allows lazy initialization of
      * the editor (unlike the cookie). */
     public EditorCookie getServletEditor() {
@@ -332,20 +344,19 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 servletEdit.close();
                 servletEdit = null;
             }
-        }
-        else {
+        } else {
             if (servletEdit == null) {
                 servletEdit = createServletEditor();
             }
         }
     }
-
-
+    
+    
     /** Gets the current fileobject of the servlet corresponding to this JSP or null if may not exist.
-    * Note that the file still doesn't need to exist, even if it's not null. 
-    * This does not need to be synchronized, because the calling method
-    * getPlugin() is synchronized.
-    */
+     * Note that the file still doesn't need to exist, even if it's not null.
+     * This does not need to be synchronized, because the calling method
+     * getPlugin() is synchronized.
+     */
     private FileObject updateServletFileObject() throws IOException {
         return compileData.getServletFileObject();
     }
@@ -362,37 +373,37 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         }
     }*/
     
-    public void setQueryString (String params) throws java.io.IOException {
-        WebExecSupport.setQueryString(getPrimaryEntry ().getFile (), params);
-        firePropertyChange (PROP_REQUEST_PARAMS, null, null);
+    public void setQueryString(String params) throws java.io.IOException {
+        WebExecSupport.setQueryString(getPrimaryEntry().getFile(), params);
+        firePropertyChange(PROP_REQUEST_PARAMS, null, null);
     }
     
-    protected org.openide.filesystems.FileObject handleRename (String str) throws java.io.IOException {
+    protected org.openide.filesystems.FileObject handleRename(String str) throws java.io.IOException {
         if ("".equals(str)) // NOI18N
             throw new IOException(NbBundle.getMessage(JspDataObject.class, "FMT_Not_Valid_FileName"));
-
+        
         org.openide.filesystems.FileObject retValue;
         
-        retValue = super.handleRename (str);
+        retValue = super.handleRename(str);
         return retValue;
     }
     
     public void addSaveCookie(SaveCookie cookie){
         getCookieSet().add(cookie);
     }
-
+    
     public void removeSaveCookie(){
         Node.Cookie cookie = getCookie(SaveCookie.class);
         if (cookie!=null) getCookieSet().remove(cookie);
     }
-
+    
     protected FileObject handleMove(DataFolder df) throws IOException {
-
+        
         FileObject retValue;
         
         retValue = super.handleMove(df);
         
-        // fix for issue #55961 - remove old TagLibParseSupport and add new one. 
+        // fix for issue #55961 - remove old TagLibParseSupport and add new one.
         TagLibParseSupport tlps = null;
         tlps = (TagLibParseSupport)getCookie(TagLibParseSupport.class);
         if (tlps != null){
@@ -402,25 +413,25 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         }
         return retValue;
     }
-
-
+    
+    
     ////// -------- INNER CLASSES ---------
-
+    
     private class Listener extends FileChangeAdapter implements PropertyChangeListener/*, ServerRegistryImpl.ServerRegistryListener */{
         WeakReference weakListener;
         
         Listener() {
         }
         
-        private void register (FileObject fo) {
-            EventListener el = WeakListeners.create (FileChangeListener.class, this, fo);
-            fo.addFileChangeListener ((FileChangeListener) el);
-            weakListener = new WeakReference (el);
+        private void register(FileObject fo) {
+            EventListener el = WeakListeners.create(FileChangeListener.class, this, fo);
+            fo.addFileChangeListener((FileChangeListener) el);
+            weakListener = new WeakReference(el);
         }
-        private void unregister (FileObject fo) {
-            FileChangeListener listener = (FileChangeListener) weakListener.get ();
+        private void unregister(FileObject fo) {
+            FileChangeListener listener = (FileChangeListener) weakListener.get();
             if (listener != null) {
-                fo.removeFileChangeListener (listener);
+                fo.removeFileChangeListener(listener);
             }
         }
         public void propertyChange(PropertyChangeEvent evt) {
@@ -432,13 +443,13 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 }
             }
             // primary file changed or files changed
-            if (PROP_PRIMARY_FILE.equals(evt.getPropertyName()) || 
-                PROP_FILES.equals(evt.getPropertyName())) {
+            if (PROP_PRIMARY_FILE.equals(evt.getPropertyName()) ||
+                    PROP_FILES.equals(evt.getPropertyName())) {
                 if (evt.getOldValue() instanceof FileObject)
-                    unregister ((FileObject)evt.getOldValue());
+                    unregister((FileObject)evt.getOldValue());
                 if (evt.getNewValue() instanceof FileObject)
-                    register ((FileObject)evt.getNewValue());;
-                refreshPlugin(true);
+                    register((FileObject)evt.getNewValue());;
+                    refreshPlugin(true);
             }
             // the context object has changed
             if (DataObject.PROP_VALID.equals(evt.getPropertyName())) {
@@ -452,7 +463,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                     }
                 }
             }
-
+            
         }
         
         public void fileRenamed(FileRenameEvent fe) {
@@ -465,24 +476,24 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         public void added(ServerRegistryImpl.ServerEvent added) {
             serverChange();
         }
-
+         
         public void setAppDefault(ServerRegistryImpl.InstanceEvent inst) {
             serverChange();
         }
-
+         
         public void setWebDefault(ServerRegistryImpl.InstanceEvent inst) {
             serverChange();
         }
-
+         
         public void removed(ServerRegistryImpl.ServerEvent removed) {
             serverChange();
         }
-        */
+         */
         
         private void serverChange() {
             refreshPlugin(true);
             firePropertyChange0(PROP_SERVER_CHANGE, null, null);
         }
-    }    
+    }
 }
 

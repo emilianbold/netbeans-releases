@@ -22,9 +22,9 @@ package org.netbeans.modules.web.core.jsploader;
 import java.io.*;
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
-
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.*;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
@@ -33,7 +33,6 @@ import org.openide.actions.OpenAction;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
-
 import org.netbeans.modules.web.core.WebExecSupport;
 
 //import org.netbeans.modules.java.Util;
@@ -54,7 +53,7 @@ public class JspNode extends DataNode {
             
     public static final String PROP_FILE_ENCODING = "encoding"; //NOI18N
     public static final String PROP_REQUEST_PARAMS   = "requestparams"; // NOI18N
-
+    
     /** Create a node for the internet data object using the default children.
     * @param jdo the data object to represent
     */
@@ -142,18 +141,25 @@ public class JspNode extends DataNode {
         ps.setShortDescription(NbBundle.getBundle(JspNode.class).getString("HINT_textfileSetName")); // NOI18N
         sheet.put(ps);
         
-        ps.put(new PropertySupport.ReadOnly (
-               PROP_FILE_ENCODING,
-               String.class,
-               NbBundle.getBundle(JspNode.class).getString("PROP_fileEncoding"), //NOI18N
-               NbBundle.getBundle(JspNode.class).getString("HINT_fileEncoding") //NOI18N
-           ) {
+           ps.put(new PropertySupport.ReadWrite(
+                   PROP_FILE_ENCODING,
+                   String.class,
+                   NbBundle.getBundle(JspNode.class).getString("PROP_fileEncoding"), //NOI18N
+                   NbBundle.getBundle(JspNode.class).getString("HINT_fileEncoding") //NOI18N
+                   ) {
                public Object getValue() {
-                   return ((JspDataObject)getDataObject()).getFileEncoding(true); 
+                   return ((JspDataObject)getDataObject()).getFileEncoding(false, true); 
                }
-
+               public void setValue(Object val) throws InvocationTargetException {
+                   if (val instanceof String) {
+                       ((JspDataObject)getDataObject()).setFileEncoding((String)val);
+                   } else {
+                       throw new IllegalArgumentException();
+                   }
+               }
            }
-          );     
+           );
+        
         
         return sheet;
     }
