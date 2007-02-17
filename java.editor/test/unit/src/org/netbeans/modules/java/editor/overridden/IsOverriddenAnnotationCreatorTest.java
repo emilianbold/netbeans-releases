@@ -151,6 +151,10 @@ public class IsOverriddenAnnotationCreatorTest extends NbTestCase {
         doTest("TestHierarchy2");
     }
     
+    public void testBrokenSource() throws Exception {
+        doTest("TestBrokenSource");
+    }
+    
     private void doTest(String name) throws Exception {
         prepareTest(name);
         

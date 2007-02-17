@@ -227,7 +227,12 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
             
             final Map<Name, List<ExecutableElement>> name2Method = new HashMap<Name, List<ExecutableElement>>();
             
-            sortOutMethods(info, name2Method, td.resolve(info), false);
+            TypeElement resolvedType = td.resolve(info);
+            
+            if (resolvedType == null)
+                continue;
+            
+            sortOutMethods(info, name2Method, resolvedType, false);
             
             for (ElementHandle<ExecutableElement> methodHandle : v.type2Declaration.get(td)) {
                 if (isCanceled())
