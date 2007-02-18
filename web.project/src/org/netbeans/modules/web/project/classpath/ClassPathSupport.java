@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -303,7 +303,18 @@ public class ClassPathSupport {
                             //remove ${ and } from the beginning and end
                             String webFileText = findText(webFile);
                             webFileText = webFileText.substring(2, webFileText.length() - 1);
-                            warIncludesMap.put(webFileText, pathInWarElements.getLength() > 0 ? findText((Element) pathInWarElements.item(0)) : Item.PATH_IN_WAR_NONE);
+                            
+                            //#86522
+                            if (webModuleLibraries.equals(TAG_WEB_MODULE__ADDITIONAL_LIBRARIES)) {
+                                String pathInWar = Item.PATH_IN_WAR_NONE;
+                                if (pathInWarElements.getLength() > 0) {
+                                    pathInWar = findText((Element) pathInWarElements.item(0));
+                                    if (pathInWar == null)
+                                        pathInWar = Item.PATH_IN_WAR_APPLET;
+                                }
+                                warIncludesMap.put(webFileText, pathInWar);
+                            } else
+                                warIncludesMap.put(webFileText, pathInWarElements.getLength() > 0 ? findText((Element) pathInWarElements.item(0)) : Item.PATH_IN_WAR_NONE);
                         }
                     }
                     return warIncludesMap;
