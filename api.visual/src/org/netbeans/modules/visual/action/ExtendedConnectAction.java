@@ -22,6 +22,7 @@ import org.netbeans.api.visual.action.ConnectDecorator;
 import org.netbeans.api.visual.action.ConnectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Widget;
+import org.openide.util.Utilities;
 
 import java.awt.event.MouseEvent;
 
@@ -29,23 +30,40 @@ import java.awt.event.MouseEvent;
  *
  * @author alex
  */
-public class ExtendedConnectAction extends ConnectAction{
+public class ExtendedConnectAction extends ConnectAction {
+
+    private boolean macLocking;
 
     public ExtendedConnectAction(ConnectDecorator decorator, Widget interractionLayer, ConnectProvider provider) {
         super(decorator,interractionLayer,provider);
     }
 
+    protected boolean isLocked () {
+        return super.isLocked ()  ||  macLocking;
+    }
+
     public WidgetAction.State mousePressed(Widget widget, WidgetAction.WidgetMouseEvent event) {
-        if ((event.getModifiers () & MouseEvent.CTRL_MASK) != 0)
+        if (macLocking)
+            return State.createLocked (widget, this);
+        if ((event.getModifiers () & MouseEvent.CTRL_MASK) != 0) {
+            if (Utilities.isMac ())
+                macLocking = true;
             return super.mousePressed(widget,event);
+        }
         return State.REJECTED;
     }
 
     public WidgetAction.State mouseReleased(Widget widget, WidgetAction.WidgetMouseEvent event) {
+        macLocking = false;
         if (isLocked ())
             return super.mouseReleased(widget,event);
         else
             return State.REJECTED;
     }
 
+    public State mouseMoved (Widget widget, WidgetMouseEvent event) {
+        if (macLocking)
+            return super.mouseDragged (widget, event);
+        return super.mouseMoved (widget, event);
+    }
 }
