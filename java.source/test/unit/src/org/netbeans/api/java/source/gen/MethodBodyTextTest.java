@@ -26,6 +26,7 @@ import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import com.sun.source.tree.*;
+import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.api.java.source.*;
 import static org.netbeans.api.java.source.JavaSource.*;
@@ -47,11 +48,12 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(MethodBodyTextTest.class);
+//        suite.addTestSuite(MethodBodyTextTest.class);
 //        suite.addTest(new MethodBodyTextTest("testSetBodyText"));
 //        suite.addTest(new MethodBodyTextTest("testCreateWithBodyText"));
+        suite.addTest(new MethodBodyTextTest("testCreateReturnBooleanBodyText"));
 //        suite.addTest(new MethodBodyTextTest("testModifyBodyText"));
-//        suite.addTest(new MethodBodyTextTest("testCreateReturnBooleanBodyText"));
+        suite.addTest(new MethodBodyTextTest("testReplaceConstrBody"));
         return suite;
     }
     
@@ -203,7 +205,86 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
         );
         assertEquals(golden, res);
     }
+
+    /**
+     * Replace constructor body. -- In old constructor, syntetic super()
+     * was in the body, no syntetic element in new constructor body. 
+     * 
+     * #93740
+     */
+    public void testReplaceConstrBody() throws Exception {
+        System.err.println("testReplaceConstrBody");
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public Object method() {\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {" +
+            "System.err.println(null);\n" +
+            "\n" +
+            "    }\n" +
+            "    \n" +
+            "    public Object method() {\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        MethodTree method = (MethodTree) clazz.getMembers().get(0);
+                        ExpressionStatementTree statement = make.ExpressionStatement(
+                            make.MethodInvocation(
+                                Collections.<ExpressionTree>emptyList(),
+                                make.MemberSelect(
+                                    make.MemberSelect(
+                                        make.Identifier("System"),
+                                        "err"
+                                    ),
+                                    "println"
+                                ),
+                                Collections.singletonList(
+                                    make.Literal(null)
+                                )
+                            )
+                        );
+                        BlockTree newBody = make.Block(
+                                Collections.<StatementTree>singletonList(statement),
+                                false
+                        );
+                        workingCopy.rewrite(method.getBody(), newBody);
+                    }
+                }
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
     
+
     public static void main(String[] args) {
         TestRunner.run(suite());
     }
