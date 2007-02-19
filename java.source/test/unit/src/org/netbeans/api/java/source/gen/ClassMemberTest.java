@@ -23,6 +23,7 @@ import com.sun.source.tree.TypeParameterTree;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -58,6 +59,7 @@ public class ClassMemberTest extends GeneratorTest {
         suite.addTest(new ClassMemberTest("testModifyFieldName"));
         suite.addTest(new ClassMemberTest("testModifyModifiers"));
         suite.addTest(new ClassMemberTest("testAddToEmptyInterface"));
+//        suite.addTest(new ClassMemberTest("testAddNewClassWithNewMembers"));
           return suite;
     }
     
@@ -463,6 +465,57 @@ public class ClassMemberTest extends GeneratorTest {
                         workingCopy.rewrite(classTree, copy);
                     }
                 }
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddNewClassWithNewMembers() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n\n" +
+                "public class Test {\n" +
+                "}\n"
+                );
+        String golden =
+                "package hierbas.del.litoral;\n\n" +
+                "public class Test {\n" +
+                "    public class X {\n" +
+                "        private int i;\n\n" +
+                "        public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n";
+        
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = m(make);
+                MethodTree methodC = make.Method(method.getModifiers(),
+                        method.getName(),
+                        method.getReturnType(),
+                        (List<TypeParameterTree>) method.getTypeParameters(),
+                        method.getParameters(),
+                        method.getThrows(),
+                        "{}",
+                        null
+                        );
+                VariableTree var = make.Variable(make.Modifiers(EnumSet.of(Modifier.PRIVATE)), "i", make.Type(workingCopy.getTypes().getPrimitiveType(TypeKind.INT)), null);
+                ClassTree nueClass = make.Class(make.Modifiers(EnumSet.of(Modifier.PUBLIC)), "X", Collections.<TypeParameterTree>emptyList(), null, Collections.<ExpressionTree>emptyList(), Arrays.asList(var, methodC));
+                ClassTree copy = make.addClassMember(ct, nueClass);
+                workingCopy.rewrite(ct, copy);
             }
             
             public void cancel() {
