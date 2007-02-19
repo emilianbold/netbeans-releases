@@ -35,6 +35,7 @@ import java.util.jar.Manifest;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.Dependency;
+import org.openide.util.Exceptions;
 
 // XXX a lot of code in this method is more or less duplicated from
 // org.netbeans.core.modules.Module class. Do not forgot to refactor this as
@@ -122,24 +123,21 @@ public final class ManifestManager {
     }
     
     public static ManifestManager getInstance(File manifest, boolean loadPublicPackages) {
-        ManifestManager mm = null;
-        InputStream mis = null;
-        try {
-            if (manifest.exists()) {
-                mis = new FileInputStream(manifest); // NOI18N
-                Manifest mf = new Manifest(mis);
-                mm = ManifestManager.getInstance(mf, loadPublicPackages);
-            }
-        } catch (IOException e) {
-            Util.err.notify(ErrorManager.INFORMATIONAL, e);
-        } finally {
+        if (manifest.exists()) {
             try {
-                if (mis != null) { mis.close(); }
-            } catch (IOException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                InputStream mis = new FileInputStream(manifest); // NOI18N
+                try {
+                    Manifest mf = new Manifest(mis);
+                    return ManifestManager.getInstance(mf, loadPublicPackages);
+                } finally {
+                    mis.close();;
+                }
+            } catch (IOException x) {
+                Exceptions.attachMessage(x, "While opening: " + manifest);
+                Exceptions.printStackTrace(x);
             }
         }
-        return mm == null ? new ManifestManager() : mm;
+        return NULL_INSTANCE;
     }
     
     public static ManifestManager getInstanceFromJAR(File jar) {
@@ -159,7 +157,7 @@ public final class ManifestManager {
             }
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
-            return new ManifestManager();
+            return NULL_INSTANCE;
         }
     }
     
@@ -194,7 +192,7 @@ public final class ManifestManager {
             }
         }
         boolean deprecated = "true".equals(attr.getValue("OpenIDE-Module-Deprecated")); // NOI18N
-        ManifestManager mm = new ManifestManager(
+        return new ManifestManager(
                 codenamebase, releaseVersion,
                 attr.getValue(OPENIDE_MODULE_SPECIFICATION_VERSION),
                 attr.getValue(OPENIDE_MODULE_IMPLEMENTATION_VERSION),
@@ -208,7 +206,6 @@ public final class ManifestManager {
                 friendNames,
                 deprecated,
                 attr.getValue(OPENIDE_MODULE_MODULE_DEPENDENCIES));
-        return mm;
     }
     
     /**
