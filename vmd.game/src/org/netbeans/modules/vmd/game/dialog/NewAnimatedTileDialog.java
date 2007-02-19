@@ -20,6 +20,7 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.AnimatedTile;
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.view.main.MainView;
@@ -57,8 +58,8 @@ public class NewAnimatedTileDialog extends AbstractNameValidationDialog {
 		if (name.equals("")) {
 			return this.getInitialStateDescriptionText();
 		}
-		if (this.imageResource.getAnimatedTileByName(name) != null) {
-			errMsg = "Animated Tile name already exists.";
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			errMsg = "Component name already exists. Choose a different name.";
 		}
 		return errMsg;
 	}

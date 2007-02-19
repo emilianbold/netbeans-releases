@@ -464,7 +464,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 		if (layerName.equals("")) {
 			errMsg = "Enter layer name.";
 		} 
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(layerName)) {
+		else if (!GlobalRepository.getInstance().isComponentNameAvailable(layerName)) {
 			errMsg = "Component name already exists. Choose a different name.";
 		}		
 		else if (!isValidJavaIdentifier(layerName)) {

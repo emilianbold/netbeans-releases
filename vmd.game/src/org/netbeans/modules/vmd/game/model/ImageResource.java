@@ -94,10 +94,10 @@ public class ImageResource implements CodeGenerator {
 		this.listenerList.remove(ImageResourceListener.class, l);
 	}
 	
-	public Sequence createSequence(String name) {
-		return this.createSequence(name, 1);
-	}
 	public Sequence createSequence(String name, int numberFrames) {
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("Sequence cannot be created because component name '" + name + "' already exists.");
+		}
 		Sequence sequence = new Sequence(name, this, numberFrames);
 		this.sequences.add(sequence);
 		this.fireSequenceAdded(sequence);
@@ -105,11 +105,14 @@ public class ImageResource implements CodeGenerator {
 	}
 	
 	public Sequence createSequence(String name, Sequence sequence) {
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("Sequence cannot be created because component name '" + name + "' already exists.");
+		}
 		Sequence newSequence = new Sequence(name, sequence);
 		this.sequences.add(newSequence);
 		this.fireSequenceAdded(newSequence);
 		return newSequence;
-	}	
+	}
 
 	public Sequence getSequenceByName(String name) {
 		for (Sequence sequence : this.sequences) {
@@ -153,6 +156,10 @@ public class ImageResource implements CodeGenerator {
 		assert (index < 0);
 		assert (this.animatedTiles.get(index) == null);
 		
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists.");
+		}
+		
 		if (this.animatedTileIndexKey >= index) {
 			this.animatedTileIndexKey = index -1;
 		}
@@ -165,6 +172,10 @@ public class ImageResource implements CodeGenerator {
 	}
 	
 	public AnimatedTile createAnimatedTile(String name, int firstStaticTileIndex) {
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists.");
+		}
+		
 		int index = this.animatedTileIndexKey--;
 		return this.createAnimatedTile(index, name, firstStaticTileIndex);
 	}
@@ -172,6 +183,10 @@ public class ImageResource implements CodeGenerator {
 	public AnimatedTile createAnimatedTile(int index, String name, Sequence sequence) {
 		assert (index < 0);
 		assert (this.animatedTiles.get(index) == null);
+		
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists.");
+		}
 		
 		if (this.animatedTileIndexKey >= index) {
 			this.animatedTileIndexKey = index -1;
@@ -183,6 +198,10 @@ public class ImageResource implements CodeGenerator {
 	}
 	
 	public AnimatedTile createAnimatedTile(String name, Sequence sequence) {
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists.");
+		}
+		
 		int index = this.animatedTileIndexKey--;
 		return this.createAnimatedTile(index, name, sequence);
 	}
@@ -190,7 +209,13 @@ public class ImageResource implements CodeGenerator {
 	public AnimatedTile createAnimatedTile(int[] staticTileIndexes) {
 		assert(staticTileIndexes != null);
 		assert(staticTileIndexes.length >= 1);
-		AnimatedTile at = createAnimatedTile(this.getNextAnimatedTileName(), staticTileIndexes[0]);
+		
+		String name = this.getNextAnimatedTileName();
+		while (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			name = this.getNextAnimatedTileName();
+		}
+		
+		AnimatedTile at = createAnimatedTile(name, staticTileIndexes[0]);
 		if (staticTileIndexes.length > 1) {
 			Sequence seq = at.getDefaultSequence();
 			for (int i = 1; i < staticTileIndexes.length; i++) {
@@ -200,7 +225,7 @@ public class ImageResource implements CodeGenerator {
 		return at;
 	}
 	
-	private static final String ANIMATED_TILE_NAME_PREFIX = "AnimTile";
+	private static final String ANIMATED_TILE_NAME_PREFIX = "animTile";
 	private String getNextAnimatedTileName() {
 		int biggestNum = 0;
 		for (AnimatedTile at : this.getAnimatedTiles()) {

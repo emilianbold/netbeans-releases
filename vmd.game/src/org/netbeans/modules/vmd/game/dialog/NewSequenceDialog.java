@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.vmd.game.dialog;
 
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Sequence;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
 
@@ -54,8 +55,8 @@ public class NewSequenceDialog extends AbstractNameValidationDialog  {
 		if (seqName.equals("")) {
 			return this.getInitialStateDescriptionText();
 		}
-		if (this.sequenceContainer.getSequenceByName(seqName) != null) {
-			errMsg = "Sequence name already exists.";
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(seqName)) {
+			errMsg = "Component name already exists. Choose a different name.";
 		}
 		return errMsg;
 	}

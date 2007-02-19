@@ -19,6 +19,7 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Sequence;
 
 public class RenameSequenceDialog extends AbstractNameValidationDialog {
@@ -49,8 +50,8 @@ public class RenameSequenceDialog extends AbstractNameValidationDialog {
 			return this.getInitialStateDescriptionText();
 		}
 		
-		if (this.sequence.getImageResource().getSequenceByName(name) != null) {
-			errMsg = "Sequence name already exists.";
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			errMsg = "Component name already exists. Choose a different name.";
 		}
 		return errMsg;
 	}

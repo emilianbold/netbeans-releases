@@ -50,7 +50,7 @@ public class Sprite extends Layer implements SequenceContainer {
 	Sprite(String name, ImageResource imageResource, int numberFrames) {
 		super(name, imageResource);
 		this.sequenceContainer = new SequenceContainerImpl(this, null, super.propertyChangeSupport, imageResource);
-		Sequence defaultSequence = this.createSequence(name + "SeqDefault", numberFrames);
+		Sequence defaultSequence = this.createSequence(name + "seq", numberFrames);
 		this.setDefaultSequence(defaultSequence);
 	}
     

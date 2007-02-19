@@ -278,7 +278,7 @@ public class SequencePreviewPanel extends javax.swing.JPanel  implements
 
         buttonPause.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/sequece/resources/pause.gif")));
 
-        buttonPlayForward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/sequece/resources/play.gif")));
+        buttonPlayForward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/sequece/resources/play.png")));
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
