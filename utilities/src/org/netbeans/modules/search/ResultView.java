@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -190,6 +190,10 @@ final class ResultView extends TopComponent {
         btnDisplayContext = new JToggleButton();
         btnDisplayContext.setIcon(new ImageIcon(Utilities.loadImage(
                 "org/netbeans/modules/search/res/context.gif", true))); //NOI18N
+        btnDisplayContext.setToolTipText(
+                NbBundle.getMessage(getClass(), "TOOLTIP_ShowContext"));//NOI18N
+        btnDisplayContext.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(getClass(), "ACSD_ShowContext"));   //NOI18N
         btnDisplayContext.setSelected(SHOW_CONTEXT_BY_DEFAULT);
         btnPrev = new JButton();
         btnPrev.setIcon(new ImageIcon(Utilities.loadImage(
