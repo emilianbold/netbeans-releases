@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - The contents of this file are subject to the terms of the Common Development
+  - and Distribution License (the License). You may not use this file except in
+  - compliance with the License.
+  - 
+  - You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+  - or http://www.netbeans.org/cddl.txt.
+  - 
+  - When distributing Covered Code, include this CDDL Header Notice in each file
+  - and include the License file at http://www.netbeans.org/cddl.txt.
+  - If applicable, add the following below the CDDL Header, with the fields
+  - enclosed by brackets [] replaced by your own identifying information:
+  - "Portions Copyrighted [year] [name of copyright owner]"
+  - 
+  - The Original Software is NetBeans. The Initial Developer of the Original
+  - Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+  - Microsystems, Inc. All Rights Reserved.
+  - 
+  - $Id$
+-->
+
+<!--
+    This is a base script for building NBI product packages and 
+    releasing them to the managing server.
+-->
+<project name="build-product" default="usage" basedir=".">
+    <!-- load properties specific to product's build script. First try to 
+         load them from the specified ${.product.dir}, then from the current 
+         directory -->
+    <property file="${.product.dir}/build.properties"/>
+    
+    <!-- import the common target library, fail if it cannot be loaded -->
+    <import file="${.common.dir}/build.xml" optional="false"/>
+    
+    <target name="everything" depends="init,clean,build"/>
+    
+    <!--
+      - Builds and releases the product. This target just calls the 
+      - initialization, clean-up, build and release targets in a proper 
+      - sequence.
+    -->
+    <target name="all" depends="init,clean,build,release"/>
+    
+    <!--
+      - Initializes the product's build script. This target calls the 
+      - initialization target in the target library and additionally 
+      - reevaluates several properties, since they can be yet unitialized at 
+      - this point. It also checks whether the engine should be built.
+    -->
+    <target name="init" depends="-init">
+        <!-- reevaluate properties -->
+        <evaluate property="engine.basedir"/>
+        <evaluate property="engine..common.dir"/>
+        <evaluate property="engine.build.native"/>
+        <evaluate property="engine.work.dir"/>
+        <evaluate property="engine.move.to.dist"/>
+        
+        <!-- check whether the engine should be built -->
+        <condition property="do.build.engine">
+            <equals arg1="${build.engine}" arg2="true"/>
+        </condition>
+        
+        <!-- check whether the configuration logic should be built -->
+        <condition property="do.build.logic">
+            <equals arg1="${build.logic}" arg2="true"/>
+        </condition>
+        
+        <!-- check whether we should release the product -->
+        <condition property="do.release.product">
+            <equals arg1="${release.product}" arg2="true"/>
+        </condition>
+    </target>
+    
+    <!--
+      - Performs clean-up. Additional clean-up in this case - remove the 
+      - product's distributive file.
+    -->
+    <target name="clean" depends="init,-clean,-clean-engine">
+        <delete file="${dist.dir}/${product.jar.file}"/>
+    </target>
+    
+    <!--
+      - Overrides -pre-build in ${.common.dir}/build.xml. It is needed to 
+      - replace some tokens in product's bundles and code prior to building.
+    -->
+    <target name="-pre-build">
+        <!-- reevaluate properties -->
+        <evaluate property="product.dir"/>
+        <evaluate property="product.logic.dir"/>
+        <evaluate property="product.data.dir"/>
+        <evaluate property="product.icon.file"/>
+        <evaluate property="product.descriptor.file"/>
+        <evaluate property="product.jar.file"/>
+        <evaluate property="product.jar.manifest.file"/>
+        
+        <evaluate property="product.logic.file"/>
+        <evaluate property="product.data.file"/>
+        <evaluate property="product.release.data.file"/>
+        
+        <evaluate property="product.icon"/>
+        <evaluate property="product.bundle"/>
+        
+        <!-- replace the tokens -->
+        <for-each from="1" to="${product.params.length}" property="i">
+            <set-property property="current.token" 
+                          source="product.params.${i}.token"/>
+            <set-property property="current.value" 
+                          source="product.params.${i}.value"/>
+            
+            <replace dir="${cvs.dir}" 
+                     token="${current.token}" 
+                     value="${current.value}"/>
+        </for-each>
+    </target>
+    
+    <!--
+      - Builds the product. First the engine is compiled, as it needs to be in
+      - the product's classpath. Then the configuration logic is built. After 
+      - that the following prodedures are performed:
+      -     * fetch all configuration logic jars
+      -     * fetch all installation data zip files and for each of them:
+      -         * unzip
+      -         * repackage (pack200 on jars)
+      -         * build files list
+      -         * jar
+      -     * fetch the icon
+      -     * create the xml descriptor
+      -     * create the distributive jar file
+    -->
+    <target name="build" depends="init,build-logic">
+        <!-- init the required disk space -->
+        <property name="product.disk.space" 
+                  value="${product.disk.space.modificator}"/>
+        
+        <!-- fetch the configuration logic jars -->
+        <mkdir dir="${work.dir}/${product.logic.dir}"/>
+        <for-each from="1" to="${product.logic.length}" property="i">
+            <!-- reevaluate the properties -->
+            <evaluate property="product.logic.${i}.uri"/>
+            <evaluate property="product.data.${i}.uri"/>
+            <evaluate property="product.packaged.data.${i}.file"/>
+            <evaluate property="product.packaged.data.${i}.size.file"/>
+            
+            <!-- set the properties relevant to the current file -->
+            <set-property property="current.uri" 
+                          source="product.logic.${i}.uri"/>
+            <set-property property="current.file" 
+                          value="${work.dir}/${product.logic.dir}/${product.logic.file}"/>
+            
+            <get src="${current.uri}" dest="${current.file}"/>
+            
+            <!-- sign the current jar file -->
+            <signjar jar="${current.file}" 
+                     keystore="${jarsigner.keystore}"
+                     storepass="${jarsigner.storepass}"
+                     alias="${jarsigner.alias}"
+                     maxmemory="${jarsigner.xmx}"/>
+            
+            <!-- calculate the metadata for the file -->
+            <sizeof file="${current.file}" property="product.logic.${i}.size"/>
+            <md5 file="${current.file}" property="product.logic.${i}.md5"/>
+            <set-property property="product.logic.${i}.uri"
+                          value="resource:${product.logic.dir}/${product.logic.file}"/>
+        </for-each>
+        
+        <!-- fetch and repackage installation data zips -->
+        <mkdir dir="${work.dir}/${product.data.dir}"/>
+        <for-each from="1" to="${product.data.length}" property="i">
+            <!-- define the path to the current working file and the temporary
+                 directory which should be used for repackaging -->
+            <set-property 
+                property="current.file" 
+                value="${work.dir}/${product.data.dir}/${product.data.file}"/>
+            <set-property 
+                property="current.temp" 
+                value="${work.dir}/${product.data.dir}/tmpdir"/>
+            <set-property property="current.uri" 
+                          source="product.data.${i}.uri"/>
+            <set-property property="current.packaged.uri" 
+                          source="product.packaged.data.${i}.file"/>
+            <set-property property="current.packaged.size.uri" 
+                          source="product.packaged.data.${i}.size.file"/>
+            <set-property property="current.size.file" 
+                          value="${work.dir}/size"/>
+            
+            <available file="${current.packaged.uri}" 
+                       property="packaged.data.available"/>
+            
+            <condition property="do.package.data" value="true">
+                <or>
+                    <equals arg1="${package.data}" arg2="true"/>
+                    <and>
+                        <equals arg1="${package.data}" arg2="default"/>
+                        <not>
+                            <equals arg1="${packaged.data.available}" arg2="true"/>
+                        </not>
+                    </and>
+                </or>
+            </condition>
+            <condition property="do.package.data" value="false">
+                <or>
+                    <equals arg1="${package.data}" arg2="false"/>
+                    <and>
+                        <equals arg1="${package.data}" arg2="default"/>
+                        <equals arg1="${packaged.data.available}" arg2="true"/>
+                    </and>
+                </or>
+            </condition>
+            
+            <!-- if the data needs to be packaged -->
+            <if property="do.package.data" value="true">
+                <get src="${current.uri}" dest="${current.file}"/>
+                
+                <!-- extract the zip file to a temporary directory -->
+                <mkdir dir="${current.temp}"/>
+                <unzip src="${current.file}" dest="${current.temp}"/>
+                
+                <!-- measure its size and add it to the required disk space -->
+                <sizeof file="${current.temp}" property="current.disk.space"/>
+                <sum arg1="${product.disk.space}" arg2="${current.disk.space}" 
+                     property="product.disk.space"/>
+                
+                <!-- repackage (pack200, jar) and build files list -->
+                <package directory="${current.temp}" file="${current.file}"/>
+                
+                <!-- if we need to release the packaged data - copy the file 
+                     and the original size to the specified directory -->
+                <if property="release.packaged.data" value="true">
+                    <mkdir dir="${product.packaged.data.repository}"/>
+                    
+                    <set-property 
+                        property="release.data.file"
+                        value="${product.packaged.data.repository}/${product.release.data.file}"/>
+                    <set-property 
+                        property="release.size.file"
+                        value="${release.data.file}.size"/>
+                    
+                    <copy file="${current.file}" 
+                          tofile="${release.data.file}"/>
+                    <echo 
+                        message="product.packaged.data.${i}.real.size=${current.disk.space}" 
+                        file="${release.size.file}"/>
+                </if>
+                
+                <!-- remove the temporary directory -->
+                <delete dir="${current.temp}"/>
+            </if>
+            
+            <!-- if the data does not need to be packaged -->
+            <if property="do.package.data" value="false">
+                <copy file="${current.packaged.uri}" tofile="${current.file}"/>                              
+                
+                <!-- fetch the real size data -->
+                <copy file="${current.packaged.size.uri}" 
+                      tofile="${current.size.file}"/>
+                <property file="${current.size.file}"/>
+                
+                <set-property property="current.disk.space" 
+                              source="product.packaged.data.${i}.real.size"/>
+                <sum arg1="${product.disk.space}" arg2="${current.disk.space}" 
+                     property="product.disk.space"/>
+            </if>
+            
+            <!-- sign the resulting jar file -->
+            <signjar jar="${current.file}" 
+                     keystore="${jarsigner.keystore}"
+                     storepass="${jarsigner.storepass}"
+                     alias="${jarsigner.alias}"
+                     maxmemory="${jarsigner.xmx}"/>
+            
+            <!-- calculate the metadata for the file -->
+            <sizeof file="${current.file}" property="product.data.${i}.size"/>
+            <md5 file="${current.file}" property="product.data.${i}.md5"/>
+            <set-property property="product.data.${i}.uri"
+                          value="resource:${product.data.dir}/${product.data.file}"/>
+        </for-each>
+        
+        <!-- fetch the icon -->
+        <copy 
+            file="${product.icon}" 
+            tofile="${work.dir}/${product.icon.file}"/>
+        <sizeof 
+            file="${work.dir}/${product.icon.file}" 
+            property="product.icon.size"/>
+        <md5 
+            file="${work.dir}/${product.icon.file}" 
+            property="product.icon.md5"/>
+        <set-property 
+            property="product.icon.uri"
+            value="resource:${product.icon.file}"/>
+        
+        <!-- load product's localizing bundle and generate descriptor -->
+        <load-locales 
+            basename="${product.bundle}" 
+            list="product.locales.list"/>
+        <product-descriptor 
+            file="${work.dir}/${product.descriptor.file}"/>
+        
+        <!-- generate the manifest file -->
+        <echo file="${work.dir}/${product.jar.manifest.file}" 
+              message="Manifest-Version: " 
+              append="false"/>
+        <echo file="${work.dir}/${product.jar.manifest.file}" 
+              message="1.0${line.separator}" 
+              append="true"/>
+        
+        <echo file="${work.dir}/${product.jar.manifest.file}" 
+              message="Product-Descriptor: " 
+              append="true"/>
+        <echo file="${work.dir}/${product.jar.manifest.file}" 
+              message="${product.descriptor.file}${line.separator}" 
+              append="true"/>
+        
+        <!-- create the distributive jar file -->
+        <jar destfile="${work.dir}/${product.jar.file}" 
+             compress="true" 
+             manifest="${work.dir}/${product.jar.manifest.file}">
+            <fileset dir="${work.dir}">
+                <include name="${product.dir}"/>
+                <include name="${product.dir}/**"/>
+                <include name="${product.descriptor.file}"/>
+            </fileset>
+        </jar>
+        
+        <!-- sign it -->
+        <signjar jar="${work.dir}/${product.jar.file}" 
+                 keystore="${jarsigner.keystore}"
+                 storepass="${jarsigner.storepass}"
+                 alias="${jarsigner.alias}"
+                 maxmemory="${jarsigner.xmx}"/>
+        
+        <if property="move.to.dist" value="true">
+            <move file="${work.dir}/${product.jar.file}" 
+                  todir="${dist.dir}"/>
+        </if>
+    </target>
+    
+    <!--
+      - Builds the configuration logic for the product. This target first 
+      - builds the engine, then the resulting jar is used as a classpath entry
+      - for the actual configuration logic build.
+      - 
+      - The engine building step is optional and is controlled by 
+      - ${build.engine}, which can be either "true" or "false". Note that it is
+      - impossible to supply a custom path to the engine jar, the build script 
+      - will always assume that it's in the same working directory as the 
+      - product's configuration logic sources. Therefore it is only feasible
+      - to skip this step if you are building several products in the same 
+      - working directory - in this case it is enough to build the engine once,
+      - and it will be reused for all successive products.
+    -->
+    <target name="build-logic" 
+            depends="-build-engine,-build" 
+            if="do.build.logic"/>
+    
+    <!-- 
+      - Releases the product package to the server. A single custom ant task 
+      - is called which generates and sends an HTTP POST request to an 
+      - appropriate servlet, which handles the rest. Tis task will fail if the
+      - server returns something other that code 200.
+    -->
+    <target name="release" depends="init,build">
+        <if property="move.to.dist" value="true">
+            <update-product url="${release.url}"
+                            registry="${release.registry}"
+                            uid="${release.parent.uid}"
+                            version="${release.parent.version}"
+                            archive="${dist.dir}/${product.jar.file}"/>
+        </if>
+        <if property="move.to.dist" value="false">
+            <update-product url="${release.url}"
+                            registry="${release.registry}"
+                            uid="${release.parent.uid}"
+                            version="${release.parent.version}"
+                            platforms="${product.platforms}"
+                            archive="${work.dir}/${product.jar.file}"/>
+        </if>
+    </target>
+    
+    <!-- =======================================================================
+        Utility Targets
+    ======================================================================== -->
+    <!--
+      - An utility target, which performs the clean-up of the engine. It calls
+      - an appropriate target on the engine's build script.
+      - 
+      - Execution of the target is controlled by the ${do.build.engine} 
+      - property, whose existance in turn is controlled by the value of the 
+      - ${build.engine} property ("true"/"false").
+    -->
+    <target name="-clean-engine" depends="init" if="do.build.engine">
+        <subant buildpath="${engine.basedir}" 
+                target="clean" 
+                failonerror="false" 
+                inheritall="false" 
+                inheritrefs="false">
+            <property name=".common.dir" value="${engine..common.dir}"/>
+            <property name="build.native" value="${engine.build.native}"/>
+            <property name="work.dir" value="${engine.work.dir}"/>
+            <property name="skip.build.custom.tasks" value="true"/>
+        </subant>
+    </target>
+    
+    <!--
+      - An utility target, which builds the engine. It calls an appropriate 
+      - target on the engine's build script.
+      - 
+      - Execution of the target is controlled by the ${do.build.engine} 
+      - property, whose existance in turn is controlled by the value of the 
+      - ${build.engine} property ("true"/"false").
+    -->
+    <target name="-build-engine" depends="init" if="do.build.engine">
+        <subant buildpath="${engine.basedir}" 
+                target="build" 
+                failonerror="true" 
+                inheritall="false" 
+                inheritrefs="false">
+            <property name=".common.dir" value="${engine..common.dir}"/>
+            <property name="build.native" value="${engine.build.native}"/>
+            <property name="work.dir" value="${engine.work.dir}"/>
+            <property name="move.to.dist" value="${engine.move.to.dist}"/>
+            <property name="skip.build.custom.tasks" value="true"/>
+        </subant>
+    </target>
+    
+    <!-- =======================================================================
+        Default Target
+    ======================================================================== -->
+    <!--
+      - The default target. Does nto do anything useful, except depiting the 
+      - usage scenario for the script.
+    -->
+    <target name="usage">
+        <echo>
+            This script builds and releases an NBI product. In order for it 
+            to function correctly, set up properties in 
+            ${.product.dir}/build.properties, 
+            ${.common.dir}/common.properties and 
+            ${.common.dir}/native/*.properties.
+            
+            It is not meant to be used directly. Script fot individual 
+            products should import this script and use it as a target library.
+        </echo>
+    </target>
+</project>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ===========================================================================
+  The contents of this file are subject to the terms of the Common Development
+  and Distribution License (the License). You may not use this file except in
+  compliance with the License.
+  
+  You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+  or http://www.netbeans.org/cddl.txt.
+  
+  When distributing Covered Code, include this CDDL Header Notice in each file
+  and include the License file at http://www.netbeans.org/cddl.txt.
+  If applicable, add the following below the CDDL Header, with the fields
+  enclosed by brackets [] replaced by your own identifying information:
+  "Portions Copyrighted [year] [name of copyright owner]"
+  
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+  Microsystems, Inc. All Rights Reserved.
+  
+  $Id$
+============================================================================ -->
+
+<!--
+  This is a base script for building, packaging and releasing nbi group 
+  packages. It is meant to be imported into individual group build scripts, 
+  which define the essential group-specific properties, which are referenced 
+  throughout this script.
+-->
+<project name="build-group" default="usage" basedir=".">
+    <property file="${common.dir}/common.properties"/>
+    <property file="${common.dir}/group.properties"/>
+    <import file="${common.dir}/common.xml" optional="false"/>
+    
+    <target name="build-all" depends="init,clean,build"/>
+    
+    <target name="release-all" depends="build-all,release"/>
+    
+    <target name="init" depends="-init">
+        <evaluate property="group.dir"/>
+        <evaluate property="group.icon.file"/>
+        <evaluate property="group.descriptor.file"/>
+        <evaluate property="group.jar.file"/>
+        
+        <evaluate property="group.icon"/>
+        <evaluate property="group.bundle"/>
+        
+        <condition property="do.build.engine">
+            <equals arg1="${build.engine}" arg2="true"/>
+        </condition>
+    </target>
+    
+    <target name="clean" depends="init,-clean">
+        <delete file="${dist.dir}/${group.jar.file}"/>
+    </target>
+    
+    <target name="-pre-build">
+        <for-each from="1" to="${group.params.length}" property="i">
+            <set-property property="current.token" 
+                          source="group.params.${i}.token"/>
+            <set-property property="current.value" 
+                          source="group.params.${i}.value"/>
+            
+            <replace dir="${cvs.dir}" 
+                     token="${current.token}" 
+                     value="${current.value}"/>
+        </for-each>
+    </target>
+    
+    <target name="build" depends="init,-checkout,-pre-build">
+        <copy file="${group.icon}" tofile="${work.dir}/${group.icon.file}"/>
+        <sizeof file="${work.dir}/${group.icon.file}" property="group.icon.size"/>
+        <md5 file="${work.dir}/${group.icon.file}" property="group.icon.md5"/>
+        <set-property property="group.icon.uri"
+                      value="resource:${group.icon.file}"/>
+        
+        <load-locales basename="${group.bundle}" list="group.locales.list"/>
+        <group-descriptor file="${work.dir}/${group.descriptor.file}"/>
+        
+        <echo file="${work.dir}/${group.jar.manifest.file}" 
+              message="Manifest-Version: 1.0${line.separator}" 
+              append="false"/>
+        <echo file="${work.dir}/${group.jar.manifest.file}" 
+              message="Group-Descriptor: ${group.descriptor.file}${line.separator}" 
+              append="true"/>
+        
+        <jar destfile="${work.dir}/${group.jar.file}" 
+             compress="true" 
+             manifest="${work.dir}/${group.jar.manifest.file}">
+            <fileset dir="${work.dir}">
+                <include name="${group.dir}"/>
+                <include name="${group.dir}/**"/>
+                <include name="${group.descriptor.file}"/>
+            </fileset>
+        </jar>
+        
+        <signjar jar="${work.dir}/${group.jar.file}" 
+                 keystore="${jarsigner.keystore}"
+                 storepass="${jarsigner.storepass}"
+                 alias="${jarsigner.alias}"
+                 maxmemory="${jarsigner.xmx}"/>
+        
+        <if property="move.to.dist" value="true">
+            <move file="${work.dir}/${group.jar.file}" 
+                  todir="${dist.dir}"/>
+        </if>
+    </target>
+    
+    <target name="release" depends="init,build">
+        <update-group url="${release.url}"
+                      registry="${release.registry}"
+                      uid="${release.parent.uid}"
+                      version="${release.parent.version}"
+                      archive="${dist.dir}/${group.jar.file}"/>
+    </target>
+    
+    <!-- =======================================================================
+        Default Target
+    ======================================================================== -->
+    
+    <!--
+      The default target. Does not do anything useful, except depicting the 
+      usage scenario for the script.
+    -->
+    <target name="usage">
+        <echo>
+            This script is a base script for building NBI group packages. It is
+            not intended to be used directly.
+        </echo>
+    </target>
+</project>
