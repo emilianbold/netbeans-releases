@@ -64,6 +64,7 @@ public class Utilities {
     public static String stepIntoItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_into_action_name");
     public static String stepOverItem = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Step_Over");
     public static String stepOutItem = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Step_Out");
+    public static String stepOverExpresItem = Bundle.getString("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_operation_action_name");
     public static String runIntoMethodItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Run_into_method_action_name");
     public static String continueItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Continue_action_name");
     public static String pauseItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Pause_action_name");
@@ -222,6 +223,7 @@ public class Utilities {
     public static void showDebuggerView(String viewName) {
         new Action(windowMenu + "|" + debugMenu + "|" + viewName, null).perform();
         new TopComponentOperator(viewName);
+        new EventTool().waitNoEvent(500);
     }
         
     public static String removeTags(String in) {

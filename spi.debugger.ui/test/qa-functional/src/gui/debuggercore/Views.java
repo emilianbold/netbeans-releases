@@ -21,6 +21,7 @@
 
 package gui.debuggercore;
 
+import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -28,6 +29,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbTestSuite;
 
 
@@ -74,81 +76,151 @@ public class Views extends JellyTestCase {
         }
     }
     
-    public void testViewsDefaultOpen() {
-        assertNotNull("Local variables view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.localVarsViewTitle, 0));
-        assertNotNull("Call stack view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.callStackViewTitle, 0));
-        assertNotNull("Watches view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.watchesViewTitle, 0));
-    }
-    
-    public void testViewsCallStack() {
-        Utilities.showDebuggerView(Utilities.callStackViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.callStackViewTitle));
-        assertEquals("MemoryView.updateStatus:92", Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()));
-        assertEquals("MemoryView.updateConsumption:80", Utilities.removeTags(jTableOperator.getValueAt(1,0).toString()));
-        assertEquals("MemoryView.main:116", Utilities.removeTags(jTableOperator.getValueAt(2,0).toString()));
-    }
-    
-    public void testViewsClasses() {
-        Utilities.showDebuggerView(Utilities.classesViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.classesViewTitle));
-        TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
-        new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "Application Class Loader|examples.advanced|MemoryView|1").expand();
-        String[] entries = {"System Class Loader", "Application Class Loader", "examples.advanced", "Helper", "MemoryView", "1"};
-        for (int i = 0; i < entries.length; i++) {
-            assertTrue("Node " + entries[i] + " not displayed in Classes view", entries[i].equals(Utilities.removeTags(treeTableOperator.getValueAt(i, 0).toString())));
-        }
-    }
-    
-    public void testViewsThreads() {
-        Utilities.showDebuggerView(Utilities.threadsViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.threadsViewTitle));
-        assertTrue("Thread group system is not shown in threads view", "system".equals(Utilities.removeTags(jTableOperator.getValueAt(0,0).toString())));
-        assertTrue("Thread group main is not shown in threads view", "main".equals(Utilities.removeTags(jTableOperator.getValueAt(1,0).toString())));
-        assertTrue("Thread main is not shown in threads view", "main".equals(Utilities.removeTags(jTableOperator.getValueAt(2,0).toString())));
-        assertTrue("Thread Reference Handler is not shown in threads view", "Reference Handler".equals(Utilities.removeTags(jTableOperator.getValueAt(3,0).toString())));
-        assertTrue("Thread Finalizer is not shown in threads view", "Finalizer".equals(Utilities.removeTags(jTableOperator.getValueAt(4,0).toString())));
-        assertTrue("Thread Signal Dispatcher is not shown in threads view", "Signal Dispatcher".equals(Utilities.removeTags(jTableOperator.getValueAt(5,0).toString())));
-    }
-    
-    public void testViewsSessions() {
-        Utilities.showDebuggerView(Utilities.sessionsViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.sessionsViewTitle));
-        assertEquals("examples.advanced.MemoryView", Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()));
+    public void testViewsDefaultOpen() throws Throwable {
         try {
-            org.openide.nodes.Node.Property property = (org.openide.nodes.Node.Property)jTableOperator.getValueAt(0,1);
-            assertEquals("Stopped", Utilities.removeTags(property.getValue().toString()));
-            property = (org.openide.nodes.Node.Property)jTableOperator.getValueAt(0,2);
-            assertEquals("org.netbeans.api.debugger.Session localhost:examples.advanced.MemoryView", Utilities.removeTags(property.getValue().toString()));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            assertTrue(ex.getClass()+": "+ex.getMessage(), false);
-        }
-    }
-    
-    public void testViewsSources() {
-        Utilities.showDebuggerView(Utilities.sourcesViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.sourcesViewTitle));
-        String debugAppSource = "debugTestProject" + java.io.File.separator + "src (Project debugTestProject)";
-        boolean jdk = false, project = false;
-        for (int i=0;i < jTableOperator.getRowCount();i++) {
-            String src = Utilities.removeTags(jTableOperator.getValueAt(i,0).toString());
-            if (src.endsWith("src.zip")) {
-                jdk=true;
-            } else if (src.endsWith(debugAppSource)) {
-                project = true;
+            assertNotNull("Local variables view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.localVarsViewTitle, 0));
+            assertNotNull("Call stack view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.callStackViewTitle, 0));
+            assertNotNull("Watches view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.watchesViewTitle, 0));
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
             }
+            throw th;
         }
-        assertTrue("JDK source root is not shown in threads view", jdk);
-        assertTrue("MemoryView source root is not shown in threads view", project);
     }
     
-    public void testViewsClose() {
-        //new TopComponentOperator(Utilities.localVarsViewTitle).close();
-        //new TopComponentOperator(Utilities.watchesViewTitle).close();
-        //new TopComponentOperator(Utilities.callStackViewTitle).close();
-        new TopComponentOperator(Utilities.classesViewTitle).close();
-        new TopComponentOperator(Utilities.sessionsViewTitle).close();
-        new TopComponentOperator(Utilities.threadsViewTitle).close();
-        new TopComponentOperator(Utilities.sourcesViewTitle).close();
+    public void testViewsCallStack() throws Throwable {
+        try {
+            Utilities.showDebuggerView(Utilities.callStackViewTitle);
+            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.callStackViewTitle));
+            assertEquals("MemoryView.updateStatus:92", Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()));
+            assertEquals("MemoryView.updateConsumption:80", Utilities.removeTags(jTableOperator.getValueAt(1,0).toString()));
+            assertEquals("MemoryView.main:116", Utilities.removeTags(jTableOperator.getValueAt(2,0).toString()));
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    public void testViewsClasses() throws Throwable {
+        try {
+            Utilities.showDebuggerView(Utilities.classesViewTitle);
+            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.classesViewTitle));
+            TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
+            new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "Application Class Loader|examples.advanced|MemoryView|1").expand();
+            String[] entries = {"System Class Loader", "Application Class Loader", "examples.advanced", "Helper", "MemoryView", "1"};
+            for (int i = 0; i < entries.length; i++) {
+                assertTrue("Node " + entries[i] + " not displayed in Classes view", entries[i].equals(Utilities.removeTags(treeTableOperator.getValueAt(i, 0).toString())));
+            }
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    public void testViewsThreads() throws Throwable {
+        try {
+            Utilities.showDebuggerView(Utilities.threadsViewTitle);
+            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.threadsViewTitle));
+            assertTrue("Thread group system is not shown in threads view", "system".equals(Utilities.removeTags(jTableOperator.getValueAt(0,0).toString())));
+            assertTrue("Thread group main is not shown in threads view", "main".equals(Utilities.removeTags(jTableOperator.getValueAt(1,0).toString())));
+            assertTrue("Thread main is not shown in threads view", "main".equals(Utilities.removeTags(jTableOperator.getValueAt(2,0).toString())));
+            assertTrue("Thread Reference Handler is not shown in threads view", "Reference Handler".equals(Utilities.removeTags(jTableOperator.getValueAt(3,0).toString())));
+            assertTrue("Thread Finalizer is not shown in threads view", "Finalizer".equals(Utilities.removeTags(jTableOperator.getValueAt(4,0).toString())));
+            assertTrue("Thread Signal Dispatcher is not shown in threads view", "Signal Dispatcher".equals(Utilities.removeTags(jTableOperator.getValueAt(5,0).toString())));
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    public void testViewsSessions() throws Throwable {
+        try {
+            Utilities.showDebuggerView(Utilities.sessionsViewTitle);
+            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.sessionsViewTitle));
+            assertEquals("examples.advanced.MemoryView", Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()));
+            try {
+                org.openide.nodes.Node.Property property = (org.openide.nodes.Node.Property)jTableOperator.getValueAt(0,1);
+                assertEquals("Stopped", Utilities.removeTags(property.getValue().toString()));
+                property = (org.openide.nodes.Node.Property)jTableOperator.getValueAt(0,2);
+                assertEquals("org.netbeans.api.debugger.Session localhost:examples.advanced.MemoryView", Utilities.removeTags(property.getValue().toString()));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                assertTrue(ex.getClass()+": "+ex.getMessage(), false);
+            }
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    public void testViewsSources() throws Throwable {
+        try {
+            Utilities.showDebuggerView(Utilities.sourcesViewTitle);
+            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.sourcesViewTitle));
+            String debugAppSource = "debugTestProject" + java.io.File.separator + "src (Project debugTestProject)";
+            boolean jdk = false, project = false;
+            for (int i=0;i < jTableOperator.getRowCount();i++) {
+                String src = Utilities.removeTags(jTableOperator.getValueAt(i,0).toString());
+                if (src.endsWith("src.zip")) {
+                    jdk=true;
+                } else if (src.endsWith(debugAppSource)) {
+                    project = true;
+                }
+            }
+            assertTrue("JDK source root is not shown in threads view", jdk);
+            assertTrue("MemoryView source root is not shown in threads view", project);
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    public void testViewsClose() throws Throwable {
+        try {
+            //new TopComponentOperator(Utilities.localVarsViewTitle).close();
+            //new TopComponentOperator(Utilities.watchesViewTitle).close();
+            //new TopComponentOperator(Utilities.callStackViewTitle).close();
+            new TopComponentOperator(Utilities.classesViewTitle).close();
+            new TopComponentOperator(Utilities.sessionsViewTitle).close();
+            new TopComponentOperator(Utilities.threadsViewTitle).close();
+            new TopComponentOperator(Utilities.sourcesViewTitle).close();
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
     }
 }

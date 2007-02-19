@@ -20,20 +20,20 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="Debugger gui functional test config">
 
-    <testbag testattribs="validation" executor="ide" name="Debugger overall" resultsprocessor="qa-functional">
+    <testbag testattribs="stable" executor="ide" name="Debugger overall">
        <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/debuggercore/Actions.class"/>
                 <include name="gui/debuggercore/Breakpoints.class"/>
                 <include name="gui/debuggercore/LocalVariables.class"/>
                 <include name="gui/debuggercore/StartDebugger.class"/>
-                <!--<include name="gui/debuggercore/Watches.class"/>-->
+                <include name="gui/debuggercore/Watches.class"/>
                 <include name="gui/debuggercore/Views.class"/>
             </patternset>
         </testset>
     </testbag>
     
-    <testbag testattribs="start" executor="ide" name="Start Debugger" resultsprocessor="qa-functional">
+    <testbag testattribs="start" executor="ide" name="Start Debugger">
        <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/debuggercore/StartDebugger.class"/>
@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="breakpoints" executor="ide" name="Breakpoints" resultsprocessor="qa-functional">
+    <testbag testattribs="breakpoints" executor="ide" name="Breakpoints">
        <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/debuggercore/Breakpoints.class"/>
@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="local" executor="ide" name="Local Variables" resultsprocessor="qa-functional">
+    <testbag testattribs="local" executor="ide" name="Local Variables">
        <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/debuggercore/LocalVariables.class"/>
@@ -57,7 +57,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="watches" executor="ide" name="Watches" resultsprocessor="qa-functional">
+    <testbag testattribs="watches" executor="ide" name="Watches">
        <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/debuggercore/Watches.class"/>
@@ -65,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="views" executor="ide" name="Views" resultsprocessor="qa-functional">
+    <testbag testattribs="views" executor="ide" name="Views">
        <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/debuggercore/Views.class"/>
@@ -73,7 +73,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="actions" executor="ide" name="Actions" resultsprocessor="qa-functional">
+    <testbag testattribs="actions" executor="ide" name="Actions">
        <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/debuggercore/Actions.class"/>

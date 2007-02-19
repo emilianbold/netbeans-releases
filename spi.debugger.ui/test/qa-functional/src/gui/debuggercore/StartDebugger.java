@@ -21,6 +21,7 @@
 
 package gui.debuggercore;
 
+import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
@@ -29,6 +30,7 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbTestSuite;
 
 public class StartDebugger extends JellyTestCase {
@@ -43,7 +45,6 @@ public class StartDebugger extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        //suite.addTest(new StartDebugger("testExp"));
         suite.addTest(new StartDebugger("testDebugMainProject"));
         suite.addTest(new StartDebugger("testDebugProject"));
         suite.addTest(new StartDebugger("testDebugFile"));
@@ -61,44 +62,91 @@ public class StartDebugger extends JellyTestCase {
         Utilities.endAllSessions();
     }
     
-    public void testExp() {
+    public void testDebugMainProject() throws Throwable {
+        try {
+            new Action(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, null).perform();
+            Utilities.getDebugToolbar().waitComponentVisible(true);
+            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
     }
     
-    public void testDebugMainProject() {
-        new Action(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, null).perform();
-        Utilities.getDebugToolbar().waitComponentVisible(true);
-        Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
+    public void testDebugProject() throws Throwable {
+        try {
+            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+            new DebugProjectAction().perform(projectNode);
+            Utilities.getDebugToolbar().waitComponentVisible(true);
+            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
     }
     
-    public void testDebugProject() {
-        Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
-        new DebugProjectAction().perform(projectNode);
-        Utilities.getDebugToolbar().waitComponentVisible(true);
-        Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
+    public void testDebugFile() throws Throwable {
+        try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            new Action(null, null, Utilities.debugFileShortcut).performShortcut();
+            Utilities.getDebugToolbar().waitComponentVisible(true);
+            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
     }
     
-    public void testDebugFile() {
-        //open source
-        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-        new OpenAction().performAPI(beanNode); // NOI18N
-        EditorOperator eo = new EditorOperator("MemoryView.java");
-        new Action(null, null, Utilities.debugFileShortcut).performShortcut();
-        Utilities.getDebugToolbar().waitComponentVisible(true);
-        Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
+    public void testRunDebuggerStepInto() throws Throwable {
+        try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            new Action(null, null, Utilities.stepIntoShortcut).performShortcut();
+            Utilities.getDebugToolbar().waitComponentVisible(true);
+            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:", 0);
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
     }
     
-    public void testRunDebuggerStepInto() {
-        EditorOperator eo = new EditorOperator("MemoryView.java");
-        new Action(null, null, Utilities.stepIntoShortcut).performShortcut();
-        Utilities.getDebugToolbar().waitComponentVisible(true);
-        Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:", 0);
-    }
-    
-    public void testRunDebuggerRunToCursor() {
-        EditorOperator eo = new EditorOperator("MemoryView.java");
-        Utilities.setCaret(eo, 75);
-        new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
-        Utilities.getDebugToolbar().waitComponentVisible(true);
-        Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:75", 0);
+    public void testRunDebuggerRunToCursor() throws Throwable {
+        try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.setCaret(eo, 75);
+            new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
+            Utilities.getDebugToolbar().waitComponentVisible(true);
+            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:75", 0);
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
     }
 }
