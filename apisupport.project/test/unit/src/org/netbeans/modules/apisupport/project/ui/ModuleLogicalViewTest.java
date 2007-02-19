@@ -61,7 +61,7 @@ public class ModuleLogicalViewTest extends TestBase {
         LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
         Node root = lvp.createLogicalView();
-        Node iFiles = root.getChildren().findChild(ModuleLogicalView.IMPORTANT_FILES_NAME);
+        Node iFiles = root.getChildren().findChild(ImportantFilesNodeFactory.IMPORTANT_FILES_NAME);
         assertNotNull("have the Important Files node", iFiles);
         iFiles.getChildren().getNodes(true); // ping
         waitForChildrenUpdate();
@@ -90,7 +90,7 @@ public class ModuleLogicalViewTest extends TestBase {
     }
     
     private void waitForChildrenUpdate() {
-        ModuleLogicalView.RP.post(new Runnable() {
+        ImportantFilesNodeFactory.RP.post(new Runnable() {
             public void run() {
                 // flush ModuleLogicalView.RP under which is the Children's update run
             }

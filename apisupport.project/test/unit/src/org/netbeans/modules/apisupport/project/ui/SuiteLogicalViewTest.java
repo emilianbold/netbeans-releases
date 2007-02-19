@@ -55,12 +55,12 @@ public class SuiteLogicalViewTest extends TestBase {
     public void testModulesNode() throws Exception {
         SuiteProject suite1 = generateSuite("suite1");
         TestBase.generateSuiteComponent(suite1, "module1a");
-        Node modulesNode = new SuiteLogicalView.ModulesNode(suite1);
+        Node modulesNode = new ModulesNodeFactory.ModulesNode(suite1);
         modulesNode.getChildren().getNodes(true); // "expand the node" simulation
         waitForGUIUpdate();
         assertEquals("one children", 1, modulesNode.getChildren().getNodes(true).length);
         
-        final ModuleChildren children = (ModuleChildren) modulesNode.getChildren();
+        final ModulesNodeFactory.ModulesNode.ModuleChildren children = (ModulesNodeFactory.ModulesNode.ModuleChildren) modulesNode.getChildren();
         TestBase.generateSuiteComponent(suite1, "module1b");
         waitForGUIUpdate();
         assertEquals("two children", 2, children.getNodes(true).length);
