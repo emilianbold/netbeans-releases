@@ -45,7 +45,6 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
     private static final Image IMAGE_EXPAND = Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-expand.png"); // NOI18N
     private static final Image IMAGE_COLLAPSE = Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse.png"); // NOI18N
 
-    private static final Border BORDER_NODE = new VMDNodeBorder ();
     private static final Color BORDER_CATEGORY_BACKGROUND = new Color (0xCDDDF8);
     private static final Border BORDER_MINIMIZE = BorderFactory.createRoundedBorder (2, 2, null, VMDNodeBorder.COLOR_BORDER);
     static final Color COLOR_SELECTED = new Color (0x748CC0);
@@ -75,7 +74,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         super (scene);
 
         setOpaque (false);
-        setBorder (BORDER_NODE);
+        setBorder (VMDFactory.createVMDNodeBorder ());
         setLayout (LayoutFactory.createVerticalLayout ());
         setMinimumSize (new Dimension (128, 8));
 
@@ -120,6 +119,17 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
     }
 
     /**
+     * Called to check whether a particular widget is minimizable. By default it returns true.
+     * The result have to be the same for whole life-time of the widget. If not, then the revalidation has to be invoked manually.
+     * An anchor (created by <code>VMDNodeWidget.createPinAnchor</code> is not affected by this method.
+     * @param widget the widget
+     * @return true, if the widget is minimizable; false, if the widget is not minimizable
+     */
+    protected boolean isMinimizableWidget (Widget widget) {
+        return true;
+    }
+
+    /**
      * Check the minimized state.
      * @return true, if minimized
      */
@@ -152,8 +162,9 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         boolean minimized = stateModel.getBooleanState ();
         Rectangle rectangle = minimized ? new Rectangle () : null;
         for (Widget widget : getChildren ())
-            if (widget != header  &&  widget != pinsSeparator)
-                getScene ().getSceneAnimator ().animatePreferredBounds (widget, rectangle);
+            if (widget != header  &&  widget != pinsSeparator) {
+                getScene ().getSceneAnimator ().animatePreferredBounds (widget, minimized  && isMinimizableWidget (widget) ? rectangle : null);
+            }
         minimizeWidget.setImage (minimized ? IMAGE_EXPAND : IMAGE_COLLAPSE);
     }
 
@@ -212,7 +223,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
     public void attachPinWidget (Widget widget) {
         widget.setCheckClipping (true);
         addChild (widget);
-        if (stateModel.getBooleanState ())
+        if (stateModel.getBooleanState ()  && isMinimizableWidget (widget))
             widget.setPreferredBounds (new Rectangle ());
     }
 
