@@ -21,8 +21,11 @@ package org.netbeans.modules.vmd.game.editor.sequece;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -37,6 +40,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.Scrollable;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.vmd.game.model.AnimatedTile;
@@ -67,6 +71,9 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 	private JScrollPane scrollEditors;
 	
 	private int syncComponentHeight = 0;
+	
+	private int maxFrameCount = 0;
+	private int filmUnitWidth = 0;
 	
 	public SequenceContainerEditor(SequenceContainer sequenceContainer) {
 		this.setBackground(Color.WHITE);
@@ -106,9 +113,9 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 		this.previewsPanel = new FastScrollPanel();
 		this.editorsPanel  = new FastScrollPanel();
 		
+		this.initScrolling();
 		this.initPreviews();
 		this.initEditors();
-		this.initScrolling();
 		
 		this.setLayout(new BorderLayout());
 		this.add(this.scrollPreviews, BorderLayout.WEST);
@@ -157,7 +164,7 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 	private void initEditors() {
 		this.editorsPanel.setBackground(Color.WHITE);
 		this.editorsPanel.setLayout(new BoxLayout(this.editorsPanel, BoxLayout.Y_AXIS));
-		Color colorEven = new Color(250, 250, 250);
+		Color colorEven = new Color(245, 245, 255);
 		Color colorOdd = Color.WHITE;
 		int index = 0;
 		for (Sequence s : this.sequenceContainer.getSequences()) {
@@ -173,6 +180,7 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 		editor.setBackground(c);
 		editor.addSequenceEditingPanelListener(this);
 		editor.setSequenceContainer(this.sequenceContainer);
+		//editor.setViewPort(this.scrollEditors.getViewport());
 		p.add(editor);
 		
 		Dimension minSize = new Dimension(0, this.syncComponentHeight);
@@ -260,6 +268,61 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 		
 	}
 	
+	
+	class RulerHorizontal  extends JComponent {
+		private static final int SIZE = 18;
+		private static final boolean DEBUG = false;
+				
+		public RulerHorizontal() {
+			ToolTipManager.sharedInstance().registerComponent(this);
+		}
+		
+		public String getToolTipText(MouseEvent event) {
+			return "Sequence index: " + this.getColumnAtPoint(event.getPoint());
+		}
+		
+		public Dimension getPreferredSize() {
+			Dimension size = SequenceContainerEditor.this.editorsPanel.getPreferredSize();
+			size.height = SIZE;
+			return size;
+		}
+		protected void paintComponent(Graphics graphincs) {
+			Graphics2D g = (Graphics2D) graphincs;
+			
+			Rectangle rect = g.getClipBounds();
+			g.setColor(Color.WHITE);
+			g.fill(rect);
+			
+			if (DEBUG) System.out.println("RulerHorizontal.repaint " + rect);
+			
+			int unit = 1 + SequenceContainerEditor.this.filmUnitWidth;
+			
+			for (int x = (rect.x / unit) * unit; x <= rect.x + rect.width; x+= unit) {
+				int col =  x / unit;
+				
+				if (col >= SequenceContainerEditor.this.maxFrameCount) {
+					break;
+				}
+				
+				boolean raised = true;
+				//if (DEBUG) System.out.println("paint col: " + col);
+				g.setColor(new Color(240, 238, 230));
+				
+				g.fill3DRect(x, 0, unit, SIZE, raised);
+				
+			}
+		}
+		
+		private int getColumnAtPoint(Point point) {
+			return this.getColumnAtCoordinates(point.x, point.y);
+		}
+		private int getColumnAtCoordinates(int x, int y) {
+			return (x - 1) / (SequenceContainerEditor.this.filmUnitWidth + 1);
+		}
+				
+	}
+		
+
 	
 	public static void main(String[] args) {
 		URL imageURL = SequenceEditingPanel.class.getResource("../../view/main/res/color_tiles.png");

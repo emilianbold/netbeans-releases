@@ -1268,6 +1268,8 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			Graphics2D g = (Graphics2D) graphincs;
 			
 			Rectangle rect = g.getClipBounds();
+			g.setColor(Color.WHITE);
+			g.fill(rect);
 			if (DEBUG) System.out.println("RulerVertical.repaint " + rect);
 			
 			int unit = TiledLayerEditorComponent.this.gridWidth + TiledLayerEditorComponent.this.cellHeight;
@@ -1447,6 +1449,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			Graphics2D g = (Graphics2D) graphincs;
 			
 			Rectangle rect = g.getClipBounds();
+			g.setColor(Color.WHITE);
+			g.fill(rect);
+			
 			if (DEBUG) System.out.println("RulerHorizontal.repaint " + rect);
 			
 			int unit = TiledLayerEditorComponent.this.gridWidth + TiledLayerEditorComponent.this.cellWidth;

@@ -80,7 +80,8 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 	private static final int SEPARATOR_WIDTH_MIN = 15;
 	
 	
-	private static final Color COLOR_SEPARATOR = Color.LIGHT_GRAY;
+	private static final Color COLOR_SEPARATOR_VERTICAL = new Color(204, 218, 228);
+	private static final Color COLOR_SEPARATOR_HORIZONTAL = COLOR_SEPARATOR_VERTICAL; //new Color(162, 162, 178);
     private Color backgroundColor = Color.WHITE;
 
 	private static final int NONE = -1;
@@ -114,7 +115,6 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 	
 	private int filmUnitWidth;
 		
-	//private List selectedFrameIndexes = new ArrayList();
 	private FrameSelectionManager selection;
 	
 	private int hilitedColumn = NONE;
@@ -140,7 +140,7 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 		
 		this.separatorWidth = Math.max(unitWidth, SEPARATOR_WIDTH_MIN);
 		
-		this.transSeparatorToOutline = new Point(unitWidth, 0);
+		this.transSeparatorToOutline = new Point(separatorWidth + unitWidth, 0);
 		this.transOutlineToFrame = new Point(unitWidth, unitHeight);
 		this.transFrameToSeparator = new Point(this.frameWidth + unitWidth * 2, -unitHeight);
 		this.transOutlineToSeparator = new Point(unitWidth, 0);
@@ -158,7 +158,7 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 		DragSource dragSource = new DragSource();
 		DragGestureRecognizer dgr = dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY, new DGL());
 	
-		ToolTipManager.sharedInstance().registerComponent(this);
+		ToolTipManager.sharedInstance().registerComponent(this);		
 	}
 	
 	public void setBackground(Color color) {
@@ -190,17 +190,6 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 		this.sequenceContainer = sequenceContainer;
 	}
 	
-	/** Creates a new instance of SequenceEditingPanel that is added to a viewport and centers itself accordingly*/
-	public SequenceEditingPanel(Sequence sequence, JViewport viewPort, boolean centerHorizontally, boolean centerVertically) {
-		this(sequence);
-		this.centerHorizontally = centerHorizontally;
-		this.centerVertically = centerVertically;
-		this.viewPort = viewPort;
-		if (this.viewPort != null)
-			this.viewPort.addComponentListener(new ResizeListener());
-			
-	}
-
 	public Sequence getSequence() {
 		return this.sequence;
 	}
@@ -284,6 +273,9 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
         }
 	}
 	
+	public void setViewPort(JViewport viewPort) {
+		this.viewPort = viewPort;
+	}
 	
     public Dimension getPreferredSize() {
 		if (DEBUG) System.out.println("getPreferredSize");
@@ -294,25 +286,18 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 		int prefWidth = 0;
 		int prefHeight = 0;
 
-		if (this.viewPort != null && this.centerHorizontally && this.viewPort.getWidth() > filmRollWidth) {
+		if (this.viewPort != null && this.viewPort.getWidth() > filmRollWidth) {
 			prefWidth += this.viewPort.getWidth();
-			this.start.x = Math.max((prefWidth - filmRollWidth) /2, BOUNDARY_MIN);
 		}
 		else {
-			prefWidth += filmRollWidth;
+			prefWidth += filmRollWidth + 20;
 			this.start.x = BOUNDARY_MIN;
 		}
 
-		if (this.viewPort != null && this.centerVertically && this.viewPort.getHeight() > filmRollHeight ) {
-			prefHeight += this.viewPort.getHeight();
-			this.start.y = Math.max((prefHeight - filmRollHeight) /2, BOUNDARY_MIN);
-		}
-		else {
-			prefHeight += filmRollHeight;
-			this.start.y = BOUNDARY_MIN;
-		}
-		
-        return new Dimension(prefWidth, prefHeight);
+		prefHeight += filmRollHeight;
+		this.start.y = BOUNDARY_MIN;
+        
+		return new Dimension(prefWidth, prefHeight);
     }
 
 	//Always repaints the whole sequence :(
@@ -320,7 +305,7 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 		Graphics2D g = (Graphics2D) graphics;
 		g.setColor(this.backgroundColor);
 		//g.fillRect(0, 0, this.getWidth(), this.getHeight());
-		g.setColor(COLOR_SEPARATOR);
+		g.setColor(COLOR_SEPARATOR_HORIZONTAL);
 		g.drawLine(0, this.getHeight()-1, this.getWidth(), this.getHeight()-1);
 		
 		this.start = new Point (this.separatorWidth, (this.getHeight() - this.outlineHeight) /2);
@@ -347,30 +332,27 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 	private void drawSeparator(Graphics2D g, int col, Point p) {
 		Color c = (this.hilitedColumn == col) ? new Color(255, 235, 140) : this.backgroundColor;
 		g.setColor(c);
-		g.fillRect(p.x, 0, this.separatorWidth, this.getHeight());
-		g.setColor(COLOR_SEPARATOR);
-		int x = p.x - this.separatorWidth / 2;
-		g.drawLine(x, 0, x, this.getHeight());
+		g.fillRect(p.x, 0, this.separatorWidth, this.getHeight() -1);
+		g.setColor(COLOR_SEPARATOR_VERTICAL);
+		int x = p.x + this.separatorWidth / 2;
+		g.drawLine(x, 0, x, this.getHeight() -1);
 	}
 	
 	private void drawOutline(Graphics2D g, int frameIndex, Point p) {
 		int col = this.getColumnForFrame(frameIndex);
 		int halfW = this.unitWidth / 2;
 		int halfH = this.unitHeight / 2;
-		if (this.hilitedColumn == col) {
-			g.setColor(new Color(255, 235, 140));
-			g.fillRoundRect(p.x - halfW, p.y - halfH, this.outlineWidth + this.unitWidth, this.outlineHeight + this.unitHeight, this.unitWidth, this.unitHeight);
-			g.setColor(Color.WHITE);
-			g.fillRoundRect(p.x, p.y, this.outlineWidth, this.outlineHeight, this.unitWidth, this.unitHeight);
-		}
 		if (this.selection.isFrameSelected(frameIndex)) {
 			g.setColor(new Color(175, 195, 255));
 			if (DEBUG) System.out.println("COL: " + frameIndex);
-			g.fillRoundRect(p.x, p.y, this.outlineWidth, this.outlineHeight, this.unitWidth, this.unitHeight);
+			g.fillRect(p.x - this.unitWidth, p.y - this.unitHeight, this.outlineWidth + 2*this.unitWidth, this.outlineHeight + 2*this.unitHeight);
 		}
-		g.setColor(Color.GRAY);
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g.drawRoundRect(p.x, p.y, this.outlineWidth, this.outlineHeight, this.unitWidth, this.unitHeight);		
+		if (this.hilitedColumn == col) {
+			g.setColor(new Color(255, 235, 140));
+			g.fillRect(p.x - halfW, p.y - halfH, this.outlineWidth + this.unitWidth, this.outlineHeight + this.unitHeight);
+		}
+		g.setColor(Color.WHITE);
+		g.fillRect(p.x, p.y, this.outlineWidth, this.outlineHeight);
 	}
 	
 	private void drawFrame(Graphics2D g, StaticTile frame, Point p) {
@@ -862,5 +844,7 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 		public void frameModified(Sequence sequence, int index) {
 		}
 	}	
+	
+	
 	
 }

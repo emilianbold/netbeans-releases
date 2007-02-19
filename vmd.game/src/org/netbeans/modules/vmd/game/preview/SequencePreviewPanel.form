@@ -16,20 +16,20 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="panelSequenceAnimatedPreview" pref="96" max="32767" attributes="2"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <Component id="panelSequenceAnimatedPreview" pref="82" max="32767" attributes="2"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="panelSequenceAnimatedPreview" linkSize="2" alignment="0" pref="85" max="32767" attributes="1"/>
-                  <Component id="jPanel1" linkSize="2" alignment="1" min="-2" max="-2" attributes="1"/>
-              </Group>
+          <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                  <Component id="panelSequenceAnimatedPreview" alignment="0" max="32767" attributes="1"/>
+                  <Component id="jPanel1" alignment="0" min="-2" max="-2" attributes="1"/>
+              </Group>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -56,37 +56,40 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
+              <Group type="102" alignment="1" attributes="0">
+                  <EmptySpace max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="panelSpinner" alignment="1" pref="116" max="32767" attributes="1"/>
-                      <Group type="102" alignment="0" attributes="0">
+                      <Component id="labelName" alignment="0" min="-2" pref="127" max="-2" attributes="1"/>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Component id="buttonPlayBackward" min="-2" pref="35" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="buttonPlayBackward" min="-2" max="-2" attributes="0"/>
+                          <Component id="buttonPause" min="-2" pref="34" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="buttonPause" min="-2" max="-2" attributes="0"/>
+                          <Component id="buttonPlayForward" min="-2" pref="34" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="buttonPlayForward" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="labelName" alignment="0" pref="116" max="32767" attributes="1"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="panelSpinner" min="-2" pref="97" max="-2" attributes="1"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
+              <Group type="102" attributes="0">
                   <Component id="labelName" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Component id="panelSpinner" pref="13" max="32767" attributes="0"/>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="buttonPause" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="buttonPlayForward" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="buttonPlayBackward" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="buttonPlayBackward" alignment="1" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" alignment="1" groupAlignment="3" attributes="0">
+                          <Component id="buttonPlayForward" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="buttonPause" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -109,7 +112,7 @@
         <Component class="javax.swing.JButton" name="buttonPlayBackward">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/org/netbeans/modules/vmd/game/editor/sequece/resources/playrev.gif"/>
+              <Image iconType="3" name="/org/netbeans/modules/vmd/game/editor/sequece/resources/playrev.png"/>
             </Property>
           </Properties>
         </Component>
