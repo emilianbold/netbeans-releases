@@ -10,7 +10,7 @@
 package org.netbeans.modules.languages.parser;
 
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.TokenInput;
+import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.api.languages.ASTNode;
 import java.io.BufferedReader;
 import java.io.IOException;

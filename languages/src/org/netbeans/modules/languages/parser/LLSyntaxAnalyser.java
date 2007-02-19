@@ -231,20 +231,20 @@ public class LLSyntaxAnalyser {
         boolean skipErrors
     ) throws ParseException {
         List result = null;
-        List<ASTItem> children = token.getChildren ();
-        if (children.isEmpty ())
-            return Collections.EMPTY_LIST;
-        TokenInput in = TokenInput.create (children);
-        Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
-            getLanguage (children.get (0).getMimeType ());
-        ASTNode n = language.getAnalyser ().read (in, skipErrors);
-        if (node != null)
-            node.addNode (n);
-        else {
-            if (result == null)
-                result = new ArrayList ();
-            result.add (result);
-        }
+//        List<ASTItem> children = token.getChildren ();
+//        if (children.isEmpty ())
+//            return Collections.EMPTY_LIST;
+//        TokenInput in = TokenInput.create (children);
+//        Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+//            getLanguage (children.get (0).getMimeType ());
+//        ASTNode n = language.getAnalyser ().read (in, skipErrors);
+//        if (node != null)
+//            node.addNode (n);
+//        else {
+//            if (result == null)
+//                result = new ArrayList ();
+//            result.add (result);
+//        }
         if (result == null)
             return Collections.EMPTY_LIST;
         return result;

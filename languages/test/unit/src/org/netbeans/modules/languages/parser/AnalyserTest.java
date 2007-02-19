@@ -11,7 +11,7 @@ import junit.framework.TestCase;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.SToken;
-import org.netbeans.api.languages.TokenInput;
+import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.api.languages.ASTNode;
 
 import java.util.Arrays;
