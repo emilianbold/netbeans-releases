@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -305,16 +305,12 @@ final class JUnitOutputReader {
             }
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="OUTPUT_DELIMITER_PREFIX">
-        else if (msg.startsWith(RegexpUtils.OUTPUT_DELIMITER_PREFIX)) {
-
+        else if (msg.startsWith(RegexpUtils.OUTPUT_DELIMITER_PREFIX)
+                && regexp.getOutputDelimPattern().matcher(msg).matches()) {
             if (report == null) {
                 return;
             }
-            
-            Matcher matcher = regexp.getOutputDelimPattern().matcher(msg);
-            if (matcher.matches()) {
-                readingOutputReport = true;
-            }
+            readingOutputReport = true;
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="XML_DECL_PREFIX">
         else if (expectXmlReport && msg.startsWith(RegexpUtils.XML_DECL_PREFIX)) {
