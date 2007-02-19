@@ -33,10 +33,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.ErrorManager;
-
 import java.util.*;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 
@@ -103,8 +103,10 @@ public class FileStatusCache implements ISVNNotifyListener {
     private DiskMapTurboProvider    cacheProvider;
     
     private Subversion     svn;
-
+    
     private Set<FileSystem> filesystemsToRefresh;
+    
+    private RequestProcessor.Task refreshFilesystemsTask;    
     
     FileStatusCache() {
         this.svn = Subversion.getInstance();
@@ -792,7 +794,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         // force event: an updated file changes status from uptodate to uptodate but its entry changes
         refresh(path, REPOSITORY_STATUS_UNKNOWN, true);
 
-        // collect the filesystems to notify them in logCompleted() about the external change
+        // collect the filesystems to notify them in SvnClientInvocationHandler about the external change
         for (;;) {
             FileObject fo = FileUtil.toFileObject(path);
             if (fo != null) {
@@ -811,18 +813,26 @@ public class FileStatusCache implements ISVNNotifyListener {
             }
         }
     }
-
+        
     public void refreshDirtyFileSystems() {
-        Set<FileSystem> filesystems = getFilesystemsToRefresh();
-        FileSystem[]  filesystemsToRefresh = new FileSystem[filesystems.size()];
-        synchronized (filesystems) {
-            filesystemsToRefresh = filesystems.toArray(new FileSystem[filesystems.size()]);
-            filesystems.clear();
+        if(refreshFilesystemsTask == null) {
+           RequestProcessor rp = new RequestProcessor();
+           refreshFilesystemsTask = rp.create(new Runnable() {
+                public void run() {
+                    Set<FileSystem> filesystems = getFilesystemsToRefresh();
+                    FileSystem[]  filesystemsToRefresh = new FileSystem[filesystems.size()];
+                    synchronized (filesystems) {
+                        filesystemsToRefresh = filesystems.toArray(new FileSystem[filesystems.size()]);
+                        filesystems.clear();
+                    }
+                    for (int i = 0; i < filesystemsToRefresh.length; i++) {            
+                        // don't call refresh() in synchronized (filesystems). It may lead to a deadlock.
+                        filesystemsToRefresh[i].refresh(true);            
+                    }                            
+                }
+           }); 
         }
-        for (int i = 0; i < filesystemsToRefresh.length; i++) {            
-            // don't call refresh() in synchronized (filesystems). It may lead to a deadlock.
-            filesystemsToRefresh[i].refresh(true);            
-        }        
+        refreshFilesystemsTask.schedule(200);
     }
     
     private Set<FileSystem> getFilesystemsToRefresh() {
