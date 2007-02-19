@@ -58,9 +58,12 @@ import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
+import org.netbeans.modules.xml.wsdl.model.impl.WSDLAttribute;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.StringAttribute;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
+import org.netbeans.modules.xml.wsdl.validator.visitor.schema.SchemaSemanticsVisitor;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validator;
@@ -107,7 +110,7 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
     
     /** Fix for message not found for operation input */
     public static final String FIX_MESSAGE_NOT_FOUND_IN_OPERATION_INPUT =
-            "VAL_MESSAGE_NOT_FOUND_IN_OPERATION_FAULT";
+            "FIX_MESSAGE_NOT_FOUND_IN_OPERATION_INPUT";
     
     /** Fix for Message not found for operation output */
     public static final String FIX_MESSAGE_NOT_FOUND_IN_OPERATION_OUTPUT =
@@ -142,10 +145,17 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
     public static final String FIX_WARNING_WSDL_MESSAGE_DOES_NOT_HAVE_ANY_PARTS_DEFINED = "FIX_WARNING_WSDL_MESSAGE_DOES_NOT_HAVE_ANY_PARTS_DEFINED";
     
     /** part does not have element or type attribute */
-    public static final String VAL_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART = "VAL_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_PART";
+    public static final String VAL_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART = "VAL_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART";
     
     /** part does not have element or type attribute */
-    public static final String FIX_VAL_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_PART = "FIX_VAL_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_PART";
+    public static final String FIX_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART = "FIX_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART";
+    
+    /** part has both element and type  attribute */
+    public static final String VAL_BOTH_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART = "VAL_BOTH_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART";
+    
+    /** part has both element and type  attribute */
+     public static final String FIX_BOTH_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART = "FIX_BOTH_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART";
+    
     
     /**part has element attribute but the referenced element object can not be located*/
     public static final String VAL_ELEMENT_ATTRIBUTE_DEFINED_IN_MESSAGE_PART_IS_NOT_VALID = "VAL_ELEMENT_ATTRIBUTE_DEFINED_IN_MESSAGE_PART_IS_NOT_VALID";
@@ -219,9 +229,10 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
     public List<ResultItem> mResultItems;
     private Validation mValidation;
     private List<Model> mValidatedModels;
+    private Validator mValidator;
     
     /** Creates a new instance of WSDLSchemaVisitor */
-    public WSDLSemanticsVisitor(Validation validation, List<Model> validatedModels) {
+    public WSDLSemanticsVisitor(Validator validator, Validation validation, List<Model> validatedModels) {
         
         Properties defaults = new Properties();
         defaults.setProperty(ValidateConfiguration.WSDL_SYNTAX_ATTRIB_REQUIRED, "true");
@@ -235,8 +246,13 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
             mValConfig = new ValidateConfiguration(defaults);
             mResultItems = new Vector<ResultItem>();
         }
+        
+        mValidator = validator;
         mValidation = validation;
         mValidatedModels = validatedModels;
+        
+         getValidateSupport().setValidator(mValidator);
+         getValidateSupport().setResultItems(mResultItems);
     }
     
     public List<ResultItem> getResultItems() {
@@ -262,21 +278,7 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
     }
     
     
-    /** Prepares the visitor for use.
-     * @param   v   Values to use.
-     *              <ol start="0">
-     *              <li><code>com.sun.wsdl.model.common.model.bpel.BPELDocument</code> Destination document.</li>
-     *              </ol>
-     */
-    @SuppressWarnings("unchecked")
-    public void prepare(Object[] v) {
-        Collection resultItems = (Collection) v[0];
-        getValidateSupport().setResultItems(resultItems);
-        
-        Validator validator = (Validator) v[1];
-        getValidateSupport().setValidator(validator);
-        
-    }
+   
     
     
     /**
@@ -286,7 +288,7 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
      */
     public void visit(Definitions w) {
         if (w.getTargetNamespace() == null || w.getTargetNamespace().trim().length() == 0) {
-            getValidateSupport().fireToDo(Validator.ResultType.ERROR, w, mMsg.getString(VAL_ERROR_WSDL_DEFINITIONS_NO_TARGETNAMESPACE),
+            getValidateSupport().fireToDo(Validator.ResultType.WARNING, w, mMsg.getString(VAL_ERROR_WSDL_DEFINITIONS_NO_TARGETNAMESPACE),
                     mMsg.getString(FIX_ERROR_WSDL_DEFINITIONS_NO_TARGETNAMESPACE));
             
         }
@@ -320,7 +322,15 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
             getValidateSupport().fireToDo
                     (Validator.ResultType.ERROR, p,
                     mMsg.getString(VAL_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART, p.getName()),
-                    mMsg.getString(FIX_VAL_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_PART));
+                    mMsg.getString(FIX_NO_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART));
+        }
+        
+        //if both element and type attribute are specified then part is invalid
+        if(p.getElement() != null && p.getType() != null) {
+            getValidateSupport().fireToDo
+                    (Validator.ResultType.ERROR, p,
+                    mMsg.getString(VAL_BOTH_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART, p.getName()),
+                    mMsg.getString(FIX_BOTH_ELEMENT_OR_TYPE_ATTRIBUTE_DEFINED_IN_MESSAGE_PART));
         }
         
         //if element attribute is specified and xsd element object can not be resolved
@@ -410,37 +420,14 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
     public void visit(NotificationOperation operation) {
         // if the opertion is an one-way operation or a notification operation,
         // then there should be no faults
-        if ((operation.getInput() == null || operation.getOutput() == null)
-        && (operation.getFaults() != null && operation.getFaults().size() > 0)) {
+        if (operation.getFaults() != null && operation.getFaults().size() > 0) {
             getValidateSupport().fireToDo
                     (Validator.ResultType.WARNING, operation,
                     mMsg.getString(VAL_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()),
                     mMsg.getString(FIX_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()));
         }
         
-        //wsdl spec:
-        //2.4.5 Names of Elements within an Operation:
-        //The name of the fault element is unique within the set of faults defined for the operation
-        ArrayList<String> faultNames = new ArrayList<String>();
-        
-        Collection faults = operation.getFaults();
-        Iterator it = faults.iterator();
-        while(it.hasNext()) {
-            Fault fault = (Fault) it.next();
-            String faultName = fault.getName();
-            if(faultName != null) {
-                if(!faultNames.contains(faultName)) {
-                    faultNames.add(faultName);
-                } else {
-                    //found duplicate output name in this portType operations
-                    getValidateSupport().fireToDo
-                            (Validator.ResultType.ERROR, operation,
-                            mMsg.getString(VAL_DUPLICATE_OPRATION_FAULT_NAME, faultName, operation.getName()),
-                            mMsg.getString(FIX_DUPLICATE_OPRATION_FAULT_NAME));
-                }
-            }
-        }
-        
+                
         visitChildren(operation);
         //return true;
     }
@@ -459,25 +446,7 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         //wsdl spec:
         //2.4.5 Names of Elements within an Operation:
         //The name of the fault element is unique within the set of faults defined for the operation
-        ArrayList<String> faultNames = new ArrayList<String>();
-        
-        Collection faults = operation.getFaults();
-        Iterator it = faults.iterator();
-        while(it.hasNext()) {
-            Fault fault = (Fault) it.next();
-            String faultName = fault.getName();
-            if(faultName != null) {
-                if(!faultNames.contains(faultName)) {
-                    faultNames.add(faultName);
-                } else {
-                    //found duplicate output name in this portType operations
-                    getValidateSupport().fireToDo
-                            (Validator.ResultType.ERROR, operation,
-                            mMsg.getString(VAL_DUPLICATE_OPRATION_FAULT_NAME, faultName, operation.getName()),
-                            mMsg.getString(FIX_DUPLICATE_OPRATION_FAULT_NAME));
-                }
-            }
-        }
+        validateFaultNames(operation);
         
         visitChildren(operation);
         // return true;
@@ -504,25 +473,7 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         //wsdl spec:
         //2.4.5 Names of Elements within an Operation:
         //The name of the fault element is unique within the set of faults defined for the operation
-        ArrayList<String> faultNames = new ArrayList<String>();
-        
-        Collection faults = operation.getFaults();
-        Iterator it = faults.iterator();
-        while(it.hasNext()) {
-            Fault fault = (Fault) it.next();
-            String faultName = fault.getName();
-            if(faultName != null) {
-                if(!faultNames.contains(faultName)) {
-                    faultNames.add(faultName);
-                } else {
-                    //found duplicate output name in this portType operations
-                    getValidateSupport().fireToDo
-                            (Validator.ResultType.ERROR, operation,
-                            mMsg.getString(VAL_DUPLICATE_OPRATION_FAULT_NAME, faultName, operation.getName()),
-                            mMsg.getString(FIX_DUPLICATE_OPRATION_FAULT_NAME));
-                }
-            }
-        }
+        validateFaultNames(operation);
         
         visitChildren(operation);
         // return true;
@@ -536,36 +487,13 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
     public void visit(OneWayOperation operation) {
         // if the opertion is an one-way operation or a notification operation,
         // then there should be no faults
-        if ((operation.getInput() == null || operation.getOutput() == null)
-        && (operation.getFaults() != null && operation.getFaults().size() > 0)) {
+        if (operation.getFaults() != null && operation.getFaults().size() > 0) {
             getValidateSupport().fireToDo
                     (Validator.ResultType.WARNING, operation,
                     mMsg.getString(VAL_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()),
                     mMsg.getString(FIX_FAULT_NOT_ALLOWED_IN_OPERATION, operation.getName()));
         }
         
-        //wsdl spec:
-        //2.4.5 Names of Elements within an Operation:
-        //The name of the fault element is unique within the set of faults defined for the operation
-        ArrayList<String> faultNames = new ArrayList<String>();
-        
-        Collection faults = operation.getFaults();
-        Iterator it = faults.iterator();
-        while(it.hasNext()) {
-            Fault fault = (Fault) it.next();
-            String faultName = fault.getName();
-            if(faultName != null) {
-                if(!faultNames.contains(faultName)) {
-                    faultNames.add(faultName);
-                } else {
-                    //found duplicate output name in this portType operations
-                    getValidateSupport().fireToDo
-                            (Validator.ResultType.ERROR, operation,
-                            mMsg.getString(VAL_DUPLICATE_OPRATION_FAULT_NAME, faultName, operation.getName()),
-                            mMsg.getString(FIX_DUPLICATE_OPRATION_FAULT_NAME));
-                }
-            }
-        }
         visitChildren(operation);
         //return true;
     }
@@ -585,15 +513,17 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
             
         }
         
-        if (message == null) {
+        String messageName = input.getAttribute(new StringAttribute(Input.MESSAGE_PROPERTY));
+        
+        if (messageName != null && message == null) {
             // throw validation error
             Operation operation = (Operation) input.getParent();
             getValidateSupport().fireToDo
                     (Validator.ResultType.ERROR, input,
                     mMsg.getString(VAL_MESSAGE_NOT_FOUND_IN_OPERATION_INPUT,
-                    input.getAttribute(new StringAttribute(Input.MESSAGE_PROPERTY)), operation.getName()),
+                    messageName, operation.getName()),
                     mMsg.getString(FIX_MESSAGE_NOT_FOUND_IN_OPERATION_INPUT,
-                    input.getAttribute(new StringAttribute(Input.MESSAGE_PROPERTY)), operation.getName()));
+                    messageName, operation.getName()));
             
         }
         
@@ -614,15 +544,17 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
             
         }
         
-        if (message == null) {
+        String messageName = output.getAttribute(new StringAttribute(Output.MESSAGE_PROPERTY));
+        
+        if (messageName != null && message == null) {
             // throw validation error
             Operation operation = (Operation) output.getParent();
             getValidateSupport().fireToDo
                     (Validator.ResultType.ERROR, output,
                     mMsg.getString(VAL_MESSAGE_NOT_FOUND_IN_OPERATION_OUTPUT,
-                    output.getAttribute(new StringAttribute(Output.MESSAGE_PROPERTY)), operation.getName()),
+                    messageName, operation.getName()),
                     mMsg.getString(FIX_MESSAGE_NOT_FOUND_IN_OPERATION_OUTPUT,
-                    output.getAttribute(new StringAttribute(Output.MESSAGE_PROPERTY)), operation.getName()));
+                    messageName, operation.getName()));
             
         }
         
@@ -645,15 +577,17 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
             
         }
         
-        if (message == null) {
+        String messageName = fault.getAttribute(new StringAttribute(Fault.MESSAGE_PROPERTY));
+        
+        if (messageName != null && message == null) {
             // throw validation error
             Operation operation = (Operation) fault.getParent();
             getValidateSupport().fireToDo
                     (Validator.ResultType.ERROR, fault,
                     mMsg.getString(VAL_MESSAGE_NOT_FOUND_IN_OPERATION_FAULT,
-                    fault.getAttribute(new StringAttribute(Fault.MESSAGE_PROPERTY)), operation.getName()),
+                    messageName, fault.getName(), operation.getName()),
                     mMsg.getString(FIX_MESSAGE_NOT_FOUND_IN_OPERATION_FAULT,
-                    fault.getAttribute(new StringAttribute(Fault.MESSAGE_PROPERTY)), operation.getName()));
+                    fault.getName(), operation.getName()));
             
         }
         
@@ -743,13 +677,14 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         }
         
         //now make sure portType is available
+        String type = binding.getAttribute(new StringAttribute(Binding.TYPE_PROPERTY));
         
-        if(portType == null) {
+        if(type != null && portType == null) {
             getValidateSupport().fireToDo
                     (Validator.ResultType.ERROR, binding,
                     mMsg.getString(VAL_MISSING_PORTTYPE_IN_BINDING,
                     binding.getName(),
-                    binding.getAttribute(new StringAttribute(Binding.TYPE_PROPERTY))),
+                    type),
                     mMsg.getString(FIX_MISSING_PORTTYPE_IN_BINDING)
                     );
         }
@@ -777,20 +712,21 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
             portType = ptRef.get();
         }
         
-        String portTypeName = portType.getName();
+        String portTypeName = null;
+        if(portType != null) {
+            portTypeName = portType.getName();
+        }
+        
         String bindingName = binding.getName();
         String operationName = bindingOp.getName();
         if(portType != null && operationName != null) {
             Collection<Operation> operations = portType.getOperations();
+            Reference<Operation> matchingOpRef = bindingOp.getOperation();
             Operation matchingOp = null;
-            if (operations != null) {
-                for (Operation operation : operations) {
-                    if (operationName.equals(operation.getName())) {
-                        matchingOp = operation;
-                        break;
-                    }
-                }
+            if(matchingOpRef != null) {
+                matchingOp = matchingOpRef.get();
             }
+            
             
             //if no matching operation is found then it is an error
             if(matchingOp == null){
@@ -819,7 +755,7 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                             mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_INPUT_IN_PORT_TYPE, operationName));
                 }else{
                     if(bindingOpHasInput){
-                        if(!inputNamesMatch(bindingInput, portTypeInput)){
+                        if(!inputNamesMatch(bindingInput, portTypeInput, operationName)){
                             getValidateSupport().fireToDo
                                     (Validator.ResultType.WARNING, bindingInput,
                                     mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE, operationName, bindingName, portTypeName),
@@ -836,7 +772,7 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                             mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE, operationName));
                 }else{
                     if(bindingOpHasOutput){
-                        if(!outputNamesMatch(bindingOutput, portTypeOutput)){
+                        if(!outputNamesMatch(bindingOutput, portTypeOutput, operationName)){
                             getValidateSupport().fireToDo
                                     (Validator.ResultType.WARNING, bindingOutput,
                                     mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE, operationName, bindingName, portTypeName),
@@ -861,20 +797,27 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         // return true;
     }
     
-    private boolean inputNamesMatch(BindingInput bindingInput, Input portTypeInput){
-        String bindingInputName = bindingInput.getName();
+    private boolean inputNamesMatch(BindingInput bindingInput, Input portTypeInput, String operationName){
+        String bindingInputName = bindingInput.getAttribute(WSDLAttribute.NAME);
+        String portTypeInputName = portTypeInput.getAttribute(WSDLAttribute.NAME);
         if(bindingInputName != null){
-            return bindingInputName.equals(portTypeInput.getName());
+            return bindingInputName.equals(portTypeInputName);
+        } else {
+        	return portTypeInputName == null;
         }
-        return true;
+        
     }
     
-    private boolean outputNamesMatch(BindingOutput bindingOutput, Output portTypeOutput){
+    private boolean outputNamesMatch(BindingOutput bindingOutput, Output portTypeOutput, String operationName){
         String bindingOutputName = bindingOutput.getName();
+        String portTypeOutputName = portTypeOutput.getAttribute(WSDLAttribute.NAME);
+        
         if(bindingOutputName != null){
             return bindingOutputName.equals(portTypeOutput.getName());
+        } else {
+        	return portTypeOutputName == null;
         }
-        return true;
+        
     }
     
     private boolean faultsMatch(Collection<BindingFault> bindingFaults, Collection<Fault> portTypeFaults){
@@ -953,7 +896,16 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                         }
                     }
                 }
+                
+                SchemaSemanticsVisitor v = new SchemaSemanticsVisitor(mValidator, mValidation, mValidatedModels);
+                model.getSchema().accept(v);
+                
+                List<ResultItem> r =  v.getResultItems();
+                if(r != null) {
+                    mResultItems.addAll(r);
+                }
             }
+           
         }
     }
     
@@ -967,4 +919,31 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
             }
         }
     }
+    
+    private void validateFaultNames(Operation operation) {
+        //wsdl spec:
+        //2.4.5 Names of Elements within an Operation:
+        //The name of the fault element is unique within the set of faults defined for the operation
+        ArrayList<String> faultNames = new ArrayList<String>();
+        
+        Collection faults = operation.getFaults();
+        Iterator it = faults.iterator();
+        while(it.hasNext()) {
+            Fault fault = (Fault) it.next();
+            String faultName = fault.getName();
+            if(faultName != null) {
+                if(!faultNames.contains(faultName)) {
+                    faultNames.add(faultName);
+                } else {
+                    //found duplicate output name in this portType operations
+                    getValidateSupport().fireToDo
+                            (Validator.ResultType.ERROR, operation,
+                            mMsg.getString(VAL_DUPLICATE_OPRATION_FAULT_NAME, faultName, operation.getName()),
+                            mMsg.getString(FIX_DUPLICATE_OPRATION_FAULT_NAME));
+                }
+            }
+        }
+    }
+    
+   
 }

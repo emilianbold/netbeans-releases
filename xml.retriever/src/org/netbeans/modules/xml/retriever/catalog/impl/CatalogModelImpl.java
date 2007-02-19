@@ -586,6 +586,7 @@ public class CatalogModelImpl implements CatalogModel {
         return this;
     }
     
+    
     private Reader getFileStreamFromDocument(File resultFile) {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(resultFile));
         if(fo != null){

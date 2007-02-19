@@ -21,6 +21,9 @@
 package org.netbeans.modules.xml.wsdl.validator.spi;
 
 import java.io.InputStream;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import org.w3c.dom.ls.LSResourceResolver;
 
 
 /**
@@ -38,9 +41,20 @@ public abstract class ValidatorSchemaFactory {
      */
     public abstract String getNamespaceURI();
     
+  
     /**
      * Returns the Inputstream related to this schema
      */
-    public abstract InputStream getSchemaInputStream();
-
+    public abstract Source getSchemaSource();
+    
+    /**
+     * Returns the LSResourceResolver related to this schema
+     * for resolution of resources defined in schema like import location etc
+     */
+    public  LSResourceResolver getLSResourceResolver() {
+        return null;
+    }
+    
+    
+            
 }

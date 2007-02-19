@@ -22,13 +22,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.XsdBasedValidator;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSResourceResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 public class WSDLSchemaValidator extends XsdBasedValidator {
     
@@ -49,30 +59,68 @@ public class WSDLSchemaValidator extends XsdBasedValidator {
         }
         
         InputStream wsdlSchemaInputStream = WSDLSchemaValidator.class.getResourceAsStream(wsdlXSDUrl);
+        Source wsdlSource = new StreamSource(wsdlSchemaInputStream);
+        wsdlSource.setSystemId(WSDLSchemaValidator.class.getResource(wsdlXSDUrl).toString());
         
         //combine all possible schemas through ElementFactoryProvider mechanism
         Collection<ValidatorSchemaFactory> extSchemaFactories = ValidatorSchemaFactoryRegistry.getDefault().getAllValidatorSchemaFactories();
         
-        ArrayList<InputStream> isList = new ArrayList<InputStream>();
-        isList.add(wsdlSchemaInputStream);
+        ArrayList<Source> isList = new ArrayList<Source>();
+        isList.add(wsdlSource);
         for (ValidatorSchemaFactory factory : extSchemaFactories) {
-            InputStream is = factory.getSchemaInputStream();
-            isList.add(is);
-        }
-
-        Schema schema = getCompiledSchema(isList.toArray(new InputStream[isList.size()]), null);
-        for (InputStream stream : isList) {
-            try {
-                if (stream != null) {
-                    stream.close();
-                }
-            } catch (IOException ex) {
-                // ignore.
+            Source is = factory.getSchemaSource();
+            if(is != null) {
+                isList.add(is);
+            } else {
+                //any validator should not return a null input stream
+                Logger.getLogger(getClass().getName()).severe("getSchema: " + factory.getClass() +" returned null input stream for its schema");
             }
         }
+
+        Schema schema = getCompiledSchema(isList.toArray(new Source[isList.size()]), new CentralLSResourceResolver(extSchemaFactories), new SchemaErrorHandler());
+        
         return schema;
     }
 
-
+    class SchemaErrorHandler implements ErrorHandler {
+    	public void error(SAXParseException exception) throws SAXException {
+    		Logger.getLogger(getClass().getName()).log(Level.SEVERE, "SchemaErrorHandler: " + exception.getMessage(), exception);
+    	}
+    	
+    	public void fatalError(SAXParseException exception) throws SAXException {
+    		Logger.getLogger(getClass().getName()).log(Level.SEVERE, "SchemaErrorHandler: " + exception.getMessage(), exception);
+    	}
+    	
+    	public void warning(SAXParseException exception) throws SAXException {
+    		
+    	}
+    }
     
+    class CentralLSResourceResolver implements LSResourceResolver {
+        
+        private Collection<ValidatorSchemaFactory> mExtSchemaFactories;
+                
+        CentralLSResourceResolver(Collection<ValidatorSchemaFactory> extSchemaFactories) {
+            mExtSchemaFactories = extSchemaFactories;
+        }
+        
+        public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
+            LSInput input = null;
+            
+            Iterator<ValidatorSchemaFactory> it = mExtSchemaFactories.iterator();
+            while(it.hasNext()) {
+                ValidatorSchemaFactory fac = it.next();
+                LSResourceResolver resolver = fac.getLSResourceResolver();
+                if(resolver != null) {
+                    input = resolver.resolveResource(type, namespaceURI, publicId, systemId, baseURI);
+                    if(input != null) {
+                       break;
+                    }
+                }
+            }
+            
+            return input;
+        }
+        
+    }
 }

@@ -3,12 +3,15 @@ package org.netbeans.modules.xml.wsdl.validator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -20,10 +23,13 @@ import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
 
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
@@ -43,6 +49,8 @@ import org.netbeans.modules.xml.xam.spi.ValidationResult;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.XsdBasedValidator;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.InputSource;
@@ -87,45 +95,22 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
                     
                     List<Integer> linePositions = setupLinePositions(text); 
                     
+                    WSDLLSResourceResolver resolver = new WSDLLSResourceResolver(wsdlModel, 
+                                                                                 systemId, 
+                                                                                 text, 
+                                                                                 prefixes, 
+                                                                                 linePositions);
+           
                     for (WSDLSchema schema : schemas) {
-                        SAXSource source = null;
+                        Reader in = createInlineSchemaSource(text, prefixes, linePositions, schema);
+                        SAXSource source = new SAXSource(new InputSource(in));
+                        source.setSystemId(systemId);
                         int start = schema.findPosition();
                         int lineNumber = getLineNumber(start, linePositions); //where the schema starts in the wsdl document
-                        String schemaString = schema.getContentFragment(); // get inner text content of schema.
-                        int index = text.indexOf(schemaString, start);
-                        if (schemaString != null && schemaString.trim().length() > 0) { //else if its schema with no contents
-                            assert index != -1 : "the text content under schema couldnt be found in the wsdl document";
-                            String schemaTop = text.substring(start, index); //get the schema definition.
-                            String[] splits = schemaTop.split(">");
-                            StringBuffer strBuf = new StringBuffer();
-                            if (splits.length > 0) {
-                                strBuf.append(splits[0]);
-                                Map<String, String> schemaPrefixes = ((AbstractDocumentComponent)schema.getSchemaModel().getSchema()).getPrefixes();
-                                for (String prefix : prefixes.keySet()) {
-                                    if (!(prefix == null || prefix.length() == 0 || schemaPrefixes.containsKey(prefix))) {
-                                        strBuf.append(" xmlns:").append(prefix).append("=\"").append(prefixes.get(prefix)).append('\"');
-                                    }
-                                }
-                                
-                                for (int i = 1; i < splits.length; i++) {
-                                    strBuf.append('>').append(splits[i]);
-                                }
-                                strBuf.append('>');
-                                strBuf.append(schemaString).append(getEndTag(splits[0]));
-                                schemaString = null;
-                                splits = null;
-                                schemaTop = null;
-                            }
-                            
-                            
-                            
-                            source = new SAXSource(new InputSource(new StringReader(strBuf.toString())));
-                            source.setSystemId(systemId);
-                            strBuf = null;
-                        }
+      
                         //validate the source
                         Handler handler = new InlineSchemaValidatorHandler(wsdlModel, lineNumber);
-                        validate(source, handler);
+                        validate(wsdlModel, source, handler, resolver);
                         resultItems.addAll(handler.getResultItems());
                     }
                     
@@ -148,7 +133,7 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
                 try {
                     source =  new SAXSource(new InputSource(new FileInputStream(file)));
                 } catch (FileNotFoundException ex) {
-                    // catch error.
+                    Logger.getLogger(getClass().getName()).log(Level.SEVERE, "getSystemId", ex); //NOI18N
                 }
             }
         }
@@ -160,12 +145,14 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
         
     }
 
-    protected void validate(Source saxSource, XsdBasedValidator.Handler handler) {
+    private void validate(WSDLModel model, 
+                          Source saxSource, 
+                          XsdBasedValidator.Handler handler,
+                          LSResourceResolver resolver) {
         try {
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            LSResourceResolver delegate = CatalogModelFactory.getDefault().getLSResourceResolver();
-            if (delegate != null) {
-                sf.setResourceResolver(delegate);
+            if (resolver != null) {
+                sf.setResourceResolver(resolver);
             }
             sf.setErrorHandler(handler);
             if (saxSource == null) {
@@ -245,7 +232,7 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
             return d.getText(0, d.getLength());
         } catch (BadLocationException e) {
             //log this..
-            Logger.getLogger(getClass().getName()).log(Level.FINE, "getWSDLText", e); //NOI18N
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "getWSDLText", e); //NOI18N
         }
         return null;
     }
@@ -269,5 +256,135 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
         }
         return null;
     }
-    
+ 
+    private Reader createInlineSchemaSource(String wsdlText,
+                                            Map<String, String> wsdlPrefixes,
+                                            List<Integer> wsdlLinePositions,
+                                            WSDLSchema oneInlineSchema) {
+        Reader source = null;
+        int start = oneInlineSchema.findPosition();
+        int lineNumber = getLineNumber(start, wsdlLinePositions); //where the schema starts in the wsdl document
+        String schemaString = oneInlineSchema.getContentFragment(); // get inner text content of schema.
+        int index = wsdlText.indexOf(schemaString, start);
+        if (schemaString != null && schemaString.trim().length() > 0) { //else if its schema with no contents
+            assert index != -1 : "the text content under schema couldnt be found in the wsdl document";
+            String schemaTop = wsdlText.substring(start, index); //get the schema definition.
+            String[] splits = schemaTop.split(">");
+            StringBuffer strBuf = new StringBuffer();
+            if (splits.length > 0) {
+                strBuf.append(splits[0]);
+                Map<String, String> schemaPrefixes = ((AbstractDocumentComponent)oneInlineSchema.getSchemaModel().getSchema()).getPrefixes();
+                for (String prefix : wsdlPrefixes.keySet()) {
+                    if (!(prefix == null || prefix.length() == 0 || schemaPrefixes.containsKey(prefix))) {
+                        strBuf.append(" ").append("xmlns:").append(prefix).append("=\"").append(wsdlPrefixes.get(prefix)).append("\"");
+                    }
+                }
+
+                for (int i = 1; i < splits.length; i++) {
+                    strBuf.append(">").append(splits[i]);
+                }
+                strBuf.append(">");
+                strBuf.append(schemaString).append(getEndTag(splits[0]));
+                schemaString = null;
+                splits = null;
+                schemaTop = null;
+            }
+
+
+            source = new StringReader(strBuf.toString());
+//            source = new SAXSource(new InputSource(new StringReader(strBuf.toString())));
+            strBuf = null;
+        }
+        
+        return source;
+    }
+                        
+    class WSDLLSResourceResolver implements LSResourceResolver {
+        
+        private WSDLModel mModel;
+                
+        private LSResourceResolver mDelegate;
+        
+        private String mWsdlSystemId;
+        private String mWsdlText;
+        private Map<String, String> mWsdlPrefixes;
+        private List<Integer> mWsdlLinePositions;
+                
+        public WSDLLSResourceResolver(WSDLModel wsdlmodel,
+                                      String wsdlSystemId,
+                                      String wsdlText,
+                                      Map<String, String> wsdlPrefixes,
+                                      List<Integer> wsdlLinePositions) {
+             mModel = wsdlmodel;
+             mWsdlSystemId = wsdlSystemId;
+             mWsdlText  = wsdlText;   
+             mWsdlPrefixes = wsdlPrefixes;
+             mWsdlLinePositions = wsdlLinePositions;
+
+             mDelegate = CatalogModelFactory.getDefault().getLSResourceResolver();
+           
+        }
+        public LSInput resolveResource(String type, 
+                                       String namespaceURI, 
+                                       String publicId, 
+                                       String systemId, 
+                                       String baseURI) {
+            
+             LSInput lsi = mDelegate.resolveResource(type, namespaceURI, publicId, systemId, baseURI);
+             if(lsi == null) {
+                 //if we can not get an input from catalog, then it could that
+                 //there as a schema in types section which refer to schema compoment from other inline schema
+                 //so we try to check in other inline schema.
+                WSDLSchema schema = findSchema(namespaceURI);
+                if(schema != null) {
+                    Reader in = createInlineSchemaSource(mWsdlText, mWsdlPrefixes, mWsdlLinePositions, schema);
+                    
+                    //create LSInput object
+                    DOMImplementation domImpl = null;
+                    try {
+                        domImpl =  DocumentBuilderFactory.newInstance().newDocumentBuilder().getDOMImplementation();
+                    } catch (ParserConfigurationException ex) {
+                         Logger.getLogger(getClass().getName()).log(Level.SEVERE, "resolveResource", ex); //NOI18N
+                        return null;
+                    }
+                    
+                    DOMImplementationLS dols = (DOMImplementationLS) domImpl.getFeature("LS","3.0");
+                    lsi = dols.createLSInput();
+                    if(in != null) {
+                        lsi.setCharacterStream(in);
+                    }
+                    
+                    if(mWsdlSystemId != null) {
+                        lsi.setSystemId(mWsdlSystemId);
+                    }
+                    return lsi;        
+                }
+             }
+             return null;                      
+        }
+
+        private WSDLSchema findSchema(String namespaceURI) {
+                WSDLSchema schema = null;
+                Definitions def = mModel.getDefinitions(); 
+                Types types = def.getTypes();
+                if (types != null) {
+                    Collection<WSDLSchema> schemas = types.getExtensibilityElements(WSDLSchema.class);
+                    Iterator<WSDLSchema> it = schemas.iterator();
+                    while(it.hasNext()) {
+                        WSDLSchema sch = it.next();
+                        SchemaModel model = sch.getSchemaModel();
+                        if(model != null) {
+                            org.netbeans.modules.xml.schema.model.Schema s = model.getSchema();
+                            if(s != null && s.getTargetNamespace() != null && s.getTargetNamespace().equals(namespaceURI)) {
+                                schema = sch;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                return schema;
+        }
+        
+    }
 }

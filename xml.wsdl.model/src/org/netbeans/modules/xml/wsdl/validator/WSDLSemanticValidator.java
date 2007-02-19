@@ -34,11 +34,10 @@ public class WSDLSemanticValidator implements Validator {
                     return EMPTY_RESULT;
                 }
                  
-                WSDLSemanticsVisitor visitor = new WSDLSemanticsVisitor(validation, validatedModels);
-                Vector<ResultItem> resultItems = new Vector<ResultItem>();
-                visitor.prepare(new Object[] {resultItems, this});
+                WSDLSemanticsVisitor visitor = new WSDLSemanticsVisitor(this, validation, validatedModels);
                 wsdlModel.getDefinitions().accept(visitor);
                 validatedModels.add(model);
+                List<ResultItem> resultItems = visitor.getResultItems();
                 return new ValidationResult(resultItems, validatedModels);
                 
             }
