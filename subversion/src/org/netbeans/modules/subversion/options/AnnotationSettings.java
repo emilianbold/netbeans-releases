@@ -77,7 +77,7 @@ public class AnnotationSettings implements ActionListener, TableModelListener {
         HelpCtx helpCtx = new HelpCtx(AnnotationSettings.class);
         
         dialogDescriptor = new DialogDescriptor(panel, title);
-        dialogDescriptor.setModal(false);
+        dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(helpCtx);
         dialogDescriptor.setValid(valid);
         

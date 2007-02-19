@@ -18,20 +18,16 @@
  */
 package org.netbeans.modules.subversion.options;
 
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.JFileChooser;
-import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
