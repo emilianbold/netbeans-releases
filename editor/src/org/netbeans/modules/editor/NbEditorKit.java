@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.editor;
 
+import org.netbeans.modules.editor.impl.PopupActions;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;

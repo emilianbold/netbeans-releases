@@ -84,6 +84,24 @@ is the proper place.
 
         <change>
             <api name="editor"/>
+            <summary>Moving PopupActions and PopupInitializer to a private package</summary>
+            <version major="1" minor="30"/>
+            <date day="19" month="2" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility source="incompatible" semantic="compatible" binary="incompatible" modification="no" addition="no" deletion="yes" deprecation="no" />
+            <description>
+            <p>
+                The <code>PopupActions</code> and <code>PopupInitializer</code>
+                classes were accidentaly exposed in an API visible package. We
+                moved them to a private package, because thet have no API use.
+                They implement support for editor popup menu, which can be registered
+                using the <code>Popup</code> subfolders in <code>MimeLookup</code>.
+            </p>
+            </description>
+        </change>
+        
+        <change>
+            <api name="editor"/>
             <summary>Adding NbEditorUtilities.getMimeType(JTextComponent)</summary>
             <version major="1" minor="29"/>
             <date day="16" month="2" year="2007"/>
