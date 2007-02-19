@@ -21,39 +21,57 @@
 ============================================================================ -->
 
 <!--
-  This is a base script for building, packaging and releasing nbi group 
+  This is the base script for building, packaging and releasing nbi group 
   packages. It is meant to be imported into individual group build scripts, 
-  which define the essential group-specific properties, which are referenced 
-  throughout this script.
+  which define the essential group-specific properties, which, in their turn, 
+  are referenced throughout this script.
 -->
 <project name="build-group" default="usage" basedir=".">
+    <!-- import the most common properties -->
     <property file="${common.dir}/common.properties"/>
+    
+    <!-- import the properties common among all group build scripts -->
     <property file="${common.dir}/group.properties"/>
+    
+    <!-- import the common target library -->
     <import file="${common.dir}/common.xml" optional="false"/>
     
+    <!-- define an aggregating target for cleaning and building groups -->
     <target name="build-all" depends="init,clean,build"/>
     
+    <!-- define an aggregating target for cleaning, building and 
+         publishing groups -->
     <target name="release-all" depends="build-all,release"/>
     
-    <target name="init" depends="-init">
-        <evaluate property="group.dir"/>
-        <evaluate property="group.icon.file"/>
-        <evaluate property="group.descriptor.file"/>
-        <evaluate property="group.jar.file"/>
-        
-        <evaluate property="group.icon"/>
-        <evaluate property="group.bundle"/>
-        
-        <condition property="do.build.engine">
-            <equals arg1="${build.engine}" arg2="true"/>
-        </condition>
-    </target>
+    <!--
+      Initialization. Initialization for groups is no different from the
+      base intiialization routine, thus the only thing this target does is 
+      falling back to the common initialization procedure.
+    -->
+    <target name="init" depends="-init"/>
     
+    <!--
+      Clean-up. The clean-up procedure for groups is almost the same as the
+      base one. The only additional action here is to remove the distributive 
+      file.
+    -->
     <target name="clean" depends="init,-clean">
         <delete file="${dist.dir}/${group.jar.file}"/>
     </target>
     
-    <target name="-pre-build">
+    
+    <target name="build" depends="init,-checkout,-pre-build,-build,-post-build"/>
+    
+    <!--
+      This is a hook target. Individual group build scripts may override it in
+      order to add some custom logic which will be executed prior to building 
+      the group package.
+    -->
+    <target name="-pre-build"/>
+    
+    <target name="-build"/>
+        <!-- substitute the params in group's source tree (normally that would
+             consist only of the icon and the localizing bundle -->
         <for-each from="1" to="${group.params.length}" property="i">
             <set-property property="current.token" 
                           source="group.params.${i}.token"/>
@@ -64,25 +82,32 @@
                      token="${current.token}" 
                      value="${current.value}"/>
         </for-each>
-    </target>
-    
-    <target name="build" depends="init,-checkout,-pre-build">
-        <copy file="${group.icon}" tofile="${work.dir}/${group.icon.file}"/>
-        <sizeof file="${work.dir}/${group.icon.file}" property="group.icon.size"/>
-        <md5 file="${work.dir}/${group.icon.file}" property="group.icon.md5"/>
-        <set-property property="group.icon.uri"
-                      value="resource:${group.icon.file}"/>
         
+        <!-- copy the group's icon to the soon-to-be package directory 
+             structure and calculate some metadata for it -->
+        <copy file="${group.icon}" 
+              tofile="${work.dir}/${group.icon.file}"/>
+        <sizeof file="${work.dir}/${group.icon.file}" 
+                property="group.icon.size"/>
+        <md5 file="${work.dir}/${group.icon.file}" 
+             property="group.icon.md5"/>
+        
+        <!-- load the group's localizing bundle and store the locales list to 
+             ${group.locales.list} -->
         <load-locales basename="${group.bundle}" list="group.locales.list"/>
+        
+        <!-- generate the group package descriptor -->
         <group-descriptor file="${work.dir}/${group.descriptor.file}"/>
         
+        <!-- create the package manifest file -->
         <echo file="${work.dir}/${group.jar.manifest.file}" 
-              message="Manifest-Version: 1.0${line.separator}" 
+              message="Manifest-Version: 1.0${nl}" 
               append="false"/>
         <echo file="${work.dir}/${group.jar.manifest.file}" 
-              message="Group-Descriptor: ${group.descriptor.file}${line.separator}" 
+              message="Package-Descriptor: ${group.descriptor.file}${nl}" 
               append="true"/>
         
+        <!-- create the package jar file and sign it -->
         <jar destfile="${work.dir}/${group.jar.file}" 
              compress="true" 
              manifest="${work.dir}/${group.jar.manifest.file}">
@@ -92,17 +117,15 @@
                 <include name="${group.descriptor.file}"/>
             </fileset>
         </jar>
-        
         <signjar jar="${work.dir}/${group.jar.file}" 
                  keystore="${jarsigner.keystore}"
                  storepass="${jarsigner.storepass}"
                  alias="${jarsigner.alias}"
                  maxmemory="${jarsigner.xmx}"/>
         
-        <if property="move.to.dist" value="true">
-            <move file="${work.dir}/${group.jar.file}" 
-                  todir="${dist.dir}"/>
-        </if>
+        <!-- move the distributive to the distributives directory -->
+        <move file="${work.dir}/${group.jar.file}" 
+              todir="${dist.dir}"/>
     </target>
     
     <target name="release" depends="init,build">

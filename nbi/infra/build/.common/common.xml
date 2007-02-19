@@ -34,11 +34,14 @@
         Initialization
     ======================================================================== -->
     <!--
-        This target performs the default initialization, all custom ant tasks 
-        are defined here. It also sets some properties which control the flow
-        of the build process.
+      This target performs the default initialization, all custom ant tasks 
+      are defined here. It also sets some properties which control the flow
+      of the build process.
     -->
     <target name="-init" depends=".build-custom-tasks">
+        <!-- set the line.separator property to a shorter name -->
+        <property name="nl" value="${line.separator}"/>
+        
         <!-- define custom ant tasks -->
         <taskdef 
             name="for-each" 
@@ -119,14 +122,14 @@
             </and>
         </condition>
         
-        <!-- decide whether to copy sources from a location -->
+        <!-- decide whether to copy sources from a given location -->
         <condition property="do.copy.sources">
             <not>
                 <equals arg1="${checkout.sources}" arg2="true"/>
             </not>
         </condition>
         
-        <!-- decide whether to build native (jni) libraries or not -->
+        <!-- decide whether to build native libraries/launchers or not -->
         <condition property="do.build.native">
             <equals arg1="${build.native}" arg2="true"/>
         </condition>
