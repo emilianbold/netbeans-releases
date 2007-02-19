@@ -184,13 +184,31 @@ public abstract class XsdBasedValidator implements Validator {
         try {
             schema = schemaFactory.newSchema(schemaStreamSources);            
         } catch(SAXException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.FINE, "getCompiledSchema", ex);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "getCompiledSchema", ex);
         } 
         
         return schema;
     }
     
-
+    protected Schema getCompiledSchema(Source[] schemas,
+            LSResourceResolver lsResourceResolver,
+            ErrorHandler errorHandler) {
+        
+        Schema schema = null;
+        
+        // Create a compiled Schema object.
+        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        schemaFactory.setResourceResolver(lsResourceResolver);
+        schemaFactory.setErrorHandler(errorHandler);
+        try {
+            schema = schemaFactory.newSchema(schemas);            
+        } catch(SAXException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "getCompiledSchema", ex);
+        } 
+        
+        return schema;
+    }
+    
     /**
      *  Handler to receive parse events.
      */

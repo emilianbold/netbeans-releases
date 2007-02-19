@@ -334,7 +334,7 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
             throw new IllegalArgumentException("component == null"); //NOI18N
         }
         if (! _getChildren().contains(component)) {
-            throw new IllegalArgumentException("component is not"); //NOI18N
+            throw new IllegalArgumentException("component to be deleted is not a child"); //NOI18N
         }
         _removeChildQuietly(component, _getChildren());
         firePropertyChange(propertyName, component, null);

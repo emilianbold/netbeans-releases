@@ -440,7 +440,7 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         updateReference(peer);
     }
     
-    private DocumentModelAccess getAccess() {
+    protected DocumentModelAccess getAccess() {
         getChildren(); //make sure children populated before potential mutation
         return (DocumentModelAccess) getModel().getAccess();
     }
