@@ -34,7 +34,7 @@ import org.netbeans.modules.vmd.game.model.SequenceContainer;
 public class SequenceContainerPreview extends javax.swing.JPanel implements ActionListener {
     
     private SequenceContainer sequenceContainer;
-    private SequencePreviewPanelSidebar sequencePreviewPanel;
+    private SequencePreviewPanel sequencePreviewPanel;
 	private String labelTypeName;
 	
     /**
@@ -43,7 +43,7 @@ public class SequenceContainerPreview extends javax.swing.JPanel implements Acti
     public SequenceContainerPreview(String labelTypeName, SequenceContainer sequenceContainer) {
 		this.labelTypeName = labelTypeName;
         this.sequenceContainer = sequenceContainer;
-		this.sequencePreviewPanel = (SequencePreviewPanelSidebar) this.sequenceContainer.getDefaultSequence().getPreview();
+		this.sequencePreviewPanel = (SequencePreviewPanel) this.sequenceContainer.getDefaultSequence().getPreview();
         initComponents();
     }
     

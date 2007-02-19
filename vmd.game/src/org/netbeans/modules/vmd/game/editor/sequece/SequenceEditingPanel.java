@@ -19,9 +19,7 @@
 package org.netbeans.modules.vmd.game.editor.sequece;
 
 import java.awt.Color;
-import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -47,7 +45,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.font.LineMetrics;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -62,7 +59,6 @@ import javax.swing.JViewport;
 import javax.swing.Scrollable;
 import javax.swing.ToolTipManager;
 import javax.swing.event.EventListenerList;
-import org.netbeans.modules.vmd.game.dialog.NewSequenceDialog;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Sequence;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
@@ -70,8 +66,7 @@ import org.netbeans.modules.vmd.game.model.SequenceListener;
 import org.netbeans.modules.vmd.game.model.StaticTile;
 import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.model.TileDataFlavor;
-import org.netbeans.modules.vmd.game.view.main.MainView;import org.openide.DialogDisplayer;
-import org.openide.DialogDescriptor;
+import org.netbeans.modules.vmd.game.view.main.MainView;
 
 
 /**
@@ -79,14 +74,15 @@ import org.openide.DialogDescriptor;
  */
  public class SequenceEditingPanel extends JComponent implements Scrollable, MouseMotionListener, MouseListener, SequenceListener {
 	
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = true;
 
 	private static final int BOUNDARY_MIN = 10;
 	private static final int SEPARATOR_WIDTH_MIN = 15;
-	private static final int HEADER_HEIGHT_MIN = 20;
 	
 	
 	private static final Color COLOR_SEPARATOR = Color.LIGHT_GRAY;
+    private Color backgroundColor = Color.WHITE;
+
 	private static final int NONE = -1;
 	
 	private Sequence sequence;
@@ -105,17 +101,12 @@ import org.openide.DialogDescriptor;
 	
 	private int outlineWidth;
 	private int outlineHeight;
-	
-	private int headerHeight;
-	private int headerWidth;
-	
+		
 	private boolean centerVertically;
 	private boolean centerHorizontally;
 	
 	private Point start = new Point(0, 0);
 	
-	private Point transSeparatorToHeader;
-	private Point transHeaderToOutline;
 	private Point transOutlineToFrame;
 	private Point transFrameToSeparator;
 	private Point transOutlineToSeparator;
@@ -138,30 +129,23 @@ import org.openide.DialogDescriptor;
 		this.sequence.addSequenceListener(this);
 		this.sequence.addSequenceListener(this.selection);
 		
-		
 		this.frameWidth = this.sequence.getFrameWidth();
 		this.frameHeight = this.sequence.getFrameHeight();
 		
-		this.unitWidth = Math.max(this.frameWidth / 5 ,5);
-		this.unitHeight = Math.max(this.frameHeight / 5, 5);
+		this.unitWidth = Math.max(this.frameWidth / 5 ,10);
+		this.unitHeight = Math.max(this.frameHeight / 5, 10);
 
 		this.outlineWidth = this.frameWidth + unitWidth * 2;
 		this.outlineHeight = this.frameHeight + unitHeight * 2;
 		
 		this.separatorWidth = Math.max(unitWidth, SEPARATOR_WIDTH_MIN);
-		this.separatorHeight = outlineHeight;
 		
-		this.headerHeight = HEADER_HEIGHT_MIN;
-		this.headerWidth = this.unitWidth + this.outlineWidth + this.unitWidth;
-		
-		this.transSeparatorToHeader = new Point(this.separatorWidth, -(unitHeight + this.headerHeight) );
-		this.transHeaderToOutline = new Point(unitWidth, unitHeight + this.headerHeight);
+		this.transSeparatorToOutline = new Point(unitWidth, 0);
 		this.transOutlineToFrame = new Point(unitWidth, unitHeight);
 		this.transFrameToSeparator = new Point(this.frameWidth + unitWidth * 2, -unitHeight);
 		this.transOutlineToSeparator = new Point(unitWidth, 0);
-		this.transSeparatorToOutline = new Point(this.transSeparatorToHeader.x + this.transHeaderToOutline.x, this.transSeparatorToHeader.y + this.transHeaderToOutline.y);
 		
-		this.filmUnitWidth = this.transSeparatorToHeader.x + this.transHeaderToOutline.x + this.transOutlineToFrame.x + this.transFrameToSeparator.x;
+		this.filmUnitWidth = this.transSeparatorToOutline.x + this.transOutlineToFrame.x + this.transFrameToSeparator.x;
 		
 		this.addMouseMotionListener(this);
 		this.addMouseListener(this);
@@ -177,6 +161,10 @@ import org.openide.DialogDescriptor;
 		ToolTipManager.sharedInstance().registerComponent(this);
 	}
 	
+	public void setBackground(Color color) {
+		this.backgroundColor = color;
+	}
+	
 
 	private class DGL extends DragSourceAdapter implements DragGestureListener {
 
@@ -184,10 +172,6 @@ import org.openide.DialogDescriptor;
 			Point dragOrigin = dge.getDragOrigin();
 			int col = SequenceEditingPanel.this.getColumnForPoint(dragOrigin);
 			int frame = SequenceEditingPanel.this.getFrameForColumn(col);
-//			int index = ResourceImageList.this.locationToIndex(dragOrigin);
-//			Tile payload = (Tile) ResourceImageList.this.getModel().getElementAt(index);
-//			ResourceImageList.this.hiliteTileAtPoint(dragOrigin);
-//			dge.startDrag(null, payload, this);
 		}
 		
 		public void dragDropEnd(DragSourceDropEvent dsde) {
@@ -201,9 +185,6 @@ import org.openide.DialogDescriptor;
 		}
 	
 	}
-	
-	
-	
 	
 	public void setSequenceContainer(SequenceContainer sequenceContainer) {
 		this.sequenceContainer = sequenceContainer;
@@ -308,7 +289,7 @@ import org.openide.DialogDescriptor;
 		if (DEBUG) System.out.println("getPreferredSize");
 		
 		int filmRollWidth = (this.filmUnitWidth * this.sequence.getFrameCount()) + this.transOutlineToSeparator.x + this.transSeparatorToOutline.x;
-		int filmRollHeight = BOUNDARY_MIN + this.separatorHeight + Math.abs(this.transSeparatorToHeader.y) + BOUNDARY_MIN*2;
+		int filmRollHeight = BOUNDARY_MIN + this.separatorHeight;
 
 		int prefWidth = 0;
 		int prefHeight = 0;
@@ -337,18 +318,20 @@ import org.openide.DialogDescriptor;
 	//Always repaints the whole sequence :(
 	public void paintComponent(Graphics graphics) {
 		Graphics2D g = (Graphics2D) graphics;
+		g.setColor(this.backgroundColor);
+		//g.fillRect(0, 0, this.getWidth(), this.getHeight());
+		g.setColor(COLOR_SEPARATOR);
+		g.drawLine(0, this.getHeight()-1, this.getWidth(), this.getHeight()-1);
+		
+		this.start = new Point (this.separatorWidth, (this.getHeight() - this.outlineHeight) /2);
 		Point current = new Point(this.start);
-		current.translate(0, this.transHeaderToOutline.y);
 		int col = 0;
 		for (int i = 0; i < this.sequence.getFrameCount(); i++) {
 			this.drawSeparator(g, col, current);
 			col++;
 			
-			current.translate(transSeparatorToHeader.x, transSeparatorToHeader.y);
-			this.drawFrameHeader(g, i, current);
-			
-			
-			current.translate(transHeaderToOutline.x, transHeaderToOutline.y);
+			current.translate(transSeparatorToOutline.x, transSeparatorToOutline.y);
+
 			this.drawOutline(g, i, current);
 			
 			current.translate(transOutlineToFrame.x, transOutlineToFrame.y);
@@ -358,30 +341,16 @@ import org.openide.DialogDescriptor;
 			
 			current.translate(transFrameToSeparator.x, transFrameToSeparator.y);
 		}
-		//col++;
 		this.drawSeparator(g, col, current);
 	}
-	
-	private void drawFrameHeader(Graphics2D g, int frameIndex, Point p) {
-		String txt = Integer.toString(frameIndex) + " : " + Integer.toString(this.sequence.getFrame(frameIndex).getIndex());
-		FontMetrics fm = g.getFontMetrics();
-		LineMetrics lm = fm.getLineMetrics(txt, g);
-
-		int w = (int) fm.getStringBounds(txt, g).getWidth();
 		
-		int asc = (int) lm.getAscent();
-		int desc = (int) lm.getDescent();
-		float lead = (int) lm.getLeading();
-		
-		
-		int txtOffX = (this.headerWidth - w) / 2;
-		int txtOffY = (this.headerHeight - desc + asc) / 2;
-		
-		g.setColor(Color.LIGHT_GRAY);
-		g.fill3DRect(p.x, p.y, this.headerWidth, this.headerHeight, true);
-		g.setColor(Color.BLACK);
-		g.drawString(txt, p.x + txtOffX, p.y + txtOffY);
-		
+	private void drawSeparator(Graphics2D g, int col, Point p) {
+		Color c = (this.hilitedColumn == col) ? new Color(255, 235, 140) : this.backgroundColor;
+		g.setColor(c);
+		g.fillRect(p.x, 0, this.separatorWidth, this.getHeight());
+		g.setColor(COLOR_SEPARATOR);
+		int x = p.x - this.separatorWidth / 2;
+		g.drawLine(x, 0, x, this.getHeight());
 	}
 	
 	private void drawOutline(Graphics2D g, int frameIndex, Point p) {
@@ -402,15 +371,6 @@ import org.openide.DialogDescriptor;
 		g.setColor(Color.GRAY);
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g.drawRoundRect(p.x, p.y, this.outlineWidth, this.outlineHeight, this.unitWidth, this.unitHeight);		
-	}
-	
-	private void drawSeparator(Graphics2D g, int col, Point p) {
-		Color c = (this.hilitedColumn == col) ? new Color(255, 235, 140) : Color.WHITE;
-		g.setColor(c);
-		g.fillRect(p.x, p.y, this.separatorWidth, this.separatorHeight);
-		g.setColor(COLOR_SEPARATOR);
-		int x = p.x + this.separatorWidth / 2;
-		g.drawLine(x, p.y, x, p.y + this.separatorHeight);
 	}
 	
 	private void drawFrame(Graphics2D g, StaticTile frame, Point p) {
@@ -607,12 +567,14 @@ import org.openide.DialogDescriptor;
 		JPopupMenu menu = new JPopupMenu();
 		
 		//common menu items
-		for (Iterator it = this.getCommonActions().iterator(); it.hasNext();) {
-			Action a = (Action) it.next();
-			menu.add(a);
+		if (this.sequenceContainer != null) {
+			for (Iterator it = this.sequenceContainer.getActionsForSequence(this.sequence).iterator(); it.hasNext();) {
+				Action a = (Action) it.next();
+				menu.add(a);
+			}
+
+			menu.addSeparator();
 		}
-		
-		menu.addSeparator();
 		
 		int col = this.getColumnForPoint(e.getPoint());
 		//menu for separator
@@ -631,94 +593,7 @@ import org.openide.DialogDescriptor;
 		}
 		menu.show(this, e.getX(), e.getY());
 	}
-	
-	//----------- Common actions
-	
-	private List<Action> getCommonActions() {
-		List<Action> commonActions = new ArrayList();
-		CreateSequenceAction csa = new CreateSequenceAction();
-		DuplicateSequenceAction dsa = new DuplicateSequenceAction();
-		DefaultSequenceAction defsa = new DefaultSequenceAction();
-		RemoveSequenceAction rsa = new RemoveSequenceAction();
-		if (this.sequenceContainer == null) {
-			csa.setEnabled(false);
-			dsa.setEnabled(false);
-			rsa.setEnabled(false);
-		}
-		//cannot remove default sequence
-		else if (this.sequenceContainer.getDefaultSequence() == this.sequence) {
-			rsa.setEnabled(false);
-			defsa.setEnabled(false);
-		}
 		
-		commonActions.add(csa);
-		commonActions.add(dsa);
-		commonActions.add(defsa);
-		commonActions.add(rsa);
-		commonActions.addAll(this.sequence.getActions());
-		//remove the "edit" action since this menu shows up in the editor :)
-		for (Iterator it = commonActions.iterator(); it.hasNext();) {
-			Action action = (Action) it.next();
-			if (action instanceof Sequence.EditSequenceAction) {
-				it.remove();
-			}
-		}
-		return commonActions;
-	}
-	
-	public class CreateSequenceAction extends AbstractAction {
-		{
-			this.putValue(NAME, "Create New Sequence");
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			NewSequenceDialog dialog = new NewSequenceDialog(SequenceEditingPanel.this.sequenceContainer);
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Sequence");
-			dd.setButtonListener(dialog);
-			dd.setValid(false);
-			dialog.setDialogDescriptor(dd);
-			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-			d.setVisible(true);
-		}
-	}
-
-	
-	public class DuplicateSequenceAction extends AbstractAction {
-		{
-			this.putValue(NAME, "Duplicate Sequence");
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			NewSequenceDialog dialog = new NewSequenceDialog(SequenceEditingPanel.this.sequenceContainer, SequenceEditingPanel.this.sequence);
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Duplicate Sequence");
-			dd.setButtonListener(dialog);
-			dd.setValid(false);
-			dialog.setDialogDescriptor(dd);
-			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-			d.setVisible(true);
-		}
-	}
-
-	public class DefaultSequenceAction extends AbstractAction {
-		{
-			this.putValue(NAME, "Default Sequence");
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			SequenceEditingPanel.this.sequenceContainer.setDefaultSequence(SequenceEditingPanel.this.sequence);
-		}
-	}
-	
-	public class RemoveSequenceAction extends AbstractAction {
-		{
-			this.putValue(NAME, "Remove Sequence");
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			SequenceEditingPanel.this.sequenceContainer.remove(SequenceEditingPanel.this.sequence);
-		}
-	}
-
 	//----------- Frame actions
 	private List getFrameActions(int col) {
 		ArrayList actions = new ArrayList();
@@ -986,6 +861,6 @@ import org.openide.DialogDescriptor;
 
 		public void frameModified(Sequence sequence, int index) {
 		}
-	}
-
+	}	
+	
 }

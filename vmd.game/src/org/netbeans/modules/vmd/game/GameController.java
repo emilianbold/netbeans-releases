@@ -71,6 +71,7 @@ import org.netbeans.modules.vmd.game.model.TiledLayer;
 import org.netbeans.modules.vmd.game.model.TiledLayerCD;
 import org.netbeans.modules.vmd.game.model.TiledLayerListener;
 import org.netbeans.modules.vmd.game.nbdialog.SelectImageForLayerDialog;
+import org.netbeans.modules.vmd.game.view.GameComponentOverviewPanel;
 import org.netbeans.modules.vmd.game.view.main.MainView;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -152,6 +153,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 						GameController.this.modelComponent(root);
 
 						GlobalRepository.getInstance().addGlobalRepositoryListener(GameController.this);
+						MainView.getInstance().requestEditing(new GameComponentOverviewPanel());
 					}
 				}
 			});

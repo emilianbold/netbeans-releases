@@ -26,6 +26,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.modules.vmd.game.dialog.NewSequenceDialog;
 import org.netbeans.modules.vmd.game.dialog.RenameAnimatedTileDialog;
@@ -134,6 +135,9 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 		return this.sequenceContainer.getSequenceAt(index);
 	}
 	
+    public List<Action> getActionsForSequence(Sequence sequence) {
+        return this.sequenceContainer.getActionsForSequence(sequence);
+    }
 	
 	public JComponent getEditor() {
 		return this.editor == null ? this.editor = new SequenceContainerEditor(this) : this.editor;

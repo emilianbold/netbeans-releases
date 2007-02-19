@@ -25,22 +25,29 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.Scrollable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.vmd.game.model.AnimatedTile;
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
+import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Sequence;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
 import org.netbeans.modules.vmd.game.model.SequenceContainerListener;
-import org.netbeans.modules.vmd.game.preview.SequencePreviewPanelSidebar;
+import org.netbeans.modules.vmd.game.model.StaticTile;
+import org.netbeans.modules.vmd.game.preview.SequencePreviewPanel;
+import org.netbeans.modules.vmd.game.view.main.MainView;
 
 /**
  *
@@ -77,8 +84,8 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 			Sequence oldSeq = (Sequence) evt.getOldValue();
 			Sequence newSeq = (Sequence) evt.getNewValue();
 			
-			SequencePreviewPanelSidebar previewOld = (SequencePreviewPanelSidebar) this.previewMap.get(oldSeq);
-			SequencePreviewPanelSidebar previewNew = (SequencePreviewPanelSidebar) this.previewMap.get(newSeq);
+			SequencePreviewPanel previewOld = (SequencePreviewPanel) this.previewMap.get(oldSeq);
+			SequencePreviewPanel previewNew = (SequencePreviewPanel) this.previewMap.get(newSeq);
 			
 			if (previewOld != null)
 				previewOld.setImportant(false);
@@ -128,7 +135,8 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 		JPanel p = new JPanel();
 		p.setBackground(Color.WHITE);
 		p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
-		SequencePreviewPanelSidebar preview = (SequencePreviewPanelSidebar) s.getPreview();
+		SequencePreviewPanel preview = (SequencePreviewPanel) s.getPreview();
+		preview.setSequenceContainer(this.sequenceContainer);
 		if (this.sequenceContainer.getDefaultSequence() == s) {
 			preview.setImportant(true);
 		}
@@ -149,15 +157,20 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 	private void initEditors() {
 		this.editorsPanel.setBackground(Color.WHITE);
 		this.editorsPanel.setLayout(new BoxLayout(this.editorsPanel, BoxLayout.Y_AXIS));
+		Color colorEven = new Color(250, 250, 250);
+		Color colorOdd = Color.WHITE;
+		int index = 0;
 		for (Sequence s : this.sequenceContainer.getSequences()) {
-			this.addEditorForSequence(s);
+			Color bg = (index++ % 2 == 0) ? colorEven : colorOdd;
+			this.addEditorForSequence(s, bg);
 		}
 	}
-	private void addEditorForSequence(Sequence s) {
+	private void addEditorForSequence(Sequence s, Color c) {
 		JPanel p = new JPanel();
-		p.setBackground(Color.WHITE);
+		p.setBackground(c);
 		p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
 		SequenceEditingPanel editor = (SequenceEditingPanel) s.getEditor();
+		editor.setBackground(c);
 		editor.addSequenceEditingPanelListener(this);
 		editor.setSequenceContainer(this.sequenceContainer);
 		p.add(editor);
@@ -198,12 +211,12 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 	
 	public void frameHilited(SequenceEditingPanel source, int frameIndex) {
 		//System.out.println("frameHilited " + frameIndex);
-		((SequencePreviewPanelSidebar) this.previewMap.get(source.getSequence())).requestPreviewFrame(frameIndex);
+		((SequencePreviewPanel) this.previewMap.get(source.getSequence())).requestPreviewFrame(frameIndex);
 	}
 	
 	public void hiliteLost(SequenceEditingPanel source) {
 		//System.out.println("hiliteLost");
-		((SequencePreviewPanelSidebar) this.previewMap.get(source.getSequence())).requestPreviewFrame(0);
+		((SequencePreviewPanel) this.previewMap.get(source.getSequence())).requestPreviewFrame(0);
 	}
 	
 	public void frameSelectionChange(SequenceEditingPanel source, int[] selectedFrameIdices) {
@@ -246,5 +259,50 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 		}
 		
 	}
+	
+	
+	public static void main(String[] args) {
+		URL imageURL = SequenceEditingPanel.class.getResource("../../view/main/res/color_tiles.png");
+		ImageResource imgRes = GlobalRepository.getInstance().getImageResource(imageURL, "Path", 20, 20);
+		
+		Sequence s1 = imgRes.createSequence("seq1", 5);
+		s1.setFrame((StaticTile) imgRes.getTile(1), 0);
+		s1.setFrame((StaticTile) imgRes.getTile(2), 1);
+		s1.setFrame((StaticTile) imgRes.getTile(3), 2);
+		
+		Sequence s2 = imgRes.createSequence("seq2", 5);
+		s2.setFrame((StaticTile) imgRes.getTile(1), 0);
+		s2.setFrame((StaticTile) imgRes.getTile(2), 1);
+		s2.setFrame((StaticTile) imgRes.getTile(3), 2);
+		
+		Sequence s3 = imgRes.createSequence("seq3", 3);
+		s3.setFrame((StaticTile) imgRes.getTile(4), 0);
+		s3.setFrame((StaticTile) imgRes.getTile(5), 1);
+		s3.setFrame((StaticTile) imgRes.getTile(6), 2);
+		
+		Sequence s4 = imgRes.createSequence("seq4", 3);
+		s4.setFrame((StaticTile) imgRes.getTile(2), 0);
+		s4.setFrame((StaticTile) imgRes.getTile(3), 1);
+		s4.setFrame((StaticTile) imgRes.getTile(4), 2);
+		
+		AnimatedTile at = imgRes.createAnimatedTile("AT1", s1);
+		at.append(s2);
+		at.append(s3);
+		at.append(s4);
+		
+		SequenceContainerEditor sep = new SequenceContainerEditor(at);
+		
+		JFrame frame = new JFrame("Test SequenceEditing Panel");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setSize(new Dimension(900, 600));
+		frame.getContentPane().setLayout(new BorderLayout());
+		frame.getContentPane().add(sep, BorderLayout.CENTER);
+		MainView.center(frame);
+		frame.setVisible(true);
+		frame.getContentPane().doLayout();
+		
+	}
+	
+	
 	
 }

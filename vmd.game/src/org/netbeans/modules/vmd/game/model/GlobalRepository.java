@@ -112,6 +112,11 @@ public class GlobalRepository implements PropertyChangeListener {
 		}
 		return imgResource;
 	}
+	
+	public Collection<ImageResource> getImageResources() {
+		return Collections.unmodifiableCollection(this.imgResourceMap.values());
+	}
+	
 	private void fireImageResourceAdded(ImageResource imgRes) {
 		Object[] listeners = listenerList.getListenerList();
 		for (int i = listeners.length - 2; i >= 0; i -= 2) {

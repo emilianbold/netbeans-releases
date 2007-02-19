@@ -29,10 +29,7 @@ import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.vmd.game.model.Sequence;
-import org.netbeans.modules.vmd.game.model.SequenceListener;
 
 /**
  *

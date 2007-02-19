@@ -37,7 +37,7 @@ import javax.swing.JComponent;
 import javax.swing.event.EventListenerList;
 import org.netbeans.modules.vmd.game.dialog.RenameSequenceDialog;
 import org.netbeans.modules.vmd.game.editor.sequece.SequenceEditingPanel;
-import org.netbeans.modules.vmd.game.preview.SequencePreviewPanelSidebar;
+import org.netbeans.modules.vmd.game.preview.SequencePreviewPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -260,7 +260,7 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
     }
 	
 	public JComponent getPreview() {
-		return new SequencePreviewPanelSidebar(this);
+		return new SequencePreviewPanel(this);
 	}
 
 

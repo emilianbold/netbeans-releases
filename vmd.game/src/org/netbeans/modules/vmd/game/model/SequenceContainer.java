@@ -19,15 +19,22 @@
 
 package org.netbeans.modules.vmd.game.model;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.event.EventListenerList;
+import org.netbeans.modules.vmd.game.dialog.NewSequenceDialog;
 import org.netbeans.modules.vmd.game.editor.sequece.SequenceContainerEditor;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 /**
  *
@@ -82,14 +89,16 @@ public interface SequenceContainer extends Editable {
 	public String getName();
 	
 	public int indexOf(Sequence sequence);
-
+	
+	public List<Action> getActionsForSequence(Sequence sequence);
+	
 	/**
 	 * Default implementation of SequenceContainer.
 	 */
 	public static class SequenceContainerImpl implements  SequenceContainer {
-	
+		
 		public static final boolean DEBUG = false;
-
+		
 		EventListenerList listenerList;
 		PropertyChangeSupport propertyChangeSupport;
 		
@@ -111,19 +120,19 @@ public interface SequenceContainer extends Editable {
 		public void addPropertyChangeListener(PropertyChangeListener l) {
 			propertyChangeSupport.addPropertyChangeListener(l);
 		}
-
+		
 		public void removePropertyChangeListener(PropertyChangeListener l) {
 			propertyChangeSupport.removePropertyChangeListener(l);
 		}
-
+		
 		public void addSequenceContainerListener(SequenceContainerListener listener) {
 			this.listenerList.add(SequenceContainerListener.class, listener);
 		}
-	
+		
 		public void removeSequenceContainerListener(SequenceContainerListener listener) {
 			this.listenerList.remove(SequenceContainerListener.class, listener);
 		}
-	
+		
 		protected void fireSequenceAdded(Sequence sequence, int index) {
 			Object[] listeners = listenerList.getListenerList();
 			for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -257,17 +266,104 @@ public interface SequenceContainer extends Editable {
 		public int getSequenceCount() {
 			return this.sequences.size();
 		}
-
+		
 		public JComponent getEditor() {
 			return this.editor == null ? this.editor = new SequenceContainerEditor(this) : this.editor;
 		}
-
+		
 		public ImageResource getImageResource() {
 			return this.imageResource;
 		}
-
+		
 		public JComponent getNavigator() {
 			return null;
+		}
+		
+		public List<Action> getActionsForSequence(Sequence sequence) {
+			List<Action> commonActions = new ArrayList();
+			
+			CreateSequenceAction csa = new CreateSequenceAction();
+			DuplicateSequenceAction dsa = new DuplicateSequenceAction(sequence);
+			DefaultSequenceAction defsa = new DefaultSequenceAction(sequence);
+			RemoveSequenceAction rsa = new RemoveSequenceAction(sequence);
+			//cannot remove default sequence
+			if (this.getDefaultSequence() == sequence) {
+				rsa.setEnabled(false);
+				defsa.setEnabled(false);
+			}
+			commonActions.add(csa);
+			commonActions.add(dsa);
+			commonActions.add(defsa);
+			commonActions.add(rsa);
+			commonActions.addAll(sequence.getActions());
+			//remove the "edit" action since this menu shows up in the editor :)
+			for (Iterator it = commonActions.iterator(); it.hasNext();) {
+				Action action = (Action) it.next();
+				if (action instanceof Sequence.EditSequenceAction) {
+					it.remove();
+				}
+			}
+			
+			return Collections.unmodifiableList(commonActions);
+		}
+		
+		public class CreateSequenceAction extends AbstractAction {
+			{
+				this.putValue(NAME, "Create New Sequence");
+			}
+			
+			public void actionPerformed(ActionEvent e) {
+				NewSequenceDialog dialog = new NewSequenceDialog(SequenceContainerImpl.this);
+				DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Sequence");
+				dd.setButtonListener(dialog);
+				dd.setValid(false);
+				dialog.setDialogDescriptor(dd);
+				Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+				d.setVisible(true);
+			}
+		}
+		
+		
+		public class DuplicateSequenceAction extends AbstractAction {
+			private Sequence sequence;
+			public DuplicateSequenceAction(Sequence sequence) {
+				this.sequence = sequence;
+				this.putValue(NAME, "Duplicate Sequence");
+			}
+			
+			public void actionPerformed(ActionEvent e) {
+				NewSequenceDialog dialog = new NewSequenceDialog(SequenceContainerImpl.this, this.sequence);
+				DialogDescriptor dd = new DialogDescriptor(dialog, "Duplicate Sequence");
+				dd.setButtonListener(dialog);
+				dd.setValid(false);
+				dialog.setDialogDescriptor(dd);
+				Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+				d.setVisible(true);
+			}
+		}
+		
+		public class DefaultSequenceAction extends AbstractAction {
+			private Sequence sequence;
+			public DefaultSequenceAction(Sequence sequence) {
+				this.sequence = sequence;
+				this.putValue(NAME, "Default Sequence");
+			}
+			
+			public void actionPerformed(ActionEvent e) {
+				SequenceContainerImpl.this.setDefaultSequence(this.sequence);
+			}
+		}
+		
+		public class RemoveSequenceAction extends AbstractAction {
+			private Sequence sequence;
+			public RemoveSequenceAction(Sequence sequence) {
+				this.sequence = sequence;
+				this.putValue(NAME, "Remove Sequence");
+			}
+			
+			public void actionPerformed(ActionEvent e) {
+				SequenceContainerImpl.this.remove(this.sequence);
+			}
 		}
 		
 	}

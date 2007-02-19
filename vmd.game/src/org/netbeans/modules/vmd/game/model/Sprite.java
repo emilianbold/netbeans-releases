@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.modules.vmd.game.dialog.NewSequenceDialog;
 import org.netbeans.modules.vmd.game.dialog.RenameSpriteDialog;
@@ -120,6 +121,10 @@ public class Sprite extends Layer implements SequenceContainer {
 	public Sequence getSequenceAt(int index) {
 		return this.sequenceContainer.getSequenceAt(index);
 	}
+	
+    public List<Action> getActionsForSequence(Sequence sequence) {
+        return this.sequenceContainer.getActionsForSequence(sequence);
+    }
 	
 	//------Editable-------
 	

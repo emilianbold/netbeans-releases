@@ -22,7 +22,6 @@ import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.ValidatorPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.game.integration.GameCodeSupport;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -60,6 +59,15 @@ public class SceneCD extends ComponentDescriptor {
             new ValidatorPresenter().addValidChildrenTypeID(SceneItemCD.TYPEID),
             // code
             GameCodeSupport.createSceneCodePresenter ()
+			
+//			new CodeNamePresenter() {
+//				public List<String> getReservedNames() {
+//					throw new UnsupportedOperationException("Not supported yet.");
+//				}
+//				public List<String> getReservedNamesFor(String suggestedMainName) {
+//					throw new UnsupportedOperationException("Not supported yet.");
+//				}			
+//			}
         );
     }
 
