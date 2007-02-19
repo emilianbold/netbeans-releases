@@ -126,14 +126,11 @@ public class GlobalRepository implements PropertyChangeListener {
 		}
 	}
 	
-	boolean addTiledLayer(TiledLayer layer) {
-		if (!this.addLayer(layer))
-			return false;
+	private void addTiledLayer(TiledLayer layer) {
 		this.tiledLayers.add(layer);
 		Collections.sort(this.tiledLayers, new Layer.NameComparator());
 		int index = this.tiledLayers.indexOf(layer);
 		this.fireTiledLayerAdded(layer, index);
-		return true;
 	}
 	
 	private void fireTiledLayerAdded(TiledLayer layer, int index) {
@@ -145,14 +142,11 @@ public class GlobalRepository implements PropertyChangeListener {
 		}
 	}
 
-	boolean addSprite(Sprite layer) {
-		if (!this.addLayer(layer))
-			return false;
+	private void addSprite(Sprite layer) {
 		this.sprites.add(layer);
 		Collections.sort(this.sprites, new Layer.NameComparator());
 		int index = this.sprites.indexOf(layer);
 		this.fireSpriteAdded(layer, index);
-		return true;
 	}
 	
 	private void fireSpriteAdded(Sprite layer, int index) {
@@ -164,15 +158,7 @@ public class GlobalRepository implements PropertyChangeListener {
 		}
 	}
 
-	private boolean addLayer(Layer layer) {
-		if (this.layers.containsKey(layer.getName()))
-			return false;
-		this.layers.put(layer.getName(), layer);
-		layer.addPropertyChangeListener(this);
-		return true;
-	}
-	
-	void removeTiledLayer(TiledLayer layer) {
+	private void removeTiledLayer(TiledLayer layer) {
 		this.removeLayerfromLayers(layer);
 		int index = this.tiledLayers.indexOf(layer);
 		this.tiledLayers.remove(layer);
@@ -188,7 +174,7 @@ public class GlobalRepository implements PropertyChangeListener {
 		}
 	}
 
-	void removeSprite(Sprite layer) {
+	private void removeSprite(Sprite layer) {
 		this.removeLayerfromLayers(layer);
 		int index = this.sprites.indexOf(layer);
 		this.sprites.remove(layer);
@@ -225,14 +211,11 @@ public class GlobalRepository implements PropertyChangeListener {
 	}
 
 
-	boolean addScene(Scene scene) {
-		if (this.getSceneByName(scene.getName()) != null)
-			return false;
+	private void addScene(Scene scene) {
 		this.scenes.add(scene);
 		Collections.sort(this.scenes, new Scene.NameComparator());
 		int index = this.scenes.indexOf(scene);
 		this.fireSceneAdded(scene, index);
-		return true;
 	}
 	
 	private void fireSceneAdded(Scene scene, int index) {
@@ -260,6 +243,19 @@ public class GlobalRepository implements PropertyChangeListener {
 		}
 	}
 	
+	public boolean isComponentNameAvailable(String name) {
+		if (this.getLayerByName(name) != null)
+			return false;
+		if (this.getSceneByName(name) != null) 
+			return false;
+		for (ImageResource imgRes : this.getImageResources()) {
+			if (imgRes.getSequenceByName(name) != null)
+				return false;
+			if (imgRes.getAnimatedTileByName(name) != null)
+				return false;
+		}
+		return true;
+	}
 	
 	public Scene getSceneByName(String name) {
 		for (Iterator iter = this.scenes.iterator(); iter.hasNext();) {
@@ -296,57 +292,66 @@ public class GlobalRepository implements PropertyChangeListener {
 	}
 
 	public Scene createScene(String name) {
+		if (!this.isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("Scene cannot be created because component name '" + name + "' already exists.");
+		}
 		Scene scene = new Scene(name);
-		if (!this.addScene(scene))
-			throw new IllegalArgumentException("Scene " + name + " already exists.");
+		this.addScene(scene);
 		return scene;
 	}
 	
 	public Scene createScene(String name, Scene original) {
+		if (!this.isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("Scene cannot be created because component name '" + name + "' already exists.");
+		}
 		Scene scene = new Scene(name, original);
-		if (!this.addScene(scene))
-			throw new IllegalArgumentException("Scene " + name + " already exists.");
+		this.addScene(scene);
 		return scene;
 	}
 	
 	public TiledLayer createTiledLayer(String name, ImageResource imageResource, int rows, int columns) {
-		TiledLayer layer = new TiledLayer(name, imageResource, rows, columns);
-		if (!this.addTiledLayer(layer)) {
-			throw new IllegalArgumentException("ERR: Layer " + name + " already exists!");
+		if (!this.isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("Scene cannot be created because component name '" + name + "' already exists.");
 		}
+		TiledLayer layer = new TiledLayer(name, imageResource, rows, columns);
+		this.addTiledLayer(layer);
 		return layer;
 	}
 
 	public TiledLayer createTiledLayer(String name, ImageResource imageResource, int[][] grid) {
+		if (!this.isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("TiledLayer cannot be created because component name '" + name + "' already exists.");
+		}		
 		TiledLayer layer = new TiledLayer(name, imageResource, grid);
-		if (!this.addTiledLayer(layer)) {
-			throw new IllegalArgumentException("ERR: Layer " + name + " already exists!");
-		}
+		this.addTiledLayer(layer);
 		return layer;
 	}
 
 	public TiledLayer duplicateTiledLayer(String name, TiledLayer original) {
-		TiledLayer layer = new TiledLayer(name, original);
-		if (!this.addTiledLayer(layer)) {
-			throw new IllegalArgumentException("ERR: Layer " + name + " already exists!");
+		if (!this.isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("TiledLayer cannot be created because component name '" + name + "' already exists.");
 		}
+		TiledLayer layer = new TiledLayer(name, original);
+		this.addTiledLayer(layer);
 		return layer;
 	}
 	
 	public Sprite createSprite(String name, ImageResource imageResource, int numberFrames) {
 		assert (numberFrames >= 1);
-		Sprite sprite = new Sprite(name, imageResource, numberFrames);
-		if (!this.addSprite(sprite)) {
-			throw new IllegalArgumentException("ERR: Layer " + name + " already exists!");
+		if (!this.isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("Sprite cannot be created because component name '" + name + "' already exists.");
 		}
+		Sprite sprite = new Sprite(name, imageResource, numberFrames);
+		this.addSprite(sprite);
 		return sprite;
 	}
 	public Sprite createSprite(String name, ImageResource imageResource, Sequence defaultSequence) {
 		assert (defaultSequence != null);
-		Sprite sprite = new Sprite(name, imageResource, defaultSequence);
-		if (!this.addSprite(sprite)) {
-			throw new IllegalArgumentException("ERR: Layer " + name + " already exists!");
+		if (!this.isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("Sprite cannot be created because component name '" + name + "' already exists.");
 		}
+		Sprite sprite = new Sprite(name, imageResource, defaultSequence);
+		this.addSprite(sprite);
 		return sprite;
 	}
 	

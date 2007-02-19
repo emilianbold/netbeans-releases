@@ -56,9 +56,9 @@ public class NewSimpleTiledLayerDialog extends AbstractNameValidationDialog {
 		if (layerName.equals("")) {
 			return this.getInitialStateDescriptionText();
 		}
-		if (GlobalRepository.getInstance().getLayerByName(layerName) != null) {
-			errMsg = "Layer name already exists.";
-		}
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(layerName)) {
+			errMsg = "Component name already exists. Choose a different name.";
+		}		
 		return errMsg;
 	}
 

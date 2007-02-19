@@ -49,9 +49,9 @@ public class RenameSceneDialog extends AbstractNameValidationDialog {
 			return this.getInitialStateDescriptionText();
 		}
 		
-		if (GlobalRepository.getInstance().getLayerByName(name) != null) {
-			errMsg = "Scene name already exists.";
-		}
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			errMsg = "Component name already exists. Choose a different name.";
+		}		
 		return errMsg;
 	}
 	

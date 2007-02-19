@@ -101,8 +101,8 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         panelLayerInfo = new javax.swing.JPanel();
         labelLayerName = new javax.swing.JLabel();
         fieldLayerName = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
         spinnerFrames = new javax.swing.JSpinner();
+        jLabel1 = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
 
         labelImageFile.setText("Select image:");
@@ -118,7 +118,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
             .add(panelCustomizerLayout.createSequentialGroup()
                 .add(panelCustomizerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(labelImageFile)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE))
                 .addContainerGap())
         );
         panelCustomizerLayout.setVerticalGroup(
@@ -126,7 +126,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
             .add(panelCustomizerLayout.createSequentialGroup()
                 .add(labelImageFile)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE))
         );
 
         labelImagePreview.setText("Adjust tile size in pixels:");
@@ -156,8 +156,8 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
                         .addContainerGap(116, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPreviewLayout.createSequentialGroup()
                         .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, sliderWidth, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
-                            .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, sliderWidth, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
+                            .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(sliderHeight, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
         );
@@ -166,12 +166,12 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPreviewLayout.createSequentialGroup()
                 .add(labelImagePreview)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(sliderHeight, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE))
+                    .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sliderWidth, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 24, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(labelTileHeight)
                     .add(labelTileWidth, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
@@ -202,30 +202,26 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         panelLayerInfoLayout.setHorizontalGroup(
             panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelLayerInfoLayout.createSequentialGroup()
-                .add(panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(panelLayerInfoLayout.createSequentialGroup()
-                        .add(labelLayerName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(42, 42, 42))
-                    .add(panelLayerInfoLayout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .add(panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(panelLayerInfoLayout.createSequentialGroup()
-                        .add(spinnerFrames, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(481, Short.MAX_VALUE))
-                    .add(fieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE)))
+                    .add(labelLayerName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1))
+                .add(22, 22, 22)
+                .add(panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(spinnerFrames, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(fieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE))
+                .addContainerGap())
         );
         panelLayerInfoLayout.setVerticalGroup(
             panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, panelLayerInfoLayout.createSequentialGroup()
+            .add(panelLayerInfoLayout.createSequentialGroup()
                 .addContainerGap(20, Short.MAX_VALUE)
                 .add(panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(labelLayerName)
-                    .add(fieldLayerName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(fieldLayerName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(labelLayerName))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(spinnerFrames, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(spinnerFrames, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1))
                 .addContainerGap())
         );
 
@@ -235,18 +231,18 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, panelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, panelLayerInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 676, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(panelLayerInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 676, Short.MAX_VALUE)
+                    .add(panelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(panelCustomizer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(panelPreview, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(panelPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -257,7 +253,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 13, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, panelCustomizer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, panelPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -440,9 +436,9 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		if (layerName.equals("")) {
 			errMsg = "Enter layer name.";
 		} 
-		else if (GlobalRepository.getInstance().getLayerByName(layerName) != null) {
-			errMsg = "Layer already exists. Choose a different name.";
-		}
+		else if (!GlobalRepository.getInstance().isComponentNameAvailable(layerName)) {
+			errMsg = "Component name already exists. Choose a different name.";
+		}		
 		else if (!isValidJavaIdentifier(layerName)) {
 			errMsg = illegalIdentifierName;
 		}

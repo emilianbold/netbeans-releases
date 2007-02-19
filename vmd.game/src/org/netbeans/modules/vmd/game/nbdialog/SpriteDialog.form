@@ -17,18 +17,18 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="panelError" alignment="0" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="panelLayerInfo" alignment="0" max="32767" attributes="2"/>
                   <Component id="jSeparator1" alignment="0" pref="676" max="32767" attributes="2"/>
+                  <Component id="panelError" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="panelCustomizer" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="jSeparator2" min="-2" pref="2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="panelPreview" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="panelPreview" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -43,13 +43,13 @@
               <Component id="jSeparator1" min="-2" pref="13" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jSeparator2" pref="293" max="32767" attributes="0"/>
+                  <Component id="jSeparator2" pref="265" max="32767" attributes="0"/>
                   <Component id="panelCustomizer" alignment="0" max="32767" attributes="2"/>
                   <Component id="panelPreview" alignment="0" max="32767" attributes="2"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="panelError" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -63,7 +63,7 @@
               <Group type="102" attributes="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="labelImageFile" min="-2" max="-2" attributes="0"/>
-                      <Component id="jScrollPane1" alignment="0" pref="253" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" alignment="0" pref="284" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -74,7 +74,7 @@
               <Group type="102" attributes="0">
                   <Component id="labelImageFile" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" pref="269" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" pref="244" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -118,8 +118,8 @@
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="sliderWidth" alignment="0" pref="319" max="32767" attributes="1"/>
-                              <Component id="panelImage" alignment="1" pref="319" max="32767" attributes="2"/>
+                              <Component id="sliderWidth" alignment="0" pref="332" max="32767" attributes="1"/>
+                              <Component id="panelImage" alignment="1" pref="332" max="32767" attributes="2"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="sliderHeight" min="-2" max="-2" attributes="0"/>
@@ -133,13 +133,13 @@
               <Group type="102" alignment="1" attributes="0">
                   <Component id="labelImagePreview" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="sliderHeight" max="32767" attributes="1"/>
-                      <Component id="panelImage" alignment="0" pref="191" max="32767" attributes="1"/>
+                      <Component id="panelImage" alignment="0" pref="200" max="32767" attributes="2"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Component id="sliderWidth" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="24" max="32767" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="labelTileHeight" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="labelTileWidth" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
@@ -224,38 +224,31 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Group type="103" groupAlignment="1" attributes="0">
-                      <Group type="102" alignment="1" attributes="0">
-                          <Component id="labelLayerName" min="-2" pref="86" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="1" attributes="0">
-                          <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
-                          <Component id="spinnerFrames" min="-2" pref="67" max="-2" attributes="0"/>
-                          <EmptySpace pref="481" max="32767" attributes="0"/>
-                      </Group>
-                      <Component id="fieldLayerName" pref="548" max="32767" attributes="0"/>
+                      <Component id="labelLayerName" min="-2" pref="86" max="-2" attributes="0"/>
+                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="spinnerFrames" alignment="0" min="-2" pref="67" max="-2" attributes="0"/>
+                      <Component id="fieldLayerName" alignment="0" pref="526" max="32767" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="1" attributes="0">
+              <Group type="102" attributes="0">
                   <EmptySpace pref="20" max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="labelLayerName" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="fieldLayerName" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="labelLayerName" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="spinnerFrames" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -273,12 +266,12 @@
         </Component>
         <Component class="javax.swing.JTextField" name="fieldLayerName">
         </Component>
+        <Component class="javax.swing.JSpinner" name="spinnerFrames">
+        </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">
           <Properties>
             <Property name="text" type="java.lang.String" value="Number of frames:"/>
           </Properties>
-        </Component>
-        <Component class="javax.swing.JSpinner" name="spinnerFrames">
         </Component>
       </SubComponents>
     </Container>

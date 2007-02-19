@@ -47,9 +47,9 @@ public class RenameTiledLayerDialog extends AbstractNameValidationDialog {
 			return this.getInitialStateDescriptionText();
 		}
 		
-		if (GlobalRepository.getInstance().getLayerByName(name) != null) {
-			errMsg = "Tiled layer name already exists.";
-		}
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			errMsg = "Component name already exists. Choose a different name.";
+		}		
 		return errMsg;
 	}
 	

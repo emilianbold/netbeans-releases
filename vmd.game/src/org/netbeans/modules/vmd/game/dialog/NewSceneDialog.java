@@ -48,9 +48,9 @@ public class NewSceneDialog extends AbstractNameValidationDialog {
 		if (sceneName == null || "".equals(sceneName)) {
 			return this.getInitialStateDescriptionText();
 		}
-		if (GlobalRepository.getInstance().getSceneByName(sceneName) != null) {
-			return "Scene name already exists.";
-		}
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(sceneName)) {
+			return "Component name already exists. Choose a different name.";
+		}		
 		return null;
 	}
 	
