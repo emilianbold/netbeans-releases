@@ -189,10 +189,10 @@ public class SyntaxElement {
     
     
     public static class Tag extends org.netbeans.editor.ext.html.parser.SyntaxElement.Named {
-        Collection attribs;
+        private Collection<TagAttribute> attribs;
         private boolean empty = false;
         
-        public Tag( SyntaxParser parser, int from, int to, String name, Collection attribs) {
+        public Tag( SyntaxParser parser, int from, int to, String name, Collection<TagAttribute> attribs) {
             this(parser, from, to, name, attribs, false);
         }
         
@@ -206,7 +206,7 @@ public class SyntaxElement {
             return empty;
         }
         
-        public Collection getAttributes() {
+        public Collection<TagAttribute> getAttributes() {
             return attribs;
         }
         
@@ -226,4 +226,58 @@ public class SyntaxElement {
         }
     }
     
+    public static class TagAttribute {
+        
+        private String name, value;
+        private int nameOffset, valueOffset;
+        
+        TagAttribute(String name, String value, int nameOffset, int valueOffset) {
+            this.name = name;
+            this.value = value;
+            this.nameOffset = nameOffset;
+            this.valueOffset = valueOffset;
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        void setName(String name) {
+            this.name = name;
+        }
+        
+        public String getValue() {
+            return value;
+        }
+        
+        void setValue(String value) {
+            this.value = value;
+        }
+        
+        public int getNameOffset() {
+            return nameOffset;
+        }
+        
+        void setNameOffset(int ofs) {
+            this.nameOffset = ofs;
+        }
+        
+        public int getValueOffset() {
+            return valueOffset;
+        }
+        
+        void setValueOffset(int ofs) {
+            this.valueOffset = ofs;
+        }
+        
+        
+        //backward compatibility
+        public boolean equals(Object o) {
+            if (!(o instanceof TagAttribute)) {
+                return false;
+            } else {
+                return getName().equals(((TagAttribute)o).getName());
+            }
+        }
+    }
 }

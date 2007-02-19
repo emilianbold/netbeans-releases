@@ -264,7 +264,7 @@ public class HTMLCompletionQuery implements CompletionQuery {
                     String prefix = (id == HTMLTokenId.ARGUMENT) ? preText : "";
                     len = prefix.length();
                     List possible = tag.getAttributeList( prefix ); // All attribs of given tag
-                    Collection existing = tagElem.getAttributes(); // Attribs already used
+                    Collection<SyntaxElement.TagAttribute> existing = tagElem.getAttributes(); // Attribs already used
                     
                     String wordAtCursor = (item == null) ? null : item.text().toString();
                     // #BUGFIX 25261 because of being at the end of document the

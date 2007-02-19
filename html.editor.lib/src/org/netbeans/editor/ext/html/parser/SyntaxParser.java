@@ -422,36 +422,44 @@ public final class SyntaxParser {
                 }
             }
             if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN ||
-                    (item.id() ==
-                    org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL &&
+                    (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL &&
                     !item.text().toString().equals("</"))) {
                 java.lang.String name = item.text().toString();
-                java.util.ArrayList attrs = new java.util.ArrayList();
+                ArrayList<SyntaxElement.TagAttribute> attrs = new ArrayList<SyntaxElement.TagAttribute>();
                 
-                if (item.id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL) {
+                if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL) {
                     ts.moveNext();
                     name = ts.token().text().toString();
                 }
                 ts.moveNext();
                 item = ts.token();
+                
+                //find tag attributes
+                Token attrNameToken = null;
                 do {
                     item = ts.token();
-                    if (item.id() ==
-                            org.netbeans.api.html.lexer.HTMLTokenId.ARGUMENT)
-                        attrs.add(item.text().toString());
+                    if (item.id() == HTMLTokenId.ARGUMENT) {
+                        //attribute name
+                        attrNameToken = item;
+                    } else if (item.id() == HTMLTokenId.VALUE && attrNameToken != null) {
+                        //found attribute value after attribute name
+                        SyntaxElement.TagAttribute tagAttr = 
+                                new SyntaxElement.TagAttribute(attrNameToken.text().toString(),
+                                item.text().toString(),
+                                attrNameToken.offset(hi),
+                                item.offset(hi));
+                        attrs.add(tagAttr);
+                        attrNameToken = null;
+                    }
                     lastOffset = getTokenEnd(hi, item);
                 } while ((item.id() == org.netbeans.api.html.lexer.HTMLTokenId.WS ||
-                        item.id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.ARGUMENT ||
-                        item.id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.OPERATOR ||
+                        item.id() == org.netbeans.api.html.lexer.HTMLTokenId.ARGUMENT ||
+                        item.id() == org.netbeans.api.html.lexer.HTMLTokenId.OPERATOR ||
                         item.id() == org.netbeans.api.html.lexer.HTMLTokenId.VALUE ||
-                        item.id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.CHARACTER) &&
+                        item.id() == org.netbeans.api.html.lexer.HTMLTokenId.CHARACTER) &&
                         ts.moveNext());
-                if (item.id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE_SYMBOL) {
+                
+                if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE_SYMBOL) {
                     return new org.netbeans.editor.ext.html.parser.SyntaxElement.Tag(this,
                             offset,
                             getTokenEnd(hi,

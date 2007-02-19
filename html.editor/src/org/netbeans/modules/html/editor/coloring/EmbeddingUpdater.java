@@ -42,13 +42,14 @@ import org.netbeans.editor.ext.html.parser.SyntaxParserListener;
 public class EmbeddingUpdater implements SyntaxParserListener {
     
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
+    private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
     
     private static final String HTML_SCRIPT_TAG_NAME = "script"; //NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(EmbeddingUpdater.class.getName());
     
     private final Document doc;
-
+    
     private int scriptStart;
     
     public EmbeddingUpdater(Document doc) {
@@ -66,68 +67,81 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         }
     }
     
-    private void startTag(SyntaxElement.Named sel) {
+    private void startTag(SyntaxElement.Tag sel) {
+        //script tag content embedding
         if(HTML_SCRIPT_TAG_NAME.equals(sel.getName())) {
             scriptStart = sel.getElementOffset() + sel.getElementLength();
+        }
+        //various attributes values embedding
+        for(SyntaxElement.TagAttribute tagattr : sel.getAttributes()) {
+            if("style".equalsIgnoreCase(tagattr.getName())) { //NOI18N
+                //XXX we need to look for it just in certain html tags
+                createEmbedding(CSS_MIMETYPE, tagattr);
+            } else if(tagattr.getName().startsWith("on") || tagattr.getName().startsWith("ON")) {
+                //XXX very simple algorithm for finding "onclick" like attributes
+                //should be restricted according to the html specification
+                createEmbedding(JAVASCRIPT_MIMETYPE, tagattr);
+            }
         }
     }
     
     private void endTag(SyntaxElement.Named sel) {
         if(HTML_SCRIPT_TAG_NAME.equals(sel.getName())) {
             if(scriptStart != -1) {
-                createJavaScriptEmbedding(scriptStart, sel.getElementOffset() - 1);
+                createEmbedding(JAVASCRIPT_MIMETYPE, scriptStart, sel.getElementOffset() - 1);
             }
         }
     }
+
+    private void createEmbedding(String mimeType, SyntaxElement.TagAttribute tagAttr) {
+        if(tagAttr.getValue().charAt(0) == '\'' || tagAttr.getValue().charAt(0) == '"') {
+            //cut off the qutation marks
+            createEmbedding(mimeType, tagAttr.getValueOffset() + 1, tagAttr.getValueOffset() + tagAttr.getValue().length() - 1);
+        } else {
+            createEmbedding(mimeType, tagAttr.getValueOffset(), tagAttr.getValueOffset() + tagAttr.getValue().length());
+        }
+    }
     
-    private void createJavaScriptEmbedding(final int startOffset, final int endOffset) {
+    private void createEmbedding(String mimeType, final int startOffset, final int endOffset) {
+        Language lang = Language.find(mimeType);
+        if(lang == null) {
+            LOGGER.log(Level.WARNING, "No " + mimeType + " language found! (" + startOffset + " - " + endOffset + ")");
+            return ; //no language found
+        }
+        
         ((BaseDocument)doc).readLock();
         try {
             TokenHierarchy th = TokenHierarchy.get(doc);
             TokenSequence ts = tokenSequence(th, scriptStart);
             
-            int diff = ts.move(startOffset);
-            if(diff == Integer.MAX_VALUE) return; //no token found
-            
-            ts.moveNext();
-            Language lang = Language.find(JAVASCRIPT_MIMETYPE);
-            if(lang == null) {
-                LOGGER.log(Level.WARNING, "No " + JAVASCRIPT_MIMETYPE + " language found!");
-                return ; //no javascript language found
+            ts.move(startOffset);
+            if(!ts.moveNext()) {
+                return ; //no token
             }
             
             do {
                 Token item = ts.token();
                 if(!ts.createEmbedding(lang, 0, 0)) {
-                    LOGGER.log(Level.WARNING, "Cannot create embedding for " + JAVASCRIPT_MIMETYPE + ".");
+                    LOGGER.log(Level.WARNING, "Cannot create embedding for " + mimeType + ".");
                 } else {
-                    LOGGER.log(Level.INFO, "Embedding for " + JAVASCRIPT_MIMETYPE + " created [" + startOffset + " - "  + endOffset + "].");
+                    LOGGER.log(Level.INFO, "Embedding for " + mimeType + " created [" + startOffset + " - "  + endOffset + "].");
                 }
-                
-                //                        System.out.println("embedding of the script content token:");
-                //                        TokenSequence ts2 = ts.embedded();
-                //                        if(ts2 != null) {
-                //                            System.out.println(ts2.toString().substring(1));
-                //                        } else {
-                //                            System.out.println("NO embedding in script content token");
-                //                        }
-                
             } while(ts.moveNext() && ts.offset() <= endOffset);
         }finally {
             ((BaseDocument)doc).readUnlock();
         }
     }
     
+    
     private static TokenSequence tokenSequence(TokenHierarchy hi, int offset) {
         TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
         if(ts == null) {
             //HTML language is not top level one
             ts = hi.tokenSequence();
-            int diff = ts.move(offset);
-            if(diff == Integer.MAX_VALUE) {
+            ts.move(offset);
+            if(!ts.moveNext()) {
                 return null; //no token found
             } else {
-                ts.moveNext();
                 ts = ts.embedded(HTMLTokenId.language());
             }
         }
