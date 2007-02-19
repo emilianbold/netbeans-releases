@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.bpel.refactoring;
@@ -63,6 +63,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import static org.netbeans.modules.print.api.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -114,8 +115,8 @@ final class Renamer {
     Component component,
     FileRenameRequest request) throws IOException
   {
-//Log.out();
-//Log.out("FILE RENAME: " + Util.getName(component));
+//out();
+//out("FILE RENAME: " + Util.getName(component));
     if ( !(component instanceof Import)) {
       return;
     }
@@ -129,10 +130,10 @@ final class Renamer {
   }
 
   private void renameComponent(Component component,Named target) throws IOException{
-//Log.out();
-//Log.out("RENAME: " + Util.getName(target));
-//Log.out("    in: " + Util.getName(component));
-//Log.out();
+//out();
+//out("RENAME: " + Util.getName(target));
+//out("    in: " + Util.getName(component));
+//out();
     if (component instanceof PartReference &&
       ((PartReference) component).getPart() != null &&
       component instanceof ReferenceCollection &&
@@ -221,9 +222,9 @@ final class Renamer {
       rename((ContentElement) component);
     }
     else {
-//Log.out();
-//Log.out("!!! RENAME IN !!! : " + component.getClass().getName());
-//Log.out();
+//out();
+//out("!!! RENAME IN !!! : " + component.getClass().getName());
+//out();
       return;
     }
   }
@@ -259,9 +260,9 @@ final class Renamer {
 
   private void rename(ContentElement element) throws IOException {
     String content = myXPath.rename(element.getContent(), (BpelEntity) element);
-//Log.out();
-//Log.out("New content: " + content);
-//Log.out();
+//out();
+//out("New content: " + content);
+//out();
     try {
       element.setContent(content);
     }
@@ -343,8 +344,8 @@ final class Renamer {
     Named target) throws IOException
   {
     if (target instanceof CorrelationProperty) {
-//Log.out();
-//Log.out("RENAME");
+//out();
+//out("RENAME");
       List<WSDLReference<CorrelationProperty>> references =
         correlationSet.getProperties();
 
@@ -357,10 +358,10 @@ final class Renamer {
       for (WSDLReference<CorrelationProperty> reference : references) {
         if (reference.get() != null) {
           list.add(reference);
-//Log.out("  see: " + reference.get());
+//out("  see: " + reference.get());
         }
         else {
-//Log.out("  add");
+//out("  add");
           list.add(correlationSet.createWSDLReference(
             (CorrelationProperty) target, CorrelationProperty.class));
         }
@@ -375,10 +376,10 @@ final class Renamer {
   }
 
   private void rename(Variable variable, Named target) {
-//Log.out();
-//Log.out("RENAME: " + Util.getName(target));
-//Log.out("    in: " + Util.getName(variable));
-//Log.out();
+//out();
+//out("RENAME: " + Util.getName(target));
+//out("    in: " + Util.getName(variable));
+//out();
     if (target instanceof GlobalElement) {
       variable.setElement(
         variable.createSchemaReference((GlobalElement) target, GlobalElement.class));
@@ -438,8 +439,8 @@ final class Renamer {
     return new QName(qName.getNamespaceURI(), target.getName(), qName.getPrefix());
   }
 
-  // --------------------------------------------------------
-  private static class StringAttribute implements Attribute {
+  // --------------------------------------------------------------
+  private static final class StringAttribute implements Attribute {
     
     public StringAttribute(String name) {
       myName = name;

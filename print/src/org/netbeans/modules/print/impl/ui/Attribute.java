@@ -50,14 +50,14 @@ import org.openide.DialogDescriptor;
 import org.openide.text.PrintSettings;
 import org.openide.util.HelpCtx;
 
-import org.netbeans.modules.print.api.PrintUtil.Dialog;
+import org.netbeans.modules.print.api.PrintUI;
 import org.netbeans.modules.print.impl.util.Util;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.02.14
  */
-final class Attribute extends Dialog
+final class Attribute extends PrintUI
   implements FocusListener, Pattern.Listener, Percent.Listener
 {
   Attribute(Preview preview, Option option, boolean isText) {
@@ -83,7 +83,7 @@ final class Attribute extends Dialog
   {
     myDescriptor = new DialogDescriptor(
       getPanel(),
-      getMessage("LBL_Options"), // NOI18N
+      i18n("LBL_Options"), // NOI18N
       true,
       getButtons(),
       DialogDescriptor.OK_OPTION,
@@ -94,12 +94,12 @@ final class Attribute extends Dialog
           if (DialogDescriptor.OK_OPTION == event.getSource()) {
             if (updatePreview()) {
               myDescriptor.setClosingOptions(
-                new Object[] { DialogDescriptor.OK_OPTION,
+                new Object [] { DialogDescriptor.OK_OPTION,
                   DialogDescriptor.CANCEL_OPTION });
             }
             else {
               myDescriptor.setClosingOptions(
-                new Object[] { DialogDescriptor.CANCEL_OPTION });
+                new Object [] { DialogDescriptor.CANCEL_OPTION });
             }
           }
         }
@@ -112,15 +112,15 @@ final class Attribute extends Dialog
 
   public void invalidValue(String value) {
 //out("INVALID value: " + value);
-    printError("ERR_Zoom_Value_Is_Invalid"); // NOI18N
+    printError(i18n("ERR_Zoom_Value_Is_Invalid")); // NOI18N
   }
 
-  private Object[] getButtons() {
-    return new Object[] {
+  private Object [] getButtons() {
+    return new Object [] {
       DialogDescriptor.OK_OPTION,
       createButton(
-        "TLT_Apply", // NOI18N
-        new AbstractAction(getMessage("LBL_Apply")) { // NOI18N
+        i18n("TLT_Apply"), // NOI18N
+        new AbstractAction(i18n("LBL_Apply")) { // NOI18N
           public void actionPerformed(ActionEvent event) {
             updatePreview();
           }
@@ -188,19 +188,19 @@ final class Attribute extends Dialog
 
   private boolean checkValue(int zoomWidth, int zoomHeight) {
     if (myHeaderFontValue.getSize() > MAX_HEADER_SIZE) {
-      printError("ERR_Header_Size_Is_Too_Big"); // NOI18N
+      printError(i18n("ERR_Header_Size_Is_Too_Big")); // NOI18N
       return false;
     }
     if (myFooterFontValue.getSize() > MAX_FOOTER_SIZE) {
-      printError("ERR_Footer_Size_Is_Too_Big"); // NOI18N
+      printError(i18n("ERR_Footer_Size_Is_Too_Big")); // NOI18N
       return false;
     }
     if (zoomWidth <= 0 || zoomHeight <= 0) {
-      printError("ERR_Page_Number_Is_Invalid"); // NOI18N
+      printError(i18n("ERR_Page_Number_Is_Invalid")); // NOI18N
       return false;
     }
     if (zoomWidth > MAX_PAGE_NUBER || zoomHeight > MAX_PAGE_NUBER) {
-      printError("ERR_Page_Number_Is_Too_Big"); // NOI18N
+      printError(i18n("ERR_Page_Number_Is_Too_Big")); // NOI18N
       return false;
     }
     return true;
@@ -217,19 +217,19 @@ final class Attribute extends Dialog
     c.gridx = 0;
 
     // border
-    panel.add(getSeparator("LBL_Print_Options"), c); // NOI18N
+    panel.add(createSeparator(i18n("LBL_Print_Options")), c); // NOI18N
     panel.add(getBorderPanel(), c);
 
     // header & footer
-    panel.add(getSeparator("LBL_Header_Footer"), c); // NOI18N
+    panel.add(createSeparator(i18n("LBL_Header_Footer")), c); // NOI18N
     panel.add(getTitlePanel(), c);
 
     // text
-    panel.add(getSeparator("LBL_Text"), c); // NOI18N
+    panel.add(createSeparator(i18n("LBL_Text")), c); // NOI18N
     panel.add(getTextPanel(), c);
 
     // zoom
-    panel.add(getSeparator("LBL_Zoom"), c); // NOI18N
+    panel.add(createSeparator(i18n("LBL_Zoom")), c); // NOI18N
     panel.add(getZoomPanel(), c);
 
     updateControl();
@@ -244,8 +244,8 @@ final class Attribute extends Dialog
 
     // border
     myBorder = createCheckBox(
-      "LBL_Print_Border", // NOI18N
-      new AbstractAction(getMessage("LBL_Print_Border")) { // NOI18N
+      i18n("LBL_Print_Border"), // NOI18N
+      new AbstractAction(i18n("LBL_Print_Border")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myBorderColor.setEnabled(myBorder.isSelected());
         }
@@ -257,8 +257,8 @@ final class Attribute extends Dialog
     c.weightx = 1.0;
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
     myBorderColor = createButton(
-      "TLT_Border_Color", // NOI18N
-      new AbstractAction(null, Util.getIcon("color")) { // NOI18N
+      i18n("TLT_Border_Color"), // NOI18N
+      new AbstractAction(null, icon(Util.class, "color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           borderColor();
         }
@@ -269,8 +269,8 @@ final class Attribute extends Dialog
     // page setup
     c.anchor = GridBagConstraints.EAST;
     JButton button = createButton(
-      "TLT_Page_Setup", // NOI18N
-      new AbstractAction(getMessage("LBL_PageSetup")) { // NOI18N
+      i18n("TLT_Page_Setup"), // NOI18N
+      new AbstractAction(i18n("LBL_PageSetup")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           if (pageSetup()) {
             updatePreview();
@@ -317,13 +317,13 @@ final class Attribute extends Dialog
     panel.add(new JLabel(), c);
 
     // left
-    panel.add(createLabel("LBL_Left"), c); // NOI18N
+    panel.add(createLabel(i18n("LBL_Left")), c); // NOI18N
 
     // center
-    panel.add(createLabel("LBL_Center"), c); // NOI18N
+    panel.add(createLabel(i18n("LBL_Center")), c); // NOI18N
 
     // right
-    panel.add(createLabel("LBL_Right"), c); // NOI18N
+    panel.add(createLabel(i18n("LBL_Right")), c); // NOI18N
   }
 
   private void setHeaderPanel(JPanel panel, GridBagConstraints c) {
@@ -332,8 +332,8 @@ final class Attribute extends Dialog
     c.insets = new Insets(0, 0, 0, 0);
     c.anchor = GridBagConstraints.WEST;
     myHeader = createCheckBox(
-      "LBL_Print_Header", // NOI18N
-      new AbstractAction(getMessage("LBL_Print_Header")) { // NOI18N
+      i18n("LBL_Print_Header"), // NOI18N
+      new AbstractAction(i18n("LBL_Print_Header")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           boolean enabled = myHeader.isSelected();
           myHeaderLeft.setEnabled(enabled);
@@ -368,8 +368,8 @@ final class Attribute extends Dialog
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
     myHeaderColor = createButton(
-      "TLT_Header_Color", // NOI18N
-      new AbstractAction(null, Util.getIcon("color")) { // NOI18N
+      i18n("TLT_Header_Color"), // NOI18N
+      new AbstractAction(null, icon(Util.class, "color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           headerColor();
         }
@@ -379,8 +379,8 @@ final class Attribute extends Dialog
 
     // header font
     myHeaderFont = createButton(
-      "TLT_Header_Font", // NOI18N
-      new AbstractAction(null, Util.getIcon("font")) { // NOI18N
+      i18n("TLT_Header_Font"), // NOI18N
+      new AbstractAction(null, icon(Util.class, "font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           headerFont();
         }
@@ -395,8 +395,8 @@ final class Attribute extends Dialog
     c.insets = new Insets(0, 0, 0, 0);
     c.anchor = GridBagConstraints.WEST;
     myFooter = createCheckBox(
-      "LBL_Print_Footer", // NOI18N
-      new AbstractAction(getMessage("LBL_Print_Footer")) { // NOI18N
+      i18n("LBL_Print_Footer"), // NOI18N
+      new AbstractAction(i18n("LBL_Print_Footer")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           boolean enabled = myFooter.isSelected();
           myFooterLeft.setEnabled(enabled);
@@ -430,8 +430,8 @@ final class Attribute extends Dialog
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
     myFooterColor = createButton(
-      "TLT_Footer_Color", // NOI18N
-      new AbstractAction(null, Util.getIcon("color")) { // NOI18N
+      i18n("TLT_Footer_Color"), // NOI18N
+      new AbstractAction(null, icon(Util.class, "color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           footerColor();
         }
@@ -441,8 +441,8 @@ final class Attribute extends Dialog
 
     // footer font
     myFooterFont = createButton(
-      "TLT_Footer_Font", // NOI18N
-      new AbstractAction(null, Util.getIcon("font")) { // NOI18N
+      i18n("TLT_Footer_Font"), // NOI18N
+      new AbstractAction(null, icon(Util.class, "font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           footerFont();
         }
@@ -474,7 +474,7 @@ final class Attribute extends Dialog
     panel.add(p, c);
   }
 
-  public void pressed(String pattern) {
+  public void pressed(Pattern pattern) {
     mySelectedField = getSelectedTextField();
 //out(field);
 
@@ -485,7 +485,7 @@ final class Attribute extends Dialog
       String head = text.substring(0, mySelectedField.getSelectionStart());
       String tail = text.substring(mySelectedField.getSelectionEnd(), text.length());
 
-      mySelectedField.setText(head + pattern + tail);
+      mySelectedField.setText(head + pattern.getName() + tail);
     }
   }
 
@@ -526,8 +526,8 @@ final class Attribute extends Dialog
     // line numbers
     c.gridy++;
     myLineNumbers = createCheckBox(
-      "LBL_Line_Numbers", // NOI18N
-      new AbstractAction(getMessage("LBL_Line_Numbers")) { // NOI18N
+      i18n("LBL_Line_Numbers"), // NOI18N
+      new AbstractAction(i18n("LBL_Line_Numbers")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );
@@ -535,8 +535,8 @@ final class Attribute extends Dialog
 
     // use color
     myUseColor = createCheckBox(
-      "TLT_Use_Color", // NOI18N
-      new AbstractAction(getMessage("LBL_Use_Color")) { // NOI18N
+      i18n("TLT_Use_Color"), // NOI18N
+      new AbstractAction(i18n("LBL_Use_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );
@@ -548,8 +548,8 @@ final class Attribute extends Dialog
     // text color
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
     myTextColor = createButton(
-      "TLT_Text_Color", // NOI18N
-      new AbstractAction(null, Util.getIcon("color")) { // NOI18N
+      i18n("TLT_Text_Color"), // NOI18N
+      new AbstractAction(null, icon(Util.class, "color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           textColor();
         }
@@ -559,8 +559,8 @@ final class Attribute extends Dialog
     
     // text font
     myTextFont = createButton(
-      "TLT_Text_Font", // NOI18N
-      new AbstractAction(null, Util.getIcon("font")) { // NOI18N
+      i18n("TLT_Text_Font"), // NOI18N
+      new AbstractAction(null, icon(Util.class, "font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           textFont();
         }
@@ -574,8 +574,8 @@ final class Attribute extends Dialog
     c.gridy++;
     c.insets = new Insets(0, 0, 0, 0);
     myWrapLines = createCheckBox(
-      "LBL_Wrap_Lines", // NOI18N
-      new AbstractAction(getMessage("LBL_Wrap_Lines")) { // NOI18N
+      i18n("LBL_Wrap_Lines"), // NOI18N
+      new AbstractAction(i18n("LBL_Wrap_Lines")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );
@@ -583,8 +583,8 @@ final class Attribute extends Dialog
 
     // use font
     myUseFont = createCheckBox(
-      "TLT_Use_Font", // NOI18N
-      new AbstractAction(getMessage("LBL_Use_Font")) { // NOI18N
+      i18n("TLT_Use_Font"), // NOI18N
+      new AbstractAction(i18n("LBL_Use_Font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );
@@ -599,8 +599,8 @@ final class Attribute extends Dialog
     c.anchor = GridBagConstraints.WEST;
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
     myBackgroundColor = createButton(
-      "TLT_Background_Color", // NOI18N
-      new AbstractAction(null, Util.getIcon("color")) { // NOI18N
+      i18n("TLT_Background_Color"), // NOI18N
+      new AbstractAction(null, icon(Util.class, "color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           backgroundColor();
         }
@@ -620,7 +620,7 @@ final class Attribute extends Dialog
     c.weightx = 0.0;
     c.anchor = GridBagConstraints.EAST;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
-    JLabel label = createLabel("LBL_Line_Spacing"); // NOI18N
+    JLabel label = createLabel(i18n("LBL_Line_Spacing")); // NOI18N
     panel.add(label, c);
 
     c.anchor = GridBagConstraints.WEST;
@@ -658,7 +658,7 @@ final class Attribute extends Dialog
     // (o) Fit width to
     c.gridy++;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    JRadioButton buttonW = createRadioButton("LBL_Fit_Width_to"); // NOI18N
+    JRadioButton buttonW = createRadioButton(i18n("LBL_Fit_Width_to")); // NOI18N
     buttonW.addItemListener(createItemListener(true, false, false));
     panel.add(buttonW, c);
     group.add(buttonW);
@@ -678,7 +678,7 @@ final class Attribute extends Dialog
     c.weightx = 0.0;
     c.anchor = GridBagConstraints.EAST;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    JRadioButton buttonF = createRadioButton("LBL_Zoom_to"); // NOI18N
+    JRadioButton buttonF = createRadioButton(i18n("LBL_Zoom_to")); // NOI18N
     buttonF.addItemListener(createItemListener(false, false, true));
     panel.add(buttonF, c);
     group.add(buttonF);
@@ -692,10 +692,10 @@ final class Attribute extends Dialog
       getDouble(zoomFactor),
       PERCENTS,
       0,
-      new String[] {
-        getMessage("LBL_Fit_to_Page"), // NOI18N
+      new String [] {
+        i18n("LBL_Fit_to_Page"), // NOI18N
       },
-      getMessage("TLT_Print_Zoom") // NOI18N
+      i18n("TLT_Print_Zoom") // NOI18N
     );
     panel.add(myZoomFactor, c);
 
@@ -703,7 +703,7 @@ final class Attribute extends Dialog
     c.gridy++;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
 
-    JRadioButton buttonH = createRadioButton("LBL_Fit_Height_to"); // NOI18N
+    JRadioButton buttonH = createRadioButton(i18n("LBL_Fit_Height_to")); // NOI18N
     buttonH.addItemListener(createItemListener(false, true, false));
     panel.add(buttonH, c);
     group.add(buttonH);
@@ -813,7 +813,7 @@ final class Attribute extends Dialog
   private Font font(Font font) {
     return (Font) new Editor(
       Font.class,
-      getMessage("LBL_Choose_Font"), // NOI18N
+      i18n("LBL_Choose_Font"), // NOI18N
       font).getValue();
   }
 
@@ -860,7 +860,7 @@ final class Attribute extends Dialog
   private Color color(Color color) {
     return (Color) new Editor(
       Color.class,
-      getMessage("LBL_Choose_Color"), // NOI18N
+      i18n("LBL_Choose_Color"), // NOI18N
       color).getValue();
   }
 
@@ -957,7 +957,7 @@ final class Attribute extends Dialog
   private JTextField mySelectedField;
 
   private Option myOption;
-  private Dialog myPreview;
+  private Preview myPreview;
   private boolean myIsText;
   private DialogDescriptor myDescriptor;
 

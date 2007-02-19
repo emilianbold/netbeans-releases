@@ -16,43 +16,31 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.bpel.search.impl.diagram;
+package org.netbeans.modules.bpel.search.impl.ui;
 
-import org.netbeans.modules.bpel.editors.api.DiagramElement;
-import org.netbeans.modules.bpel.search.api.SearchElement;
+import static org.netbeans.modules.print.api.PrintUI.*;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bpel.search.api.SearchEvent;
+import org.netbeans.modules.bpel.search.spi.SearchListener;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2006.11.17
+ * @version 2007.01.25
  */
-final class Element extends SearchElement.Adapter {
+final class Progress implements SearchListener {
 
-  Element(DiagramElement element) {
-    super(element.getText(), element.getText(), null, null);
-    myElement = element;
-    highlightOnDiagram(true);
+  public void searchStarted(SearchEvent event) {
+    myProgress = ProgressHandleFactory.createHandle(
+      i18n(Progress.class, "LBL_Search_Progress")); // NOI18N
+    myProgress.start();
   }
 
-  /**{@inheritDoc}*/
-  @Override
-  public void gotoSource()
-  {
-    myElement.gotoSource();
+  public void searchFinished(SearchEvent event) {
+    myProgress.finish();
   }
 
-  /**{@inheritDoc}*/
-  @Override
-  public void selectOnDiagram()
-  {
-    myElement.select();
-  }
+  public void searchFound(SearchEvent event) {}
 
-  /**{@inheritDoc}*/
-  @Override
-  public void highlightOnDiagram(boolean highlighted)
-  {
-    myElement.highlight(highlighted);
-  }
-
-  private DiagramElement myElement;
+  private ProgressHandle myProgress;
 }

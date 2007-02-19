@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.bpel.search.impl.ui;
@@ -45,14 +45,13 @@ import javax.swing.filechooser.FileFilter;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
-import static org.netbeans.modules.print.api.PrintUtil.*;
-import org.netbeans.modules.print.api.PrintUtil.Dialog;
+import org.netbeans.modules.print.api.PrintUI;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.12.21
  */
-class Export extends Dialog {
+class Export extends PrintUI {
 
   void show(List<List<String>> descriptions, String title) {
     myDescriptions = descriptions;
@@ -69,7 +68,7 @@ class Export extends Dialog {
     c.insets = new Insets(MEDIUM_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
 
     // file name
-    panel.add(createLabel("LBL_File_Name"), c); // NOI18N
+    panel.add(createLabel(i18n("LBL_File_Name")), c); // NOI18N
 
     c.gridy++;
     c.weightx = 1.0;
@@ -83,8 +82,8 @@ class Export extends Dialog {
     c.insets = new Insets(MEDIUM_INSET, 0, TINY_INSET, TINY_INSET);
     c.fill = GridBagConstraints.NONE;
     JButton button = createButton(
-      "TLT_Browse", // NOI18N
-      new AbstractAction(getMessage("LBL_Browse")) { // NOI18N
+      i18n("TLT_Browse"), // NOI18N
+      new AbstractAction(i18n("LBL_Browse")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           selectFile();
         }
@@ -99,7 +98,7 @@ class Export extends Dialog {
     // description
     c.gridy++;
     c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, MEDIUM_INSET);
-    panel.add(createLabel("LBL_Description"), c); // NOI18N
+    panel.add(createLabel(i18n("LBL_Description")), c); // NOI18N
 
     c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
     c.weightx = 1.0;
@@ -122,8 +121,8 @@ class Export extends Dialog {
     c.insets = new Insets(TINY_INSET, 0, TINY_INSET, TINY_INSET);
     c.fill = GridBagConstraints.NONE;
     myRunBrowser = createCheckBox(
-      "LBL_Open_in_Browser", // NOI18N
-      new AbstractAction(getMessage("LBL_Open_in_Browser")) { // NOI18N
+      i18n("LBL_Open_in_Browser"), // NOI18N
+      new AbstractAction(i18n("LBL_Open_in_Browser")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );
@@ -145,7 +144,7 @@ class Export extends Dialog {
     File file = new File(name);
 
     if (file.exists()) {
-      if (showWarning("LBL_File_Exists", name)) { // NOI18N
+      if (printWarning(i18n("LBL_File_Exists", name))) { // NOI18N
         exportFile(file);
       }
       else {
@@ -166,7 +165,7 @@ class Export extends Dialog {
           file.isDirectory();
       }
       public String getDescription() {
-        return getMessage("LBL_HTML_File_Type"); // NOI18N
+        return i18n("LBL_HTML_File_Type"); // NOI18N
       }
     });
     chooser.setSelectedFile(new File(myFileName.getText()));
@@ -182,7 +181,7 @@ class Export extends Dialog {
     // create html
     StringBuffer html = new StringBuffer();
     html.append("<html><body>" + LS); // NOI18N
-    html.append("<h3>" + getMessage("LBL_Search_Results") + // NOI18N
+    html.append("<h3>" + i18n("LBL_Search_Results") + // NOI18N
       "</h3>" + LS + LS); // NOI18N
 
     if (myTitle != null) {
@@ -190,7 +189,7 @@ class Export extends Dialog {
     }
     if (text.size() > 0) {
       html.append("<p><b>" + // NOI18N
-        getMessage("LBL_Description") + "</b>"); // NOI18N
+        i18n("LBL_Description") + "</b>"); // NOI18N
     
       for (String item : text) {
         html.append(item + LS);
@@ -225,7 +224,7 @@ class Export extends Dialog {
       outputStream.close();
     }
     catch (IOException e) {
-      printError("LBL_Cannot_Write_to_File", file.getAbsolutePath()); // NOI18N
+      printError(i18n("LBL_Cannot_Write_to_File", file.getAbsolutePath())); // NOI18N
       show();
       return;
     }
@@ -254,7 +253,7 @@ class Export extends Dialog {
   {
     myDescriptor = new DialogDescriptor(
       getPanel(),
-      getMessage("LBL_Export_Title") // NOI18N
+      i18n("LBL_Export_Title") // NOI18N
     );
     return myDescriptor;
   }

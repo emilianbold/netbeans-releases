@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.bpel.search.impl.ui;
@@ -52,10 +52,9 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
+import static org.netbeans.modules.print.api.PrintUI.*;
 
-import static org.netbeans.modules.print.api.PrintUtil.*;
 import org.netbeans.modules.bpel.search.api.SearchEvent;
 import org.netbeans.modules.bpel.search.api.SearchElement;
 import org.netbeans.modules.bpel.search.spi.SearchListener;
@@ -65,11 +64,15 @@ import org.netbeans.modules.bpel.search.impl.util.Util;
  * @author Vladimir Yaroslavskiy
  * @version 2006.11.24
  */
-final class Tree implements SearchListener {
+final class Tree extends JTree implements SearchListener {
+
+  Tree() {
+    super(new DefaultTreeModel(new DefaultMutableTreeNode()));
+    myRoot = (DefaultMutableTreeNode) getModel().getRoot();
+  }
 
   public void searchStarted(SearchEvent event) {
 //out();
-    myRoot = new DefaultMutableTreeNode();
     myFoundCount = 0;
   }
 
@@ -84,26 +87,48 @@ final class Tree implements SearchListener {
   public void searchFinished(SearchEvent event) {
     String text = event.getSearchOption().getText();
     String count = String.valueOf(myFoundCount);
-    String title = NbBundle.getMessage(
-      Tree.class, "LBL_Found_Occurrences", text, myFoundCount); // NOI18N
-    myRoot.setUserObject(
-      new SearchElement.Adapter(title, title, Util.getIcon("find"), null)); // NOI18N
 
+    String title = i18n(
+      Tree.class, "LBL_Found_Occurrences", text, "" + myFoundCount); // NOI18N
+
+    myRoot.setUserObject(new SearchElement.Adapter(
+      title, title, icon(Util.class, "find"), null)); // NOI18N
+
+    createOccurences();
+
+    updateRoot();
     View view = (View) WindowManager.getDefault().findTopComponent(View.NAME);
-    view.show(createTree());
+    view.show(this);
   }
 
-  private JTree createTree() {
-    myTree = new JTree(new DefaultTreeModel(myRoot));
-    myTree.getSelectionModel().setSelectionMode(
-      TreeSelectionModel.SINGLE_TREE_SELECTION);
-    ToolTipManager.sharedInstance().registerComponent(myTree);
-    myTree.setCellRenderer(new TreeRenderer());
-    myTree.setShowsRootHandles(false);
-    myTree.setRootVisible(true);
-    myTree.setSelectionPath(new TreePath(myRoot.getPath()));
+  private void createOccurences() {
+    myOccurences = new ArrayList<DefaultMutableTreeNode>();
+    createOccurences(myRoot);
+    myIndex = -1;
+  }
 
-    myTree.addTreeWillExpandListener(new TreeWillExpandListener() {
+  private void createOccurences(DefaultMutableTreeNode node) {
+    Enumeration children = node.children();
+
+    if (node.isLeaf()) {
+      myOccurences.add(node);
+    }
+    while (children.hasMoreElements()) {
+      createOccurences((DefaultMutableTreeNode) children.nextElement());
+    }
+  }
+
+  private void updateRoot() {
+    getSelectionModel().setSelectionMode(
+      TreeSelectionModel.SINGLE_TREE_SELECTION);
+    ToolTipManager.sharedInstance().registerComponent(this);
+    setCellRenderer(new TreeRenderer());
+    setShowsRootHandles(false);
+    setRootVisible(true);
+    setSelectionPath(new TreePath(myRoot.getPath()));
+    expandPath(new TreePath(myRoot.getPath()));
+
+    addTreeWillExpandListener(new TreeWillExpandListener() {
       public void treeWillExpand(TreeExpansionEvent event) {
       }
       public void treeWillCollapse(TreeExpansionEvent event) {
@@ -111,7 +136,7 @@ final class Tree implements SearchListener {
         collapseChildren(getNode(event.getPath()));
       }
     });
-    myTree.addTreeExpansionListener(new TreeExpansionListener() {
+    addTreeExpansionListener(new TreeExpansionListener() {
       public void treeExpanded(TreeExpansionEvent event) {
 //out("Expanded: " + getNode(event.getPath()));
         expandChildren(getNode(event.getPath()));
@@ -121,7 +146,7 @@ final class Tree implements SearchListener {
         updateSize();
       }
     });
-    myTree.addMouseListener(new MouseAdapter() {
+    addMouseListener(new MouseAdapter() {
       public void mousePressed(MouseEvent event) {
         if (SwingUtilities.isRightMouseButton(event)) {
           showPopupMenu(event, event.getX(), event.getY());
@@ -138,14 +163,12 @@ final class Tree implements SearchListener {
         }
       }
     });
-    myTree.addKeyListener(new KeyAdapter() {
+    addKeyListener(new KeyAdapter() {
       public void keyReleased(KeyEvent event) {
         handleEvent(event);
       }
     });
     updateSize();
-
-    return myTree;
   }
 
   private void handleEvent(KeyEvent event) {
@@ -162,11 +185,11 @@ final class Tree implements SearchListener {
   }
 
   private void handleAction(int code, int modifiers, DefaultMutableTreeNode node) {
-    if (code == KeyEvent.VK_O && isAlt(modifiers)) {
-      gotoSource(node);
-    }
-    else if (code == KeyEvent.VK_D && isAlt(modifiers)) {
+    if (code == KeyEvent.VK_D && isAlt(modifiers)) {
       selectOnDiagram(node);
+    }
+    else if (code == KeyEvent.VK_O && isAlt(modifiers)) {
+      gotoSource(node);
     }
     else if (code == KeyEvent.VK_C && isCtrl(modifiers)) {
       copy(node);
@@ -187,7 +210,7 @@ final class Tree implements SearchListener {
       nextOccurence(node);
     }
     else if (code == KeyEvent.VK_E && isCtrl(modifiers)) {
-      collapseExpand(getSelectedNode());
+      expose(node);
     }
     else if (code == KeyEvent.VK_DELETE) {
       remove(node);
@@ -232,7 +255,7 @@ final class Tree implements SearchListener {
     item.setEnabled( !node.isLeaf());
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        collapseExpand(node);
+        expose(node);
       }
     });
     item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.CTRL_MASK));
@@ -256,17 +279,6 @@ final class Tree implements SearchListener {
   private void createAction(JPopupMenu popup, final DefaultMutableTreeNode node) {
     JMenuItem item;
 
-    // go to source
-    item = createItem("LBL_Go_to_Source"); // NOI18N
-    item.setEnabled( !node.isRoot());
-    item.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent event) {
-        gotoSource(node);
-      }
-    });
-    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_MASK));
-    popup.add(item);
-
     // select on diagram
     item = createItem("LBL_Select_on_Diagram"); // NOI18N
     item.setEnabled( !node.isRoot());
@@ -276,6 +288,17 @@ final class Tree implements SearchListener {
       }
     });
     item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.ALT_MASK));
+    popup.add(item);
+
+    // go to source
+    item = createItem("LBL_Go_to_Source"); // NOI18N
+    item.setEnabled( !node.isRoot());
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        gotoSource(node);
+      }
+    });
+    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_MASK));
     popup.add(item);
 
     // copy
@@ -316,7 +339,7 @@ final class Tree implements SearchListener {
   }
 
   private void updateSize() {
-    myTree.putClientProperty(Dimension.class.getName(), myTree.getMaximumSize());
+    putClientProperty(Dimension.class.getName(), getMaximumSize());
   }
 
   private void gotoSource(DefaultMutableTreeNode node) {
@@ -327,12 +350,28 @@ final class Tree implements SearchListener {
     ((SearchElement) node.getUserObject()).selectOnDiagram();
   }
 
-  private void previousOccurence(TreeNode node) {
-// todo a
+  public void previousOccurence(TreeNode node) {
+    myIndex--;
+
+    if (myIndex < 0) {
+      myIndex = myOccurences.size() - 1;
+    }
+    selectOccurence();
   }
 
-  private void nextOccurence(TreeNode node) {
-// todo a
+  public void nextOccurence(TreeNode node) {
+    myIndex++;
+
+    if (myIndex == myOccurences.size()) {
+      myIndex = 0;
+    }
+    selectOccurence();
+  }
+
+  private void selectOccurence() {
+    TreePath path = new TreePath(myOccurences.get(myIndex).getPath());
+    setSelectionPath(path);
+    scrollPathToVisible(path);
   }
 
   private void copy(TreeNode node) {
@@ -356,7 +395,7 @@ final class Tree implements SearchListener {
     }
   }
 
-  private void export(DefaultMutableTreeNode node) {
+  public void export(DefaultMutableTreeNode node) {
     List<List<String>> descriptions = new ArrayList<List<String>>();
     export(node, descriptions);
     descriptions.add (null);
@@ -410,13 +449,13 @@ final class Tree implements SearchListener {
     return false;
   }
 
-  private void collapseExpand(DefaultMutableTreeNode node) {
+  public void expose(DefaultMutableTreeNode node) {
     if (node == null || node.isLeaf()) {
       return;
     }
     myIsReformAll = true;
     TreePath path = new TreePath(node.getPath());
-    boolean isExpanded = myTree.isExpanded(path);
+    boolean isExpanded = isExpanded(path);
 
     // for root special check
     if (node.isRoot()) {
@@ -426,7 +465,7 @@ final class Tree implements SearchListener {
       while (children.hasMoreElements()) {
         DefaultMutableTreeNode child =
           (DefaultMutableTreeNode) children.nextElement();
-        isExpanded = myTree.isExpanded(new TreePath(child.getPath()));
+        isExpanded = isExpanded(new TreePath(child.getPath()));
 
         if (isExpanded) {
           break;
@@ -439,14 +478,14 @@ final class Tree implements SearchListener {
         collapseChildren(node);
       }
       else {
-        myTree.collapsePath(path);
+        collapsePath(path);
       }
     }
     else {
       // expand
-      myTree.expandPath(path);
+      expandPath(path);
 
-      if (myTree.isExpanded(path)) {
+      if (isExpanded(path)) {
         expandChildren(node);
       }
     }
@@ -461,9 +500,9 @@ final class Tree implements SearchListener {
         DefaultMutableTreeNode child =
           (DefaultMutableTreeNode) children.nextElement();
         TreePath path = new TreePath(child.getPath());
-        myTree.expandPath(path);
+        expandPath(path);
 
-        if (myTree.isExpanded(path)) {
+        if (isExpanded(path)) {
           expandChildren(child);
         }
       }
@@ -476,9 +515,9 @@ final class Tree implements SearchListener {
 
         if ( !children.hasMoreElements()) {
           TreePath path = new TreePath(child.getPath());
-          myTree.expandPath(path);
+          expandPath(path);
 
-          if (myTree.isExpanded(path)) {
+          if (isExpanded(path)) {
             expandChildren(child);
           }
         }
@@ -494,7 +533,7 @@ final class Tree implements SearchListener {
         DefaultMutableTreeNode child =
           (DefaultMutableTreeNode) children.nextElement();
         TreePath path = new TreePath(child.getPath());
-        myTree.collapsePath(path);
+        collapsePath(path);
       }
     }
   }
@@ -502,9 +541,12 @@ final class Tree implements SearchListener {
   private void remove(DefaultMutableTreeNode node) {
     DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
 
-    if (parent != null) {
+    if (parent == null) {
+      return;
+    }
+    if (printConfirmation(i18n(Tree.class, "LBL_Are_You_Sure"))) { // NOI18N
       parent.remove(node);
-      myTree.updateUI();
+      updateUI();
     }
   }
 
@@ -512,8 +554,8 @@ final class Tree implements SearchListener {
     return (DefaultMutableTreeNode) path.getLastPathComponent();
   }
 
-  private DefaultMutableTreeNode getSelectedNode() {
-    TreePath[] paths = myTree.getSelectionPaths();
+  public DefaultMutableTreeNode getSelectedNode() {
+    TreePath [] paths = getSelectionPaths();
 
     if (paths == null || paths.length == 0) {
       return myRoot;
@@ -527,7 +569,7 @@ final class Tree implements SearchListener {
   }
 
   private JMenuItem createItem(String name) {
-    return new JMenuItem(NbBundle.getMessage(Tree.class, name));
+    return new JMenuItem(i18n(Tree.class, name));
   }
 
   private void addElement(
@@ -584,8 +626,8 @@ final class Tree implements SearchListener {
     return elements.iterator();
   }
 
-  // ----------------------------------------------------------------
-  private static class TreeRenderer extends DefaultTreeCellRenderer {
+  // ----------------------------------------------------------------------
+  private static final class TreeRenderer extends DefaultTreeCellRenderer {
 
     public Component getTreeCellRendererComponent (
       JTree tree, Object value, boolean select, boolean expanded,
@@ -602,9 +644,10 @@ final class Tree implements SearchListener {
     }
   }
 
-  private JTree myTree;
+  private int myIndex;
   private Export myExport;
   private int myFoundCount;
   private boolean myIsReformAll;
   private DefaultMutableTreeNode myRoot;
+  private List<DefaultMutableTreeNode> myOccurences;
 }

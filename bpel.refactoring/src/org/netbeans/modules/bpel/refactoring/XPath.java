@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.bpel.refactoring;
@@ -64,6 +64,7 @@ import org.netbeans.modules.xml.xpath.XPathModel;
 import org.netbeans.modules.xml.xpath.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.XPathVariableReference;
 import org.netbeans.modules.xml.xpath.visitor.AbstractXPathVisitor;
+import static org.netbeans.modules.print.api.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -78,8 +79,8 @@ final class XPath extends AbstractXPathVisitor {
   }
 
   void visit(String content, Component component) {
-//Log.out();
-//Log.out("XPATH visit: " + content);
+//out();
+//out("XPATH visit: " + content);
     visit(content, component, false);
   }
 
@@ -117,13 +118,13 @@ final class XPath extends AbstractXPathVisitor {
   }
 
   private void rename(String newName) {
-//Log.out();
-//Log.out("----------------------------------");
-//Log.out();
-//Log.out("To rename:");
+//out();
+//out("----------------------------------");
+//out();
+//out("To rename:");
 
     for(XPathExpression expression: myExpressions) {
-//Log.out("See: " + expression);
+//out("See: " + expression);
       if (expression instanceof LocationStep) {
         LocationStep step = (LocationStep) expression;
         step.setNodeTest(new StepNodeNameTest(
@@ -134,9 +135,9 @@ final class XPath extends AbstractXPathVisitor {
         reference.setVariableName(createName(reference.getVariableName(), newName));
       }
     }
-//Log.out();
-//Log.out("----------------------------------");
-//Log.out();
+//out();
+//out("----------------------------------");
+//out();
   }
 
   private String createName(String oldName, String newName) {
@@ -161,27 +162,27 @@ final class XPath extends AbstractXPathVisitor {
   @Override
   public void visit(XPathExpressionPath expressionPath)
   {
-//Log.out();
-//Log.out("EXPRESION: " + expressionPath);
+//out();
+//out("EXPRESION: " + expressionPath);
     XPathExpression rootExpression = expressionPath.getRootExpression();
     myVariable = null;
     myVariableReference = null;
 
     if ( !expressionPath.equals(rootExpression)) {
-///Log.out("     root: " + expression);
+///out("     root: " + expression);
       rootExpression.accept(this);
     }
     if (myVariable == null) {
-//Log.out("Variable is not found");
+//out("Variable is not found");
       return;
     }
-//Log.out(" Variable: " + myVariable.getName());
+//out(" Variable: " + myVariable.getName());
 
     if (myVariable == myTarget) {
       addItem();
       return;
     }
-    LocationStep[] locations = expressionPath.getSteps();
+    LocationStep [] locations = expressionPath.getSteps();
     List<LocationStep> steps = new LinkedList<LocationStep>();
     steps.add(null); // first step is fake
     
@@ -195,7 +196,7 @@ final class XPath extends AbstractXPathVisitor {
     visit(locations);
   }
 
-  private void visit(LocationStep[] locations) {
+  private void visit(LocationStep [] locations) {
     if (locations == null) {
       return;
     }
@@ -240,11 +241,11 @@ final class XPath extends AbstractXPathVisitor {
     String indent)
   {
     if (object instanceof ComplexType) {
-//Log.out("  visit complex");
+//out("  visit complex");
       visitComplexType((ComplexType) object, steps, indent);
     }
     else if (object instanceof SimpleType) {
-//Log.out("  visit simple");
+//out("  visit simple");
       visitSimpleType((SimpleType) object, steps, indent);
     }
     else if (object instanceof Element) {
@@ -257,7 +258,7 @@ final class XPath extends AbstractXPathVisitor {
       if (object == null) {
         return;
       }
-//Log.out(indent + " unknown !!!: " + object);
+//out(indent + " unknown !!!: " + object);
     }
   }
 
@@ -270,9 +271,9 @@ final class XPath extends AbstractXPathVisitor {
 
     while (parts.hasNext()) {
       Part part = parts.next();
-//Log.out();
-//Log.out("  see part: " + part.getName());
-//Log.out("      part: " + myPartName);
+//out();
+//out("  see part: " + part.getName());
+//out("      part: " + myPartName);
       if (part.equals(myTarget)) {
         addItem();
 
@@ -281,8 +282,8 @@ final class XPath extends AbstractXPathVisitor {
         }
       }
       if (myPartName.equals(part.getName())) {
-//Log.out("==== PART: " + myPartName);
-//Log.out();
+//out("==== PART: " + myPartName);
+//out();
         visitPart(part, createList(steps));
       }
     }
@@ -293,8 +294,8 @@ final class XPath extends AbstractXPathVisitor {
     List<LocationStep> steps,
     String indent)
   {
-///Log.out();
-//Log.out(indent + "ELEMENT: " + Util.getName(element));
+///out();
+//out(indent + "ELEMENT: " + Util.getName(element));
     if (checkUsages(element, steps, false)) {
       return;
     }
@@ -325,7 +326,7 @@ final class XPath extends AbstractXPathVisitor {
     List<LocationStep> steps,
     String indent)
   {
-//Log.out(indent + "CM.TYPE: " + Util.getName(type));
+//out(indent + "CM.TYPE: " + Util.getName(type));
     if (myVisitedComplexType.contains(type)) {
       return;
     }
@@ -346,7 +347,7 @@ final class XPath extends AbstractXPathVisitor {
       visitComplexContent((ComplexContent) definition, steps, indent);
     }
     else {
-//Log.out(indent + "unk !!: " + definition);
+//out(indent + "unk !!: " + definition);
       return;
     }
   }
@@ -364,7 +365,7 @@ final class XPath extends AbstractXPathVisitor {
   }
 
   private void visitChoice(Choice choice, List<LocationStep> steps, String indent) {
-//Log.out(indent + " [choice] ===================");
+//out(indent + " [choice] ===================");
     Iterator<Choice> choices = choice.getChoices().iterator();
 
     while (choices.hasNext()) {
@@ -385,7 +386,7 @@ final class XPath extends AbstractXPathVisitor {
     while (references.hasNext()) {
       visitReference(references.next().getRef(), createList(steps), indent + INDENT);
     }
-//Log.out(indent + " [===========================");
+//out(indent + " [===========================");
   }
 
   private void visitSequence(
@@ -393,14 +394,14 @@ final class XPath extends AbstractXPathVisitor {
     List<LocationStep> steps,
     String indent)
   {
-//Log.out(indent + " [sequnce] ==================");
+//out(indent + " [sequnce] ==================");
     List<SequenceDefinition> content = sequence.getContent();
 
     if (content == null) {
       return;
     }
     for (SequenceDefinition definition : content) {
-///Log.out(indent + "      see: " + Util.getName(definition));
+///out(indent + "      see: " + Util.getName(definition));
       if (definition instanceof Element) {
         visitElement((Element) definition,
           createList(steps), indent + INDENT);
@@ -418,11 +419,11 @@ final class XPath extends AbstractXPathVisitor {
           createList(steps), indent + INDENT);
       }
       else {
-//Log.out(indent + "    error !!!: " + definition);
+//out(indent + "    error !!!: " + definition);
         return;
       }
     }
-//Log.out(indent + " [===========================");
+//out(indent + " [===========================");
   }
 
   private void visitSimpleType(
@@ -430,7 +431,7 @@ final class XPath extends AbstractXPathVisitor {
     List<LocationStep> steps,
     String indent)
   {
-//Log.out(indent + "SM.TYPE: " + Util.getName(type));
+//out(indent + "SM.TYPE: " + Util.getName(type));
     checkUsages(type, steps, true);
   }
 
@@ -438,7 +439,7 @@ final class XPath extends AbstractXPathVisitor {
   public void visit(XPathVariableReference reference)
   {
     QName qName = reference.getVariableName();
-//Log.out("VAR REFER: " + qName);
+//out("VAR REFER: " + qName);
     String name = qName.getLocalPart();
     String part = ""; // NOI18N
     int k = name.indexOf("."); // NOI18N
@@ -450,17 +451,17 @@ final class XPath extends AbstractXPathVisitor {
     if ( !(myComponent instanceof BpelEntity)) {
       return;
     }
-    Variable[] variables = ((BpelModel) ((BpelEntity) myComponent).getModel()).
+    Variable [] variables = ((BpelModel) ((BpelEntity) myComponent).getModel()).
       getProcess().getVariableContainer().getVariables();
 
     if (variables == null) {
       return;
     }
     for (Variable variable : variables) {
-//Log.out("  see: " + variable.getName());
+//out("  see: " + variable.getName());
 
       if (variable.getName().equals(name)) {
-//Log.out("   this.");
+//out("   this.");
         myVariable = variable;
         myVariableReference = reference;
         myPartName = part;
@@ -472,8 +473,8 @@ final class XPath extends AbstractXPathVisitor {
   @Override
   public void visit(LocationStep locationStep)
   {
-//Log.out(" LCL STEP: " + locationStep);
-    XPathPredicateExpression[] expressions = locationStep.getPredicates();
+//out(" LCL STEP: " + locationStep);
+    XPathPredicateExpression [] expressions = locationStep.getPredicates();
 
     if (expressions == null) {
       return;
@@ -486,28 +487,28 @@ final class XPath extends AbstractXPathVisitor {
   @Override
   public void visit(XPathCoreFunction coreFunction)
   {
-//Log.out("CORE FUNC: " + coreFunction);
+//out("CORE FUNC: " + coreFunction);
     visitChildren(coreFunction);
   }
 
   @Override
   public void visit(XPathCoreOperation coreOperation)
   {
-//Log.out("CORE OPER: " + coreOperation);
+//out("CORE OPER: " + coreOperation);
     visitChildren(coreOperation);
   }
 
   @Override
   public void visit(XPathExtensionFunction extensionFunction)
   {
-//Log.out("EXT  FUNC: " + extensionFunction);
+//out("EXT  FUNC: " + extensionFunction);
     visitChildren(extensionFunction);
   }
 
   @Override
   public void visit(XPathLocationPath locationPath)
   {
-//Log.out("LOCA PATH: " + locationPath);
+//out("LOCA PATH: " + locationPath);
     visit(locationPath.getSteps());
   }
 
@@ -519,43 +520,43 @@ final class XPath extends AbstractXPathVisitor {
     if (component == null) {
       return false;
     }
-//Log.out();
-//Log.out("  chk compnt: "+ Util.getName(component));
-//Log.out("      target: "+ myTarget.getName());
-//Log.out("        step: "+ (steps.size() == 0 ? null : steps.get(0)));
+//out();
+//out("  chk compnt: "+ Util.getName(component));
+//out("      target: "+ myTarget.getName());
+//out("        step: "+ (steps.size() == 0 ? null : steps.get(0)));
 
     if (steps.size() == 0) {
-//Log.out("        size: 0");
-//Log.out("      return: false");
-//Log.out();
+//out("        size: 0");
+//out("      return: false");
+//out();
       return false;
     }
     LocationStep step = steps.get(0);
 
     if (myTarget.equals(component)) {
-//Log.out();
-//Log.out("name: " + myOldName);
-//Log.out("step: " + step.getString());
+//out();
+//out("name: " + myOldName);
+//out("step: " + step.getString());
       if (step != null && equalsIgnorePrefix(myOldName, step.getString())) {
         addItem();
 
         if (myDoRename) {
           myExpressions.add(step);
-//Log.out("!! ==== STEP: " + step.getString());
+//out("!! ==== STEP: " + step.getString());
         }
-//Log.out("      return: true");
-//Log.out();
+//out("      return: true");
+//out();
         return true;
       }
     }
     else {
       if (nextStep) {
-//Log.out("      remove: " + step);
+//out("      remove: " + step);
         steps.remove(0);
       }
     }
-//Log.out("      return: false");
-//Log.out();
+//out("      return: false");
+//out();
     return false;
   }
 
@@ -574,7 +575,7 @@ final class XPath extends AbstractXPathVisitor {
   private void addItem() {
     if (myUsage != null) {
       myUsage.addItem(myComponent);
-//Log.out("!! ===== ADD: " + Util.getName(myComponent));
+//out("!! ===== ADD: " + Util.getName(myComponent));
     }
   }
 

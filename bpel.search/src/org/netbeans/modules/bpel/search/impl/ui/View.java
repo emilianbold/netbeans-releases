@@ -2,35 +2,39 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.bpel.search.impl.ui;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.Date;
 
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
 import javax.swing.JScrollPane;
-import javax.swing.JTree;
+import javax.swing.JToolBar;
 
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
+import static org.netbeans.modules.print.api.PrintUI.*;
 import org.netbeans.modules.bpel.search.impl.util.Util;
 
 /**
@@ -41,12 +45,12 @@ public final class View extends TopComponent implements FocusListener {
 
   /**{@inheritDoc}*/
   public View() {
-    setIcon(Util.getIcon("find").getImage()); // NOI18N
+    setIcon(icon(Util.class, "find").getImage()); // NOI18N
     setLayout(new GridBagLayout());
     setFocusable(true);
   }
 
-  void show(JTree tree) {
+  void show(Tree tree) {
     myTree = tree;
     myModifiedDate = new Date(System.currentTimeMillis());
     myTree.addFocusListener(this);
@@ -68,24 +72,90 @@ public final class View extends TopComponent implements FocusListener {
 
   private void setActivatedNode() {
     String root = myTree.getModel().getRoot().toString();
-    String name = NbBundle.getMessage(
+    String name = i18n(
       View.class, "CTL_Search_Results_Print", root); // NOI18N
     setActivatedNodes(new Node [] { new Node(myTree, name, myModifiedDate) });
   }
 
   private void createPanel() {
     removeAll();
-    JScrollPane scrollPanel = new JScrollPane(myTree);
+    JScrollPane scrollPane = new JScrollPane(myTree);
     GridBagConstraints c = new GridBagConstraints();
     c.anchor = GridBagConstraints.NORTH;
+
+    // buttons
+    add(createButtonPanel(), c);
+
+    // tree
     c.fill = GridBagConstraints.BOTH;
     c.weightx = 1.0;
     c.weighty = 1.0;
-    add(scrollPanel, c);
-//todo a add buttons on toolbar
+    add(scrollPane, c);
 
     revalidate();
     repaint();
+  }
+
+  private JToolBar createButtonPanel() {
+    JToolBar toolBar = new JToolBar(JToolBar.VERTICAL);
+    toolBar.setFloatable(false);
+    JButton button;
+
+    // collapse/expand
+    button = createButton(
+      i18n(View.class, "TLT_Expose"), // NOI18N
+      new AbstractAction(null, icon(Util.class, "expose")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          myTree.expose(myTree.getSelectedNode());
+        }
+      }
+    );
+    setSize(button);
+    toolBar.add(button);
+
+    // export
+    button = createButton(
+      i18n(View.class, "TLT_Export"), // NOI18N
+      new AbstractAction(null, icon(Util.class, "export")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          myTree.export(myTree.getSelectedNode());
+        }
+      }
+    );
+    setSize(button);
+    toolBar.add(button);
+
+    // previous occurence
+    button = createButton(
+      i18n(View.class, "TLT_Previous_Occurence"), // NOI18N
+      new AbstractAction(null, icon(Util.class, "previous")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          myTree.previousOccurence(myTree.getSelectedNode());
+        }
+      }
+    );
+    setSize(button);
+    toolBar.add(button);
+
+    // next occurence
+    button = createButton(
+      i18n(View.class, "TLT_Next_Occurence"), // NOI18N
+      new AbstractAction(null, icon(Util.class, "next")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          myTree.nextOccurence(myTree.getSelectedNode());
+        }
+      }
+    );
+    setSize(button);
+    toolBar.add(button);
+
+    return toolBar;
+  }
+
+  private void setSize(JButton button) {
+    button.setMaximumSize(IMAGE_BUTTON_SIZE);
+    button.setMinimumSize(IMAGE_BUTTON_SIZE);
+    button.setPreferredSize(IMAGE_BUTTON_SIZE);
   }
   
   /**{@inheritDoc}*/
@@ -113,14 +183,14 @@ public final class View extends TopComponent implements FocusListener {
   @Override
   public String getDisplayName()
   {
-    return NbBundle.getMessage(View.class, "CTL_Search_Results_Name"); // NOI18N
+    return i18n(View.class, "CTL_Search_Results_Name"); // NOI18N
   }
 
   /**{@inheritDoc}*/
   @Override
   public String getToolTipText()
   {
-    return NbBundle.getMessage(View.class, "CTL_Search_Results_Tooltip"); // NOI18N
+    return i18n(View.class, "CTL_Search_Results_Tooltip"); // NOI18N
   }
 
   @Override
@@ -137,7 +207,9 @@ public final class View extends TopComponent implements FocusListener {
     return NAME;
   }
 
-  public static final String NAME = "search"; // NOI18N
-  private JTree myTree;
+  private Tree myTree;
   private Date myModifiedDate;
+
+  public static final String NAME = "search"; // NOI18N
+  private static final Dimension IMAGE_BUTTON_SIZE = new Dimension(24, 24);
 }

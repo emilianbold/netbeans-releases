@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.bpel.search.impl.ui;
@@ -31,13 +31,11 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
 import org.openide.actions.FindAction;
-import org.openide.util.NbBundle;
-
 import org.netbeans.modules.xml.xam.ui.search.SearchControlPanel;
 import org.netbeans.modules.xml.xam.ui.search.SearchProvider;
 import org.netbeans.modules.xml.xam.ui.search.Query;
 
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.print.api.PrintUI.*;
 import org.netbeans.modules.bpel.search.api.SearchElement;
 import org.netbeans.modules.bpel.search.api.SearchEvent;
 import org.netbeans.modules.bpel.search.api.SearchException;
@@ -123,7 +121,7 @@ public final class Find extends SearchControlPanel {
     }
 
     public String getInputDescription() {
-      return NbBundle.getMessage(Provider.class, "CTL_Input_Description"); // NOI18N
+      return i18n(Provider.class, "CTL_Input_Description"); // NOI18N
     }
 
     public List<Object> search(Query query)
@@ -147,6 +145,7 @@ public final class Find extends SearchControlPanel {
         throw new org.netbeans.modules.xml.xam.ui.search.SearchException(
           e.getMessage(), e);
       }
+//out("returned: " + myElements);
       return myElements;
     }
 
@@ -154,13 +153,13 @@ public final class Find extends SearchControlPanel {
       if (query.isRegularExpression()) {
         return SearchMatch.REGULAR_EXPRESSION;
       }
-      return SearchMatch.PATTERN_MATCH;
+      return SearchMatch.PATTERN;
     }
 
     private String getText(Query query, SearchMatch match) {
-      String text = query.getQuery();
+      String text = query.getQuery().trim();
 
-      if (match == SearchMatch.PATTERN_MATCH) {
+      if (match == SearchMatch.PATTERN) {
         return "*" + text + "*"; // NOI18N
       }
       return text;
@@ -174,14 +173,11 @@ public final class Find extends SearchControlPanel {
       myElements.add(event.getSearchElement());
     }
 
-    public void searchFinished(SearchEvent event) {
-      myCurrentIndex = 0;
-    }
+    public void searchFinished(SearchEvent event) {}
 
     private Object mySource;
     private SearchEngine mySearchEngine;
   }
 
-  private int myCurrentIndex;
   private List<Object> myElements;
 }

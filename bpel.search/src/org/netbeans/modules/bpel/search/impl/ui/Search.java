@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.bpel.search.impl.ui;
@@ -35,27 +35,25 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.openide.DialogDescriptor;
-import org.netbeans.modules.print.api.PrintUtil.Dialog;
+import org.netbeans.modules.print.api.PrintUI;
 
 import org.netbeans.modules.bpel.search.api.SearchException;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
-import org.netbeans.modules.bpel.search.spi.SearchListener;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.11.23
  */
-public final class Search extends Dialog {
+public final class Search extends PrintUI {
 
   /**{@inheritDoc}*/
   public Component getUIComponent(List<SearchEngine> engines, Object source) {
     mySource = source;
-    myTree = new Tree();
     mySearchEngine = engines.get(0);
-    mySearchEngine.addSearchListener(myTree);
-    // todo a? progress
+    mySearchEngine.addSearchListener(new Tree());
+    mySearchEngine.addSearchListener(new Progress());
     show();
     return getUIComponent();
   }
@@ -71,10 +69,12 @@ public final class Search extends Dialog {
     c.gridx = 0;
 
     // text
+    c.insets = new Insets(SMALL_INSET, 0, 0, 0);
     panel.add(createTextPanel(), c);
 
     // option
-    panel.add(getSeparator("LBL_Options"), c); // NOI18N
+    c.insets = new Insets(0, 0, 0, 0);
+    panel.add(createSeparator(i18n("LBL_Options")), c); // NOI18N
     panel.add(createOptionPanel(), c);
 
     return panel;
@@ -88,18 +88,13 @@ public final class Search extends Dialog {
     // text
     c.gridy++;
     c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
-    JLabel label = createLabel("LBL_Name"); // NOI18N
+    JLabel label = createLabel(i18n("LBL_Name")); // NOI18N
     panel.add(label, c);
 
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
     myName = new TextField(ASTERISK);
-    myName.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent event) {
-        updateButton();
-      }
-    });
     setWidth(myName.getUIComponent(), TEXT_WIDTH);
     label.setLabelFor(myName.getUIComponent());
     panel.add(myName.getUIComponent(), c);
@@ -109,7 +104,7 @@ public final class Search extends Dialog {
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0.0;
     c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
-    label = createLabel("LBL_Type"); // NOI18N
+    label = createLabel(i18n("LBL_Type")); // NOI18N
     panel.add(label, c);
 
     c.fill = GridBagConstraints.HORIZONTAL;
@@ -131,8 +126,8 @@ public final class Search extends Dialog {
 
     c.gridy++;
     myMatchCase = createCheckBox(
-      "LBL_Match_Case", // NOI18N 
-      new AbstractAction(getMessage("LBL_Match_Case")) { // NOI18N
+      i18n("LBL_Match_Case"), // NOI18N 
+      new AbstractAction(i18n("LBL_Match_Case")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );
@@ -140,8 +135,8 @@ public final class Search extends Dialog {
 
     c.gridy++;
     myPatternMatch = createCheckBox(
-      "LBL_Pattern_Match", // NOI18N 
-      new AbstractAction(getMessage("LBL_Pattern_Match")) { // NOI18N
+      i18n("LBL_Match_Pattern"), // NOI18N 
+      new AbstractAction(i18n("LBL_Match_Pattern")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           exclusion(myPatternMatch, myRegularExpression);
         }
@@ -153,8 +148,8 @@ public final class Search extends Dialog {
 
     c.gridy++;
     myRegularExpression = createCheckBox(
-      "LBL_Regular_Expression", // NOI18N 
-      new AbstractAction(getMessage("LBL_Regular_Expression")) { // NOI18N
+      i18n("LBL_Regular_Expression"), // NOI18N 
+      new AbstractAction(i18n("LBL_Regular_Expression")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           exclusion(myRegularExpression, myPatternMatch);
         }
@@ -182,7 +177,7 @@ public final class Search extends Dialog {
 
   private SearchMatch getMatch() {
     if (myPatternMatch.isSelected()) {
-      return SearchMatch.PATTERN_MATCH;
+      return SearchMatch.PATTERN;
     }
     if (myRegularExpression.isSelected()) {
       return SearchMatch.REGULAR_EXPRESSION;
@@ -190,22 +185,15 @@ public final class Search extends Dialog {
     return null;
   }
 
-  private void updateButton() {
-//    String text = myName.getText();
-//    boolean enabled = text != null && text.length() > 0;
-//    mySearchButton.setEnabled(enabled);
-// todo r
-  }
-
   private void search() {
     myDescriptor.setClosingOptions(
-      new Object[] { 
+      new Object [] { 
         mySearchButton,
         DialogDescriptor.CANCEL_OPTION
       }
     );
     SearchOption option = new SearchOption.Adapter(
-      myName.getText(),
+      myName.getText().trim(),
       mySource,
       myTarget.getSelectedItem(),
       getMatch(),
@@ -217,11 +205,11 @@ public final class Search extends Dialog {
     }
     catch (SearchException e) {
       myDescriptor.setClosingOptions(
-        new Object[] { 
+        new Object [] { 
           DialogDescriptor.CANCEL_OPTION
         }
       );
-      printError("ERR_Pattern_Error", e.getMessage()); // NOI18N
+      printError(i18n("ERR_Pattern_Error", e.getMessage())); // NOI18N
     }
   }
 
@@ -229,19 +217,17 @@ public final class Search extends Dialog {
   protected void closed()
   {
     myName.save();
-    mySearchEngine.removeSearchListener(myTree);
     mySearchEngine = null;
     mySource = null;
-    myTree = null;
   }
 
   @Override
   protected DialogDescriptor createDescriptor()
   {
-    Object[] buttons = getButtons();
+    Object [] buttons = getButtons();
     myDescriptor = new DialogDescriptor(
       getPanel(),
-      getMessage("LBL_Advanced_Search"), // NOI18N
+      i18n("LBL_Advanced_Search"), // NOI18N
       true, // modal
       buttons,
       mySearchButton,
@@ -255,19 +241,17 @@ public final class Search extends Dialog {
         }
       }
     );
-    updateButton();
-
     return myDescriptor;
   }
 
-  private Object[] getButtons() {
+  private Object [] getButtons() {
     mySearchButton = createButton(
-      "TLT_Search", // NOI18N
-      new AbstractAction(getMessage("LBL_Search")) { // NOI18N
+      i18n("TLT_Search"), // NOI18N
+      new AbstractAction(i18n("LBL_Search")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
       }
     );
-    return new Object[] {
+    return new Object [] {
       mySearchButton,
       DialogDescriptor.CANCEL_OPTION,
     };
@@ -276,7 +260,6 @@ public final class Search extends Dialog {
   private Object mySource;
   private TextField myName;
   private JComboBox myTarget;
-  private SearchListener myTree;
   private JButton mySearchButton;
   private JCheckBox myMatchCase;
   private JCheckBox myPatternMatch;

@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.bpel.refactoring;
@@ -32,6 +32,7 @@ import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import static org.netbeans.modules.print.api.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -61,12 +62,12 @@ final class Util {
     if (reference == null || reference.get() == null) {
       return;
     }
-//Log.out();
-//Log.out("   Visit: " + getName(reference.get()));
-//Log.out("  target: " + target.getName());
+//out();
+//out("   Visit: " + getName(reference.get()));
+//out("  target: " + target.getName());
     if (target.equals(reference.get())) {
-//Log.out();
-//Log.out("AdD: " + getName(component));
+//out();
+//out("AdD: " + getName(component));
       usage.addItem(component);
     }
   }
@@ -77,26 +78,26 @@ final class Util {
     Component component,
     UsageGroup usage)
   {
-//Log.out();
-//Log.out("VISIT: " + qName);
+//out();
+//out("VISIT: " + qName);
     if (target instanceof Named && contains(qName, (Named) target)) {
-//Log.out();
-//Log.out("ADd: " + getName(component));
+//out();
+//out("ADd: " + getName(component));
       usage.addItem(component);
     }
   }
 
   private static boolean contains(QName qName, Named target) {
     if (qName == null) {
-//Log.out("qName is null");
+//out("qName is null");
       return false;
     }
     String part = qName.getLocalPart();
 
     if ( !part.equals(target.getName())) {
-//Log.out("Target name != part");
-//Log.out("         part: " + part);
-//Log.out("  Target name: " + target.getName());
+//out("Target name != part");
+//out("         part: " + part);
+//out("  Target name: " + target.getName());
       return false;
     }
     return qName.getNamespaceURI().equals(getNamespace(target.getModel()));

@@ -23,10 +23,9 @@ import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
-
 import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+
+import static org.netbeans.modules.print.api.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -34,7 +33,7 @@ import static org.netbeans.modules.print.api.PrintUtil.*;
  */
 final class Printer implements Printable {
 
-  void print(Paper[] papers, Option option) {
+  void print(Paper [] papers, Option option) {
     PrinterJob printerJob = PrinterJob.getPrinterJob();
     myPapers = papers;
 //out("SET PAPER: " + myPapers);
@@ -50,7 +49,7 @@ final class Printer implements Printable {
       }
     }
     catch (PrinterException e) {
-      String msg = NbBundle.getMessage(
+      String msg = i18n(
         Printer.class, "ERR_Printer_Problem", e.getLocalizedMessage()); // NOI18N
       ErrorManager.getDefault().annotate(e, msg);
       ErrorManager.getDefault().notify(ErrorManager.USER, e);
@@ -68,10 +67,10 @@ final class Printer implements Printable {
       return NO_SUCH_PAGE;
     }
 //out("  print: " + index);
-    myPapers[index].print(g);
+    myPapers [index].print(g);
   
     return PAGE_EXISTS;
   }
 
-  private Paper[] myPapers;
+  private Paper [] myPapers;
 }
