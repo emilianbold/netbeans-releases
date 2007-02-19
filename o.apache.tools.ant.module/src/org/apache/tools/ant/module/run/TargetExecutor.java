@@ -431,8 +431,8 @@ public final class TargetExecutor implements Runnable {
                 io.select();
             }
         });
-        handle.start();
         handle.setInitialDelay(0); // #92436
+        handle.start();
         sa.setEnabled(true);
         ra.setEnabled(false);
         ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName, interestingOutputCallback, handle);
