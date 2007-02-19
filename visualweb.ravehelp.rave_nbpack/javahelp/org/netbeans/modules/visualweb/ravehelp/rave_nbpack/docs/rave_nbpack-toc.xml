@@ -118,7 +118,7 @@
 					<tocitem text="Deleting a Database Server Type" target="projrave_connect_data_howtodata_delete_server_type" />
 					<tocitem text="Deleting a JDBC Driver" target="projrave_connect_data_howtodata_delete_server_type" />
 					<tocitem text="Editing a Database Server Type" target="projrave_connect_data_howtodata_configure_jdbc_driver" />
-					<tocitem text="Modifying a Database Connection" target="projrave_connect_data_howtodata_modify_database_connection" />
+					<tocitem text="Modifying a Database Connection" target="projrave_connect_data_howtodata_modify_ds_properties" />
 					<tocitem text="Modifying Database Connection Properties" target="projrave_connect_data_howtodata_modify_ds_properties" />
 					<tocitem text="Removing a Database Connection from the Runtime Window" target="projrave_connect_data_howtodata_remove_data_source" />
 					<tocitem text="Resolving a Data Source" target="projrave_ui_elements_dialogs_resolve_data_source_db" />

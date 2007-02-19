@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="C:/HelpProjects/Rave/cvstree/shortfin5-5-1/ravehelp/rave_nbpack/javahelp/com/sun/rave/modules/rave_nbpack/docs">
+		<directory title="C:/Documents and Settings/James Branam/CVS/NBVisualWeb/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
 			<directory title="a11y">
 				<file title="abouta11y.html"/>
 				<file title="component_palette_shortcuts.html"/>
@@ -69,7 +69,6 @@
 					<file title="delete_table.html"/>
 					<file title="edit_database_svr_type.html"/>
 					<file title="java_db_quickref.html"/>
-					<file title="modify_database_connection.html"/>
 					<file title="modify_db_conn_properties.html"/>
 					<file title="refresh_jav_db.html"/>
 					<file title="remove_database_conn.html"/>

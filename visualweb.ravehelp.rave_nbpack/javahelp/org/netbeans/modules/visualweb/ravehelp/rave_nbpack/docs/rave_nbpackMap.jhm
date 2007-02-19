@@ -55,7 +55,6 @@
 	<mapID target="projrave_connect_data_howtodata_delete_server_type" url="connect_data/howtodata/delete_database_svr_type.html"/>
 	<mapID target="projrave_connect_data_howtodata_delete_table" url="connect_data/howtodata/delete_table.html"/>
 	<mapID target="projrave_connect_data_howtodata_howtoconnectdata" url="connect_data/howtodata/data_quickref.html"/>
-	<mapID target="projrave_connect_data_howtodata_modify_database_connection" url="connect_data/howtodata/modify_database_connection.html"/>
 	<mapID target="projrave_connect_data_howtodata_modify_ds_properties" url="connect_data/howtodata/modify_db_conn_properties.html"/>
 	<mapID target="projrave_connect_data_howtodata_refresh_bundled_db" url="connect_data/howtodata/refresh_jav_db.html"/>
 	<mapID target="projrave_connect_data_howtodata_refresh_java_db" url="connect_data/howtodata/refresh_jav_db.html"/>
