@@ -23,14 +23,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DeleteAction;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.Operator;
 
 /**
@@ -39,6 +42,8 @@ import org.netbeans.jemmy.operators.Operator;
  * @author Jiri Vagner
  */
 public abstract class ExtJellyTestCase extends JellyTestCase {
+    private static int MY_WAIT_MOMENT = 500;
+    
     public static String TEST_PROJECT_NAME = "SampleProject"; // NOI18N
     public static String TEST_PACKAGE_NAME = "data"; // NOI18N
     public static String DELETE_OBJECT_CONFIRM = "Confirm Object Deletion"; // NOI18N
@@ -54,21 +59,21 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
   /**
    * Simple console println
    */
-    private void p(String msg) {
+    public void p(String msg) {
         System.out.println(msg);
     }
     
   /**
    * Simple console println
    */
-    private void p(Boolean msg) {
+    public void p(Boolean msg) {
         p(String.valueOf(msg));
     }
     
   /**
    * Simple console println
    */
-    private void p(int msg) {
+    public void p(int msg) {
         p(String.valueOf(msg));
     }
     
@@ -88,12 +93,24 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         nfwo.selectFileType(fileType);
         nfwo.next();
         
+        // following code avoids issue nr. 60418
         NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         String fileName = name +  String.valueOf(new Date().getTime());
         nfnlso.txtObjectName().typeText(fileName);
         nfnlso.setPackage(packageName);
         nfnlso.finish();
+        
+        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        ProjectRootNode prn = pto.getProjectRootNode(project);
+        prn.select();
+        Node formnode = new Node(prn, "Source Packages|" + packageName + "|" + fileName); // NOI18N
+        formnode.select();
+
+        OpenAction openAction = new OpenAction();
+        openAction.perform(formnode);
+        // end of issue code 
         
         return fileName;
     }
@@ -104,7 +121,8 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     public void removeFile(String fileName) {
         if (DELETE_FILES) {
             ProjectsTabOperator project = new ProjectsTabOperator();
-            Node node = new Node(project.tree(), TEST_PROJECT_NAME + "|Source Packages|" + TEST_PACKAGE_NAME + "|" + fileName + ".java");
+            Node node = new Node(project.tree(), TEST_PROJECT_NAME +
+                    "|Source Packages|" + TEST_PACKAGE_NAME + "|" + fileName + ".java");  // NOI18N
             DeleteAction act = new DeleteAction();
             act.performPopup(node);
             new NbDialogOperator(DELETE_OBJECT_CONFIRM).yes();
@@ -116,7 +134,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      * @return new file name
      */ 
     public String createJDialogFile() {
-        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Java GUI Forms",  "JDialog Form", "MyJDialog");
+        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Java GUI Forms",  "JDialog Form", "MyJDialog"); // NOI18N
     }
     
     /**
@@ -124,7 +142,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      * @return new file name
      */ 
     public String createJFrameFile() {
-        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Java GUI Forms",  "JFrame Form", "MyJFrame");
+        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Java GUI Forms",  "JFrame Form", "MyJFrame"); // NOI18N
     }
     
     /**
@@ -132,7 +150,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      * @return new file name
      */ 
     public String createFrameFile() {
-        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Java GUI Forms|AWT Forms",  "Frame Form", "MyFrame");
+        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Java GUI Forms|AWT Forms",  "Frame Form", "MyFrame"); // NOI18N
     }
     
     /**
@@ -178,7 +196,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      */
     private void findStringInCode(String stringToFind, String code) {
         if (!code.contains(stringToFind))
-            fail("Missing string \"" + stringToFind + "\" in code.");
+            fail("Missing string \"" + stringToFind + "\" in code.");  // NOI18N
     }
     
     /**
@@ -217,7 +235,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         EditorOperator editor = designer.editor();
         
         if (editor.getText().contains(stringToFind))
-            fail("String \"" + stringToFind + "\" found in code.");
+            fail("String \"" + stringToFind + "\" found in code."); // NOI18N
         
         designer.design();
     }
@@ -228,5 +246,12 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      */
     public static void waitNoEvent(long waitTimeout) {
         new org.netbeans.jemmy.EventTool().waitNoEvent(waitTimeout);
+   }
+    
+    /**
+     * Calls Jelly waitNoEvent() with MY_WAIT_MOMENT 
+     */
+    public static void waitAMoment() {
+        waitNoEvent(MY_WAIT_MOMENT);
    }
 }
