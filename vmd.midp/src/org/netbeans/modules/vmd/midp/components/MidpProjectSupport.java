@@ -24,6 +24,7 @@ import java.util.*;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
@@ -240,7 +241,7 @@ public final class MidpProjectSupport {
     }
 
     public static ClasspathInfo getClasspathInfo (Project project) {
-        SourceGroup[] sourceGroups = org.netbeans.api.project.ProjectUtils.getSources (project).getSourceGroups (Sources.TYPE_GENERIC);
+        SourceGroup[] sourceGroups = org.netbeans.api.project.ProjectUtils.getSources (project).getSourceGroups (JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sourceGroups == null || sourceGroups.length < 1)
             return null;
         FileObject fileObject = sourceGroups[0].getRootFolder ();

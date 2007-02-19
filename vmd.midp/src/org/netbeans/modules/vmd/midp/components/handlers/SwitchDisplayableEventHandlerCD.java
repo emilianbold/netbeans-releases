@@ -32,6 +32,7 @@ import org.netbeans.modules.vmd.midp.flow.FlowSwitchDisplayableEventHandlerEdgeP
 import org.netbeans.modules.vmd.midp.flow.FlowSwitchDisplayableEventHandlerForwardEdgePresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowSwitchDisplayableEventHandlerPinPresenter;
 import org.netbeans.modules.vmd.midp.general.AbstractEventHandlerCreatorPresenter;
+import org.netbeans.modules.vmd.midp.codegen.SwitchDisplayableParameterPresenter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -73,8 +74,16 @@ public final class SwitchDisplayableEventHandlerCD extends ComponentDescriptor {
             // code
             new CodeMultiGuardedLevelPresenter() {
                 protected void generateMultiGuardedSectionCode (MultiGuardedSection section) {
-                    String alert = CodeReferencePresenter.generateAccessCode (getComponent ().readProperty (PROP_ALERT).getComponent ());
-                    String displayable = CodeReferencePresenter.generateAccessCode (getComponent ().readProperty (PROP_DISPLAYABLE).getComponent ());
+                    SwitchDisplayableParameterPresenter presenter;
+
+                    DesignComponent alertComponent = getComponent ().readProperty (PROP_ALERT).getComponent ();
+                    presenter = alertComponent != null ? alertComponent.getPresenter (SwitchDisplayableParameterPresenter.class) : null;
+                    String alert = presenter != null ? presenter.generateSwitchDisplayableParameterCode () : CodeReferencePresenter.generateAccessCode (alertComponent);
+
+                    DesignComponent displayableComponent = getComponent ().readProperty (PROP_DISPLAYABLE).getComponent ();
+                    presenter = displayableComponent != null ? displayableComponent.getPresenter (SwitchDisplayableParameterPresenter.class) : null;
+                    String displayable = presenter != null ? presenter.generateSwitchDisplayableParameterCode () : CodeReferencePresenter.generateAccessCode (displayableComponent);
+
                     section.getWriter ().write ("switchDisplayable (" + alert + ", " + displayable + ");\n"); // NOI18N
                 }
             },
