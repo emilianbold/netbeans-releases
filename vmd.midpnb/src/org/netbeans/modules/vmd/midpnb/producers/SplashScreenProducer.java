@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
@@ -56,5 +57,8 @@ public class SplashScreenProducer extends MidpComponentProducer {
 
         return new Result(splashScreen, dismissCommand, dismissEventSource);
     }
-
+    
+    public boolean checkValidity(DesignDocument document) {
+        return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
+    }
 }

@@ -37,24 +37,31 @@ import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 /**
  *
  * @author Karol Harezlak
+ * @author Anton Chechel
  */
 public abstract class CustomComponentProducer extends ComponentProducer {
     
     public CustomComponentProducer(TypeID typeID, PaletteDescriptor paletteDescriptor) {
         super(typeID.toString(), typeID, paletteDescriptor);
     }
-
+    
     public Result createComponent(DesignDocument document) {
         return new Result(document.createComponent(getComponentTypeID()));
     }
-
+    
     public boolean checkValidity(DesignDocument document) {
-        return MidpJavaSupport.checkValidity(document, getComponentTypeID());
+        // SimpleTableModel & SimpleCancellableTask should be valid by default, NetBeans MIDP Components library will be added automatically
+        return true;
     }
-
+    
     public static final class SVGAnimatorWrapper extends CustomComponentProducer {
         public SVGAnimatorWrapper() {
             super(SVGAnimatorWrapperCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Animator Wrapper", "SVG Animator Wrapper", SVGAnimatorWrapperCD.ICON_PATH, SVGAnimatorWrapperCD.ICON_LARGE_PATH)); // NOI18N
+        }
+        
+        public boolean checkValidity(DesignDocument document) {
+            return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
+                   MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
         }
     }
     
@@ -62,11 +69,20 @@ public abstract class CustomComponentProducer extends ComponentProducer {
         public SVGImage() {
             super(SVGImageCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Image", "SVG Image", SVGImageCD.ICON_PATH, null)); // NOI18N
         }
+        
+        public boolean checkValidity(DesignDocument document) {
+            return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
+                   MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
+        }
     }
     
     public static final class TableItem extends CustomComponentProducer {
         public TableItem() {
             super(TableItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Table Item", "Table Item", TableItemCD.ICON_PATH, null)); // NOI18N
+        }
+
+        public boolean checkValidity(DesignDocument document) {
+            return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Item"); // NOI18N
         }
     }
     
@@ -76,7 +92,7 @@ public abstract class CustomComponentProducer extends ComponentProducer {
         }
     }
     
-     public static final class SimpleTableModel extends CustomComponentProducer {
+    public static final class SimpleTableModel extends CustomComponentProducer {
         public SimpleTableModel() {
             super(SimpleTableModelCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Simple Table Model", "Simple Table Model", SimpleCancellableTaskCD.ICON_PATH, null)); // NOI18N
         }

@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
@@ -39,15 +40,15 @@ import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
  * @author Anton Chechel
  */
 public class SVGWaitScreenProducer extends MidpComponentProducer {
-   
+    
     public SVGWaitScreenProducer() {
-       super(SVGWaitScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Wait Screen", "SVG Wait Screen", SVGWaitScreenCD.ICON_PATH, SVGWaitScreenCD.ICON_LARGE_PATH)); // NOI18N
+        super(SVGWaitScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Wait Screen", "SVG Wait Screen", SVGWaitScreenCD.ICON_PATH, SVGWaitScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
-
+    
     public Result createComponent(DesignDocument document) {
         DesignComponent waitScreen = document.createComponent(SVGWaitScreenCD.TYPEID);
-        DesignComponent successCommand = MidpDocumentSupport.getSingletonCommand (document, SVGWaitScreenSuccessCommandCD.TYPEID);
-        DesignComponent failureCommand = MidpDocumentSupport.getSingletonCommand (document, SVGWaitScreenFailureCommandCD.TYPEID);
+        DesignComponent successCommand = MidpDocumentSupport.getSingletonCommand(document, SVGWaitScreenSuccessCommandCD.TYPEID);
+        DesignComponent failureCommand = MidpDocumentSupport.getSingletonCommand(document, SVGWaitScreenFailureCommandCD.TYPEID);
         
         DesignComponent successEventSource = document.createComponent(SVGWaitScreenSuccessCommandEventSourceCD.TYPEID);
         DesignComponent failureEventSource = document.createComponent(SVGWaitScreenFailureCommandEventSourceCD.TYPEID);
@@ -57,11 +58,15 @@ public class SVGWaitScreenProducer extends MidpComponentProducer {
         
         failureEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(waitScreen));
         failureEventSource.writeProperty(CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference(failureCommand));
-       
+        
         MidpDocumentSupport.addEventSource(waitScreen, DisplayableCD.PROP_COMMANDS, successEventSource);
         MidpDocumentSupport.addEventSource(waitScreen, DisplayableCD.PROP_COMMANDS, failureEventSource);
         
         return new Result(waitScreen, successCommand, failureCommand, successEventSource, failureEventSource);
     }
     
+    public boolean checkValidity(DesignDocument document) {
+            return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
+                   MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
+    }
 }

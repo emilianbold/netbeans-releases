@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
@@ -41,22 +42,26 @@ import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 public class SVGMenuProducer extends MidpComponentProducer {
     
     public SVGMenuProducer() {
-       super(SVGMenuCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Menu", "SVG Menu", SVGMenuCD.ICON_PATH, SVGMenuCD.ICON_LARGE_PATH)); // NOI18N
+        super(SVGMenuCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Menu", "SVG Menu", SVGMenuCD.ICON_PATH, SVGMenuCD.ICON_LARGE_PATH)); // NOI18N
     }
     
     public Result createComponent(DesignDocument document) {
         DesignComponent menu = document.createComponent(SVGMenuCD.TYPEID);
-        DesignComponent selectCommand = MidpDocumentSupport.getSingletonCommand (document, SVGMenuSelectCommandCD.TYPEID);
-
+        DesignComponent selectCommand = MidpDocumentSupport.getSingletonCommand(document, SVGMenuSelectCommandCD.TYPEID);
+        
         DesignComponent selectEventSource = document.createComponent(SVGMenuSelectCommandEventSourceCD.TYPEID);
         selectEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(menu));
         selectEventSource.writeProperty(CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference(selectCommand));
         MidpDocumentSupport.addEventSource(menu, DisplayableCD.PROP_COMMANDS, selectEventSource);
-
+        
         DesignComponent menuEventHandler = document.createComponent(SVGMenuEventHandlerCD.TYPEID);
         MidpDocumentSupport.updateEventHandlerWithNew(selectEventSource, menuEventHandler);
-
+        
         return new Result(menu, selectCommand, selectEventSource);
     }
-
+    
+    public boolean checkValidity(DesignDocument document) {
+            return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
+                   MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
+    }
 }

@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
@@ -39,21 +40,25 @@ import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 public class SVGSplashScreenProducer extends MidpComponentProducer {
     
     public SVGSplashScreenProducer() {
-       super(SVGSplashScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Splash Screen", "SVG Splash Screen", SVGSplashScreenCD.ICON_PATH, SVGSplashScreenCD.ICON_LARGE_PATH)); // NOI18N
+        super(SVGSplashScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Splash Screen", "SVG Splash Screen", SVGSplashScreenCD.ICON_PATH, SVGSplashScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
     
     public Result createComponent(DesignDocument document) {
         DesignComponent splashScreen = document.createComponent(SVGSplashScreenCD.TYPEID);
-        DesignComponent dismissCommand = MidpDocumentSupport.getSingletonCommand (document, SVGSplashScreenDismissCommandCD.TYPEID);
-
+        DesignComponent dismissCommand = MidpDocumentSupport.getSingletonCommand(document, SVGSplashScreenDismissCommandCD.TYPEID);
+        
         DesignComponent dismissEventSource = document.createComponent(SVGSplashScreenDismissCommandEventSourceCD.TYPEID);
-
+        
         dismissEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(splashScreen));
         dismissEventSource.writeProperty(CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference(dismissCommand));
-
+        
         MidpDocumentSupport.addEventSource(splashScreen, DisplayableCD.PROP_COMMANDS, dismissEventSource);
-
+        
         return new Result(splashScreen, dismissCommand, dismissEventSource);
     }
-
+    
+    public boolean checkValidity(DesignDocument document) {
+            return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
+                   MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
+    }
 }

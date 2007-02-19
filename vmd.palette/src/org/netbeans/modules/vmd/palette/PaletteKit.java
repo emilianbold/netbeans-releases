@@ -68,7 +68,7 @@ public class PaletteKit implements Runnable {
                 rootFolderFO = FileUtil.createFolder(projectTypeFO, "palette"); // NOI18N
             }
             rootFolder = DataFolder.findFolder(rootFolderFO);
-            rootFolder.getPrimaryFile().setAttribute("itemWidth", "100"); // NOI18N
+            rootFolder.getPrimaryFile().setAttribute("itemWidth", "120"); // NOI18N
             
             paletteController = PaletteFactory.createPalette(rootFolderPath, new Actions(), new Filter(), new DNDHandler());
         } catch (IOException ex) {
