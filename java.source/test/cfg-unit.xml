@@ -41,7 +41,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/api/java/source/gen/GeneratorTest.class" />
                 <exclude name="org/netbeans/api/java/source/gen/MethodTest2.class" />
                 <exclude name="org/netbeans/api/java/source/gen/MethodTest3.class" />
-                <exclude name="org/netbeans/api/java/source/gen/MethodBodyTextTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/LabelsTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/CompareTreeTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/MethodCreationTest.class"/>
@@ -74,6 +73,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/PackageTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/MethodParametersTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/MethodTypeParametersTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/MethodBodyTextTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/MethodThrowsTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/ImportsTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/ImportFormatTest.class"/>
@@ -129,21 +129,6 @@ Microsystems, Inc. All Rights Reserved.
                 -->
                 <include name="org/netbeans/api/java/source/gen/AnnotationOnLocVarTest.class"/>
                 
-                <!--
-                Three method for testing body provided as a text.
-                Current problems:
-                * Methods are in tests - not possible to add them to the TreeMaker as they need
-                  to know SourceUtils class. Method will be defined in java/source module.
-                * generator adds extra empty statement ';' when setting body
-                * how to generate comments with the statements? It is not possible to add them
-                * immediately in text.
-                -->
-                <include name="org/netbeans/api/java/source/gen/MethodBodyTextTest.class"/>
-                
-                <!-- <include name="org/netbeans/api/java/source/gen/CompareTreeTest.class"/> -->
-                <!-- <include name="org/netbeans/api/java/source/gen/FieldTest2.class"/> -->
-                <!-- <include name="org/netbeans/api/java/source/gen/FieldTest3.class"/> -->
-                <!-- <include name="org/netbeans/api/java/source/gen/FieldTest4.class"/> -->
             </patternset>
         </testset>
     </testbag>
