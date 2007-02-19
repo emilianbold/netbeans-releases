@@ -335,25 +335,25 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         Node beanNode = new Node(new SourcePackagesNode(SAMPLE_WEB_PROJECT_NAME), "org.netbeans.test|MyBean.java"); //NOI18N
         new OpenAction().performAPI(beanNode); // NOI18N
         EditorOperator eoBean = new EditorOperator("MyBean.java"); // NOI18N
-        int line = Utils.setBreakpoint(eoBean, "System.out.println"); // NOI18N
+        final int lineJavaSource = Utils.setBreakpoint(eoBean, "System.out.println"); // NOI18N
         new DebugAction().perform(beanNode);
-        stt.waitText("MyBean.java:"+line); //NOI18N
+        stt.waitText("MyBean.java:"+lineJavaSource); //NOI18N
         
         Node pageNode = new Node(new WebPagesNode(SAMPLE_WEB_PROJECT_NAME), "incl|simpleInclude.jsp"); //NOI18N
         new OpenAction().performAPI(pageNode);
         EditorOperator eoPage = new EditorOperator("simpleInclude.jsp"); // NOI18N
-        line = Utils.setBreakpoint(eoPage, "incl/simpleInclude.jsp"); // NOI18N
+        final int lineJSP = Utils.setBreakpoint(eoPage, "incl/simpleInclude.jsp"); // NOI18N
         new DebugAction().perform(pageNode);
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/incl/simpleInclude.jsp");
-        stt.waitText("simpleInclude.jsp:"+line); //NOI18N
+        stt.waitText("simpleInclude.jsp:"+lineJSP); //NOI18N
         
         SessionsOperator so = SessionsOperator.invoke();
         so.makeCurrent("MyBean"); //NOI18N
         // wait pointer in editor (two annotations there)
         new Waiter(new Waitable() {
             public Object actionProduced(Object editorOper) {
-                return ((EditorOperator)editorOper).getAnnotations().length == 2 ? Boolean.TRUE : null;
+                return ((EditorOperator)editorOper).getAnnotations(lineJavaSource).length == 2 ? Boolean.TRUE : null;
             }
             public String getDescription() {
                 return("Wait 2 annotations in editor."); // NOI18N
@@ -364,7 +364,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         // wait pointer in editor (two annotations there)
         new Waiter(new Waitable() {
             public Object actionProduced(Object editorOper) {
-                return ((EditorOperator)editorOper).getAnnotations().length == 2 ? Boolean.TRUE : null;
+                return ((EditorOperator)editorOper).getAnnotations(lineJSP).length == 2 ? Boolean.TRUE : null;
             }
             public String getDescription() {
                 return("Wait 2 annotations in editor."); // NOI18N
