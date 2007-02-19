@@ -472,6 +472,12 @@ class HeapView extends JComponent {
             updateCacheIfNecessary(width, height);
             paintCachedBackground(g2, width, height);
             g.translate(1, 2);
+            if (containsMouse) {
+                g.clipRect(1, 0, width - 4, height - 4);
+            }
+            else {
+                g.clipRect(0, 0, width - 2, height - 4);
+            }
             int innerW = width - BORDER_W;
             int innerH = height - BORDER_H;
             if (heapGrowTimer != null) {
@@ -641,12 +647,9 @@ class HeapView extends JComponent {
     private void paintBorder(Graphics g, int w, int h) {
         // Draw the border
         if (containsMouse) {
-            g.setColor(BORDER1_COLOR);
-            g.drawRect(0, 1, w - 1, h - 3);
-            g.setColor(BORDER2_COLOR);
-            g.fillRect(0, h - 1, w, 1);
             g.setColor(Color.WHITE);
-            g.fillRect(0, 0, w, 1);
+            g.drawRect(0, 0, w - 1, h - 1);
+            g.drawRect(1, 1, w - 3, h - 3);
         }
         else {
             g.setColor(BORDER1_COLOR);
