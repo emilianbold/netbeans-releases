@@ -903,9 +903,13 @@ public class CasualDiff {
         // let diffClassDef() method notified that anonymous class is printed.
         if (oldT.def != null) {
             copyTo(localPointer, getOldPos(oldT.def));
-            anonClass = true; 
-            localPointer = diffTree(oldT.def, newT.def, getBounds(oldT.def));
-            anonClass = false;
+            if (newT.def != null) {
+                anonClass = true;
+                localPointer = diffTree(oldT.def, newT.def, getBounds(oldT.def));
+                anonClass = false;
+            } else {
+                localPointer = endPos(oldT.def);
+            }
         }
         copyTo(localPointer, bounds[1]);
         return bounds[1];
