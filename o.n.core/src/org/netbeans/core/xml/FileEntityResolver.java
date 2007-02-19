@@ -163,7 +163,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
         }
         
         try {
-            InstanceCookie cookie = (InstanceCookie)source.getCookie (InstanceCookie.class);
+            InstanceCookie cookie = source.getCookie (InstanceCookie.class);
             
             if (cookie != null) {
                 Object inst = cookie.instanceCreate ();
@@ -402,6 +402,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                 }
                 reader.parse(is);
             } catch (StopSaxException ex) {
+                ERR.log(Level.FINE, null, ex);
             } catch (Exception ex) { // SAXException, FileNotFoundException, IOException
                 if ("org.openide.util.lookup.AbstractLookup$ISE".equals (ex.getClass ().getName ())) { // NOI18N
                     // this is covered by the FileEntityResolverDeadlock54971Test
@@ -412,7 +413,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                     // #25082: do not notify an exception if the file comes
                     // from other filesystem than the system filesystem
                     if (src.getFileSystem() == Repository.getDefault().getDefaultFileSystem()) {
-                        Logger.getLogger(FileEntityResolver.class.getName()).log(Level.WARNING, null, ex);
+                        ERR.log(Level.WARNING, "Parsing " + src, ex); // NOI18N
                     }
                 } catch (org.openide.filesystems.FileStateInvalidException fie) {
                     // ignore
@@ -423,7 +424,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                         in.close();
                     }
                 } catch (IOException exc) {
-                    Logger.getLogger(FileEntityResolver.class.getName()).log(Level.WARNING, null, exc);
+                    ERR.log(Level.WARNING, "Closing stream for " + src, exc);
                 }
             }
         }
