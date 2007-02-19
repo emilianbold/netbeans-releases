@@ -36,6 +36,8 @@ import org.openide.util.Lookup;
  * @author Milos Kleint (mkleint@netbeans.org)
  */
 public final class InternalHandle {
+
+    private static final Logger LOG = Logger.getLogger(InternalHandle.class.getName());
     
     private String displayName;
     private boolean customPlaced1 = false;
@@ -117,7 +119,7 @@ public final class InternalHandle {
     
     public void setInitialDelay(int millis) {
         if (state != STATE_INITIALIZED) {
-            Logger.getAnonymousLogger().warning("Setting ProgressHandle.setInitialDelay() after the task is started has no effect"); //NOI18N
+            LOG.warning("Setting ProgressHandle.setInitialDelay() after the task is started has no effect"); //NOI18N
             return;
         }
         initialDelay = millis;
@@ -233,7 +235,7 @@ public final class InternalHandle {
             }
             if (workunit > totalUnits) {
                 // seems to be the by far most frequently abused contract. Record it to log file and safely handle the case
-                Logger.getAnonymousLogger().log(Level.WARNING,
+                LOG.log(Level.WARNING,
                     "Cannot process more work than scheduled. " +
                     "Progress handle with name \"" + getDisplayName() + "\" has requested progress to workunit no." + workunit + 
                     " but the total number of workunits is " + totalUnits + ". That means the progress bar UI will not display real progress and will stay at 100%.",
@@ -313,7 +315,7 @@ public final class InternalHandle {
         if (component == null) {
             ProgressUIWorkerProvider prov = Lookup.getDefault().lookup(ProgressUIWorkerProvider.class);
             if (prov == null) {
-                Logger.getLogger(InternalHandle.class.getName()).log(Level.CONFIG, "Using fallback trivial progress implementation");
+                LOG.log(Level.CONFIG, "Using fallback trivial progress implementation");
                 prov = new TrivialProgressUIWorkerProvider();
             }
             component = prov.getExtractedComponentWorker();
@@ -371,7 +373,7 @@ public final class InternalHandle {
             // should give us more smooth estimates 
             long remainingUnits = (totalUnits - currentUnit);
             double remainingPortion = (double)remainingUnits / (double)totalUnits;
-            double currentEstimate = (double)durationSoFar / (double)currentUnit * totalUnits;
+            double currentEstimate = durationSoFar / (double)currentUnit * totalUnits;
             long retValue = (long)(((initialEstimate * remainingUnits * remainingPortion) 
                          + (currentEstimate * remainingUnits * (1 - remainingPortion)))
                        / totalUnits); 

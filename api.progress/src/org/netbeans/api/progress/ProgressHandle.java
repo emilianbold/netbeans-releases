@@ -80,6 +80,7 @@ public final class ProgressHandle {
      * stops moving, hides completely or partially. Useful to make progress in status bar less intrusive 
      * for very long running tasks, eg. running an ant script that executes user application, debugs user application etc.
      * Any incoming progress wakes up the progress bar to previous state.
+     * @param message a message to display in the silent mode
      * @since org.netbeans.api.progress/1 1.9
      */
     public void suspend(String message) {
@@ -90,6 +91,7 @@ public final class ProgressHandle {
      * Currently indeterminate task can be switched to show percentage completed.
      * A common usecase is to calculate the amount of work in the beginning showing 
      * in indeterminate mode and later switch to the progress with known steps
+     * @param workunits a definite number of complete units of work out of the total
      */
     public void switchToDeterminate(int workunits) {
         internal.toDeterminate(workunits, -1);
@@ -99,6 +101,8 @@ public final class ProgressHandle {
      * Currently indeterminate task can be switched to show the time estimate til completion.
      * A common usecase is to calculate the amount of work in the beginning 
      * in indeterminate mode and later switch to the progress with the calculated estimate.
+     * @param workunits a definite number of complete units of work out of the total
+     * @param estimate estimated time to process the task, in seconds
      */
     public void switchToDeterminate(int workunits, long estimate) {
         internal.toDeterminate(workunits, estimate);
@@ -142,10 +146,12 @@ public final class ProgressHandle {
      * Set a custom initial delay for the progress task to appear in the status bar.
      * This delay marks the time between starting of the progress handle
      * and its appearance in the status bar. If it finishes earlier, it's not shown at all.
-     * There is a default &lt; 1s value for this. If you want to to appear earlier or later, 
-     * call this method with the value you prefer before starting the handle.
+     * There is a default &lt; 1s value for this. If you want it to appear earlier or later,
+     * call this method with the value you prefer <strong>before {@linkplain #start() starting}</strong> the handle.
+     * (Has no effect if called after the handle is started.)
      * <p> Progress bars that are placed in custom dialogs do always appear right away without a delay.
      * @param millis number of miliseconds to wait before the progress appears in status bar.
+     * @since org.netbeans.api.progress/1 1.2
      */
     public void setInitialDelay(int millis) {
        internal.setInitialDelay(millis); 
@@ -154,6 +160,7 @@ public final class ProgressHandle {
     /**
      * change the display name of the progress task. Use with care, please make sure the changed name is not completely different,
      * or otherwise it might appear to the user as a different task.
+     * @param newDisplayName a new name to set for the task
      * @since org.netbeans.api.progress 1.5
      */
     public void setDisplayName(String newDisplayName) {
@@ -171,6 +178,7 @@ public final class ProgressHandle {
      * for unit testing only..
      * @deprecated for unit testing only.
      */
+    @Deprecated
     InternalHandle getInternalHandle() {
         return internal;
     }
