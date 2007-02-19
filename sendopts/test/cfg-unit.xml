@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
     "**/*Hid.*"
 -->
 
-<mconfig name="contrib/profiles">
+<mconfig name="core/sendopts">
     <testbag testattribs="stable" executor="code" name="unit" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>

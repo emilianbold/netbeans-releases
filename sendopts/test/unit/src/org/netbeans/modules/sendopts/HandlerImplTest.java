@@ -68,7 +68,7 @@ public class HandlerImplTest extends NbTestCase {
         assertEquals("No out", 0, os.toByteArray().length);
 
         String msg = bundle.getString("SIMPLEERROR");
-        assertEquals("error is as expected", msg + "\n", err.toString());
+        assertEquals("error is as expected", msg, err.toString().replace("\n", "").replace("\r", ""));
     }
     public void testErrorMessageIsPrintedWithArgs() {
         key = "ARGS";
@@ -79,7 +79,7 @@ public class HandlerImplTest extends NbTestCase {
         assertEquals("Execution returns 337", 337, ret);
         assertEquals("No out", 0, os.toByteArray().length);
 
-        assertEquals("error is as expected", "XYZ\n", err.toString());
+        assertEquals("error is as expected", "XYZ", err.toString().replace("\n", "").replace("\r", ""));
     }
     public void testErrorMessageForInlinedThrowable() {
         key = new Exception() {
@@ -93,7 +93,7 @@ public class HandlerImplTest extends NbTestCase {
         assertEquals("Execution returns 221", 221, ret);
         assertEquals("No out", 0, os.toByteArray().length);
 
-        assertEquals("error is as expected", "LOC\n", err.toString());
+        assertEquals("error is as expected", "LOC", err.toString().replace("\n", "").replace("\r", ""));
     }
 
     public static final class OP extends OptionProcessor {
