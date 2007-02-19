@@ -19,12 +19,13 @@
 
 package org.netbeans.modules.editor;
 
-import org.netbeans.modules.editor.impl.PopupActions;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -41,8 +42,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.Keymap;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.ActionFactory;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtKit;
@@ -60,6 +59,8 @@ import org.netbeans.editor.MacroDialogSupport;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.modules.editor.impl.ActionsList;
+import org.netbeans.modules.editor.impl.PopupMenuActionsProvider;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.OptionUtilities;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
@@ -67,6 +68,8 @@ import org.netbeans.modules.editor.options.MacrosEditorPanel;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -260,24 +263,17 @@ public class NbEditorKit extends ExtKit {
         }
 
         protected JPopupMenu buildPopupMenu(JTextComponent component) {        
-            List l;
             EditorUI ui = Utilities.getEditorUI(component);
             if (!ui.hasExtComponent()) {
                 return null;
             }
-            JPopupMenu pm = createPopupMenu(component);
-            Map notAddedFolders = new HashMap();
             
-            Object mimeTypeObj = component.getDocument().getProperty("mimeType");  //NOI18N
-            String mimeType;
-            mimeType = (mimeTypeObj instanceof String) ? 
-                (String) mimeTypeObj :
-                NbEditorKit.this.getContentType();
-            Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
-            PopupActions pa = (PopupActions)lookup.lookup(PopupActions.class);
-            if (pa != null){
-                l = pa.getPopupActions();
-            } else {            
+            JPopupMenu pm = createPopupMenu(component);
+            
+            String mimeType = NbEditorUtilities.getMimeType(component);
+            List l = PopupMenuActionsProvider.getPopupMenuInstances(mimeType);
+            
+            if (l.isEmpty()){
                 l = (List)Settings.getValue(Utilities.getKitClass(component),
                     (ui == null || ui.hasExtComponent())
                         ? ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST
@@ -286,34 +282,17 @@ public class NbEditorKit extends ExtKit {
             }
             
             if (l != null) {
-                Iterator i = l.iterator();
-                while (i.hasNext()) {
+                for (Iterator i = l.iterator(); i.hasNext(); ) {
                     Object obj = i.next();
-                    if (obj == null) continue;
-                    if (obj instanceof Action){
-                        addAction(component, pm, (Action)obj);
-                    }else if (obj instanceof javax.swing.JSeparator){
+                    
+                    if (obj == null || obj instanceof javax.swing.JSeparator) {
                         addAction(component, pm, (String)null);
-                    }else if (obj instanceof String){
-                        String actionName = (String)obj;
-                        addAction(component, pm, actionName);
-                    }else if (obj instanceof DataFolder){
-                        DataFolder folder = (DataFolder) obj;
-                        String folderName = folder.getName();
-                        if (pa!=null){
-                            String localizedName = null;
-                            String bundleLocation = (String) folder.getPrimaryFile().
-                                    getAttribute("SystemFileSystem.localizingBundle"); //NOI18N
-                            ResourceBundle bundle = getBundleFromName (bundleLocation);
-                            if (bundle!=null){
-                                try {
-                                    localizedName = bundle.getString(folderName);
-                                } catch (MissingResourceException mre){
-                                }
-                            }
-                            JMenu subMenu = new LayerSubFolderMenu(component, (localizedName == null) ? folderName : localizedName, pa.getPopupActions(folderName));
-                            pm.add(subMenu);
-                        }
+                    } else if (obj instanceof String) {
+                        addAction(component, pm, (String)obj);
+                    } else if (obj instanceof Action) {
+                        addAction(component, pm, (Action)obj);
+                    } else if (obj instanceof DataFolder) {
+                        pm.add(new LayerSubFolderMenu(component, ((DataFolder) obj).getPrimaryFile()));
                     }
                 }
             }
@@ -728,24 +707,42 @@ public class NbEditorKit extends ExtKit {
     }
 
     
-    private static class LayerSubFolderMenu extends JMenu {
+    private static final class LayerSubFolderMenu extends JMenu {
 
-        public LayerSubFolderMenu(JTextComponent target, String text, List items) {
-            super(text);
+        private static String getLocalizedName(FileObject f) {
+            try {
+                return f.getFileSystem().getStatus().annotateName(
+                    f.getNameExt(),
+                    Collections.singleton(f));
+            } catch (FileStateInvalidException e) {
+                return f.getNameExt();
+            }
+        }
+        
+        public LayerSubFolderMenu(JTextComponent target, FileObject folder) {
+            this(target, getLocalizedName(folder), ActionsList.convert(Arrays.asList(folder.getChildren())));
+        }
+        
+        private LayerSubFolderMenu(JTextComponent target, String text, List items) {
+            super();
             Mnemonics.setLocalizedText(this, text);
-            for (int i=0; i<items.size(); i++){
-                Object obj = items.get(i);
-                if (obj == null){
+            
+            for (Iterator i = items.iterator(); i.hasNext(); ) {
+                Object obj = i.next();
+                
+                if (obj == null || obj instanceof javax.swing.JSeparator) {
                     addSeparator();
-                } else if (obj instanceof String){
+                } else if (obj instanceof String) {
                     addAction(target, this, (String)obj);
-                } else if (obj instanceof Action){
-                    addAction (target, this, (Action)obj);
+                } else if (obj instanceof Action) {
+                    addAction(target, this, (Action)obj);
+                } else if (obj instanceof DataFolder) {
+                    this.add(new LayerSubFolderMenu(target, ((DataFolder) obj).getPrimaryFile()));
                 }
             }
         }
 
-        private void addAcceleretors(Action a, JMenuItem item, JTextComponent target){
+        private static void addAcceleretors(Action a, JMenuItem item, JTextComponent target) {
             // Try to get the accelerator
             Keymap km = (target == null) ? BaseKit.getKit(BaseKit.class).getKeymap() :
                     target.getKeymap();
@@ -773,7 +770,7 @@ public class NbEditorKit extends ExtKit {
             }
         }
 
-        protected String getItemText(JTextComponent target, String actionName, Action a) {
+        private static String getItemText(JTextComponent target, String actionName, Action a) {
             String itemText;
             if (a instanceof BaseAction) {
                 itemText = ((BaseAction)a).getPopupMenuText(target);
@@ -784,54 +781,48 @@ public class NbEditorKit extends ExtKit {
             return itemText;
         }
 
-        protected void addAction(JTextComponent target, JMenu menu,
-        String actionName) {
+        private static void addAction(JTextComponent target, JMenu menu, String actionName) {
+            assert target != null : "The parameter target must not be null"; //NOI18N
+            assert menu != null : "The parameter menu must not be null"; //NOI18N
+            assert actionName != null : "The parameter actionName must not be null";//NOI18N
+            
             BaseKit kit = Utilities.getKit(target);
             if (kit == null) return;
             Action a = kit.getActionByName(actionName);
-            if (a!=null){
+            if (a != null) {
                 addAction(target, menu, a);
-            } else { // action-name is null, add the separator
-                menu.addSeparator();
             }
         }        
         
         
-        protected void addAction(JTextComponent target, JMenu menu,
-        Action a) {
-            BaseKit kit = (target == null) ? BaseKit.getKit(BaseKit.class) : Utilities.getKit(target);
-            if (!(kit instanceof BaseKit)) { //bugfix of #45101
-                kit = BaseKit.getKit(BaseKit.class);
-                target = null;
+        private static void addAction(JTextComponent target, JMenu menu, Action action) {
+            assert target != null : "The parameter target must not be null"; //NOI18N
+            assert menu != null : "The parameter menu must not be null"; //NOI18N
+            assert action != null : "The parameter action must not be null"; //NOI18N
+            
+            JMenuItem item = null;
+            if (action instanceof BaseAction) {
+                item = ((BaseAction)action).getPopupMenuItem(target);
             }
-            if (kit == null) return;
-
-            if (a != null) {
-                String actionName = (String) a.getValue(Action.NAME);
-                JMenuItem item = null;
-                if (a instanceof BaseAction) {
-                    item = ((BaseAction)a).getPopupMenuItem(target);
-                }
-                if (item == null) {
-                    String itemText = getItemText(target, actionName, a);
-                    if (itemText != null) {
-                        item = new JMenuItem(itemText);
-                        item.addActionListener(a);
-                        Mnemonics.setLocalizedText(item, itemText);
-                        addAcceleretors(a, item, target);
-                        item.setEnabled(a.isEnabled());
-                        Object helpID = a.getValue ("helpID"); // NOI18N
-                        if (helpID != null && (helpID instanceof String))
-                            item.putClientProperty ("HelpID", helpID); // NOI18N
+            
+            if (item == null) {
+                String actionName = (String) action.getValue(Action.NAME);
+                String itemText = getItemText(target, actionName, action);
+                if (itemText != null) {
+                    item = new JMenuItem(itemText);
+                    item.addActionListener(action);
+                    Mnemonics.setLocalizedText(item, itemText);
+                    addAcceleretors(action, item, target);
+                    item.setEnabled(action.isEnabled());
+                    Object helpID = action.getValue ("helpID"); // NOI18N
+                    if (helpID != null && (helpID instanceof String)) {
+                        item.putClientProperty ("HelpID", helpID); // NOI18N
                     }
                 }
+            }
 
-                if (item != null) {
-                    menu.add(item);
-                }
-
-            } else { // action-name is null, add the separator
-                menu.addSeparator();
+            if (item != null) {
+                menu.add(item);
             }
         }        
     }

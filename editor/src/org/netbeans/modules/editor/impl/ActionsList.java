@@ -33,7 +33,7 @@ public class ActionsList {
     private final List actions;
 
     protected ActionsList(List keys) {
-        List [] lists = convert(keys == null ? Collections.emptyList() : keys);
+        List [] lists = convertImpl(keys == null ? Collections.emptyList() : keys);
         this.all = lists[0];
         this.actions = lists[1];
     }
@@ -46,7 +46,12 @@ public class ActionsList {
         return actions;
     }
 
-    private static List [] convert(List keys) {
+    public static List convert(List keys) {
+        List [] lists = convertImpl(keys);
+        return lists[0];
+    }
+    
+    private static List [] convertImpl(List keys) {
         List all = new ArrayList();
         List actions = new ArrayList();
 
