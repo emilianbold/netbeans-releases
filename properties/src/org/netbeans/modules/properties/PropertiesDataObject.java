@@ -49,9 +49,6 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     /** Generated Serialized Version UID. */
     static final long serialVersionUID = 4795737295255253334L;
     
-    /** MIME type for properties. */
-    public static final String MIME_PROPERTIES = "text/x-properties"; // NOI18N
-
     /** Structural view of the dataobject */
     private transient BundleStructure bundleStructure;
     

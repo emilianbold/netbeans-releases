@@ -107,13 +107,6 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         super(new Environment(entry),
               org.openide.util.lookup.Lookups.singleton(entry.getDataObject()));
         this.myEntry = entry;
-        initialize();       
-    }
-    
-    
-    /** Sets MIME type for this support. */
-    public void initialize() {
-        setMIMEType (PropertiesDataObject.MIME_PROPERTIES);        
     }
     
     /** 
