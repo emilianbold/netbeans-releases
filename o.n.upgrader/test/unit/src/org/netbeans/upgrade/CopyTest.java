@@ -246,7 +246,7 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
             "root/X.txt_hidden", 
         };
         LocalFileSystem fs = createLocalFileSystem (res);
-        URL url = getClass().getResource("layer4.1.xml");
+        URL url = getClass().getResource("layer5.5.xml");
         assertNotNull("found sample layer", url);
         XMLFileSystem xfs = new XMLFileSystem(url);
         
