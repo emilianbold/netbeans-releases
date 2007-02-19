@@ -750,7 +750,6 @@ public class TomcatManager implements DeploymentManager {
                 "conf/web.xml",   // NOI18N
                 ADMIN_XML,   // NOI18N For bundled tomcat 5.0.x 
                 "conf/Catalina/localhost/manager.xml",   // NOI18N
-                //"conf/Catalina/localhost/balancer.xml"   // NOI18N For bundled tomcat 5.0.x 
             };
             String [] patternFrom = new String [] { 
                 null, 
@@ -760,8 +759,7 @@ public class TomcatManager implements DeploymentManager {
                 "</tomcat-users>",   // NOI18N
                 null,
                 "docBase=\"../server/webapps/admin\"",    // NOI18N For bundled tomcat 5.0.x 
-                "docBase=\"../server/webapps/manager\"",    // NOI18N
-                //"docBase=\"balancer\""                    // NOI18N For bundled tomcat 5.0.x 
+                isTomcat50() || isTomcat55() ? "docBase=\"../server/webapps/manager\"" : null,    // NOI18N
             };
             String passwd = null;
             if (isBundledTomcat()) {
@@ -776,8 +774,7 @@ public class TomcatManager implements DeploymentManager {
                 passwd != null ? "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager,admin\"/>\n</tomcat-users>" : null,   // NOI18N
                 null, 
                 "docBase=\"${catalina.home}/server/webapps/admin\"",   // NOI18N For bundled tomcat 5.0.x
-                "docBase=\"${catalina.home}/server/webapps/manager\"",   // NOI18N 
-                //"docBase=\""+new File (homeDir, "webapps/balancer").getAbsolutePath ()+"\""   // NOI18N For bundled tomcat 5.0.x
+                isTomcat50() || isTomcat55() ? "docBase=\"${catalina.home}/server/webapps/manager\"" : null,   // NOI18N 
             };
             for (int i = 0; i<files.length; i++) {
                 // get folder from, to, name and ext
@@ -823,7 +820,6 @@ public class TomcatManager implements DeploymentManager {
                         )) {
                         if (!(ADMIN_XML.equals(files[i]) && !(new File (fromDir, files[i].substring (slash+1))).exists()) ){
                             ErrorManager.getDefault ().log (ErrorManager.INFORMATIONAL, "Cannot create config file "+files[i]);
-                            return null;
                         }
                     }
                 }
@@ -832,6 +828,11 @@ public class TomcatManager implements DeploymentManager {
             if (new File(homeDir, "webapps/ROOT").exists()) { // NOI18N
                 writeToFile(new File(baseDir, "conf/Catalina/localhost/ROOT.xml"), // NOI18N
                     "<Context path=\"\" docBase=\"${catalina.home}/webapps/ROOT\"/>\n"); // NOI18N
+            }
+            // since tomcat 6.0 the manager app lives in the webapps folder
+            if (!isTomcat50() && !isTomcat55() && new File(homeDir, "webapps/manager").exists()) { // NOI18N
+                writeToFile(new File(baseDir, "conf/Catalina/localhost/manager.xml"), // NOI18N
+                     "<Context docBase=\"${catalina.home}/webapps/manager\" antiResourceLocking=\"false\" privileged=\"true\"/>\n"); // NOI18N
             }
         } catch (java.io.IOException ioe) {
             ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
