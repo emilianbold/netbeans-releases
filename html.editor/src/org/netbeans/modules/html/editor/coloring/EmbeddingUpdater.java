@@ -23,6 +23,7 @@ package org.netbeans.modules.html.editor.coloring;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
@@ -42,7 +43,9 @@ import org.netbeans.editor.ext.html.parser.SyntaxParserListener;
 public class EmbeddingUpdater implements SyntaxParserListener {
     
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
-    private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+    
+    //XXX update mimetype once Hanz fixes the mimetype in CSS editor module
+    private static final String CSS_MIMETYPE = "text/css2"; //NOI18N
     
     private static final String HTML_SCRIPT_TAG_NAME = "script"; //NOI18N
     
@@ -88,7 +91,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
     private void endTag(SyntaxElement.Named sel) {
         if(HTML_SCRIPT_TAG_NAME.equals(sel.getName())) {
             if(scriptStart != -1) {
-                createEmbedding(JAVASCRIPT_MIMETYPE, scriptStart, sel.getElementOffset() - 1);
+                createEmbedding(JAVASCRIPT_MIMETYPE, scriptStart, sel.getElementOffset() - 1, 0,0);
             }
         }
     }
@@ -96,13 +99,13 @@ public class EmbeddingUpdater implements SyntaxParserListener {
     private void createEmbedding(String mimeType, SyntaxElement.TagAttribute tagAttr) {
         if(tagAttr.getValue().charAt(0) == '\'' || tagAttr.getValue().charAt(0) == '"') {
             //cut off the qutation marks
-            createEmbedding(mimeType, tagAttr.getValueOffset() + 1, tagAttr.getValueOffset() + tagAttr.getValue().length() - 1);
+            createEmbedding(mimeType, tagAttr.getValueOffset(), tagAttr.getValueOffset() + tagAttr.getValue().length(), 1, 1);
         } else {
-            createEmbedding(mimeType, tagAttr.getValueOffset(), tagAttr.getValueOffset() + tagAttr.getValue().length());
+            createEmbedding(mimeType, tagAttr.getValueOffset(), tagAttr.getValueOffset() + tagAttr.getValue().length(), 0, 0);
         }
     }
     
-    private void createEmbedding(String mimeType, final int startOffset, final int endOffset) {
+    private void createEmbedding(String mimeType, int startOffset, int endOffset, int startSkipLength, int endSkipLength ) {
         Language lang = Language.find(mimeType);
         if(lang == null) {
             LOGGER.log(Level.WARNING, "No " + mimeType + " language found! (" + startOffset + " - " + endOffset + ")");
@@ -121,10 +124,10 @@ public class EmbeddingUpdater implements SyntaxParserListener {
             
             do {
                 Token item = ts.token();
-                if(!ts.createEmbedding(lang, 0, 0)) {
+                if(!ts.createEmbedding(lang, startSkipLength, endSkipLength)) {
                     LOGGER.log(Level.WARNING, "Cannot create embedding for " + mimeType + ".");
                 } else {
-                    LOGGER.log(Level.INFO, "Embedding for " + mimeType + " created [" + startOffset + " - "  + endOffset + "].");
+                    LOGGER.log(Level.INFO, "Embedding for " + mimeType + " created [" + startOffset + " - "  + endOffset + "] (" + item.text().toString() + ")");
                 }
             } while(ts.moveNext() && ts.offset() <= endOffset);
         }finally {
