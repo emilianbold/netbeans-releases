@@ -240,7 +240,7 @@ public class ParserManagerImpl extends ParserManager {
             String type = t.id ().name ();
             int offset = ts.offset ();
             String ttype = (String) t.getProperty ("type");
-//            if (ttype == null) {
+            if (ttype == null) {
                 List embeddings = null;
                 TokenSequence ts2 = ts.embedded ();
                 if (ts2 != null)
@@ -253,48 +253,63 @@ public class ParserManagerImpl extends ParserManager {
                     t.length (),
                     embeddings
                 ));
-//            } else
-//            if (ttype.equals ("E"))
-//                continue;
-//            else
-//            if (ttype.equals ("S")) {
-//                StringBuilder sb = new StringBuilder (t.text ().toString ());
-//                Map embeddings = new HashMap ();
-//                while (ts.moveNext ()) {
-//                    t = ts.token ();
-//                    TokenSequence ts2 = ts.embedded ();
-//                    if (ts2 != null)
-//                        embeddings.put (
-//                            ts2.language ().mimeType (),
-//                            getTokens (ts2)
-//                        );
-//                    ttype = (String) t.getProperty ("type");
-//                    if (ttype == null) {
-//                        ts.movePrevious ();
-//                        break;
-//                    }
-//                    if (ttype.equals ("E"))
-//                        continue;
-//                    if (ttype.equals ("S")) {
-//                        ts.movePrevious ();
-//                        break;
-//                    }
-//                    if (!ttype.equals ("C"))
-//                        throw new IllegalArgumentException ();
-//                    if (!type.equals (t.id ().name ()))
-//                        throw new IllegalArgumentException ();
-//                    sb.append (t.text ().toString ());
-//                }
-//                int no = ts.offset () + ts.token ().length ();
-//                tokens.add (ASTToken.create (
-//                    type, 
-//                    sb.toString (), 
-//                    offset,
-//                    no - offset,
-//                    embeddings
-//                ));
-//            } else
-//                throw new IllegalArgumentException ();
+            } else
+            if (ttype.equals ("E"))
+                continue;
+            else
+            if (ttype.equals ("S")) {
+                StringBuilder sb = new StringBuilder (t.text ().toString ());
+                List children = new ArrayList ();
+                TokenSequence ts2 = ts.embedded ();
+                if (ts2 != null)
+                    children.addAll (
+                        getTokens (ts2)
+                    );
+                while (ts.moveNext ()) {
+                    t = ts.token ();
+                    ttype = (String) t.getProperty ("type");
+                    if (ttype == null) {
+                        ts.movePrevious ();
+                        break;
+                    }
+                    if (ttype.equals ("E")) {
+                        ts2 = ts.embedded ();
+                        children.add (ASTToken.create (
+                            ts2.language ().mimeType (),
+                            t.id ().name (), 
+                            t.text ().toString (), 
+                            ts.offset (),
+                            t.length (),
+                            getTokens (ts2)
+                        ));
+                        continue;
+                    }
+                    if (ttype.equals ("S")) {
+                        ts.movePrevious ();
+                        break;
+                    }
+                    if (!ttype.equals ("C"))
+                        throw new IllegalArgumentException ();
+                    ts2 = ts.embedded ();
+                    if (ts2 != null)
+                        children.addAll (
+                            getTokens (ts2)
+                        );
+                    if (!type.equals (t.id ().name ()))
+                        throw new IllegalArgumentException ();
+                    sb.append (t.text ().toString ());
+                }
+                int no = ts.offset () + ts.token ().length ();
+                tokens.add (ASTToken.create (
+                    ts.language ().mimeType (),
+                    type, 
+                    sb.toString (), 
+                    offset,
+                    no - offset,
+                    children
+                ));
+            } else
+                throw new IllegalArgumentException ();
         }
         return tokens;
     }

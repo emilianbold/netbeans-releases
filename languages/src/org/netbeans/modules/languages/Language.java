@@ -295,6 +295,8 @@ public class Language {
         skipTokenTypes.addAll (l.skipTokenTypes);
         importFeature (STORE, l);
         importFeature (TOOLTIP, l);
+        importFeature (IMPORT, l);
+        importedLangauges.addAll (l.importedLangauges);
     }
     
     private void importColorings (Language l) {

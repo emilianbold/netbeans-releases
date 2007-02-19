@@ -33,6 +33,8 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
+import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.LanguagesManager;
@@ -219,38 +221,30 @@ public class LLSyntaxAnalyser {
                     result = new ArrayList ();
                 result.add (token);
             }
-            List embeddings = readEmbeddings (token, node, skipErrors);
-            if (node == null && !embeddings.isEmpty ())
-                result.addAll (embeddings);
+            readEmbeddings (token, skipErrors);
         }
         return result;
     }
     
     private List readEmbeddings (
         ASTToken token, 
-        Node node,
         boolean skipErrors
     ) throws ParseException {
         List result = null;
-//        Iterator<ASTItem> it = token.getChildren ().iterator ();
-//        if (!embeddings.isEmpty ()) {
-//            Iterator it = embeddings.keySet ().iterator ();
-//            while (it.hasNext ()) {
-//                String mimeType = (String) it.next ();
-//                List tokens = (List) embeddings.get (mimeType);
-//                TokenInput in = TokenInput.create (tokens);
-//                Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
-//                    getLanguage (mimeType);
-//                ASTNode n = language.getAnalyser ().read (in, skipErrors);
-//                if (node != null)
-//                    node.addNode (n);
-//                else {
-//                    if (result == null)
-//                        result = new ArrayList ();
-//                    result.add (result);
-//                }
-//            }
-//        }
+        List<ASTItem> children = token.getChildren ();
+        if (children.isEmpty ())
+            return Collections.EMPTY_LIST;
+        TokenInput in = TokenInput.create (children);
+        Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+            getLanguage (children.get (0).getMimeType ());
+        ASTNode n = language.getAnalyser ().read (in, skipErrors);
+        if (node != null)
+            node.addNode (n);
+        else {
+            if (result == null)
+                result = new ArrayList ();
+            result.add (result);
+        }
         if (result == null)
             return Collections.EMPTY_LIST;
         return result;
@@ -264,7 +258,7 @@ public class LLSyntaxAnalyser {
         while (!input.eof ()) {
             ASTToken token = input.read ();
             root.addToken (token);
-            readEmbeddings (token, root, skipErrors);
+            readEmbeddings (token, skipErrors);
         }
         return root.createASTNode ();
     }
