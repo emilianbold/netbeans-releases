@@ -584,6 +584,10 @@ public class TomcatManager implements DeploymentManager {
         return impl;
     }
     
+    public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
+        return distribute(target, inputStream, inputStream0);
+    }
+    
 // --- End of DeploymentManager interface implementation ----------------------
         
     /** Utility method that retrieve the list of J2EE application modules 
@@ -988,4 +992,5 @@ public class TomcatManager implements DeploymentManager {
         }
         return tomcatPlatform;
     }
+
 }
