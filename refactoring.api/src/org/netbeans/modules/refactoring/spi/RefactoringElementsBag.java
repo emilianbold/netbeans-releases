@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,7 @@ package org.netbeans.modules.refactoring.spi;
 
 import java.io.IOException;
 import java.util.*;
+import javax.swing.text.Position;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
@@ -177,13 +178,11 @@ public final class RefactoringElementsBag {
             if (e!=null) {
                 GuardedSectionManager manager = GuardedSectionManager.getInstance(e.openDocument());
                 if (manager != null) {
+                    Position elementStart = el.getPosition().getBegin().getPosition();
+                    Position elementEnd = el.getPosition().getEnd().getPosition();
                     for(GuardedSection section:manager.getGuardedSections()) {
-                        int sectionStart = section.getStartPosition().getOffset();
-                        int sectionEnd = section.getEndPosition().getOffset();
-                        int elementStart = el.getPosition().getBegin().getOffset();
-                        int elementEnd = el.getPosition().getEnd().getOffset();
-                        if (sectionStart <= elementStart && sectionEnd >=elementStart ||
-                                sectionStart <= elementEnd && sectionEnd >=elementEnd) {
+                        if (section.contains(elementStart, false) ||
+                                section.contains(elementEnd, false)) {
                             return true;
                         }
                     }
