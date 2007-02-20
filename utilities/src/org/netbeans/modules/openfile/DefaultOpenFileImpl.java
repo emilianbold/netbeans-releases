@@ -23,10 +23,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Enumeration;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -43,17 +40,12 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataLoader;
-import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOperation;
 import org.openide.text.NbDocument;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 
@@ -484,10 +476,11 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
             return true;
         }
         
+        String ext = fileObject.getExt();
         if (
-            ZIP_EXT.equalsIgnoreCase(fileObject.getExt()) || 
-            JAR_EXT.equalsIgnoreCase(fileObject.getExt()) ||
-            WAR_EXT.equalsIgnoreCase(fileObject.getExt()) ||
+            ZIP_EXT.equalsIgnoreCase(ext) || 
+            JAR_EXT.equalsIgnoreCase(ext) ||
+            WAR_EXT.equalsIgnoreCase(ext) ||
             fileObject.isFolder()
         ) {
             // select it in explorer:
