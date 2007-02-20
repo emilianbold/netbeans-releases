@@ -61,18 +61,11 @@ public class JaxWsRootNode extends AbstractNode implements PropertyChangeListene
     private static final Image WEB_SERVICES_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/webservicegroup.png", true ); // NOI18N
     static Icon folderIconCache;
     static Icon openedFolderIconCache;
-    private final DataFolder srcFolder;
     
-    public JaxWsRootNode(JaxWsModel jaxWsModel, FileObject srcRoot) {
-        super(new JaxWsRootChildren(jaxWsModel,srcRoot), createLookup(srcRoot));
+    public JaxWsRootNode(Project project, JaxWsModel jaxWsModel, FileObject[] srcRoots) {
+        super(new JaxWsRootChildren(jaxWsModel,srcRoots));
         setDisplayName(NbBundle.getBundle(JaxWsRootNode.class).getString("LBL_WebServices"));
-        if(srcRoot.isFolder()) {
-            srcFolder = DataFolder.findFolder(srcRoot);
-        } else {
-            srcFolder = null;
-        }
-        
-        project = FileOwnerQuery.getOwner(srcRoot);
+        this.project=project;
         if(!Util.isJavaEE5orHigher(project)){
             listenToServerChanges();
             jsr109Supported = isJsr109Supported();

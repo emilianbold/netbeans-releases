@@ -36,7 +36,7 @@ public class JaxWsRootChildren extends Children.Keys {
     JaxWsModel jaxWsModel;
     Service[] services;
     JaxWsListener listener;
-    FileObject srcRoot;
+    FileObject[] srcRoots;
 
     private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
         public void run() {
@@ -44,9 +44,9 @@ public class JaxWsRootChildren extends Children.Keys {
         }
     });
     
-    public JaxWsRootChildren(JaxWsModel jaxWsModel, FileObject srcRoot) {
+    public JaxWsRootChildren(JaxWsModel jaxWsModel, FileObject[] srcRoots) {
         this.jaxWsModel = jaxWsModel;
-        this.srcRoot=srcRoot;
+        this.srcRoots=srcRoots;
     }
     
     protected void addNotify() {
@@ -76,7 +76,12 @@ public class JaxWsRootChildren extends Children.Keys {
 
     protected Node[] createNodes(Object key) {
         if(key instanceof Service) {
-            return new Node[] {new JaxWsNode(jaxWsModel, (Service)key, srcRoot)};
+            String implClass = ((Service)key).getImplementationClass();
+            for (FileObject srcRoot:srcRoots) {
+                FileObject implClassFo = getImplementationClass(implClass, srcRoot);
+                if (implClassFo!=null)
+                    return new Node[] {new JaxWsNode(jaxWsModel, (Service)key, srcRoot)};
+            }
         }
         return new Node[0];
     }
@@ -86,5 +91,13 @@ public class JaxWsRootChildren extends Children.Keys {
             updateNodeTask.schedule(2000);
         }        
     }
-
+    
+    private FileObject getImplementationClass(String implClass, FileObject srcRoot) {
+        if(implClass != null && srcRoot!=null) {
+            return srcRoot.getFileObject(implClass.replace('.','/')+".java");
+            //return JMIUtils.findClass(implBean, srcRoot);
+        }
+        return null;
+    }
+    
 }

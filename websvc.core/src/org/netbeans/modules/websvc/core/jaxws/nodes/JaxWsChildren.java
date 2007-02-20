@@ -90,10 +90,10 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
     private boolean modelGenerationFinished;
 
     
-    public JaxWsChildren(Service service, FileObject srcRoot) {
+    public JaxWsChildren(Service service, FileObject implClass) {
         super();
         this.service = service;
-        this.srcRoot = srcRoot;
+        this.implClass = implClass;
     }
 
 // Retouche
@@ -115,16 +115,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
         }
         return publicMethods;
     }
-    
-    private FileObject getImplementationClass() {
-        String implBean = service.getImplementationClass();
-        if(implBean != null) {
-            return srcRoot.getFileObject(implBean.replace('.','/')+".java");
-            //return JMIUtils.findClass(implBean, srcRoot);
-        }
-        return null;
-    }
-    
+
     protected void addNotify() {
         super.addNotify();
         if (isFromWsdl()) {
@@ -164,9 +155,6 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
                 updateKeys();
             }
         } else {
-            if(implClass == null){
-                implClass = getImplementationClass();
-            }
             assert(implClass != null);
             //registerListener();
             //methods = getMethods();
