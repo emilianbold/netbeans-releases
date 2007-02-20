@@ -49,6 +49,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileLock;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /**
  * Basic setup for all the tests.
@@ -90,6 +92,7 @@ import org.openide.filesystems.FileLock;
     
     protected void setUp() throws Exception {
         super.setUp();
+        Lookup.getDefault().lookup(ModuleInfo.class);
         cvsAvailable = isCVSAvailable();
         if (cvsAvailable) {
             nbcvsrootF = FileUtil.normalizeFile(getTestNBRoot());
