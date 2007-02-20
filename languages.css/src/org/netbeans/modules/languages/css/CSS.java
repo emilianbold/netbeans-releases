@@ -38,7 +38,7 @@ public class CSS {
 
     public static String tooltip (Cookie cookie) {
         if (!(cookie instanceof SyntaxCookie)) return null;
-        ASTNode n = (ASTNode) ((SyntaxCookie) cookie).getPTPath ().getLeaf ();
+        ASTNode n = (ASTNode) ((SyntaxCookie) cookie).getASTPath ().getLeaf ();
         StringBuilder sb = new StringBuilder ();
         sb.append ("<html>");
         sb.append ("<p style=\"");
@@ -56,7 +56,7 @@ public class CSS {
 
     public static String navigatorTooltip (Cookie cookie) {
         if (!(cookie instanceof SyntaxCookie)) return null;
-        ASTNode n = (ASTNode) ((SyntaxCookie) cookie).getPTPath ().getLeaf ();
+        ASTNode n = (ASTNode) ((SyntaxCookie) cookie).getASTPath ().getLeaf ();
         StringBuilder sb = new StringBuilder ();
         sb.append ("<html>");
         sb.append ("<p style=\"");

@@ -158,7 +158,7 @@ public class JavaScript {
     }
 
     public static Runnable hyperlink (SyntaxCookie cookie) {
-        ASTPath path = cookie.getPTPath ();
+        ASTPath path = cookie.getASTPath ();
         ASTToken t = (ASTToken) path.getLeaf ();
         ASTNode n = path.size () > 1 ? 
             (ASTNode) path.get (path.size () - 2) :
@@ -185,7 +185,7 @@ public class JavaScript {
     }
     
     public static String functionName (SyntaxCookie cookie) {
-        ASTPath path = cookie.getPTPath ();
+        ASTPath path = cookie.getASTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
         String name = null;
         ASTNode nameNode = n.getNode ("FunctionName");
@@ -214,7 +214,7 @@ public class JavaScript {
     }
 
     public static String objectName (SyntaxCookie cookie) {
-        ASTPath path = cookie.getPTPath ();
+        ASTPath path = cookie.getASTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
         ASTNode p = n.getParent ();
         while (p != null) {
@@ -237,7 +237,7 @@ public class JavaScript {
     public static List completionItems (Cookie cookie) {
         List result = new ArrayList ();
         if (cookie instanceof SyntaxCookie) {
-            ASTPath path = ((SyntaxCookie) cookie).getPTPath ();
+            ASTPath path = ((SyntaxCookie) cookie).getASTPath ();
             DatabaseManager databaseManager = DatabaseManager.getDefault ();
             Collection c = databaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
             result.addAll (c);
@@ -351,7 +351,7 @@ public class JavaScript {
 //            }
 //        }
 //        if (!(cookie instanceof SyntaxCookie)) return completionDescriptions;
-//        ASTPath path = ((SyntaxCookie) cookie).getPTPath ();
+//        ASTPath path = ((SyntaxCookie) cookie).getASTPath ();
 //        ArrayList l = new ArrayList ();
 //        DatabaseManager databaseManager = DatabaseManager.getDefault ();
 //        Collection c = databaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
@@ -515,7 +515,7 @@ public class JavaScript {
             return false;
         }
         SyntaxCookie scookie = (SyntaxCookie)cookie;
-        ASTPath path = scookie.getPTPath ();
+        ASTPath path = scookie.getASTPath ();
         int size = path.size ();
         if (size < 2) return false;
         if (!(path.get (size - 2) instanceof ASTNode)) return false;
@@ -553,7 +553,7 @@ public class JavaScript {
             return false;
         }
         SyntaxCookie scookie = (SyntaxCookie)cookie;
-        ASTPath path = scookie.getPTPath();
+        ASTPath path = scookie.getASTPath();
         int size = path.size();
         if (size < 2) return false;
         if (!(path.get (size - 2) instanceof ASTNode)) return false;
