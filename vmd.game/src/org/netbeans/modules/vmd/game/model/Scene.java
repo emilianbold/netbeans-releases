@@ -89,6 +89,9 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	}
 
 	public void setName(String name) {
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("Scene cannot be renamed because component name '" + name + "' already exists.");
+		}
 		String oldName = this.name;
 		this.name = name;
 		this.propertyChangeSupport.firePropertyChange(PROPERTY_NAME, oldName, this.name);

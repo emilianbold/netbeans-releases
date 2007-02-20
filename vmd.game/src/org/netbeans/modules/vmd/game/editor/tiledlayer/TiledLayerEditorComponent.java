@@ -1047,17 +1047,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 					List<Tile> tiles = (List<Tile>) transferable.getTransferData(tileFlavor);
 					assert (tiles.size() > 0);
 					ImageResource imgRes = TiledLayerEditorComponent.this.tiledLayer.getImageResource();
-					Tile newTile = null;
-					if (tiles.size() > 1) {
-						//TODO if dropping multiple tiles then turn them into an animated tile
-						int[] indexes = new int[tiles.size()];
-						for (int i = 0; i < indexes.length; i++) {
-							indexes[i] = tiles.get(i).getIndex();
-						}
-						newTile = imgRes.createAnimatedTile(indexes);
-					} else {
-						newTile = imgRes.getTile(tiles.get(0).getIndex());
-					}
+					Tile newTile = imgRes.getTile(tiles.get(0).getIndex());
 					Position cell = TiledLayerEditorComponent.this.getCellAtPoint(dropPoint);
 					if (TiledLayerEditorComponent.this.cellsSelected.contains(cell)) {
 						TiledLayerEditorComponent.this.tiledLayer.setTileAtPositions(newTile.getIndex(), TiledLayerEditorComponent.this.cellsSelected);

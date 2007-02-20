@@ -56,6 +56,9 @@ public abstract class Layer implements Previewable, Editable, Transferable, Code
 	}
 	
 	public void setName(String name) {
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("Layer cannot be renamed because component name '" + name + "' already exists.");
+		}
 		String oldName = this.name;
 		this.name = name;
 		this.propertyChangeSupport.firePropertyChange(PROPERTY_LAYER_NAME, oldName, name);

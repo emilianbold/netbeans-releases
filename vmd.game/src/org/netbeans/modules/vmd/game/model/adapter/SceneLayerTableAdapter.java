@@ -26,11 +26,13 @@ import java.util.Iterator;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.SceneListener;
 import org.netbeans.modules.vmd.game.model.Scene.LayerInfo;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 
 
@@ -137,7 +139,16 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 				this.scene.setLayerLocked(layer, locked);
 				break;
 			case COL_INDEX_LAYER_NAME:
-				layer.setName((String) aValue);
+				String name = (String) aValue;
+				if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+					DialogDisplayer.getDefault().notify(
+							new DialogDescriptor.Message("Layer cannot be renamed because component name '" 
+							+ name + "' already exists.", DialogDescriptor.ERROR_MESSAGE)
+					);
+				}
+				else {
+					layer.setName(name);
+				}
 				break;
 			case COL_INDEX_LAYER_POS_X:
 				Integer xPos = (Integer) aValue;

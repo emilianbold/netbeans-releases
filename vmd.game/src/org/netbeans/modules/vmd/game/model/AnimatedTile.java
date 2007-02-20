@@ -59,10 +59,18 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 		super(imageResource, index);
 		this.sequenceContainer = new SequenceContainerImpl(this, null, this.propertyChangeSupport, imageResource);
 		this.name = name;
-		Sequence sequence = this.createSequence(name + "seq", 1);
+		String seqName = this.getNextSequenceName(this.name + "seq");
+		Sequence sequence = this.createSequence(seqName, 1);
 		this.setDefaultSequence(sequence);
 	}
 
+	
+	public String getNextSequenceName(String prefix) {
+		return this.sequenceContainer.getNextSequenceName(prefix);
+	}
+
+	
+	
 	public void addSequenceContainerListener(SequenceContainerListener listener) {
 		this.sequenceContainer.addSequenceContainerListener(listener);
 	}
@@ -72,6 +80,9 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 	}
 
 	public void setName(String name) {
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("AnimatedTile cannot be renamed because component name '" + name + "' already exists.");
+		}
 		String oldName = this.name;
 		this.name = name;
 		this.propertyChangeSupport.firePropertyChange(PROPERTY_NAME, oldName, name);

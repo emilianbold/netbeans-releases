@@ -19,16 +19,12 @@
 package org.netbeans.modules.vmd.game.editor.sequece;
 
 import java.awt.Component;
-import javax.swing.ButtonGroup;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
-import org.netbeans.modules.vmd.game.model.Sequence;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
-import org.netbeans.modules.vmd.game.model.SequenceContainerListener;
 import org.netbeans.modules.vmd.game.model.adapter.SequenceContainerTableAdapter;
-import org.netbeans.modules.vmd.game.preview.SequenceTimeSpinner;
 
 /**
  *

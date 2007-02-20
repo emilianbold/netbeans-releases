@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.game;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,6 +47,7 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.game.integration.components.GameTypes;
 import org.netbeans.modules.vmd.game.model.AnimatedTile;
 import org.netbeans.modules.vmd.game.model.AnimatedTileCD;
+import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.GlobalRepositoryListener;
 import org.netbeans.modules.vmd.game.model.ImageResource;
@@ -153,7 +155,22 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 						GameController.this.modelComponent(root);
 
 						GlobalRepository.getInstance().addGlobalRepositoryListener(GameController.this);
-						MainView.getInstance().requestEditing(new GameComponentOverviewPanel());
+						MainView.getInstance().requestEditing(new Editable() {
+                            public JComponent getEditor() {
+								JPanel top = new JPanel(new BorderLayout());
+								JPanel midle = new JPanel(new GridBagLayout());
+								midle.add(new GameComponentOverviewPanel());
+								top.add(midle, BorderLayout.NORTH);
+								top.add(new JPanel(), BorderLayout.CENTER);
+								return top;
+                            }
+                            public ImageResource getImageResource() {
+								return null;
+                            }
+                            public JComponent getNavigator() {
+								return null;
+                            }
+						});
 					}
 				}
 			});
@@ -161,6 +178,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		this.panel.add(view);
 		this.panel.validate();
 	}
+	
 	
 	private void removeAllListeners() {
 		GlobalRepository.getInstance().removeGlobalRepositoryListener(this);

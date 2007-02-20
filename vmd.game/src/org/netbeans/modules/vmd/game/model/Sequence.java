@@ -97,6 +97,9 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 	}
 
 	public void setName(String name) {
+		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+			throw new IllegalArgumentException("Sequence cannot be renamed because component name '" + name + "' already exists.");
+		}
 		String oldName = this.name;
 		this.name = name;
 		this.propertyChangeSupport.firePropertyChange(Sequence.PROPERTY_NAME, oldName, name);

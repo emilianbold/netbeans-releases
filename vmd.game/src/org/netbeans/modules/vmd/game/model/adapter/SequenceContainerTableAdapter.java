@@ -25,10 +25,13 @@ import java.util.Iterator;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Sequence;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
 import org.netbeans.modules.vmd.game.model.SequenceContainerListener;
 import org.netbeans.modules.vmd.game.model.SequenceListener;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 /**
  *
@@ -134,7 +137,16 @@ public class SequenceContainerTableAdapter implements TableModel, SequenceContai
 				this.sequenceContainer.setDefaultSequence(s);
 				break;
 			case COL_NAME:
-				s.setName((String) aValue);
+				String name = (String) aValue;
+				if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+					DialogDisplayer.getDefault().notify(
+							new DialogDescriptor.Message("Sequence cannot be renamed because component name '" 
+							+ name + "' already exists.", DialogDescriptor.ERROR_MESSAGE)
+					);
+				}
+				else {
+					s.setName(name);
+				}
 				break;
 			case COL_DELAY:
 				s.setFrameMs((Integer) aValue);

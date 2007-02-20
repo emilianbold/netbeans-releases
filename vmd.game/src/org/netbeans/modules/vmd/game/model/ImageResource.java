@@ -204,46 +204,7 @@ public class ImageResource implements CodeGenerator {
 		
 		int index = this.animatedTileIndexKey--;
 		return this.createAnimatedTile(index, name, sequence);
-	}
-	
-	public AnimatedTile createAnimatedTile(int[] staticTileIndexes) {
-		assert(staticTileIndexes != null);
-		assert(staticTileIndexes.length >= 1);
-		
-		String name = this.getNextAnimatedTileName();
-		while (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
-			name = this.getNextAnimatedTileName();
-		}
-		
-		AnimatedTile at = createAnimatedTile(name, staticTileIndexes[0]);
-		if (staticTileIndexes.length > 1) {
-			Sequence seq = at.getDefaultSequence();
-			for (int i = 1; i < staticTileIndexes.length; i++) {
-				seq.setFrame(new StaticTile(this, staticTileIndexes[i]), i);
-			}
-		}
-		return at;
-	}
-	
-	private static final String ANIMATED_TILE_NAME_PREFIX = "animTile";
-	private String getNextAnimatedTileName() {
-		int biggestNum = 0;
-		for (AnimatedTile at : this.getAnimatedTiles()) {
-			String name = at.getName();
-			if (name.startsWith(ANIMATED_TILE_NAME_PREFIX)) {
-				try {
-					int num = Integer.parseInt(name.substring(ANIMATED_TILE_NAME_PREFIX.length()));
-					if (num > biggestNum)
-						biggestNum = num;
-				} catch (NumberFormatException nfe) {
-				}
-			}
-		}
-		DecimalFormat df = new DecimalFormat("000");
-		String nextNum = df.format(biggestNum + 1);
-		return ANIMATED_TILE_NAME_PREFIX + nextNum;
-	}
-	
+	}	
 	
 	public void fireAnimatedTileAdded(AnimatedTile animatedTile) {
 		Object[] listeners = listenerList.getListenerList();

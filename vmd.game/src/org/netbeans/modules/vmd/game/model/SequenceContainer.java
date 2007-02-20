@@ -23,6 +23,7 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -91,6 +92,8 @@ public interface SequenceContainer extends Editable {
 	public int indexOf(Sequence sequence);
 	
 	public List<Action> getActionsForSequence(Sequence sequence);
+	
+	public String getNextSequenceName(String prefix);
 	
 	/**
 	 * Default implementation of SequenceContainer.
@@ -173,6 +176,27 @@ public interface SequenceContainer extends Editable {
 			return newSequence;
 		}
 		
+		public String getNextSequenceName(String prefix) {
+			int biggestNum = 0;
+			for (Sequence at : this.getSequences()) {
+				String name = at.getName();
+				if (name.startsWith(prefix)) {
+					try {
+						int num = Integer.parseInt(name.substring(prefix.length()));
+						if (num > biggestNum)
+							biggestNum = num;
+					} catch (NumberFormatException nfe) {
+					}
+				}
+			}
+			DecimalFormat df = new DecimalFormat("000");
+			String nextName;
+			do {
+				nextName = prefix + df.format(++biggestNum);
+			} while (!GlobalRepository.getInstance().isComponentNameAvailable(nextName));
+			return nextName;
+		}
+
 		public boolean append(Sequence sequence) {
 			if (DEBUG) System.out.println(this + " append " + sequence);
 			if (this.sequences.contains(sequence)) {
