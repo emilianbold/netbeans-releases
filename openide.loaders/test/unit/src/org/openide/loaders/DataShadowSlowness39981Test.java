@@ -62,23 +62,23 @@ public class DataShadowSlowness39981Test extends NbTestCase implements Operation
             "folder/orig.txt",
             "modify/"
         });
-        Repository.getDefault ().addFileSystem (lfs);
+        FileObject root = FileUtil.toFileObject(FileUtil.toFile(lfs.getRoot()));
         
         int count = getTestNumber ();
         
         shadows = createShadows (
-            DataObject.find (lfs.findResource("folder/original.txt")), 
-            DataFolder.findFolder (lfs.findResource ("shadows")),
+            DataObject.find (root.getFileObject("folder/original.txt")), 
+            DataFolder.findFolder (root.getFileObject("shadows")),
             count
         );
         
         brokenShadows = /*Collections.EMPTY_LIST; */createShadows (
-            DataObject.find (lfs.findResource("folder/orig.txt")), 
-            DataFolder.findFolder (lfs.findResource ("shadows")),
+            DataObject.find (root.getFileObject("folder/orig.txt")), 
+            DataFolder.findFolder (root.getFileObject("shadows")),
             count
         );
         
-        DataObject.find (lfs.findResource("folder/orig.txt")).delete ();
+        DataObject.find (root.getFileObject("folder/orig.txt")).delete ();
         
         ListIterator it = brokenShadows.listIterator ();
         while (it.hasNext ()) {
@@ -92,7 +92,7 @@ public class DataShadowSlowness39981Test extends NbTestCase implements Operation
             it.set (newObj);
         }
         
-        FileObject files = lfs.findResource ("modify");
+        FileObject files = root.getFileObject("modify");
         for (int i = 0; i < 200; i++) {
             FileUtil.createData (files, "empty" + i + ".txt");
         }
@@ -113,8 +113,6 @@ public class DataShadowSlowness39981Test extends NbTestCase implements Operation
     }
     
     protected void tearDown() throws Exception {
-        Repository.getDefault ().removeFileSystem (lfs);
-        
         ArrayList weaks = new ArrayList();
         addWeakRefs(Arrays.asList(arr), weaks);
         addWeakRefs(brokenShadows, weaks);

@@ -38,7 +38,7 @@ import org.openide.util.NbBundle;
 /*
  */
 public class FileObjectInLookupTest extends NbTestCase {
-    private FileSystem lfs;
+    FileObject root;
     
     public FileObjectInLookupTest(String name) {
         super(name);
@@ -47,12 +47,14 @@ public class FileObjectInLookupTest extends NbTestCase {
     protected void setUp() throws Exception {
         MockServices.setServices(OwnDataLoaderPool.class);
         clearWorkDir ();
-        lfs = TestUtilHid.createLocalFileSystem (getWorkDir (), new String[] {
+        FileSystem lfs = TestUtilHid.createLocalFileSystem (getWorkDir (), new String[] {
             "adir/",
             "adir/file.txt",
             "adir/file.own"
         });
-        Repository.getDefault().addFileSystem(lfs);
+        
+        root = FileUtil.toFileObject(FileUtil.toFile(lfs.getRoot()));
+        
         Enumeration<?> en = DataLoaderPool.getDefault().allLoaders();
         while (en.hasMoreElements()) {
             if (en.nextElement() instanceof OwnDataLoader) {
@@ -63,7 +65,6 @@ public class FileObjectInLookupTest extends NbTestCase {
     }
     
     protected void tearDown() throws Exception {
-        Repository.getDefault().removeFileSystem(lfs);
     }
     
     protected boolean runInEQ() {
@@ -71,14 +72,14 @@ public class FileObjectInLookupTest extends NbTestCase {
     }
     
     public void testFOInsideFolder() throws Exception {
-        DataFolder f = DataFolder.findFolder(lfs.findResource("adir"));
+        DataFolder f = DataFolder.findFolder(root.getFileObject("adir"));
         assertFileObjects(f);
         f.rename("bdir");
         assertFileObjects(f);
     }
     
     public void testFOInsideADefaultDataObject() throws Exception {
-        DataObject obj = DataObject.find(lfs.findResource("adir/file.txt"));
+        DataObject obj = DataObject.find(root.getFileObject("adir/file.txt"));
         assertFileObjects(obj);
         obj.rename("kuk");
         assertFileObjects(obj);
@@ -87,7 +88,7 @@ public class FileObjectInLookupTest extends NbTestCase {
     }
 
     public void testOwnLoader() throws Exception {
-        DataObject obj = DataObject.find(lfs.findResource("adir/file.own"));
+        DataObject obj = DataObject.find(root.getFileObject("adir/file.own"));
         assertEquals(OwnDataLoader.class, obj.getLoader().getClass());
         assertFileObjects(obj);
         obj.rename("kuk");
@@ -97,7 +98,7 @@ public class FileObjectInLookupTest extends NbTestCase {
     }
 
     public void testShadow() throws Exception {
-        DataObject obj = DataObject.find(lfs.findResource("adir/file.own"));
+        DataObject obj = DataObject.find(root.getFileObject("adir/file.own"));
         DataShadow shadow = obj.createShadow(obj.getFolder().getFolder());
         assertEquals(OwnDataLoader.class, obj.getLoader().getClass());
         

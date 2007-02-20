@@ -43,8 +43,45 @@ implements ChangeListener {
     private static final Validator VALIDATOR = new Validator ();
 
     private static final Collection<Item> TOKEN = Collections.unmodifiableList(new ArrayList<Item>());
-    
-    private Map<FileObject,Item> map = new HashMap<FileObject,Item>(512);
+
+    /** assignes file objects a unique instance of Item, if it has been created
+     */
+    private Map<FileObject,Item> map = new HashMap<FileObject,Item>(512) {
+        public Item put(FileObject obj, Item item) {
+            Item prev = super.put(obj, item);
+            FileObject parent = obj.getParent();
+            if (parent == null) {
+                return prev;
+            }
+            List<Item> arr = children.get(parent);
+            if (arr == null) {
+                arr = new ArrayList<Item>(parent.getChildren().length);
+            }
+            arr.add(item);
+            return prev;
+        }
+        public Item remove(Object obj) {
+            Item prev = super.remove(obj);
+            if (! (obj instanceof FileObject)) {
+                return prev;
+            }
+            
+            FileObject parent = ((FileObject)obj).getParent();
+            if (parent == null) {
+                return prev;
+            }
+            List<Item> arr = children.get(parent);
+            if (arr != null) {
+                arr.remove(obj);
+                if (arr.isEmpty()) {
+                    children.remove(parent);
+                }
+            }
+            return prev;
+        }
+    };
+    /** map that assigns to each folder list of Items created for its children */
+    private Map<FileObject,List<Item>> children = new HashMap<FileObject, List<Item>>();
     
     /** covers all FileSystems we're listening on */
     private Set<FileSystem> knownFileSystems = new WeakSet<FileSystem>();
@@ -543,19 +580,16 @@ implements ChangeListener {
             synchronized (DataObjectPool.this) {
                 Item itm = map.get(fo);
                 if (itm != null) { // the file was someones' primary
-                    toNotify.add(itm); // so notify only owner
+                    return Collections.singleton(itm); // so notify only owner
                 } else { // unknown file or someone secondary
-                    FileObject parent = fo.getParent();
-                    if (parent != null) { // the fo is not root
-                        // notify all in folder
-                        for (FileObject sibling : parent.getChildren()) {
-                            itm = map.get (sibling);
-                            if (itm != null) toNotify.add(itm);
-                        }
+                    List<Item> arr = children.get(fo.getParent());
+                    if (arr != null) {
+                        return new ArrayList<Item>(arr);
+                    } else {
+                        return Collections.emptyList();
                     }
                 }
             }
-            return toNotify;
         }
 
         public void fileChanged(FileEvent fe) {

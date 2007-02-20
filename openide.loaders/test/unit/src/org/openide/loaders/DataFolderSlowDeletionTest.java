@@ -64,8 +64,13 @@ public class DataFolderSlowDeletionTest extends LoggingTestCaseHid {
         int count = getTestNumber ();
         String[] resources = new String[count];       
         for (int i=0; i<resources.length; i++) resources[i] = "folder/file" + i + ".txt";
-        FileSystem fs = TestUtilHid.createLocalFileSystem(getWorkDir(), resources);      
+        FileSystem fs = TestUtilHid.createLocalFileSystem(getWorkDir(), resources);
         folder = fs.findResource("folder");
+        
+        // convert to masterfs
+        folder = FileUtil.toFileObject(FileUtil.toFile(folder));
+        
+        
         children = folder.getChildren();
         df = DataFolder.findFolder (folder);
         do0 = DataObject.find(children[0]);
