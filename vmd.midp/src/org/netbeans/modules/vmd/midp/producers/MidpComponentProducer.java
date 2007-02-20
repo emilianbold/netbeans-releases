@@ -101,6 +101,12 @@ public abstract class MidpComponentProducer extends ComponentProducer {
         }
     }
 
+    public static final class CustomItem extends MidpComponentProducer {
+        public CustomItem() {
+            super(CustomItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Custom Item", "Custom Item", CustomItemCD.ICON_PATH, null)); // NOI18N
+        }
+    }
+
     public static final class Font extends MidpComponentProducer {
         public Font() {
             super(FontCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Font", "Font", ResourceCD.ICON_PATH, null)); // NOI18N
