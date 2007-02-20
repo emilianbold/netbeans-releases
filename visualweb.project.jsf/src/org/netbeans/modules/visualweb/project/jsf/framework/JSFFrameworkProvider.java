@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Petr Pisl
+ * @author Po-Ting Wu
  */
 public class JSFFrameworkProvider extends WebFrameworkProvider {
 
