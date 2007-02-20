@@ -79,6 +79,7 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
     }
     
     public void testSimpleComponentInsertingIntoForm() {
+        p("testSimpleComponentInsertingIntoForm - start"); // NOI18N
         String frameName = createJFrameFile();
         FormDesignerOperator designer = new FormDesignerOperator(frameName);
         ComponentPaletteOperator palette = new ComponentPaletteOperator();
@@ -103,6 +104,7 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
     }
     
     public void testLayouts() {
+        p("testLayouts - start"); // NOI18N
         String nodeName = "JFrame"; // NOI18N
         String name = createJFrameFile();
         
@@ -135,6 +137,7 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
     }
     
     public void testAWTAndSwingComponentsTogether() {
+        p("testAWTAndSwingComponentsTogether - start"); // NOI18N
         String nodeName = "JFrame"; // NOI18N
         String name = createJFrameFile();
         
@@ -155,6 +158,7 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
     }
     
     public void testAddComponentsIntoContainersSwing() {
+        p("testAddComponentsIntoContainersSwing - start"); // NOI18N
         String frameName = createJFrameFile();
         FormDesignerOperator designer = new FormDesignerOperator(frameName);
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
@@ -214,6 +218,7 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
     }
     
     public void testAddComponentsIntoContainersAwt() {
+        p("testAddComponentsIntoContainersAwt - start"); // NOI18N
         String frameName = createFrameFile();
         FormDesignerOperator designer = new FormDesignerOperator(frameName);
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
@@ -240,6 +245,7 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
     
     
     public void testMenuAndPopUpMenuCreation() {
+        p("testMenuAndPopUpMenuCreation - start"); // NOI18N
         String frameName = createJFrameFile();
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         FormDesignerOperator designer = new FormDesignerOperator(frameName);
@@ -279,6 +285,7 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
     }
     
     public void testInPlaceEditing() {
+        p("testInPlaceEditing - start"); // NOI18N
         String testText = "xyz"; // NOI18N
         String dialogName = createJDialogFile();
         
@@ -327,6 +334,7 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
     }
     
     public void testBorderSettings() {
+        p("testBorderSettings - start"); // NOI18N
         String dialogName = createJFrameFile();
         
         HashMap<String,Class> components = new HashMap<String,Class>();
