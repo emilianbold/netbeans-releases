@@ -71,6 +71,7 @@ public class ComponentInstaller {
                         if (! iterator.hasNext ())
                             break;
                         TypeElement element = iterator.next ();
+                        iterator.remove ();
                         search (element, elements, registry, result);
                     }
                 }
