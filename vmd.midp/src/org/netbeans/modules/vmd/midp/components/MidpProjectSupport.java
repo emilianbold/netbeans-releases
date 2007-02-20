@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.midp.components;
 
 import java.io.IOException;
 import java.util.*;
-
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -30,9 +29,9 @@ import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.filesystems.FileObject;
@@ -71,7 +70,7 @@ public final class MidpProjectSupport {
                         try {
                             extender.addLibrary(library);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            Debug.warning(e);
                         }
                     }
                 }
@@ -95,143 +94,141 @@ public final class MidpProjectSupport {
         return ProjectUtils.getProject(context);
     }
     
-	/**
-	 * Returns a Map keyed by a FileObject matching the relative resource path 
-	 * while the value is the FileObject representing the classpath root containing 
-	 * the key FileObject.
-	 * @param relativeResourcePath as seen from a MIDlet prespective must start with 
-	 */ 
-	public static Map<FileObject, FileObject> getFileObjectsForRelativeResourcePath(DesignDocument document, String relativeResourcePath) {
-		assert (document != null);
-		assert (relativeResourcePath != null);
-		
-		if (relativeResourcePath.startsWith("/")) { // NOI18N
-			relativeResourcePath = relativeResourcePath.substring(1);
-		}
-		
-		Map<FileObject, FileObject> matches = new HashMap<FileObject, FileObject>();
-		
-		DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
-		DataObject dataObject = context.getDataObject();
-		
-		assert (dataObject != null);
-		
-		FileObject primaryFile = dataObject.getPrimaryFile();
-		
-		assert (primaryFile != null);
-		
-		Project project = getProjectForDocument(document);
-		List<ClassPath> classPathList = getClassPath(project, primaryFile);
-		
-		assert(classPathList != null);
-		
-		for (ClassPath cp : classPathList) {
-			FileObject[] roots = cp.getRoots();
-			for (int k = 0; k < roots.length; k++) {
-				Enumeration<? extends FileObject> children = roots[k].getChildren(true);
-				while (children.hasMoreElements()) {
-					FileObject child = children.nextElement();
-					String curRelPath = FileUtil.getRelativePath(roots[k], child);
-					if (relativeResourcePath.equals(curRelPath)) {
-						matches.put(child, roots[k]);
-					}
-				}
-			}
-		}
-		return matches;
-	}
-	
-
-	/**
-	 * Returns a Map of all images in the project keyed by FileObjects with their relative resource paths as values.
-	 */ 
-	public static Map<FileObject, String> getImagesForProject(DesignDocument document, boolean pngOnly) {
-		String EXTENSION_JPEG = "jpeg"; // NOI18N
-		String EXTENSION_JPG = "jpg"; // NOI18N
-		String EXTENSION_GIF = "gif"; // NOI18N
-		String EXTENSION_PNG = "png"; // NOI18N
-		
-		assert (document != null);
-		
-		Map<FileObject, String> imageFileObjects = null;
-		if (pngOnly) {
-			imageFileObjects = getAllFilesForProjectByExt(document, Arrays.asList(
-					EXTENSION_PNG
-					));
-		} 
-		else {
-			imageFileObjects = getAllFilesForProjectByExt(document, Arrays.asList(
-					EXTENSION_JPEG,
-					EXTENSION_JPG,
-					EXTENSION_GIF,
-					EXTENSION_PNG
-					));
-		}
-		return imageFileObjects;
-    }
-	
-	/**
-	 * Returns a Map of all files matching any of the provided file edxtensions 
-	 * keyed by FileObjects with their relative resource paths as values.
-	 */ 
-    public static Map<FileObject, String> getAllFilesForProjectByExt(DesignDocument document, Collection<String> fileExtensions) {
-		assert (fileExtensions != null);
-		assert (document != null);
-		
-		Map<FileObject, String> matches = new HashMap<FileObject, String>();
-		
-		DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
-		DataObject dataObject = context.getDataObject();
-		
-		assert (dataObject != null);
-		
-		FileObject primaryFile = dataObject.getPrimaryFile();
-		
-		assert (primaryFile != null);
-		
-		Project project = getProjectForDocument(document);
-		List<ClassPath> classPathList = getClassPath(project, primaryFile);
-		
-		assert (classPathList != null);
-		
-		for (ClassPath cp : classPathList) {
-			FileObject[] roots = cp.getRoots();
-			for (int k = 0; k < roots.length; k++) {
-				//fill the map <FileObject, String relativePath>
-				extractFiles(roots[k], roots[k], matches, fileExtensions);
-			}
-		}
-		return matches;
-    }
-	
     /**
-	 * Recurses directories looking for files with given extensions. Extensions must be in lowercase.
-	 */
+     * Returns a Map keyed by a FileObject matching the relative resource path
+     * while the value is the FileObject representing the classpath root containing
+     * the key FileObject.
+     * @param relativeResourcePath as seen from a MIDlet prespective must start with
+     */
+    public static Map<FileObject, FileObject> getFileObjectsForRelativeResourcePath(DesignDocument document, String relativeResourcePath) {
+        assert (document != null);
+        assert (relativeResourcePath != null);
+        
+        if (relativeResourcePath.startsWith("/")) { // NOI18N
+            relativeResourcePath = relativeResourcePath.substring(1);
+        }
+        
+        Map<FileObject, FileObject> matches = new HashMap<FileObject, FileObject>();
+        
+        DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
+        DataObject dataObject = context.getDataObject();
+        
+        assert (dataObject != null);
+        
+        FileObject primaryFile = dataObject.getPrimaryFile();
+        
+        assert (primaryFile != null);
+        
+        Project project = getProjectForDocument(document);
+        List<ClassPath> classPathList = getClassPath(project, primaryFile);
+        
+        assert(classPathList != null);
+        
+        for (ClassPath cp : classPathList) {
+            FileObject[] roots = cp.getRoots();
+            for (int k = 0; k < roots.length; k++) {
+                Enumeration<? extends FileObject> children = roots[k].getChildren(true);
+                while (children.hasMoreElements()) {
+                    FileObject child = children.nextElement();
+                    String curRelPath = FileUtil.getRelativePath(roots[k], child);
+                    if (relativeResourcePath.equals(curRelPath)) {
+                        matches.put(child, roots[k]);
+                    }
+                }
+            }
+        }
+        return matches;
+    }
+    
+    
+    /**
+     * Returns a Map of all images in the project keyed by FileObjects with their relative resource paths as values.
+     */
+    public static Map<FileObject, String> getImagesForProject(DesignDocument document, boolean pngOnly) {
+        String EXTENSION_JPEG = "jpeg"; // NOI18N
+        String EXTENSION_JPG = "jpg"; // NOI18N
+        String EXTENSION_GIF = "gif"; // NOI18N
+        String EXTENSION_PNG = "png"; // NOI18N
+        
+        assert (document != null);
+        
+        Map<FileObject, String> imageFileObjects = null;
+        if (pngOnly) {
+            imageFileObjects = getAllFilesForProjectByExt(document, Arrays.asList(
+                    EXTENSION_PNG
+                    ));
+        } else {
+            imageFileObjects = getAllFilesForProjectByExt(document, Arrays.asList(
+                    EXTENSION_JPEG,
+                    EXTENSION_JPG,
+                    EXTENSION_GIF,
+                    EXTENSION_PNG
+                    ));
+        }
+        return imageFileObjects;
+    }
+    
+    /**
+     * Returns a Map of all files matching any of the provided file edxtensions
+     * keyed by FileObjects with their relative resource paths as values.
+     */
+    public static Map<FileObject, String> getAllFilesForProjectByExt(DesignDocument document, Collection<String> fileExtensions) {
+        assert (fileExtensions != null);
+        assert (document != null);
+        
+        Map<FileObject, String> matches = new HashMap<FileObject, String>();
+        
+        DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
+        DataObject dataObject = context.getDataObject();
+        
+        assert (dataObject != null);
+        
+        FileObject primaryFile = dataObject.getPrimaryFile();
+        
+        assert (primaryFile != null);
+        
+        Project project = getProjectForDocument(document);
+        List<ClassPath> classPathList = getClassPath(project, primaryFile);
+        
+        assert (classPathList != null);
+        
+        for (ClassPath cp : classPathList) {
+            FileObject[] roots = cp.getRoots();
+            for (int k = 0; k < roots.length; k++) {
+                //fill the map <FileObject, String relativePath>
+                extractFiles(roots[k], roots[k], matches, fileExtensions);
+            }
+        }
+        return matches;
+    }
+    
+    /**
+     * Recurses directories looking for files with given extensions. Extensions must be in lowercase.
+     */
     private static void extractFiles(FileObject root, FileObject current, final Map<FileObject, String> bank, Collection imgFileExtensions) {
         if (current.isFolder()) {
             FileObject[] children = current.getChildren();
             for (int i = 0; i < children.length; i++) {
                 extractFiles(root, children[i], bank, imgFileExtensions);
             }
-        }
-        else {
+        } else {
             String ext = current.getExt();
             if (imgFileExtensions.contains(ext)) {
                 String relativePath = FileUtil.getRelativePath(root, current);
                 bank.put(current, "/" + relativePath); // NOI18N
-				if (false) System.out.println(current.getPath() + " -> " + "/" + relativePath); // NOI18N
+                if (false) System.out.println(current.getPath() + " -> " + "/" + relativePath); // NOI18N
             }
         }
     }
-	
-	/**
+    
+    /**
      * Gets classpath for given project and fileobject.
-	 * 
+     *
      * @param project
      * @param fileObject
      * @return
      */
-    private static List<ClassPath> getClassPath (Project project, FileObject fileObject) {
+    private static List<ClassPath> getClassPath(Project project, FileObject fileObject) {
         ArrayList<ClassPath> classPathList = new ArrayList<ClassPath>();
         ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
         classPathList.add(cpp.findClassPath(fileObject, ClassPath.BOOT));
@@ -239,13 +236,13 @@ public final class MidpProjectSupport {
         classPathList.add(cpp.findClassPath(fileObject, ClassPath.SOURCE));
         return classPathList;
     }
-
-    public static ClasspathInfo getClasspathInfo (Project project) {
-        SourceGroup[] sourceGroups = org.netbeans.api.project.ProjectUtils.getSources (project).getSourceGroups (JavaProjectConstants.SOURCES_TYPE_JAVA);
+    
+    public static ClasspathInfo getClasspathInfo(Project project) {
+        SourceGroup[] sourceGroups = org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sourceGroups == null || sourceGroups.length < 1)
             return null;
-        FileObject fileObject = sourceGroups[0].getRootFolder ();
-        return ClasspathInfo.create (fileObject);
+        FileObject fileObject = sourceGroups[0].getRootFolder();
+        return ClasspathInfo.create(fileObject);
     }
-
+    
 }

@@ -30,9 +30,10 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
-
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInteger;
 
 /**
  *
@@ -70,8 +71,8 @@ public class SplashScreenCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                   .addProperty("Timeout", Integer.class, PROP_TIMEOUT)
-                   .addProperty("Allow Timeout Interrupt", Boolean.class, PROP_ALLOW_TIMEOUT_INTERRUPT);
+                   .addProperty("Timeout", PropertyEditorInteger.createInstance(), PROP_TIMEOUT)
+                   .addProperty("Allow Timeout Interrupt", PropertyEditorBooleanUC.createInstance(), PROP_ALLOW_TIMEOUT_INTERRUPT);
     }
 
     private Presenter createSetterPresenter () {
