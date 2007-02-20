@@ -47,19 +47,8 @@ public class CSS {
         StringBuilder sb = new StringBuilder ();
         sb.append ("<html>");
         sb.append ("<p style=\"");
-        
-        ASTNode body = null;
-        ListIterator<ASTItem> it = path.listIterator (path.size ());
-        while (it.hasPrevious ()) {
-            ASTItem item = it.previous ();
-            if (item instanceof ASTToken) break;
-            ASTNode node = (ASTNode) item;
-            if (!node.getNT ().equals ("body")) continue;
-            body = node;
-            break;
-        }
-        if (body == null) return null;
-        
+        ASTNode ruleset = (ASTNode) path.get (path.size () - 2);
+        ASTNode body = ruleset.getNode ("body");
         ASTNode declarations = body.getNode ("declarations");
         if (declarations == null) return null;
         String s = declarations.getAsText ();
