@@ -1,3 +1,10 @@
+netbeans5.5 (5.5-0.52) feisty; urgency=low
+
+  * Added javadoc to doc package
+  * Register doc with doc-base
+
+ -- Marek Slama <mslama@netbeans.org>  Tue, 20 Feb 2007 19:15:00 +0100
+
 netbeans5.5 (5.5-0.51) feisty; urgency=low
 
   * Note for reviewers: netbeans5.5.prerm removes the alternative for

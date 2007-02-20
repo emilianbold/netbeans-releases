@@ -2,6 +2,7 @@
 
 DEB_TAR_SRCDIR = netbeans
 DOCS_SRCDIR = build-tree/nb55-jumbodocpack
+API_DOCS_SRCDIR = build-tree/api
 
 include /usr/share/cdbs/1/rules/tarball.mk
 include /usr/share/cdbs/1/rules/simple-patchsys.mk
@@ -14,6 +15,7 @@ p_ide_ja		:= $(p_ide)-ja
 p_ide_pt		:= $(p_ide)-pt
 p_ide_zh		:= $(p_ide)-zh
 p_doc	 		:= $(p_ide)-doc
+usd_doc			:= usr/share/doc/$(p_doc)
 p_platform 		:= $(p_ide)-platform
 p_platform_ja 		:= $(p_platform)-ja
 p_platform_pt 		:= $(p_platform)-pt
@@ -61,13 +63,14 @@ list_platform_rm	:= $(d_lists)/platform_rm.txt
 list_ide_rm		:= $(d_lists)/ide_rm.txt
 list_platform_core	:= $(d_lists)/platform_core.txt
 list_ide_core		:= $(d_lists)/ide_core.txt
+list_doc_zip            := $(d_lists)/doc_zip.txt
 
 DEB_INSTALL_DIRS_$(p_platform) = usr/share/doc/$(p_platform) $(NBROOT) $(OVERRIDES)
 DEB_INSTALL_DIRS_$(p_platform_ja) = usr/share/doc/$(p_platform_ja) $(NBROOT) $(OVERRIDES)
 DEB_INSTALL_DIRS_$(p_platform_pt) = usr/share/doc/$(p_platform_pt) $(NBROOT) $(OVERRIDES)
 DEB_INSTALL_DIRS_$(p_platform_zh) = usr/share/doc/$(p_platform_zh) $(NBROOT) $(OVERRIDES)
 DEB_INSTALL_DIRS_$(p_ide) = usr/share/doc/$(p_ide) $(NBROOT) usr/bin etc/$(p_ide) $(APPLICATIONS) $(OVERRIDES)
-DEB_INSTALL_DIRS_$(p_doc) = usr/share/doc/$(p_doc)
+DEB_INSTALL_DIRS_$(p_doc) = $(usd_doc)/html $(usd_doc)/api
 DEB_INSTALL_DIRS_$(p_ide_ja) = usr/share/doc/$(p_ide_ja) $(NBROOT) $(OVERRIDES)
 DEB_INSTALL_DIRS_$(p_ide_pt) = usr/share/doc/$(p_ide_pt) $(NBROOT) $(OVERRIDES)
 DEB_INSTALL_DIRS_$(p_ide_zh) = usr/share/doc/$(p_ide_zh) $(NBROOT) $(OVERRIDES)
@@ -208,9 +211,27 @@ install/$(p_ide_zh)::
 	cp debian/lintian/$(p_ide_zh) $(d_ide_zh)/$(OVERRIDES)/
 
 install/$(p_doc)::
-	cp -r $(DOCS_SRCDIR)/* $(d_doc)/usr/share/doc/$(p_doc)/
+	cp -r $(DOCS_SRCDIR)/* $(d_doc)/$(usd_doc)/html
 	# remove extraneous file
-	rm -f $(d_doc)/usr/share/doc/$(p_doc)/index.html.bak
+	rm -f $(d_doc)/$(usd_doc)/html/index.html.bak
+	cp -r $(API_DOCS_SRCDIR)/* $(d_doc)/$(usd_doc)/api
+	mkdir -p $(d_lists)
+	# create the list of duplicate javadoc zip files
+	(cd  $(API_DOCS_SRCDIR); find . -name '*.zip' -print) | sort > $(list_doc_zip)
+	# delete duplicate javadoc zip files
+	for i in `cat $(list_doc_zip)` ; do \
+		echo $$i ; \
+		rm $(d_doc)/$(usd_doc)/api/$$i ; \
+	done;
+	# cp $(d_doc)/$(usd_doc)/api/overview-summary.html $(d_doc)/$(usd_doc)/api/overview-summary.html.orig 
+	# Remove links to deleted zip files from html document
+	# First strip leading ./ from zip file name and then delete href lines containing zip file name
+	for i in `cat $(list_doc_zip)` ; do \
+		f2=$$(echo $$i | sed 's_./__'); \
+		echo $$f2 ; \
+		sed "/$$f2/d" $(d_doc)/$(usd_doc)/api/overview-summary.html > $(d_doc)/$(usd_doc)/api/overview-summary.html.new ; \
+		mv $(d_doc)/$(usd_doc)/api/overview-summary.html.new $(d_doc)/$(usd_doc)/api/overview-summary.html ; \
+	done;
 
 clean::
 	-rm -f configure-once update-copyright
