@@ -29,7 +29,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectTest;
-import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView.ModulesNode.ModuleChildren;
 import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView.SuiteRootNode;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
