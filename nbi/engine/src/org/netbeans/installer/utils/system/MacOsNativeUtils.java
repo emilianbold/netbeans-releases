@@ -24,6 +24,7 @@ package org.netbeans.installer.utils.system;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.LinkedList;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -210,6 +211,8 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     
     private boolean modifyDockLink(Shortcut shortcut, File dockFile, boolean adding) {
         OutputStream outputStream = null;
+        boolean modified  = false;
+        
         try {
             
             modifyShortcutExecutable(shortcut);
@@ -253,13 +256,13 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                 index++;
             }
             
-            LogManager.log(ErrorLevel.DEBUG,
-                    "    done. KeyNode = " + persistentAppsKeyNode.getTextContent());
-            
             if(persistentAppsKeyNode == null) {
                 LogManager.log(ErrorLevel.DEBUG,
                         "    Not found.. strange.. Create new one");
                 persistentAppsKeyNode = XMLUtils.appendChild(dict,"key","persistent-apps");
+            } else {
+                LogManager.log(ErrorLevel.DEBUG,
+                        "    done. KeyNode = " + persistentAppsKeyNode.getTextContent());                
             }
             LogManager.log(ErrorLevel.DEBUG,
                     "    Getting next element.. expecting it to be array element");
@@ -299,6 +302,8 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                         "    Not an array element");
                 return false;
             }
+            
+            
             if(adding) {
                 LogManager.log(ErrorLevel.DEBUG,
                         "Adding shortcut with the following properties: ");
@@ -323,6 +328,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                 XMLUtils.appendChild(dict, "string","file-tile");
                 LogManager.log(ErrorLevel.DEBUG,
                         "... adding shortcut to Dock XML finished");
+                modified = true;
             } else {
                 LogManager.log(ErrorLevel.DEBUG,
                         "Removing shortcut with the following properties: ");
@@ -333,8 +339,17 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                         "name = " + shortcut.getName());
                 
                 String location = shortcut.getExecutablePath();
-                Element dctsElement = XMLUtils.getChild(array, "dict/dict/dict");
-                List<Element> dcts = XMLUtils.getChildren(dctsElement, "string");
+                List<Element> dcts = new LinkedList <Element> ();
+                
+                for(Element el1: XMLUtils.getChildren(array, "dict")) {
+                    for(Element el2: XMLUtils.getChildren(el1, "dict")) {
+                        for(Element el3: XMLUtils.getChildren(el2, "dict")) {
+                            dcts.addAll(XMLUtils.getChildren(el3, "string"));
+                        }
+                    }
+                }
+                
+                
                 index = 0;
                 Node dct = null;
                 LogManager.log(ErrorLevel.DEBUG,
@@ -362,19 +377,23 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                     LogManager.log(ErrorLevel.DEBUG,
                             "Shortcut exists in the dock.plist");
                     array.removeChild(dct.getParentNode().getParentNode().getParentNode());
+                    modified = true;
                 } else {
                     LogManager.log(ErrorLevel.DEBUG,
-                            "Shortcut doesn`t exist in the dock.plist");
+                            "... shortcut doesn`t exist in the dock.plist");
+                    modified = false;
                 }
                 LogManager.unindent();
                 LogManager.log(ErrorLevel.DEBUG,
                         "... removing shortcut from Dock XML finished");
             }
-            LogManager.log(ErrorLevel.DEBUG,
-                    "    Saving XML... ");
-            XMLUtils.saveXMLDocument(document,dockFile);
-            LogManager.log(ErrorLevel.DEBUG,
-                    "    Done (saving xml)");
+            if(modified) {
+                LogManager.log(ErrorLevel.DEBUG,
+                        "    Saving XML... ");
+                XMLUtils.saveXMLDocument(document,dockFile);
+                LogManager.log(ErrorLevel.DEBUG,
+                        "    Done (saving xml)");
+            }
             
         } catch (ParserConfigurationException e) {
             LogManager.log(ErrorLevel.WARNING,e);
@@ -402,8 +421,8 @@ public class MacOsNativeUtils extends UnixNativeUtils {
             }
         }
         LogManager.log(ErrorLevel.DEBUG,
-                "    Return true from modifyDockLink");
-        return true;
+                "    Return " + modified + " from modifyDockLink");
+        return modified;
         
     }
     
