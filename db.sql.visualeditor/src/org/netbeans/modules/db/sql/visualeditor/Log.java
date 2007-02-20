@@ -21,13 +21,14 @@ package org.netbeans.modules.db.sql.visualeditor;
 
 import org.openide.ErrorManager;
 
-/** Used for development logging. Not for inclusion in the product.
+/**
+ * Log utility for the visualsqleditor module
  *
  * @author Jim Davidson
  */
 public class Log {
     public static final ErrorManager err =
-	ErrorManager.getDefault().getInstance("rave.queryeditor"); // NOI18N
+	ErrorManager.getDefault().getInstance(Log.class.getPackage().getName()); // NOI18N
     public static boolean isLoggable() {
         return err.isLoggable(err.INFORMATIONAL) ;
     }
