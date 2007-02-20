@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.openfile;
 
-import java.io.File;
-
 import org.openide.filesystems.FileObject;
 
 /**
