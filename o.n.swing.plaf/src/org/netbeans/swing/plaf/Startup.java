@@ -59,22 +59,6 @@ public final class Startup {
      */
     private static final boolean NO_CUSTOMIZATIONS = Boolean.getBoolean("netbeans.plaf.disable.ui.customizations"); //NOI18N
 
-    /** Constants for default system-provided LF customizers */
-    private static final String MetalCustomsKey = "Nb.MetalLFCustoms"; //NOI18N
-    private static final String MetalCustomsClass = "org.netbeans.swing.plaf.metal.MetalLFCustoms"; //NOI18N
-    
-    private static final String WinCustomsKey = "Nb.WindowsLFCustoms"; //NOI18N
-    private static final String WinCustomsClass = "org.netbeans.swing.plaf.winclassic.WindowsLFCustoms"; //NOI18N
-    
-    private static final String XPCustomsKey = "Nb.WindowsXPLFCustoms"; //NOI18N
-    private static final String XPCustomsClass = "org.netbeans.swing.plaf.winxp.XPLFCustoms"; //NOI18N
-    
-    private static final String AquaCustomsKey = "Nb.AquaLFCustoms"; //NOI18N
-    private static final String AquaCustomsClass = "org.netbeans.swing.plaf.aqua.AquaLFCustoms"; //NOI18N
-    
-    private static final String GtkCustomsKey = "Nb.GTKLFCustoms"; //NOI18N
-    private static final String GtkCustomsClass = "org.netbeans.swing.plaf.gtk.GtkLFCustoms"; //NOI18N
-    
     /** Singleton instance */
     private static Startup instance = null;
     
