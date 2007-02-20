@@ -12,6 +12,7 @@ package org.netbeans.modules.e2e.schema;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -164,6 +165,9 @@ public class SchemaParser extends DefaultHandler {
             validationResults.add( new WSDL2Java.ValidationResult(
                 WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Schema " + uri + " cannot be located." ));
 //            throw new SchemaException( "");
+        } catch( ConnectException e ) {
+            validationResults.add( new WSDL2Java.ValidationResult(
+                WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Connection problem. Cannot download schema from " + uri + " location." ));
         } catch( IOException e ) {
             e.printStackTrace();
         }        

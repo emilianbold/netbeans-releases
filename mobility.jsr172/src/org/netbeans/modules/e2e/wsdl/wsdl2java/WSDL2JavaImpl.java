@@ -572,13 +572,14 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             off.write( "\n" );
                             off.write( "Operation op = Operation.newInstance( _qname_operation_" + operation.getName() + ", _type_" + paramTypeName + ", _type_" + returnTypeName + " );\n" );
                             off.write( "_prepOperation( op );\n");
-                            off.write( "op.setProperty( Operation.SOAPACTION_URI_PROPERTY, \"" );
-                            ExtensibilityElement exe = bindingOperation.getExtensibilityElements().get( 0 );
-                            if( exe instanceof SOAPOperation ) {
-                                SOAPOperation so = (SOAPOperation) exe;
-                                off.write( so.getSoapActionURI());
+                            for( ExtensibilityElement exe : bindingOperation.getExtensibilityElements()) {
+                                if( ee instanceof SOAPOperation ) {
+                                    SOAPOperation so = (SOAPOperation) exe;
+                                    off.write( "op.setProperty( Operation.SOAPACTION_URI_PROPERTY, \"" );
+                                    off.write( so.getSoapActionURI());
+                                    off.write( "\" );\n" );
+                                }
                             }
-                            off.write( "\" );\n" );
                             off.write( "Object resultObj;\n" );
                             off.write( "try {\n" );
                             off.write( "resultObj = op.invoke( inputObject );\n" );
