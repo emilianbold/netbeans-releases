@@ -27,7 +27,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import com.sun.source.tree.*;
 import java.io.File;
-import junit.textui.TestRunner;
 import org.netbeans.api.java.source.*;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.junit.NbTestSuite;
@@ -54,9 +53,10 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
         suite.addTest(new MethodBodyTextTest("testCreateReturnBooleanBodyText"));
 //        suite.addTest(new MethodBodyTextTest("testModifyBodyText"));
         suite.addTest(new MethodBodyTextTest("testReplaceConstrBody"));
+        suite.addTest(new MethodBodyTextTest("testReplaceMethod"));
         return suite;
     }
-    
+
     protected void setUp() throws Exception {
         super.setUp();
         testFile = getFile(getSourceDir(), getSourcePckg() + "MethodBodyText.java");
@@ -76,7 +76,6 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                     if (Tree.Kind.CLASS == typeDecl.getKind()) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         MethodTree node = (MethodTree) clazz.getMembers().get(1);
-                        //if ("method".contentEquals(node.getName())) {
                         BlockTree newBody = make.createMethodBody(node, "{ System.err.println(\"Nothing.\"); }");
                         workingCopy.rewrite(node.getBody(), newBody);
                     }
@@ -187,7 +186,6 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                     if (Tree.Kind.CLASS == typeDecl.getKind()) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         MethodTree node = (MethodTree) clazz.getMembers().get(1);
-                        //if ("method2".equals(node.getName().toString())) {
                         String body = "{ List l; }";
                         BlockTree copy = make.createMethodBody(node, body);
                         workingCopy.rewrite(node.getBody(), copy);
@@ -284,9 +282,69 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    /**
+     * #93730 - incorrectly diffed method invocation.
+     */
+    public void testReplaceMethod() throws Exception {
+        System.err.println("testReplaceMethod");
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public Object method() {\n" +
+            "        for(int i = 0; i < 10; i++) {\n" +
+            "            System.out.println(\"In loop\");\n" +
+            "        }\n" +
+            "        Thread.currentThread();\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public Object method() {\n" +
+            "        System.out.println(\"Ahoj svete!\");\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree meth = (MethodTree) clazz.getMembers().get(1);
+                String bodyText = "{System.out.println(\"Ahoj svete!\");}";
+                MethodTree newMeth = make.Method(
+                        meth.getModifiers(),
+                        meth.getName(),
+                        meth.getReturnType(),
+                        meth.getTypeParameters(),
+                        meth.getParameters(),
+                        meth.getThrows(),
+                        bodyText,
+                        (ExpressionTree) meth.getDefaultValue()
+                );
+                workingCopy.rewrite(meth.getBody(), newMeth.getBody());
+            }
 
-    public static void main(String[] args) {
-        TestRunner.run(suite());
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
     }
 
     String getSourcePckg() {

@@ -884,9 +884,22 @@ public class CasualDiff {
     protected int diffApply(JCMethodInvocation oldT, JCMethodInvocation newT, int[] bounds) {
         int localPointer = bounds[0];
         diffParameterList(oldT.typeargs, newT.typeargs, localPointer);
-        localPointer = diffTree(oldT.meth, newT.meth, new int[] { getOldPos(oldT.meth), endPos(oldT.meth) });
-        localPointer = diffParameterList(oldT.args, newT.args, localPointer);
-        return localPointer;
+        int[] methBounds = getBounds(oldT.meth);
+        localPointer = diffTree(oldT.meth, newT.meth, methBounds);
+        if (!listsMatch(oldT.args, newT.args)) {
+            if (oldT.args.nonEmpty()) {
+                copyTo(localPointer, localPointer = getOldPos(oldT.args.head));
+            } else {
+                int rParen = TokenUtilities.moveFwdToToken(tokenSequence, getOldPos(oldT.meth), JavaTokenId.RPAREN);
+                copyTo(localPointer, localPointer = rParen);
+            }
+            VeryPretty buf = new VeryPretty(context, JavaFormatOptions.getDefault());
+            localPointer = diffParameterList(oldT.args, newT.args, false, localPointer, buf);
+            printer.print(buf.toString());
+        }
+        copyTo(localPointer, bounds[1]);
+        
+        return bounds[1];
     }
 
     boolean anonClass = false;
