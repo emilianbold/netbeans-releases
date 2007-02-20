@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
     Stable tests are enumerated bellow
     -->
 
-    <testbag testattribs="validation or full or ds or i18n or dspool" executor="code" name="DO1" resultsprocessor="unit">
+    <testbag testattribs="validation or full or ds or i18n or dspool or stable" executor="code" name="DO1" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="DataLoaderTests/LoaderPoolTest/DataLoaderPoolTest_explore.class"/>
@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="validation or full or ds or i18n or dsmanipulation" executor="ide" name="DO2" resultsprocessor="unit">        
+    <testbag testattribs="validation or full or ds or i18n or dsmanipulation or stable" executor="ide" name="DO2" resultsprocessor="unit">        
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="DataLoaderTests/DataObjectTest/Manipulation.class"/>
@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="validation or full or ds or i18n or dsmodify" executor="ide" name="DO3" resultsprocessor="unit">        
+    <testbag testattribs="validation or full or ds or i18n or dsmodify or stable" executor="ide" name="DO3" resultsprocessor="unit">        
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="DataLoaderTests/DataObjectTest/Modify.class"/>
@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="validation or full or ds or i18n or dsvalidity" executor="ide" name="DO4" resultsprocessor="unit">        
+    <testbag testattribs="validation or full or ds or i18n or dsvalidity or stable" executor="ide" name="DO4" resultsprocessor="unit">        
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="DataLoaderTests/DataObjectTest/Validity.class"/>
@@ -69,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="validation or full or ds or i18n or dsother" executor="ide" name="DO5" resultsprocessor="unit">        
+    <testbag testattribs="validation or full or ds or i18n or dsother or stable" executor="ide" name="DO5" resultsprocessor="unit">        
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="DataLoaderTests/DataObjectTest/Others.class"/>
@@ -79,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
 
     
 
-    <testbag testattribs="fs or full or validation or attribs or i18n" executor="ide" name="FileObject attributes test" resultsprocessor="unit">
+    <testbag testattribs="fs or full or validation or attribs or i18n or stable" executor="ide" name="FileObject attributes test" resultsprocessor="unit">
           <testset dir="qa-functional/src"> 
             <patternset>
                 <include name="FileSystemTest/AttrTest.class"/>
@@ -107,7 +107,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>        
     </testbag>
     
-   <testbag testattribs="validation or ds" executor="ide" name="DO6">
+   <testbag testattribs="validation or ds or stable" executor="ide" name="DO6">
     <testset dir="qa-functional/src">
             <patternset>
                 <include name="DataLoaderTests/DataObjectTest/SomeTests.class"/>
