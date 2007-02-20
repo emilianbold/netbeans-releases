@@ -8,7 +8,7 @@ Element(text)[71,75] "
 Element(tag)[76,81] " - "head" - {}
 Element(text)[82,90] "
         
-Element(tag)[91,158] " - "meta" - {http-equiv, content, }
+Element(tag)[91,158] " - "meta" - {org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@1dafb4e, org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@1a8d460, }
 Element(text)[159,167] "
         
 Element(tag)[168,174] " - "title" - {}
@@ -17,7 +17,7 @@ Element(endtag)[181,188] " - "title"
 Element(text)[189,202] "
     
         
-Element(tag)[203,225] " - "style" - {type, }
+Element(tag)[203,225] " - "style" - {org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@10f0625, }
 Element(text)[226,307] "
             #search {height:100%;}
             #topmodule {align:right;}
@@ -25,7 +25,7 @@ Element(text)[226,307] "
 Element(endtag)[308,315] " - "style"
 Element(text)[316,324] "
         
-Element(tag)[325,377] " - "script" - {language, type, }
+Element(tag)[325,377] " - "script" - {org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@15c97e4, org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@1f8247d, }
 Element(text)[378,378] "
 
 Element(comment)[379,499] "
@@ -44,33 +44,33 @@ Element(text)[551,557] " &amp;
 Element(endtag)[558,563] " - "div"
 Element(text)[564,572] "
         
-Element(tag)[573,590] " - "table" - {border, }
+Element(tag)[573,590] " - "table" - {org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@23bdd1, }
 Element(text)[591,603] "
             
 Element(tag)[604,607] " - "tr" - {}
 Element(text)[608,624] "
                 
-Element(tag)[625,659] " - "td" - {valign, style, }
+Element(tag)[625,659] " - "td" - {org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@830122, org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@bf7916, }
 Element(text)[660,681] "
 
                     
-Element(tag)[682,711] " - "div" - {style, }
+Element(tag)[682,711] " - "div" - {org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@a6af6e, }
 Element(text)[712,736] "
                         
-Element(tag)[737,845] " - "a" - {href, title, }
-Element(tag)[846,1044] " - "img" - {src, alt, style, border, }
+Element(tag)[737,845] " - "a" - {org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@1478a2d, org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@1c09624, }
+Element(tag)[846,1044] " - "img" - {org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@c1186f, org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@12b3349, org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@134263a, org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@b9b8d0, }
 Element(endtag)[1045,1048] " - "a"
 Element(text)[1049,1073] "
                         
-Element(tag)[1074,1140] " - "h2" - {style, }
+Element(tag)[1074,1140] " - "h2" - {org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@1148603, }
 Element(text)[1141,1186] "Building JAX-WS 2.0 Services with NetBeans 5.0
 Element(endtag)[1187,1191] " - "h2"
 Element(text)[1192,1744] "
                         This article explains how you can use the built-in features of NetBeans 5.0 to create JAX-WS 2.0 services quickly. Once the project has been created, it can be rebuilt (and tested!) with one command. While newer versions of NetBeans include the ability to create JAX-RPC 1.X web services, the JAX-WS 2.0 code is still under development. The steps to create a web service with JAX-WS 2.0 have been simplified, and you can turn a web application project in NetBeans into a web service with very few steps.
                         
-Element(tag)[1745,1797] " - "a" - {href, }
+Element(tag)[1745,1797] " - "a" - {org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@6a63d3, }
 Element(text)[1798,1807] "Read more 
-Element(tag)[1808,1890] " - "img" - {src, alt, width, height, border, }
+Element(tag)[1808,1890] " - "img" - {org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@bfed5a, org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@77eb97, org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@10c3a08, org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@1b6235b, org.netbeans.editor.ext.html.parser.SyntaxElement$TagAttribute@cb42cf, }
 Element(endtag)[1891,1894] " - "a"
 Element(text)[1895,1915] "
                     
