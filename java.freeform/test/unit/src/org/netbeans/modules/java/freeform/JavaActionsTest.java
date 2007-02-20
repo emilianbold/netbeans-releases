@@ -499,8 +499,6 @@ public class JavaActionsTest extends TestBase {
             "        <java classpath=\"${cp}\" fork=\"true\">\n" +
             "            <stuff/>\n" +
             "            <jvmarg value=\"-Xdebug\"/>\n" +
-            "            <jvmarg value=\"-Xnoagent\"/>\n" +
-            "            <jvmarg value=\"-Djava.compiler=none\"/>\n" +
             "            <jvmarg value=\"-Xrunjdwp:transport=dt_socket,address=${jpda.address}\"/>\n" +
             "        </java>\n" +
             "        <task2/>\n" +
@@ -527,8 +525,6 @@ public class JavaActionsTest extends TestBase {
             "        <java classname=\"some.main.Class\" fork=\"true\">\n" +
             "            <classpath refid=\"cp\"/>\n" +
             "            <jvmarg value=\"-Xdebug\"/>\n" +
-            "            <jvmarg value=\"-Xnoagent\"/>\n" +
-            "            <jvmarg value=\"-Djava.compiler=none\"/>\n" +
             "            <jvmarg value=\"-Xrunjdwp:transport=dt_socket,address=${jpda.address}\"/>\n" +
             "        </java>\n" +
             "    </target>\n" +
@@ -583,8 +579,6 @@ public class JavaActionsTest extends TestBase {
             "        <java classname=\"${test.class}\" fork=\"true\">\n" +
             "            <classpath refid=\"cp\"/>\n" +
             "            <jvmarg value=\"-Xdebug\"/>\n" +
-            "            <jvmarg value=\"-Xnoagent\"/>\n" +
-            "            <jvmarg value=\"-Djava.compiler=none\"/>\n" +
             "            <jvmarg value=\"-Xrunjdwp:transport=dt_socket,address=${jpda.address}\"/>\n" +
             "        </java>\n" +
             "    </target>\n" +
