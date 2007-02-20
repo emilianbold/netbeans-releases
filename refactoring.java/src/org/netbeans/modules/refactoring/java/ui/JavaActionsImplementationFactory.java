@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -45,6 +45,7 @@ public final class JavaActionsImplementationFactory {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canChangeParameters(lookup)) {
                 rafi.doChangeParameters(lookup);
+                return;
             }
         }
     }
@@ -62,6 +63,7 @@ public final class JavaActionsImplementationFactory {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canEncapsulateFields(lookup)) {
                 rafi.doEncapsulateFields(lookup);
+                return;
             }
         }
     }
@@ -78,6 +80,7 @@ public final class JavaActionsImplementationFactory {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canExtractInterface(lookup)) {
                 rafi.doExtractInterface(lookup);
+                return;
             }
         }
     }
@@ -86,6 +89,7 @@ public final class JavaActionsImplementationFactory {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canExtractSuperClass(lookup)) {
                 rafi.doExtractSuperClass(lookup);
+                return;
             }
         }
     }
@@ -103,6 +107,7 @@ public final class JavaActionsImplementationFactory {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canInnerToOuter(lookup)) {
                 rafi.doInnerToOuter(lookup);
+                return;
             }
         }
     }
@@ -120,6 +125,7 @@ public final class JavaActionsImplementationFactory {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canPullUp(lookup)) {
                 rafi.doPullUp(lookup);
+                return;
             }
         }
     }
@@ -137,6 +143,7 @@ public final class JavaActionsImplementationFactory {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canPushDown(lookup)) {
                 rafi.doPushDown(lookup);
+                return;
             }
         }
     }
@@ -154,6 +161,7 @@ public final class JavaActionsImplementationFactory {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canUseSuperType(lookup)) {
                 rafi.doUseSuperType(lookup);
+                return;
             }
         }
     }
