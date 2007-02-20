@@ -264,16 +264,28 @@ public class MacOsNativeUtils extends UnixNativeUtils {
             LogManager.log(ErrorLevel.DEBUG,
                     "    Getting next element.. expecting it to be array element");
             Element array = keys.get(index);
+            Node arrayIt = array;
+            
             index = 0 ;
-            while(!array.getNodeName().equals("array") && index < 10) {
-                array = (Element) array.getNextSibling();
+            int MAX_SEARCH_ELEMENTS = 20 ;
+            String nodeName;
+            while(index < MAX_SEARCH_ELEMENTS && arrayIt!=null) {
+                nodeName = arrayIt.getNodeName();
+                if(nodeName!=null && nodeName.equals("array") &&
+                        arrayIt instanceof Element) {
+                    break;
+                }
+                
+                arrayIt = arrayIt.getNextSibling();
                 index++;
             }
-            if(index==10) {
+            
+            if(index==MAX_SEARCH_ELEMENTS || arrayIt==null) {
                 LogManager.log(ErrorLevel.DEBUG,
                         "    is not an array element... very strange");
                 return false;
             }
+            array = (Element) arrayIt;
             
             if(array==null) {
                 LogManager.log(ErrorLevel.DEBUG,
@@ -287,9 +299,9 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                         "    Not an array element");
                 return false;
             }
-            if(adding) {                
+            if(adding) {
                 LogManager.log(ErrorLevel.DEBUG,
-                        "Adding shortcut with the following properties: ");                
+                        "Adding shortcut with the following properties: ");
                 LogManager.log(ErrorLevel.DEBUG, "    executable = " + shortcut.getExecutablePath());
                 LogManager.log(ErrorLevel.DEBUG, "    name = " + shortcut.getName());
                 
@@ -308,7 +320,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                 XMLUtils.appendChild(dictChild,"key","file-type");
                 XMLUtils.appendChild(dictChild,"integer","41");
                 XMLUtils.appendChild(dict,"key","tile-type");
-                XMLUtils.appendChild(dict, "string","file-tile");                                
+                XMLUtils.appendChild(dict, "string","file-tile");
                 LogManager.log(ErrorLevel.DEBUG,
                         "... adding shortcut to Dock XML finished");
             } else {
@@ -336,7 +348,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                     Node item = dcts.get(index);
                     String content = item.getTextContent();
                     LogManager.log(ErrorLevel.DEBUG, "        content = " + content);
-                    if(content!=null && !content.equals("")) {                        
+                    if(content!=null && !content.equals("")) {
                         File contentFile = new File(content);
                         if(locationFile.equals(contentFile)) {
                             dct = item;
