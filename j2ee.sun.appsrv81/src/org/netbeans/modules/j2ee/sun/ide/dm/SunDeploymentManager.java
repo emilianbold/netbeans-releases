@@ -467,6 +467,10 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         }
     }
     
+    public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
+        return distribute(target, inputStream, inputStream0);
+    }
+    
     public ProgressObject distribute(Target[] target, File archive, File plan)
     throws IllegalStateException {
         ThrowExceptionIfSuspended();

@@ -124,5 +124,9 @@ public class GSDeploymentManager implements DeploymentManager {
     public Target[] getTargets() throws IllegalStateException {
         return null;
     }
+
+    public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
+        return null;
+    }
     
 }

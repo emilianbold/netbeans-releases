@@ -168,6 +168,10 @@ public class WLDeploymentManager implements DeploymentManager {
         }
     }
     
+    public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
+        return distribute(target, inputStream, inputStream0);
+    }
+    
     private ClassLoader swapLoader;
     
     private void modifiedLoader() {

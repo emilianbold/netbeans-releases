@@ -221,6 +221,10 @@ public class JBDeploymentManager implements DeploymentManager {
         return dm.distribute(target, inputStream, inputStream2);
     }
     
+    public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
+        return distribute(target, inputStream, inputStream0);
+    }
+    
     public ProgressObject undeploy(TargetModuleID[] targetModuleID) throws IllegalStateException {
         return dm.undeploy(targetModuleID);
     }
@@ -309,4 +313,5 @@ public class JBDeploymentManager implements DeploymentManager {
     public JBProperties getProperties() {
         return new JBProperties(this);
     }
+    
 }
