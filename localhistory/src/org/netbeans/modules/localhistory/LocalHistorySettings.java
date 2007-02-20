@@ -18,7 +18,10 @@
  */
 package org.netbeans.modules.localhistory;
 
+import java.io.File;
+import java.util.prefs.Preferences;
 import org.openide.ErrorManager;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -30,8 +33,20 @@ import org.openide.ErrorManager;
  */
 public class LocalHistorySettings {
     
+    private static final LocalHistorySettings INSTANCE = new LocalHistorySettings();
+    
+    private static final String LAST_SELECTED_ENTRY =   "RevertFileChanges.lastSelected";        // NOI18N  
+            
     /** Creates a new instance of LocalHistorySettings */
-    public LocalHistorySettings() {
+    private LocalHistorySettings() {
+    }
+    
+    public static LocalHistorySettings getInstance() {        
+        return INSTANCE;
+    }
+    
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(LocalHistorySettings.class);
     }
     
     public static long getTTL() {       
@@ -66,6 +81,14 @@ public class LocalHistorySettings {
         } else {
             return ".*(\\.class|\\.jar|\\.zip|\\.rar|\\.gz|\\.bz|\\.tgz|\\.tar|\\.gif|\\.jpg|\\.jpeg|\\.png|\\.nbm)"; // this is going to be a very very long list ...   
         }        
+    }
+
+    public void setLastSelectedEntry(File file, long ts) {
+        getPreferences().putLong(LAST_SELECTED_ENTRY + "#" + file.getAbsoluteFile(), ts);
+    }
+    
+    public long getLastSelectedEntry(File file) {
+        return getPreferences().getLong(LAST_SELECTED_ENTRY  + "#" + file.getAbsoluteFile(), -1);
     }
     
 }

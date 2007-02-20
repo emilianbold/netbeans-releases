@@ -29,33 +29,32 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 
 /**
+ * Local History specific utilities.
  *
  * @author Tomas Stupka
  */
 public class Utils {
     
-    public static void revert(final Node[] nodes) {        
+    public static void revert(final Node[] nodes) {
         for(Node node : nodes) {
             StoreEntry se =  node.getLookup().lookup(StoreEntry.class);
             if(se != null) {
                 Utils.revert(se);
-                return;
-            }                     
-            break;
-        }   
+            }
+        }
     }
-
-    public static void revert(StoreEntry se) {                       
+    
+    public static void revert(StoreEntry se) {
         InputStream is = null;
         OutputStream os = null;
-        try {                        
-            FileObject fo = FileUtil.toFileObject(se.getFile());  
-            if(se.getStoreFile() != null) { // XXX change this semantic to isDeleted() or something similar                
+        try {
+            FileObject fo = FileUtil.toFileObject(se.getFile());
+            if(se.getStoreFile() != null) { // XXX change this semantic to isDeleted() or something similar
                 if(fo == null) {
-                    fo = FileUtil.createData(se.getFile());                                    
-                }                
-                os = getOutputStream(fo);     
-                is = se.getStoreFileInputStream();                 
+                    fo = FileUtil.createData(se.getFile());
+                }
+                os = getOutputStream(fo);
+                is = se.getStoreFileInputStream();
                 FileUtil.copy(is, os);
             } else {
                 fo.delete();
@@ -67,22 +66,22 @@ public class Utils {
                 if(os != null) { os.close(); }
                 if(is != null) { is.close(); }
             } catch (IOException e) {}
-        }                        
+        }
     }
     
     private static OutputStream getOutputStream(FileObject fo) throws FileAlreadyLockedException, IOException, InterruptedException {
         int retry = 0;
         while (true) {
             try {
-                return fo.getOutputStream();                
-            } catch (IOException ioe) {            
+                return fo.getOutputStream();
+            } catch (IOException ioe) {
                 retry++;
                 if (retry > 7) {
                     throw ioe;
                 }
                 Thread.sleep(retry * 30);
-            } 
-        }                    
-    }     
+            }
+        }
+    }
     
 }

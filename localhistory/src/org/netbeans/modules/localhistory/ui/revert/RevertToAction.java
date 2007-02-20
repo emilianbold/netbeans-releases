@@ -63,7 +63,7 @@ public class RevertToAction extends NodeAction {
         } else {
             revertChanges = new RevertFolderChanges();
         }        
-        revertChanges.show(roots);        
+        revertChanges.show(roots[0]);        
     }
        
     protected boolean enable(Node[] activatedNodes) {

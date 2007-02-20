@@ -22,6 +22,7 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import org.netbeans.modules.localhistory.LocalHistorySettings;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.localhistory.ui.view.LocalHistoryFileView;
 import org.netbeans.modules.localhistory.utils.Utils;
@@ -34,19 +35,24 @@ import org.openide.util.RequestProcessor;
  */
 public class RevertFileChanges extends RevertChanges implements PropertyChangeListener {
            
-    void show(File[] roots) {
-        LocalHistoryFileView view = new LocalHistoryFileView (roots);        
+    void show(File root) {
+                                
+        long ts = LocalHistorySettings.getInstance().getLastSelectedEntry(root);
+        LocalHistoryFileView view = new LocalHistoryFileView (new File[] {root}, ts);                                
         view.getPanel().setPreferredSize(new Dimension(550, 250));
-        if(show(view.getPanel())) {
-            Node[] nodes = view.getExplorerManager().getSelectedNodes();
-            revert(nodes); // XXX get selected nodes            
+        if(show(view.getPanel())) {            
+            StoreEntry[] entries = view.getSelectedEntries();
+            if(entries != null && entries.length > 0) {
+                revert(entries[0]); 
+                LocalHistorySettings.getInstance().setLastSelectedEntry(root, entries[0].getTimestamp());    
+            }            
         }        
     }
     
-    public static void revert(final Node[] nodes) {
+    private void revert(final StoreEntry entry) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {                 
-                Utils.revert(nodes);
+                Utils.revert(entry);   
             }
         });
     }        
