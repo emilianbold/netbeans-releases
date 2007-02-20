@@ -37,12 +37,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.api.java.source.query.CommentHandler;
 import org.netbeans.api.java.source.transform.ChangeSet;
 import org.netbeans.api.java.source.query.QueryException;
 import org.netbeans.api.java.source.transform.Transformer;
 import org.netbeans.modules.java.source.engine.RootTree;
 import org.netbeans.modules.java.source.builder.UndoListService;
 import org.netbeans.modules.java.source.builder.ASTService;
+import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.DefaultEnvironment;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.engine.DefaultApplicationContext;
@@ -68,6 +70,7 @@ public class WorkingCopy extends CompilationController {
     private boolean afterCommit = false;
     private WorkingCopyContext wcc;
     private TreeMaker treeMaker;
+    private CommentHandlerService commentHandler;
     
     WorkingCopy(final CompilationInfo delegate) throws IOException {        
         super(delegate);
@@ -89,6 +92,7 @@ public class WorkingCopy extends CompilationController {
         ce = new DefaultEnvironment(
                 task, getCompilationUnit(), Source.instance(task.getContext()).name, wcc);
         treeMaker = new TreeMaker(this, ce.getTreeMaker());
+        commentHandler = CommentHandlerService.instance(task.getContext());
         changes = new ChangeSet("<no-description>");
         changes.attach(ce);
     }
@@ -124,6 +128,13 @@ public class WorkingCopy extends CompilationController {
         if (treeMaker == null)
             throw new IllegalStateException("Cannot call getTreeMaker before toPhase.");
         return treeMaker;
+    }
+    
+    public CommentHandler getCommentHandler() {
+        if (commentHandler == null) {
+            throw new IllegalStateException("Cannot call getCommentHandler() before toPhase() call.");
+        }
+        return commentHandler;
     }
     
     void run(Transformer t) {
