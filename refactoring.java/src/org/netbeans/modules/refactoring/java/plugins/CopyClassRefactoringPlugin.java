@@ -74,7 +74,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
             );
             return createProblem(null, true, msg);
         }
-        URL target = (URL) refactoring.getTarget();
+        URL target = refactoring.getTarget().lookup(URL.class);
         String targetPackageName = RetoucheUtils.getPackageName(target);
         if (!RetoucheUtils.isValidPackageName(targetPackageName)) {
             String msg = new MessageFormat(NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_InvalidPackage")).format(
@@ -129,7 +129,7 @@ private class CopyClass extends SimpleRefactoringElementImpl implements Refactor
 
         public void performChange() {
             try {
-                FileObject fo = RetoucheUtils.getOrCreateFolder((URL)refactoring.getTarget());
+                FileObject fo = RetoucheUtils.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
                 FileObject source = refactoring.getRefactoringSource().lookup(FileObject.class);
                 String oldPackage = RetoucheUtils.getPackageName(source.getParent());
                 

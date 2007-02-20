@@ -83,7 +83,7 @@ public class FileCopyPlugin implements RefactoringPlugin {
         
         public void performChange() {
             try {
-                FileObject fo = FileHandlingFactory.getOrCreateFolder((URL)refactoring.getTarget());
+                FileObject fo = FileHandlingFactory.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
                 FileObject source = refactoring.getRefactoringSource().lookup(FileObject.class);
                 DataObject dob = DataObject.find(source);
                 newOne = dob.copy(DataFolder.findFolder(fo));
