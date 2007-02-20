@@ -78,7 +78,7 @@ public class HelpManager {
             }*/
             if (helpMap == null){
                 //Parse the config file
-                InputStream in = this.getClass().getClassLoader()
+                InputStream in = HelpManager.class.getClassLoader()
                 .getResourceAsStream("org/netbeans/editor/ext/html/javadoc/resources/HtmlHelp.xml"); //NOI18N
                 if (in == null){
                     helpMap = new Hashtable();
