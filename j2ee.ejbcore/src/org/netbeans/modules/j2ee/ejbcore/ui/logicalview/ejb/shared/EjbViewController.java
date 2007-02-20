@@ -21,10 +21,12 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -53,6 +55,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.dnd.EjbReferenceImpl;
 
 /**
  * This class provides controller capabilities for ejb logical views. The nodes
@@ -118,9 +121,7 @@ public final class EjbViewController {
         } else {
             moduleJarTarget = antArtifacts[0];
         }
-        //TODO: RETOUCHE
-        return null;
-//        return new EjbReferenceImpl(moduleJarTarget, (EntityAndSession)model);
+        return new EjbReferenceImpl(moduleJarTarget, (EntityAndSession) ejb);
     }
     
     private FileObject findBeanFo() {
@@ -139,17 +140,18 @@ public final class EjbViewController {
         return null;
     }
     
-    public TypeElement getBeanClass() {
+    public ElementHandle<TypeElement> getBeanClass() {
         try {
             JavaSource javaSource = JavaSource.forFileObject(findBeanFo());
-            final TypeElement[] result = new TypeElement[1];
+            final List<ElementHandle<TypeElement>> result = new ArrayList<ElementHandle<TypeElement>>(1);
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController compilationController) throws IOException {
                     compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
-                    result[0] = compilationController.getElements().getTypeElement(ejb.getEjbClass());
+                    TypeElement typeElement = compilationController.getElements().getTypeElement(ejb.getEjbClass());
+                    result.add(ElementHandle.create(typeElement));
                 }
             }, true);
-            return result[0];
+            return result.get(0);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
             return null;

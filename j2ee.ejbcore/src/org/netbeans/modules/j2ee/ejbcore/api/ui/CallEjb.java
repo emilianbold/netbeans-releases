@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.ejbcore.api.ui;
 
 import java.io.IOException;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddCmpFieldAction;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddFinderMethodStrategy;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddSelectMethodStrategy;
@@ -35,9 +34,9 @@ import org.openide.filesystems.FileObject;
  */
 public final class CallEjb {
     
-    public static boolean showCallEjbDialog(WorkingCopy workingCopy, TypeElement beanClass, String title) {
+    public static boolean showCallEjbDialog(FileObject fileObject, String className, String title) {
         try {
-            return new CallEjbDialog().open(workingCopy, beanClass, title);
+            return new CallEjbDialog().open(fileObject, className, title);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
             return false;

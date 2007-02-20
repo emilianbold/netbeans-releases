@@ -46,11 +46,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -157,7 +155,7 @@ public class Utils {
         final MethodModel[] methodModel = new MethodModel[1];
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ExecutableElement executableElement = methodHandle.resolve(workingCopy);
                 Set<Modifier> modifiers = executableElement.getModifiers();
                 boolean signatureOk = modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.STATIC);
@@ -181,7 +179,7 @@ public class Utils {
         final MethodModel[] methodModel = new MethodModel[1];
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ExecutableElement method = methodHandle.resolve(workingCopy);
                 Element enclosingElement = method.getEnclosingElement();
                 ejbClassName[0] = ((TypeElement) enclosingElement).getQualifiedName().toString();
@@ -198,7 +196,7 @@ public class Utils {
         final MethodModel[] methodModel = new MethodModel[1];
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ExecutableElement executableElement = methodHandle.resolve(workingCopy);
                 Set<Modifier> modifiers = executableElement.getModifiers();
                 boolean signatureOk = modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.STATIC);
@@ -222,7 +220,7 @@ public class Utils {
         final MethodModel[] methodModel = new MethodModel[1];
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ExecutableElement method = methodHandle.resolve(workingCopy);
                 Element enclosingElement = method.getEnclosingElement();
                 ejbClassName[0] = ((TypeElement) enclosingElement).getQualifiedName().toString();
@@ -233,11 +231,10 @@ public class Utils {
         ejbMethodController.createAndAddInterface(methodModel[0], false);
     }
     
-    public static void addReference(WorkingCopy workingCopy, TypeElement beanClass, EjbReference ref, String serviceLocator, boolean remote,
+    public static void addReference(FileObject fileObject, String className, EjbReference ref, String serviceLocator, boolean remote,
             boolean throwExceptions, String ejbRefName, Project nodeProject) throws IOException {
         // find the project containing the source file
-        FileObject srcFile = workingCopy.getFileObject();
-        Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
+        Project enterpriseProject = FileOwnerQuery.getOwner(fileObject);
         EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
         enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
 
@@ -249,30 +246,38 @@ public class Utils {
             if (ejbRefName != null) {
                 ejbRef.setEjbRefName(ejbRefName);
             }
-            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(workingCopy, beanClass)) {
+            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
                 addProjectToClassPath(enterpriseProject, ref);
             } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
-                erc.addEjbReference(ejbRef, srcFile, beanClass.getQualifiedName().toString(), ref.getClientJarTarget());
+                erc.addEjbReference(ejbRef, fileObject, className, ref.getClientJarTarget());
             }
             if (serviceLocator == null) {
-                ref.generateReferenceCode(beanClass, ejbRef, throwExceptions);
+                //TODO: RETOUCHE resolve EjbReference signatures
+//                ref.generateReferenceCode(fileObject, className, ejbRef, throwExceptions);
+                ref.generateReferenceCode(fileObject, ejbRef, throwExceptions);
             } else {
-                ref.generateServiceLocatorLookup(beanClass, ejbRef, serviceLocator, throwExceptions);
+                //TODO: RETOUCHE resolve EjbReference signatures
+//                ref.generateServiceLocatorLookup(fileObject, className, ejbRef, serviceLocator, throwExceptions);
+                ref.generateServiceLocatorLookup(fileObject, ejbRef, serviceLocator, throwExceptions);
             }
         } else {
             EjbLocalRef ejbLocalRef = ref.createLocalRef();
             if (ejbRefName != null) {
                 ejbLocalRef.setEjbRefName(ejbRefName);
             }
-            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(workingCopy, beanClass)) {
+            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
                 addProjectToClassPath(enterpriseProject, ref);
             } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
-                erc.addEjbLocalReference(ejbLocalRef, srcFile, beanClass.getQualifiedName().toString(), ref.getClientJarTarget());
+                erc.addEjbLocalReference(ejbLocalRef, fileObject, className, ref.getClientJarTarget());
             }
             if (serviceLocator == null) {
-                ref.generateReferenceCode(beanClass, ejbLocalRef, throwExceptions);
+                //TODO: RETOUCHE resolve EjbReference signatures
+//                ref.generateReferenceCode(fileObject, className, ejbLocalRef, throwExceptions);
+                ref.generateReferenceCode(fileObject, ejbLocalRef, throwExceptions);
             } else {
-                ref.generateServiceLocatorLookup(beanClass, ejbLocalRef, serviceLocator, throwExceptions);
+                //TODO: RETOUCHE resolve EjbReference signatures
+//                ref.generateServiceLocatorLookup(fileObject, className, ejbLocalRef, serviceLocator, throwExceptions);
+                ref.generateServiceLocatorLookup(fileObject, ejbLocalRef, serviceLocator, throwExceptions);
             }
         }
         if (serviceLocator != null) {
@@ -356,28 +361,40 @@ public class Utils {
     /**
      * @return true if given <code>target</code> is defined in a Java SE environment.
      */
-    public static boolean isTargetJavaSE(CompilationController controller, TypeElement target){
-        Project owner = FileOwnerQuery.getOwner(controller.getFileObject());
+    public static boolean isTargetJavaSE(FileObject fileObject, final String className) throws IOException{
+        Project owner = FileOwnerQuery.getOwner(fileObject);
         if (owner.getLookup().lookup(J2eeModuleProvider.class) == null){
             return true;
         }
-        return extendsTestCase(controller, target);
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        final boolean[] result = new boolean[] { false };
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = controller.getElements().getTypeElement(className);
+                TypeElement junitTestCase = controller.getElements().getTypeElement("junit.framework.TestCase");
+                if (junitTestCase != null) {
+                    result[0] = controller.getTypes().isSubtype(typeElement.asType(), junitTestCase.asType());
+                }
+            }
+        }, true);
+        return result[0];
     }
     
-    /**
-     * @return true if given <code>javaClass</code> is a subtype (direct or
-     * indirect) of <code>junit.framework.TestCase</code>.
-     */
-    private static boolean extendsTestCase(CompilationController controller, TypeElement typeElement){
-        if (typeElement == null){
-            return false;
-        }
-        if (typeElement.getQualifiedName().contentEquals("junit.framework.TestCase")){
-            return true;
-        }
-        DeclaredType superClassType = (DeclaredType) typeElement.getSuperclass();
-        return extendsTestCase(controller, (TypeElement) superClassType.asElement());
-    }
+//    /**
+//     * @return true if given <code>javaClass</code> is a subtype (direct or
+//     * indirect) of <code>junit.framework.TestCase</code>.
+//     */
+//    private static boolean extendsTestCase(CompilationController controller, TypeElement typeElement){
+//        if (typeElement == null){
+//            return false;
+//        }
+//        if (typeElement.getQualifiedName().contentEquals("junit.framework.TestCase")){
+//            return true;
+//        }
+//        DeclaredType superClassType = (DeclaredType) typeElement.getSuperclass();
+//        return extendsTestCase(controller, (TypeElement) superClassType.asElement());
+//    }
     
     /**
      * Converts the given <code>jndiName</code> to camel case, i.e. removes

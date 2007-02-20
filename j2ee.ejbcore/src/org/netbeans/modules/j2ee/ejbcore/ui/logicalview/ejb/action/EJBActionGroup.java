@@ -20,19 +20,16 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import java.io.IOException;
-import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.openide.nodes.Node;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -99,28 +96,18 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
             return false;
         }
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        final String[] className = new String[1];
+        String className = null;
         try {
             if (javaSource == null) {
                 return false;
             }
-            javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-                public void run(WorkingCopy workingCopy) throws IOException {
-                    workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    //TODO: RETOUCHE get selected class from Node
-                    SourceUtils sourceUtils = SourceUtils.newInstance(workingCopy);
-                    if (sourceUtils != null) {
-                        TypeElement typeElement = sourceUtils.getTypeElement();
-                        className[0] = typeElement.getQualifiedName().toString();
-                    }
-                }
-            });
+            className = _RetoucheUtil.getJavaClassFromNode(activatedNodes[0]).getQualifiedName();
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
         EjbMethodController ejbMethodController = null;
-        if (className[0] != null) {
-             ejbMethodController = EjbMethodController.createFromClass(fileObject, className[0]);
+        if (className != null) {
+             ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
         }
         return ejbMethodController != null;
     }

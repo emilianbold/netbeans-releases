@@ -18,7 +18,20 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
+
+import java.io.IOException;
+import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
@@ -34,10 +47,14 @@ import org.openide.util.actions.NodeAction;
 public class CallEjbAction extends NodeAction {
     
     protected void performAction(Node[] nodes) {
-        //TODO: RETOUCHE
-//        JavaClass beanClass = JMIUtils.getJavaClassFromNode(nodes[0]);
-//        CallEjbDialog callEjbDialog = new CallEjbDialog();
-//        callEjbDialog.open(beanClass, NbBundle.getMessage(CallEjbAction.class, "LBL_CallEjbAction")); //NOI18N
+        try {
+            ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
+            FileObject fileObject = nodes[0].getLookup().lookup(FileObject.class);
+            CallEjbDialog callEjbDialog = new CallEjbDialog();
+            callEjbDialog.open(fileObject, elementHandle.getQualifiedName(), NbBundle.getMessage(CallEjbAction.class, "LBL_CallEjbAction")); //NOI18N
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
     }
 
     public String getName() {
@@ -58,29 +75,38 @@ public class CallEjbAction extends NodeAction {
         if (nodes == null || nodes.length != 1) {
             return false;
         }
-        //TODO: RETOUCHE
+        ElementHandle<TypeElement> elementHandle = null;
+        try {
+            elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+            return false;
+        }
+        if (elementHandle == null) {
+            return false;
+        }
+        FileObject srcFile = nodes[0].getLookup().lookup(FileObject.class);
+        Project project = FileOwnerQuery.getOwner(srcFile);
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
+            if (serverInstanceId == null) {
+                return true;
+            }
+            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
+            if (platform == null) {
+                return true;
+            }
+            if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                return false;
+            }
+        }
+        try {
+            return !_RetoucheUtil.isInterface(srcFile, elementHandle);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
         return false;
-//	JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[0]);
-//        if (jc == null) {
-//            return false;
-//        }
-//        FileObject srcFile = JavaModel.getFileObject(jc.getResource());
-//        Project project = FileOwnerQuery.getOwner(srcFile);
-//        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
-//        if (j2eeModuleProvider != null) {
-//            String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
-//            if (serverInstanceId == null) {
-//                return true;
-//            }
-//            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
-//            if (platform == null) {
-//                return true;
-//            }
-//            if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
-//                return false;
-//            }
-//        }
-//        return !jc.isInterface();
     }
     
     /** Perform extra initialization of this action's singleton.

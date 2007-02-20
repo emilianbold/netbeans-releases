@@ -25,7 +25,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
-
 /**
  * Provide a set of children representing the ejb nodes.
  * @author ChrisWebster
@@ -42,16 +41,18 @@ public class EjbChildren extends Children.Array {
         super.addNotify();
         Node ejbsNode = projectNode.getChildren().findChild(EjbNodesFactory.CONTAINER_NODE_NAME);
         // could add code here to only show ejb's which can be referenced
-        Node[] ejbNodes = ejbsNode.getChildren().getNodes(true);
-        Node[] filteredNodes = new Node[ejbNodes.length];
-        for (int i =0; i < ejbNodes.length; i++) {
-            filteredNodes[i] = new FilterNode(ejbNodes[i], Children.LEAF) {
-                public Action[] getActions(boolean context) {
-                    return new Action[0];
-                }
-            };
+        if (ejbsNode != null) {
+            Node[] ejbNodes = ejbsNode.getChildren().getNodes(true);
+            Node[] filteredNodes = new Node[ejbNodes.length];
+            for (int i =0; i < ejbNodes.length; i++) {
+                filteredNodes[i] = new FilterNode(ejbNodes[i], Children.LEAF) {
+                    public Action[] getActions(boolean context) {
+                        return new Action[0];
+                    }
+                };
+            }
+            add(filteredNodes);
         }
-        add(filteredNodes);
     }
     
 }

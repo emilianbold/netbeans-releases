@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -44,6 +45,7 @@ import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -83,7 +85,11 @@ public final class _RetoucheUtil {
     }
 
     public static ElementHandle<TypeElement> getJavaClassFromNode(Node node) throws IOException {
-        //TODO: RETOUCHE TypeElement from Node, this one just takes main TypeElement
+        ElementHandle elementHandle = node.getLookup().lookup(ElementHandle.class);
+        if (elementHandle != null && ElementKind.CLASS == elementHandle.getKind()) {
+            return (ElementHandle<TypeElement>) elementHandle;
+        }
+        //TODO: RETOUCHE TypeElement from Node, this one just takes main TypeElement if ElementHandle is not found
         FileObject fileObject = node.getLookup().lookup(FileObject.class);
         if (fileObject == null) {
             return null;
@@ -149,5 +155,74 @@ public final class _RetoucheUtil {
             }
         }).commit();
     }
+
+    public static boolean isInterface(FileObject fileObject, final ElementHandle<TypeElement> elementHandle) throws IOException {
+        final boolean[] isInterface = new boolean[1];
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        if (javaSource == null || elementHandle == null) {
+            return false;
+        }
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = elementHandle.resolve(controller);
+                isInterface[0] = ElementKind.INTERFACE == typeElement.getKind();
+            }
+        }, true);
+        return isInterface[0];
+    }
+
+    /**
+     * Generates unique member name in class-scope
+     * @param javaClass scope for uniqueness
+     * @param memberName suggested member name
+     * @param defaultValue default value applied if member name cannot be converted to legal Java identifier
+     * @return given member name if no such member exists or given member name without any illegal characters extended with unique number
+     */
+    public static String uniqueMemberName(FileObject fileObject, final String className, final String memberName, final String defaultValue) throws IOException{
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        final String[] result = new String[1];
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                String newName = convertToJavaIdentifier(memberName, defaultValue);
+                List<String> existingMethodNames = new ArrayList<String>();
+                TypeElement typeElement = controller.getElements().getTypeElement(className);
+                for (Element element : typeElement.getEnclosedElements()) {
+                    existingMethodNames.add(element.getSimpleName().toString());
+                }
+                int uniquefier = 1;
+                while (existingMethodNames.contains(newName)){
+                    newName = memberName + uniquefier++;
+                }
+                result[0] = newName;
+            }
+        }, true);
+        return result[0];
+    }
     
+    private static String convertToJavaIdentifier(String name, String defaultValue) {
+        Parameters.notWhitespace("name", name);
+        Parameters.notWhitespace("defaultValue", defaultValue);
+        String str = name;
+        while (str.length() > 0 && !Character.isJavaIdentifierStart(str.charAt(0))) {
+            str = str.substring(1);
+        }
+        StringBuilder result = new StringBuilder();
+        if (str.length() > 0) {
+            char firstChar = str.charAt(0);
+            firstChar = Character.toLowerCase(firstChar);
+            result.append(firstChar);
+            for (int i = 1; i < str.length(); i++) {
+                char character = str.charAt(i);
+                if (Character.isJavaIdentifierPart(character)) {
+                    result.append(character);
+                }
+            }
+        } else {
+            result.append(defaultValue);
+        }
+        return result.toString();
+    }
+
 }

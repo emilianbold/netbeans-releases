@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.ejbcore;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
@@ -83,6 +85,38 @@ public class _RetoucheUtilTest extends TestBase{
                 Collections.singletonMap("name", "MyJndiName"), 
                 true);
         testAddedField(testFO, true);
+    }
+    
+    public void testIsInterface() throws IOException {
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "}");
+        final List<ElementHandle<TypeElement>> result1 = new ArrayList<ElementHandle<TypeElement>>(1);
+        JavaSource javaSource = JavaSource.forFileObject(testFO);
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
+                result1.add(ElementHandle.create(typeElement));
+            }
+        }, true);
+        assertFalse(_RetoucheUtil.isInterface(testFO, result1.get(0)));
+
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public interface TestClass {" +
+                "}");
+        final List<ElementHandle<TypeElement>> result2 = new ArrayList<ElementHandle<TypeElement>>(1);
+        javaSource = JavaSource.forFileObject(testFO);
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
+                result2.add(ElementHandle.create(typeElement));
+            }
+        }, true);
+        assertTrue(_RetoucheUtil.isInterface(testFO, result2.get(0)));
     }
     
     private void testAddedField(FileObject fileObject, final boolean isStatic) throws IOException {
