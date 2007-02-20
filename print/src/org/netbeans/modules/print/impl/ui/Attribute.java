@@ -543,7 +543,7 @@ final class Attribute extends PrintUI
     panel.add(myUseColor, c);
 
     // text label
-    panel.add(createLabel("LBL_Text_Font_and_Color"), c); // NOI18N
+    panel.add(createLabel(i18n("LBL_Text_Font_and_Color")), c); // NOI18N
 
     // text color
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
@@ -593,7 +593,7 @@ final class Attribute extends PrintUI
     // background label
     c.anchor = GridBagConstraints.EAST;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
-    panel.add(createLabel("LBL_Background"), c); // NOI18N
+    panel.add(createLabel(i18n("LBL_Background")), c); // NOI18N
 
     // background color
     c.anchor = GridBagConstraints.WEST;
@@ -672,7 +672,7 @@ final class Attribute extends PrintUI
 
     // page(s)
     c.weightx = 1.0;
-    panel.add(createLabel("LBL_Pages"), c); // NOI18N
+    panel.add(createLabel(i18n("LBL_Pages")), c); // NOI18N
 
     // (o) Zoom to
     c.weightx = 0.0;
@@ -716,7 +716,7 @@ final class Attribute extends PrintUI
     panel.add(myZoomHeight, c);
 
     // page(s)
-    panel.add(createLabel("LBL_Pages"), c); // NOI18N
+    panel.add(createLabel(i18n("LBL_Pages")), c); // NOI18N
 
     buttonF.setSelected(zoomFactor >= 0.0);
     buttonW.setSelected(zoomWidth > 0 && zoomFactor < 0.0);
