@@ -19,14 +19,13 @@
 
 package org.netbeans.modules.web.freeform.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.web.freeform.WebProjectGenerator;
 import org.openide.filesystems.FileUtil;
@@ -361,42 +360,14 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         return Util.relativizeLocation(baseFolder, nbProjectFolder, normalizedLocation);
     }
 
-    public static class Panel implements ProjectPropertiesPanel {
-        
-        private AntProjectHelper projectHelper;
-        private PropertyEvaluator projectEvaluator;
-        private AuxiliaryConfiguration aux;
-        private WebLocationsPanel panel =  null;
-        
-        public Panel(AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
-            this.projectHelper = projectHelper;
-            this.projectEvaluator = projectEvaluator;
-            this.aux = aux;
-        }
-    
-        public void storeValues() {
-            if (panel == null) {
-                return;
+    ActionListener getCustomizerOkListener() {
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(projectHelper);
+                WebProjectGenerator.putWebSourceFolder(projectHelper, getWebSrcFolder());
+                WebProjectGenerator.putWebModules(projectHelper, aux, getWebModules());
             }
-            AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(projectHelper);
-            WebProjectGenerator.putWebSourceFolder(projectHelper, panel.getWebSrcFolder());
-            WebProjectGenerator.putWebModules(projectHelper, aux, panel.getWebModules());
-        }
-
-        public String getDisplayName() {
-            return NbBundle.getMessage(WebLocationsPanel.class, "LBL_ProjectCustomizer_Category_Web");
-        }
-
-        public JComponent getComponent() {
-            if (panel == null) {
-                panel = new WebLocationsPanel(projectHelper, projectEvaluator, aux);
-            }
-            return panel;
-        }
-
-        public int getPreferredPosition() {
-            return 150; // after Java sources panel, befvore Java Sources Classpath panel
-        }
+        };
     }
     
 }

@@ -41,20 +41,6 @@ import org.openide.util.Lookup;
 public interface ProjectNature {
 
     /**
-     * Check project and provide additional lookup if it is project of your type.
-     * @return lookup additional lookup to insert; cannot be null (use {@link Lookup#EMPTY} instead)
-     */
-    Lookup getLookup(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux);
-    
-    /**
-     * Check project and provide additional customizer panels if it is project of your type.
-     * Order of panels is unimportant because 
-     * {@link ProjectPropertiesPanel#getPreferredPosition} will be used for ordering.
-     * @return a list of {@link ProjectPropertiesPanel}s (can be empty but not null)
-     */
-    Set<ProjectPropertiesPanel> getCustomizerPanels(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux);
-    
-    /**
      * Check project and provide additional build targets to be shown in 
      * target mapping customizer panel if it is project of your type. Order
      * of targets is important.

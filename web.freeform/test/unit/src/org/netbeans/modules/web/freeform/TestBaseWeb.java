@@ -26,6 +26,8 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 
 /**
@@ -50,6 +52,7 @@ abstract class TestBaseWeb extends NbTestCase {
     protected FileObject jakartaIndex;
     
     protected void setUp() throws Exception {
+        Lookup.getDefault().lookup(ModuleInfo.class);
         super.setUp();
         egdir = FileUtil.normalizeFile(new File(getDataDir(), "example-projects"));
         assertTrue("example dir " + egdir + " exists", egdir.exists());
@@ -66,6 +69,7 @@ abstract class TestBaseWeb extends NbTestCase {
         assertNotNull("found index.html", jakartaIndex);
         buildProperties = jakartaDir.getFileObject("build.properties");
         assertNotNull("found build.properties", buildProperties);
+        
     }
     
 }

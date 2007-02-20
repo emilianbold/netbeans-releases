@@ -34,7 +34,7 @@ import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.FreeformProjectType;
-import org.netbeans.modules.ant.freeform.ProjectAccessor;
+import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;

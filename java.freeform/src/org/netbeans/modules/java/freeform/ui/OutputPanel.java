@@ -19,21 +19,16 @@
 
 package org.netbeans.modules.java.freeform.ui;
 
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
-import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.JavaProjectGenerator;
 import org.openide.filesystems.FileUtil;
@@ -509,44 +504,14 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         }
     }
     
-    public static class Panel implements ProjectPropertiesPanel, ChangeListener {
-        
-        private OutputPanel panel;
-        private ProjectModel model;
-        
-        public Panel(ProjectModel model) {
-            this.model = model;
-        }
-    
-        public void storeValues() {
-        }    
-
-        public String getDisplayName() {
-        return NbBundle.getMessage(ClasspathPanel.class, "LBL_ProjectCustomizer_Category_Output");
-        }
-
-        public JComponent getComponent() {
-            if (panel == null) {
-                panel = new OutputPanel();
-                panel.setModel(model);
-                model.addChangeListener(this);
-            }
-            return panel;
-        }
-
-        public void stateChanged(ChangeEvent e) {
-            panel.updateControls();
-        }
-
-        public int getPreferredPosition() {
-            return 300;
-        }
-        
-    }
-    
-    private void setModel(ProjectModel model) {
+    void setModel(ProjectModel model) {
         this.model = model;
         updateControls();
+        model.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent arg0) {
+                updateControls();
+            }
+        });
     }
 
     

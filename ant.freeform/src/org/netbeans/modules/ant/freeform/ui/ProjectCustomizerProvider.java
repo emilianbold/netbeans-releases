@@ -22,20 +22,23 @@ package org.netbeans.modules.ant.freeform.ui;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
-import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.FreeformProject;
+import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ui.CustomizerProvider;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -45,103 +48,81 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
     
     private final FreeformProject project;
     
-    // Option indexes
-    private static final int OPTION_OK = 0;
-    private static final int OPTION_CANCEL = OPTION_OK + 1;
+    public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-ant-freeform/Customizer"; //NO18N
     
-    // Option command names
-    private static final String COMMAND_OK = "OK";          // NOI18N
-    private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
-    
-    private DialogDescriptor dialogDescriptor;
-    private Map<FreeformProject,Dialog> customizerPerProject = new WeakHashMap<FreeformProject,Dialog>(); // Is weak needed here?
+    private static Map /*<Project,Dialog>*/project2Dialog = new HashMap(); 
     
     public ProjectCustomizerProvider(FreeformProject project) {
         this.project = project;
     }
             
     public void showCustomizer() {
-        
-        if (customizerPerProject.containsKey (project)) {
-            Dialog dlg = customizerPerProject.get(project);
-            
-            // check if the project is being customized
-            if (dlg.isShowing ()) {
-                // make it showed
-                dlg.setVisible(true);
-                return ;
-            }
+        Dialog dialog = (Dialog)project2Dialog.get (project);
+        if ( dialog != null ) {            
+            dialog.setVisible(true);
+            return;
         }
+        else {
+            InstanceContent ic = new InstanceContent();
+            Lookup context = new AbstractLookup(ic);
+            ic.add(project);
+            ic.add(project.getLookup().lookup(ProjectAccessor.class));
+            ic.add(project.getLookup().lookup(AuxiliaryConfiguration.class));
+            //TODO replace with generic apis..
+            ic.add(ic);
+            
+            OptionListener listener = new OptionListener( project );
+            dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, null, listener, null );
+            dialog.addWindowListener( listener );
+            dialog.setTitle( MessageFormat.format(                 
+                    NbBundle.getMessage( ProjectCustomizerProvider.class, "LBL_Customizer_Title" ), // NOI18N 
+                    new Object[] { ProjectUtils.getInformation(project).getDisplayName() } ) );
 
-        // Create options
-        JButton options[] = new JButton[] { 
-            new JButton( NbBundle.getMessage( ProjectCustomizerProvider.class, "LBL_Customizer_Ok_Option") ), // NOI18N
-            new JButton( NbBundle.getMessage( ProjectCustomizerProvider.class, "LBL_Customizer_Cancel_Option" ) ) , // NOI18N
-        };
-
-        // Set commands
-        options[ OPTION_OK ].setActionCommand( COMMAND_OK );
-        options[ OPTION_CANCEL ].setActionCommand( COMMAND_CANCEL );
-
-        ProjectCustomizer pc = new ProjectCustomizer(project);
-        // RegisterListener
-        ActionListener optionsListener = new OptionListener( project, pc);
-        options[ OPTION_OK ].addActionListener( optionsListener );
-        options[ OPTION_OK ].getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ProjectCustomizerProvider.class, "ACSD_Customizer_Ok_Option")); // NOI18N
-        options[ OPTION_CANCEL ].addActionListener( optionsListener );
-        options[ OPTION_CANCEL ].getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ProjectCustomizerProvider.class, "ACSD_Customizer_Cancel_Option")); // NOI18N
-
-        dialogDescriptor = new DialogDescriptor( 
-            pc, // innerPane
-            MessageFormat.format(                 // displayName
-                NbBundle.getMessage( ProjectCustomizerProvider.class, "LBL_Customizer_Title" ), // NOI18N 
-                new Object[] { ProjectUtils.getInformation(project).getDisplayName() } ),    
-            false,                                  // modal
-            options,                                // options
-            options[OPTION_OK],                     // initial value
-            DialogDescriptor.BOTTOM_ALIGN,          // options align
-            null,                                   // helpCtx
-            null );                                 // listener 
-
-        pc.setDialogDescriptor( dialogDescriptor );        
-        dialogDescriptor.setClosingOptions( new Object[] { options[ OPTION_OK ], options[ OPTION_CANCEL ] } );
-
-        Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
-
-        customizerPerProject.put (project, dialog);
-
-        dialog.setVisible(true);
-        
+            project2Dialog.put(project, dialog);
+            dialog.setVisible(true);
+        }
     }    
     
 
-    
     /** Listens to the actions on the Customizer's option buttons */
-    private static class OptionListener implements ActionListener {
+    private class OptionListener extends WindowAdapter implements ActionListener {
     
         private Project project;
-        private ProjectCustomizer projectCustomizer;
         
-        private OptionListener(Project project, ProjectCustomizer projectCustomizer) {
+        OptionListener( Project project) {
             this.project = project;
-            this.projectCustomizer = projectCustomizer;
         }
         
+        // Listening to OK button ----------------------------------------------
+        
         public void actionPerformed( ActionEvent e ) {
-            String command = e.getActionCommand();
+            // Store the properties into project 
+            assert !ProjectManager.getDefault().isModified(project) : 
+                "Some of the customizer panels has written the changed data before OK Button was pressed. Please file it as bug."; //NOI18N
             
-            if ( COMMAND_OK.equals( command ) ) {
-                projectCustomizer.save();
-                
-                try {
-                    ProjectManager.getDefault().saveProject(project);
-                } catch ( IOException ex ) {
-                    ErrorManager.getDefault().notify( ex );
-                }
+            // Close & dispose the the dialog
+            Dialog dialog = (Dialog)project2Dialog.get( project );
+            if ( dialog != null ) {
+                dialog.setVisible(false);
+                dialog.dispose();
             }
-            
         }        
         
+        // Listening to window events ------------------------------------------
+                
+        public void windowClosed( WindowEvent e) {
+            project2Dialog.remove( project );
+        }    
+        
+        public void windowClosing (WindowEvent e) {
+            //Dispose the dialog otherwsie the {@link WindowAdapter#windowClosed}
+            //may not be called
+            Dialog dialog = (Dialog)project2Dialog.get( project );
+            if ( dialog != null ) {
+                dialog.setVisible(false);
+                dialog.dispose();
+            }
+        }
     }
                             
 }

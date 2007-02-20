@@ -22,11 +22,9 @@ package org.netbeans.modules.ant.freeform;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupMerger;
-import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.openide.util.Lookup;
 
 /**

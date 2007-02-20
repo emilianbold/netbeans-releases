@@ -19,20 +19,14 @@
 
 package org.netbeans.modules.web.freeform.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.MalformedURLException;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.StringTokenizer;
-
 import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.web.freeform.WebProjectGenerator;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -40,7 +34,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
-
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -265,7 +258,7 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
         updateButtons();
     }//GEN-LAST:event_moveUpActionPerformed
 
-    private void updateButtons() {
+    void updateButtons() {
         int indices[] = classpath.getSelectedIndices();
         removeClasspath.setEnabled(listModel.getSize() > 0 && indices.length != 0 && indices[0] != 0);
         moveUp.setEnabled(indices.length > 0 && indices[0] > 1);
@@ -340,7 +333,7 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
         return sf.toString();
     }
     
-    private void setClasspath(String classpath, PropertyEvaluator evaluator){
+    void setClasspath(String classpath, PropertyEvaluator evaluator){
         if (classpath == null)
             return;
         listModel.clear();
@@ -356,57 +349,23 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
         }
     }
     
-    public static class Panel implements ProjectPropertiesPanel{
-        
-        private WebClasspathPanel panel = null;
-        private AntProjectHelper projectHelper;
-        private PropertyEvaluator projectEvaluator;
-        private AuxiliaryConfiguration aux;
-        
-        
-        public Panel(AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
-            this.projectHelper = projectHelper;
-            this.projectEvaluator = projectEvaluator;
-            this.aux = aux;
-        }
-    
-        public void storeValues() {
-            if (panel == null) {
-                return;
-            }
-            AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(projectHelper);
-            List l = WebProjectGenerator.getWebmodules(projectHelper, aux);
-            if (l != null){
-                WebProjectGenerator.WebModule wm = (WebProjectGenerator.WebModule)l.get(0);
-                wm.classpath = panel.getClasspath();
-                WebProjectGenerator.putWebModules(projectHelper, aux, l);
-            }
-            panel.updateButtons();
-        }    
-
-        public String getDisplayName() {
-            return NbBundle.getMessage(WebClasspathPanel.class, "LBL_ProjectCustomizer_Category_Classpath");
-        }
-
-        public JComponent getComponent() {
-            if (panel == null) {
-                panel = new WebClasspathPanel(false);
+    ActionListener getCustomizerOkListener(final AntProjectHelper projectHelper) {
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(projectHelper);
                 List l = WebProjectGenerator.getWebmodules(projectHelper, aux);
                 if (l != null){
                     WebProjectGenerator.WebModule wm = (WebProjectGenerator.WebModule)l.get(0);
-                    panel.setProjectFolders(Util.getProjectLocation(projectHelper, projectEvaluator), 
-                            FileUtil.toFile(projectHelper.getProjectDirectory()));
-                    panel.setClasspath(wm.classpath, projectEvaluator);
-                    panel.updateButtons();
+                    wm.classpath = getClasspath();
+                    WebProjectGenerator.putWebModules(projectHelper, aux, l);
                 }
+                //mkleint: why updating buttons on saving??
+                updateButtons();
             }
-            return panel;
-        }
-        
-        public int getPreferredPosition() {
-            return 250; // after Java Sources Classpath, before Output panel
-        }    
+        };
     }
+
+  
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

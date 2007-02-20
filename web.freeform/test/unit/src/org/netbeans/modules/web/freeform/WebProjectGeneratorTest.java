@@ -36,6 +36,8 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /**
  * Tests for FreeformProjectGenerator.
@@ -54,6 +56,11 @@ public class WebProjectGeneratorTest extends NbTestCase {
     public WebProjectGeneratorTest(String testName) {
         super(testName);
     }
+    
+        protected void setUp() throws Exception {
+            super.setUp();
+            Lookup.getDefault().lookup(ModuleInfo.class);
+        }
     
     private AntProjectHelper createEmptyProject(String projectFolder, String projectName) throws Exception {
         File base = new File(getWorkDir(), projectFolder);

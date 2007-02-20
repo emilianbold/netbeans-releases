@@ -48,7 +48,6 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
-import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.JavaProjectGenerator;
 import org.netbeans.modules.java.freeform.JavaProjectNature;
@@ -757,41 +756,6 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
     
     public boolean hasSomeSourceFolder() {
         return model.getSourceFoldersCount() > 0;
-    }
-    
-    public static class Panel implements ProjectPropertiesPanel {
-        
-        private SourceFoldersPanel panel;
-        private ProjectModel model;
-        private AntProjectHelper projectHelper;
-        
-        public Panel(ProjectModel model, AntProjectHelper projectHelper) {
-            this.model = model;
-            this.projectHelper = projectHelper;
-        }
-    
-        /* ProjectCustomizer.Panel save */
-        public void storeValues() {
-            // store changes always because model could be modified in ClasspathPanel or OutputPanel
-            ProjectModel.saveProject(projectHelper, model);
-        }    
-
-        public String getDisplayName() {
-            return NbBundle.getMessage(ClasspathPanel.class, "LBL_ProjectCustomizer_Category_Sources");
-        }
-
-        public JComponent getComponent() {
-            if (panel == null) {
-                panel = new SourceFoldersPanel(false);
-                panel.setModel(model, projectHelper);
-            }
-            return panel;
-        }
-
-        public int getPreferredPosition() {
-            return 100;
-        }
-        
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -20,6 +20,7 @@
 package org.netbeans.modules.ant.freeform.ui;
 
 import java.awt.Frame;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +33,6 @@ import java.util.regex.Pattern;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -41,7 +41,6 @@ import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.Util;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
-import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.TargetDescriptor;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -83,7 +82,8 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
     
     /** Any change in custom tasks which needs to be persisted? */
     private boolean dirtyCustom;
-
+    
+    private AntProjectHelper helper;
     
     public TargetMappingPanel(boolean advancedPart) {
         this(new ArrayList<TargetDescriptor>(), advancedPart);
@@ -104,7 +104,7 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
 
     public TargetMappingPanel(List<TargetDescriptor> extraTargets, PropertyEvaluator evaluator, AntProjectHelper helper) {
         this(extraTargets, true);
-        
+        this.helper = helper;
         FileObject as = FreeformProjectGenerator.getAntScript(helper, evaluator);
         List<String> l = null;
         // #50933 - script can be null
@@ -621,64 +621,36 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
         remove.setEnabled(custTargets.size() > 0);
     }
     
-    public static class Panel implements ProjectPropertiesPanel {
-        
-        private List<TargetDescriptor> extraTargets;
-        private PropertyEvaluator evaluator;
-        private AntProjectHelper helper;
-        private TargetMappingPanel panel;
-        
-        public Panel(List<TargetDescriptor> extraTargets, PropertyEvaluator evaluator, AntProjectHelper helper) {
-            this.helper = helper;
-            this.extraTargets = extraTargets;
-            this.evaluator = evaluator;
-        }
-        
-        /* ProjectCustomizer.Panel save */
-        public void storeValues() {
-            if (panel == null) {
-                return;
-            }
-            List<FreeformProjectGenerator.TargetMapping> mapping = panel.getMapping();
-            if (panel.dirtyRegular) {
-                FreeformProjectGenerator.putTargetMappings(helper, mapping);
-                FreeformProjectGenerator.putContextMenuAction(helper, mapping);
-            }
-
-            if (panel.dirtyCustom) {
-                List<FreeformProjectGenerator.CustomTarget> l = new ArrayList<FreeformProjectGenerator.CustomTarget>(panel.custTargets);
-                Iterator<FreeformProjectGenerator.CustomTarget> it = l.iterator();
-                while (it.hasNext()) {
-                    FreeformProjectGenerator.CustomTarget ct = it.next();
-                    // ignore row if target was not set
-                    if (ct.targets == null || ct.targets.size() == 0) {
-                        it.remove();
-                        continue;
-                    }
-                    if (ct.label == null || ct.label.length() == 0) {
-                        ct.label = ct.targets.get(0);
-                    }
+    
+    ActionListener getCustomizerOkListener() {
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                List<FreeformProjectGenerator.TargetMapping> mapping = getMapping();
+                if (dirtyRegular) {
+                    FreeformProjectGenerator.putTargetMappings(helper, mapping);
+                    FreeformProjectGenerator.putContextMenuAction(helper, mapping);
                 }
-                FreeformProjectGenerator.putCustomContextMenuActions(helper, l);
+                
+                if (dirtyCustom) {
+                    List<FreeformProjectGenerator.CustomTarget> l = new ArrayList<FreeformProjectGenerator.CustomTarget>(custTargets);
+                    Iterator<FreeformProjectGenerator.CustomTarget> it = l.iterator();
+                    while (it.hasNext()) {
+                        FreeformProjectGenerator.CustomTarget ct = it.next();
+                        // ignore row if target was not set
+                        if (ct.targets == null || ct.targets.size() == 0) {
+                            it.remove();
+                            continue;
+                        }
+                        if (ct.label == null || ct.label.length() == 0) {
+                            ct.label = ct.targets.get(0);
+                        }
+                    }
+                    FreeformProjectGenerator.putCustomContextMenuActions(helper, l);
+                }
             }
-        }
-
-        public String getDisplayName() {
-            return NbBundle.getMessage(TargetMappingPanel.class, "LBL_ProjectCustomizer_Category_Targets");
-        }
-
-        public JComponent getComponent() {
-            if (panel == null) {
-                panel = new TargetMappingPanel(extraTargets, evaluator, helper);
-            }
-            return panel;
-        }
-
-        public int getPreferredPosition() {
-            return 1000;
-        }
-        
+        };
     }
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton add;
@@ -791,5 +763,5 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
             dlg.setVisible(true);
         }
     }
-    
+
 }

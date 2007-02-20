@@ -29,12 +29,14 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.Lookup;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -54,6 +56,7 @@ public class ViewTest extends TestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
+        ModuleInfo info = Lookup.getDefault().lookup(ModuleInfo.class);
         lvp = extsrcroot.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("found a LogicalViewProvider", lvp);
     }

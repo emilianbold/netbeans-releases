@@ -82,12 +82,30 @@ is the proper place.
 
     <changes>
 
+        <change id="remove_nature_lookup_customizer">
+            <summary>Simplify ProjectNature and align with common project extensibility APIs</summary>
+            <version major="1" minor="14"/>
+            <date day="20" month="2" year="2007"/>
+            <author login="mkleint"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="no" />
+            <description>
+                <p>
+                    Removed class <code>org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel</code>
+                    and removed methods from <code>org.netbeans.modules.ant.freeform.spi.ProjectNature</code>.
+                    The removed methods were replaced by new project extensibility APIs.
+                </p>
+            </description>
+             <class package="org.netbeans.modules.ant.freeform.spi" name="ProjectPropertiesPanel"/>
+             <class package="org.netbeans.modules.ant.freeform.spi" name="ProjectNature"/>
+            <issue number="90562" />
+        </change>
+        
         <change id="deprecate_LookupMerger">
             <summary>Remove LookupMerger</summary>
             <version major="1" minor="13"/>
             <date day="11" month="10" year="2006"/>
             <author login="mkleint"/>
-            <compatibility binary="no" source="no" semantic="no" addition="no" />
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="no" />
             <description>
                 <p>
                     Removed class <code>org.netbeans.modules.ant.freeform.spi.LookupMerger</code>

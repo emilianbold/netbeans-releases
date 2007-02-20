@@ -38,6 +38,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /**
  * Base class for tests.
@@ -67,6 +69,8 @@ public abstract class TestBase extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
+        Lookup.getDefault().lookup(ModuleInfo.class);
+
         egdir = FileUtil.normalizeFile(new File(getDataDir(), "example-projects"));
         assertTrue("example dir " + egdir + " exists", egdir.exists());
         egdirFO = FileUtil.toFileObject(egdir);

@@ -19,13 +19,9 @@
 
 package org.netbeans.modules.ant.freeform;
 
+import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
@@ -36,20 +32,16 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.ant.freeform.ui.ProjectCustomizerProvider;
 import org.netbeans.modules.ant.freeform.ui.View;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -80,6 +72,7 @@ public final class FreeformProject implements Project {
     private Lookup initLookup() throws IOException {
         aux = helper().createAuxiliaryConfiguration(); // AuxiliaryConfiguration
         Lookup baseLookup = Lookups.fixed(
+            this,
             new Info(), // ProjectInformation
             new FreeformSources(this), // Sources
             new Actions(this), // ActionProvider
@@ -90,12 +83,13 @@ public final class FreeformProject implements Project {
             new Subprojects(this), // SubprojectProvider
             new ArtifactProvider(this), // AntArtifactProvider
             new LookupMergerImpl(), // LookupMerger or ActionProvider
-            UILookupMergerSupport.createPrivilegedTemplatesMerger(), 
+            UILookupMergerSupport.createPrivilegedTemplatesMerger(),
+            UILookupMergerSupport.createRecommendedTemplatesMerger(),
             new FreeformProjectOperations(this),
 	    new FreeformSharabilityQuery(helper()), //SharabilityQueryImplementation
-            new ProjectAccessor(this) //Access to AntProjectHelper and PropertyEvaluator
+            Accessor.DEFAULT.createProjectAccessor(this) //Access to AntProjectHelper and PropertyEvaluator
         );
-        return new FreeformLookup(baseLookup, this, helper, eval, aux);
+        return LookupProviderSupport.createCompositeLookup(baseLookup, "Projects/org-netbeans-modules-ant-freeform/Lookup"); //NOI18N
     }
     
     public FileObject getProjectDirectory() {
@@ -183,86 +177,7 @@ public final class FreeformProject implements Project {
         
     }
     
-    private static final class FreeformLookup extends ProxyLookup implements LookupListener {
-
-        private final Lookup baseLookup;
-        private final AntProjectHelper helper;
-        private final PropertyEvaluator evaluator;
-        private final FreeformProject project;
-        private final AuxiliaryConfiguration aux;
-        private Lookup.Result<org.netbeans.spi.project.LookupMerger> mergers2;
-        private Reference<LookupListener> listenerRef2;
-        
-        //#68623: the proxy lookup fires changes only if someone listens on a particular template:
-        private List<Lookup.Result<?>> results;
-        
-        public FreeformLookup(Lookup baseLookup, FreeformProject project, AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
-            super();
-            this.baseLookup = baseLookup;
-            this.project = project;
-            this.helper = helper;
-            this.evaluator = evaluator;
-            this.aux = aux;
-            this.results = Collections.emptyList();
-            updateLookup();
-            PROJECT_NATURES.addLookupListener(WeakListeners.create(LookupListener.class, this, PROJECT_NATURES));
-        }
-        
-        public void resultChanged (LookupEvent ev) {
-            updateLookup();
-        }
-        
-        private void updateLookup() {
-            //unregister listeners from the old results:
-            for (Lookup.Result<?> r : results) {
-                r.removeLookupListener(this);
-            }
-            
-            results = new ArrayList<Lookup.Result<?>>();
-            
-            List<Lookup> lookups = new ArrayList<Lookup>();
-            lookups.add(baseLookup);
-            for (ProjectNature pn : PROJECT_NATURES.allInstances()) {
-                lookups.add(pn.getLookup(project, helper, evaluator, aux));
-            }
-            Lookup lkp = new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
-            
-            //merge:
-            List<Class<?>> filteredClasses = new ArrayList<Class<?>>();
-            List<Object> mergedInstances = new ArrayList<Object>();
-            //first comes the new project API's LookupMerger
-            //merge:
-            LookupListener l = listenerRef2 != null ? listenerRef2.get() : null;
-            if (l != null) {
-                mergers2.removeLookupListener(l);
-            }
-            mergers2 = lkp.lookupResult(org.netbeans.spi.project.LookupMerger.class);
-            l = WeakListeners.create(LookupListener.class, this, mergers2);
-            listenerRef2 = new WeakReference<LookupListener>(l);
-            mergers2.addLookupListener(l);
-            for (org.netbeans.spi.project.LookupMerger lm : mergers2.allInstances()) {
-                Class<?> c = lm.getMergeableClass();
-                if (filteredClasses.contains(c)) {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING,
-                            "Two LookupMerger registered for class " + c +
-                            ". Only first one will be used"); // NOI18N
-                    continue;
-                }
-                filteredClasses.add(c);
-                mergedInstances.add(lm.merge(lkp));
-                
-                Lookup.Result<?> result = lkp.lookupResult(c);
-                
-                result.addLookupListener(this);
-                results.add(result);
-            }
-            
-            lkp = Lookups.exclude(lkp, filteredClasses.toArray(new Class<?>[filteredClasses.size()]));
-            Lookup fixed = Lookups.fixed(mergedInstances.toArray(new Object[mergedInstances.size()]));
-            setLookups(fixed, lkp);
-        }
-        
-    }
+ 
     
     /**
      * Utility method to decide if the project actually uses Ant scripting.

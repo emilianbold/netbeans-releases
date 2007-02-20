@@ -35,4 +35,21 @@ Microsystems, Inc. All Rights Reserved.
 
         </folder>
     </folder>
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-ant-freeform">
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-web-freeform-LookupProviderImpl.instance"/>
+            </folder>
+            <folder name="Customizer">
+                <file name="org-netbeans-modules-web-freeform-ui-WebLocationsCategoryProvider.instance"/>
+                <attr name="org-netbeans-modules-java-freeform-ui-SourceFoldersCategoryProvider.instance/org-netbeans-modules-web-freeform-ui-WebLocationsCategoryProvider.instance" boolvalue="true"/>
+                <attr name="org-netbeans-modules-web-freeform-ui-WebLocationsCategoryProvider.instance/org-netbeans-modules-java-freeform-ui-ClasspathCategoryProvider.instance" boolvalue="true"/>
+                
+                <file name="org-netbeans-modules-web-freeform-ui-WebClasspathCategoryProvider.instance"/>
+                <attr name="org-netbeans-modules-java-freeform-ui-ClasspathCategoryProvider.instance/org-netbeans-modules-web-freeform-ui-WebClasspathCategoryProvider.instance" boolvalue="true"/>
+                <attr name="org-netbeans-modules-web-freeform-ui-WebClasspathCategoryProvider.instance/org-netbeans-modules-java-freeform-ui-OutputCategoryProvider.instance" boolvalue="true"/>
+            </folder>
+        </folder>
+    </folder>
+    
 </filesystem>

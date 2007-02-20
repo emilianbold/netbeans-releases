@@ -56,6 +56,8 @@ import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -77,6 +79,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
+        Lookup.getDefault().lookup(ModuleInfo.class);
         clearWorkDir();
     }
     

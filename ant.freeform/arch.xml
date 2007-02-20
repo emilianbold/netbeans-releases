@@ -1003,9 +1003,29 @@ Nothing.
         </question>
 -->
  <answer id="resources-layer">
-  <p>
-   No.
-  </p>
+    <api group="layer" name="AntFreeformLogicalViewProvider" type="export" category="official">
+     <p>
+       "Projects/org-netbeans-modules-ant-freeform/Nodes" folder's content is used to construct the project's child nodes.
+       It's content is expected to be <code>NodeFactory</code> instances.
+     </p>
+    </api>
+    <api group="layer" name="AntFreeformLookup" type="export" category="official">
+     <p>
+       "Projects/org-netbeans-modules-ant-freeform/Lookup" folder's content is used to construct the project's additional lookup.
+       It's content is expected to be <code>LookupProvider</code> instances. Freeform project provides <code>LookupMerger</code>s 
+       for <code>ActionProvider</code>, <code>PrivilegedTemplates</code> and <code>RecommendedTemplates</code>. Implementations added by 3rd parties 
+       will be merged into a single instance in the project's lookup.
+     </p>
+    </api>
+    <api group="layer" name="AntFreeformCustomizer" type="export" category="official">
+     <p>
+       "Projects/org-netbeans-modules-ant-freeform/Customizer" folder's content is used to construct the project's customizer.
+       It's content is expected to be <code>ProjectCustomizer.CompositeCategoryProvider</code> instances.
+       The lookup passed to the panels contains an instance of <code>Project</code>, <code>AuxiliaryConfiguration</code> and <code>ProjectAccessor</code>
+       Each panel is assumed to save it's own changed content by setting an <code>ActionListener</code> on it's <code>ProjectCutomizer.Category</code>
+     </p>
+    </api>
+    
  </answer>
 
 
@@ -1081,6 +1101,87 @@ Nothing.
  <answer id="security-policy">
   <p>
    No.
+  </p>
+ </answer>
+
+
+
+
+<!--
+        <question id="arch-where" when="impl">
+            Where one can find sources for your module?
+            <hint>
+                Please provide link to the CVS web client at
+                http://www.netbeans.org/download/source_browse.html
+                or just use tag defaultanswer generate='here'
+            </hint>
+        </question>
+-->
+ <answer id="arch-where">
+  <defaultanswer generate='here' />
+ </answer>
+
+
+
+<!--
+        <question id="compat-deprecation" when="init">
+            How the introduction of your project influences functionality
+            provided by previous version of the product?
+            <hint>
+            If you are planning to deprecate/remove/change any existing APIs,
+            list them here accompanied with the reason explaining why you
+            are doing so.
+            </hint>
+        </question>
+-->
+ <answer id="compat-deprecation">
+  <p>
+   XXX no answer for compat-deprecation
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="exec-ant-tasks" when="impl">
+            Do you define or register any ant tasks that other can use?
+            
+            <hint>
+            If you provide an ant task that users can use, you need to be very
+            careful about its syntax and behaviour, as it most likely forms an
+	          API for end users and as there is a lot of end users, their reaction
+            when such API gets broken can be pretty strong.
+            </hint>
+        </question>
+-->
+ <answer id="exec-ant-tasks">
+  <p>
+   XXX no answer for exec-ant-tasks
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="resources-preferences" when="final">
+            Does your module uses preferences via Preferences API? Does your module use NbPreferences or
+            or regular JDK Preferences ? Does it read, write or both ? 
+            Does it share preferences with other modules ? If so, then why ?
+            <hint>
+                You may use
+                    &lt;api type="export" group="preferences"
+                    name="preference node name" category="private"&gt;
+                    description of individual keys, where it is used, what it
+                    influences, whether the module reads/write it, etc.
+                    &lt;/api&gt;
+                Due to XML ID restrictions, rather than /org/netbeans/modules/foo give the "name" as org.netbeans.modules.foo.
+                Note that if you use NbPreferences this name will then be the same as the code name base of the module.
+            </hint>
+        </question>
+-->
+ <answer id="resources-preferences">
+  <p>
+   XXX no answer for resources-preferences
   </p>
  </answer>
 

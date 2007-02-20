@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
 // XXX testContextActions
@@ -40,7 +41,7 @@ public class ActionsWebTest extends TestBaseWeb {
     public ActionsWebTest (String name) {
         super(name);
     }
-    
+        
     public void testBasicActions() throws Exception {
         ActionProvider ap = (ActionProvider)jakarta.getLookup().lookup(ActionProvider.class);
         assertNotNull("have an action provider", ap);

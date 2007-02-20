@@ -48,7 +48,7 @@ public class JavaProjectNatureTest extends NbTestCase {
         String xml2expected = xml1.replaceAll("/1", "/2");
         Document doc1 = XMLUtil.parse(new InputSource(new StringReader(xml1)), false, true, null, null);
         Element el1 = doc1.getDocumentElement();
-        Element el2 = JavaProjectNature.upgradeSchema(el1);
+        Element el2 = LookupProviderImpl.upgradeSchema(el1);
         Document doc2 = XMLUtil.createDocument(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, null, null);
         doc2.removeChild(doc2.getDocumentElement());
         doc2.appendChild(doc2.importNode(el2, true));

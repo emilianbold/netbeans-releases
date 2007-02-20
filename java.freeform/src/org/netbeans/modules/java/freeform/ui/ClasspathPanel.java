@@ -22,7 +22,6 @@ package org.netbeans.modules.java.freeform.ui;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -36,21 +35,15 @@ import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.JavaProjectGenerator;
 import org.netbeans.modules.java.freeform.jdkselection.JdkConfiguration;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
@@ -83,7 +76,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
     /**
      * Create new panel in project properties mode.
      */
-    private ClasspathPanel(JdkConfiguration jdkConf) {
+    ClasspathPanel(JdkConfiguration jdkConf) {
         this.jdkConf = jdkConf;
         basicInit();
         jTextArea1.setText(NbBundle.getMessage(ClasspathPanel.class, "LBL_ClasspathPanel_Explanation"));
@@ -130,7 +123,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         return new HelpCtx( ClasspathPanel.class );
     }
     
-    private void updateControls() {
+    void updateControls() {
         sourceFolder.removeAllItems();
         compUnitsKeys = model.createCompilationUnitKeys();
         isSeparateClasspath = !ProjectModel.isSingleCompilationUnit(compUnitsKeys);
@@ -666,55 +659,6 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
     }
 
-    public static class Panel implements ProjectPropertiesPanel, ChangeListener {
-        
-        private ClasspathPanel panel;
-        private ProjectModel model;
-        private final JdkConfiguration jdkConf;
-        private JavaPlatform initialPlatform;
-        
-        public Panel(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, ProjectModel model) {
-            jdkConf = new JdkConfiguration(project, helper, evaluator);
-            this.model = model;
-        }
-    
-        public void storeValues() {
-            if (panel != null) {
-                JavaPlatform p = (JavaPlatform) panel.javaPlatform.getSelectedItem();
-                if (p != initialPlatform) {
-                    try {
-                        jdkConf.setSelectedPlatform(p);
-                    } catch (IOException x) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, x);
-                    }
-                }
-            }
-        }
-
-        public String getDisplayName() {
-            return NbBundle.getMessage(ClasspathPanel.class, "LBL_ProjectCustomizer_Category_Classpath");
-        }
-
-        public JComponent getComponent() {
-            if (panel == null) {
-                panel = new ClasspathPanel(jdkConf);
-                panel.setModel(model);
-                model.addChangeListener(this);
-                initialPlatform = (JavaPlatform) panel.javaPlatform.getSelectedItem();
-            }
-            return panel;
-        }
-        
-        public void stateChanged(ChangeEvent e) {
-            panel.updateControls();
-        }
-
-        public int getPreferredPosition() {
-            return 200;
-        }
-        
-    }
-    
     public void setModel(ProjectModel model) {
         this.model = model;
         updateControls();
@@ -728,7 +672,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JComboBox javaPlatform;
+    javax.swing.JComboBox javaPlatform;
     private javax.swing.JButton javaPlatformButton;
     private javax.swing.JTextArea javaPlatformIntro;
     private javax.swing.JLabel javaPlatformLabel;

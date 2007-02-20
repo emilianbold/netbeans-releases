@@ -79,7 +79,7 @@ public class JavaActionsTest extends TestBase {
         prj.helper().putPrimaryConfigurationData(data, true);
         ProjectManager.getDefault().saveProject(prj);
         AuxiliaryConfiguration origAux = prj.getLookup().lookup(AuxiliaryConfiguration.class);
-        AuxiliaryConfiguration aux = new JavaProjectNature.UpgradingAuxiliaryConfiguration(origAux);
+        AuxiliaryConfiguration aux = new LookupProviderImpl.UpgradingAuxiliaryConfiguration(origAux);
         ja = new JavaActions(prj, prj.helper(), prj.evaluator(), aux);
         src = prj.getProjectDirectory().getFileObject("src");
         assertNotNull(src);
