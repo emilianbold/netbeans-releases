@@ -21,15 +21,18 @@ package org.netbeans.modules.vmd.midp.components.items;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 
 /**
  *
@@ -57,13 +60,16 @@ public class CustomItemCD extends ComponentDescriptor {
         );
     }
 
-    private static DefaultPropertiesPresenter createPropertiesPresenter() {
-        return new DefaultPropertiesPresenter();
+    private static Presenter createSetterPresenter() {
+        return new CodeSetterPresenter()
+                .addParameters(MidpParameter.create(ItemCD.PROP_LABEL))
+                .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP_2).addParameters(ItemCD.PROP_LABEL));
     }
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
-                createPropertiesPresenter()
+                // code
+                createSetterPresenter()
         );
     }
 }
