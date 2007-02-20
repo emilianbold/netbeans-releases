@@ -18,10 +18,20 @@
  */
 package org.netbeans.modules.websvc.core.webservices.action;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.AddOperationCookie;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -55,8 +65,8 @@ public class AddOperationEditorAction extends NodeAction {
 // Retouche
 //                  ( activatedNodes[0].getLookup().lookup(ClassMember.class) != null || JMIUtils.getClassMemberFromNode(activatedNodes[0])!=null ) &&
 //                  JMIUtils.getJavaClassFromNode(activatedNodes[0]) != null &&
-                    (isJaxWsImplementationClass(activatedNodes[0]) || 
-                    (isWsImplBeanOrInterface(activatedNodes[0]) && !isFromWSDL(activatedNodes[0])));
+                    (isJaxWsImplementationClass(activatedNodes[0]) /*|| (isWsImplBeanOrInterface(activatedNodes[0]) */
+                    && !isFromWSDL(activatedNodes[0]));
             }
         }
         return false;
@@ -86,29 +96,29 @@ public class AddOperationEditorAction extends NodeAction {
 
     
     private boolean isJaxWsImplementationClass(Node node) {
-// Retouche
-//         JavaClass ce = JMIUtils.getJavaClassFromNode(node);
-//         Resource r = ce.getResource();
-//         FileObject fo = JavaModel.getFileObject(r);
-//         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(fo);
-//         if (jaxWsSupport!=null) {
-//             List services = jaxWsSupport.getServices();
-//             for (int i=0;i<services.size();i++) {
-//                 Service serv = (Service)services.get(i);
-//                 if (serv.getWsdlUrl()==null) {
-//                     String implClass = serv.getImplementationClass();
-//                     if (implClass.equals(ce.getName())) {
-//                         service=serv;
-//                         return true;
-//                     }
-//                 }
-//             }
-//         }
-         service=null;
-         return false;
+        FileObject fo = getFileObjectFromNode(node);
+        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(fo);
+        if (jaxWsSupport!=null) {
+            List services = jaxWsSupport.getServices();
+            for (int i=0;i<services.size();i++) {
+                Service serv = (Service)services.get(i);
+                if (serv.getWsdlUrl()==null) {
+                    String implClass = serv.getImplementationClass();
+                    if (implClass.equals(getPackageName(fo))) {
+                        service=serv;
+                        return true;
+                    }
+                }
+            }
+        }
+        service=null;
+        return false;
     }
     
     private boolean isFromWSDL(Node node) {
+        if (service!=null) {
+            return service.getWsdlUrl()!=null;
+        }
 // Retouche
 //        JavaClass ce = JMIUtils.getJavaClassFromNode(node);
 //        Resource r = ce.getResource();
@@ -125,71 +135,30 @@ public class AddOperationEditorAction extends NodeAction {
         return false;
     }
     
+    private String getPackageName(FileObject fo) {
+        Project project = FileOwnerQuery.getOwner(fo);
+        Sources sources = (Sources)project.getLookup().lookup(Sources.class);
+        if (sources!=null) {
+            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if (groups!=null) {
+                List<FileObject> roots = new ArrayList<FileObject>();
+                for (SourceGroup group: groups) {   
+                    FileObject rootFolder = group.getRootFolder();
+                    if (FileUtil.isParentOf(rootFolder, fo)) {
+                        String relativePath = FileUtil.getRelativePath(rootFolder, fo).replace('/', '.');
+                        return (relativePath.endsWith(".java")? //NOI18N
+                            relativePath.substring(0,relativePath.length()-5):
+                            relativePath);
+                    }
+                }
+            }   
+        }
+        return null;
+    }
+    
     protected void performAction(Node[] activatedNodes) {
-// Retouche        
-//        JavaMetamodel.getManager().waitScanFinished();
-//        
-//        Node.Cookie cookie=null;
-//        if (service!=null) {
-//            cookie = JaxWsCookieFactory.getJaxWsClassesCookie(service,JMIUtils.getJavaClassFromNode(activatedNodes[0]));
-//        } else {
-//            cookie = WebServiceCookieFactory.getWebServiceClassesCookie(JMIUtils.getJavaClassFromNode(activatedNodes[0]));
-//        }
-//        if (cookie == null) return;
-//
-//        Method m = null;
-//        JavaClass javaClass = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
-//
-//        if ((javaClass != null) && (javaClass.isValid())) {
-//            JMIUtils.beginJmiTransaction();
-//            try {
-//                m = JMIUtils.createMethod(javaClass);
-//                m.setModifiers(Modifier.PUBLIC);
-//                m.setName(NbBundle.getMessage(AddOperationAction.class, "TXT_DefaultOperationName")); //NOI18N
-//                // sets 'String' as a default return value for method. 
-//                // method.setType(type) can't be used here since it would set 
-//                // return value to 'java.lang.String' (#61178)
-//                TypeReference tr = 
-//                        ((JavaModelPackage)javaClass.refImmediatePackage()).getMultipartId().createMultipartId("String", null, null);
-//                m.setTypeName(tr);
-//                
-//            } catch (JmiException e) {
-//                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.toString());
-//                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.getElementInError().toString());
-//                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.getObjectInError().toString());
-//            } finally {
-//                JMIUtils.endJmiTransaction();
-//            }
-//            if (m == null) {
-//                return;
-//            }
-//
-//            MethodCustomizer mc = MethodCollectorFactory.operationCollector(m);
-//            final NotifyDescriptor nd = new NotifyDescriptor(mc,  NbBundle.getMessage(AddOperationAction.class, "TTL_AddOperation"),
-//                    NotifyDescriptor.OK_CANCEL_OPTION,
-//                    NotifyDescriptor.PLAIN_MESSAGE,
-//                    null, null
-//                    );
-//            mc.addPropertyChangeListener(new PropertyChangeListener() {
-//                public void propertyChange(PropertyChangeEvent evt) {
-//                    if (evt.getPropertyName().equals(MethodCustomizer.OK_ENABLED)) {
-//                        Object newvalue = evt.getNewValue();
-//                        if ((newvalue != null) && (newvalue instanceof Boolean)) {
-//                            nd.setValid(((Boolean)newvalue).booleanValue());
-//                        }
-//                    }
-//                }
-//            });
-//            Object rv = DialogDisplayer.getDefault().notify(nd);
-//            mc.isOK(); // apply possible changes in dialog fields
-//            if (rv == NotifyDescriptor.OK_OPTION) {
-//                if (cookie instanceof JaxWsClassesCookie)
-//                    ((JaxWsClassesCookie)cookie).addOperation(m);
-//                else 
-//                    ((WebServiceClassesCookie)cookie).addOperation(m);
-//            }
-//
-//        }
-
+            FileObject fo = getFileObjectFromNode(activatedNodes[0]);
+            AddOperationCookie cookie = WebServiceActionProvider.getAddOperationAction(fo);
+            cookie.addOperation(fo);
     }
 }
