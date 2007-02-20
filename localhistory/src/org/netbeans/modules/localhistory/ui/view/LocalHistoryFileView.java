@@ -55,6 +55,38 @@ public class LocalHistoryFileView implements PropertyChangeListener {
     private FileTablePanel tablePanel;             
     private File[] files;
     
+    private class RefreshTable implements Runnable {
+        private boolean selectFirst = false;
+        void setup(boolean selectFirst) {
+            this.selectFirst = selectFirst;
+        }
+        public void run() {            
+            Node[] oldSelection = tablePanel.getExplorerManager().getSelectedNodes();
+            Node oldExploredContext = tablePanel.getExplorerManager().getExploredContext();
+            Node root = LocalHistoryRootNode.createRootNode(files);
+            tablePanel.getExplorerManager().setRootContext(root);
+            if (!selectFirst && oldSelection != null && oldSelection.length > 0) {                        
+                Node[] newSelection = getEqualNodes(root, oldSelection);                        
+                if(newSelection.length > 0) {
+                    selectNodes(newSelection);
+                } else {
+                    if(oldExploredContext != null) {
+                        Node[] newExploredContext = getEqualNodes(root, new Node[] { oldExploredContext });                           
+                        if(newExploredContext.length > 0) {
+                            selectFirstNeighborNode(newExploredContext[0], oldSelection[0]);                                    
+                        }                                
+                    }                       
+                }
+            } else {
+                selectFirstNode(root);
+            }
+            tablePanel.revalidate();
+            tablePanel.repaint();
+        }
+    }     
+    private RequestProcessor.Task refreshTask;        
+    private RefreshTable refreshTable;
+    
     /** Creates a new instance of LocalHistoryView */
     public LocalHistoryFileView(File[] files) {                       
         tablePanel = new FileTablePanel();        
@@ -98,38 +130,17 @@ public class LocalHistoryFileView implements PropertyChangeListener {
             }
         }
         return false;
-    }
-        
+    }                
+    
     private void refreshTablePanel(final boolean selectFirst) {       
-        RequestProcessor.getDefault().post(
-            new Runnable() {
-                public void run() {
-                    Node[] oldSelection = tablePanel.getExplorerManager().getSelectedNodes();
-                    Node oldExploredContext = tablePanel.getExplorerManager().getExploredContext();
-                    
-                    Node root = LocalHistoryRootNode.createRootNode(files);
-                    tablePanel.getExplorerManager().setRootContext(root);
-                    if (!selectFirst && oldSelection != null && oldSelection.length > 0) {                        
-                        Node[] newSelection = getEqualNodes(root, oldSelection);                        
-                        if(newSelection.length > 0) {
-                            selectNodes(newSelection);
-                        } else {
-                            if(oldExploredContext != null) {
-                                Node[] newExploredContext = getEqualNodes(root, new Node[] { oldExploredContext });                           
-                                if(newExploredContext.length > 0) {
-                                    selectFirstNeighborNode(newExploredContext[0], oldSelection[0]);                                    
-                                }                                
-                            }                             
-                            // selectFirstNode(root);  
-                        }
-                    } else {
-                        selectFirstNode(root);
-                    }
-                    tablePanel.revalidate();
-                    tablePanel.repaint();        
-                }
-            });
-    }
+        if(refreshTask == null) {
+            refreshTable = new RefreshTable();
+            RequestProcessor rp = new RequestProcessor();
+            refreshTask = rp.create(refreshTable);            
+        }
+        refreshTable.setup(selectFirst);
+        refreshTask.schedule(100);
+    }    
     
     private Node[] getEqualNodes(Node root, Node[] oldNodes) {    
         List<Node> ret = new ArrayList<Node>();
@@ -156,14 +167,14 @@ public class LocalHistoryFileView implements PropertyChangeListener {
         return null;
     } 
 
-    private void selectFirstNode(Node root) {
+    private void selectFirstNode(final Node root) {        
         Node[] dateFolders = root.getChildren().getNodes();
         if (dateFolders != null && dateFolders.length > 0) {
             final Node[] nodes = dateFolders[0].getChildren().getNodes();
             if (nodes != null && nodes.length > 0) {                
                 selectNodes(new Node[]{ nodes[0] });
             }
-        }
+        }        
     }
     
     private void selectFirstNeighborNode(Node context, Node oldSelection) {
@@ -188,7 +199,7 @@ public class LocalHistoryFileView implements PropertyChangeListener {
                     tablePanel.getExplorerManager().setSelectedNodes(nodes);
                 } catch (PropertyVetoException ex) {
                     // ignore
-                }
+                }                                     
             }
         });                                             
     }
@@ -223,7 +234,7 @@ public class LocalHistoryFileView implements PropertyChangeListener {
                 setBorder(BorderFactory.createEtchedBorder());
         //        treeView.getAccessibleContext().setAccessibleDescription(browserAcsd);
         //        treeView.getAccessibleContext().setAccessibleName(browserAcsn);           
-                setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);            // XXX DISCONTIGUOUS_TREE_SELECTION
+                setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);            
                 setPopupAllowed(true);    
 
                 DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
