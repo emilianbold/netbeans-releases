@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import javax.swing.text.Document;
 import junit.framework.*;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.xml.schema.model.*;
 import org.netbeans.modules.xml.schema.model.impl.SchemaComponentFactoryImpl;
 import org.netbeans.modules.xml.schema.model.impl.SchemaImpl;
@@ -19,12 +20,13 @@ import org.netbeans.modules.xml.schema.model.impl.SchemaModelImpl;
 import org.netbeans.modules.xml.schema.model.visitor.DefaultSchemaVisitor;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.openide.awt.UndoRedo.Empty;
 import org.w3c.dom.Text;
 /**
  *
  * @author nn136682
  */
-public class PurchaseOrderTest extends TestCase implements TestSchemaReadWrite {
+public class PurchaseOrderTest extends NbTestCase {
     
     public PurchaseOrderTest(String testName) {
         super(testName);
@@ -32,11 +34,8 @@ public class PurchaseOrderTest extends TestCase implements TestSchemaReadWrite {
     }
     
     public static final String TEST_XSD = "resources/PurchaseOrder.xsd";
-    Schema schema = null;
     
     protected void setUp() throws Exception {
-        SchemaModel model = Util.loadSchemaModel(getSchemaResourcePath());
-        schema = model.getSchema();
     }
     
     protected void tearDown() throws Exception {
@@ -48,7 +47,8 @@ public class PurchaseOrderTest extends TestCase implements TestSchemaReadWrite {
     }
     
     public void testRead() throws Exception {
-        SchemaImpl si = (SchemaImpl) schema;
+        SchemaModel model = Util.loadSchemaModel(getSchemaResourcePath());
+        SchemaImpl si = (SchemaImpl) model.getSchema();
         si.accept(new SchemaTestVisitor());
         assertTrue(seenRef);
     }
@@ -57,7 +57,7 @@ public class PurchaseOrderTest extends TestCase implements TestSchemaReadWrite {
         SchemaModel model = Util.createEmptySchemaModel();
         SchemaImpl si = (SchemaImpl)model.getSchema();
         assertNotNull(si);
-        SchemaComponentFactoryImpl factory = new SchemaComponentFactoryImpl((SchemaModelImpl)model);
+        SchemaComponentFactory factory = model.getFactory();
         
         //set attributes
         model.startTransaction();
@@ -82,6 +82,10 @@ public class PurchaseOrderTest extends TestCase implements TestSchemaReadWrite {
         el.setType(ref);
         assertEquals("refString", "xsd:string", ref.getRefString());
         sequence.addContent(el, 0);
+        
+        //FIXME
+        //assertNull("no xmlns:xsd", ((AbstractDocumentComponent)el).getPeer().getAttribute("xmlns:xsd"));
+        
         //create and add street element
         el = factory.createLocalElement();
         el.setName("street");
@@ -175,8 +179,7 @@ public class PurchaseOrderTest extends TestCase implements TestSchemaReadWrite {
         assertEquals("schema's elementFormDefault", Form.UNQUALIFIED.toString(), si.getElementFormDefault().toString());
         assertEquals("schema's targetNamespace: ", "http://www.example.com/PO1", si.getTargetNamespace());
         
-        //verify contents
-        //Util.dumpToFile(((SchemaModelImpl)model).getBaseDocument(), new File("c:\\temp\\test2.xml"));
+        //Util.dumpToFile(si.getModel().getBaseDocument(), new File(getWorkDir(), "test.xsd"));
         
         si.accept(new SchemaTestVisitor());
         assertTrue(seenRef);
@@ -299,12 +302,13 @@ public class PurchaseOrderTest extends TestCase implements TestSchemaReadWrite {
     int countShipToVisit = 0;
 
     public void testPrefixConsolidation() throws Exception {
+        TestCatalogModel.getDefault().clearDocumentPool();
         SchemaModelImpl model = (SchemaModelImpl) Util.createEmptySchemaModel();
         Schema s = model.getSchema();
         SchemaComponentFactory factory = model.getFactory();
         
         GlobalElement ge1 = factory.createGlobalElement();
-        ge1.setName("auto-loan-application");
+        ge1.setName("my-auto-loan-application");
         LocalComplexType lct = factory.createLocalComplexType();
         assertNotNull(lct.getPeer().getAttribute("xmlns:xsd"));
         ge1.setInlineType(lct);
@@ -313,15 +317,12 @@ public class PurchaseOrderTest extends TestCase implements TestSchemaReadWrite {
         assertNotNull(cc.getPeer().getAttribute("xmlns:xsd"));
         lct.setDefinition(cc);
         assertNull(cc.getPeer().getAttribute("xmlns:xsd"));
-        Sequence seq = factory.createSequence();
-        assertNotNull(seq.getPeer().getAttribute("xmlns:xsd"));
-        //cc.setLocalDefinition(seq);
         
         model.startTransaction();
-        //model.getSchema().addElement(ge1);
-        model.getSchema().setVersion("Foo");
+        model.getSchema().addElement(ge1);
         model.endTransaction();
         
-        Util.dumpToFile(model.getBaseDocument(), new File("c:/temp/test.xsd"));
+        assertNull(lct.getPeer().getAttribute("xmlns:xsd"));
+        assertNull(cc.getPeer().getAttribute("xmlns:xsd"));
     }
 }

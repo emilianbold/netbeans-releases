@@ -76,12 +76,10 @@ public class TestCatalogModel extends CatalogWriteModelImpl{
         Lookup proxyLookup = Lookups.proxy(
                 new Lookup.Provider() {
             public Lookup getLookup() {
-                Document document = null;
-                document = getDocument(thisFileObj);
                 return Lookups.fixed(new Object[] {
                     FileUtil.toFile(thisFileObj),
                     thisFileObj,
-                    document,
+                    getDocument(dobj.getPrimaryFile()),
                     dobj,
                     catalogModel
                 });

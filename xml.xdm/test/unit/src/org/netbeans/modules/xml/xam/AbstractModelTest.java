@@ -9,10 +9,10 @@ import junit.framework.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.undo.UndoManager;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.xml.xam.ComponentEvent.EventType;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.Model.State;
-
 import org.netbeans.modules.xml.xam.TestComponent.A;
 import org.netbeans.modules.xml.xam.TestComponent.B;
 import org.netbeans.modules.xml.xam.TestComponent.C;
@@ -26,7 +26,7 @@ import org.netbeans.modules.xml.xdm.diff.Difference;
  *
  * @author Nam Nguyen
  */
-public class AbstractModelTest extends TestCase {
+public class AbstractModelTest extends NbTestCase {
     PropertyListener plistener;
     TestComponentListener listener;
     TestModel model;
@@ -865,7 +865,6 @@ public class AbstractModelTest extends TestCase {
         D d = model.getRootComponent().getChild(D.class);
         assertNotNull(d.getChild(B.class));
         
-        Util.dumpToFile(doc, new File("c:/temp/test1.xml"));
         model = Util.dumpAndReloadModel(model);
         d = model.getRootComponent().getChild(D.class);
         assertNotNull(d.getChild(B.class));
@@ -881,15 +880,12 @@ public class AbstractModelTest extends TestCase {
         model.getRootComponent().appendChild("test", new D(model, 2));
         model.endTransaction();
 
-        Util.dumpToFile(doc, new File("c:/temp/test1-xam-mutation.xml"));
-        
         um.undo();
         D d = model.getRootComponent().getChild(D.class);
         assertNull(d);
         um.redo();
         d = model.getRootComponent().getChild(D.class);
         assertNotNull(d.getChild(B.class));
-        Util.dumpToFile(doc, new File("c:/temp/test1-xam-mutation-redo.xml"));
     }
 
     public void testUndoOnMutationFromSyncEvent() throws Exception {
