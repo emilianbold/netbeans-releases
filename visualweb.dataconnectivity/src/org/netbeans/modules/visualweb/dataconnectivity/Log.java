@@ -21,13 +21,14 @@ package org.netbeans.modules.visualweb.dataconnectivity;
 
 import org.openide.ErrorManager;
 
-/** Used for development logging. Not for inclusion in the product.
+/**
+ * Log utility for the dataconnectivity module
  *
  * @author Jim Davidson
  */
 public class Log {
     public static final ErrorManager err =
-	ErrorManager.getDefault().getInstance("rave.dataconnectivity"); // NOI18N
+	ErrorManager.getDefault().getInstance(Log.class.getPackage().getName()); // NOI18N
     public static boolean isLoggable() {
         return err.isLoggable(err.INFORMATIONAL) ;
     }
