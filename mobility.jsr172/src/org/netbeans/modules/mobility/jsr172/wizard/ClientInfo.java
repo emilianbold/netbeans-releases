@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.e2e.api.schema.SchemaException;
 import org.netbeans.modules.e2e.api.wsdl.wsdl2java.WSDL2Java;
 import org.netbeans.modules.e2e.wsdl.wsdl2java.WSDL2JavaImpl;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -1070,7 +1071,9 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             return showValidationResults( validationResults );
             
         } catch( IOException e ) {
-            
+        } catch( Exception e ) {
+            System.err.println(" --- ----");
+            e.printStackTrace();
         } finally {
             if( tempWSDL != null ) {
                 tempWSDL.delete();

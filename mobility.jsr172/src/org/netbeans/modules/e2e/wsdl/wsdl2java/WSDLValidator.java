@@ -66,9 +66,7 @@ class WSDLValidator {
         this.result.addAll( result );
     }
                 
-    public List<ValidationResult> validate() {
-        Set flags = new HashSet();
-        
+    public List<ValidationResult> validate() {        
         checkDefinition( definition );
                         
         printMessages();
@@ -130,40 +128,54 @@ class WSDLValidator {
     }
     
     private void checkBindingOperation( BindingOperation bindingOperation ) {        
+        SOAPOperation soapOperation = null;
         for( ExtensibilityElement bindingOperationEE : bindingOperation.getExtensibilityElements()) {
             if( SOAPConstants.OPERATION.equals( bindingOperationEE.getElementType())) {
-                SOAPOperation soapOperation = (SOAPOperation) bindingOperationEE;
-                System.err.println(" operation - style = " + soapOperation.getStyle());
-                if( !SOAPConstants.STYLE_DOCUMENT.equals( soapOperation.getStyle())) {
-                    addMessage( ErrorLevel.FATAL, "0001", bindingOperation.getName());
-                }
-
-                BindingInput bindingInput = bindingOperation.getBindingInput();
-                if (bindingInput != null) {//it is not notification operation
-                    for( ExtensibilityElement bindingInputEE : bindingInput.getExtensibilityElements()) {
-                        if( SOAPConstants.BODY.equals( bindingInputEE.getElementType())) {
-                            SOAPBody soapBody = (SOAPBody) bindingInputEE;
-                            System.err.println("body - use = " + soapBody.getUse());
-                            if( !SOAPConstants.USE_LITERAL.equals( soapBody.getUse())) {
-                                addMessage( ErrorLevel.FATAL, "0002", bindingOperation.getName(), "input" );
-                            }
-                        }
-                    }
-                }
-                BindingOutput bindingOutput = bindingOperation.getBindingOutput();                                            
-                if (bindingOutput != null) {//it is not one way operation
-                    for( ExtensibilityElement bindingOutputEE : bindingOutput.getExtensibilityElements()) {
-                        if( SOAPConstants.BODY.equals( bindingOutputEE.getElementType())) {
-                            SOAPBody soapBody = (SOAPBody) bindingOutputEE;
-                            System.err.println("body - use = " + soapBody.getUse());
-                            if( !SOAPConstants.USE_LITERAL.equals( soapBody.getUse())) {
-                                addMessage( ErrorLevel.FATAL, "0002", bindingOperation.getName(), "output" );
-                            }
-                        }
-                    }
+                if( soapOperation == null ) {
+                    soapOperation = (SOAPOperation) bindingOperationEE;
+                } else {
+                    addMessage( ErrorLevel.FATAL, "0011", bindingOperation.getName());
                 }
             }
         }                                                                                
+        if( soapOperation != null ) {
+//            System.err.println(" operation - style = " + soapOperation.getStyle());
+            if( !SOAPConstants.STYLE_DOCUMENT.equals( soapOperation.getStyle())) {
+                addMessage( ErrorLevel.FATAL, "0001", bindingOperation.getName());
+            }
+        }
+        
+        // BindingInput
+        BindingInput bindingInput = bindingOperation.getBindingInput();
+        if( bindingInput != null ) {//it is not notification operation
+            for( ExtensibilityElement bindingInputEE : bindingInput.getExtensibilityElements()) {
+                if( SOAPConstants.BODY.equals( bindingInputEE.getElementType())) {
+                    SOAPBody soapBody = (SOAPBody) bindingInputEE;
+//                        System.err.println("body - use = " + soapBody.getUse());
+                    if( !SOAPConstants.USE_LITERAL.equals( soapBody.getUse())) {
+                        addMessage( ErrorLevel.FATAL, "0002", bindingOperation.getName(), "input" );
+                    }
+                }
+            }
+        } else {
+            addMessage( ErrorLevel.FATAL, "0012", bindingOperation.getName());
+        }
+        
+        // BindingOutput
+        BindingOutput bindingOutput = bindingOperation.getBindingOutput();                                            
+        if( bindingOutput != null ) {//it is not one way operation
+            for( ExtensibilityElement bindingOutputEE : bindingOutput.getExtensibilityElements()) {
+                if( SOAPConstants.BODY.equals( bindingOutputEE.getElementType())) {
+                    SOAPBody soapBody = (SOAPBody) bindingOutputEE;
+//                    System.err.println("body - use = " + soapBody.getUse());
+                    if( !SOAPConstants.USE_LITERAL.equals( soapBody.getUse())) {
+                        addMessage( ErrorLevel.FATAL, "0002", bindingOperation.getName(), "output" );
+                    }
+                }
+            }
+        } else {
+            addMessage( ErrorLevel.FATAL, "0013", bindingOperation.getName());
+        }
     }
     
     private void checkOperation( Operation operation ) {        
@@ -175,7 +187,7 @@ class WSDLValidator {
         }
         Message message = output.getMessage();
         if( message.getParts().size() == 0 ) {
-            // zero parts
+            addMessage( ErrorLevel.FATAL, "0014", message.getName());
         } else if( message.getParts().size() > 1 ) {
             addMessage( ErrorLevel.FATAL, "0006", operation.getName());
         } else {
@@ -203,7 +215,7 @@ class WSDLValidator {
         }
         message = input.getMessage();
         if( message.getParts().size() == 0 ) {            
-            // zero parts
+            addMessage( ErrorLevel.FATAL, "0014", message.getName());
         } else if( message.getParts().size() > 1 ) {
             addMessage( ErrorLevel.FATAL, "0006", operation.getName());
         } else {

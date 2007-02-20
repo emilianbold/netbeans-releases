@@ -89,7 +89,7 @@ public class WSDLParser {
         validationResults = new ArrayList();
     }
     
-    public Definition parse( String uri ) {
+    public Definition parse( String uri ) throws WSDLException {
         Definition definition = new DefinitionImpl();
         
         DefaultHandler handler = new DefaultHandlerImpl( definition );
@@ -101,11 +101,10 @@ public class WSDLParser {
             
             SAXParser parser = spf.newSAXParser();
             parser.parse( uri, handler );
-            try {
-                
+            try {                
                 schemaParser.parseLocation( uri );
             } catch (SchemaException ex) {
-                ex.printStackTrace();
+                throw new WSDLException( ex );
             }
         } catch( SAXException e ) {
             e.printStackTrace();
@@ -113,7 +112,7 @@ public class WSDLParser {
             e.printStackTrace();
         } catch( IOException e ) {
             e.printStackTrace();
-        }        
+        } 
         definition.setSchemaHolder( schemaParser.getSchemaHolder());
         validationResults.addAll( schemaParser.getValidationResults());
         

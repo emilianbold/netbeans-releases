@@ -40,6 +40,7 @@ import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPBinding;
 import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPOperation;
 import org.netbeans.modules.e2e.api.wsdl.wsdl2java.WSDL2Java;
 import org.netbeans.modules.e2e.schema.SchemaConstants;
+import org.netbeans.modules.e2e.wsdl.WSDLException;
 import org.netbeans.modules.e2e.wsdl.WSDLParser;
 import org.netbeans.modules.e2e.wsdl.extensions.soap.SOAPConstants;
 import org.openide.filesystems.FileObject;
@@ -71,23 +72,46 @@ public class WSDL2JavaImpl implements WSDL2Java {
     public void generate() {
         uniqueTypeName = new HashMap();
         
-        definition = wsdlParser.parse( configuration.getWSDLFileName());
-        
         try {
+            
+            definition = wsdlParser.parse( configuration.getWSDLFileName());
+        
             validate();
             
             generateInterfaces();
             generateTypes();
             generateStub();
+        } catch( WSDLException e ) {
+            e.printStackTrace();
         } catch( Exception e ) {
             e.printStackTrace();
         }
     }
     
     public List<ValidationResult> validate() {
-        // TODO: Hack
-        definition = wsdlParser.parse( configuration.getWSDLFileName());
-        return new WSDLValidator( wsdlParser.getValidationResults(), definition ).validate();
+        List<ValidationResult> validationResults = new ArrayList();
+        try {
+            definition = wsdlParser.parse( configuration.getWSDLFileName());
+            validationResults.addAll( wsdlParser.getValidationResults());
+            
+            // Check of errors during the WSDL parsing. If fatal, return the validation results
+            // from the parsing process
+            for( ValidationResult result : validationResults ) {
+                if( ValidationResult.ErrorLevel.FATAL.equals( result.getErrorLevel())) {
+                    return validationResults;
+                }
+            }
+            
+            // Do the validation
+            WSDLValidator validator = new WSDLValidator( wsdlParser.getValidationResults(), definition );
+            validationResults = validator.validate();
+        } catch( WSDLException e ) {
+            // Drop e because the error is already in validationResults
+            // e.printStackTrace();
+        } catch( Exception e ) {
+            e.printStackTrace();
+        }
+        return validationResults;
     }    
     
     /**

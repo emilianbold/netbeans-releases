@@ -9,6 +9,7 @@
 
 package org.netbeans.modules.e2e.schema;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -135,7 +136,7 @@ public class SchemaParser extends DefaultHandler {
             parser.parse( is, this );
         } catch( SAXException e ) {
             if( e.getException() instanceof SchemaException ) {
-                throw new SchemaException( e.getException().getMessage());
+                throw new SchemaException( e.getCause());
             }
         } catch( ParserConfigurationException e ) {
             e.printStackTrace();
@@ -154,11 +155,15 @@ public class SchemaParser extends DefaultHandler {
             
             parser.parse( uri, this );
         } catch( SAXException e ) {
-            if( e.getException() instanceof SchemaException ) {
-                throw new SchemaException( e.getException().getMessage());
+            if( e.getException() instanceof SchemaException ) {             
+                throw new SchemaException( e.getCause());
             }
         } catch( ParserConfigurationException e ) {
             e.printStackTrace();
+        } catch( FileNotFoundException e ) {
+            validationResults.add( new WSDL2Java.ValidationResult(
+                WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Schema " + uri + " cannot be located." ));
+//            throw new SchemaException( "");
         } catch( IOException e ) {
             e.printStackTrace();
         }        
@@ -218,8 +223,12 @@ public class SchemaParser extends DefaultHandler {
             if( localName.equalsIgnoreCase( SchemaConstants.ELEMENT.getLocalPart())) {
                 state.push( ELEMENT );
                 // TODO: check name
-                QName qn;
-                if( schemaConstructs.isEmpty() || elementFormDefault ) {
+                QName qn = null;
+                // Check for ref attribute
+                if( attributes.getValue( "ref" ) != null ) {
+                    validationResults.add( new WSDL2Java.ValidationResult(
+                        WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Reference in element is not supported by this version of stub compiler." ));
+                } else if( schemaConstructs.isEmpty() || elementFormDefault ) {
                     qn = new QName( targetNamespace, attributes.getValue( "name" ));
                 } else {
                     qn = new QName( "", attributes.getValue( "name" ));
