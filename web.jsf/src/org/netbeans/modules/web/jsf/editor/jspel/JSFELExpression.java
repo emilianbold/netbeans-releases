@@ -23,7 +23,7 @@ import java.util.List;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.completion.ELExpression;
-import org.netbeans.modules.web.jsf.config.model.ManagedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 
 /**
  *
@@ -60,7 +60,7 @@ public class JSFELExpression extends ELExpression{
     
     @Override public String getObjectClass(){
         String beanName = extractBeanName();
-        
+  
         List <ManagedBean>beans = JSFBeanCache.getBeans(wm);
         
         for (ManagedBean bean : beans){

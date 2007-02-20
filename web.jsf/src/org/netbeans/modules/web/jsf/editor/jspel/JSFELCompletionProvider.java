@@ -29,7 +29,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
-import org.netbeans.modules.web.jsf.config.model.ManagedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;

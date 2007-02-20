@@ -20,7 +20,8 @@
 
 package org.netbeans.modules.web.jsf;
 
-import org.netbeans.modules.web.jsf.config.model.FacesConfig;
+
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.xml.catalog.spi.*;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -162,22 +163,23 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
         return null;
     }
     
-    public static String extractVersion(Document document) {
+    public static JSFVersion extractVersion(Document document) {
         // first check the doc type to see if there is one
         DocumentType dt = document.getDoctype();
+        JSFVersion value = JSFVersion.JSF_1_0;
         // This is the default version
         if (dt != null) {
             if (JSF_ID_1_0.equals(dt.getPublicId())) {
-                return FacesConfig.VERSION_1_0;
+                value = JSFVersion.JSF_1_0;
             }
             if (JSF_ID_1_1.equals(dt.getPublicId())) {
-                return FacesConfig.VERSION_1_1;
+                value = JSFVersion.JSF_1_1;
             }
             if (JSF_ID_1_2.equals(dt.getPublicId())) {
-                return FacesConfig.VERSION_1_2;
+                value = JSFVersion.JSF_1_2;
             }
         }
-        return FacesConfig.VERSION_1_2;
+        return value;
 
     }
     

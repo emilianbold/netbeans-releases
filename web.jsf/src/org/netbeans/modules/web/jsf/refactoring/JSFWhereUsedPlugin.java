@@ -19,9 +19,8 @@
 
 package org.netbeans.modules.web.jsf.refactoring;
 
-import com.sun.source.tree.CompilationUnitTree;
+
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
@@ -31,7 +30,6 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
@@ -88,8 +86,8 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
             if (element instanceof TreePathHandle) {
                 treePathHandle = (TreePathHandle)element;
                 if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS){
-                    WebModule wm = WebModule.getWebModule(treePathHandle.getFileObject());
-                    if (wm != null){
+                    WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
+                    if (webModule != null){
                         CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
                         if (refactoring.getContext().lookup(CompilationInfo.class) == null){
                             final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
@@ -107,10 +105,10 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
                             }
                         }
                         info = refactoring.getContext().lookup(CompilationInfo.class);
-                        Element el = treePathHandle.resolveElement(info);
-                        TypeElement type = (TypeElement) el;
+                        Element resElement = treePathHandle.resolveElement(info);
+                        TypeElement type = (TypeElement) resElement;
                         String fqnc = type.getQualifiedName().toString();
-                        List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(wm, fqnc,"");
+                        List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, fqnc,"");
                         for (Occurrences.OccurrenceItem item : items) {
                             refactoringElements.add(refactoring, new JSFWhereUsedElement(item));
                         }
@@ -124,7 +122,7 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
     
     public class JSFWhereUsedElement extends SimpleRefactoringElementImpl  {
         
-        private Occurrences.OccurrenceItem item;
+        private final Occurrences.OccurrenceItem item;
         
         public JSFWhereUsedElement(Occurrences.OccurrenceItem item){
             this.item = item;
@@ -146,7 +144,7 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
         }
         
         public FileObject getParentFile() {
-            return item.getConfigDO().getPrimaryFile();
+            return item.getFacesConfig();
         }
         
         public PositionBounds getPosition() {
@@ -154,7 +152,7 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
         }
         
         public Object getComposite() {
-            return item.getConfigDO().getPrimaryFile();
+            return item.getFacesConfig();
         }
         
     }

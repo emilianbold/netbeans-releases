@@ -19,8 +19,9 @@
 
 package org.netbeans.modules.web.jsf.refactoring;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -28,11 +29,11 @@ import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
-import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.jsf.config.model.Converter;
-import org.netbeans.modules.web.jsf.config.model.FacesConfig;
-import org.netbeans.modules.web.jsf.config.model.ManagedBean;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
 import org.netbeans.modules.web.jsf.editor.JSFEditorUtilities;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -51,27 +52,28 @@ public class Occurrences {
     private static final Logger LOGGER = Logger.getLogger(Occurrences.class.getName());
     
     public static abstract class OccurrenceItem {
-        protected JSFConfigDataObject config;
+        // the faces configuration file
+        protected FileObject config;
         protected String newValue;
         protected String oldValue;
         
-        public OccurrenceItem(JSFConfigDataObject config, String newValue, String oldValue){
+        public OccurrenceItem(FileObject config, String newValue, String oldValue){
             this.config = config;
             this.newValue = newValue;
             this.oldValue = oldValue;
         }
         
-        public JSFConfigDataObject getConfigDO() {
+        public FileObject getFacesConfig() {
             return config;
         }
         
         public String getElementText(){
-            StringBuffer sb = new StringBuffer();
-            sb.append("<font color=\"#0000FF\">");      //NOI18N
-            sb.append("&lt;").append(getXMLElementName()).append("&gt;</font><b>");   //NOI18N
-            sb.append(oldValue).append("</b><font color=\"#0000FF\">&lt;/").append(getXMLElementName());//NOI18N
-            sb.append("&gt;</font>");//NOI18N
-            return sb.toString();
+            StringBuffer stringBuffer = new StringBuffer();
+            stringBuffer.append("<font color=\"#0000FF\">");
+            stringBuffer.append("&lt;").append(getXMLElementName()).append("&gt;</font><b>");
+            stringBuffer.append(oldValue).append("</b><font color=\"#0000FF\">&lt;/").append(getXMLElementName());
+            stringBuffer.append("&gt;</font>");
+            return stringBuffer.toString();
         }
         
         protected abstract String getXMLElementName();
@@ -87,11 +89,21 @@ public class Occurrences {
         public abstract String getWhereUsedMessage();
         
         protected PositionBounds createPosition(int startOffset, int endOffset) {
-            CloneableEditorSupport editor = JSFEditorUtilities.findCloneableEditorSupport(config);
-            if (editor != null){
-                PositionRef start=editor.createPositionRef(startOffset, Bias.Forward);
-                PositionRef end=editor.createPositionRef(endOffset, Bias.Backward);
-                return new PositionBounds(start,end);
+            try{
+                DataObject dataObject = DataObject.find(config);
+                if (dataObject instanceof JSFConfigDataObject){
+                    CloneableEditorSupport editor
+                            = JSFEditorUtilities.findCloneableEditorSupport((JSFConfigDataObject)dataObject);
+                    if (editor != null){
+                        PositionRef start=editor.createPositionRef(startOffset, Bias.Forward);
+                        PositionRef end=editor.createPositionRef(endOffset, Bias.Backward);
+                        return new PositionBounds(start,end);
+                    }
+                }
+            } catch (DataObjectNotFoundException ex) {
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                        ex.getMessage(),
+                        ex);
             }
             return null;
         }
@@ -106,9 +118,9 @@ public class Occurrences {
     }
     
     public static class ManagedBeanClassItem extends OccurrenceItem{
-        private ManagedBean bean;
+        private final ManagedBean bean;
         
-        public ManagedBeanClassItem(JSFConfigDataObject config, ManagedBean bean, String newValue){
+        public ManagedBeanClassItem(FileObject config, ManagedBean bean, String newValue){
             super(config, newValue, bean.getManagedBeanClass());
             this.bean = bean;
         }
@@ -136,29 +148,24 @@ public class Occurrences {
         }
         
         public void performSafeDelete() {
-            try {
-                FacesConfig faces = config.getFacesConfig();
-                ManagedBean[] beans = faces.getManagedBean();
-                for (int i = 0; i < beans.length; i++) {
-                    if (bean.getManagedBeanName().equals(beans[i].getManagedBeanName())){
-                        faces.removeManagedBean(beans[i]);
-                        continue;
-                    }
+            FacesConfig faces = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            Collection<ManagedBean> beans = faces.getManagedBeans();
+            for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
+                ManagedBean managedBean = it.next();
+                if (bean.getManagedBeanName().equals(managedBean.getManagedBeanName())){
+                    faces.getModel().startTransaction();
+                    faces.removeManagedBean(managedBean);
+                    faces.getModel().endTransaction();
+                    continue;
                 }
-                config.write(faces);
-            } catch (IOException e){
-                ErrorManager.getDefault().notify(e);
             }
         }
         
         public void undoSafeDelete() {
-            try {
-                FacesConfig faces = config.getFacesConfig();
-                faces.addManagedBean(bean);
-                config.write(faces);
-            } catch (IOException e){
-                ErrorManager.getDefault().notify(e);
-            }
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            facesConfig.getModel().startTransaction();
+            facesConfig.addManagedBean(bean);
+            facesConfig.getModel().endTransaction();
         }
         
         public String getSafeDeleteMessage() {
@@ -167,48 +174,59 @@ public class Occurrences {
         }
         
         private void changeBeanClass(String className){
-            try {
-                FacesConfig faces = config.getFacesConfig();
-                ManagedBean[] beans = faces.getManagedBean();
-                for (int i = 0; i < beans.length; i++) {
-                    if (bean.getManagedBeanName().equals(beans[i].getManagedBeanName())){
-                        beans[i].setManagedBeanClass(className);
-                        continue;
-                    }
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            List <ManagedBean> beans = facesConfig.getManagedBeans();
+            for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
+                ManagedBean managedBean = it.next();
+                if (bean.getManagedBeanName().equals(managedBean.getManagedBeanName())){
+                    facesConfig.getModel().startTransaction();
+                    managedBean.setManagedBeanClass(className);
+                    facesConfig.getModel().endTransaction();
+                    continue;
                 }
-                config.write(faces);
-            } catch (IOException e){
-                ErrorManager.getDefault().notify(e);
+                
             }
         }
         
         public PositionBounds getClassDefinitionPosition() {
             PositionBounds position = null;
-            BaseDocument document = JSFEditorUtilities.getBaseDocument(config);
-            int [] offsets = JSFEditorUtilities.getManagedBeanDefinition(document, bean.getManagedBeanName());
-            try {
+            try{
+                JSFConfigDataObject dataObject = (JSFConfigDataObject)DataObject.find(config);
+                BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
+                int [] offsets = JSFEditorUtilities.getManagedBeanDefinition(document, bean.getManagedBeanName());
                 String text = document.getText(offsets);
                 int offset = offsets[0] + text.indexOf(oldValue);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException ex) {
                 ErrorManager.getDefault().notify(ex);
+            } catch (DataObjectNotFoundException ex) {
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                        ex.getMessage(),
+                        ex);
             }
             return position;
         };
         
         public PositionBounds getElementDefinitionPosition() {
             PositionBounds position = null;
-            BaseDocument document = JSFEditorUtilities.getBaseDocument(config);
-            int [] offsets = JSFEditorUtilities.getManagedBeanDefinition(document, bean.getManagedBeanName());
-            position =  createPosition(offsets[0], offsets[1]);
+            try {
+                JSFConfigDataObject dataObject = (JSFConfigDataObject)DataObject.find(config);
+                BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
+                int [] offsets = JSFEditorUtilities.getManagedBeanDefinition(document, bean.getManagedBeanName());
+                position =  createPosition(offsets[0], offsets[1]);
+            } catch (DataObjectNotFoundException ex) {
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                        ex.getMessage(),
+                        ex);
+            }
             return position;
         };
     }
     
     public static class ConverterClassItem extends OccurrenceItem {
-        private Converter converter;
+        private final Converter converter;
         
-        public ConverterClassItem(JSFConfigDataObject config, Converter converter, String newValue){
+        public ConverterClassItem(FileObject config, Converter converter, String newValue){
             super(config, newValue, converter.getConverterClass());
             this.converter = converter;
         }
@@ -234,29 +252,24 @@ public class Occurrences {
         }
         
         public void performSafeDelete() {
-            try {
-                FacesConfig faces = config.getFacesConfig();
-                Converter[] converters = faces.getConverter();
-                for (int i = 0; i < converters.length; i++) {
-                    if (oldValue.equals(converters[i].getConverterClass())){
-                        faces.removeConverter(converters[i]);
-                        continue;
-                    }
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            List <Converter> converters = facesConfig.getConverters();
+            for (Iterator<Converter> it = converters.iterator(); it.hasNext();) {
+                Converter converter = it.next();
+                if (oldValue.equals(converter.getConverterClass())){
+                    facesConfig.getModel().startTransaction();
+                    facesConfig.removeConverter(converter);
+                    facesConfig.getModel().endTransaction();
+                    continue;
                 }
-                config.write(faces);
-            } catch (IOException e){
-                ErrorManager.getDefault().notify(e);
             }
         }
         
         public void undoSafeDelete() {
-            try {
-                FacesConfig faces = config.getFacesConfig();
-                faces.addConverter(converter);
-                config.write(faces);
-            } catch (IOException e){
-                ErrorManager.getDefault().notify(e);
-            }
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            facesConfig.getModel().startTransaction();
+            facesConfig.addConverter(converter);
+            facesConfig.getModel().endTransaction();
         }
         
         public String getSafeDeleteMessage() {
@@ -265,48 +278,59 @@ public class Occurrences {
         }
         
         private void changeConverterClass(String oldClass, String newClass){
-            try {
-                FacesConfig faces = config.getFacesConfig();
-                Converter[] converters = faces.getConverter();
-                for (int i = 0; i < converters.length; i++) {
-                    if (oldClass.equals(converters[i].getConverterClass())){
-                        converters[i].setConverterClass(newClass);
-                        continue;
-                    }
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            List <Converter> converters = facesConfig.getConverters();
+            for (Iterator<Converter> it = converters.iterator(); it.hasNext();) {
+                Converter converter = it.next();
+                if (oldClass.equals(converter.getConverterClass())){
+                    converter.getModel().startTransaction();
+                    converter.setConverterClass(newClass);
+                    converter.getModel().endTransaction();
+                    continue;
                 }
-                config.write(faces);
-            } catch (IOException e){
-                ErrorManager.getDefault().notify(e);
             }
         }
         
         public PositionBounds getClassDefinitionPosition() {
             PositionBounds position = null;
-            BaseDocument document = JSFEditorUtilities.getBaseDocument(config);
-            int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
-            try {
+            try{
+                JSFConfigDataObject dataObject = (JSFConfigDataObject)DataObject.find(config);
+                BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
+                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
+                
                 String text = document.getText(offsets);
                 int offset = offsets[0] + text.indexOf(oldValue);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException ex) {
                 ErrorManager.getDefault().notify(ex);
+            } catch (DataObjectNotFoundException ex) {
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                        ex.getMessage(),
+                        ex);
             }
             return position;
         };
         
         public PositionBounds getElementDefinitionPosition() {
             PositionBounds position = null;
-            BaseDocument document = JSFEditorUtilities.getBaseDocument(config);
-            int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
-            position =  createPosition(offsets[0], offsets[1]);
+            try{
+                JSFConfigDataObject dataObject = (JSFConfigDataObject)DataObject.find(config);
+                BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
+                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
+                position =  createPosition(offsets[0], offsets[1]);
+            } catch (DataObjectNotFoundException ex) {
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                        ex.getMessage(),
+                        ex);
+            }
             return position;
         };
     }
     
     public static class ConverterForClassItem extends OccurrenceItem {
-        private Converter converter;
+        private final Converter converter;
         
-        public ConverterForClassItem(JSFConfigDataObject config, Converter converter, String newValue){
+        public ConverterForClassItem(FileObject config, Converter converter, String newValue){
             super(config, newValue, converter.getConverterForClass());
             this.converter = converter;
         }
@@ -332,29 +356,25 @@ public class Occurrences {
         }
         
         public void performSafeDelete() {
-            try {
-                FacesConfig faces = config.getFacesConfig();
-                Converter[] converters = faces.getConverter();
-                for (int i = 0; i < converters.length; i++) {
-                    if (oldValue.equals(converters[i].getConverterClass())){
-                        faces.removeConverter(converters[i]);
-                        continue;
-                    }
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            List <Converter> converters = facesConfig.getConverters();
+            for (Iterator<Converter> it = converters.iterator(); it.hasNext();) {
+                Converter converter = it.next();
+                if (oldValue.equals(converter.getConverterClass())){
+                    facesConfig.getModel().startTransaction();
+                    facesConfig.removeConverter(converter);
+                    facesConfig.getModel().endTransaction();
+                    continue;
                 }
-                config.write(faces);
-            } catch (IOException e){
-                ErrorManager.getDefault().notify(e);
             }
         }
         
         public void undoSafeDelete() {
-            try {
-                FacesConfig faces = config.getFacesConfig();
-                faces.addConverter(converter);
-                config.write(faces);
-            } catch (IOException e){
-                ErrorManager.getDefault().notify(e);
-            }
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            facesConfig.getModel().startTransaction();
+            facesConfig.addConverter(converter);
+            facesConfig.addConverter(converter);
+            facesConfig.getModel().endTransaction();
         }
         
         public String getSafeDeleteMessage() {
@@ -363,83 +383,86 @@ public class Occurrences {
         }
         
         private void changeConverterForClass(String oldClass, String newClass){
-            try {
-                FacesConfig faces = config.getFacesConfig();
-                Converter[] converters = faces.getConverter();
-                for (int i = 0; i < converters.length; i++) {
-                    if (oldClass.equals(converters[i].getConverterForClass())){
-                        converters[i].setConverterForClass(newClass);
-                        continue;
-                    }
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            List<Converter> converters = facesConfig.getConverters();
+            for (Iterator<Converter> it = converters.iterator(); it.hasNext();) {
+                Converter converter = it.next();
+                if (oldClass.equals(converter.getConverterForClass())){
+                    converter.getModel().startTransaction();
+                    converter.setConverterForClass(newClass);
+                    converter.getModel().endTransaction();
+                    continue;
                 }
-                config.write(faces);
-            } catch (IOException e){
-                ErrorManager.getDefault().notify(e);
             }
         }
         
         public PositionBounds getClassDefinitionPosition() {
             PositionBounds position = null;
-            BaseDocument document = JSFEditorUtilities.getBaseDocument(config);
-            int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
-            try {
+            try{
+                JSFConfigDataObject dataObject = (JSFConfigDataObject)DataObject.find(config);
+                BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
+                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
                 String text = document.getText(offsets);
                 int offset = offsets[0] + text.indexOf(oldValue);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException ex) {
                 ErrorManager.getDefault().notify(ex);
+            } catch (DataObjectNotFoundException ex) {
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                        ex.getMessage(),
+                        ex);
             }
             return position;
         };
         
         public PositionBounds getElementDefinitionPosition() {
             PositionBounds position = null;
-            BaseDocument document = JSFEditorUtilities.getBaseDocument(config);
-            int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
-            position =  createPosition(offsets[0], offsets[1]);
+            try{
+                JSFConfigDataObject dataObject = (JSFConfigDataObject)DataObject.find(config);
+                BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
+                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
+                position =  createPosition(offsets[0], offsets[1]);
+            } catch (DataObjectNotFoundException ex) {
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                        ex.getMessage(),
+                        ex);
+            }
             return position;
         };
     }
     
-    public static List <OccurrenceItem> getAllOccurrences(WebModule wm, String oldName, String newName){
+    public static List <OccurrenceItem> getAllOccurrences(WebModule webModule, String oldName, String newName){
         List result = new ArrayList();
-        assert wm != null;
+        assert webModule != null;
         assert oldName != null;
         assert newName != null;
         
-        LOGGER.fine("getAllOccurences("+ wm.getDocumentBase().getPath() + ", " + oldName + ", " + newName + ")");
-        if (wm != null){
+        LOGGER.fine("getAllOccurences("+ webModule.getDocumentBase().getPath() + ", " + oldName + ", " + newName + ")");
+        if (webModule != null){
             // find all jsf configuration files in the web module
-            FileObject[] configs = JSFConfigUtilities.getConfiFilesFO(wm.getDeploymentDescriptor());
+            FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
             
             if (configs != null){
-                try {
-                    for (int i = 0; i < configs.length; i++) {
-                        DataObject dObject = DataObject.find(configs[i]);
-                        if (dObject instanceof JSFConfigDataObject){
-                            JSFConfigDataObject configDO = (JSFConfigDataObject) dObject ;
-                            FacesConfig config = configDO.getFacesConfig();
-                            Converter[] converters = config.getConverter();
-                            for (int j = 0; j < converters.length; j++) {
-                                if (oldName.equals(converters[j].getConverterClass()))
-                                    result.add(new ConverterClassItem(configDO, converters[j], newName));
-                                else if (oldName.equals(converters[j].getConverterForClass()))
-                                    result.add(new ConverterForClassItem(configDO, converters[j], newName));
-                            }
-                            ManagedBean[] managedBeans = config.getManagedBean();
-                            for (int j = 0; j < managedBeans.length; j++) {
-                                if (oldName.equals(managedBeans[j].getManagedBeanClass()))
-                                    result.add(new ManagedBeanClassItem(configDO, managedBeans[j], newName));
-                            }
-                        }
+                for (int i = 0; i < configs.length; i++) {
+                    FacesConfig facesConfig = ConfigurationUtils.getConfigModel(configs[i], true).getRootComponent();
+                    List <Converter> converters = facesConfig.getConverters();
+                    for (Iterator<Converter> it = converters.iterator(); it.hasNext();) {
+                        Converter converter = it.next();
+                        if (oldName.equals(converter.getConverterClass()))
+                            result.add(new ConverterClassItem(configs[i], converter, newName));
+                        else if (oldName.equals(converter.getConverterForClass()))
+                            result.add(new ConverterForClassItem(configs[i], converter, newName));
                     }
-                } catch (DataObjectNotFoundException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    List<ManagedBean> managedBeans = facesConfig.getManagedBeans();
+                    for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
+                        ManagedBean managedBean = it.next();
+                        if (oldName.equals(managedBean.getManagedBeanClass()))
+                            result.add(new ManagedBeanClassItem(configs[i], managedBean, newName));
+                        
+                    }
+                    
                 }
             }
-            
         }
         return result;
     }

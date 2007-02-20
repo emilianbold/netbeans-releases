@@ -20,10 +20,11 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Sources;
@@ -31,10 +32,11 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
-import org.netbeans.modules.web.jsf.config.model.FacesConfig;
-import org.netbeans.modules.web.jsf.config.model.ManagedBean;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.editor.JSFEditorUtilities;
-
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponentFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -42,12 +44,12 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
-
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.web.jsf.JSFConfigUtilities;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponentFactory;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
@@ -135,10 +137,9 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         dir = wm.getDocumentBase();
         FileObject fo = dir.getFileObject(configFile); //NOI18N
-        JSFConfigDataObject configDO = (JSFConfigDataObject)DataObject.find(fo);
-        FacesConfig config= configDO.getFacesConfig();
-        
-        ManagedBean bean = config.newManagedBean();
+        FacesConfig facesConfig = ConfigurationUtils.getConfigModel(fo, true).getRootComponent();
+                
+        ManagedBean bean = facesConfig.getModel().getFactory().createManagedBean();
         String targetName = Templates.getTargetName(wizard);
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -156,23 +157,20 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         else
             className=targetName;
         
-        bean.setManagedBeanName(getUniqueName(targetName, config));
+        bean.setManagedBeanName(getUniqueName(targetName, facesConfig));
         bean.setManagedBeanClass(className);
         bean.setManagedBeanScope((String) wizard.getProperty(WizardProperties.SCOPE));
         
         String description = (String) wizard.getProperty(WizardProperties.DESCRIPTION);
         if (description != null && description.length() > 0){
             String newLine = System.getProperty("line.separator");
-            bean.setDescription(new String[]{newLine + description + newLine});
+            bean.setDescription(newLine + description + newLine);
         }
-        config.addManagedBean(bean);
-        BaseDocument doc = (BaseDocument)configDO.getEditorSupport().getDocument();
-        if (doc == null){
-            ((OpenCookie)configDO.getCookie(OpenCookie.class)).open();
-            doc = (BaseDocument)configDO.getEditorSupport().getDocument();
-        }
-        JSFEditorUtilities.writeBean(doc, (BaseBean) bean, "managed-bean"); //NOI18N
-        configDO.getEditorSupport().saveDocument();        
+        facesConfig.getModel().startTransaction();
+        facesConfig.addManagedBean(bean);
+        facesConfig.getModel().endTransaction();
+        facesConfig.getModel().sync();
+        
         return Collections.singleton(dobj);
     }
     
@@ -243,13 +241,13 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         } catch (javax.swing.text.BadLocationException ex){}
     }
     
-    private String getUniqueName(String original, FacesConfig config){
+    private String getUniqueName(String original, FacesConfig facesConfig){
         String value = original;
-        ManagedBean [] beans = config.getManagedBean();
-        int index = 0;
+        Collection<ManagedBean> beans = facesConfig.getManagedBeans();
         int count = 0;
-        while (index < beans.length){
-            if (!beans[index].getManagedBeanName().equals(value)){
+        for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
+            ManagedBean managedBean = it.next();
+            if (!value.equals(managedBean.getManagedBeanName())){
                 index++;
             }
             else {

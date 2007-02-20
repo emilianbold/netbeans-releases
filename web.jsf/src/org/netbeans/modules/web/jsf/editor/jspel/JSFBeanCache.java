@@ -19,17 +19,16 @@
 
 package org.netbeans.modules.web.jsf.editor.jspel;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.jsf.config.model.FacesConfig;
-import org.netbeans.modules.web.jsf.config.model.ManagedBean;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
@@ -38,24 +37,15 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class JSFBeanCache {
     
     public static List /*<ManagedBean>*/ getBeans(WebModule wm){
-        FileObject[] files = JSFConfigUtilities.getConfiFilesFO(wm.getDeploymentDescriptor());
+        FileObject[] files = ConfigurationUtils.getFacesConfigFiles(wm);
         ArrayList beans = new ArrayList();
         
         for (int i = 0; i < files.length; i++) {
-            try {
-                DataObject dObject = DataObject.find(files[i]);
-                if (dObject != null){
-                    FacesConfig config = ((JSFConfigDataObject)dObject).getFacesConfig();
-                    ManagedBean [] mb = config.getManagedBean();
-                    for (int j = 0; j < mb.length; j++) {
-                        beans.add(mb[j]);
-                    }
+                FacesConfig facesConfig = ConfigurationUtils.getConfigModel(files[i], false).getRootComponent();
+                Collection<ManagedBean> managedBeans = facesConfig.getManagedBeans();
+                for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
+                    beans.add(it.next());   
                 }
-            } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
         }
         return beans;
     }

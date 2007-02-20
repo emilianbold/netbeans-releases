@@ -19,13 +19,16 @@
 
 package org.netbeans.modules.web.jsf.dialogs;
 
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import javax.swing.SwingUtilities;
-//import org.netbeans.modules.j2ee.common.FQNSearch;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.jsf.config.model.ManagedBean;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,10 +58,12 @@ public class AddManagedBeanDialog extends javax.swing.JPanel implements Validati
         if (existingBeans == null){
             existingBeans = new Hashtable();
             ManagedBean bean;
-            Iterator iter = JSFConfigUtilities.getAllManagedBeans(config).iterator();
-            while (iter.hasNext()){
-               bean = (ManagedBean)iter.next();
-               existingBeans.put(bean.getManagedBeanName(), ""); 
+            //Iterator iter = JSFConfigUtilities.getAllManagedBeans(config).iterator();
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config.getPrimaryFile(), false).getRootComponent();
+            Collection<ManagedBean> beans = facesConfig.getManagedBeans();
+            for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
+                ManagedBean managedBean = it.next();
+                existingBeans.put(managedBean.getManagedBeanName(), "");
             }
         }
         if (existingBeans.get(getName()) != null)

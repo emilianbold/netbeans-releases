@@ -33,7 +33,6 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
-import org.netbeans.modules.web.jsf.config.model.NavigationCase;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -205,32 +204,6 @@ public class JSFEditorUtilities {
         return new int []{-1,-1};
     }
     
-    public static int writeCaseIntoRule(BaseDocument doc, String fromViewID, NavigationCase navigationCase) throws IOException{
-        int possition = -1;
-        int [] definition = getNavigationRuleDefinition(doc, fromViewID);
-        ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
-        String sBean = addNewLines((BaseBean)navigationCase);
-        TokenItem token;
-        try{
-            if (definition [0] > -1){
-                if (definition[1] < doc.getLength()){
-                    token = sup.getTokenChain(definition[1]-2, definition[1]-1);
-                    while (token != null
-                            && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
-                            && token.getImage().equals(">")))
-                        token = token.getPrevious();
-                    if (token != null ){
-                        possition = writeString(doc, sBean, token.getOffset());
-                    }
-                }
-            }
-        }
-        catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
-        }
-        return possition;
-    }
-
 
     /** Writes new bean to the document directly under <faces-config> element
      */

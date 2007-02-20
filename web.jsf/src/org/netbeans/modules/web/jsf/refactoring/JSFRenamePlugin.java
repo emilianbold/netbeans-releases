@@ -29,7 +29,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -119,14 +118,14 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                     treePathHandle = (TreePathHandle)element;
             
             if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS){
-                WebModule wm = WebModule.getWebModule(treePathHandle.getFileObject());
-                if (wm != null){
+                WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
+                if (webModule != null){
                     CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
-                    Element el = treePathHandle.resolveElement(info);
-                    TypeElement type = (TypeElement) el;
+                    Element resElement = treePathHandle.resolveElement(info);
+                    TypeElement type = (TypeElement) resElement;
                     String oldFQN = type.getQualifiedName().toString();
                     String newFQN = renameClass(oldFQN, refactoring.getNewName());
-                    List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(wm, oldFQN, newFQN);
+                    List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, oldFQN, newFQN);
                     for (Occurrences.OccurrenceItem item : items) {
                         refactoringElements.add(refactoring, new JSFConfigRenameClassElement(item));
                     }
@@ -164,7 +163,7 @@ public class JSFRenamePlugin implements RefactoringPlugin {
     }
     
     public static class JSFConfigRenameClassElement extends SimpleRefactoringElementImpl {
-        private Occurrences.OccurrenceItem item;
+        private final Occurrences.OccurrenceItem item;
         
         JSFConfigRenameClassElement(Occurrences.OccurrenceItem item){
             this.item = item;
@@ -191,7 +190,7 @@ public class JSFRenamePlugin implements RefactoringPlugin {
         
         
         public FileObject getParentFile() {
-            return item.getConfigDO().getPrimaryFile();
+            return item.getFacesConfig();
         }
         
         public PositionBounds getPosition() {
@@ -199,7 +198,7 @@ public class JSFRenamePlugin implements RefactoringPlugin {
         }
         
         public Object getComposite() {
-            return item.getConfigDO().getPrimaryFile();
+            return item.getFacesConfig();
         }
     }
     

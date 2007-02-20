@@ -18,12 +18,11 @@
  */
 
 package org.netbeans.modules.web.jsf.palette.items;
-import java.awt.Color;
+
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -31,10 +30,7 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-//TODO: RETOUCHE
-//import org.netbeans.modules.j2ee.common.FQNSearch;
-//import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.web.jsf.config.model.ManagedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -72,11 +68,12 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
         }
         catch (Exception e) {}
         
+        
         descriptor = new DialogDescriptor
                 (this, NbBundle.getMessage(JsfFormCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
-                     public void actionPerformed(ActionEvent e) {
+                     public void actionPerformed(ActionEvent event) {
                         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
                             evaluateInput();
                             dialogOK = true;
@@ -218,15 +215,15 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
 //                java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_NoJSF"));
     }
 
-    public void insertUpdate(DocumentEvent e) {
+    public void insertUpdate(DocumentEvent event) {
         checkStatus();
     }
 
-    public void removeUpdate(DocumentEvent e) {
+    public void removeUpdate(DocumentEvent event) {
         checkStatus();
     }
 
-    public void changedUpdate(DocumentEvent e) {
+    public void changedUpdate(DocumentEvent event) {
         checkStatus();
     }
     

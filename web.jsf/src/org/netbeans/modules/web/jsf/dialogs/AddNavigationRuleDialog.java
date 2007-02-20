@@ -24,7 +24,9 @@ import java.util.Iterator;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.jsf.config.model.NavigationRule;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -55,7 +57,9 @@ public class AddNavigationRuleDialog extends javax.swing.JPanel implements Valid
         if(existingRules == null){
             existingRules = new Hashtable();
             NavigationRule rule;
-            Iterator iter = JSFConfigUtilities.getAllNavigationRules(config).iterator();
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config.getPrimaryFile(), true).getRootComponent();
+            
+            Iterator iter = facesConfig.getNavigationRules().iterator();
             while (iter.hasNext()){
                 rule = (NavigationRule) iter.next();
                 if (rule.getFromViewId() != null)

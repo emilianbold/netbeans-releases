@@ -38,8 +38,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.jsf.config.model.FacesConfig;
-import org.netbeans.modules.web.jsf.config.model.ManagedBean;
+
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsf.wizards.JSFClinetGenerator;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;

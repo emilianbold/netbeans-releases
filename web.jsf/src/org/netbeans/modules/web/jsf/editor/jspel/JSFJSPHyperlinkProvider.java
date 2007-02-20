@@ -40,6 +40,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.deprecated.ELTokenContext;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.editor.JSFEditorUtilities;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -266,7 +267,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
         public void run(){
             if (wm == null) return;
             
-            FileObject config = JSFConfigUtilities.findFacesConfigForManagedBean(wm, beanName);
+            FileObject config = ConfigurationUtils.findFacesConfigForManagedBean(wm, beanName);
             if (config != null){
                 DataObject dobj = null;
                 try{

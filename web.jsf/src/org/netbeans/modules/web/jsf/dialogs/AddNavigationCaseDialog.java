@@ -19,14 +19,16 @@
 
 package org.netbeans.modules.web.jsf.dialogs;
 
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.jsf.config.model.NavigationCase;
-import org.netbeans.modules.web.jsf.config.model.NavigationRule;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -40,12 +42,13 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
     public AddNavigationCaseDialog(JSFConfigDataObject config, String rule) {
         initComponents();
         this.config = config;
-        List rules = JSFConfigUtilities.getAllNavigationRules(config);
+        FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config.getPrimaryFile(), false).getRootComponent();
+        
         DefaultComboBoxModel modelF = (DefaultComboBoxModel)jComboBoxFromView.getModel();
         DefaultComboBoxModel modelT = (DefaultComboBoxModel)jComboBoxToView.getModel();
         modelF.addElement("");
         modelT.addElement("");
-        Iterator iter = rules.iterator();
+        Iterator iter = facesConfig.getNavigationRules().iterator();
         while (iter.hasNext()) {
             String fromViewID=((NavigationRule)iter.next()).getFromViewId();
             modelF.addElement(fromViewID);
@@ -54,16 +57,16 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
         if (rule != null)
             jComboBoxFromView.setSelectedItem(rule);
     }
-
+    
     public javax.swing.text.JTextComponent[] getDocumentChangeComponents() {
-        return new javax.swing.text.JTextComponent[]{(JTextComponent)jComboBoxFromView.getEditor().getEditorComponent(), 
-            (JTextComponent) jComboBoxToView.getEditor().getEditorComponent(), jTextFieldFromAction, jTextFieldFromOutcome};
+        return new javax.swing.text.JTextComponent[]{(JTextComponent)jComboBoxFromView.getEditor().getEditorComponent(),
+        (JTextComponent) jComboBoxToView.getEditor().getEditorComponent(), jTextFieldFromAction, jTextFieldFromOutcome};
     }
-
+    
     public javax.swing.AbstractButton[] getStateChangeComponents() {
         return new javax.swing.AbstractButton[]{  };
     }
-
+    
     public String validatePanel() {
         if (getRule().length()==0)
             return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddNavigationCase_EmptyRule");
@@ -74,13 +77,15 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
         NavigationRule rule = JSFConfigUtilities.findNavigationRule(config, getRule());
         //if the rule exist, check whether doesn't already indlclude the case
         if (rule != null){
-            NavigationCase[] cases = rule.getNavigationCase();
+            
+            Collection<NavigationCase> cases = rule.getNavigationCases();
             String from;
-            for (int i = 0; i < cases.length; i++){
-                from = cases[i].getFromAction();
+            for (Iterator<NavigationCase> it = cases.iterator(); it.hasNext();) {
+                NavigationCase navigationCase = it.next();
+                from = navigationCase.getFromAction();
                 if (from != null && from.equals(getFromAction()))
                     return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddNavigationCase_FromActionExist");
-                from = cases[i].getFromOutcome();
+                from = navigationCase.getFromOutcome();
                 if (from != null && from.equals(getFromOutcome()))
                     return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddNavigationCase_FromOutcomeExist");
             }
@@ -263,7 +268,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
 
     }
     // </editor-fold>//GEN-END:initComponents
-
+    
     private void jButtonToViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonToViewActionPerformed
         try{
             org.netbeans.api.project.SourceGroup[] groups = JSFConfigUtilities.getDocBaseGroups(config.getPrimaryFile());
@@ -276,7 +281,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
             ErrorManager.getDefault().notify(ex);
         }
     }//GEN-LAST:event_jButtonToViewActionPerformed
-
+    
     private void jButtonFromViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonFromViewActionPerformed
         try{
             org.netbeans.api.project.SourceGroup[] groups = JSFConfigUtilities.getDocBaseGroups(config.getPrimaryFile());

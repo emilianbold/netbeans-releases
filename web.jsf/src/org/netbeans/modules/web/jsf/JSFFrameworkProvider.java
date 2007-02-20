@@ -31,24 +31,21 @@ import java.math.BigInteger;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
-
 import org.netbeans.modules.j2ee.dd.api.web.*;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanel;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.Repository;
-
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
-
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
@@ -68,14 +65,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Description"));       //NOI18N
     }
     
-    public Set extend(WebModule wm) {
-        FileObject fo = wm.getDocumentBase();;
-        Project project = FileOwnerQuery.getOwner(fo);
+    public Set extend(WebModule webModule) {
+        FileObject fileObject = webModule.getDocumentBase();Project project = FileOwnerQuery.getOwner(fileObject);
         
         try {
-            FileObject dd = wm.getDeploymentDescriptor();
+            FileObject dd = webModule.getDeploymentDescriptor();
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
-            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+            ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
             if (ddRoot != null){
                 if (!WebApp.VERSION_2_5.equals(ddRoot.getVersion())) {
                     Library jsfLibrary = LibraryManager.getDefault().getLibrary("jsf");
@@ -100,8 +96,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
             }
             boolean isMyFaces = cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") != null; //NOI18N
-            FileSystem fs = wm.getWebInf().getFileSystem();
-            fs.runAtomicAction(new CreateFacesConfig(wm, isMyFaces));
+            FileSystem fileSystem = webModule.getWebInf().getFileSystem();
+            fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
         } catch (FileNotFoundException exc) {
             ErrorManager.getDefault().notify(exc);
         } catch (IOException exc) {
@@ -112,24 +108,24 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     
     public static String readResource(InputStream is, String encoding) throws IOException {
         // read the config from resource first
-        StringBuffer sb = new StringBuffer();
+        StringBuffer sbuffer = new StringBuffer();
         String lineSep = System.getProperty("line.separator");//NOI18N
         BufferedReader br = new BufferedReader(new InputStreamReader(is, encoding));
         String line = br.readLine();
         while (line != null) {
-            sb.append(line);
-            sb.append(lineSep);
+            sbuffer.append(line);
+            sbuffer.append(lineSep);
             line = br.readLine();
         }
         br.close();
-        return sb.toString();
+        return sbuffer.toString();
     }
     
     public java.io.File[] getConfigurationFiles(org.netbeans.modules.web.api.webmodule.WebModule wm) {
         // The JavaEE 5 introduce web modules without deployment descriptor. In such wm can not be jsf used.
         FileObject dd = wm.getDeploymentDescriptor();
         if (dd != null){
-            FileObject[] filesFO = JSFConfigUtilities.getConfiFilesFO(dd);
+            FileObject[] filesFO = ConfigurationUtils.getFacesConfigFiles(wm);
             File[] files = new File[filesFO.length];
             for (int i = 0; i < filesFO.length; i++)
                 files[i] = FileUtil.toFile(filesFO[i]);
@@ -139,25 +135,25 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         return null;
     }
     
-    public FrameworkConfigurationPanel getConfigurationPanel(WebModule wm) {
-        boolean defaultValue = (wm == null || !isInWebModule(wm));
+    public FrameworkConfigurationPanel getConfigurationPanel(WebModule webModule) {
+        boolean defaultValue = (webModule == null || !isInWebModule(webModule));
         panel = new JSFConfigurationPanel(!defaultValue);
         if (!defaultValue){
             // get configuration panel with values from the wm
-            Servlet servlet = JSFConfigUtilities.getActionServlet(wm.getDeploymentDescriptor());
+            Servlet servlet = ConfigurationUtils.getFacesServlet(webModule);
             panel.setServletName(servlet.getServletName());
-            panel.setURLPattern(JSFConfigUtilities.getActionServletMapping(wm.getDeploymentDescriptor()));
-            panel.setValidateXML(JSFConfigUtilities.validateXML(wm.getDeploymentDescriptor()));
-            panel.setVerifyObjects(JSFConfigUtilities.verifyObjects(wm.getDeploymentDescriptor()));
+            panel.setURLPattern(ConfigurationUtils.getFacesServletMapping(webModule));
+            panel.setValidateXML(JSFConfigUtilities.validateXML(webModule.getDeploymentDescriptor()));
+            panel.setVerifyObjects(JSFConfigUtilities.verifyObjects(webModule.getDeploymentDescriptor()));
         }
         
         return panel;
     }
     
-    public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule wm) {
+    public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule webModule) {
         // The JavaEE 5 introduce web modules without deployment descriptor. In such wm can not be jsf used.
-        FileObject dd = wm.getDeploymentDescriptor();
-        return (dd != null && JSFConfigUtilities.getActionServlet(dd) != null);
+        FileObject dd = webModule.getDeploymentDescriptor();
+        return (dd != null && ConfigurationUtils.getFacesServlet(webModule) != null);
     }
     
     public String getServletPath(FileObject file){
@@ -169,7 +165,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             url = FileUtil.getRelativePath(wm.getDocumentBase(), file);
             if (url.charAt(0)!='/')
                 url = "/" + url;
-            String mapping = JSFConfigUtilities.getActionServletMapping(wm.getDeploymentDescriptor());
+            String mapping = ConfigurationUtils.getFacesServletMapping(wm);
             if (mapping != null && !"".equals(mapping)){
                 if (mapping.endsWith("/*")){
                     mapping = mapping.substring(0, mapping.length()-2);
@@ -193,17 +189,17 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     }
     
     private class  CreateFacesConfig implements FileSystem.AtomicAction{
-        WebModule wm;
+        WebModule webModule;
         boolean isMyFaces;
         
-        public CreateFacesConfig(WebModule wm, boolean isMyFaces){
-            this.wm = wm;
+        public CreateFacesConfig(WebModule webModule, boolean isMyFaces){
+            this.webModule = webModule;
             this.isMyFaces = isMyFaces;
         }
         
         public void run() throws IOException {
             // Enter servlet into the deployment descriptor
-            FileObject dd = wm.getDeploymentDescriptor();
+            FileObject dd = webModule.getDeploymentDescriptor();
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             if (ddRoot != null){
                 try{
@@ -257,7 +253,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
             
             // copy faces-config.xml
-            if (canCreateNewFile(wm.getWebInf(),"faces-config.xml")){
+            if (canCreateNewFile(webModule.getWebInf(),"faces-config.xml")){
                 String facesConfigTemplate = "faces-config.xml"; //NOI18N
                 if (ddRoot != null) {
                     if (WebApp.VERSION_2_5.equals(ddRoot.getVersion())) {
@@ -265,17 +261,17 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     }
                 }
                 String content = readResource(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-jsf/" + facesConfigTemplate).getInputStream(), "UTF-8"); //NOI18N
-                FileObject target = FileUtil.createData(wm.getWebInf(), "faces-config.xml");//NOI18N
+                FileObject target = FileUtil.createData(webModule.getWebInf(), "faces-config.xml");//NOI18N
                 createFile(target, content, "UTF-8"); //NOI18N
             }
             
             //copy Welcome.jsp
-            if (canCreateNewFile(wm.getDocumentBase(), "welcomeJSF.jsp")){
+            if (canCreateNewFile(webModule.getDocumentBase(), "welcomeJSF.jsp")){
                 String content = readResource(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-jsf/welcomeJSF.jsp").getInputStream(), "UTF-8"); //NOI18N
-                FileObject target = FileUtil.createData(wm.getDocumentBase(), "welcomeJSF.jsp");//NOI18N
+                FileObject target = FileUtil.createData(webModule.getDocumentBase(), "welcomeJSF.jsp");//NOI18N
                 createFile(target, content, "UTF-8");  //NOI18N
                 
-                FileObject documentBase = wm.getDocumentBase();
+                FileObject documentBase = webModule.getDocumentBase();
                 FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
                 if (indexjsp != null){
                     changeIndexJSP(indexjsp);
@@ -315,7 +311,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 replace.append("    <br/>");                        //NOI18N
                 replace.append(endLine);
                 replace.append("    <a href=\".");                  //NOI18N
-                replace.append(JSFConfigUtilities.translateURI(panel == null ? "/faces/*" : panel.getURLPattern(),"/welcomeJSF.jsp")); //NOI18N
+                replace.append(ConfigurationUtils.translateURI(panel == null ? "/faces/*" : panel.getURLPattern(),"/welcomeJSF.jsp")); //NOI18N
                 replace.append("\">");                              //NOI18N
                 replace.append(NbBundle.getMessage(JSFFrameworkProvider.class,"LBL_JSF_WELCOME_PAGE"));
                 replace.append("</a>");                             //NOI18N

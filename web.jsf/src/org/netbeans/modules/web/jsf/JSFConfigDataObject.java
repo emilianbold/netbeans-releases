@@ -19,15 +19,10 @@
 
 package org.netbeans.modules.web.jsf;
 
-
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
-import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.schema2beans.GraphManager;
-import org.netbeans.modules.web.jsf.config.model.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -36,7 +31,6 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.w3c.dom.Document;
 import org.xml.sax.*;
-
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.spi.xml.cookies.*;
@@ -160,40 +154,6 @@ public class JSFConfigDataObject extends MultiDataObject
         }
     }
     
-    public void write(FacesConfig config) throws java.io.IOException {
-        java.io.File file = org.openide.filesystems.FileUtil.toFile(getPrimaryFile());
-        org.openide.filesystems.FileObject configFO = getPrimaryFile();
-        try {
-            org.openide.filesystems.FileLock lock = configFO.lock();
-            try {
-                java.io.OutputStream os =configFO.getOutputStream(lock);
-                try {
-                    config.write(os);
-                } finally {
-                    os.close();
-                }
-            } 
-            finally {
-                lock.releaseLock();
-            }
-        } catch (org.openide.filesystems.FileAlreadyLockedException ex) {
-            
-            //ErrorManager.getDefault().notify(ex);
-            try{
-                BaseDocument doc = (BaseDocument)getEditorSupport().getDocument();
-                doc.remove(0, doc.getLength());
-                java.io.StringWriter text = new java.io.StringWriter();
-                config.write(text);
-                doc.insertString(0,text.toString(), null);
-                doc.getFormatter().reformat(doc, 0, doc.getLength());
-            }
-            catch (Exception e){
-                ErrorManager.getDefault().notify(ex);
-            }
-            
-        }
-    }
-    
     /** This method parses XML document and calls updateNode method which
     * updates corresponding Node.
     */
@@ -262,17 +222,20 @@ public class JSFConfigDataObject extends MultiDataObject
     protected SAXParseError updateNode(InputStream is) throws java.io.IOException{
         try {
             Document doc = getDomDocument(is);
-            String version = JSFCatalog.extractVersion(doc);
+            
+            //TODO new api
+            //JSF version = JSFCatalog.extractVersion(doc);
             //check version, use impl class to create graph
-            if (FacesConfig.VERSION_1_1.equals(version)) {
-                lastGoodFacesConfig = org.netbeans.modules.web.jsf.config.model_1_1.FacesConfig.createGraph(doc);
-            }
-            if (FacesConfig.VERSION_1_0.equals(version)) {
-                lastGoodFacesConfig = org.netbeans.modules.web.jsf.config.model_1_1.FacesConfig.createGraph(doc);
-            }
-            if (FacesConfig.VERSION_1_2.equals(version)) {
-                lastGoodFacesConfig = org.netbeans.modules.web.jsf.config.model_1_2.FacesConfig.createGraph(doc);
-            }
+            //TODO new API
+//            if (FacesConfig.VERSION_1_1.equals(version)) {
+//                lastGoodFacesConfig = org.netbeans.modules.web.jsf.config.model_1_1.FacesConfig.createGraph(doc);
+//            }
+//            if (FacesConfig.VERSION_1_0.equals(version)) {
+//                lastGoodFacesConfig = org.netbeans.modules.web.jsf.config.model_1_1.FacesConfig.createGraph(doc);
+//            }
+//            if (FacesConfig.VERSION_1_2.equals(version)) {
+//                lastGoodFacesConfig = org.netbeans.modules.web.jsf.config.model_1_2.FacesConfig.createGraph(doc);
+//            }
         }
         catch(SAXParseException ex) {
             return new SAXParseError(ex);

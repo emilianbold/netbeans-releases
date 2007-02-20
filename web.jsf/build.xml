@@ -20,62 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 <project name="web/jsf" default="netbeans" basedir=".">
 
     <import file="../../nbbuild/templates/projectized.xml"/>
-    
-    <property name="s2b_root11" location="src/org/netbeans/modules/web/jsf/config/model_1_1"/>
-    <property name="s2b_root12" location="src/org/netbeans/modules/web/jsf/config/model_1_2"/>
-    <property name="s2b_res_root" location="src/org/netbeans/modules/web/jsf/resources"/>
-
-    <target name="s2binit" depends="build-init">
-	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
-	  <classpath>
-		<pathelement path="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
-		<pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
-		<pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
-	  </classpath>
-	</taskdef>
-    </target>
-    
-    <target name="s2bgen" depends="s2binit">
-     <echo message="generating code generation input file information" />
-	<schema2beans schema="${s2b_res_root}/web-facesconfig_1_1.dtd"
-	  mddFile="${s2b_res_root}/web-facesconfig_1_1.mdd"
-	  package="org.netbeans.modules.web.jsf.config.model_1_1"
-	  validate="false"
-	  useInterfaces="true"
-	  attrProp="true"
-	  removeUnreferencedNodes="true"
-	  rootDir="src"/>
-	<schema2beans schema="${s2b_res_root}/web-facesconfig_1_2.xsd"
-	  mddFile="${s2b_res_root}/web-facesconfig_1_2.mdd"
-	  package="org.netbeans.modules.web.jsf.config.model_1_2"
-	  validate="false"
-	  useInterfaces="true"
-	  attrProp="true"
-	  removeUnreferencedNodes="true"
-	  rootDir="src"/>
-    </target>
-    
-    <target name="compile" depends="s2bgen, projectized-common.compile"/>
-  
-    <target name="clean" depends="clean-s2b-src, projectized-common.clean"/>
-
-    <target name="clean-s2b-src">
-        <mkdir dir="${s2b_root11}"/>
-        <mkdir dir="${s2b_root12}"/>
-        <delete>
-            <fileset dir="${s2b_root11}">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete>
-            <fileset dir="${s2b_root12}">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${s2b_root11}"/>
-        <delete dir="${s2b_root12}"/>
-    </target>
-  
+      
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">

@@ -18,32 +18,29 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 import java.awt.event.ActionEvent;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
-import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.schema2beans.BaseBean;
-import org.netbeans.modules.schema2beans.XMLUtil.DOMWriter;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.jsf.config.model.*;
+import org.netbeans.modules.web.jsf.JSFConfigUtilities;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.dialogs.AddDialog;
 import org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog;
 import org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog;
 import org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.openide.ErrorManager;
-import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -60,7 +57,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
     static private String END_LINE = System.getProperty("line.separator");  //NOI18N
     protected final static int MANAGED_BEAN_TYPE = 1;
     protected final static int NAVIGATION_RULE_TYPE = 2;
-
+    
     public String getName() {
         return NbBundle.getMessage(JSFPopupAction.class, "org-netbeans-modules-web-jsf-editor-JSFPopupAction.instance"); // NOI18N
     }
@@ -112,25 +109,28 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
             d.setVisible(true);
             if (dialog.getValue().equals(dialog.ADD_OPTION)) {
-                try {
-                    FacesConfig config = data.getFacesConfig();
-                    if (config == null){
-                        return;
-                    }
-                    ManagedBean bean = config.newManagedBean();
+                try             {
+                    FacesConfig facesConfig = ConfigurationUtils.getConfigModel(data.getPrimaryFile(),true).getRootComponent();
+                    ManagedBean bean = facesConfig.getModel().getFactory().createManagedBean();
+                    
                     bean.setManagedBeanName(dialogPanel.getName());
                     bean.setManagedBeanClass(dialogPanel.getBeanClass());
                     bean.setManagedBeanScope(dialogPanel.getScope());
-                    if(dialogPanel.getDescription() != null && !dialogPanel.getDescription().equals(""))   //NOI18N
-                        bean.setDescription(new String[]{END_LINE + dialogPanel.getDescription() + END_LINE});
-                    config.addManagedBean(bean);    
-                    
-                    target.setCaretPosition(JSFEditorUtilities.writeBean(doc, (BaseBean) bean, "managed-bean"));             //NOI18N
-                } 
-                catch (java.io.IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    if (dialogPanel.getDescription() != null &&
+                            !dialogPanel.getDescription().equals(""))
+                        bean.setDescription(END_LINE +
+                                dialogPanel.getDescription() +
+                                END_LINE);
+                    facesConfig.getModel().startTransaction();
+                    facesConfig.addManagedBean(bean);
+                    facesConfig.getModel().endTransaction();
+                    facesConfig.getModel().sync();
+                    target.setCaretPosition(bean.findPosition());
+                } catch (IOException ex) {
+                    java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                            ex.getMessage(),
+                            ex);
                 }
-                
             }
         }
     }
@@ -152,18 +152,22 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
             d.setVisible(true);
             if (dialog.getValue().equals(dialog.ADD_OPTION)) {
                 try {
-                    FacesConfig config = data.getFacesConfig();
-                    if (config == null){
-                        return;
+                    JSFConfigModel model = ConfigurationUtils.getConfigModel(data.getPrimaryFile(),true);
+                    FacesConfig facesConfig = model.getRootComponent();
+                    NavigationRule rule = facesConfig.getModel().getFactory().createNavigationRule();
+                    if (dialogPanel.getDescription() == null || "".equals(dialogPanel.getDescription())){
+                        rule.setDescription(null);
+                    } 
+                    else {
+                        rule.setDescription(END_LINE + dialogPanel.getDescription() + END_LINE);
                     }
-                    NavigationRule rule = config.newNavigationRule();
-                    rule.setDescription(new String[]{END_LINE + dialogPanel.getDescription() + END_LINE});
                     rule.setFromViewId(dialogPanel.getFromView());
-                    config.addNavigationRule(rule);
-                    
-                    target.setCaretPosition(JSFEditorUtilities.writeBean(doc, (BaseBean) rule, "navigation-rule"));    //NOI18N
-                } 
-                catch (java.io.IOException ex) {
+                    facesConfig.getModel().startTransaction();
+                    facesConfig.addNavigationRule(rule);
+                    facesConfig.getModel().endTransaction();
+                    facesConfig.getModel().sync();
+                    target.setCaretPosition(rule.findPosition());
+                } catch (java.io.IOException ex) {
                     ErrorManager.getDefault().notify(ex);
                 }
             }
@@ -178,7 +182,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             BaseDocument doc = (BaseDocument)target.getDocument();
             JSFConfigDataObject data = (JSFConfigDataObject)NbEditorUtilities.getDataObject(doc);
-            AddNavigationCaseDialog dialogPanel = new AddNavigationCaseDialog(data, 
+            AddNavigationCaseDialog dialogPanel = new AddNavigationCaseDialog(data,
                     JSFEditorUtilities.getNavigationRule((BaseDocument)doc, target.getCaretPosition()));
             AddDialog dialog = new AddDialog(dialogPanel,
                     NbBundle.getMessage(JSFPopupAction.class,"TTL_AddNavigationCase"),    //NOI18N
@@ -188,19 +192,19 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
             d.setVisible(true);
             if (dialog.getValue().equals(dialog.ADD_OPTION)) {
                 try {
-                    FacesConfig config = data.getFacesConfig();
-                    if (config == null){
-                        return;
-                    }
+                    
+                    FacesConfig facesConfig = ConfigurationUtils.getConfigModel(data.getPrimaryFile(),true).getRootComponent();
                     boolean newRule = false;
-                    NavigationRule rule = JSFConfigUtilities.findNavigationRule(config, dialogPanel.getRule());
+                    NavigationRule rule = JSFConfigUtilities.findNavigationRule(data, dialogPanel.getRule());
                     if (rule == null){
-                        rule = config.newNavigationRule();
+                        rule = facesConfig.getModel().getFactory().createNavigationRule();
                         rule.setFromViewId(dialogPanel.getRule());
-                        config.addNavigationRule(rule);
+                        facesConfig.getModel().startTransaction();
+                        facesConfig.addNavigationRule(rule);
+                        facesConfig.getModel().endTransaction();
                         newRule = true;
                     }
-                    NavigationCase nCase = rule.newNavigationCase();
+                    NavigationCase nCase = facesConfig.getModel().getFactory().createNavigationCase();
                     if(dialogPanel.getFromAction() != null && !dialogPanel.getFromAction().equals(""))      //NOI18N
                         nCase.setFromAction(dialogPanel.getFromAction());
                     if(dialogPanel.getFromOutcome() != null && !dialogPanel.getFromOutcome().equals(""))    //NOI18N
@@ -208,17 +212,21 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     nCase.setRedirected(dialogPanel.isRedirect());
                     nCase.setToViewId(dialogPanel.getToView());
                     if(dialogPanel.getDescription() != null && !dialogPanel.getDescription().equals(""))    //NOI18N
-                        nCase.setDescription(new String[]{END_LINE + dialogPanel.getDescription() + END_LINE});
+                        nCase.setDescription(END_LINE + dialogPanel.getDescription() + END_LINE);
+                    
+                    facesConfig.getModel().startTransaction();
                     rule.addNavigationCase(nCase);
+                    facesConfig.getModel().endTransaction();
+                    facesConfig.getModel().sync();
+                    
                     if (newRule)
-                        target.setCaretPosition(JSFEditorUtilities.writeBean(doc, (BaseBean) rule, "navigation-rule"));    //NOI18N
+                        target.setCaretPosition(rule.findPosition());    //NOI18N
                     else
-                        target.setCaretPosition(JSFEditorUtilities.writeCaseIntoRule(doc, rule.getFromViewId(), nCase ));
-                } 
-                catch (java.io.IOException ex) {
+                        target.setCaretPosition(nCase.findPosition());
+                } catch (java.io.IOException ex) {
                     ErrorManager.getDefault().notify(ex);
                 }
             }
         }
-    }    
+    }
 }
