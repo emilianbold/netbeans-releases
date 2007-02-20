@@ -561,16 +561,15 @@ char *readEndorsedDirs(const char *progdir, char **clusterDirs, char *pOptions) 
     for (char **clusterName = clusterDirs; *clusterName != NULL; clusterName++) {
         if (strstr(*clusterName, "ide")) {
             char *endorsedParam = (char *) malloc(60+strlen(*clusterName)+strlen(progdir));
-            strcpy(endorsedParam, "-J-Djava.endorsed.dirs=\"");
+            strcpy(endorsedParam, "-J-Djava.endorsed.dirs=");
             strcat(endorsedParam, progdir);
             strcat(endorsedParam, "\\");
             strcat(endorsedParam, *clusterName);
             strcat(endorsedParam, "\\modules\\ext\\jaxws21\\api");
 #ifdef DEBUG 
-    printf("Searching for : >%s<\n", endorsedParam+24);
+    printf("Searching for : >%s<\n", endorsedParam+23);
 #endif
-            if (dirExists(endorsedParam+24)) {
-                strcat(endorsedParam, "\"");
+            if (dirExists(endorsedParam+23)) {
                 return endorsedParam;
             }
         }
