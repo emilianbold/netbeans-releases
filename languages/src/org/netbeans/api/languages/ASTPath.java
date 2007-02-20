@@ -41,10 +41,8 @@ public abstract class ASTPath {
     public abstract ASTItem                 get (int index);
     public abstract ASTPath                 subPath (int index);
 
-    public static ASTPath create (ASTItem n, ASTItem t) {
-        if (n == null) return create (t);
-        if (t == null) throw new NullPointerException ();
-        return new Token2Path (n.getPath (), t);
+    public static ASTPath create (List<ASTItem> path) {
+        return new Token2Path (path);
     }
 
     public static ASTPath create (ASTItem n) {
@@ -100,25 +98,16 @@ public abstract class ASTPath {
 
     private static class Token2Path extends ASTPath {
 
-        private List<ASTItem> l = new ArrayList<ASTItem> ();
+        private List<ASTItem> path;
         private int s;
         
-        Token2Path (ASTPath p, ASTItem t) {
-            if (p instanceof Token2Path)
-                l.addAll (((Token2Path) p).l);
-            else
-                l.add (((TokenPath) p).o);
-            l.add (t);
-            s = l.size ();
-        }
-        
-        Token2Path (List<ASTItem> list) {
-            l.addAll (list);
-            s = l.size ();
+        Token2Path (List<ASTItem> path) {
+            this.path = path;
+            s = path.size ();
         }
         
         public ASTItem getLeaf () {
-            return l.get (s - 1);
+            return path.get (s - 1);
         }
         
         public int size () {
@@ -126,28 +115,28 @@ public abstract class ASTPath {
         }
         
         public ASTItem getRoot () {
-            return l.get (0);
+            return path.get (0);
         }
         
         public ListIterator<ASTItem> listIterator () {
-            return l.listIterator ();
+            return path.listIterator ();
         }
         
         public ListIterator<ASTItem> listIterator (int index) {
-            return l.listIterator (index);
+            return path.listIterator (index);
         }
         
         public ASTItem get (int index) {
-            return l.get (index);
+            return path.get (index);
         }
         
         public ASTPath subPath (int index) {
-            return new Token2Path (l.subList (0, index));
+            return new Token2Path (path.subList (0, index));
         }
         
         public String toString () {
             StringBuilder sb = new StringBuilder ("ASTPath ");
-            Iterator<ASTItem> it = l.iterator ();
+            Iterator<ASTItem> it = path.iterator ();
             if (it.hasNext ()) {
                 ASTItem item = it.next ();
                 if (item instanceof ASTNode)

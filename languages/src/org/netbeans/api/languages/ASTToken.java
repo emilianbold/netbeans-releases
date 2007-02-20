@@ -26,7 +26,6 @@ public class ASTToken extends ASTItem {
     
     private String      identifier;
     private String      type;
-    private List         mimeTypeToTokens;
     
     
     public static ASTToken create (
@@ -34,7 +33,7 @@ public class ASTToken extends ASTItem {
         String  identifier,
         int     offset,
         int     length,
-        List     mimeTypeToTokens
+        List     children
     ) {
         return new ASTToken (
             null,
@@ -42,7 +41,7 @@ public class ASTToken extends ASTItem {
             identifier, 
             offset, 
             length,
-            mimeTypeToTokens
+            children
         );
     }
     
@@ -81,7 +80,7 @@ public class ASTToken extends ASTItem {
         String  identifier,
         int     offset,
         int     length,
-        List    mimeTypeToTokens
+        List    children
     ) {
         return new ASTToken (
             mimeType,
@@ -89,7 +88,7 @@ public class ASTToken extends ASTItem {
             identifier, 
             offset, 
             length,
-            mimeTypeToTokens
+            children
         );
     }
     
@@ -130,12 +129,11 @@ public class ASTToken extends ASTItem {
         String  identifier, 
         int     offset,
         int     length,
-        List    mimeTypeToTokens
+        List<ASTItem> children
     ) {
-        super(mimeType, offset, length, Collections.<ASTItem>emptyList ());
+        super (mimeType, offset, length, children);
         this.identifier = identifier;
         this.type = type;
-        this.mimeTypeToTokens = mimeTypeToTokens;
     }
 
     public String getType () {
@@ -144,16 +142,6 @@ public class ASTToken extends ASTItem {
     
     public String getIdentifier () {
         return identifier;
-    }
-    
-    public List getEmbeddings () {
-        if (mimeTypeToTokens == null) return Collections.EMPTY_LIST;
-        return mimeTypeToTokens;
-    }
-    
-    public boolean equals (Object o) {
-        Thread.dumpStack();
-        return super.equals (o);
     }
 
     public boolean isCompatible (Object obj) {

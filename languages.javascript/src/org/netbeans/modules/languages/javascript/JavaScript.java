@@ -21,7 +21,11 @@ package org.netbeans.modules.languages.javascript;
 
 import java.util.HashSet;
 import java.util.ListIterator;
+import java.util.ListIterator;
 import java.util.Set;
+import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.DatabaseManager;
 import org.netbeans.api.languages.LibrarySupport;
@@ -70,7 +74,7 @@ import javax.swing.text.StyledDocument;
 
 /**
  *
- * @author Jan Jancura
+ * @author Jan Jancura, Dan Prusa
  */
 public class JavaScript {
 
@@ -165,17 +169,20 @@ public class JavaScript {
             null;
         String name = t.getIdentifier ();
         DatabaseManager databaseManager = DatabaseManager.getDefault ();
-        List list = databaseManager.get (n, name, false);
+        List<Line.Part> list = databaseManager.get (path, name, false);
         if (list.isEmpty ()) 
             list = databaseManager.get (DatabaseManager.FOLDER, name);
         if (list.isEmpty ()) return null;
-        final Line.Part l = (Line.Part) list.get (0);
+        final Line.Part l = list.get (0);
         if (l == null) return null;
         DataObject dataObject = (DataObject) l.getLine ().getLookup ().
             lookup (DataObject.class);
         EditorCookie ec = (EditorCookie) dataObject.getCookie (EditCookie.class);
         StyledDocument document = ec.getDocument ();
-        int offset = NbDocument.findLineOffset (document, l.getLine ().getLineNumber ()) + l.getColumn ();
+        int offset = NbDocument.findLineOffset (
+            document, 
+            l.getLine ().getLineNumber ()
+        ) + l.getColumn ();
         if (offset == t.getOffset ()) return null;
         return new Runnable () {
             public void run () {
@@ -196,8 +203,12 @@ public class JavaScript {
         if (parametersNode != null)
             parameters = parametersNode.getAsText ();
         if (name != null) return name + " (" + parameters + ")";
-        ASTNode p = n.getParent ();
-        while (p != null) {
+        
+        ListIterator<ASTItem> it = path.listIterator (path.size () - 1);
+        while (it.hasPrevious ()) {
+            ASTItem item = it.previous ();
+            if (item instanceof ASTToken) break;
+            ASTNode p = (ASTNode) item;
             if (p.getNT ().equals ("AssignmentExpressionInitial") &&
                 p.getNode ("AssignmentOperator") != null
             ) {
@@ -208,7 +219,6 @@ public class JavaScript {
                 return p.getNode ("PropertyName").getAsText () + 
                     " (" + getAsText (n.getNode ("FormalParameterList")) + ")";
             }
-            p = p.getParent ();
         }
         return "?";
     }
@@ -216,8 +226,11 @@ public class JavaScript {
     public static String objectName (SyntaxCookie cookie) {
         ASTPath path = cookie.getASTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
-        ASTNode p = n.getParent ();
-        while (p != null) {
+        ListIterator<ASTItem> it = path.listIterator (path.size ());
+        while (it.hasPrevious ()) {
+            ASTItem item = it.previous ();
+            if (item instanceof ASTToken) break;
+            ASTNode p = (ASTNode) item;
             if (p.getNT ().equals ("AssignmentExpressionInitial") &&
                 p.getNode ("AssignmentOperator") != null
             ) {
@@ -226,7 +239,6 @@ public class JavaScript {
             if (p.getNT ().equals ("PropertyNameAndValue")) {
                 return p.getNode ("PropertyName").getAsText ();
             }
-            p = p.getParent ();
         }
         return "?";
     }
@@ -239,7 +251,7 @@ public class JavaScript {
         if (cookie instanceof SyntaxCookie) {
             ASTPath path = ((SyntaxCookie) cookie).getASTPath ();
             DatabaseManager databaseManager = DatabaseManager.getDefault ();
-            Collection c = databaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
+            Collection c = databaseManager.getIds (path, true);
             result.addAll (c);
             c = databaseManager.getIds (DatabaseManager.FOLDER);
             result.addAll (c);
@@ -510,7 +522,7 @@ public class JavaScript {
         }
     }
     
-    public static boolean isFunctionParameter(Cookie cookie) {
+    public static boolean isFunctionParameter (Cookie cookie) {
         if (!(cookie instanceof SyntaxCookie)) {
             return false;
         }
@@ -527,14 +539,14 @@ public class JavaScript {
         if ("MemberOperator".equals(nt)) { // NOI18N
             return false;
         }
-        ASTToken leaf = (ASTToken)path.getLeaf();
-        ListIterator iter = path.listIterator(size - 1);
-        while (iter.hasPrevious()) {
-            Object obj = iter.previous();
-            if (obj instanceof ASTNode) {
-                node = (ASTNode)obj;
-                if ("FunctionDeclaration".equals(node.getNT())) { // NOI18N
-                    for (Iterator it = node.getChildren().listIterator(1); it.hasNext(); ) {
+        ASTToken leaf = (ASTToken)path.getLeaf ();
+        ListIterator<ASTItem> iter = path.listIterator (size - 1);
+        while (iter.hasPrevious ()) {
+            ASTItem item = iter.previous ();
+            if (item instanceof ASTNode) {
+                node = (ASTNode) item;
+                if ("FunctionDeclaration".equals (node.getNT ())) { // NOI18N
+                    for (Iterator it = node.getChildren ().listIterator(1); it.hasNext(); ) {
                         Object o = it.next();
                         if (o instanceof ASTNode && "FormalParameterList".equals(((ASTNode)o).getNT())) { // NOI18N
                             return ((ASTNode)o).findToken("js_identifier", leaf.getIdentifier()) != null; // NOI18N

@@ -19,6 +19,7 @@
 
 package org.netbeans.api.languages;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -107,9 +108,6 @@ public final class ASTNode extends ASTItem {
         return rule;
     }
 
-    public ASTNode getParent () {
-        return (ASTNode) super.getParent ();
-    }
     /**
      * Finds path to the first token defined by type and identifier or null.
      *
@@ -119,6 +117,14 @@ public final class ASTNode extends ASTItem {
      * @return path to the first token defined by type and identifier or null
      */
     public ASTPath findToken (String type, String identifier) {
+        List<ASTItem> path = new ArrayList<ASTItem> ();
+        findToken (type, identifier, path);
+        if (path.isEmpty ()) return null;
+        return ASTPath.create (path);
+    }
+    
+    private boolean findToken (String type, String identifier, List<ASTItem> path) {
+        path.add (this);
         Iterator it = getChildren ().iterator ();
         while (it.hasNext ()) {
             Object e = it.next ();
@@ -126,11 +132,13 @@ public final class ASTNode extends ASTItem {
                 ASTToken t = (ASTToken) e;
                 if (type != null && !type.equals (t.getType ())) continue;
                 if (identifier != null && !identifier.equals (t.getIdentifier ())) continue;
-                return ASTPath.create (this, t);
+                return true;
             } else
-                return ((ASTNode) e).findToken (type, identifier);
+                if (((ASTNode) e).findToken (type, identifier, path))
+                    return true;
         }
-        return null;
+        path.remove (path.size () - 1);
+        return false;
     }
     
     /**
@@ -230,18 +238,6 @@ public final class ASTNode extends ASTItem {
             }
         }
         return nameToChild.get (name);
-    }
-
-    /**
-     * Returns parent node of this node with given non terminal.
-     * 
-     * @return parent node of this node with given non terminal
-     */
-    public ASTNode getParent (String nt) {
-        ASTNode p = (ASTNode) getParent ();
-        while (p != null && !p.getNT ().equals (nt))
-            p = (ASTNode) p.getParent ();
-        return p;
     }
     
     /**

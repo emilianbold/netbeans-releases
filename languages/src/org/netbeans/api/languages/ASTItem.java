@@ -38,7 +38,6 @@ public class ASTItem {
     private int             offset;
     private int             length = -1;
 
-    private ASTItem         parent;
     private List<ASTItem>   children;
     private ASTPath         path;
 
@@ -63,9 +62,6 @@ public class ASTItem {
                     throw new NullPointerException ();
 //                if (item.getOffset () != lastOffset)
 //                    throw new IllegalArgumentException ();
-                if (item.getParent () != null)
-                    throw new IllegalArgumentException ();
-                item.parent = this;
                 this.children.add (item);
 //                lastOffset += item.getLength ();
             }
@@ -80,15 +76,6 @@ public class ASTItem {
      */
     public int getOffset () {
         return offset;
-    }
-
-    /**
-     * Returns parent node of this node.
-     * 
-     * @return parent node of this node
-     */
-    public ASTItem getParent () {
-        return parent;
     }
 
     /**
@@ -107,18 +94,6 @@ public class ASTItem {
      */
     public List<ASTItem> getChildren () {
         return children;
-    }
-    
-    /**
-     * Returns path to this node from root node.
-     * 
-     * @return path to this node from root node
-     */
-    public ASTPath getPath () {
-        if (path == null) {
-            path = ASTPath.create (getParent (), this);
-        }
-        return path;
     }
     
     /**
@@ -167,34 +142,39 @@ public class ASTItem {
      * @return path from this node to the token on given offset
      */
     public ASTPath findPath (int offset) {
-        if (offset < getOffset ()) return null;
-        if (offset > getEndOffset ()) return null;
+        return findPath (new ArrayList<ASTItem> (), offset);
+    }
+    
+    private ASTPath findPath (List<ASTItem> path, int offset) {
+        if (offset < getOffset ()) return ASTPath.create (path);
+        if (offset > getEndOffset ()) return ASTPath.create (path);
+        path.add (this);
         if (getChildren ().isEmpty ())
-            return getPath ();
+            return ASTPath.create (path);
         if (getChildren ().size () > 10)
-            return findPath2 (offset);
+            return findPath2 (path, offset);
         Iterator<ASTItem> it = getChildren ().iterator ();
         while (it.hasNext ()) {
             ASTItem item = it.next ();
             if (offset < item.getEndOffset () &&
                 item.getOffset () <= offset
             )
-                return item.findPath (offset);
+                return item.findPath (path, offset);
         }
-        return getPath ();
+        return ASTPath.create (path);
     }
 
-    private ASTPath findPath2 (int offset) {
+    private ASTPath findPath2 (List<ASTItem> path, int offset) {
         TreeMap<Integer,ASTItem> childrenMap = getChildrenMap ();
         SortedMap<Integer,ASTItem> headMap = childrenMap.headMap (new Integer (offset + 1));
         if (headMap.isEmpty ())
-            return getPath ();
+            return ASTPath.create (path);
         Integer key = headMap.lastKey ();
         ASTItem item = childrenMap.get (key);
-        ASTPath path =  item.findPath (offset);
-        if (path == null)
-            return getPath ();
-        return path;
+        ASTPath path2 =  item.findPath (path, offset);
+        if (path2 == null)
+            return ASTPath.create (path);
+        return path2;
     }
     
     private TreeMap<Integer,ASTItem> childrenMap = null;

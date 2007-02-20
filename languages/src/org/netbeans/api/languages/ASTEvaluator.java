@@ -18,14 +18,15 @@
  */
 package org.netbeans.api.languages;
 
-import java.util.EventListener;
 import org.netbeans.api.languages.ParserManager.State;
 
 /**
  *
  * @author Jan Jancura
  */
-public interface ParserManagerListener extends EventListener {
+public interface ASTEvaluator {
     
-    public void parsed (State state, ASTNode root);
+    public void beforeEvaluation (State state, ASTNode root);
+    public void afterEvaluation (State state, ASTNode root);
+    public void evaluate (State state, ASTPath path);
 }

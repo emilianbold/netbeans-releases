@@ -19,7 +19,11 @@
 
 package org.netbeans.modules.languages.css;
 
+import java.util.ListIterator;
+import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.ASTPath;
+import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.SyntaxCookie;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.languages.Cookie;
@@ -38,12 +42,24 @@ public class CSS {
 
     public static String tooltip (Cookie cookie) {
         if (!(cookie instanceof SyntaxCookie)) return null;
-        ASTNode n = (ASTNode) ((SyntaxCookie) cookie).getASTPath ().getLeaf ();
+        SyntaxCookie syntaxCookie = (SyntaxCookie) cookie;
+        ASTPath path = syntaxCookie.getASTPath ();
         StringBuilder sb = new StringBuilder ();
         sb.append ("<html>");
         sb.append ("<p style=\"");
-        ASTNode body = n.getParent ().getNode ("body");
+        
+        ASTNode body = null;
+        ListIterator<ASTItem> it = path.listIterator (path.size ());
+        while (it.hasPrevious ()) {
+            ASTItem item = it.previous ();
+            if (item instanceof ASTToken) break;
+            ASTNode node = (ASTNode) item;
+            if (!node.getNT ().equals ("body")) continue;
+            body = node;
+            break;
+        }
         if (body == null) return null;
+        
         ASTNode declarations = body.getNode ("declarations");
         if (declarations == null) return null;
         String s = declarations.getAsText ();

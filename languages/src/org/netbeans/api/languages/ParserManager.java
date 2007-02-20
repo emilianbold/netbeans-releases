@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.api.languages;
 
 import java.lang.ref.WeakReference;
@@ -24,7 +23,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.ParserManagerImpl;
-import org.netbeans.modules.languages.Utils;
+
 
 /**
  *
@@ -32,10 +31,7 @@ import org.netbeans.modules.languages.Utils;
  */
 public abstract class ParserManager {
     
-    public static final int PARSING = 1;
-    public static final int OK = 2;
-    public static final int ERROR = 3;
-    public static final int NOT_PARSED = 4;
+    public static enum State {PARSING, OK, ERROR, NOT_PARSED}
     
     
     private static Map<NbEditorDocument,WeakReference<ParserManager>> managers = 
@@ -53,13 +49,17 @@ public abstract class ParserManager {
     }
 
     
-    public abstract int getState ();
+    public abstract State getState ();
     
     public abstract ASTNode getAST () throws ParseException;
     
     public abstract void addListener (ParserManagerListener l);
     
     public abstract void removeListener (ParserManagerListener l);
+    
+    public abstract void addASTEvaluator (ASTEvaluator e);
+    
+    public abstract void removeASTEvaluator (ASTEvaluator e);
 }
 
 

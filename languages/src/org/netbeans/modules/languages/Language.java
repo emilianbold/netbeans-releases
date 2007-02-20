@@ -19,8 +19,10 @@
 
 package org.netbeans.modules.languages;
 
+import java.util.ListIterator;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTNode;
@@ -360,26 +362,28 @@ public class Language {
     
     private Map features = new HashMap ();
     
-    private Object getFeature (String featureName, ASTNode node) {
+    public Object getFeature (String featureName, ASTPath path) {
         Map m = (Map) features.get (featureName);
         if (m == null) return null;
-        while (true) {
-            Object value = m.get (node.getNT ());
+        ListIterator<ASTItem> it = path.listIterator (path.size ());
+        while (it.hasPrevious ()) {
+            ASTItem item = it.previous ();
+            Object value = (item instanceof ASTToken) ? 
+                m.get (((ASTToken) item).getType ()) :
+                m.get (((ASTNode) item).getNT ());
             if (value == null) return m.get ("");
-            if (value instanceof MMap) {
+            if (value instanceof MMap)
                 m = (Map) value;
-                node = node.getParent ();
-                if (node == null) return null;
-                continue;
-            }
-            return value;
+            else
+                return value;
         }
+        return null;
     }
     
-    public Object getFeature (String featureName, String nt) {
+    public Object getFeature (String featureName, String id) {
         Map m = (Map) features.get (featureName);
         if (m == null) return null;
-        Object value = m.get (nt);
+        Object value = m.get (id);
         if (value == null) return m.get ("");
         if (value instanceof MMap) {
             m = (Map) value;
@@ -392,19 +396,19 @@ public class Language {
         return (Map) features.get (featureName);
     }
     
-    public Object getFeature (String featureName, ASTItem item) {
-        if (item instanceof ASTNode)
-            return getFeature (featureName, (ASTNode) item);
-        return getFeature (featureName, (ASTToken) item);
-    }
-    
-    private Object getFeature (String featureName, ASTToken token) {
-        Map m = (Map) features.get (featureName);
-        if (m == null) return null;
-        Object result = m.get (token.getType ());
-        if (result instanceof MMap) return null;
-        return result;
-    }
+//    private Object getFeature (String featureName, ASTItem item) {
+//        if (item instanceof ASTNode)
+//            return getFeature (featureName, (ASTNode) item);
+//        return getFeature (featureName, (ASTToken) item);
+//    }
+//    
+//    private Object getFeature (String featureName, ASTToken token) {
+//        Map m = (Map) features.get (featureName);
+//        if (m == null) return null;
+//        Object result = m.get (token.getType ());
+//        if (result instanceof MMap) return null;
+//        return result;
+//    }
     
     public boolean supportsFeature (String featureName) {
         return features.get (featureName) != null;

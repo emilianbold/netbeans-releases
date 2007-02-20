@@ -16,39 +16,41 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.languages;
 
 import java.lang.ref.WeakReference;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.api.languages.ASTEvaluator;
+import org.netbeans.api.languages.ASTEvaluator;
+import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManagerListener;
-import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.SyntaxCookie;
-import org.netbeans.modules.languages.LanguagesManagerImpl;
-import org.netbeans.modules.languages.LanguagesManagerImpl.LanguagesManagerListener;
-import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.api.languages.SyntaxCookie;
 import org.netbeans.api.languages.ASTNode;
+import org.netbeans.modules.languages.parser.TokenInput;
+import org.netbeans.modules.languages.LanguagesManagerImpl;
+import org.netbeans.modules.languages.LanguagesManagerImpl.LanguagesManagerListener;
+import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
+import org.netbeans.modules.languages.Evaluator;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.openide.windows.TopComponent;
 
 
@@ -61,8 +63,9 @@ public class ParserManagerImpl extends ParserManager {
     private NbEditorDocument        doc;
     private ASTNode                 ast = null;
     private ParseException          exception = null;
-    private int                     state = NOT_PARSED;
-    private Vector                  listeners = new Vector ();
+    private State                   state = State.NOT_PARSED;
+    private List<ParserManagerListener> listeners = new ArrayList<ParserManagerListener> ();
+    private List<ASTEvaluator>      evaluators = new ArrayList<ASTEvaluator> ();
     private static RequestProcessor rp = new RequestProcessor ("Parser");
     
     
@@ -72,7 +75,7 @@ public class ParserManagerImpl extends ParserManager {
         String mimeType = (String) doc.getProperty ("mimeType");
     }
     
-    public int getState () {
+    public State getState () {
         return state;
     }
     
@@ -88,14 +91,22 @@ public class ParserManagerImpl extends ParserManager {
     public void removeListener (ParserManagerListener l) {
         listeners.remove (l);
     }
-
+    
+    public void addASTEvaluator (ASTEvaluator e) {
+        evaluators.add (e);
+    }
+    
+    public void removeASTEvaluator (ASTEvaluator e) {
+        evaluators.remove (e);
+    }
+    
     
     // private methods .........................................................
     
     private RequestProcessor.Task parsingTask;
     
     private synchronized void startParsing () {
-        setChange (PARSING, ast);
+        setChange (State.PARSING, ast);
         if (parsingTask != null) {
             String mimeType = (String) doc.getProperty ("mimeType");
             try {
@@ -115,24 +126,52 @@ public class ParserManagerImpl extends ParserManager {
         }, 1000);
     }
     
-    private void setChange (int state, ASTNode ast) {
+    private void setChange (State state, ASTNode root) {
         if (state == this.state) return;
         
         //switch (state) {case PARSING:System.out.println("parsing started");break;case OK:System.out.println("parsed OK");break;case ERROR:System.out.println("parser ERROR");};
         
         this.state = state;
-        this.ast = ast;
+        this.ast = root;
         exception = null;
-        Iterator it = new ArrayList (listeners).iterator ();
+        Iterator<ParserManagerListener> it = new ArrayList<ParserManagerListener> (listeners).iterator ();
         while (it.hasNext ()) {
-            ParserManagerListener l = (ParserManagerListener) it.next ();
-            l.parsed (state, ast);
+            ParserManagerListener l = it.next ();
+            l.parsed (state, root);
         }
-        refreshPanes();
+        if (state == State.PARSING) return;
+        if (!evaluators.isEmpty ()) {
+            Iterator<ASTEvaluator> it2 = evaluators.iterator ();
+            while (it2.hasNext ()) {
+                ASTEvaluator e = it2.next ();
+                e.beforeEvaluation (state, root);
+            }
+            evaluate (state, root, root, new ArrayList<ASTItem> ());
+            it2 = evaluators.iterator ();
+            while (it2.hasNext ()) {
+                ASTEvaluator e = it2.next ();
+                e.afterEvaluation (state, root);
+            }
+        }
+        refreshPanes ();
+    }
+    
+    private void evaluate (State state, ASTItem root, ASTItem item, List<ASTItem> path) {
+        path.add (item);
+        ASTPath path2 = ASTPath.create (path);
+        Iterator<ASTEvaluator> it = evaluators.iterator ();
+        while (it.hasNext ()) {
+            ASTEvaluator e = it.next ();
+            e.evaluate (state, path2);
+        }
+        Iterator<ASTItem> it2 = item.getChildren ().iterator ();
+        while (it2.hasNext ())
+            evaluate (state, root, it2.next (), path);
+        path.remove (path.size () - 1);
     }
     
     private void setChange (ParseException ex) {
-        state = ERROR;
+        state = State.ERROR;
         ast = null;
         exception = ex;
         Iterator it = new ArrayList (listeners).iterator ();
@@ -140,6 +179,7 @@ public class ParserManagerImpl extends ParserManager {
             ParserManagerListener l = (ParserManagerListener) it.next ();
             l.parsed (state, ast);
         }
+        if (state == State.PARSING) return;
         refreshPanes();
     }
     
@@ -168,7 +208,7 @@ public class ParserManagerImpl extends ParserManager {
     
     private void parseAST () {
         try {
-            setChange (PARSING, ast);
+            setChange (State.PARSING, ast);
             ast = parse (doc);
             if (ast == null) {
                 setChange (new ParseException ("ast is null?!"));
@@ -179,7 +219,7 @@ public class ParserManagerImpl extends ParserManager {
                 setChange (new ParseException ("ast is null?!"));
                 return;
             }
-            setChange (OK, ast);
+            setChange (State.OK, ast);
         } catch (ParseException ex) {
             if (ex.getASTNode () != null) {
                 ASTNode ast = process (ex.getASTNode ());
@@ -190,7 +230,7 @@ public class ParserManagerImpl extends ParserManager {
         }
     }
     
-    private ASTNode process (ASTNode n) {
+    private ASTNode process (ASTNode root) {
         try {
             String mimeType = (String) doc.getProperty ("mimeType");
             Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
@@ -199,12 +239,12 @@ public class ParserManagerImpl extends ParserManager {
             if (m != null && ast != null) {
                 Evaluator e = (Evaluator) m.get ("process");
                 if (e != null) 
-                    return (ASTNode) e.evaluate (SyntaxCookie.create (doc, ast.getPath ()));
+                    return (ASTNode) e.evaluate (SyntaxCookie.create (doc, ASTPath.create (root)));
             }
-            return n;
+            return root;
         } catch (Exception ex) {
             ErrorManager.getDefault ().notify (ex);
-            return n;
+            return root;
         }
     }
     
@@ -233,25 +273,25 @@ public class ParserManagerImpl extends ParserManager {
         }
     }
     
-    private static List getTokens (TokenSequence ts) {
-        List tokens = new ArrayList ();
+    private static List<ASTToken> getTokens (TokenSequence ts) {
+        List<ASTToken> tokens = new ArrayList<ASTToken> ();
         while (ts.moveNext ()) {
             Token t = ts.token ();
             String type = t.id ().name ();
             int offset = ts.offset ();
             String ttype = (String) t.getProperty ("type");
             if (ttype == null) {
-                List embeddings = null;
+                List<ASTToken> children = null;
                 TokenSequence ts2 = ts.embedded ();
                 if (ts2 != null)
-                    embeddings = getTokens (ts2);
+                    children = getTokens (ts2);
                 tokens.add (ASTToken.create (
                     ts.language ().mimeType (),
                     type, 
                     t.text ().toString (), 
                     offset,
                     t.length (),
-                    embeddings
+                    children
                 ));
             } else
             if (ttype.equals ("E"))
@@ -259,7 +299,7 @@ public class ParserManagerImpl extends ParserManager {
             else
             if (ttype.equals ("S")) {
                 StringBuilder sb = new StringBuilder (t.text ().toString ());
-                List children = new ArrayList ();
+                List<ASTToken> children = new ArrayList<ASTToken> ();
                 TokenSequence ts2 = ts.embedded ();
                 if (ts2 != null)
                     children.addAll (
