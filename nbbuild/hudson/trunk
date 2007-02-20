@@ -4,6 +4,6 @@ if [ `ant -f nbbuild/build.xml print-cvs-modules | perl -ne 'print sort qw(jemmy
 then
     echo "Set of modules changed, getting fresh checkout..."
     rm -rf `ls | fgrep -v nbbuild`
-    ant -f nbbuild/build.xml checkout cvs-clean
+    ant -f nbbuild/build.xml checkout cvs-clean || exit
 fi
 ant -emacs -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml all || ant -emacs -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml cvs-clean all
