@@ -29,20 +29,50 @@ import java.io.File;
 public interface LocalHistoryStore {
     
     
+    /**
+     * 
+     */
     public String PROPERTY_CHANGED = "LocalHistoryStore.changed";               // NOI18N  
     
     
     // events
     
+    /**
+     * 
+     * @param file 
+     * @param ts 
+     */
     public void fileCreate(File file, long ts);        
     
+    /**
+     * 
+     * @param file 
+     * @param ts 
+     */
     public void fileDelete(File file, long ts);
     
     // XXX merge fileCreateFromMove and fileDeleteFromMove into one call
+    /**
+     * 
+     * @param from 
+     * @param to 
+     * @param ts 
+     */
     public void fileCreateFromMove(File from, File to, long ts);
     
+    /**
+     * 
+     * @param from 
+     * @param to 
+     * @param ts 
+     */
     public void fileDeleteFromMove(File from, File to, long ts);
  
+    /**
+     * 
+     * @param file 
+     * @param ts 
+     */
     public void fileChange(File file, long ts);                   
     
     
@@ -51,19 +81,32 @@ public interface LocalHistoryStore {
     /**
      * 
      * 
+     * @param file 
+     * @param ts 
+     * @param label 
      */ 
-    public void setLabel(File file, long ts, String label);
-    
-    // set tags 
+    public void setLabel(File file, long ts, String label);    
     
     // listeners 
     
+    /**
+     * 
+     * Adds a property change listener
+     * 
+     * @param l the property change listener
+     */
     public void addPropertyChangeListener(PropertyChangeListener l);
     
+    /**
+     * 
+     * Removes a property change listener
+     * 
+     * @param l the property change listener
+     */
     public void removePropertyChangeListener(PropertyChangeListener l);
     
     
-    // data mining 
+    // data
     
     /**
      * Returns all entries for a file
@@ -86,12 +129,18 @@ public interface LocalHistoryStore {
     /**
      * 
      * 
+     * @param root 
+     * @param files 
+     * @param ts 
+     * @return 
      */ 
     public StoreEntry[] getFolderState(File root, File[] files, long ts);        
     
     /**
      * 
      * 
+     * @param root 
+     * @return 
      */ 
     public StoreEntry[] getDeletedFiles(File root);    
     
@@ -110,8 +159,7 @@ public interface LocalHistoryStore {
      * Removes all entries, their labels and all tags from the storage 
      * which are related to a time &lt; System.currentTimeMillis() - ttl;
      * 
-     * @param file the maximum age allowed for store entries given in milliseconds
-     * 
+     * @param ttl 
      */ 
     public void cleanUp(long ttl);    
 }

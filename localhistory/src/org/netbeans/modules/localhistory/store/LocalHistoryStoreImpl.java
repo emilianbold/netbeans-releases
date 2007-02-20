@@ -127,7 +127,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, file.isFile()));
         File parent = file.getParentFile();
         if(parent != null) {
-            writeHistory(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, TOUCHED)});                        
+            // XXX consider also touching the parent - yes (collisions, ...)
+            writeHistoryForFile(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, TOUCHED)});                        
         }
         fireChanged(null, file);        
     }
@@ -150,17 +151,9 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
             }            
-            
-            if(lastModified < 0) {
-                // XXX this is a hack while the beforechange event comes befre after create
-                File parent = file.getParentFile();
-                if(parent != null) {
-                    writeHistory(parent, new HistoryEntry[] {new HistoryEntry(ts, null, file.getAbsolutePath(), TOUCHED)});                        
-                }   
-            }
         } else {
             try {
-                touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, file.isFile()));
+                touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, file.isFile()));                  
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
             }             
@@ -199,7 +192,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         touch(file, new StoreDataFile(file.getAbsolutePath(), DELETED, lastModified, isFile));        
         File parent = file.getParentFile();
         if(parent != null) {
-            writeHistory(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, DELETED)});                     
+            // XXX consider also touching the parent
+            writeHistoryForFile(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, DELETED)});                     
         }
     }
     
@@ -259,13 +253,13 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         // check if the root wasn't deleted to that time        
         File parentFile = root.getParentFile();
         if(parentFile != null) {
-            List<HistoryEntry> parentHistory = readHistory(parentFile);                
+            List<HistoryEntry> parentHistory = readHistoryForFile(parentFile);                
             if(wasDeleted(root, parentHistory, ts)) {                                    
                 return emptyStoreEntryArray;
             }        
         }
         
-        List<HistoryEntry> history = readHistory(root);                
+        List<HistoryEntry> history = readHistoryForFile(root);                
         
         // StoreEntries we will return
         List<StoreEntry> ret = new ArrayList<StoreEntry>();                        
@@ -435,9 +429,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
         
         Map<String, StoreEntry> deleted = new HashMap<String, StoreEntry>();
-        List<HistoryEntry> entries = readHistory(root);
-        
-        // XXX the history is sorted, so get only the topmost deleted entry, and you are done.
+        List<HistoryEntry> entries = readHistoryForFile(root);
+                
         for(HistoryEntry he : entries) {
             if(he.getStatus() == DELETED) {
                 String filePath = he.getTo();
@@ -450,9 +443,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                         deleted.put(filePath, StoreEntry.createStoreEntry(new File(data.getAbsolutePath()), storeFile, data.getLastModified(), ""));
                     }
                 }
-            }            
-        }
-        
+            }             
+        }        
         return deleted.values().toArray(new StoreEntry[deleted.size()]);
     }
 
@@ -570,38 +562,19 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             }
             
             boolean allEmpty = true;
-            for(File secondLevelFile : secondLevelFiles) {       
-                                                            
-//                try {
-                    boolean empty = cleanUpFolder(secondLevelFile, ttl, now);    
-                    if(empty) {                        
-                        if(secondLevelFile.exists()) {
-                            FileUtils.deleteRecursively(secondLevelFile);
-                        }
-                    } else {
-                        allEmpty = false;
+            for(File secondLevelFile : secondLevelFiles) {                                                                   
+                boolean empty = cleanUpFolder(secondLevelFile, ttl, now);    
+                if(empty) {                        
+                    if(secondLevelFile.exists()) {
+                        FileUtils.deleteRecursively(secondLevelFile);
                     }
-//                } catch (FileNotFoundException e) {
-//                    // ignore 
-//                    // XXX ignore and delete
-//                } catch (IOException e) {   
-//                    // XXX why? ignore and delete
-//                    ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-//                }                
+                } else {
+                    allEmpty = false;
+                }             
             }
             if(allEmpty) {
                 FileUtils.deleteRecursively(topLevelFile);
-            }        
-            
-            if( System.currentTimeMillis() - now > 200 ) {
-                // it took you to long, get out                
-                try {
-                    if(Diagnostics.ON) {
-                        Diagnostics.println("Cleanup Sleep 200");               // NOI18N                                  
-                    }                
-                    java.lang.Thread.sleep(200);
-                } catch (InterruptedException ex) { }                    
-            }                                
+            }                    
         }                     
     }
     
@@ -632,7 +605,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             return true;
         }        
         if(dataFile.lastModified() < now - ttl) {
-            writeStoreData(dataFile, null, false);                
+            purgeDataFile(dataFile);                
             return true;
         }
         
@@ -644,7 +617,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(labelsFile.exists()) {
             labels = getLabels(labelsFile);
         }
-        for(File f : files) {                
+        for(File f : files) {      
+            // XXX check the timestamp when touched
             long ts = Long.parseLong(f.getName());
             if(ts < now - ttl) {
                 if(labels.size() > 0) {
@@ -672,8 +646,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(!parent.exists()) {
             parent.mkdirs();
         }
-        DataInputStream dis = null;        
-        DataOutputStream oos = null; 
+        DataInputStream dis = null;
+        DataOutputStream oos = null;
         try {
             for(Entry<Long, String> label : labels.entrySet()) {
                 oos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(labelsFile)));
@@ -695,37 +669,38 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     
     private boolean cleanUpStoredFolder(File store, long ttl, long now) {
         File historyFile = new File(store, HISTORY_FILE);
-
-        if(!historyFile.exists()) {
-            purgeDataFile(store);
-            return true;
+        File dataFile = new File(store, DATA_FILE);
+        
+        boolean dataObsolete = !dataFile.exists() || dataFile.lastModified() < now - ttl;
+        boolean historyObsolete = !historyFile.exists() || historyFile.lastModified() < now - ttl;
+                               
+        if(!historyObsolete) {
+            List<HistoryEntry> entries = readHistory(historyFile);
+            historyFile.delete();            
+            List<HistoryEntry> newEntries = new ArrayList<HistoryEntry>();            
+            for(HistoryEntry entry : entries) {
+                // XXX check the timestamp when touched - and you also should to write it with the historywhen 
+                if(entry.getTimestamp() > now - ttl) {
+                    newEntries.add(entry);
+                }                                
+            }
+            if(newEntries.size() > 0) {
+                writeHistory(historyFile, newEntries.toArray(new HistoryEntry[newEntries.size()]));                        
+            } else {
+                historyObsolete = true;                
+            }                        
+        }         
+        if(dataObsolete) {            
+            purgeDataFile(dataFile);
+        }
+        if(historyObsolete) {
+            historyFile.delete(); 
         }
         
-        if(historyFile.lastModified() < now - ttl) {
-            historyFile.delete();            
-            purgeDataFile(store);
-            return true;
-        }
-
-        List<HistoryEntry> entries = readHistory(historyFile);
-        historyFile.delete();            
-        List<HistoryEntry> newEntries = new ArrayList<HistoryEntry>();            
-        for(HistoryEntry entry : entries) {
-            if(entry.getTimestamp() > now - ttl) {
-                newEntries.add(entry);
-            }                                
-        }
-        if(newEntries.size() > 0) {
-            writeHistory(historyFile, newEntries.toArray(new HistoryEntry[newEntries.size()]));                        
-            return false;
-        } else {
-            purgeDataFile(store);  
-            return true;
-        }                        
+        return dataObsolete && historyObsolete; 
     }
     
-    private void purgeDataFile(File store) {
-        File dataFile = new File(store, DATA_FILE);        
+    private void purgeDataFile(File dataFile) {        
         if(dataFile.exists()) {
             writeStoreData(dataFile, null, false);                
         }                
@@ -846,16 +821,18 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }    
         return emptyLabels;
     }
-            
-    private void writeHistory(File file, HistoryEntry[] entries) { 
-        
+                
+    private void writeHistoryForFile(File file, HistoryEntry[] entries) { 
         if(Diagnostics.ON) {                
             if(getDataFile(file) == null) {
                 Diagnostics.println("writing history for file without data : " + file);    // NOI18N                                  
             }            
-        } 
-        
+        }                 
         File history = getHistoryFile(file);
+        writeHistory(history, entries);
+    }
+    
+    private void writeHistory(File history, HistoryEntry[] entries) {                 
         DataOutputStream dos = null;
         try {
             dos = getOutputStream(history, true);            
@@ -877,8 +854,11 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }                   
     }       
 
-    private List<HistoryEntry> readHistory(File file) {
-        File history = getHistoryFile(file);
+    private List<HistoryEntry> readHistoryForFile(File file) {
+        return readHistory(getHistoryFile(file));
+    }
+        
+    private List<HistoryEntry> readHistory(File history) {        
         if(!history.exists()) {
             return emptyHistory;
         }
