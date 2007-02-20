@@ -103,9 +103,9 @@
         
         <!-- replace the tokens -->
         <for-each from="1" to="${product.params.length}" property="i">
-            <set-property property="current.token" 
+            <set property="current.token" 
                           source="product.params.${i}.token"/>
-            <set-property property="current.value" 
+            <set property="current.value" 
                           source="product.params.${i}.value"/>
             
             <replace dir="${cvs.dir}" 
@@ -143,9 +143,9 @@
             <evaluate property="product.packaged.data.${i}.size.file"/>
             
             <!-- set the properties relevant to the current file -->
-            <set-property property="current.uri" 
+            <set property="current.uri" 
                           source="product.logic.${i}.uri"/>
-            <set-property property="current.file" 
+            <set property="current.file" 
                           value="${work.dir}/${product.logic.dir}/${product.logic.file}"/>
             
             <get src="${current.uri}" dest="${current.file}"/>
@@ -160,7 +160,7 @@
             <!-- calculate the metadata for the file -->
             <sizeof file="${current.file}" property="product.logic.${i}.size"/>
             <md5 file="${current.file}" property="product.logic.${i}.md5"/>
-            <set-property property="product.logic.${i}.uri"
+            <set property="product.logic.${i}.uri"
                           value="resource:${product.logic.dir}/${product.logic.file}"/>
         </for-each>
         
@@ -169,19 +169,19 @@
         <for-each from="1" to="${product.data.length}" property="i">
             <!-- define the path to the current working file and the temporary
                  directory which should be used for repackaging -->
-            <set-property 
+            <set 
                 property="current.file" 
                 value="${work.dir}/${product.data.dir}/${product.data.file}"/>
-            <set-property 
+            <set 
                 property="current.temp" 
                 value="${work.dir}/${product.data.dir}/tmpdir"/>
-            <set-property property="current.uri" 
+            <set property="current.uri" 
                           source="product.data.${i}.uri"/>
-            <set-property property="current.packaged.uri" 
+            <set property="current.packaged.uri" 
                           source="product.packaged.data.${i}.file"/>
-            <set-property property="current.packaged.size.uri" 
+            <set property="current.packaged.size.uri" 
                           source="product.packaged.data.${i}.size.file"/>
-            <set-property property="current.size.file" 
+            <set property="current.size.file" 
                           value="${work.dir}/size"/>
             
             <available file="${current.packaged.uri}" 
@@ -229,10 +229,10 @@
                 <if property="release.packaged.data" value="true">
                     <mkdir dir="${product.packaged.data.repository}"/>
                     
-                    <set-property 
+                    <set 
                         property="release.data.file"
                         value="${product.packaged.data.repository}/${product.release.data.file}"/>
-                    <set-property 
+                    <set 
                         property="release.size.file"
                         value="${release.data.file}.size"/>
                     
@@ -256,7 +256,7 @@
                       tofile="${current.size.file}"/>
                 <property file="${current.size.file}"/>
                 
-                <set-property property="current.disk.space" 
+                <set property="current.disk.space" 
                               source="product.packaged.data.${i}.real.size"/>
                 <sum arg1="${product.disk.space}" arg2="${current.disk.space}" 
                      property="product.disk.space"/>
@@ -272,7 +272,7 @@
             <!-- calculate the metadata for the file -->
             <sizeof file="${current.file}" property="product.data.${i}.size"/>
             <md5 file="${current.file}" property="product.data.${i}.md5"/>
-            <set-property property="product.data.${i}.uri"
+            <set property="product.data.${i}.uri"
                           value="resource:${product.data.dir}/${product.data.file}"/>
         </for-each>
         
@@ -286,7 +286,7 @@
         <md5 
             file="${work.dir}/${product.icon.file}" 
             property="product.icon.md5"/>
-        <set-property 
+        <set 
             property="product.icon.uri"
             value="resource:${product.icon.file}"/>
         

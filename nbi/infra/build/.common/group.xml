@@ -73,9 +73,9 @@
         <!-- substitute the params in group's source tree (normally that would
              consist only of the icon and the localizing bundle -->
         <for-each from="1" to="${group.params.length}" property="i">
-            <set-property property="current.token" 
+            <set property="current.token" 
                           source="group.params.${i}.token"/>
-            <set-property property="current.value" 
+            <set property="current.value" 
                           source="group.params.${i}.value"/>
             
             <replace dir="${cvs.dir}" 

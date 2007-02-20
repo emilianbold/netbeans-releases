@@ -18,52 +18,39 @@
  */
 package org.netbeans.installer.infra.build.ant;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.TaskContainer;
+import org.netbeans.installer.infra.build.ant.utils.AntUtils;
 
-public class If extends Task implements TaskContainer {
+public class ReleaseEngine extends Task {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private String property = null;
-    private String value = null;
-    
-    private List<Task> children = new LinkedList<Task>();
+    private String url      = "";
+    private String archive  = "";
     
     // setters //////////////////////////////////////////////////////////////////////
-    public void setProperty(final String property) {
-        this.property = property;
+    public void setUrl(String url) {
+        this.url = url;
     }
     
-    public void setValue(final String value) {
-        this.value = value;
-    }
-    
-    // task container ///////////////////////////////////////////////////////////////
-    public void addTask(final Task task) {
-        children.add(task);
+    public void setArchive(String archive) {
+        this.archive = archive;
     }
     
     // execution ////////////////////////////////////////////////////////////////////
     public void execute() throws BuildException {
-        if (getProject().getProperty(property) != null) {
-            if (value != null) {
-                if (getProject().getProperty(property).equals(value)) {
-                    executeChildren();
-                }
-            } else {
-                executeChildren();
-            }
-        }
-    }
-    
-    // private //////////////////////////////////////////////////////////////////////
-    private void executeChildren() throws BuildException {
-        for (Task task: this.children) {
-            task.perform();
+        try {
+            final Map<String, Object> args = new HashMap<String, Object>();
+            
+            args.put("archive", new File(archive));
+            
+            log(AntUtils.post(url + "/update-engine", args));
+        } catch (IOException e) {
+            throw new BuildException(e);
         }
     }
 }

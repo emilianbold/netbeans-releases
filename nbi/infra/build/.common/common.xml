@@ -21,24 +21,24 @@
 ============================================================================ -->
 
 <!--
-    This is a target library which is intended to be used by other build 
-    scripts, currently - engine, product and group. It contains utility
-    targets which perform the required initialization, clean-up and build 
-    functionality.
+  This is a target library which is intended to be used by other build 
+  scripts, currently - engine, product and group. It contains utility
+  targets which perform the required initialization, clean-up and build 
+  functionality.
 -->
-<project name="build-common" default="usage" basedir=".">
-    <!-- load the properties common to all build scripts -->
-    <property file="${.common.dir}/build.properties"/>
-    
+<project name="common" default="usage" basedir=".">
     <!-- =======================================================================
-        Initialization
+      Initialization
     ======================================================================== -->
     <!--
-      This target performs the default initialization, all custom ant tasks 
-      are defined here. It also sets some properties which control the flow
-      of the build process.
+      This target performs the default initialization, common custom tasks 
+      are defined here. 
+      
+      It sets some properties which control the flow of the build process, such 
+      as whether tp check-out sources from trunk or branch, or to copy them 
+      from a given location instead.
     -->
-    <target name="-init" depends=".build-custom-tasks">
+    <target name=".init" depends=".build-custom-tasks" unless="skip.initialization">
         <!-- set the line.separator property to a shorter name -->
         <property name="nl" value="${line.separator}"/>
         
@@ -48,56 +48,8 @@
             classname="org.netbeans.installer.infra.build.ant.ForEach" 
             classpath="${custom.tasks.cls}"/>
         <taskdef 
-            name="set-property" 
+            name="set" 
             classname="org.netbeans.installer.infra.build.ant.SetProperty" 
-            classpath="${custom.tasks.cls}"/>
-        <taskdef 
-            name="package" 
-            classname="org.netbeans.installer.infra.build.ant.Package" 
-            classpath="${custom.tasks.cls}"/>
-        <taskdef 
-            name="sizeof" 
-            classname="org.netbeans.installer.infra.build.ant.SizeOf" 
-            classpath="${custom.tasks.cls}"/>
-        <taskdef 
-            name="sum" 
-            classname="org.netbeans.installer.infra.build.ant.Sum" 
-            classpath="${custom.tasks.cls}"/>
-        <taskdef 
-            name="join" 
-            classname="org.netbeans.installer.infra.build.ant.Join" 
-            classpath="${custom.tasks.cls}"/>
-        <taskdef 
-            name="md5" 
-            classname="org.netbeans.installer.infra.build.ant.Md5" 
-            classpath="${custom.tasks.cls}"/>
-        <taskdef 
-            name="load-locales" 
-            classname="org.netbeans.installer.infra.build.ant.LoadLocales" 
-            classpath="${custom.tasks.cls}"/>
-        <taskdef 
-            name="evaluate" 
-            classname="org.netbeans.installer.infra.build.ant.Evaluate" 
-            classpath="${custom.tasks.cls}"/>
-        <taskdef 
-            name="product-descriptor" 
-            classname="org.netbeans.installer.infra.build.ant.XmlProduct" 
-            classpath="${custom.tasks.cls}"/>
-        <taskdef 
-            name="group-descriptor" 
-            classname="org.netbeans.installer.infra.build.ant.XmlGroup" 
-            classpath="${custom.tasks.cls}"/>
-        <taskdef 
-            name="update-group" 
-            classname="org.netbeans.installer.infra.build.ant.PutGroup" 
-            classpath="${custom.tasks.cls}"/>
-        <taskdef 
-            name="update-product" 
-            classname="org.netbeans.installer.infra.build.ant.PutProduct" 
-            classpath="${custom.tasks.cls}"/>
-        <taskdef 
-            name="update-engine" 
-            classname="org.netbeans.installer.infra.build.ant.PutEngine" 
             classpath="${custom.tasks.cls}"/>
         <taskdef 
             name="if" 
@@ -107,23 +59,23 @@
         <!-- decide whether to checkout sources from trunk --> 
         <condition property="do.checkout.trunk">
             <and>
-                <equals arg1="${cvs.branch}" arg2=""/>
                 <equals arg1="${checkout.sources}" arg2="true"/>
+                <equals arg1="${cvs.branch}" arg2=""/>
             </and>
         </condition>
         
         <!-- decide whether to checkout sources from a branch --> 
         <condition property="do.checkout.branch">
             <and>
+                <equals arg1="${checkout.sources}" arg2="true"/>
                 <not>
                     <equals arg1="${cvs.branch}" arg2=""/>
                 </not>
-                <equals arg1="${checkout.sources}" arg2="true"/>
             </and>
         </condition>
         
         <!-- decide whether to copy sources from a given location -->
-        <condition property="do.copy.sources">
+        <condition property="do.checkout.copy">
             <not>
                 <equals arg1="${checkout.sources}" arg2="true"/>
             </not>
@@ -134,122 +86,124 @@
             <equals arg1="${build.native}" arg2="true"/>
         </condition>
         
+        <!-- decide whether there is need to build a netbeans project -->
+        <condition property="do.build.nbproject">
+            <equals arg1="${build.nbproject}" arg2="true"/>
+        </condition>
+        
+        <!-- deduce the path to the ant executable -->
+        <condition property="ant.executable" value="${ant.home}/bin/ant.bat">
+            <os family="windows"/>
+        </condition>
+        <condition property="ant.executable" value="${ant.home}/bin/ant">
+            <not>
+                <os family="windows"/>
+            </not>
+        </condition>
+        
         <!-- initialize the local working directory -->
         <mkdir dir="${work.dir}"/>
         
         <!-- initialize the local distributive directory -->
         <mkdir dir="${dist.dir}"/>
+        
+        <!-- set the marker property which will prevent the script running the 
+             initialization procedure again, if history is lost, e.g. as a 
+             result of an antcall -->
+        <property name="skip.initialization" value="true"/>
     </target>
     
-    <target name=".build-custom-tasks" unless="skip.build.custom.tasks">
-        <!-- build custom ant tasks -->
+    <!--
+      This target builds custom ant tasks, which are required throughout the
+      build script(s). 
+      
+      It sets a marker property, which prevents this target from being 
+      executed, in case the 'init' target gets executed a second time (e.g. 
+      as the result of an antcall).
+    -->
+    <target name=".build-custom-tasks">
+        <!-- quick clean-up and initialization -->
         <delete dir="${custom.tasks.cls}"/>
         <mkdir dir="${custom.tasks.cls}"/>
         
+        <!-- compile -->
         <javac 
             srcdir="${custom.tasks.src}" 
             destdir="${custom.tasks.cls}" 
             debug="true"/>
-        
-        <property name="skip.build.custom.tasks" value="true"/>
     </target>
     
     <!-- =======================================================================
-        Clean-up
+      Clean-up
     ======================================================================== -->
     <!--
-        This is the main clean-up target, it cleans the native libraries, tries
-        to run cleanup on the java project and finally deletes the checked out 
-        sources.
+      This is the main clean-up target, it cleans the native libraries, 
+      tries to run cleanup on the java project and finally deletes the 
+      local working directory.
     -->
-    <target name="-clean" depends="-init,-pre-clean,.clean-native,.clean-java">
+    <target name=".clean">
+        <!-- for each of the defined platforms set the appropriate property
+             and execute the clean-up procedure -->
+        <for-each list="${platforms}" property="platform">
+            <antcall target=".clean-native"/>
+        </for-each>
+        
+        <antcall target=".clean-nbproject"/>
+        
         <!-- delete the local working directory -->
         <delete dir="${work.dir}" includeemptydirs="true"/>
     </target>
     
     <!--
-        A hook that allows executing something custom prior to clean-up
+      This target cleans the native part of the project. It is meant to be
+      antcall'ed from a loop which would iterate over the list of supported
+      platforms. Thus this target expects the property 'platform' to point to
+      the current platform for which clean-up should be performed.
+      
+      By default it falls back to '.clean-jni' target, but it is meant to be 
+      overriden by derivative build scripts, if there is need to do more than 
+      that.
     -->
-    <target name="-pre-clean"/>
-    
-    <!--
-      - Cleans up the native libraries. It iterates over the list of platforms 
-      - supplied via ${platforms} and calls the utility target (which 
-      - actually performs the clean-up procedure) for each.
-      - 
-      - Execution of the target is controlled by the ${do.build.native} 
-      - property, whose existance in turn is controlled by the value of the 
-      - ${build.native} property ("true"/"false").
-      - 
-      - It is important that <antcall> is used here - it allows to safely 
-      - load platform-specific properties, without any risk that they will get 
-      - propagated to the calling target.
-    -->
-    <target name=".clean-native" depends="init" if="do.build.native">
-        <for-each list="${platforms}" property="platform">
-            <antcall target="..clean-native"/>
-        </for-each>
+    <target name=".clean-native" if="do.build.native">
+        <antcall target=".clean-jni"/>
     </target>
     
     <!--
-        This target removes the locally cached native library for a given 
-        platform.
+      This target cleans up the native jni libraries for the project.
     -->
-    <target name="..clean-native">
-        <!-- load properties pertaining to the given platform -->
-        <property file="${native.properties.dir}/${platform}.properties"/>
-        <property file="${native.properties.dir}/native.properties"/>
+    <target name=".clean-jni">
+        <!-- delete the locally cached files -->
+        <delete dir="${scp.local.dir}"/>
+    </target>
+    
+    <target name=".clean-nbproject" if="do.build.nbproject">
+        <condition property="nbproject.exists" value="true">
+            <available file="${cvs.dir}/${nbproject.path}"/>
+        </condition>
         
-        <!-- delete the locally cached file -->
-        <delete dir="${scp.local.file}"/>
-    </target>
-    
-    <!--
-        This target cleans the java part of the project. It tries to execute the
-        'clean' target on the project's build script. It does not really care if
-        the target fails.
-    -->
-    <target name=".clean-java" depends="-init">
-        <!-- run the 'clean' target on the project's build script -->
-        <subant buildpath="${cvs.dir}" 
-                target="${nb.target.clean}" 
-                failonerror="false" 
-                inheritall="false" 
-                inheritrefs="false">
-            <property name="${nb.platform.home.name}" 
-                      value="${nb.platform.home.value}"/>
-            <property name="${nb.ignore.native.name}" 
-                      value="${nb.ignore.native.value}"/>
-            <property name="${nb.no.dependencies.name}" 
-                      value="${nb.no.dependencies.value}"/>
-            <property name="skip.build.custom.tasks"
-                      value="true"/>
-            <property name="custom.tasks.cls" 
-                      value="${custom.tasks.cls}"/>
-        </subant>
+        <if property="nbproject.exists" value="true">
+            <exec executable="${ant.executable}" 
+                  dir="${cvs.dir}/${nbproject.path}" 
+                  failonerror="false"
+                  failifexecutionfails="false">
+                <arg value="${nb.target.clean}"/>
+                
+                <arg value="${nb.platform.home}"/>
+                <arg value="${nb.ignore.native}"/>
+                <arg value="${nb.no.dependencies}"/>
+                <arg value="${nb.skip.build.custom.tasks}"/>
+                <arg value="${nb.custom.tasks.cls}"/>
+            </exec>
+        </if>
     </target>
     
     <!-- =======================================================================
-        Check out
+      Check-out
     ======================================================================== -->
-    <!-- 
-        This is the main check out target, it just depends on two utility 
-        targets - one checks out from trunk, the other from a branch. Each of 
-        them has a execution condition attached.
-    -->
-    <target name="-checkout" 
-            depends="-init,-pre-checkout,.co-trunk,.co-branch,.copy-sources"/>
+    <target name=".checkout" 
+            depends=".checkout-trunk,.checkout-branch,.checkout-copy"/>
     
-    <!--
-        A hook that allows executing something custom prior to checkout
-    -->
-    <target name="-pre-checkout"/>
-    
-    <!--
-        Checks out the given sources from trunk.
-    -->
-    <target name=".co-trunk" if="do.checkout.trunk">
-        <!-- run the cvs checkout command -->
+    <target name=".checkout-trunk" if="do.checkout.trunk">
         <cvs cvsroot="${cvs.root}" 
              command="checkout" 
              package="${cvs.module}/${cvs.path}" 
@@ -257,11 +211,7 @@
              failonerror="true"/>
     </target>
     
-    <!--
-        Checks out the given sources from a given branch.
-    -->
-    <target name=".co-branch" if="do.checkout.branch">
-        <!-- run the cvs checkout command -->
+    <target name=".checkout-branch" if="do.checkout.branch">
         <cvs cvsroot="${cvs.root}" 
              command="checkout" 
              package="${cvs.module}/${cvs.path}" 
@@ -270,10 +220,7 @@
              failonerror="true"/>
     </target>
     
-    <!--
-        Copies the sources from a given location
-    -->
-    <target name=".copy-sources" if="do.copy.sources">
+    <target name=".checkout-copy" if="do.checkout.copy">
         <mkdir dir="${work.dir}/${cvs.module}/${cvs.path}"/>
         
         <copy todir="${work.dir}/${cvs.module}/${cvs.path}" verbose="true">
@@ -282,100 +229,92 @@
                 <exclude name="**/nbproject/private/*.*"/>
                 <exclude name="build/**/*.*"/>
                 <exclude name="dist/**/*.*"/>
+                <exclude name="**/CVS"/>
+                <exclude name="**/.cvsignore"/>
             </fileset>
         </copy>
     </target>
     
     <!-- =======================================================================
-        Build
+      Build
     ======================================================================== -->
     <!-- 
-        This is the main build target, it invokes the check out procedure, then
-        builds the native libraries for the project and finally the java part
-        of it.
+      This is the main build target, it invokes the check out procedure, then
+      builds the native libraries for the project and finally the java part
+      of it.
     -->
-    <target name="-build" 
-            depends="-init,-checkout,-pre-build,.build-native,.build-java"/>
-    
-    <!--
-        A hook that allows executing something custom prior to build
-    -->
-    <target name="-pre-build"/>
-    
-    <!--
-        Builds the mative libraries for the project. This target is only 
-        executed if the ${build.native} property was set to 'true'. It iterates 
-        over the list of platforms supplied via ${platforms} and calls the 
-        utility target (which actually performs the build procedure) for each.
-    -->
-    <target name=".build-native" depends="-init" if="do.build.native">
-        <for-each list="${platforms}" property="platform">
-            <antcall target="..build-native"/>
+    <target name=".build">
+        <!-- for each of the defined platforms set the appropriate property
+                 and execute the build procedure -->
+        <for-each list="${native.platforms}" property="platform">
+            <antcall target=".build-native"/>
         </for-each>
+        
+        <antcall target=".build-nbproject"/>
+    </target>
+    
+    <target name=".build-native" if="do.build.native">
+        <antcall target=".build-jni"/>
     </target>
     
     <!-- 
         Performs the native library build procedure for a given platform.
     -->
-    <target name="..build-native">
-        <!-- load properties pertaining to the given platform -->
-        <property file="${native.properties.dir}/${platform}.properties"/>
-        <property file="${native.properties.dir}/native.properties"/>
+    <target name=".build-jni" if="do.build.native">
+        <!-- log -->
+        <echo message="building jni for ${platform}"/>
+        
+        <!-- set required properties -->
+        <set property="remote.host" source="remote.host.${platform}"/>
+        <set property="remote.port" source="remote.port.${platform}"/>
+        <set property="remote.user" source="remote.user.${platform}"/>
+        <set property="native.dist.file" source="native.dist.file.${platform}"/>
+        
+        <set property="current.ssh.arguments" source="ssh.arguments"/>
+        <set property="current.ssh.command" source="ssh.command"/>
+        
+        <set property="current.scp.arguments" source="scp.arguments"/>
+        <set property="current.scp.remote.dir" source="scp.remote.dir"/>
+        <set property="current.scp.local.dir" source="scp.local.dir"/>
         
         <!-- run the ssh command - it is expected that it will build 
              everything -->
         <exec executable="${ssh.executable}" failonerror="true">
-            <arg line="${ssh.arguments}"/>
-            <arg value="${ssh.command}"/>
+            <arg line="${current.ssh.arguments}"/>
+            <arg value="${current.ssh.command}"/>
         </exec>
         
         <!-- run the scp command to copy the resulting file back to the 
              host system -->
-        <mkdir dir="${scp.local.dir}"/>
+        <mkdir dir="${current.scp.local.dir}"/>
         <exec executable="${scp.executable}" failonerror="true">
-            <arg line="${scp.arguments}"/>
-            <arg value="${scp.remote.dir}/${dist.file}"/>
-            <arg value="${scp.local.dir}/${dist.file}"/>
+            <arg line="${current.scp.arguments}"/>
+            <arg value="${current.scp.remote.dir}/${native.dist.file}"/>
+            <arg value="${current.scp.local.dir}/${native.dist.file}"/>
         </exec>
     </target>
     
-    <!--
-        Builds the java part of the project. It simply invokes the 'build' 
-        target on the project's build script. The target will fail if this 
-        call's execution fails.
-    -->
-    <target name=".build-java" depends="init">
-        <!-- run the 'build' target on the project's build script -->
-        <echo message="!!!!! ${basedir}"/>
-        <echo message="!!!!! ${cvs.dir}"/>
-        <subant buildpath="${cvs.dir}" 
-                target="${nb.target.build}" 
-                failonerror="true" 
-                inheritall="false" 
-                inheritrefs="false">
-            <property name="${nb.platform.home.name}" 
-                      value="${nb.platform.home.value}"/>
-            <property name="${nb.ignore.native.name}" 
-                      value="${nb.ignore.native.value}"/>
-            <property name="${nb.no.dependencies.name}" 
-                      value="${nb.no.dependencies.value}"/>
-            <property name="${nb.no.dependencies.name}" 
-                      value="${nb.no.dependencies.value}"/>
-            <property name="skip.build.custom.tasks"
-                      value="true"/>
-            <property name="custom.tasks.cls" 
-                      value="${custom.tasks.cls}"/>
-        </subant>
+    <target name=".build-nbproject" if="do.build.nbproject">
+        <exec executable="${ant.executable}" 
+              dir="${cvs.dir}/${nbproject.path}" 
+              failonerror="false">
+            <arg value="${nb.target.build}"/>
+            
+            <arg value="${nb.platform.home}"/>
+            <arg value="${nb.ignore.native}"/>
+            <arg value="${nb.no.dependencies}"/>
+            <arg value="${nb.skip.build.custom.tasks}"/>
+            <arg value="${nb.custom.tasks.cls}"/>
+        </exec>
     </target>
     
     <!-- =======================================================================
-        Default Target
+      Default
     ======================================================================== -->
     <target name="usage">
         <echo>
-            This build script is a targets library and should not be used 
-            directly. See ../engine/build.xml and ../product/build.xml
-            for usage examples.
+            This build script is a targets library and must not be used 
+            directly.
         </echo>
     </target>
 </project>
