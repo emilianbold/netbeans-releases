@@ -98,7 +98,7 @@ abstract class UnusedCommandsAddActionPresenter extends AddActionPresenter {
         return newAddActions.toArray(new AddActionItem[newAddActions.size()]);
     }
     
-    private static Map<DesignComponent, AddActionItem> instances = new WeakHashMap<DesignComponent, AddActionItem>();
+    //private static Map<DesignComponent, AddActionItem> instances = new WeakHashMap<DesignComponent, AddActionItem>();
     
 //    private static final AddActionItem getInstance(DesignComponent unusedCommandComponent,
 //                                                   InfoPresenter infoPresenter,

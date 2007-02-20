@@ -79,13 +79,13 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
         foldersToUpdate.clear();
         updateChangedDescriptors(createdComponents, affectedComponents);
         //System.out.println("Start");
-        long start = System.currentTimeMillis();
+        //long start = System.currentTimeMillis();
         document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document == null)
             return;
         dive(InspectorFolderPath.createInspectorPath().add(rootFolderWrapper.getFolder()), rootFolderWrapper);
         updateViewChildren(rootFolderWrapper);
-        long stop = System.currentTimeMillis();
+        //long stop = System.currentTimeMillis();
         //System.out.println("Time to build and refresh navigator tree "+ ((stop-start) * 0.001)+" s"); //NOI18N //Remove
         //Clean up
         componentsToAdd.clear();
