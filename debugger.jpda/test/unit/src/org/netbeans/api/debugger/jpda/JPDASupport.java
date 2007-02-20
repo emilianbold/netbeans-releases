@@ -290,7 +290,6 @@ public class JPDASupport implements DebuggerManagerListener {
             "-Xrunjdwp:transport=" + "dt_socket" + ",address=" + 
                 connectorAddress + ",suspend=y,server=" + 
                 (server ? "y" : "n"),
-            "-Djava.compiler=NONE",
             "-classpath",
             cp.substring(0, cp.length() -1),
             mainClass
