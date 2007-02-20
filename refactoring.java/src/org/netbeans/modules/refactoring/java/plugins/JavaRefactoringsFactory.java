@@ -26,6 +26,7 @@ import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
 import org.netbeans.modules.refactoring.spi.*;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -34,26 +35,28 @@ import org.openide.filesystems.FileObject;
 public class JavaRefactoringsFactory implements RefactoringPluginFactory {
    
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+        Lookup look = refactoring.getRefactoringSource();
+        FileObject file = look.lookup(FileObject.class);
+        NonRecursiveFolder folder = look.lookup(NonRecursiveFolder.class);
+        TreePathHandle handle = look.lookup(TreePathHandle.class);
         if (refactoring instanceof WhereUsedQuery) {
-            Object o = ((WhereUsedQuery)refactoring).getRefactoredObject();
-            if (o instanceof TreePathHandle) {
+            if (handle!=null) {
                 return new JavaWhereUsedQueryPlugin((WhereUsedQuery) refactoring);
             }
         } else if (refactoring instanceof RenameRefactoring) {
-            Object o = ((RenameRefactoring) refactoring).getRefactoredObject();
-            if (o instanceof TreePathHandle || o instanceof FileObject && 
-                    RetoucheUtils.isJavaFile((FileObject)o)) {
+            if (handle!=null || RetoucheUtils.isJavaFile(file)) {
                 //rename java file, class, method etc..
                 return new RenameRefactoringPlugin((RenameRefactoring)refactoring);
-            } else if (o instanceof FileObject && RetoucheUtils.isOnSourceClasspath((FileObject)o) && ((FileObject)o).isFolder()) {
+            } else if (file!=null && RetoucheUtils.isOnSourceClasspath(file) && file.isFolder()) {
                 //rename folder
                 return new MoveRefactoringPlugin((RenameRefactoring)refactoring);
-            } else if (o instanceof NonRecursiveFolder && RetoucheUtils.isOnSourceClasspath(((NonRecursiveFolder)o).getFolder())) {
+            } else if (folder!=null && RetoucheUtils.isOnSourceClasspath(folder.getFolder())) {
                 //rename package
                 return new MoveRefactoringPlugin((RenameRefactoring)refactoring);
             }
         } else if (refactoring instanceof SafeDeleteRefactoring) {
-            if (checkSafeDelete(((SafeDeleteRefactoring)refactoring).getRefactoredObjects())) {
+            //TODO: should be implemented better
+            if (checkSafeDelete(refactoring.getRefactoringSource())) {
                 return new SafeDeleteRefactoringPlugin((SafeDeleteRefactoring)refactoring);
             }
         } else if (refactoring instanceof MoveRefactoring) {
@@ -66,17 +69,18 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
         return null;
     }
 
-    private boolean checkSafeDelete(Object[] object) {
-        if (object.getClass().isAssignableFrom(FileObject[].class)) {
-            for (FileObject f:(FileObject[])object) {
-                if (!RetoucheUtils.isJavaFile(f)) {
-                    return false;
-                }
+    //TODO: should be implemented better
+    private boolean checkSafeDelete(Lookup object) {
+        boolean a=false;
+        for (FileObject f:object.lookupAll(FileObject.class)) {
+            a=true;
+            if (!RetoucheUtils.isJavaFile(f)) {
+                return false;
             }
-            return true;
-        } else if (object.getClass().isAssignableFrom(TreePathHandle[].class)) {
-            return true;
         }
-        return false;
+        if (object.lookup(TreePathHandle.class)!=null)
+            return true;
+        
+        return a;
     }
 }

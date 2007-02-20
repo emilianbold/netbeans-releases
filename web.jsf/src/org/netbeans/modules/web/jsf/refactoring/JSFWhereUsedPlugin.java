@@ -81,7 +81,8 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         if (semafor.get() == null) {
             semafor.set(new Object());
-            Object element = refactoring.getRefactoredObject();
+            //TODO: should be improved.
+            Object element = refactoring.getRefactoringSource().lookup(Object.class);
             LOGGER.fine("Prepare refactoring: " + element);                 // NOI18N
             
             if (element instanceof TreePathHandle) {

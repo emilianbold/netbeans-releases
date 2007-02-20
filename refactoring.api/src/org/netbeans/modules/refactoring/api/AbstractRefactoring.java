@@ -89,6 +89,12 @@ public abstract class AbstractRefactoring {
     private ProgressSupport progressSupport;
     AbstractRefactoring caller;
     
+    Lookup refactoringSource;
+    
+    protected AbstractRefactoring(Lookup refactoringSource) {
+        this.refactoringSource = refactoringSource;
+    }
+    
     private Collection getPlugins() {
         if (plugins == null) {
             plugins = new ArrayList();
@@ -263,6 +269,14 @@ public abstract class AbstractRefactoring {
             this.scope=new Context(new InstanceContent());
         }
         return this.scope;
+    }
+    
+    /**
+     * Object being refactored
+     * @return 
+     */
+    public final Lookup getRefactoringSource() {
+        return refactoringSource;
     }
     
     private Context scope;

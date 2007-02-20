@@ -25,14 +25,11 @@ import java.lang.reflect.Method;
 import java.util.Hashtable;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.JEditorPane;
 import javax.swing.JMenuItem;
-import javax.swing.text.JTextComponent;
 import org.openide.awt.Actions;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -44,7 +41,8 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 
 /**
- * 
+ * This action should be in public package probably.
+ * There is copy of this action: JavaRefactoringGlobal action
  * @author Jan Becicka
  */
 public abstract class RefactoringGlobalAction extends NodeAction {

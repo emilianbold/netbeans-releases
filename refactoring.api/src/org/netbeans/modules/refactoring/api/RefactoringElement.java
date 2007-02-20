@@ -113,4 +113,19 @@ public final class RefactoringElement {
     public int getStatus() {
         return impl.getStatus();
     }
+    
+    /**
+     * Shows this element in refactoring preview are
+     * @see org.netbeans.modules.refactoring.api.ui.UI#setComponentForRefactoringPreview
+     */
+    public void showPreview() {
+        impl.showPreview();
+    }
+    
+    /**
+     * opens this RefactoringElement in the editor
+     */
+    public void openInEditor() {
+        impl.openInEditor();
+    }
 }

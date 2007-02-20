@@ -52,7 +52,7 @@ public class PackageRename implements RefactoringPluginFactory{
     
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         if (refactoring instanceof RenameRefactoring) {
-            if (((RenameRefactoring)refactoring).getRefactoredObject() instanceof NonRecursiveFolder) {
+            if (refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class)!=null) {
                 return new PackageRenamePlugin((RenameRefactoring) refactoring);
             }
         }
@@ -72,7 +72,7 @@ public class PackageRename implements RefactoringPluginFactory{
         }
         
         public Problem prepare(RefactoringElementsBag elements) {
-            elements.add(refactoring, new RenameNonRecursiveFolder((NonRecursiveFolder) refactoring.getRefactoredObject(), elements));
+            elements.add(refactoring, new RenameNonRecursiveFolder(refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class), elements));
             return null;
         }
         
@@ -85,7 +85,7 @@ public class PackageRename implements RefactoringPluginFactory{
                 return new Problem(true, msg);
             }
             
-            ClassPath projectClassPath = ClassPath.getClassPath(((NonRecursiveFolder) refactoring.getRefactoredObject()).getFolder(), ClassPath.SOURCE);
+            ClassPath projectClassPath = ClassPath.getClassPath(refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class).getFolder(), ClassPath.SOURCE);
             if (projectClassPath.findResource(newName.replace('.','/'))!=null) {
                 String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class,"ERR_PackageExists")).format(
                         new Object[] {newName}

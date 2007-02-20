@@ -41,24 +41,21 @@ import org.openide.filesystems.URLMapper;
 public class FileHandlingFactory implements RefactoringPluginFactory {
    
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+        Collection<? extends FileObject> o = refactoring.getRefactoringSource().lookupAll(FileObject.class);
         if (refactoring instanceof RenameRefactoring) {
-            Object o = ((RenameRefactoring)refactoring).getRefactoredObject();
-            if (o instanceof FileObject) {
+            if (!o.isEmpty()) {
                 return new FileRenamePlugin((RenameRefactoring) refactoring);
             }
         } else if (refactoring instanceof MoveRefactoring) {
-            Object[] o = ((MoveRefactoring)refactoring).getRefactoredObjects();
-            if (o[0] instanceof FileObject) {
+            if (!o.isEmpty()) {
                 return new FileMovePlugin((MoveRefactoring) refactoring);
             }
         } else if (refactoring instanceof SafeDeleteRefactoring) {
-            Object[] o = ((SafeDeleteRefactoring)refactoring).getRefactoredObjects();
-            if (o[0] instanceof FileObject) {
+            if (!o.isEmpty()) {
                 return new FileDeletePlugin((SafeDeleteRefactoring) refactoring);
             }
         } else if (refactoring instanceof SingleCopyRefactoring) {
-            Object o = ((SingleCopyRefactoring) refactoring).getRefactoredObject();
-            if (o instanceof FileObject) {
+            if (!o.isEmpty()) {
                 return new FileCopyPlugin((SingleCopyRefactoring) refactoring);
             }
         }

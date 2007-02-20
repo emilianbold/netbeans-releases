@@ -41,13 +41,12 @@ public final class JavaActionsImplementationFactory {
         return false;
     }
     
-    public static Runnable changeParametersImpl(Lookup lookup) {
+    public static void doChangeParameters(Lookup lookup) {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canChangeParameters(lookup)) {
-                return rafi.changeParametersImpl(lookup);
+                rafi.doChangeParameters(lookup);
             }
         }
-        return null;
     }
 
     public static boolean canEncapsulateFields(Lookup lookup) {
@@ -59,13 +58,12 @@ public final class JavaActionsImplementationFactory {
         return false;
     }
     
-    public static Runnable encapsulateFieldsImpl(Lookup lookup) {
+    public static void doEncapsulateFields(Lookup lookup) {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canEncapsulateFields(lookup)) {
-                return rafi.encapsulateFieldsImpl(lookup);
+                rafi.doEncapsulateFields(lookup);
             }
         }
-        return null;
     }
     public static boolean canExtractInterface(Lookup lookup) {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
@@ -76,22 +74,20 @@ public final class JavaActionsImplementationFactory {
         return false;
     }
     
-    public static Runnable extractInterfaceImpl(Lookup lookup) {
+    public static void doExtractInterface(Lookup lookup) {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canExtractInterface(lookup)) {
-                return rafi.extractInterfaceImpl(lookup);
+                rafi.doExtractInterface(lookup);
             }
         }
-        return null;
     }
     
-    public static Runnable extractSuperClassImpl(Lookup lookup) {
+    public static void doExtractSuperClass(Lookup lookup) {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canExtractSuperClass(lookup)) {
-                return rafi.extractSuperClassImpl(lookup);
+                rafi.doExtractSuperClass(lookup);
             }
         }
-        return null;
     }
     
     public static boolean canExtractSuperClass(Lookup lookup) {
@@ -103,13 +99,12 @@ public final class JavaActionsImplementationFactory {
         return false;
     }
 
-    public static Runnable innerToOuterImpl(Lookup lookup) {
+    public static void doInnerToOuter(Lookup lookup) {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canInnerToOuter(lookup)) {
-                return rafi.innerToOuterImpl(lookup);
+                rafi.doInnerToOuter(lookup);
             }
         }
-        return null;
     }
     
     public static boolean canInnerToOuter(Lookup lookup) {
@@ -121,13 +116,12 @@ public final class JavaActionsImplementationFactory {
         return false;
     }
 
-    public static Runnable pullUpImpl(Lookup lookup) {
+    public static void doPullUp(Lookup lookup) {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canPullUp(lookup)) {
-                return rafi.pullUpImpl(lookup);
+                rafi.doPullUp(lookup);
             }
         }
-        return null;
     }
     
     public static boolean canPullUp(Lookup lookup) {
@@ -139,13 +133,12 @@ public final class JavaActionsImplementationFactory {
         return false;
     }
 
-    public static Runnable pushDownImpl(Lookup lookup) {
+    public static void doPushDown(Lookup lookup) {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canPushDown(lookup)) {
-                return rafi.pushDownImpl(lookup);
+                rafi.doPushDown(lookup);
             }
         }
-        return null;
     }
     
     public static boolean canPushDown(Lookup lookup) {
@@ -157,13 +150,12 @@ public final class JavaActionsImplementationFactory {
         return false;
     }
 
-    public static Runnable useSuperTypeImpl(Lookup lookup) {
+    public static void doUseSuperType(Lookup lookup) {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canUseSuperType(lookup)) {
-                return rafi.useSuperTypeImpl(lookup);
+                rafi.doUseSuperType(lookup);
             }
         }
-        return null;
     }
     
     public static boolean canUseSuperType(Lookup lookup) {

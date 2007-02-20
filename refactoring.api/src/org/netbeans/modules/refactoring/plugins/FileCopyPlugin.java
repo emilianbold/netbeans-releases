@@ -49,7 +49,7 @@ public class FileCopyPlugin implements RefactoringPlugin {
     }
     
     public Problem prepare(RefactoringElementsBag elements) {
-        elements.add(refactoring, new CopyFile((FileObject) refactoring.getRefactoredObject(), elements.getSession()));
+        elements.add(refactoring, new CopyFile(refactoring.getRefactoringSource().lookup(FileObject.class), elements.getSession()));
         return null;
     }
     
@@ -84,7 +84,7 @@ public class FileCopyPlugin implements RefactoringPlugin {
         public void performChange() {
             try {
                 FileObject fo = FileHandlingFactory.getOrCreateFolder((URL)refactoring.getTarget());
-                FileObject source = (FileObject) refactoring.getRefactoredObject();
+                FileObject source = refactoring.getRefactoringSource().lookup(FileObject.class);
                 DataObject dob = DataObject.find(source);
                 newOne = dob.copy(DataFolder.findFolder(fo));
                 newOne.rename(refactoring.getNewName());

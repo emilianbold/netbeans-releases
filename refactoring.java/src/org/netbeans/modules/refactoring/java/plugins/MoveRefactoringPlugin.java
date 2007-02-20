@@ -48,15 +48,16 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     private FileObject[] origFilesToMove;
     public MoveRefactoringPlugin(MoveRefactoring move) {
         this.refactoring = move;
-        setup(Arrays.asList(move.getRefactoredObjects()), "", true);
+        setup(move.getRefactoringSource().lookupAll(FileObject.class), "", true);
     }
     
     public MoveRefactoringPlugin(RenameRefactoring rename) {
         this.refactoring = rename;
-        if (rename.getRefactoredObject() instanceof FileObject) {
-            setup(Collections.singletonList((FileObject)rename.getRefactoredObject()), "", true);
+        FileObject fo = rename.getRefactoringSource().lookup(FileObject.class);
+        if (fo!=null) {
+            setup(Collections.singletonList(fo), "", true);
         } else {
-            setup(Collections.singletonList(((NonRecursiveFolder)rename.getRefactoredObject()).getFolder()), "", false);
+            setup(Collections.singletonList(((NonRecursiveFolder)rename.getRefactoringSource().lookup(NonRecursiveFolder.class)).getFolder()), "", false);
         }
     }
     
@@ -157,7 +158,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     }
     String getNewPackageName() {
         if (refactoring instanceof MoveRefactoring) {
-            return RetoucheUtils.getPackageName((URL)((MoveRefactoring) refactoring).getTarget());        
+            return RetoucheUtils.getPackageName(((MoveRefactoring) refactoring).getTarget().lookup(URL.class));        
         } else {
             return ((RenameRefactoring) refactoring).getNewName();
         }
@@ -165,12 +166,12 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     
     String getTargetPackageName(FileObject fo) {
         if (refactoring instanceof RenameRefactoring) {
-            if (((RenameRefactoring) refactoring).getRefactoredObject() instanceof NonRecursiveFolder)
+            if (refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class) !=null)
                 //package rename
                 return getNewPackageName();
             else {
                 //folder rename
-                FileObject folder = (FileObject) ((RenameRefactoring) refactoring).getRefactoredObject();
+                FileObject folder = refactoring.getRefactoringSource().lookup(FileObject.class);
                 ClassPath cp = ClassPath.getClassPath(folder, ClassPath.SOURCE);
                 FileObject root = cp.findOwnerRoot(folder);
                 String prefix = FileUtil.getRelativePath(root, folder.getParent()).replace('/','.');

@@ -19,18 +19,20 @@
 
 package org.netbeans.modules.refactoring.spi.ui;
 
-import javax.swing.JPanel;
+import java.awt.Component;
 
 /**
- * Instances of CustomRefactoringPanel can do their initialization in 
+ * Instances of CustomRefactoringComponent can do their initialization in 
  * init() method. 
  * @author Jan Becicka
  */
-public abstract class CustomRefactoringPanel extends JPanel {
+public interface CustomRefactoringPanel {
 
     /**
      * Initialization code
      */
-    public abstract void initialize();
+    void initialize();
+    
+    Component getComponent();
 
 }

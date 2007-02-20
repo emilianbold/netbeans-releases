@@ -48,6 +48,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author Jan Becicka
@@ -129,7 +130,7 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
             return null;
         URL url = URLMapper.findURL(panel.getRootFolder(), URLMapper.EXTERNAL);
         try {
-            refactoring.setTarget(new URL(url.toExternalForm() + "/" + panel.getPackageName().replace('.','/')));
+            refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + "/" + panel.getPackageName().replace('.','/'))));
         } catch (MalformedURLException ex) {
             ex.printStackTrace();
         }
@@ -151,9 +152,9 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
     public AbstractRefactoring getRefactoring() {
         if (refactoring == null) {
             if (disable) {
-                refactoring = new MoveRefactoring(javaObjects.toArray());
+                refactoring = new MoveRefactoring(Lookups.fixed(javaObjects.toArray()));
             } else {
-                refactoring = new MoveRefactoring (resources.toArray());
+                refactoring = new MoveRefactoring (Lookups.fixed(resources.toArray()));
             }
         }
         return refactoring;

@@ -50,10 +50,8 @@ public class FileMovePlugin implements RefactoringPlugin {
     }
     
     public Problem prepare(RefactoringElementsBag elements) {
-        for (Object o: refactoring.getRefactoredObjects()) {
-            if (o instanceof FileObject) {
-                elements.add(refactoring, new MoveFile((FileObject) o, elements));
-            }
+        for (FileObject o: refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
+                elements.add(refactoring, new MoveFile(o, elements));
         }
         return null;
     }
@@ -91,7 +89,7 @@ public class FileMovePlugin implements RefactoringPlugin {
                 DataObject source;
                 public void commit() {
                     try {
-                        FileObject target = FileHandlingFactory.getOrCreateFolder((URL) refactoring.getTarget());
+                        FileObject target = FileHandlingFactory.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
                         DataFolder targetFolder = DataFolder.findFolder(target);
                         if (!fo.isValid()) {
                             fo = FileUtil.toFileObject(FileUtil.toFile(fo));

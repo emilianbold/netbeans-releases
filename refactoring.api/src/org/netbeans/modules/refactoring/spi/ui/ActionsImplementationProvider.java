@@ -35,14 +35,10 @@ import org.openide.util.Lookup;
  *      return false;
  * }
  *
- * public Runnable renameImpl(Lookup selectedNodes) {
+ * public void doRename(Lookup selectedNodes) {
  *   Node[] nodes = lookup.lookupAll(Node.class);
  *   final FileObject fo = getFileFromNode(nodes[0]);
- *   return new Runnable() {
- *     public void run() {
- *       UI.openRefactoringUI(new RenameRefactoringUI(fo);
- *     }
- *   }    
+ *   UI.openRefactoringUI(new RenameRefactoringUI(fo);
  * }
  * </pre>     
  *
@@ -60,10 +56,9 @@ public abstract class ActionsImplementationProvider {
 
     /**
      * @param lookup current context
-     * @return implementation of Rename Action
      */
-    public Runnable renameImpl(Lookup lookup) {
-        return null;
+    public void doRename(Lookup lookup) {
+        throw new UnsupportedOperationException("Not implemented!");
     }
 
     /**
@@ -76,10 +71,9 @@ public abstract class ActionsImplementationProvider {
 
     /**
      * @param lookup current context
-     * @return implementation of Find Usages Action
      */
-    public Runnable findUsagesImpl(Lookup lookup) {
-        return null;
+    public void doFindUsages(Lookup lookup) {
+        throw new UnsupportedOperationException("Not implemented!");
     }
 
     /**
@@ -92,10 +86,9 @@ public abstract class ActionsImplementationProvider {
     
     /**
      * @param lookup current context
-     * @return implementation of Delete Action
      */
-    public Runnable deleteImpl(Lookup lookup) {
-        return null;
+    public void doDelete(Lookup lookup) {
+        throw new UnsupportedOperationException("Not implemented!");
     }
 
     /**
@@ -108,10 +101,9 @@ public abstract class ActionsImplementationProvider {
 
     /**
      * @param lookup current context
-     * @return implementation of Move Action
      */
-    public Runnable moveImpl(Lookup lookup) {
-        return null;
+    public void doMove(Lookup lookup) {
+        throw new UnsupportedOperationException("Not implemented!");
     }
 
     /**
@@ -124,9 +116,8 @@ public abstract class ActionsImplementationProvider {
 
     /**
      * @param lookup current context
-     * @return implementation of Copy Action
      */
-    public Runnable copyImpl(Lookup lookup) {
-        return null;
+    public void doCopy(Lookup lookup) {
+        throw new UnsupportedOperationException("Not implemented!");
     }
 }

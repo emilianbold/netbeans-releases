@@ -37,7 +37,7 @@ public class RenameAction extends RefactoringGlobalAction {
     }
     
     public final void performAction(Lookup context) {
-        ActionsImplementationFactory.renameImpl(context).run();
+        ActionsImplementationFactory.doRename(context);
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {

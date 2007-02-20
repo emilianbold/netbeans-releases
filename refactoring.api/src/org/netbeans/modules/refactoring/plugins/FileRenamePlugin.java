@@ -48,7 +48,7 @@ public class FileRenamePlugin implements RefactoringPlugin {
     }
     
     public Problem prepare(RefactoringElementsBag elements) {
-        elements.add(refactoring, new RenameFile((FileObject) refactoring.getRefactoredObject(), elements));
+        elements.add(refactoring, new RenameFile(refactoring.getRefactoringSource().lookup(FileObject.class), elements));
         return null;
     }
     

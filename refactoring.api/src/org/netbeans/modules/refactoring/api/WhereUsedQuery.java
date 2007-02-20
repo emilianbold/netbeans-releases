@@ -20,6 +20,7 @@ package org.netbeans.modules.refactoring.api;
 
 import java.util.Hashtable;
 import org.netbeans.modules.refactoring.api.*;
+import org.openide.util.Lookup;
 
 /**
  * Where used query does not do any "real" refactoring.
@@ -33,39 +34,40 @@ import org.netbeans.modules.refactoring.api.*;
  * @author Jan Becicka
  */
 public final class WhereUsedQuery extends AbstractRefactoring {
-    private Object item;
+    /**
+     * key for {getBooleanValue()}
+     * is search in comments requested?
+     */
     public static final String SEARCH_IN_COMMENTS = "SEARCH_IN_COMMENTS";
+    /**
+     * key for {getBooleanValue()}
+     * is find references requested?
+     */
     public static final String FIND_REFERENCES = "FIND_REFERENCES";
     
     /**
      * Creates a new instance of WhereUsedQuery
-     * @param item searched item
+     * @param lookup searched item
      */
-    public WhereUsedQuery(Object item) {
-        this.item = item;
+    public WhereUsedQuery(Lookup lookup) {
+        super(lookup);
         putValue(FIND_REFERENCES, true);
     }
 
-    /**
-     * Getter for searched item
-     * @return searched item. Java module understands TreePathHandle to be a parameter
-     */
-    public final Object getRefactoredObject() {
-        return item;
-    }    
-    
-    /**
+   /**
      * Getter for searched item
      * @param item searched item. Java module understands TreePathHandle to be a parameter
      */
-    public final void setRefactoredObject(Object item) {
-        this.item = item;
+    public final void setObjectsToRefactor(Lookup item) {
+        this.refactoringSource = item;
     }
     
     private Hashtable hash = new Hashtable();
     
     /**
      * getter for various properties
+     * @param key 
+     * @return value for given key
      * @see WhereUsedQuery#SEARCH_IN_COMMENTS
      * @see WhereUsedQuery#FIND_REFERENCES
      */
@@ -78,6 +80,8 @@ public final class WhereUsedQuery extends AbstractRefactoring {
     
     /**
      * setter for various properties
+     * @param key 
+     * @param value set value for given key
      * @see WhereUsedQuery#SEARCH_IN_COMMENTS
      * @see WhereUsedQuery#FIND_REFERENCES
      */

@@ -18,7 +18,9 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -37,7 +39,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction {
     }
     
     public final void performAction(Lookup context) {
-        ActionsImplementationFactory.deleteImpl(context).run();
+        ActionsImplementationFactory.doDelete(context);
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {
@@ -50,5 +52,23 @@ public class SafeDeleteAction extends RefactoringGlobalAction {
 
     protected boolean enable(Lookup context) {
         return ActionsImplementationFactory.canDelete(context); 
+    }
+
+    public boolean delete(final Node[] nodes) {
+        if (enable(nodes)) {
+            if (java.awt.EventQueue.isDispatchThread()) {
+                performAction(nodes);
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        performAction(nodes);
+                    }
+                    
+                });
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 }

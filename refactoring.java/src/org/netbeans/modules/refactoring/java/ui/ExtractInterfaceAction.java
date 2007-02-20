@@ -36,7 +36,7 @@ public class ExtractInterfaceAction extends JavaRefactoringGlobalAction {
     }
     
     public final void performAction(Lookup context) {
-        JavaActionsImplementationFactory.extractInterfaceImpl(context).run();
+        JavaActionsImplementationFactory.doExtractInterface(context);
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {

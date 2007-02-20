@@ -57,20 +57,16 @@ public class DefaultActionsProvider extends ActionsImplementationProvider {
     }
 
     @Override
-    public Runnable deleteImpl(final Lookup lookup) {
-        return new Runnable() {
-            public void run() {
-                Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-                FileObject[] fobs = new FileObject[nodes.size()];
-                int i = 0;
-                for (Node node:nodes) {
-                    DataObject dob = (DataObject) node.getCookie(DataObject.class);
-                    if (dob!=null) {
-                        fobs[i++] = dob.getPrimaryFile();
-                    }
-                }
-                UI.openRefactoringUI(new SafeDeleteUI(fobs));
+    public void doDelete(final Lookup lookup) {
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        FileObject[] fobs = new FileObject[nodes.size()];
+        int i = 0;
+        for (Node node:nodes) {
+            DataObject dob = (DataObject) node.getCookie(DataObject.class);
+            if (dob!=null) {
+                fobs[i++] = dob.getPrimaryFile();
             }
-        };
+        }
+        UI.openRefactoringUI(new SafeDeleteUI(fobs));
     }
 }

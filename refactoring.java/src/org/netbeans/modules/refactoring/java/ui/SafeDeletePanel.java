@@ -17,11 +17,13 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.ui;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -41,7 +43,7 @@ import org.openide.util.NbBundle;
  * Safe Delete refactoring UI
  * @author Bharath Ravikumar
  */
-public class SafeDeletePanel extends CustomRefactoringPanel {
+public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
     
     private final transient Collection elements;
     private final transient SafeDeleteRefactoring refactoring;
@@ -76,7 +78,8 @@ public class SafeDeletePanel extends CustomRefactoringPanel {
         if (initialized) return;
         
         final ArrayList<String> names = new ArrayList();
-        for (Object o:refactoring.getRefactoredObjects()) {
+        //TODO: should be improved
+        for (Object o:refactoring.getRefactoringSource().lookupAll(Object.class)) {
             if (o instanceof FileObject)
                 names.add(((FileObject)o).getName());
             else if (o instanceof TreePathHandle) {
@@ -218,6 +221,10 @@ public class SafeDeletePanel extends CustomRefactoringPanel {
         return searchInComments.isSelected();
     }
     
+    public Component getComponent() {
+        return this;
+    }
+
     
 //--public utility methods--
 //    

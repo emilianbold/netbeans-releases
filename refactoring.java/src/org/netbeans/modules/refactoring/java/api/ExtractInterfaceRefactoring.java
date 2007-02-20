@@ -21,6 +21,7 @@ package org.netbeans.modules.refactoring.java.api;
 import java.lang.reflect.Modifier;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.openide.util.lookup.Lookups;
 
 /** Extract Interface Refactoring implementation class.
  *
@@ -29,8 +30,6 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 public final class ExtractInterfaceRefactoring extends AbstractRefactoring {
     private static final TreePathHandle[] EMPTY_MEMBERS = new TreePathHandle[0];
 
-    // source type
-    private final TreePathHandle sourceType;
     // name of the new class to be created
     private String ifcName;
     private TreePathHandle[] members;
@@ -39,8 +38,8 @@ public final class ExtractInterfaceRefactoring extends AbstractRefactoring {
      * @param sourceType Type the members of which should be extracted into an interface.
      */
     public ExtractInterfaceRefactoring(TreePathHandle sourceType) {
+        super(Lookups.fixed(sourceType));
         // check if the sourceType is a ParameterizedType - if so, unwrap it
-        this.sourceType = sourceType;
     }
     
     /** Returns the type the members of which should be extracted into an interface
@@ -48,7 +47,7 @@ public final class ExtractInterfaceRefactoring extends AbstractRefactoring {
      * @return Source of the members to be extracted.
      */
     public TreePathHandle getSourceType() {
-        return sourceType;
+        return getRefactoringSource().lookup(TreePathHandle.class);
     }
 
     // --- PARAMETERS ----------------------------------------------------------

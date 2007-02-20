@@ -20,6 +20,7 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import com.sun.source.util.TreePath;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeListener;
@@ -44,6 +45,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
 import javax.lang.model.element.Modifier;
+import javax.swing.JPanel;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -54,7 +56,7 @@ import org.netbeans.api.java.source.SourceUtils;
 /**
  * @author  Jan Becicka
  */
-public class WhereUsedPanel extends CustomRefactoringPanel {
+public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
     private final transient TreePathHandle element;
     private  TreePathHandle newElement;
@@ -416,6 +418,10 @@ public class WhereUsedPanel extends CustomRefactoringPanel {
 
     private Object getHeader(javax.lang.model.element.Element element) {
         return element.toString();
+    }
+
+    public Component getComponent() {
+        return this;
     }
 }
 

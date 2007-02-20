@@ -18,9 +18,11 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -35,7 +37,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Matula, Jan Becicka
  */
-public class ExtractInterfacePanel extends CustomRefactoringPanel {
+public class ExtractInterfacePanel extends JPanel implements CustomRefactoringPanel {
     // helper constants describing columns in the table of members
     private static final String[] COLUMN_NAMES = {"LBL_Selected", "LBL_ExtractInterface_Member"}; // NOI18N
     private static final Class[] COLUMN_CLASSES = {Boolean.class, TreePathHandle.class};
@@ -273,5 +275,9 @@ public class ExtractInterfacePanel extends CustomRefactoringPanel {
 //            // fire event to repaint the table
 //            this.fireTableDataChanged();
         }
+    }
+
+    public Component getComponent() {
+        return this;
     }
 }

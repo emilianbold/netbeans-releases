@@ -25,11 +25,11 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
-import org.netbeans.modules.refactoring.spi.impl.ParametersPanel;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * A CustomRefactoringUI subclass that represents Safe Delete
@@ -52,7 +52,7 @@ public class SafeDeleteUI<T> implements RefactoringUI{
      */
     public SafeDeleteUI(T[] selectedElements) {
         this.elementsToDelete = selectedElements;
-        refactoring = new SafeDeleteRefactoring(elementsToDelete);
+        refactoring = new SafeDeleteRefactoring(Lookups.fixed(elementsToDelete));
     }
     
     /**

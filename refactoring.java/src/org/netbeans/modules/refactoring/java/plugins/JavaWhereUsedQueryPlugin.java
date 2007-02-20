@@ -68,7 +68,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         return classPathInfo; 
     }
     private TreePathHandle getSearchHandle() {
-        return ((TreePathHandle) refactoring.getRefactoredObject());
+        return refactoring.getRefactoringSource().lookup(TreePathHandle.class);
     }
     
     public Problem preCheck() {

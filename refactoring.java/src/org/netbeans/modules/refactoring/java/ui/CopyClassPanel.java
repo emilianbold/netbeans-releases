@@ -19,9 +19,11 @@
 
 package org.netbeans.modules.refactoring.java.ui;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
@@ -42,7 +44,7 @@ import org.openide.filesystems.FileObject;
 /**
  * @author Jan Becicka
  */
-public class CopyClassPanel extends CustomRefactoringPanel implements ActionListener, DocumentListener {
+public class CopyClassPanel extends JPanel implements ActionListener, DocumentListener, CustomRefactoringPanel {
   
     private static final ListCellRenderer GROUP_CELL_RENDERER = new MoveClassPanel.GroupCellRenderer();
     private static final ListCellRenderer PROJECT_CELL_RENDERER = new MoveClassPanel.ProjectCellRenderer();
@@ -342,4 +344,8 @@ public class CopyClassPanel extends CustomRefactoringPanel implements ActionList
         rootComboBox.setSelectedIndex(preselectedItem);
     }
     
+    public Component getComponent() {
+        return this;
+    }
+
 }

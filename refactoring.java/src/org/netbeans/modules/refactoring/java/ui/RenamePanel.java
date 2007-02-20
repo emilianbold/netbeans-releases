@@ -17,7 +17,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.ui;
+import java.awt.Component;
 import java.awt.event.ItemEvent;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -30,7 +32,7 @@ import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
  *
  * @author  Pavel Flaska
  */
-public class RenamePanel extends CustomRefactoringPanel {
+public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
     private final transient String oldName;
     private final transient ChangeListener parent;
@@ -178,5 +180,9 @@ public class RenamePanel extends CustomRefactoringPanel {
         if (updateReferencesCheckBox.isVisible() && updateReferencesCheckBox.isSelected())
             return false;
         return true;
+    }
+
+    public Component getComponent() {
+        return this;
     }
 }

@@ -33,6 +33,7 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * A CustomRefactoringUI subclass that represents Safe Delete
@@ -55,7 +56,7 @@ public class SafeDeleteUI implements RefactoringUI{
      */
     public SafeDeleteUI(FileObject[] selectedElements) {
         this.elementsToDelete = selectedElements;
-        refactoring = new SafeDeleteRefactoring(elementsToDelete);
+        refactoring = new SafeDeleteRefactoring(Lookups.fixed(elementsToDelete));
     }
 
     /**
@@ -65,7 +66,7 @@ public class SafeDeleteUI implements RefactoringUI{
      */
     public SafeDeleteUI(TreePathHandle[] selectedElements, CompilationInfo info) {
         this.elementsToDelete = selectedElements;
-        refactoring = new SafeDeleteRefactoring(elementsToDelete);
+        refactoring = new SafeDeleteRefactoring(Lookups.fixed(elementsToDelete));
         refactoring.getContext().add(info.getClasspathInfo());
     }
     

@@ -48,25 +48,25 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     public JavaRefactoringActionsProvider() {
     }
     @Override
-    public Runnable extractInterfaceImpl(final Lookup lookup) {
+    public void doExtractInterface(final Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (RefactoringActionsProvider.isFromEditor(ec)) {
-            return new RefactoringActionsProvider.TextComponentRunnable(ec) {
+            new RefactoringActionsProvider.TextComponentRunnable(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
                     return new ExtractInterfaceRefactoringUI(selectedElement, info);
                 }
-            };
+            }.run();
         } else {
-            return new NodeToFileObject(lookup.lookupAll(Node.class)) {
+            new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
                     throw new UnsupportedOperationException("Not supported yet!");
                     //return new ExtractInterfaceRefactoringUI(selectedElements[0],(CompilationInfo) null);
                 }
-            };
+            }.run();
         }
     }
 

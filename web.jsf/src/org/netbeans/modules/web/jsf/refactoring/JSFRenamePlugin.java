@@ -86,7 +86,8 @@ public class JSFRenamePlugin implements RefactoringPlugin {
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         if (semafor.get() == null) {
             semafor.set(new Object());
-            Object element = refactoring.getRefactoredObject();
+            //TODO: Lookup stuff should be improved
+            Object element = refactoring.getRefactoringSource().lookup(Object.class);
             LOGGER.fine("Prepare refactoring: " + element);                 // NOI18N
             
             if (element instanceof FileObject){

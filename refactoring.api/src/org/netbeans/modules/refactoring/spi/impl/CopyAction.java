@@ -37,7 +37,7 @@ public class CopyAction extends RefactoringGlobalAction {
     }
     
     public final void performAction(Lookup context) {
-        ActionsImplementationFactory.copyImpl(context).run();
+        ActionsImplementationFactory.doCopy(context);
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {

@@ -37,7 +37,7 @@ public class MoveAction extends RefactoringGlobalAction {
     }
     
     public final void performAction(Lookup context) {
-        ActionsImplementationFactory.moveImpl(context).run();
+        ActionsImplementationFactory.doMove(context);
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {

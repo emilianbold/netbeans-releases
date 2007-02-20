@@ -63,11 +63,11 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     /** Creates a new instance of RenameRefactoring */
     public RenameRefactoringPlugin(RenameRefactoring rename) {
         this.refactoring = rename;
-        Object o = rename.getRefactoredObject();
-        if (o instanceof TreePathHandle) {
-            treePathHandle = (TreePathHandle) o;
+        TreePathHandle tph = rename.getRefactoringSource().lookup(TreePathHandle.class);
+        if (tph!=null) {
+            treePathHandle = tph;
         } else {
-            JavaSource source = JavaSource.forFileObject((FileObject) o);
+            JavaSource source = JavaSource.forFileObject(rename.getRefactoringSource().lookup(FileObject.class));
             try {
                 source.runUserActionTask(new CancellableTask<CompilationController>() {
                     public void cancel() {

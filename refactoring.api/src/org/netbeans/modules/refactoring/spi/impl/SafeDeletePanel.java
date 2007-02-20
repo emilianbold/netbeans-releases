@@ -19,13 +19,15 @@
 
 package org.netbeans.modules.refactoring.spi.impl;
 
+import java.awt.Component;
+import javax.swing.JPanel;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 
 /**
  *
  * @author  Jan Becicka
  */
-public class SafeDeletePanel extends CustomRefactoringPanel {
+public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
 
     /** Creates new form SafeDeletePanel */
     public SafeDeletePanel() {
@@ -60,4 +62,8 @@ public class SafeDeletePanel extends CustomRefactoringPanel {
     public void initialize() {
     }
     
+    public Component getComponent() {
+        return this;
+    }
+
 }

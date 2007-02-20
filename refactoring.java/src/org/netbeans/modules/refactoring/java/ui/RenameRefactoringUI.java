@@ -38,6 +38,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -116,7 +117,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     
     public RenameRefactoringUI(TreePathHandle jmiObject, CompilationInfo info) {
         this.jmiObject = jmiObject;
-        this.refactoring = new RenameRefactoring(jmiObject);
+        this.refactoring = new RenameRefactoring(Lookups.singleton(jmiObject));
         oldName = jmiObject.resolveElement(info).getSimpleName().toString();
         refactoring.getContext().add(info);
         dispOldName = oldName;
@@ -125,14 +126,14 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     }
     
     public RenameRefactoringUI(FileObject file) {
-        this.refactoring = new RenameRefactoring(file);
+        this.refactoring = new RenameRefactoring(Lookups.singleton(file));
         oldName = file.getName();
         dispOldName = oldName;
         //this(jmiObject, (FileObject) null, true);
     }
 
     public RenameRefactoringUI(NonRecursiveFolder file) {
-        this.refactoring = new RenameRefactoring(file);
+        this.refactoring = new RenameRefactoring(Lookups.singleton(file));
         oldName = RetoucheUtils.getPackageName(file.getFolder());
         dispOldName = oldName;
         pkgRename = true;
@@ -145,7 +146,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 //    }
 
     RenameRefactoringUI(FileObject jmiObject, String newName) {
-        this.refactoring = new RenameRefactoring(jmiObject);
+        this.refactoring = new RenameRefactoring(Lookups.singleton(jmiObject));
         //this.jmiObject = jmiObject;
         oldName = newName;
         //[FIXME] this should be oldName of refactored object
@@ -154,7 +155,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     }
     
     RenameRefactoringUI(NonRecursiveFolder jmiObject, String newName) {
-        this.refactoring = new RenameRefactoring(jmiObject);
+        this.refactoring = new RenameRefactoring(Lookups.singleton(jmiObject));
         //this.jmiObject = jmiObject;
         oldName = newName;
         //[FIXME] this should be oldName of refactored object
@@ -278,7 +279,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         if (byPassFolder != null) {
             dob = DataFolder.findFolder(byPassFolder);
         } else {
-            dob = DataObject.find((FileObject)((RenameRefactoring)refactoring).getRefactoredObject());
+            dob = DataObject.find(refactoring.getRefactoringSource().lookup(FileObject.class));
         }
         dob.rename(panel.getNameValue());
     }

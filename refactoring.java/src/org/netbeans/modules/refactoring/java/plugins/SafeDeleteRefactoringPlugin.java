@@ -66,6 +66,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -99,7 +100,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         Set refactoredObjects = new HashSet();
         fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, whereUsedQueries.length + 1);
         for(int i = 0;i < whereUsedQueries.length; ++i) {
-            Object refactoredObject = whereUsedQueries[i].getRefactoredObject();
+            Object refactoredObject = whereUsedQueries[i].getRefactoringSource().lookup(Object.class);
             refactoredObjects.add(refactoredObject);
 
             whereUsedQueries[i].prepare(inner);
@@ -163,7 +164,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
 //            }
             if (isOuterRef) {
                 fireProgressListenerStop();
-                return new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem.getHandle(), "!!!TODO!!!"), inner)));
+                return new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem.getHandle(), "!!!TODO!!!", refactoring), inner)));
             }
         }
         
@@ -243,34 +244,31 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         //This class expects too many details from SafeDeleteRefactoring
         //But there's no other go I guess.
         grips.clear();
-        Object[] object = refactoring.getRefactoredObjects();
         final ArrayList<ClasspathInfo> controllers = new ArrayList();
-        if (object.getClass().isAssignableFrom(FileObject[].class)) {
-            for (final FileObject f:(FileObject[])object) {
-                JavaSource source = JavaSource.forFileObject(f);
-                try {
-                    source.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
-                            
+        for (final FileObject f:refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
+            JavaSource source = JavaSource.forFileObject(f);
+            try {
+                source.runUserActionTask(new CancellableTask<CompilationController>() {
+                    public void cancel() {
+                        
+                    }
+                    public void run(CompilationController co) throws Exception {
+                        co.toPhase(Phase.ELEMENTS_RESOLVED);
+                        CompilationUnitTree cut = co.getCompilationUnit();
+                        for (Tree t: cut.getTypeDecls()) {
+                            grips.add(TreePathHandle.create(TreePath.getPath(cut, t), co));
                         }
-                        public void run(CompilationController co) throws Exception {
-                            co.toPhase(Phase.ELEMENTS_RESOLVED);
-                            CompilationUnitTree cut = co.getCompilationUnit();
-                            for (Tree t: cut.getTypeDecls()) {
-                                grips.add(TreePathHandle.create(TreePath.getPath(cut, t), co));
-                            }
-                            controllers.add(co.getClasspathInfo());                            
-                        }
-                    }, true);
-                } catch (IllegalArgumentException ex) {
-                    ex.printStackTrace();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+                        controllers.add(co.getClasspathInfo());
+                    }
+                }, true);
+            } catch (IllegalArgumentException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
-        } else {
-            grips.addAll(Arrays.asList((TreePathHandle[])refactoring.getRefactoredObjects()));
         }
+
+        grips.addAll(refactoring.getRefactoringSource().lookupAll(TreePathHandle.class));
 
         whereUsedQueries = new WhereUsedQuery[grips.size()];
         for(int i = 0;i <  whereUsedQueries.length; ++i) {
@@ -297,7 +295,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     private WhereUsedQuery createQuery(TreePathHandle tph) {
-        WhereUsedQuery q = new WhereUsedQuery(tph);
+        WhereUsedQuery q = new WhereUsedQuery(Lookups.singleton(tph));
         for (Object o:refactoring.getContext().lookupAll(Object.class)) {
             q.getContext().add(o);
         }

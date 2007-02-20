@@ -28,6 +28,7 @@ import java.util.Comparator;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
@@ -50,7 +51,7 @@ import org.openide.filesystems.FileObject;
  * Asks where to move a class to.
  * @author Jan Becicka, Jesse Glick
  */
-public class MoveClassPanel extends CustomRefactoringPanel implements ActionListener, DocumentListener {
+public class MoveClassPanel extends JPanel implements ActionListener, DocumentListener,CustomRefactoringPanel {
   
     private static final ListCellRenderer GROUP_CELL_RENDERER = new GroupCellRenderer();
     private static final ListCellRenderer PROJECT_CELL_RENDERER = new ProjectCellRenderer();
@@ -418,4 +419,8 @@ public class MoveClassPanel extends CustomRefactoringPanel implements ActionList
             return COLLATOR.compare(ProjectUtils.getInformation(p1).getDisplayName(), ProjectUtils.getInformation(p2).getDisplayName());
         }
     }    
+
+    public Component getComponent() {
+        return this;
+    }
 }

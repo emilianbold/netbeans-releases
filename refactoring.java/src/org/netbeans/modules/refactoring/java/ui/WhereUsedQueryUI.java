@@ -26,12 +26,14 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -43,9 +45,10 @@ public class WhereUsedQueryUI implements RefactoringUI {
     private WhereUsedPanel panel;
     private final TreePathHandle element;
     private ElementKind kind;
+    private AbstractRefactoring delegate;
 
     public WhereUsedQueryUI(TreePathHandle jmiObject, CompilationInfo info) {
-        this.query = new WhereUsedQuery(jmiObject);
+        this.query = new WhereUsedQuery(Lookups.singleton(jmiObject));
         this.query.getContext().add(info.getClasspathInfo());
         this.element = jmiObject;
         Element el = jmiObject.resolveElement(info);
@@ -53,7 +56,8 @@ public class WhereUsedQueryUI implements RefactoringUI {
         kind = el.getKind();
     }
     
-    public WhereUsedQueryUI(TreePathHandle jmiObject, String name) {
+    public WhereUsedQueryUI(TreePathHandle jmiObject, String name, AbstractRefactoring delegate) {
+        this.delegate = delegate;
         //this.query = new JavaWhereUsedQuery(jmiObject);
         //this.query.getContext().add(info.getClasspathInfo());
         this.element = jmiObject;
@@ -89,9 +93,9 @@ public class WhereUsedQueryUI implements RefactoringUI {
     
     private void setForMethod() {
         if (panel.isMethodFromBaseClass()) {
-            query.setRefactoredObject(panel.getBaseMethod());
+            query.setObjectsToRefactor(Lookups.singleton(panel.getBaseMethod()));
         } else {
-            query.setRefactoredObject(element);
+            query.setObjectsToRefactor(Lookups.singleton(element));
         }
         query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
         query.putValue(query.FIND_REFERENCES,panel.isMethodFindUsages());
@@ -115,7 +119,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
     }
 
     public org.netbeans.modules.refactoring.api.AbstractRefactoring getRefactoring() {
-        return query;
+        return query!=null?query:delegate;
     }
 
     public String getDescription() {

@@ -63,6 +63,7 @@ import org.openide.windows.TopComponent;
 /**
  *
  * @author Jan Becicka
+ * TODO: avoid Runnables
  */
 public class RefactoringActionsProvider extends ActionsImplementationProvider{
     
@@ -70,11 +71,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     public RefactoringActionsProvider() {
     }
     @Override
-    public Runnable renameImpl(final Lookup lookup) {
+    public void doRename(final Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (isFromEditor(ec)) {
-            return new TextComponentRunnable(ec) {
+            new TextComponentRunnable(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
@@ -90,9 +91,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         return new RenameRefactoringUI(selectedElement, info);
                     }
                 }
-            };
+            }.run();
         } else {
-            return new NodeToFileObject(lookup.lookupAll(Node.class)) {
+            new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
                     String newName = getName(dictionary);
@@ -108,7 +109,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         else
                             return new RenameRefactoringUI(selectedElements[0]);
                 }
-            };
+            }.run();
         }
     }
 
@@ -139,7 +140,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }
     
     @Override
-    public Runnable copyImpl(final Lookup lookup) {
+    public void doCopy(final Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
 //        if (isFromEditor(ec)) {
@@ -156,12 +157,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 //                }
 //            };
 //        } else {
-            return new NodeToFileObject(lookup.lookupAll(Node.class)) {
+            new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
                     return new CopyClassRefactoringUI(selectedElements[0], getTarget(dictionary), getPaste(dictionary));
                 }
-            };
+            }.run();
 //        }
     }
 
@@ -219,21 +220,21 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }
 
     @Override
-    public Runnable findUsagesImpl(Lookup lookup) {
+    public void doFindUsages(Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (isFromEditor(ec)) {
-            return new TextComponentRunnable(ec) {
+            new TextComponentRunnable(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     return new WhereUsedQueryUI(selectedElement, info);
                 }
-            };
+            }.run();
         } else {
-            return new NodeToElement(lookup.lookupAll(Node.class)) {
+            new NodeToElement(lookup.lookupAll(Node.class)) {
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement, CompilationInfo info) {
                     return new WhereUsedQueryUI(selectedElement, info);
                 }
-            };
+            }.run();
         }
     }
 
@@ -257,10 +258,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }
 
     @Override
-    public Runnable deleteImpl(final Lookup lookup) {
+    public void doDelete(final Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (isFromEditor(ec)) {
-            return new TextComponentRunnable(ec) {
+            new TextComponentRunnable(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
@@ -270,15 +271,15 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         return new SafeDeleteUI(new TreePathHandle[]{selectedElement}, info);
                     }
                 }
-            };
+            }.run();
         } else {
-            return new NodeToFileObject(lookup.lookupAll(Node.class)) {
+            new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
                     return new SafeDeleteUI(selectedElements);
                 }
                 
-            };
+            }.run();
         }
     }
     
@@ -375,11 +376,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }
 
     @Override
-    public Runnable moveImpl(final Lookup lookup) {
+    public void doMove(final Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (isFromEditor(ec)) {
-            return new TextComponentRunnable(ec) {
+            new TextComponentRunnable(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     if (selectedElement.resolve(info).getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
@@ -396,9 +397,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         }
                     }
                 }
-            };
+            }.run();
         } else {
-            return new NodeToFileObject(lookup.lookupAll(Node.class)) {
+            new NodeToFileObject(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
                     PasteType paste = getPaste(dictionary);
@@ -416,7 +417,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     }
                 }
                 
-            };
+            }.run();
         }
     }    
 

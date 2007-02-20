@@ -110,14 +110,13 @@ public final class RefactoringElementsBag {
     /**
      * Adds all RefactringElements from given Collection using #add method
      * @param refactoring refactoring, which adds this RefactoringElement
-     * @param c Collection of RefactoringElements
+     * @param elements Collection of RefactoringElements
      * @return instance of Problem or null
      */
-    public Problem addAll(AbstractRefactoring refactoring, Collection c) {
+    public Problem addAll(AbstractRefactoring refactoring, Collection<RefactoringElementImplementation> elements) {
 	Problem p = null;
-        Iterator e = c.iterator();
-	while (e.hasNext()) {
-	    p = APIAccessor.DEFAULT.chainProblems(p, add(refactoring, (RefactoringElementImplementation) e.next()));
+	for (RefactoringElementImplementation rei:elements) {
+	    p = APIAccessor.DEFAULT.chainProblems(p, add(refactoring, rei));
             if (p!=null && p.isFatal())
                 return p;
 	}

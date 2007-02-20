@@ -70,7 +70,7 @@ public class ActionInvocationTest extends LogTestCase {
             public void run() {
                 if (rename.isEnabled()) {
                     rename.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
-                    if (!((RenameRefactoring) DD.rui.getRefactoring()).getRefactoredObject().equals(test))
+                    if (!((RenameRefactoring) DD.rui.getRefactoring()).getRefactoringSource().lookup(FileObject.class).equals(test))
                         fail("Rename dialog was opened with wrong data");
                 } else {
                     fail("Action is not enabled.");
@@ -92,7 +92,7 @@ public class ActionInvocationTest extends LogTestCase {
             public void run() {
                 if (move.isEnabled()) {
                     move.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
-                    if (!((MoveRefactoring) DD.rui.getRefactoring()).getRefactoredObjects()[0].equals(test))
+                    if (!((MoveRefactoring) DD.rui.getRefactoring()).getRefactoringSource().lookup(FileObject.class).equals(test))
                         fail("MoveClass was opened with wrong data");
                 } else {
                     fail("Action is not enabled.");

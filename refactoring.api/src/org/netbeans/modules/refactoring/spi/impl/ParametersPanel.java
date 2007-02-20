@@ -64,7 +64,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     // corresponding implementation of RefactoringUI
     private final RefactoringUI rui;
     // refactoring-specific panel returned from RefactoringUI.getPanel
-    private final CustomRefactoringPanel customPanel;
+    private final JPanel customPanel;
+    private final CustomRefactoringPanel customComponent;
     
     // parent dialog
     private transient JDialog dialog = null;
@@ -106,7 +107,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         initComponents();
         innerPanel.setBorder(null);
         label.setText(" ");//NOI18N
-        this.customPanel = rui.getPanel(this);
+        this.customComponent = rui.getPanel(this);
+        this.customPanel = (JPanel) this.customComponent.getComponent();
         errorPanel = new ErrorPanel(rui);
         calculatePrefferedSize();
         setButtonsEnabled(false);
@@ -440,7 +442,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 if (problem != null) {
                     currentState = PRE_CHECK;
                     if (!problem.isFatal()) {
-                        customPanel.initialize();
+                        customComponent.initialize();
                     }
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -450,7 +452,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                     });
                 } else {
                     if (customPanel != null)
-                        customPanel.initialize();
+                        customComponent.initialize();
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
                                 placeCustomPanel();

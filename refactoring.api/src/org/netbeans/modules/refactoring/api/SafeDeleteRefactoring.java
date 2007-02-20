@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.refactoring.api;
 
+import org.openide.util.Lookup;
+
 /**
  * Refactoring to Safely Delete an element after checking its usages.
  * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
@@ -28,7 +30,6 @@ package org.netbeans.modules.refactoring.api;
  * @author Bharath Ravikumar
  */
 public final class SafeDeleteRefactoring extends AbstractRefactoring {
-    private final Object[] elementsToDelete;
     private boolean checkInComments;
 
     /**
@@ -36,16 +37,8 @@ public final class SafeDeleteRefactoring extends AbstractRefactoring {
      * elements as parameter.
      * @param namedElements The elements to be safely deleted
      */
-    public SafeDeleteRefactoring(Object ... namedElements) {
-        this.elementsToDelete = namedElements;
-    }
-    
-    /**
-     * Returns an array of elements to be safely deleted
-     * @return The array of elements to be safely deleted
-     */
-    public Object[] getRefactoredObjects(){
-        return this.elementsToDelete;
+    public SafeDeleteRefactoring(Lookup namedElements) {
+        super(namedElements);
     }
     
     /**

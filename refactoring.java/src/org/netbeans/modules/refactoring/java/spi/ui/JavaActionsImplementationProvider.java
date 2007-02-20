@@ -37,8 +37,8 @@ public class JavaActionsImplementationProvider {
     /**
      * @return implementation of Rename Action
      */
-    public Runnable encapsulateFieldsImpl(Lookup selectedNodes) {
-        return null;
+    public void doEncapsulateFields(Lookup selectedNodes) {
+        new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -51,8 +51,8 @@ public class JavaActionsImplementationProvider {
     /**
      * @return implementation of Find Usages Action
      */
-    public Runnable changeParametersImpl(Lookup lookup) {
-        return null;
+    public void doChangeParameters(Lookup lookup) {
+        new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -65,8 +65,8 @@ public class JavaActionsImplementationProvider {
     /**
      * @return implementation of Delete Action
      */
-    public Runnable pullUpImpl(Lookup lookup) {
-        return null;
+    public void doPullUp(Lookup lookup) {
+        new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -79,8 +79,8 @@ public class JavaActionsImplementationProvider {
     /**
      * @return implementation of Move Action
      */
-    public Runnable pushDownImpl(Lookup lookup) {
-        return null;
+    public void doPushDown(Lookup lookup) {
+        new UnsupportedOperationException("Not implemented");
     }
     
     /**
@@ -93,8 +93,8 @@ public class JavaActionsImplementationProvider {
     /**
      * @return implementation of Copy Action
      */
-    public Runnable innerToOuterImpl(Lookup lookup) {
-        return null;
+    public void doInnerToOuter(Lookup lookup) {
+        new UnsupportedOperationException("Not implemented");
     }    
     /**
      * @return true if provider can handle copy
@@ -106,8 +106,8 @@ public class JavaActionsImplementationProvider {
     /**
      * @return implementation of Copy Action
      */
-    public Runnable useSuperTypeImpl(Lookup lookup) {
-        return null;
+    public void doUseSuperType(Lookup lookup) {
+        new UnsupportedOperationException("Not implemented");
     }    
     /**
      * @return true if provider can handle copy
@@ -119,8 +119,8 @@ public class JavaActionsImplementationProvider {
     /**
      * @return implementation of Copy Action
      */
-    public Runnable extractSuperClassImpl(Lookup lookup) {
-        return null;
+    public void doExtractSuperClass(Lookup lookup) {
+        new UnsupportedOperationException("Not implemented");
     }    
     /**
      * @return true if provider can handle copy
@@ -132,8 +132,8 @@ public class JavaActionsImplementationProvider {
     /**
      * @return implementation of Copy Action
      */
-    public Runnable extractInterfaceImpl(Lookup lookup) {
-        return null;
+    public void doExtractInterface(Lookup lookup) {
+        new UnsupportedOperationException("Not implemented");
     }    
     
 }

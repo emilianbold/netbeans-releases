@@ -36,6 +36,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.lookup.Lookups;
 
 public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
     
@@ -106,7 +107,7 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
 
         URL url = URLMapper.findURL(panel.getRootFolder(), URLMapper.EXTERNAL);
         try {
-            refactoring.setTarget(new URL(url.toExternalForm() + "/" + panel.getPackageName().replace('.','/')));
+            refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + "/" + panel.getPackageName().replace('.','/'))));
         } catch (MalformedURLException ex) {
             ex.printStackTrace();
         }
@@ -127,7 +128,7 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
     
     public AbstractRefactoring getRefactoring() {
         if (refactoring == null) {
-            refactoring = new MoveRefactoring(javaObject.getPrimaryFile());
+            refactoring = new MoveRefactoring(Lookups.singleton(javaObject.getPrimaryFile()));
         }
         return refactoring;
     }

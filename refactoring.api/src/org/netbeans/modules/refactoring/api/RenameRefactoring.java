@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.refactoring.api;
 
+import org.openide.util.Lookup;
+
 /**
  * Refactoring used for renaming objects.
  * In case of Java Refactoring it means classes, fields and methods.
@@ -28,7 +30,6 @@ package org.netbeans.modules.refactoring.api;
  * @author Jan Becicka, Martin Matula, Pavel Flaska, Daniel Prusa
  */
 public final class RenameRefactoring extends AbstractRefactoring {
-    private final Object item;
     private String newName = null;
     private boolean searchInComments;
 
@@ -37,8 +38,8 @@ public final class RenameRefactoring extends AbstractRefactoring {
      * For instance Java Refactoring module understands FileObjects and TreePathHandles
      * @param item 
      */
-    public RenameRefactoring(Object item) {
-        this.item = item;
+    public RenameRefactoring(Lookup item) {
+        super(item);
     }
     
     /**
@@ -55,14 +56,6 @@ public final class RenameRefactoring extends AbstractRefactoring {
      */
     public void setNewName(String newName) {
         this.newName = newName;
-    }
-    
-    /**
-     * Getter for property refactoredObject
-     * @return refactoredObject (e.g. FileObject, TreePathHandle)
-     */
-    public Object getRefactoredObject() {
-        return item;
     }
     
     /**

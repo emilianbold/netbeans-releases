@@ -37,7 +37,7 @@ public class WhereUsedAction extends RefactoringGlobalAction {
     }
     
     public final void performAction(Lookup context) {
-        ActionsImplementationFactory.findUsagesImpl(context).run();
+        ActionsImplementationFactory.doFindUsages(context);
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {

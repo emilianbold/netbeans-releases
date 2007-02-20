@@ -51,9 +51,8 @@ public class FileDeletePlugin implements RefactoringPlugin {
     }
     
     public Problem prepare(RefactoringElementsBag elements) {
-        Object[] o = refactoring.getRefactoredObjects();
-        for (int i=0; i< o.length; i++ ) {
-            elements.add(refactoring, new DeleteFile((FileObject) o[i], elements));
+        for (FileObject fo: refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
+            elements.add(refactoring, new DeleteFile(fo, elements));
         }
         return null;
     }

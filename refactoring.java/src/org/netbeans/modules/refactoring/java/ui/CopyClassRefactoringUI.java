@@ -35,6 +35,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.lookup.Lookups;
 
 /** Refactoring UI object for Copy Class refactoring.
  *
@@ -50,7 +51,7 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
     private PasteType paste;
     
     public CopyClassRefactoringUI(FileObject resource, FileObject target, PasteType paste) {
-        refactoring = new SingleCopyRefactoring(resource);
+        refactoring = new SingleCopyRefactoring(Lookups.singleton(resource));
         this.resource = resource;
         this.targetFolder = target;
         this.paste=paste;

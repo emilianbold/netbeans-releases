@@ -87,7 +87,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
         if (fo==null) {
             return null;
         }
-        if (fo.getFileObject(refactoring.getNewName(), ((FileObject) refactoring.getRefactoredObject()).getExt()) != null)
+        if (fo.getFileObject(refactoring.getNewName(), (refactoring.getRefactoringSource().lookup(FileObject.class)).getExt()) != null)
             return createProblem(null, true, new MessageFormat(NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_ClassToMoveClashes")).format(new Object[]{refactoring.getNewName()}));
         return null;
     }
@@ -130,7 +130,7 @@ private class CopyClass extends SimpleRefactoringElementImpl implements Refactor
         public void performChange() {
             try {
                 FileObject fo = RetoucheUtils.getOrCreateFolder((URL)refactoring.getTarget());
-                FileObject source = (FileObject) refactoring.getRefactoredObject();
+                FileObject source = refactoring.getRefactoringSource().lookup(FileObject.class);
                 String oldPackage = RetoucheUtils.getPackageName(source.getParent());
                 
                 FileObject newOne = refactoring.getContext().lookup(FileObject.class);
@@ -148,7 +148,7 @@ private class CopyClass extends SimpleRefactoringElementImpl implements Refactor
         }
 
         public FileObject getParentFile() {
-            return (FileObject) refactoring.getRefactoredObject();
+            return refactoring.getRefactoringSource().lookup(FileObject.class);
         }
     }     
     

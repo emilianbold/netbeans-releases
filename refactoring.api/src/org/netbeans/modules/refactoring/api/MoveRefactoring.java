@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.refactoring.api;
 
+import org.openide.util.Lookup;
+
 /**
  * Move refactoring
  * This class is just holder for parameters of Move Refactgoring. 
@@ -31,22 +33,14 @@ package org.netbeans.modules.refactoring.api;
  */
 public final class MoveRefactoring extends AbstractRefactoring {
 
-    private Object[] objectsToMove;
-    private Object target;
+    private Lookup target;
 
     /**
      * @param objectsToMove Objects to be moved. E.g. FileObjects 
      * or TreePathHandles in case of Java Refactoring
      */
-    public MoveRefactoring (Object ... objectsToMove) {
-        this.objectsToMove = objectsToMove;
-    }
-
-    /** 
-     * getter for moved objects
-     */
-    public Object[] getRefactoredObjects() {
-        return objectsToMove;
+    public MoveRefactoring (Lookup objectsToMove) {
+        super(objectsToMove);
     }
 
     /**
@@ -54,7 +48,7 @@ public final class MoveRefactoring extends AbstractRefactoring {
      * For instance Java Refactoring understands URL as target
      * @param target
      */
-    public void setTarget(Object target) {
+    public void setTarget(Lookup target) {
         this.target = target;
     }
 
@@ -63,7 +57,7 @@ public final class MoveRefactoring extends AbstractRefactoring {
      * For instance Java Refactoring understands URL as target
      * @return target
      */
-    public Object getTarget() {
+    public Lookup getTarget() {
         return this.target;
     }
 }

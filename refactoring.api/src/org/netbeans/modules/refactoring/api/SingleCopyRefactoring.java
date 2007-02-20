@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.refactoring.api;
 
+import org.openide.util.Lookup;
+
 /**
  * Copy refactoring
  * This class is just holder for parameters of Single Copy Refactoring. 
@@ -31,23 +33,15 @@ package org.netbeans.modules.refactoring.api;
  */
 public class SingleCopyRefactoring extends AbstractRefactoring {
 
-    private Object object;
-    private Object target;
+    private Lookup target;
     private String newName;
 
     /**
      * @param objectToCopy Object to be copied.
      * E.g. FileObject in case of Java Refactoring
      */
-    public SingleCopyRefactoring (Object objectToCopy) {
-        this.object = objectToCopy;
-    }
-
-    /** 
-     * getter for copied objects
-     */
-    public Object getRefactoredObject() {
-        return object;
+    public SingleCopyRefactoring (Lookup objectToCopy) {
+        super(objectToCopy);
     }
 
     /**
@@ -55,7 +49,7 @@ public class SingleCopyRefactoring extends AbstractRefactoring {
      * For instance Java Refactoring understands URL as target
      * @param target
      */
-    public void setTarget(Object target) {
+    public void setTarget(Lookup target) {
         this.target = target;
     }
     
@@ -64,12 +58,13 @@ public class SingleCopyRefactoring extends AbstractRefactoring {
      * For instance Java Refactoring understands URL as target
      * @return target
      */
-    public Object getTarget() {
+    public Lookup getTarget() {
         return target;
     }
     
     /**
      * getter for new name of copied file
+     * @return value String value
      */
     public String getNewName() {
         return newName;
@@ -77,6 +72,7 @@ public class SingleCopyRefactoring extends AbstractRefactoring {
     
     /**
      * setter for new name of copied file
+     * @param newName new value
      */
     public void setNewName(String newName) {
         this.newName = newName;
