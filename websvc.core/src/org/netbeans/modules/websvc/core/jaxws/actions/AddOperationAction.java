@@ -17,39 +17,28 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.websvc.core.jaxws.actions;
-// Retouche
-//import org.netbeans.jmi.javamodel.ClassMember;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.Method;
-//import org.netbeans.modules.j2ee.common.JMIUtils;
-//import org.netbeans.modules.j2ee.common.WSUtils;
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+
+import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.AddOperationCookie;
-import org.openide.util.actions.CookieAction;
+import org.netbeans.modules.websvc.core.WebServiceActionProvider;
+import org.netbeans.modules.websvc.core.WebServiceActionProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
+import org.openide.util.actions.NodeAction;
 
-public class AddOperationAction extends CookieAction {
+public class AddOperationAction extends NodeAction  {
+    
     public String getName() {
         return NbBundle.getMessage(AddOperationAction.class, "LBL_OperationAction");
     }
     
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx(AddOperationAction.class);
     }
-    
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-    }
-    
-    protected Class[] cookieClasses() {
-        return new Class[] {AddOperationCookie.class};
-    }
-    
+        
     protected boolean asynchronous() {
         return false;
     }
@@ -69,7 +58,16 @@ public class AddOperationAction extends CookieAction {
     }
     
     protected void performAction(Node[] activatedNodes) {
+
+        if (activatedNodes.length != 1) {
+            return;
+        }
         
+        FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
+        if (implClassFo!=null) {
+            AddOperationCookie addOperationCookie = WebServiceActionProvider.getAddOperationAction(implClassFo);
+            if (addOperationCookie!=null) addOperationCookie.addOperation(implClassFo);
+        }
 // Retouche        
 //        JavaMetamodel.getManager().waitScanFinished();
 //
@@ -80,3 +78,4 @@ public class AddOperationAction extends CookieAction {
 //        if (m!=null) JMIUtils.openInEditor(m);
     }
 }
+

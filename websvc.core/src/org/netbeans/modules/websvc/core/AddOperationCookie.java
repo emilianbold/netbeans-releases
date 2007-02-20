@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.websvc.core;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
 /*
@@ -29,5 +29,6 @@ public interface AddOperationCookie extends Node.Cookie {
     /*
      * Adds a method definition to the the implementation class, possibly to SEI
      */
-    public void addOperation(MethodModel m);
+    public void addOperation(FileObject implementationClass);
+    
 }

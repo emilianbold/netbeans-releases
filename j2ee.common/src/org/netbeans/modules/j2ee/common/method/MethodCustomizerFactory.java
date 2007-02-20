@@ -106,10 +106,10 @@ public final class MethodCustomizerFactory {
         return new MethodCustomizer(
                 title,
                 method,
-                false, // doesn't matter? interfaces selections is disabled
-                false, // doesn't matter? interfaces selections is disabled
-                false, // doesn't matter? interfaces selections is disabled
-                false, // doesn't matter? interfaces selections is disabled
+                true, // doesn't matter? interfaces selections is disabled
+                true, // doesn't matter? interfaces selections is disabled
+                true, // doesn't matter? interfaces selections is disabled
+                true, // doesn't matter? interfaces selections is disabled
                 true,  // return type
                 null,  // EJB QL
                 false, // finder cardinality
