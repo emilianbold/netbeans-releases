@@ -48,7 +48,7 @@ public class DragAndDropHandlerTest extends AbstractPaletteTestHid {
 
     public void testCustomize() throws Exception {
         PaletteActions actions = new DummyActions();
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, actions );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), actions );
         Model model = pc.getModel();
 
         Item item = model.getCategories()[0].getItems()[0];
@@ -69,7 +69,7 @@ public class DragAndDropHandlerTest extends AbstractPaletteTestHid {
     
     public void testCanDrop() throws Exception {
         PaletteActions actions = new DummyActions();
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, actions );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), actions );
         Model model = pc.getModel();
 
         Category cat = model.getCategories()[0];
@@ -85,7 +85,7 @@ public class DragAndDropHandlerTest extends AbstractPaletteTestHid {
     
     public void testDoDropReorderItemWithinCategory() throws Exception {
         PaletteActions actions = new DummyActions();
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, actions );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), actions );
         Model model = pc.getModel();
 
         Category[] categories = model.getCategories();
@@ -112,7 +112,7 @@ public class DragAndDropHandlerTest extends AbstractPaletteTestHid {
     
     public void testDoDropItemToOtherCategory() throws Exception {
         PaletteActions actions = new DummyActions();
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, actions );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), actions );
         Model model = pc.getModel();
 
         Category[] categories = model.getCategories();
@@ -150,7 +150,7 @@ public class DragAndDropHandlerTest extends AbstractPaletteTestHid {
     
     public void testCanReorderCategories() throws Exception {
         PaletteActions actions = new DummyActions();
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, actions );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), actions );
         Model model = pc.getModel();
 
         DragAndDropHandler handler = DragAndDropHandler.getDefault();
@@ -162,7 +162,7 @@ public class DragAndDropHandlerTest extends AbstractPaletteTestHid {
     
     public void testMoveCategory() throws Exception {
         PaletteActions actions = new DummyActions();
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, actions );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), actions );
         Model model = pc.getModel();
 
         Category[] catBefore = model.getCategories();

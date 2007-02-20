@@ -46,7 +46,7 @@ public class ItemTest extends AbstractPaletteTestHid {
      * Test of getName method, of class org.netbeans.modules.palette.Item.
      */
     public void testGetName() throws IOException {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
         Category[] categories = model.getCategories();
         
@@ -64,7 +64,7 @@ public class ItemTest extends AbstractPaletteTestHid {
      * Test of getDisplayName method, of class org.netbeans.modules.palette.Item.
      */
     public void testGetDisplayName() throws IOException {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
         Category[] categories = model.getCategories();
         
@@ -82,7 +82,7 @@ public class ItemTest extends AbstractPaletteTestHid {
      * Test of getShortDescription method, of class org.netbeans.modules.palette.Item.
      */
     public void testGetShortDescription() throws IOException {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
         Category[] categories = model.getCategories();
         
@@ -100,7 +100,7 @@ public class ItemTest extends AbstractPaletteTestHid {
      * Test of getIcon method, of class org.netbeans.modules.palette.Item.
      */
     public void testGetIcon() throws IOException {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
         Category[] categories = model.getCategories();
         
@@ -120,7 +120,7 @@ public class ItemTest extends AbstractPaletteTestHid {
      */
     public void testGetActions() throws IOException {
         PaletteActions actions = new DummyActions();
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, actions );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), actions );
         Model model = pc.getModel();
 
         Category[] categories = model.getCategories();
@@ -155,7 +155,7 @@ public class ItemTest extends AbstractPaletteTestHid {
      */
     public void testInvokePreferredAction() throws IOException {
         DummyActions actions = new DummyActions();
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, actions );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), actions );
         Model model = pc.getModel();
         Category[] categories = model.getCategories();
         
@@ -192,7 +192,7 @@ public class ItemTest extends AbstractPaletteTestHid {
      */
     public void testGetLookup() throws IOException {
         PaletteActions actions = new DummyActions();
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, actions );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), actions );
         Model model = pc.getModel();
 
         Category[] categories = model.getCategories();
@@ -213,7 +213,7 @@ public class ItemTest extends AbstractPaletteTestHid {
      */
     public void testDrag() throws Exception {
         PaletteActions actions = new DummyActions();
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, actions );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), actions );
         Model model = pc.getModel();
 
         Category[] categories = model.getCategories();
@@ -237,7 +237,7 @@ public class ItemTest extends AbstractPaletteTestHid {
      */
     public void testCut() throws Exception {
         PaletteActions actions = new DummyActions();
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, actions );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), actions );
         Model model = pc.getModel();
 
         Category[] categories = model.getCategories();

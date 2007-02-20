@@ -45,7 +45,7 @@ public class HelpTest extends AbstractPaletteTestHid {
         
         item1.setAttribute( PaletteController.ATTR_HELP_ID, "DummyHelpId" );
         
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
         Category[] categories = model.getCategories();
         Item[] items = categories[0].getItems();
@@ -66,7 +66,7 @@ public class HelpTest extends AbstractPaletteTestHid {
         
         cat1.setAttribute( PaletteController.ATTR_HELP_ID, "DummyHelpId" );
         
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
         Category[] categories = model.getCategories();
         
@@ -83,7 +83,7 @@ public class HelpTest extends AbstractPaletteTestHid {
     public void testRootHelpCustom() throws Exception {
         paletteRootFolder.setAttribute( PaletteController.ATTR_HELP_ID, "DummyHelpId" );
         
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
         Node node = model.getRoot().lookup( Node.class );
         
@@ -93,7 +93,7 @@ public class HelpTest extends AbstractPaletteTestHid {
     }
 
     public void testRootHelpDefault() throws Exception {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
         Node node = model.getRoot().lookup( Node.class );
         
@@ -110,7 +110,7 @@ public class HelpTest extends AbstractPaletteTestHid {
         cat2.setAttribute( PaletteController.ATTR_HELP_ID, "DummyCategoryHelpId" );
         paletteRootFolder.setAttribute( PaletteController.ATTR_HELP_ID, "DummyRootHelpId" );
         
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
         PalettePanel panel = PalettePanel.getDefault();
         panel.setContent( pc, model, pc.getSettings() );
@@ -133,7 +133,7 @@ public class HelpTest extends AbstractPaletteTestHid {
     }
 
     public void testPalettePanelDefault() throws Exception {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
         PalettePanel panel = PalettePanel.getDefault();
         panel.setContent( pc, model, pc.getSettings() );

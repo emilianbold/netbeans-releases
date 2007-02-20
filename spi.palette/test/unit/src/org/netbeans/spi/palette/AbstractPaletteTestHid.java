@@ -39,7 +39,8 @@ import org.openide.util.NbPreferences;
 public abstract class AbstractPaletteTestHid extends TestCase {
 
     protected FileObject paletteRootFolder;
-    protected static final String PALETTE_ROOT_FOLDER_NAME = "test_palette_folder";
+    private static final String PALETTE_ROOT_FOLDER_NAME = "test_palette_folder";
+    private String rootFolderName;
     
     protected String[] categoryNames;
     protected String[][] itemNames;
@@ -52,12 +53,13 @@ public abstract class AbstractPaletteTestHid extends TestCase {
     
     protected void setUp() throws Exception {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        paletteRootFolder = fs.findResource( PALETTE_ROOT_FOLDER_NAME );
-        if( null != paletteRootFolder )
-            paletteRootFolder.delete();
-        paletteRootFolder = fs.getRoot().createFolder( PALETTE_ROOT_FOLDER_NAME );
+//        paletteRootFolder = fs.findResource( PALETTE_ROOT_FOLDER_NAME );
+//        if( null != paletteRootFolder )
+//            paletteRootFolder.delete();
+        rootFolderName = PALETTE_ROOT_FOLDER_NAME+System.currentTimeMillis();
+        paletteRootFolder = fs.getRoot().createFolder( rootFolderName );
         
-        NbPreferences.forModule( DefaultSettings.class ).node( "CommonPaletteSettings" ).removeNode();
+//        NbPreferences.forModule( DefaultSettings.class ).node( "CommonPaletteSettings" ).removeNode();
         
         if( null == myDummyLoader )
             myDummyLoader = new DummyItemLoader();
@@ -91,6 +93,10 @@ public abstract class AbstractPaletteTestHid extends TestCase {
                     lock.releaseLock();
             }
         }
+    }
+    
+    protected String getRootFolderName() {
+        return rootFolderName;
     }
     
     protected FileObject getCategoryFile( String catName ) throws DataObjectNotFoundException {

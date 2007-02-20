@@ -42,16 +42,16 @@ public class ModelTest extends AbstractPaletteTestHid {
      * Test of getName method, of class org.netbeans.modules.palette.Model.
      */
     public void testGetName() throws IOException {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
-        assertEquals( PALETTE_ROOT_FOLDER_NAME, model.getName() );
+        assertEquals( getRootFolderName(), model.getName() );
     }
 
     /**
      * Test of getCategories method, of class org.netbeans.modules.palette.Model.
      */
     public void testGetCategories() throws IOException {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
         Category[] categories = model.getCategories();
         assertEquals( categoryNames.length, categories.length );
@@ -65,7 +65,7 @@ public class ModelTest extends AbstractPaletteTestHid {
      */
     public void testGetActions() throws IOException {
         PaletteActions actions = new DummyActions();
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, actions );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), actions );
         Model model = pc.getModel();
         Action[] modelActions = model.getActions();
         Action[] rootActions = actions.getCustomPaletteActions();
@@ -89,7 +89,7 @@ public class ModelTest extends AbstractPaletteTestHid {
      * Test of getSelectedItem method, of class org.netbeans.modules.palette.Model.
      */
     public void testSelectedItemAndCategory() throws IOException {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
 
         assertNull( "No item is selected by default", model.getSelectedItem() );
@@ -114,7 +114,7 @@ public class ModelTest extends AbstractPaletteTestHid {
      * Test of getRoot method, of class org.netbeans.modules.palette.Model.
      */
     public void testGetRoot() throws IOException {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
         Lookup rootLookup = model.getRoot();
         
@@ -124,14 +124,14 @@ public class ModelTest extends AbstractPaletteTestHid {
         FileObject fo = df.getPrimaryFile();
         assertNotNull( fo );
         
-        assertEquals( PALETTE_ROOT_FOLDER_NAME, fo.getName() );
+        assertEquals( getRootFolderName(), fo.getName() );
     }
 
     /**
      * Test of moveCategory method, of class org.netbeans.modules.palette.Model.
      */
     public void testMoveCategoryBefore() throws IOException {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
 
         Category[] categories = model.getCategories();
@@ -152,7 +152,7 @@ public class ModelTest extends AbstractPaletteTestHid {
      * Test of moveCategory method, of class org.netbeans.modules.palette.Model.
      */
     public void testMoveCategoryAfter() throws IOException {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
 
         Category[] categories = model.getCategories();
@@ -173,7 +173,7 @@ public class ModelTest extends AbstractPaletteTestHid {
      * Test of moveCategory method, of class org.netbeans.modules.palette.Model.
      */
     public void testMoveCategorySamePosition() throws IOException {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
 
         Category[] categories = model.getCategories();

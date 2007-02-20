@@ -45,7 +45,7 @@ public class SettingsTest extends AbstractPaletteTestHid {
         item2.setAttribute( PaletteController.ATTR_IS_VISIBLE, new Boolean(false) );
         item3.setAttribute( PaletteController.ATTR_IS_VISIBLE, new Boolean(true) );
         
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Settings settings = pc.getSettings();
         Model model = pc.getModel();
         Category[] categories = model.getCategories();
@@ -72,7 +72,7 @@ public class SettingsTest extends AbstractPaletteTestHid {
         cat2.setAttribute( PaletteController.ATTR_IS_VISIBLE, new Boolean(false) );
         cat3.setAttribute( PaletteController.ATTR_IS_VISIBLE, new Boolean(true) );
         
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Settings settings = pc.getSettings();
         Model model = pc.getModel();
         Category[] categories = model.getCategories();
@@ -98,7 +98,7 @@ public class SettingsTest extends AbstractPaletteTestHid {
         cat2.setAttribute( PaletteController.ATTR_IS_READONLY, new Boolean(true) );
         cat3.setAttribute( PaletteController.ATTR_IS_READONLY, new Boolean(false) );
         
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
         Category[] categories = model.getCategories();
         
@@ -119,7 +119,7 @@ public class SettingsTest extends AbstractPaletteTestHid {
         item2.setAttribute( PaletteController.ATTR_IS_READONLY, new Boolean(true) );
         item3.setAttribute( PaletteController.ATTR_IS_READONLY, new Boolean(false) );
         
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Model model = pc.getModel();
         Item[] items = model.getCategories()[0].getItems();
         
@@ -140,7 +140,7 @@ public class SettingsTest extends AbstractPaletteTestHid {
         cat2.setAttribute( PaletteController.ATTR_IS_EXPANDED, new Boolean(true) );
         cat3.setAttribute( PaletteController.ATTR_IS_EXPANDED, new Boolean(false) );
         
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Settings settings = pc.getSettings();
         Model model = pc.getModel();
         Category[] categories = model.getCategories();
@@ -160,7 +160,7 @@ public class SettingsTest extends AbstractPaletteTestHid {
     
     public void testShowItemNamesTrue() throws Exception {
         paletteRootFolder.setAttribute( PaletteController.ATTR_SHOW_ITEM_NAMES, new Boolean(true) );
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Settings settings = pc.getSettings();
 
         assertTrue( settings.getShowItemNames() );
@@ -172,7 +172,7 @@ public class SettingsTest extends AbstractPaletteTestHid {
     
     public void testShowItemNamesFalse() throws Exception {
         paletteRootFolder.setAttribute( PaletteController.ATTR_SHOW_ITEM_NAMES, new Boolean(false) );
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Settings settings = pc.getSettings();
 
         assertTrue( !settings.getShowItemNames() );
@@ -183,14 +183,14 @@ public class SettingsTest extends AbstractPaletteTestHid {
     }
     
     public void testShowItemNamesDefault() throws Exception {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Settings settings = pc.getSettings();
 
         assertTrue( "ShowItemNames is on by default", settings.getShowItemNames() );
     }
     
     public void testIconSizeDefault() throws Exception {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Settings settings = pc.getSettings();
 
         assertEquals( "Small icons are default", BeanInfo.ICON_COLOR_16x16, settings.getIconSize() );
@@ -198,7 +198,7 @@ public class SettingsTest extends AbstractPaletteTestHid {
     
     public void testIconSizeCustom() throws Exception {
         paletteRootFolder.setAttribute( PaletteController.ATTR_ICON_SIZE, new Integer(123) );
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Settings settings = pc.getSettings();
 
         assertEquals( 123, settings.getIconSize() );
@@ -209,7 +209,7 @@ public class SettingsTest extends AbstractPaletteTestHid {
     }
     
     public void testItemWidthDefault() throws Exception {
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Settings settings = pc.getSettings();
 
         assertEquals( "No item width is specified by default", -1, settings.getItemWidth() );
@@ -217,7 +217,7 @@ public class SettingsTest extends AbstractPaletteTestHid {
     
     public void testItemWidthCustom() throws Exception {
         paletteRootFolder.setAttribute( PaletteController.ATTR_ITEM_WIDTH, new Integer(123) );
-        PaletteController pc = PaletteFactory.createPalette( PALETTE_ROOT_FOLDER_NAME, new DummyActions() );
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), new DummyActions() );
         Settings settings = pc.getSettings();
 
         assertEquals( 123, settings.getItemWidth() );
