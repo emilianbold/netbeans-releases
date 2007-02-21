@@ -104,6 +104,10 @@ public class DepManager implements DeploymentManager {
         return new ProgObject(this, target,inputStream,inputStream2);
     }
     
+    public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
+        return distribute(target, inputStream, inputStream0);
+    }
+    
     public TargetModuleID[] getAvailableModules(ModuleType moduleType, Target[] target) throws TargetException, java.lang.IllegalStateException {
         List l = new ArrayList();
         Targ[] mytargets = (Targ[]) getTargets();
