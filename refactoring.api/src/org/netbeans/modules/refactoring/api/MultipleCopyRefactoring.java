@@ -22,7 +22,6 @@ package org.netbeans.modules.refactoring.api;
 import org.openide.util.Lookup;
 
 /**
- * Copy refactoring
  * This class is just holder for parameters of Multiple Copy Refactoring. 
  * Refactoring itself is implemented in plugins
  * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
@@ -31,13 +30,14 @@ import org.openide.util.Lookup;
  * @see RefactoringSession
  * @author Jan Becicka
  */
-public class MultipleCopyRefactoring extends AbstractRefactoring {
+public final class MultipleCopyRefactoring extends AbstractRefactoring {
 
     private Lookup target;
 
     /**
-     * @param objectsToCopy Objects to be copied.
-     * E.g. FileObjects in case of Java Refactoring
+     * Public constructor takes Lookup containing objects to refactor as parameter.
+     * Multiple Copy Refactoring Refactoring currently does not have any implementation.
+     * @param objectsToCopy store your objects into Lookup
      */
     public MultipleCopyRefactoring (Lookup objectsToCopy) {
         super(objectsToCopy);
@@ -45,7 +45,7 @@ public class MultipleCopyRefactoring extends AbstractRefactoring {
 
     /**
      * Target where copy should be created
-     * For instance Java Refactoring understands URL as target
+     * Multiple Copy Refactoring Refactoring currently does not have any implementation.
      * @param target
      */
     public void setTarget(Lookup target) {
@@ -54,7 +54,7 @@ public class MultipleCopyRefactoring extends AbstractRefactoring {
     
     /**
      * Target where copy should be created
-     * For instance Java Refactoring understands URL as target
+     * Multiple Copy Refactoring Refactoring currently does not have any implementation.
      * @return target
      */
     public Lookup getTarget() {

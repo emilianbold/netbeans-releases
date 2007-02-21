@@ -35,19 +35,28 @@ import org.openide.util.Lookup;
  */
 public final class WhereUsedQuery extends AbstractRefactoring {
     /**
-     * key for {getBooleanValue()}
+     * key for {@link getBooleanValue()}
      * is search in comments requested?
      */
     public static final String SEARCH_IN_COMMENTS = "SEARCH_IN_COMMENTS";
     /**
-     * key for {getBooleanValue()}
+     * key for {@link getBooleanValue()}
      * is find references requested?
      */
     public static final String FIND_REFERENCES = "FIND_REFERENCES";
     
     /**
-     * Creates a new instance of WhereUsedQuery
-     * @param lookup searched item
+     * Creates a new instance of WhereUsedQuery.
+     * WhereUsedQuery implementations currently understand following types:
+     * <table border="1">
+     *   <tr><th>Module</th><th>Types the Module Understands</th><th>Implementation</th></tr>
+     *   <tr><td>Java Refactoring</td><td><ul>
+     *                                    <li>{@link org.openide.filesystems.FileObject} with content type text/x-java (class references)
+     *                                    <li>{@link org.netbeans.api.java.source.TreePathHandle} (class, field, method references)
+     *                                    </ul>
+     *                              <td>Finds references</td></tr>
+     * </table>
+     * @param lookup put object for which you request references into Lookup instance.
      */
     public WhereUsedQuery(Lookup lookup) {
         super(lookup);
@@ -55,11 +64,11 @@ public final class WhereUsedQuery extends AbstractRefactoring {
     }
 
    /**
-     * Getter for searched item
-     * @param item searched item. Java module understands TreePathHandle to be a parameter
+     * Setter for searched item
+     * @param lookup put object for which you request references into Lookup instance.
      */
-    public final void setObjectsToRefactor(Lookup item) {
-        this.refactoringSource = item;
+    public final void setRefactoringSource(Lookup lookup) {
+        this.refactoringSource = lookup;
     }
     
     private Hashtable hash = new Hashtable();

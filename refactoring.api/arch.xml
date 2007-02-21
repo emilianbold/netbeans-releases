@@ -391,6 +391,14 @@ Refactoring module allows developer to do high level code transformations aka re
     <li><api name="GuardedSections" type="import" category="official" group="java">Guarded Sections</api></li>
     <li><api name="GeneralQueriesAPI" type="import" category="official" group="java">General Queries API</api></li>
     </ul>
+    
+       AbstractRefactoring and it's sublcasses understands following types in its Lookup
+    <ul>
+    <li>
+       <api name="FilesystemsAPI" type="import" group="property" category="official">FileObject</api>
+       <api name="JavaSourceAPI" type="import" group="property" category="devel">TreePathHandle</api>
+    </li>
+    </ul>
  </answer>
 
 
@@ -818,6 +826,7 @@ Nothing.
                 indicate how you comply with the requirements for multithreaded access
                 (synchronization, mutexes, etc.) applicable to those APIs.
                 If your module defines any APIs, or has complex internal structures
+
                 that might be used from multiple threads, declare how you protect
                 data against concurrent access, race conditions, deadlocks, etc.,
                 and whether such rules are enforced by runtime warnings, errors, assertions, etc.

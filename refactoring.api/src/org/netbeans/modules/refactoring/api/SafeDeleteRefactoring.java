@@ -27,14 +27,23 @@ import org.openide.util.Lookup;
  * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
  * @see AbstractRefactoring
  * @see RefactoringSession
- * @author Bharath Ravikumar
+ * @author Bharath Ravikumar, Jan Becicka
  */
 public final class SafeDeleteRefactoring extends AbstractRefactoring {
     private boolean checkInComments;
 
     /**
-     * Creates a new instance of SafeDeleteRefactoring, passing the candidate
+     * Creates a new instance of SafeDeleteRefactoring, passing Lookup containing the candidate
      * elements as parameter.
+     * 
+     * Safe Delete Refactoring implementations currently understand following types:
+     * <table border="1">
+     *   <tr><th>Module</th><th>Types the Module Understands</th><th>Implementation</th></tr>
+     *   <tr><td>Refactoring API (Default impl.)</td><td>FileObject</td><td>Does file delete</td></tr>
+     *   <tr><td>Java Refactoring</td><td><ul><li>{@link org.openide.filesystems.FileObject}(s) with content type text/x-java (safly delete class)
+     *                                <li>{@link org.netbeans.api.java.source.TreePathHandle} (class, field, method)</td>
+     *                              <td>Check for usages and does refactoring inside .java files.</td></tr>
+     * </table>
      * @param namedElements The elements to be safely deleted
      */
     public SafeDeleteRefactoring(Lookup namedElements) {

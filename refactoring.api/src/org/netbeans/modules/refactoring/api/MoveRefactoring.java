@@ -22,9 +22,9 @@ package org.netbeans.modules.refactoring.api;
 import org.openide.util.Lookup;
 
 /**
- * Move refactoring
- * This class is just holder for parameters of Move Refactgoring. 
- * Refactoring itself is implemented in plugins
+ * This class is just holder for parameters of Move Refactoring. 
+ * Refactoring itself is implemented in plugins.
+ * 
  * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
  * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
  * @see AbstractRefactoring
@@ -36,16 +36,29 @@ public final class MoveRefactoring extends AbstractRefactoring {
     private Lookup target;
 
     /**
-     * @param objectsToMove Objects to be moved. E.g. FileObjects 
-     * or TreePathHandles in case of Java Refactoring
+     * Public constructor takes Lookup containing objects to refactor as parameter.
+     * Move Refactoring implementations currently understand following types:
+     * <table border="1">
+     *   <tr><th>Module</th><th>Types the Module Understands</th><th>Implementation</th></tr>
+     *   <tr><td>Refactoring API (Default impl.)</td><td>{@link org.openide.filsuystems.FileObject}(s)</td><td>Does file(s) move</td></tr>
+     *   <tr><td>Java Refactoring</td><td>{@link org.openide.filsuystems.FileObject}(s) with content type text/x-java</td><td>Does refactoring inside .java files</td></tr>
+     * </table>
+     * @param objectsToMove store your objects into Lookup
      */
     public MoveRefactoring (Lookup objectsToMove) {
         super(objectsToMove);
     }
 
     /**
-     * Target for moving
-     * For instance Java Refactoring understands URL as target
+     * Target for moving.
+     * Move Refactoring implementations currently understand following types:
+     * <table border="1">
+     *   <tr><th>Module</th><th>Types the Module Understands</th><th>Implementation</th></tr>
+     *   <tr><td>Refactoring API (Default impl.)</td><td>{@link java.net.URL}</td>
+     *        <td>Creates direstory corresponding to specified {@link java.net.URL} if does not 
+     *            exist and moves all FileObjects into this folder.</td></tr>
+     *   <tr><td>Java Refactoring</td><td>{@link java.net.URL}</td><td>Does move refactoring inside .java files</td></tr>
+     * </table>
      * @param target
      */
     public void setTarget(Lookup target) {
@@ -54,7 +67,7 @@ public final class MoveRefactoring extends AbstractRefactoring {
 
     /**
      * Target for moving
-     * For instance Java Refactoring understands URL as target
+     * @see #setTarget
      * @return target
      */
     public Lookup getTarget() {

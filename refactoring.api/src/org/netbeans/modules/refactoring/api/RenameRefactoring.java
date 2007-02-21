@@ -22,7 +22,6 @@ import org.openide.util.Lookup;
 
 /**
  * Refactoring used for renaming objects.
- * In case of Java Refactoring it means classes, fields and methods.
  * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
  * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
  * @see AbstractRefactoring
@@ -34,9 +33,21 @@ public final class RenameRefactoring extends AbstractRefactoring {
     private boolean searchInComments;
 
     /**
-     * Creates a new instance of RenameRefactoring
-     * For instance Java Refactoring module understands FileObjects and TreePathHandles
-     * @param item 
+     * Creates a new instance of RenameRefactoring.
+     * Rename Refactoring implementations currently understand following types:
+     * <table border="1">
+     *   <tr><th>Module</th><th>Types the Module Understands</th><th>Implementation</th></tr>
+     *   <tr><td>Refactoring API (Default impl.)</td><td>FileObject</td><td>Does file rename</td></tr>
+     *   <tr><td>Java Refactoring</td><td><ul>
+     *                                    <li>{@link org.openide.filesystems.FileObject}(s) with content type text/x-java (class rename)
+     *                                    <li>{@link org.openide.filesystems.FileObject} (folder) folder rename 
+     *                                    <li>{@link org.netbeans.api.java.source.TreePathHandle} (class, field, method rename)
+     *                                    <li>{@link org.netbeans.api.fileinfo.NonRecursiveFolder} package rename</td>
+     *                                    </ul>
+     *                              <td>Does refactoring inside .java files. 
+     *                               In case of FolderRename it also does corresponding file moves</td></tr>
+     * </table>
+     * @param item put object to rename into Lookup instance.
      */
     public RenameRefactoring(Lookup item) {
         super(item);

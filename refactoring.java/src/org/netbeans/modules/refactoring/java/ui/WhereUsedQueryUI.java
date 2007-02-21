@@ -93,9 +93,9 @@ public class WhereUsedQueryUI implements RefactoringUI {
     
     private void setForMethod() {
         if (panel.isMethodFromBaseClass()) {
-            query.setObjectsToRefactor(Lookups.singleton(panel.getBaseMethod()));
+            query.setRefactoringSource(Lookups.singleton(panel.getBaseMethod()));
         } else {
-            query.setObjectsToRefactor(Lookups.singleton(element));
+            query.setRefactoringSource(Lookups.singleton(element));
         }
         query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
         query.putValue(query.FIND_REFERENCES,panel.isMethodFindUsages());

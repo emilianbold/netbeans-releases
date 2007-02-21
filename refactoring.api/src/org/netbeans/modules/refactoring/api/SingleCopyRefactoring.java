@@ -22,7 +22,6 @@ package org.netbeans.modules.refactoring.api;
 import org.openide.util.Lookup;
 
 /**
- * Copy refactoring
  * This class is just holder for parameters of Single Copy Refactoring. 
  * Refactoring itself is implemented in plugins
  * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
@@ -31,22 +30,38 @@ import org.openide.util.Lookup;
  * @see RefactoringSession
  * @author Jan Becicka
  */
-public class SingleCopyRefactoring extends AbstractRefactoring {
+public final class SingleCopyRefactoring extends AbstractRefactoring {
 
     private Lookup target;
     private String newName;
 
     /**
-     * @param objectToCopy Object to be copied.
-     * E.g. FileObject in case of Java Refactoring
+     * Creates a new instance of SingleCopyRefactoring.
+     * Single Copy Refactoring implementations currently understand following types:
+     * <table border="1">
+     *   <tr><th>Module</th><th>Types the Module Understands</th><th>Implementation</th></tr>
+     *   <tr><td>Refactoring API (Default impl.)</td><td>FileObject</td><td>Does file copy</td></tr>
+     *   <tr><td>Java Refactoring</td><td><ul>
+     *                                    <li>{@link FileObject}(s) with content type text/x-java (class copy)
+     *                                    </ul>
+     *                              <td>Updates name, package declaration and import statements</td></tr>
+     * </table>
+     * @param objectToCopy Object to be copied stored into Lookup
      */
     public SingleCopyRefactoring (Lookup objectToCopy) {
         super(objectToCopy);
     }
 
     /**
-     * Target where copy should be created
-     * For instance Java Refactoring understands URL as target
+     * Target for copying.
+     * Single Copy Refactoring implementations currently understand following types:
+     * <table border="1">
+     *   <tr><th>Module</th><th>Types the Module Understands</th><th>Implementation</th></tr>
+     *   <tr><td>Refactoring API (Default impl.)</td><td>{@link java.net.URL}</td>
+     *        <td>Creates directory corresponding to specified URL (if does not 
+     *            exist) and copies all FileObjects into this folder.</td></tr>
+     *   <tr><td>Java Refactoring</td><td>{@link java.net.URL}</td><td>Updates name, package declaration and import statements</td></tr>
+     * </table>
      * @param target
      */
     public void setTarget(Lookup target) {
@@ -54,8 +69,8 @@ public class SingleCopyRefactoring extends AbstractRefactoring {
     }
     
     /**
-     * Target where copy should be created
-     * For instance Java Refactoring understands URL as target
+     * Target for copying
+     * @see #setTarget
      * @return target
      */
     public Lookup getTarget() {
