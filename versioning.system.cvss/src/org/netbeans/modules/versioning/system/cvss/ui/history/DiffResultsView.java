@@ -36,6 +36,7 @@ import org.openide.ErrorManager;
 import javax.swing.*;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.AncestorEvent;
+import java.util.*;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -132,8 +133,12 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                                 if (r2.getRevision().getLogInfoHeader() != r1.getRevision().getLogInfoHeader()) {
                                     throw new Exception();
                                 }
-                                String revision2 = r1.getRevision().getNumber();
-                                String revision1 = r2.getRevision().getNumber();
+                                String revision1 = r1.getRevision().getNumber();
+                                String revision2 = r2.getRevision().getNumber();
+                                if (compareRevisions(revision1, revision2) == 1) {
+                                    revision2 = r1.getRevision().getNumber();
+                                    revision1 = r2.getRevision().getNumber();
+                                }
                                 showDiff(r1.getRevision().getLogInfoHeader(), revision1, revision2, false);
                             }
                         } else {
@@ -150,6 +155,22 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         }
     }
 
+    private static int compareRevisions(String r1, String r2) {
+        StringTokenizer st1 = new StringTokenizer(r1, "."); // NOI18N
+        StringTokenizer st2 = new StringTokenizer(r2, "."); // NOI18N
+        for (;;) {
+            if (!st1.hasMoreTokens()) {
+                return st2.hasMoreTokens() ? -1 : 0;
+            }
+            if (!st2.hasMoreTokens()) {
+                return st1.hasMoreTokens() ? 1 : 0;
+            }
+            int n1 = Integer.parseInt(st1.nextToken());
+            int n2 = Integer.parseInt(st2.nextToken());
+            if (n1 != n2) return n1 - n2;
+        }
+    }
+    
     private void showDiffError(String s) {
         setBottomComponent(new NoContentPanel(s));
     }
