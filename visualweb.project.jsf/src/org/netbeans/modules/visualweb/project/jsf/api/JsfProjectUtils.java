@@ -1030,24 +1030,25 @@ public class JsfProjectUtils {
     public static boolean addLibraryReferences(Project project, Library[] libraries, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
         Lookup lookup = project.getLookup();
         
-        Object cpExtenderObj = lookup.lookup(JsfProjectClassPathExtender.class);
-        if (cpExtenderObj != null) {
+        JsfProjectClassPathExtender cpJsfExtender = (JsfProjectClassPathExtender) lookup.lookup(JsfProjectClassPathExtender.class);
+        if (cpJsfExtender != null) {
             try {
-                return ((JsfProjectClassPathExtender) cpExtenderObj).addLibraryReferences(libraries, role);
+                return cpJsfExtender.addLibraryReferences(libraries, role);
             } catch (IOException ex) {
                 return false;
             }
         }
         
+        // XXX Wait for the new ProjectClassPathModifier implementation
         ProjectClassPathExtender cpExtender = (ProjectClassPathExtender) lookup.lookup(ProjectClassPathExtender.class);
         if (cpExtender != null) {
             for (int i = 0; i < libraries.length; i++) {
                 cpExtender.addLibrary(libraries[i]);
             }
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
     
     /**
@@ -1061,11 +1062,14 @@ public class JsfProjectUtils {
      */
     public static boolean removeLibraryReferences(Project project, Library[] libraries, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
         Lookup lookup = project.getLookup();
-        Object cpExtenderObj = lookup.lookup(JsfProjectClassPathExtender.class);
-        if (cpExtenderObj != null) {
-            return ((JsfProjectClassPathExtender) cpExtenderObj).removeLibraryReferences(libraries, role);
+
+        JsfProjectClassPathExtender cpJsfExtender = (JsfProjectClassPathExtender) lookup.lookup(JsfProjectClassPathExtender.class);
+        if (cpJsfExtender != null) {
+            return cpJsfExtender.removeLibraryReferences(libraries, role);
         }
         
+        // XXX No removeLibraries method in ProjectClassPathExtender, wait for the new ProjectClassPathModifier implementation
+
         return false;
     }
     
@@ -1076,12 +1080,14 @@ public class JsfProjectUtils {
      * @param role Determines whether the library is to be referenced from the design-time classpath or deploy
      * time classpath
      * @return Returns true if the library is already referenced by the project, false otherwise
+     *
+     * XXX Will be Deprecated when the new ProjectClassPathModifier implementation is available
      */
     public static boolean hasLibraryReference(Project project, Library library, JsfProjectClassPathExtender.LibraryRole role) {
         Lookup lookup = project.getLookup();
-        Object cpExtenderObj = lookup.lookup(JsfProjectClassPathExtender.class);
-        if (cpExtenderObj != null) {
-            return ((JsfProjectClassPathExtender) cpExtenderObj).hasLibraryReference(library, role);
+        JsfProjectClassPathExtender cpJsfExtender = (JsfProjectClassPathExtender) lookup.lookup(JsfProjectClassPathExtender.class);
+        if (cpJsfExtender != null) {
+            return cpJsfExtender.hasLibraryReference(library, role);
         }
         
         return false;
@@ -1107,11 +1113,25 @@ public class JsfProjectUtils {
      */
     public static boolean addArchiveReferences(Project project, FileObject[] archiveFiles, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
         Lookup lookup = project.getLookup();
-        Object cpExtenderObj = lookup.lookup(JsfProjectClassPathExtender.class);
-        if (cpExtenderObj != null) {
-            return ((JsfProjectClassPathExtender) cpExtenderObj).addArchiveReferences(archiveFiles, role);
+        
+        JsfProjectClassPathExtender cpJsfExtender = (JsfProjectClassPathExtender) lookup.lookup(JsfProjectClassPathExtender.class);
+        if (cpJsfExtender != null) {
+            try {
+                return cpJsfExtender.addArchiveReferences(archiveFiles, role);
+            } catch (IOException ex) {
+                return false;
+            }
         }
         
+        // XXX Wait for the new ProjectClassPathModifier implementation
+        ProjectClassPathExtender cpExtender = (ProjectClassPathExtender) lookup.lookup(ProjectClassPathExtender.class);
+        if (cpExtender != null) {
+            for (int i = 0; i < archiveFiles.length; i++) {
+                cpExtender.addArchiveFile(archiveFiles[i]);
+            }
+            return true;
+        }
+
         return false;
     }
     
@@ -1126,11 +1146,14 @@ public class JsfProjectUtils {
      */
     public static boolean removeArchiveReferences(Project project, FileObject[] archiveFiles, JsfProjectClassPathExtender.LibraryRole role) throws IOException {
         Lookup lookup = project.getLookup();
-        Object cpExtenderObj = lookup.lookup(JsfProjectClassPathExtender.class);
-        if (cpExtenderObj != null) {
-            return ((JsfProjectClassPathExtender) cpExtenderObj).removeArchiveReferences(archiveFiles, role);
+
+        JsfProjectClassPathExtender cpJsfExtender = (JsfProjectClassPathExtender) lookup.lookup(JsfProjectClassPathExtender.class);
+        if (cpJsfExtender != null) {
+            return cpJsfExtender.removeArchiveReferences(archiveFiles, role);
         }
         
+        // XXX No removeRoots method in ProjectClassPathExtender, wait for the new ProjectClassPathModifier implementation
+
         return false;
     }
     
@@ -1141,12 +1164,14 @@ public class JsfProjectUtils {
      * @param role Determines whether the archive is to be referenced from the design-time classpath or deploy
      * time classpath
      * @return Returns true if the archive is already referenced by the project, false otherwise
+     *
+     * XXX Will be Deprecated when the new ProjectClassPathModifier implementation is available
      */
     public static boolean hasArchiveReference(Project project, FileObject archiveFile, JsfProjectClassPathExtender.LibraryRole role) {
         Lookup lookup = project.getLookup();
-        Object cpExtenderObj = lookup.lookup(JsfProjectClassPathExtender.class);
-        if (cpExtenderObj != null) {
-            return ((JsfProjectClassPathExtender) cpExtenderObj).hasArchiveReference(archiveFile, role);
+        JsfProjectClassPathExtender cpJsfExtender = (JsfProjectClassPathExtender) lookup.lookup(JsfProjectClassPathExtender.class);
+        if (cpJsfExtender != null) {
+            return cpJsfExtender.hasArchiveReference(archiveFile, role);
         }
         
         return false;
