@@ -399,7 +399,7 @@ Microsystems, Inc. All Rights Reserved.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.web.jsf.navigation.graph</friend>
+                <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <package>org.netbeans.modules.web.jsf.api</package>
                 <package>org.netbeans.modules.web.jsf.api.editor</package>
                 <package>org.netbeans.modules.web.jsf.api.facesmodel</package>
