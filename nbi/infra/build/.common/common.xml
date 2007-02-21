@@ -21,22 +21,39 @@
 ============================================================================ -->
 
 <!--
-  This is a target library which is intended to be used by other build 
-  scripts, currently - engine, product and group. It contains utility
-  targets which perform the required initialization, clean-up and build 
-  functionality.
+  This is a target library which is intended to be used by other build scripts.
+  
+  It contains the standard, fucntionality, common across all scripts which 
+  allows to perform some basic initialization, check out sources from a cvs 
+  repository and, finally, clean or build a netbeans project and jni libraries.
+  
+  None ot the targets defined in this script are intended to be called 
+  directly, instead it is expected that targets in build dcripts which import 
+  this one will declare dependecies on this script's targets.
+  
+  @author Kirill Sorokin
 -->
 <project name="common" default="usage" basedir=".">
     <!-- =======================================================================
       Initialization
     ======================================================================== -->
+    
     <!--
-      This target performs the default initialization, common custom tasks 
-      are defined here. 
+      Performs the default initialization.
       
-      It sets some properties which control the flow of the build process, such 
-      as whether tp check-out sources from trunk or branch, or to copy them 
-      from a given location instead.
+      This target defines a set of custom ant tasks which are used throughout
+      the script and may be useful for the derivative scripts.
+      
+      It also sets some properties which control the flow of the build process, 
+      such as whether to check-out sources from trunk or branch, or to copy 
+      them from a given location; whether to build the native components or 
+      not, whether to build the netbeans project or not.
+      
+      Finally this target initializes the local working directory and the 
+      distributives directory and sets a special property which will prevent it
+      from repeated execution.
+      
+      This target is not intended to be called directly.
     -->
     <target name=".init" depends=".build-custom-tasks" unless="skip.initialization">
         <!-- set the line.separator property to a shorter name -->
@@ -114,12 +131,13 @@
     </target>
     
     <!--
-      This target builds custom ant tasks, which are required throughout the
-      build script(s). 
+      Builds custom ant tasks.
       
-      It sets a marker property, which prevents this target from being 
-      executed, in case the 'init' target gets executed a second time (e.g. 
-      as the result of an antcall).
+      This target deletes the directory which is the target for the custom ant
+      tasks compilation, recreates it and runs javac on the custom tasks' 
+      sources.
+      
+      This target is not intended to be called directly.
     -->
     <target name=".build-custom-tasks">
         <!-- quick clean-up and initialization -->
@@ -136,18 +154,25 @@
     <!-- =======================================================================
       Clean-up
     ======================================================================== -->
+    
     <!--
-      This is the main clean-up target, it cleans the native libraries, 
-      tries to run cleanup on the java project and finally deletes the 
-      local working directory.
+      Performs the standard clean-up procedures.
+      
+      It cleans the native components (iterates over the list of platforms for 
+      which the native components should be built and deletes the distributive 
+      files of these components), tries to run cleanup on the netbeans project 
+      and finally deletes the local working directory.
+      
+      This target is not intended to be called directly.
     -->
     <target name=".clean">
         <!-- for each of the defined platforms set the appropriate property
              and execute the clean-up procedure -->
-        <for-each list="${platforms}" property="platform">
+        <for-each list="${native.platforms}" property="platform">
             <antcall target=".clean-native"/>
         </for-each>
         
+        <!-- attempt to run the clean-up procedure on the netbeans project -->
         <antcall target=".clean-nbproject"/>
         
         <!-- delete the local working directory -->
@@ -155,32 +180,66 @@
     </target>
     
     <!--
-      This target cleans the native part of the project. It is meant to be
-      antcall'ed from a loop which would iterate over the list of supported
-      platforms. Thus this target expects the property 'platform' to point to
-      the current platform for which clean-up should be performed.
+      Cleans the native components of the project. 
+      
+      It is meant to be antcall'ed from a loop which would iterate over the 
+      list of supported platforms. This target expects the property 
+      'platform' to point to the current platform for which clean-up should be 
+      performed.
       
       By default it falls back to '.clean-jni' target, but it is meant to be 
       overriden by derivative build scripts, if there is need to do more than 
       that.
+      
+      This target is only executed if the the ${build.native} property was set 
+      to 'true'.
+      
+      This target is not intended to be called directly.
     -->
     <target name=".clean-native" if="do.build.native">
         <antcall target=".clean-jni"/>
     </target>
     
     <!--
-      This target cleans up the native jni libraries for the project.
+      Cleans up the native jni libraries for the project.
+      
+      It removes the distributive file for the jni library for the current 
+      platform.
+      
+      This target is only executed if the the ${build.native} property was set 
+      to 'true'.
+      
+      This target is not intended to be called directly.
     -->
-    <target name=".clean-jni">
-        <!-- delete the locally cached files -->
-        <delete dir="${scp.local.dir}"/>
+    <target name=".clean-jni" if="do.build.native">
+        <!-- set required properties -->
+        <set property="current.scp.local.dir" 
+             source="scp.local.dir"/>
+        <set property="current.native.dist.file" 
+             source="native.dist.file.${platform}"/>
+        
+        <!-- delete the distributive -->
+        <delete dir="${scp.local.dir}/${current.native.dist.file}"/>
     </target>
     
+    <!--
+      Cleans up the netbeans part of the project.
+      
+      It runs the 'clean' target on the netbeans project's build script.
+      
+      This target is only executed if the the ${build.nbproject} property was 
+      set to 'true'.
+      
+      This target is not intended to be called directly.
+    -->
     <target name=".clean-nbproject" if="do.build.nbproject">
+        <!-- check whether the netbeans project's directory exists -->
         <condition property="nbproject.exists" value="true">
             <available file="${cvs.dir}/${nbproject.path}"/>
         </condition>
         
+        <!-- is it exists, run the 'clean' target on the netbeans project's 
+             build script -->
         <if property="nbproject.exists" value="true">
             <exec executable="${ant.executable}" 
                   dir="${cvs.dir}/${nbproject.path}" 
@@ -200,9 +259,31 @@
     <!-- =======================================================================
       Check-out
     ======================================================================== -->
+    
+    <!--
+      Checks out sources from a CVS repository with the given coordinates.
+      
+      This target uses the values of ${cvs.root}, ${cvs.module}, ${cvs.path}
+      properties to check out the required sources. It falls back to the three
+      targets: '.checkout-trunk', '.checkout-branch' and '.checkout-copy', 
+      which correspond to the choosen check-out method. Only one of these 
+      targets will be executed under any conditions.
+      
+      This target is not intended to be called directly.
+    -->
     <target name=".checkout" 
             depends=".checkout-trunk,.checkout-branch,.checkout-copy"/>
     
+    <!--
+      Checks out sources from trunk.
+      
+      This target executes the <cvs> task, which performs the actual check-out.
+      
+      This target is only executed if the the ${checkout.sources} property was 
+      set to 'true' and the ${cvs.branch} property is empty.
+      
+      This target is not intended to be called directly.
+    -->
     <target name=".checkout-trunk" if="do.checkout.trunk">
         <cvs cvsroot="${cvs.root}" 
              command="checkout" 
@@ -211,6 +292,16 @@
              failonerror="true"/>
     </target>
     
+    <!--
+      Checks out sources from a given branch.
+      
+      This target executes the <cvs> task, which performs the actual check-out.
+      
+      This target is only executed if the the ${checkout.sources} property was 
+      set to 'true' and the ${cvs.branch} property is not empty.
+      
+      This target is not intended to be called directly.
+    -->
     <target name=".checkout-branch" if="do.checkout.branch">
         <cvs cvsroot="${cvs.root}" 
              command="checkout" 
@@ -220,9 +311,27 @@
              failonerror="true"/>
     </target>
     
+    <!--
+      Copies the sources from a given location.
+      
+      This target serves as an alternative to the actual check-out targets and
+      is used in case when the calling script already knows the location of the
+      appropriate source files and there is no need to check them out again.
+      
+      Several filters are applied to the sources files, e.g. no already built
+      files are copied, the private parts of the netbeans projects are omitted,
+      CVS metadata is also omitted.
+      
+      This target is only executed if the the ${checkout.sources} property was 
+      set to 'false'.
+      
+      This target is not intended to be called directly.
+    -->
     <target name=".checkout-copy" if="do.checkout.copy">
+        <!-- create the destination directory for the sources -->
         <mkdir dir="${work.dir}/${cvs.module}/${cvs.path}"/>
         
+        <!-- copy the sources, applying the selected filters -->
         <copy todir="${work.dir}/${cvs.module}/${cvs.path}" verbose="true">
             <fileset dir="${sources.dir}/${cvs.path}">
                 <include name="**/*.*"/>
@@ -238,10 +347,15 @@
     <!-- =======================================================================
       Build
     ======================================================================== -->
+    
     <!-- 
-      This is the main build target, it invokes the check out procedure, then
-      builds the native libraries for the project and finally the java part
-      of it.
+      Performs the standard build procedures.
+      
+      This target builds the native components for the project (iterates over 
+      the list of platforms, calling the '.build-native' target) and executes 
+      the 'build' target on the netbeans part of the project.
+      
+      This target is not intended to be called directly.
     -->
     <target name=".build">
         <!-- for each of the defined platforms set the appropriate property
@@ -250,32 +364,71 @@
             <antcall target=".build-native"/>
         </for-each>
         
+        <!-- run the 'build' target on the netbeans project -->
         <antcall target=".build-nbproject"/>
     </target>
     
+    <!--
+      Builds the native components of the project for a given platform.
+      
+      By default this target falls back to the '.build-jni' target, which 
+      builds the jni libraries for the project.
+      
+      This target is called in a loop from the '.build-native' target, and 
+      expects the ${platform} property to contain the code mane of the platform 
+      for which the native components should be built.
+      
+      This target is only executed if the the ${build.native} property was set 
+      to 'true'.
+      
+      This target is not intended to be called directly.
+    -->
     <target name=".build-native" if="do.build.native">
         <antcall target=".build-jni"/>
     </target>
     
     <!-- 
-        Performs the native library build procedure for a given platform.
+      Builds the jni library for the given platform.
+      
+      This target is antcall'ed as part of the call to the '.build-native' 
+      target, and expects the ${platform} property to contain the code name of
+      the platform for which the library should be built.
+      
+      It connects to the registered satellite machine for the current platform
+      using the 'ssh' utility, checks out the library's sources and builds it.
+      The built binary is then copied back to the host machine using 'scp'.
+      
+      This target is only executed if the the ${build.native} property was set 
+      to 'true'.
+      
+      This target is not intended to be called directly.
     -->
     <target name=".build-jni" if="do.build.native">
-        <!-- log -->
-        <echo message="building jni for ${platform}"/>
-        
         <!-- set required properties -->
-        <set property="remote.host" source="remote.host.${platform}"/>
-        <set property="remote.port" source="remote.port.${platform}"/>
-        <set property="remote.user" source="remote.user.${platform}"/>
-        <set property="native.dist.file" source="native.dist.file.${platform}"/>
+        <set property="remote.host" 
+             source="remote.host.${platform}"/>
+        <set property="remote.port" 
+             source="remote.port.${platform}"/>
+        <set property="remote.user" 
+             source="remote.user.${platform}"/>
         
-        <set property="current.ssh.arguments" source="ssh.arguments"/>
-        <set property="current.ssh.command" source="ssh.command"/>
+        <set property="current.native.dist.file" 
+             source="native.dist.file.${platform}"/>
         
-        <set property="current.scp.arguments" source="scp.arguments"/>
-        <set property="current.scp.remote.dir" source="scp.remote.dir"/>
-        <set property="current.scp.local.dir" source="scp.local.dir"/>
+        <!-- now we need to re-evaluate the values of the ssh and scp-related 
+             properties as they contain references to the properties that have 
+             just been set above -->
+        <set property="current.ssh.arguments" 
+             source="ssh.arguments"/>
+        <set property="current.ssh.command" 
+             source="ssh.command"/>
+        
+        <set property="current.scp.arguments" 
+             source="scp.arguments"/>
+        <set property="current.scp.remote.dir" 
+             source="scp.remote.dir"/>
+        <set property="current.scp.local.dir" 
+             source="scp.local.dir"/>
         
         <!-- run the ssh command - it is expected that it will build 
              everything -->
@@ -289,11 +442,21 @@
         <mkdir dir="${current.scp.local.dir}"/>
         <exec executable="${scp.executable}" failonerror="true">
             <arg line="${current.scp.arguments}"/>
-            <arg value="${current.scp.remote.dir}/${native.dist.file}"/>
-            <arg value="${current.scp.local.dir}/${native.dist.file}"/>
+            <arg value="${current.scp.remote.dir}/${current.native.dist.file}"/>
+            <arg value="${current.scp.local.dir}/${current.native.dist.file}"/>
         </exec>
     </target>
     
+    <!--
+      Builds the netbeans part of the project.
+      
+      It runs the 'jar' target on the netbeans project's build script.
+      
+      This target is only executed if the the ${build.nbproject} property was 
+      set to 'true'.
+      
+      This target is not intended to be called directly.
+    -->
     <target name=".build-nbproject" if="do.build.nbproject">
         <exec executable="${ant.executable}" 
               dir="${cvs.dir}/${nbproject.path}" 
@@ -311,6 +474,12 @@
     <!-- =======================================================================
       Default
     ======================================================================== -->
+    
+    <!--
+      The default target. 
+      
+      Does nothing except printing the usage information.
+    -->
     <target name="usage">
         <echo>
             This build script is a targets library and must not be used 
