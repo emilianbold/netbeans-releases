@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="Form config">
 
 <!-- Jiri Vagner -->
-   <testbag testattribs="validation, full, my" executor="ide" name="testbag_Options">
+   <testbag testattribs="validation, full, jv" executor="ide" name="testbag_Options">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/options/*.*"/>
