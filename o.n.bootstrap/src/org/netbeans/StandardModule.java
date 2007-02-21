@@ -665,7 +665,7 @@ final class StandardModule extends Module {
     /** Class loader to load a single module.
      * Auto-localizing, multi-parented, permission-granting, the works.
      */
-    private class OneModuleClassLoader extends JarClassLoader implements Util.ModuleProvider, Util.PackageAccessibleClassLoader {
+    private class OneModuleClassLoader extends JarClassLoader implements Util.ModuleProvider {
         private int rc;
         /** Create a new loader for a module.
          * @param classp the List of all module jars of code directories;

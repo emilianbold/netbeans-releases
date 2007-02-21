@@ -47,7 +47,7 @@ import org.openide.util.Lookup;
  *
  * @author  Petr Nejedly, Jesse Glick
  */
-public class ProxyClassLoader extends ClassLoader {
+public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessibleClassLoader {
 
     private static final Logger LOGGER = Logger.getLogger(ProxyClassLoader.class.getName());
     
@@ -102,7 +102,7 @@ public class ProxyClassLoader extends ClassLoader {
     // this is used only by system classloader, maybe we can redesign it a bit
     // to live without this functionality, then destroy may also go away
     /** Add new parents dynamically.
-     * @param parents the new parents to add (append to list)
+     * @param nueparents the new parents to add (append to list)
      * @throws IllegalArgumentException in case of a null or cyclic parent (duplicate OK)
      */
     public void append(ClassLoader[] nueparents) throws IllegalArgumentException {
@@ -367,6 +367,7 @@ public class ProxyClassLoader extends ClassLoader {
      * @param name package name in org.netbeans.modules.foo format
      * @param sname package name in org/netbeans/modules/foo/ format
      * @param recurse whether to also ask parents
+     * @return located package, or null
      */
     protected Package getPackageFast(String name, String sname, boolean recurse) {
         synchronized (packages) {
@@ -466,7 +467,7 @@ public class ProxyClassLoader extends ClassLoader {
     private static void printDefaultPackageWarning(String name) {
         // #42201 - commons-logging lib tries to read its config from this file, ignore
         if (!"commons-logging.properties".equals(name)) { // NOI18N
-            LOGGER.log(Level.WARNING, "You are trying to access file: {0} from the default package. Please see http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#default_package", name);
+            LOGGER.log(Level.WARNING, "You are trying to access file: " + name + " from the default package. Please see http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#default_package", new IllegalStateException());
         }
     }
     
@@ -635,15 +636,16 @@ public class ProxyClassLoader extends ClassLoader {
     }
     
     /**
-     * See loadInOrder(...). Can be overriden by special classloaders
+     * Can be overridden by special classloaders
      * (see project installer/jnlp/modules).
+     * @see #loadInOrder
      */
     protected boolean shouldBeCheckedAsParentProxyClassLoader() {
         return true;
     }
 
     /**
-     * Allows turning off the optimilazation in loadInOrder(...).
+     * Allows turning off the optimization in {@link #loadInOrder}.
      */
     protected boolean optimizeNBLoading() {
         return true;
