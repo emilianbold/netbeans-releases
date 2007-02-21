@@ -191,7 +191,7 @@ final class LibrariesNode extends AbstractNode {
                         ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
                             public Void run() throws Exception {
                                 ProjectXMLManager pxm = new ProjectXMLManager(project);
-                                List<Object> keys = new ArrayList<Object>();
+                                final List<Object> keys = new ArrayList<Object>();
                                 keys.add(JDK_PLATFORM_NAME);
                                 SortedSet<ModuleDependency> deps = new TreeSet<ModuleDependency>(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
                                 deps.addAll(pxm.getDirectDependencies());
@@ -199,7 +199,11 @@ final class LibrariesNode extends AbstractNode {
                                 // XXX still not good when dependency was just edited, since Children use
                                 // hashCode/equals (probably HashMap) to find lastly selected node (so neither
                                 // SortedSet would help here). Use probably wrapper instead to keep selection.
-                                setKeys(Collections.unmodifiableList(keys));
+                                RP.post(new Runnable() {
+                                    public void run() {
+                                        setKeys(Collections.unmodifiableList(keys));
+                                    }
+                                });
                                 return null;
                             }
                         });
