@@ -269,7 +269,7 @@ public class NbEditorUI extends ExtEditorUI {
         scroller.setBorder(empty);
         scroller.setViewportBorder(empty);
 
-        Class kitClass = Utilities.getKitClass(component);
+        String mimeType = NbEditorUtilities.getMimeType(component);
         
         Map/*<SideBarPosition, JComponent>*/ sideBars = CustomizableSideBar.createSideBars(component);
         if (listener == null){
@@ -285,7 +285,7 @@ public class NbEditorUI extends ExtEditorUI {
                     
                 }
             };
-            CustomizableSideBar.addChangeListener(kitClass, listener);
+            CustomizableSideBar.addChangeListener(mimeType, listener);
         }
         
         processSideBars(sideBars, scroller, ec);

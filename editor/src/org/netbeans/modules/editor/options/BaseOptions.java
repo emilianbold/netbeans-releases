@@ -75,6 +75,7 @@ import java.awt.RenderingHints;
 import java.util.logging.Level;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.modules.editor.impl.KitsTracker;
 import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -284,17 +285,25 @@ public class BaseOptions extends OptionSupport {
         return kit.getContentType();
     }
     
+    /**
+     * Gets an instance of <code>BaseOptions</code> for an editir kit implementation
+     * class. Please see description of <code>BaseKit.getKit(Class)</code> for
+     * more details.
+     * 
+     * @param kitClass The editor kit implementation class to get <code>BaseOptions</code> for.
+     * 
+     * @return The <code>BaseOptions</code> or <code>null</code> if the options
+     *   can't be found or loaded for some reason.
+     * @deprecated Use <code>MimeLookup</code> to find <code>BaseOptions</code>
+     *   instances for a mime type.
+     * @see org.netbeans.editor.BaseKit#getKit(Class)
+     */
     public static BaseOptions getOptions(Class kitClass) {
         BaseOptions options = null;
 
         if (kitClass != BaseKit.class && kitClass != NbEditorKit.class) {
-            // XXX: improve this by implementing BaseKit.guessMimeTypeFromKitClass
-            // it can lookup a kit class in all registered mime types and collect
-            // mime types where the kit class matches the one we are looking for
-            // this way there would be no need for kitClass.newInstance() ...
-            BaseKit kit = BaseKit.getKit(kitClass);
-            if (kit != null) {
-                String mimeType = kit.getContentType();
+            String mimeType = KitsTracker.getInstance().findMimeType(kitClass);
+            if (mimeType != null) {
                 Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
                 options = (BaseOptions) lookup.lookup(BaseOptions.class);
             }
