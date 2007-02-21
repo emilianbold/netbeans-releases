@@ -33,6 +33,6 @@ Microsystems, Inc. All Rights Reserved.
     <compiler name="default-compiler" antfile="build-unit.xml"
         target="default-compiler" default="true"/>
 
-    <executor name="unit-executor" antfile="build-unit.xml" target="rununittest"/>
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
     
 </mconfig>

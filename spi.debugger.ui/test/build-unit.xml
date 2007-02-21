@@ -20,39 +20,5 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="Projects API tests compilers and executors" basedir="." default="all">
-
-<!--    Add this property to enable test debugging-->
-<!--    <property name="xtest.jvm.args" value="-Xdebug -Xrunjdwp:transport=dt_socket,server=n,suspend=n,address=5005"/>-->
-
-    <target name="init">
-        <path id="test.compile.cp">
-            <pathelement location="${openide.dir}/core/openide.jar"/>
-            <pathelement location="${debuggercore/api.dir}/modules/org-netbeans-api-debugger.jar"/>
-            <pathelement location="${java.home}/../lib/tools.jar"/>
-        </path>
-        <path id="test.run.cp">
-            <path refid="test.compile.cp"/>
-        </path>
-    </target>
-    
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-    
-    <target name="default-compiler" depends="init">
-        <buildTests srcdir="unit/src" compileexcludes="**/data/**">
-            <classpath refid="test.compile.cp"/>
-        </buildTests>
-    </target>
-    
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->
-    
-    <target name="rununittest" depends="init">
-        <executeTests pluginname="jvm">
-            <classpath refid="test.run.cp"/>
-        </executeTests>
-    </target>
-        
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
 </project>
