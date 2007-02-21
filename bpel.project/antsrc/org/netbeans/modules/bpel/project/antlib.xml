@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
- <antlib>
-        <typedef name="BpelProjectJBIGen" classname="org.netbeans.modules.bpel.project.anttasks.IDEGenerateJBIDescriptor"/>
-        <typedef name="BpelProjectValidate" classname="org.netbeans.modules.bpel.project.anttasks.IDEValidateBPELProject"/>
-        
- </antlib>
