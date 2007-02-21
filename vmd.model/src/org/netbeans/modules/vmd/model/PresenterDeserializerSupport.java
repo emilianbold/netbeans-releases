@@ -18,27 +18,30 @@
  *
  */
 
-package org.netbeans.modules.vmd.api.model;
+package org.netbeans.modules.vmd.model;
 
 import org.w3c.dom.Node;
-import org.w3c.dom.Document;
-
-import java.util.List;
+import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.model.PresenterDeserializer;
+import org.openide.util.Lookup;
 
 /**
- * This interface is used as an input parameter for <code>ComponentSerializationSupport.serialize</code> method
- * and allows to specify serialization of custom presenters.
- *
  * @author David Kaspar
  */
-public interface PresenterSerializer {
+public class PresenterDeserializerSupport {
 
-    /**
-     * Called to perform serialization of custom presenters.
-     * The method should not modify the document, instead just return a list of newly created nodes.
-     * @param document the xml document
-     * @return the list of newly created nodes that contains serialized data of custom presenters.
-     */
-    List<Node> serialize (Document document);
+    private static final Lookup.Result<PresenterDeserializer> result = Lookup.getDefault ().lookupResult (PresenterDeserializer.class);
+
+    static PresenterDeserializer.PresenterFactory deserialize (String projectType, Node node) {
+        assert Debug.isFriend (XMLComponentDescriptor.class, "deserializePresenters"); // NOI18N
+        for (PresenterDeserializer deserializer : result.allInstances ())
+            if (projectType.equals (deserializer.getProjectType ())) {
+                PresenterDeserializer.PresenterFactory descriptor = deserializer.deserialize (node);
+                if (descriptor != null)
+                    return descriptor;
+            }
+        return null;
+    }
+
 
 }

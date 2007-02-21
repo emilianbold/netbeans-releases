@@ -37,14 +37,15 @@ This smallIcon and largeIcon are image paths that are going to be loaded using "
     canDerive (true|false) "true"
 >
 
+<!-- not used now: helpTopic, smallIcon, largeIcon -->
 <!ELEMENT PaletteDescriptor EMPTY>
 <!ATTLIST PaletteDescriptor
     displayName CDATA #REQUIRED
     toolTip CDATA #IMPLIED
+    preferredCategoryID CDATA #IMPLIED
     helpTopic CDATA #IMPLIED
     smallIcon CDATA #IMPLIED
     largeIcon CDATA #IMPLIED
-    preferredCategoryID CDATA #IMPLIED
 >
 
 <!ELEMENT PropertyDescriptor EMPTY>
@@ -58,6 +59,7 @@ This smallIcon and largeIcon are image paths that are going to be loaded using "
     readOnly CDATA (true|false) "false"
 >
 
+<!-- not used now -->
 <!ELEMENT RequiredLibrary EMPTY>
 <!ATTLIST RequiredLibrary
     name CDATA #REQUIRED

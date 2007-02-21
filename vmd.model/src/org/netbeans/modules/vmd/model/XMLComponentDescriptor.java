@@ -20,7 +20,6 @@ package org.netbeans.modules.vmd.model;
 
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.DefaultVersionDescriptor;
-import org.openide.util.Lookup;
 import org.w3c.dom.*;
 
 import java.util.ArrayList;
@@ -34,41 +33,39 @@ import java.util.Collections;
 // TODO - whole serialization and deserialization of versionDescriptor, excludePropertyDescriptorNames, required library
 public class XMLComponentDescriptor extends ComponentDescriptor {
 
-    private static final Lookup.Result<PresenterSerializer> lookupResult = Lookup.getDefault ().lookupResult (PresenterSerializer.class);
+    public static final String COMPONENT_DESCRIPTOR_NODE = "ComponentDescriptor"; // NOI18N
+    public static final String VERSION_ATTR = "version";  // NOI18N
 
-    private static final String COMPONENT_DESCRIPTOR_NODE = "ComponentDescriptor"; // NOI18N
-    private static final String VERSION_ATTR = "version";  // NOI18N
+    public static final String TYPE_NODE = "TypeDescriptor"; // NOI18N
+    public static final String SUPER_TYPEID_ATTR = "superTypeID"; // NOI18N
+    public static final String THIS_TYPEID_ATTR = "thisTypeID"; // NOI18N
+    public static final String CAN_INSTANTIATE_ATTR = "canInstantiate"; // NOI18N
+    public static final String CAN_DERIVE_ATTR = "canDerive"; // NOI18N
 
-    private static final String TYPE_NODE = "TypeDescriptor"; // NOI18N
-    private static final String SUPER_TYPEID_ATTR = "superTypeID"; // NOI18N
-    private static final String THIS_TYPEID_ATTR = "thisTypeID"; // NOI18N
-    private static final String CAN_INSTANTIATE_ATTR = "canInstantiate"; // NOI18N
-    private static final String CAN_DERIVE_ATTR = "canDerive"; // NOI18N
+    public static final String PALETTE_NODE = "PaletteDescriptor"; // NOI18N
+    public static final String DISPLAY_NAME_ATTR = "displayName"; // NOI18N
+    public static final String TOOLTIP_ATTR = "toolTip"; // NOI18N
+    public static final String SMALL_ICON_ATTR = "smallIcon"; // NOI18N
+    public static final String LARGE_ICON_ATTR = "largeIcon"; // NOI18N
+    public static final String PREFERRED_CATEGORYID_ATTR = "preferredCategoryID"; // NOI18N
 
-    private static final String PALETTE_NODE = "PaletteDescriptor"; // NOI18N
-    private static final String DISPLAY_NAME_ATTR = "displayName"; // NOI18N
-    private static final String TOOLTIP_ATTR = "toolTip"; // NOI18N
-    private static final String SMALL_ICON_ATTR = "smallIcon"; // NOI18N
-    private static final String LARGE_ICON_ATTR = "largeIcon"; // NOI18N
-    private static final String PREFERRED_CATEGORYID_ATTR = "preferredCategoryID"; // NOI18N
+    public static final String PROPERTY_DESCRIPTOR_NODE = "PropertyDescriptor"; // NOI18N
+    public static final String NAME_ATTR = "name"; // NOI18N
+    public static final String TYPEID_ATTR = "typeID"; // NOI18N
+    public static final String DEFAULT_VALUE_ATTR = "defaultValue"; // NOI18N
+    public static final String ALLOW_NULL = "allowNull"; // NOI18N
+    public static final String ALLOW_USER_CODE = "allowUserCode"; // NOI18N
+    public static final String USE_FOR_SERIALIZATION_ATTR = "useForSerialization"; // NOI18N
+    public static final String READ_ONLY_ATTR = "readOnly"; // NOI18N
 
-    private static final String PROPERTY_DESCRIPTOR_NODE = "PropertyDescriptor"; // NOI18N
-    private static final String NAME_ATTR = "name"; // NOI18N
-    private static final String TYPEID_ATTR = "typeID"; // NOI18N
-    private static final String DEFAULT_VALUE_ATTR = "defaultValue"; // NOI18N
-    private static final String ALLOW_NULL = "allowNull"; // NOI18N
-    private static final String ALLOW_USER_CODE = "allowUserCode"; // NOI18N
-    private static final String USE_FOR_SERIALIZATION_ATTR = "useForSerialization"; // NOI18N
-    private static final String READ_ONLY_ATTR = "readOnly"; // NOI18N
+    public static final String PRESENTERS_NODE = "Presenters"; // NOI18N
 
-    private static final String PRESENTERS_NODE = "Presenters"; // NOI18N
-
-    private static final String VERSION_VALUE_1 = "1"; // NOI18N
+    public static final String VERSION_VALUE_1 = "1"; // NOI18N
 
     private TypeDescriptor typeDescriptor;
     private PaletteDescriptor paletteDescriptor;
     private List<PropertyDescriptor> propertyDescriptors;
-    private List<PresenterSerializer.PresenterFactory> presenterFactories;
+    private List<PresenterDeserializer.PresenterFactory> presenterDescriptors;
 
     public TypeDescriptor getTypeDescriptor () {
         return typeDescriptor;
@@ -92,7 +89,7 @@ public class XMLComponentDescriptor extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters () {
         ArrayList<Presenter> presenters = new ArrayList<Presenter> ();
-        for (PresenterSerializer.PresenterFactory factory : presenterFactories) {
+        for (PresenterDeserializer.PresenterFactory factory : presenterDescriptors) {
             List<Presenter> list = factory.createPresenters (this);
             if (list != null)
                 presenters.addAll (list);
@@ -100,7 +97,7 @@ public class XMLComponentDescriptor extends ComponentDescriptor {
         return presenters;
     }
 
-    public boolean deserialize (Document document) {
+    public boolean deserialize (String projectType, Document document) {
         Node rootNode = document.getFirstChild ();
 
         if (! COMPONENT_DESCRIPTOR_NODE.equals (rootNode.getNodeName ())) {
@@ -110,7 +107,7 @@ public class XMLComponentDescriptor extends ComponentDescriptor {
 
         String version = getAttributeValue (rootNode, VERSION_ATTR);
         if (VERSION_VALUE_1.equals (version)) {
-            deserializeVersion1 (rootNode);
+            deserializeVersion1 (projectType, rootNode);
             return true;
         } else {
             Debug.warning ("Invalid version", version); // NOI18N
@@ -118,9 +115,9 @@ public class XMLComponentDescriptor extends ComponentDescriptor {
         }
     }
 
-    private void deserializeVersion1 (Node rootNode) {
+    private void deserializeVersion1 (String projectType, Node rootNode) {
         ArrayList<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor> ();
-        ArrayList<PresenterSerializer.PresenterFactory> presenters = new ArrayList<PresenterSerializer.PresenterFactory> ();
+        ArrayList<PresenterDeserializer.PresenterFactory> presenters = new ArrayList<PresenterDeserializer.PresenterFactory> ();
 
         for (Node node : getChildNode (rootNode)) {
             if (TYPE_NODE.equals (node.getNodeName ())) {
@@ -168,30 +165,27 @@ public class XMLComponentDescriptor extends ComponentDescriptor {
             }
         }
 
+        deserializePresenters (rootNode, projectType, presenters);
+
+        propertyDescriptors = properties;
+        presenterDescriptors = presenters;
+    }
+
+    private void deserializePresenters (Node rootNode, String projectType, ArrayList<PresenterDeserializer.PresenterFactory> presenters) {
         for (Node presentersNode : getChildNode (rootNode))
             if (PRESENTERS_NODE.equals (presentersNode.getNodeName ()))
                 for (Node node : getChildNode (presentersNode)) {
-                    Collection<? extends PresenterSerializer> presenterSerializers = lookupResult.allInstances ();
-                    for (PresenterSerializer serializer : presenterSerializers) {
-                        PresenterSerializer.PresenterFactory factory = serializer.deserialize (this, node);
-                        if (factory != null)
-                            presenters.add (factory);
-                    }
+                    PresenterDeserializer.PresenterFactory presenterFactory = PresenterDeserializerSupport.deserialize (projectType, node);
+                    if (presenterFactory != null)
+                        presenters.add (presenterFactory);
                 }
-
-        propertyDescriptors = properties;
-        presenterFactories = presenters;
-    }
-
-    public void serialize () {
-        // TODO - serialize
     }
 
 //    private Image loadImage (String imageResource) {
 //        return imageResource != null ? Utilities.loadImage (imageResource) : null;
 //    }
 
-    static String getAttributeValue (Node node, String attr) {
+    private static String getAttributeValue (Node node, String attr) {
         try {
             if (node != null) {
                 NamedNodeMap map = node.getAttributes ();
@@ -207,14 +201,7 @@ public class XMLComponentDescriptor extends ComponentDescriptor {
         return null;
     }
 
-    static void setAttribute (Document xml, Node node, String name, String value) {
-        NamedNodeMap map = node.getAttributes ();
-        Attr attribute = xml.createAttribute (name);
-        attribute.setValue (value);
-        map.setNamedItem (attribute);
-    }
-
-    static Node[] getChildNode (Node node) {
+    private static Node[] getChildNode (Node node) {
         NodeList childNodes = node.getChildNodes ();
         Node[] nodes = new Node[childNodes != null ? childNodes.getLength () : 0];
         for (int i = 0; i < nodes.length; i++)

@@ -45,7 +45,7 @@ final class GlobalDescriptorRegistry {
     private static final HashMap<String, WeakReference<GlobalDescriptorRegistry>> registries = new HashMap<String, WeakReference<GlobalDescriptorRegistry>> ();
 
     static GlobalDescriptorRegistry getGlobalDescriptorRegistry (String projectType) {
-        assert Debug.isFriend (DescriptorRegistry.class, "getDescriptorRegistry"); // NOI18N
+        assert Debug.isFriend (DescriptorRegistry.class, "getDescriptorRegistry")  ||  Debug.isFriend (ComponentSerializationSupport.class, "serialize"); // NOI18N
         synchronized (registries) {
             WeakReference<GlobalDescriptorRegistry> ref = registries.get (projectType);
             GlobalDescriptorRegistry registry = ref != null ? ref.get () : null;
@@ -102,6 +102,11 @@ final class GlobalDescriptorRegistry {
         reload ();
     }
 
+    DataFolder getRegistryFolder () {
+        assert Debug.isFriend (ComponentSerializationSupport.class, "serialize"); // NOI18N
+        return registryFolder;
+    }
+
     DescriptorRegistry getProjectRegistry (String projectID) {
         assert Debug.isFriend (DescriptorRegistry.class, "getDescriptorRegistry"); // NOI18N
 
@@ -121,7 +126,8 @@ final class GlobalDescriptorRegistry {
         mutex.readAccess (runnable);
     }
 
-    private void reload () {
+    void reload () {
+        // TODO - method call assertion
         mutex.writeAccess (new Runnable () {
             public void run () {
                 reloadCore ();
@@ -295,7 +301,7 @@ final class GlobalDescriptorRegistry {
         descriptor.setPropertyDescriptors (propertyDescriptors);
     }
 
-    private static ComponentDescriptor dao2descriptor (DataObject dataObject) {
+    private ComponentDescriptor dao2descriptor (DataObject dataObject) {
         InstanceCookie.Of instanceCookie = dataObject.getCookie (InstanceCookie.Of.class);
         if (instanceCookie != null) {
             try {
@@ -337,7 +343,7 @@ final class GlobalDescriptorRegistry {
         return null;
     }
 
-    private static ComponentDescriptor deserializeComponentDescriptorFromXML (XMLDataObject xmlDataObject) {
+    private ComponentDescriptor deserializeComponentDescriptorFromXML (XMLDataObject xmlDataObject) {
         Document document;
         try {
             document = xmlDataObject.getDocument ();
@@ -351,7 +357,7 @@ final class GlobalDescriptorRegistry {
             return null;
         }
         XMLComponentDescriptor descriptor = new XMLComponentDescriptor ();
-        if (descriptor.deserialize (document))
+        if (descriptor.deserialize (projectType, document))
             return descriptor;
         Debug.warning ("Error during deserialization", xmlDataObject.getPrimaryFile ());
         return null;
