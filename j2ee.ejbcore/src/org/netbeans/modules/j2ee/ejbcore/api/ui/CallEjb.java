@@ -20,7 +20,6 @@
 package org.netbeans.modules.j2ee.ejbcore.api.ui;
 
 import java.io.IOException;
-import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddCmpFieldAction;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddFinderMethodStrategy;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddSelectMethodStrategy;
@@ -43,8 +42,8 @@ public final class CallEjb {
         }
     }
     
-    public static boolean addCmpField(TypeElement beanClass, FileObject ddFile) {
-        return AddCmpFieldAction.addCmpField(beanClass, ddFile);
+    public static boolean addCmpField(FileObject fileObject, String className, FileObject ddFile) {
+        return AddCmpFieldAction.addCmpField(fileObject, className, ddFile);
     }
     
     public static void addFinderMethod(FileObject fileObject, String beanClass) throws IOException {

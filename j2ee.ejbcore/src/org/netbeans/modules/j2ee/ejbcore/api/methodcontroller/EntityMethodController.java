@@ -40,7 +40,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.QueryMethod;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,6 +62,10 @@ public final class EntityMethodController extends AbstractMethodController {
         modifiersPublicAbstract.add(Modifier.ABSTRACT);
     }
 
+    public Entity getModelCopy() {
+        return (Entity) model.clone();
+    }
+    
     public List getMethods(CmpField field) {
         return getMethods(field.getFieldName());
     }
@@ -268,17 +271,6 @@ public final class EntityMethodController extends AbstractMethodController {
         cmpField.setDescription(description);
         model.addCmpField(cmpField);
         parent.write(ddFile);
-    }
-
-    public void validateNewCmpFieldName(String name) {
-        CmpField[] cmpField = model.getCmpField();
-        for (int i = 0; i < cmpField.length; i++) {
-            CmpField field = cmpField[i];
-            if (name.equals(field.getFieldName())) {
-                throw new IllegalArgumentException(NbBundle.getMessage(EntityMethodController.class,
-                        "MSG_Duplicate_Field_Name", name));
-            }
-        }
     }
 
     private MethodModel addSetterMethod(String javaClass, MethodModel.Variable field, Set<Modifier> modifiers, boolean remote, Entity entity) {
