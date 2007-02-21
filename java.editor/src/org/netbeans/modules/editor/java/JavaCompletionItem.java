@@ -1209,9 +1209,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
     private static class OverrideMethodItem extends MethodItem {
         
+        private static final String IMPL_BADGE_PATH = "org/netbeans/modules/java/editor/resources/implement_badge.png";
+        private static final String OVRD_BADGE_PATH = "org/netbeans/modules/java/editor/resources/override_badge.png";
+        
+        private static ImageIcon implementBadge = new ImageIcon(org.openide.util.Utilities.loadImage(IMPL_BADGE_PATH));
+        private static ImageIcon overrideBadge = new ImageIcon(org.openide.util.Utilities.loadImage(OVRD_BADGE_PATH));
+        
         private ExecutableElement elem;
         private ElementHandle<ExecutableElement> elemHandle;
         private boolean implement;
+        private static ImageIcon merged_icon[][] = new ImageIcon[2][4];
         
         private OverrideMethodItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement) {
             super(elem, type, substitutionOffset, false, false, false);
@@ -1230,6 +1237,29 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return result + (implement ? " - implement" : " - override");
         }
         
+        @Override
+        protected ImageIcon getIcon() {
+            Set<Modifier> modifiers = elem.getModifiers();
+            int level = getProtectionLevel(modifiers);
+            
+            ImageIcon merged = merged_icon[implement? 0 : 1][level];
+            if ( merged != null ) {
+                return merged;
+            }
+            
+            ImageIcon superIcon = super.getIcon();                        
+            merged = new ImageIcon( org.openide.util.Utilities.mergeImages(
+                superIcon.getImage(), 
+                implement ? implementBadge.getImage() : overrideBadge.getImage(), 
+                16 - 9, 
+                16 - 9) );
+            
+            merged_icon[implement? 0 : 1][level] = merged;
+            
+            return merged;
+        }
+
+                
         public void defaultAction(JTextComponent component) {
             Completion.get().hideDocumentation();
             Completion.get().hideCompletion();
@@ -1535,7 +1565,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     
     private static class DefaultConstructorItem extends JavaCompletionItem {
         
-        private static final String CONSTRUCTOR = "org/netbeans/modules/editor/resources/completion/constructor_16.png"; //NOI18N
+        private static final String CONSTRUCTOR = "org/netbeans/modules/java/editor/resources/new_constructor_16.png"; //NOI18N
         private static final String CONSTRUCTOR_COLOR = "<font color=#b28b00>"; //NOI18N
         private static ImageIcon icon;        
         
@@ -2067,7 +2097,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     
     private static class InitializeAllConstructorItem extends JavaCompletionItem {
         
-        private static final String CONSTRUCTOR_PUBLIC = "org/netbeans/modules/editor/resources/completion/constructor_16.png"; //NOI18N
+        private static final String CONSTRUCTOR_PUBLIC = "org/netbeans/modules/java/editor/resources/new_constructor_16.png"; //NOI18N
         private static final String CONSTRUCTOR_PROTECTED = "org/netbeans/modules/editor/resources/completion/constructor_protected_16.png"; //NOI18N
         private static final String CONSTRUCTOR_PACKAGE = "org/netbeans/modules/editor/resources/completion/constructor_package_private_16.png"; //NOI18N
         private static final String CONSTRUCTOR_PRIVATE = "org/netbeans/modules/editor/resources/completion/constructor_private_16.png"; //NOI18N
