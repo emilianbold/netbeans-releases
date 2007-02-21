@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Loaders">
+        <folder name="application">
+            <folder name="xslt+xml">
+                <folder name="Actions">
+                    <file name="org-openide-actions-EditAction.instance"/>
+                    <attr name="org-openide-actions-EditAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-FileSystemAction.instance"/>
+                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-1.instance/org-netbeans-modules-xml-core-actions-CollectXMLAction.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance"/>
+                    <attr name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance/sep-2.instance" boolvalue="true" />
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-2.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance"/>
+                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CopyAction.instance"/>
+                    <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true" />
+                    <file name="org-openide-actions-PasteAction.instance"/>
+                    <attr name="org-openide-actions-PasteAction.instance/sep-3.instance" boolvalue="true" />
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-3.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-RenameAction.instance"/>
+                    <attr name="org-openide-actions-RenameAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-4.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-5.instance" boolvalue="true"/>
+                    <file name="sep-5.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-5.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Services">
+        <!-- Recognize application/xslt+xml: -->
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-xslt-core-mime-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xslt/core/resources/xslt_file.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.core.resources.Bundle"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="application">
+                <folder name="xslt+xml">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Windows2">
+        <folder name="Groups">
+            <file name="xslt_designer.wsgrp" url="windowmanager/xslt_designer.wsgrp"/>
+            <file name="xslt_mapper.wsgrp" url="windowmanager/xslt_mapper.wsgrp"/>
+            <folder name="xslt_designer">
+                <file name="properties.wstcgrp" url="windowmanager/properties.wstcgrp"/>
+                <file name="navigatorTC.wstcgrp" url="windowmanager/navigatorTC.wstcgrp"/>
+            </folder>
+            <folder name="xslt_mapper">
+                <file name="properties.wstcgrp" url="windowmanager/properties.wstcgrp"/>
+                <file name="navigatorTC.wstcgrp" url="windowmanager/navigatorTC.wstcgrp"/>
+            </folder>
+        </folder>
+    </folder>
+    
+</filesystem>
+
