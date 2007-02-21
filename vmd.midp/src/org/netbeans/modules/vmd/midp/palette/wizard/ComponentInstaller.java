@@ -33,6 +33,9 @@ import org.openide.ErrorManager;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.util.*;
 
@@ -71,8 +74,7 @@ public class ComponentInstaller {
                         if (! iterator.hasNext ())
                             break;
                         TypeElement element = iterator.next ();
-                        iterator.remove ();
-                        search (element, elements, registry, result);
+                        search (parameter, element, elements, registry, result);
                     }
                 }
             }, true);
@@ -101,9 +103,10 @@ public class ComponentInstaller {
         return registryMap;
     }
 
-    private static ComponentDescriptor search (TypeElement element, Set<TypeElement> elements, Map<String, ComponentDescriptor> registry, Map<String, ComponentDescriptor> result) {
+    private static ComponentDescriptor search (CompilationController parameter, TypeElement element, Set<TypeElement> elements, Map<String, ComponentDescriptor> registry, Map<String, ComponentDescriptor> result) {
         if (element == null)
             return null;
+        elements.remove (element);
         if (element.getKind () != ElementKind.CLASS)
             return null;
 
@@ -115,8 +118,23 @@ public class ComponentInstaller {
         descriptor = result.get (fqn);
         if (descriptor != null)
             return descriptor;
+
+        TypeElement superElement = getSuperFQN (element);
+        if (superElement == null)
+            return null;
+        ComponentDescriptor superDescriptor = search (parameter, superElement, elements, registry, result);
+        if (superDescriptor == null)
+            return null;
+        
         // TODO - search and check whether it is deriving from any component which is already in the registry and derives from ClassCD
         return descriptor;
+    }
+
+    private static TypeElement getSuperFQN (TypeElement element) {
+        TypeMirror superType = element.getSuperclass ();
+        if (superType.getKind () != TypeKind.DECLARED)
+            return null;
+        return (TypeElement) ((DeclaredType) superType).asElement ();
     }
 
     private static boolean checkForJavaIdentifierCompliant (String fqn) {
