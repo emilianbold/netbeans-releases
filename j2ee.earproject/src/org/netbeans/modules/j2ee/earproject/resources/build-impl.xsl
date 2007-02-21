@@ -624,10 +624,35 @@ to simulate
         </target>
     </xsl:template>
 
+    <target name="-init-debug-args">
+        <xsl:choose>
+            <xsl:when test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
+                <exec executable="${{platform.java}}" outputproperty="version-output">
+                    <arg value="-version"/>
+                </exec>
+            </xsl:when>
+            <xsl:otherwise>
+                <property name="version-output" value="java version &quot;${{ant.java.version}}"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        <condition property="have-jdk-older-than-1.4">
+            <!-- <matches pattern="^java version &quot;1\.[0-3]" string="${version-output}"/> (ANT 1.7) -->
+            <or>
+                <contains string="${{version-output}}" substring="java version &quot;1.0"/>
+                <contains string="${{version-output}}" substring="java version &quot;1.1"/>
+                <contains string="${{version-output}}" substring="java version &quot;1.2"/>
+                <contains string="${{version-output}}" substring="java version &quot;1.3"/>
+            </or>
+        </condition>
+        <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
+            <istrue value="${{have-jdk-older-than-1.4}}"/>
+        </condition>
+    </target>
+
     <xsl:template name="debug.target">
         <xsl:param name="id"/>
         <xsl:param name="type"/>
-        <target name="run-debug-appclient" depends="init" if="can.debug.appclient">
+        <target name="run-debug-appclient" depends="init,-init-debug-args" if="can.debug.appclient">
                 <macrodef>
                     <xsl:attribute name="name">debug-appclient</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-earproject/2</xsl:attribute>
@@ -656,9 +681,7 @@ to simulate
                                     </bootclasspath>
                                 </xsl:if>
                                 <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
-                                <jvmarg value="-Xdebug"/>
-                                <jvmarg value="-Xnoagent"/>
-                                <jvmarg value="-Djava.compiler=none"/>
+                                <jvmarg line="${{debug-args-line}}"/>
                                 <jvmarg value="-Xrunjdwp:transport=${{jpda.transport}},server=y,address=${{jpda.address}},suspend=y"/>
                                 <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
                                 <arg line="@{{args}}"/>

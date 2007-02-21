@@ -391,7 +391,32 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-debug">
+            <target name="-init-debug-args">
+                <xsl:choose>
+                    <xsl:when test="/p:project/p:configuration/archiveproject:data/archiveproject:explicit-platform">
+                        <exec executable="${{platform.java}}" outputproperty="version-output">
+                            <arg value="-version"/>
+                        </exec>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <property name="version-output" value="java version &quot;${{ant.java.version}}"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+                <condition property="have-jdk-older-than-1.4">
+                    <!-- <matches pattern="^java version &quot;1\.[0-3]" string="${version-output}"/> (ANT 1.7) -->
+                    <or>
+                        <contains string="${{version-output}}" substring="java version &quot;1.0"/>
+                        <contains string="${{version-output}}" substring="java version &quot;1.1"/>
+                        <contains string="${{version-output}}" substring="java version &quot;1.2"/>
+                        <contains string="${{version-output}}" substring="java version &quot;1.3"/>
+                    </or>
+                </condition>
+                <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
+                    <istrue value="${{have-jdk-older-than-1.4}}"/>
+                </condition>
+            </target>
+
+            <target name="-init-macrodef-debug" depends="-init-debug-args">
                 <macrodef>
                     <xsl:attribute name="name">debug</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
@@ -412,9 +437,7 @@ is divided into following sections:
                             <xsl:if test="/p:project/p:configuration/archiveproject:data/archiveproject:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
-                            <jvmarg value="-Xdebug"/>
-                            <jvmarg value="-Xnoagent"/>
-                            <jvmarg value="-Djava.compiler=none"/>
+                            <jvmarg line="${{debug-args-line}}"/>
                             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
                             <jvmarg line="${{runmain.jvmargs}}"/>
                             <classpath>

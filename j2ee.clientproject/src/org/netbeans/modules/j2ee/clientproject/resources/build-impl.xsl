@@ -410,8 +410,33 @@ Microsystems, Inc. All Rights Reserved.
                     </sequential>
                 </macrodef>
             </target>
+
+            <target name="-init-debug-args">
+                <xsl:choose>
+                    <xsl:when test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
+                        <exec executable="${{platform.java}}" outputproperty="version-output">
+                            <arg value="-version"/>
+                        </exec>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <property name="version-output" value="java version &quot;${{ant.java.version}}"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+                <condition property="have-jdk-older-than-1.4">
+                    <!-- <matches pattern="^java version &quot;1\.[0-3]" string="${version-output}"/> (ANT 1.7) -->
+                    <or>
+                        <contains string="${{version-output}}" substring="java version &quot;1.0"/>
+                        <contains string="${{version-output}}" substring="java version &quot;1.1"/>
+                        <contains string="${{version-output}}" substring="java version &quot;1.2"/>
+                        <contains string="${{version-output}}" substring="java version &quot;1.3"/>
+                    </or>
+                </condition>
+                <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
+                    <istrue value="${{have-jdk-older-than-1.4}}"/>
+                </condition>
+            </target>
             
-            <target name="-init-macrodef-debug">
+            <target name="-init-macrodef-debug" depends="-init-debug-args">
                 <macrodef>
                     <xsl:attribute name="name">debug</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
@@ -440,9 +465,7 @@ Microsystems, Inc. All Rights Reserved.
                                     <path path="${{platform.bootcp}}"/>
                                 </bootclasspath>
                             </xsl:if>
-                            <jvmarg value="-Xdebug"/>
-                            <jvmarg value="-Xnoagent"/>
-                            <jvmarg value="-Djava.compiler=none"/>
+                            <jvmarg line="${{debug-args-line}}"/>
                             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
                             <jvmarg line="${{run.jvmargs.param}}"/>
                             <classpath>
@@ -459,7 +482,7 @@ Microsystems, Inc. All Rights Reserved.
                 </macrodef>
             </target>
             
-            <target name="-init-macrodef-debug-appclient">
+            <target name="-init-macrodef-debug-appclient" depends="-init-debug-args">
                 <macrodef>
                     <xsl:attribute name="name">debug-appclient</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
@@ -489,9 +512,7 @@ Microsystems, Inc. All Rights Reserved.
                                     </bootclasspath>
                                 </xsl:if>
                                 <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
-                                <jvmarg value="-Xdebug"/>
-                                <jvmarg value="-Xnoagent"/>
-                                <jvmarg value="-Djava.compiler=none"/>
+                                <jvmarg line="${{debug-args-line}}"/>
                                 <jvmarg value="-Xrunjdwp:transport=${{jpda.transport}},server=y,address=${{jpda.address}},suspend=y"/>
                                 <jvmarg line="${{run.jvmargs.param}}"/>
                                 <arg line="@{{args}}"/>

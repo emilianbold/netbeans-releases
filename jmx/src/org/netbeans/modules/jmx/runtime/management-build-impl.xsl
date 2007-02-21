@@ -269,16 +269,32 @@ is divided into following sections:
     MANAGEMENT DEBUG SECTION
     ========================
     </xsl:comment>
-       <target name="-init-macrodef-management-debug">
+       <target name="-init-debug-args">
+           <exec executable="${{platform.java}}" outputproperty="version-output">
+               <arg value="-version"/>
+           </exec>
+           <condition property="have-jdk-older-than-1.4">
+               <!-- <matches pattern="^java version &quot;1\.[0-3]" string="${version-output}"/> (ANT 1.7) -->
+               <or>
+                   <contains string="${{version-output}}" substring="java version &quot;1.0"/>
+                   <contains string="${{version-output}}" substring="java version &quot;1.1"/>
+                   <contains string="${{version-output}}" substring="java version &quot;1.2"/>
+                   <contains string="${{version-output}}" substring="java version &quot;1.3"/>
+               </or>
+           </condition>
+           <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
+               <istrue value="${{have-jdk-older-than-1.4}}"/>
+           </condition>
+       </target>
+
+       <target name="-init-macrodef-management-debug" depends="-init-debug-args">
         <macrodef name="debug-management">
             <attribute name="classname" default="${{main.class}}"/>
             <attribute name="classpath" default="${{debug.classpath}}"/>
             <attribute name="args" default="${{application.args}}"/>
             <sequential>
                 <java fork="true" classname="@{{classname}}" dir="${{work.dir}}" jvm="${{platform.java}}">
-                    <jvmarg value="-Xdebug"/>
-                    <jvmarg value="-Xnoagent"/>
-                    <jvmarg value="-Djava.compiler=none"/>
+                    <jvmarg line="${{debug-args-line}}"/>
                     <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
                     <jvmarg line="${{management.jvmargs}} ${{run.jvmargs}}"/>
                     <classpath>

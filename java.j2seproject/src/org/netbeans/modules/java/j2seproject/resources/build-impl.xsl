@@ -378,18 +378,17 @@ is divided into following sections:
                         <property name="version-output" value="java version &quot;${{ant.java.version}}"/>
                     </xsl:otherwise>
                 </xsl:choose>
-                <condition property="have-jdk-older-than-1.5">
-                    <!-- <matches pattern="^java version &quot;1\.[0-4]" string="${version-output}"/> (ANT 1.7) -->
+                <condition property="have-jdk-older-than-1.4">
+                    <!-- <matches pattern="^java version &quot;1\.[0-3]" string="${version-output}"/> (ANT 1.7) -->
                     <or>
                         <contains string="${{version-output}}" substring="java version &quot;1.0"/>
                         <contains string="${{version-output}}" substring="java version &quot;1.1"/>
                         <contains string="${{version-output}}" substring="java version &quot;1.2"/>
                         <contains string="${{version-output}}" substring="java version &quot;1.3"/>
-                        <contains string="${{version-output}}" substring="java version &quot;1.4"/>
                     </or>
                 </condition>
                 <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
-                    <istrue value="${{have-jdk-older-than-1.5}}"/>
+                    <istrue value="${{have-jdk-older-than-1.4}}"/>
                 </condition>
             </target>
 

@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
 <project name="Projects API tests compilers and executors" basedir="." default="all">
 
 <!--    Add this property to enable test debugging-->
-<!--    <property name="xtest.jvm.args" value="-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=n,suspend=n,address=5005 -Djava.compiler=NONE"/>-->
+<!--    <property name="xtest.jvm.args" value="-Xdebug -Xrunjdwp:transport=dt_socket,server=n,suspend=n,address=5005"/>-->
 
     <target name="init">
         <path id="test.compile.cp">
