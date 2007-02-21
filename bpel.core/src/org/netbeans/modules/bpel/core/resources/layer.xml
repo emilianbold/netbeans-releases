@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Templates">
+        <folder name="SOA">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.core.wizard.Bundle"/>
+            <file name="Process.bpel" url="templates/EmptyBPEL.template">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/core/resources/bp_file.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.core.wizard.Bundle"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.bpel.core.wizard.NewBpelFileIterator"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/core/wizard/createBpelFile.html"/>
+                <attr name="templateCategory" stringvalue="SOA"/>
+            </file>
+        </folder>
+    </folder>    
+    
+    <folder name="Plugins">
+        <folder name="XML">
+            <folder name="UserCatalogs">
+                <file name="org-netbeans-modules-bpel-core-BPELCatalog.instance">
+                    <attr name="instanceCreate" 
+                        newvalue="org.netbeans.modules.bpel.core.BPELCatalog"/>
+                    <attr name="instanceOf" 
+                        stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Services">
+        <!-- Recognize text/x-bpel+xml: -->
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-bpel-core-mime-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.core.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/core/resources/bpel_file.gif"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="x-bpel+xml">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                    <!--for logical view in navigator -->
+                    <file name="org-netbeans-modules-bpel-navigator-BpelNavigatorPanel.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-bpel+xml">
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance"/>
+                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-FileSystemAction.instance"/>
+                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance"/>
+                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CopyAction.instance"/>
+                    <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>                    
+                    <file name="org-openide-actions-PasteAction.instance"/>   
+                    <attr name="org-openide-actions-PasteAction.instance/sep-1a.instance" boolvalue="true"/>
+                    <file name="sep-1a.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-1a.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-RenameAction.instance"/>
+                    <attr name="org-openide-actions-RenameAction.instance/sep-1b.instance" boolvalue="true"/>                    
+                    <file name="sep-1b.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>                    
+                    <attr name="sep-1b.instance/org-netbeans-modules-xml-tools-actions-CheckAction.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
+                    <attr name="org-netbeans-modules-xml-tools-actions-CheckAction.instance/org-netbeans-modules-xml-tools-actions-ValidateAction.instance" boolvalue="true" />
+                    <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
+                    <attr name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-2.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-3.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>    
+</filesystem>
