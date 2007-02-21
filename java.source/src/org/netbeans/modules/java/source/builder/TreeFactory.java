@@ -170,7 +170,8 @@ public class TreeFactory implements TreeMakerInt {
                      List<? extends TypeParameterTree> typeParameters,
                      Tree extendsClause,
                      List<? extends ExpressionTree> implementsClauses,
-                     List<? extends Tree> memberDecls) {
+                     List<? extends Tree> memberDecls) 
+    {
         ListBuffer<JCTypeParameter> typarams = new ListBuffer<JCTypeParameter>();
         for (TypeParameterTree t : typeParameters)
             typarams.append((JCTypeParameter)t);
@@ -187,6 +188,37 @@ public class TreeFactory implements TreeMakerInt {
                              impls.toList(),
                              defs.toList());
         
+    }
+    
+    public ClassTree Interface(ModifiersTree modifiers, 
+                     CharSequence simpleName,
+                     List<? extends TypeParameterTree> typeParameters,
+                     Tree extendsClause,
+                     List<? extends ExpressionTree> implementsClauses,
+                     List<? extends Tree> memberDecls) 
+    {
+        long flags = getBitFlags(modifiers.getFlags()) | Flags.INTERFACE;
+        return Class(flags, (com.sun.tools.javac.util.List<JCAnnotation>) modifiers.getAnnotations(), simpleName, typeParameters, extendsClause, implementsClauses, memberDecls);
+    }
+
+    public ClassTree AnnotationType(ModifiersTree modifiers, 
+             CharSequence simpleName,
+             List<? extends TypeParameterTree> typeParameters,
+             Tree extendsClause,
+             List<? extends ExpressionTree> implementsClauses,
+             List<? extends Tree> memberDecls) {
+        long flags = getBitFlags(modifiers.getFlags()) | Flags.ANNOTATION;
+        return Class(flags, (com.sun.tools.javac.util.List<JCAnnotation>) modifiers.getAnnotations(), simpleName, typeParameters, extendsClause, implementsClauses, memberDecls);
+    }
+    
+    public ClassTree Enum(ModifiersTree modifiers, 
+             CharSequence simpleName,
+             List<? extends TypeParameterTree> typeParameters,
+             Tree extendsClause,
+             List<? extends ExpressionTree> implementsClauses,
+             List<? extends Tree> memberDecls) {
+        long flags = getBitFlags(modifiers.getFlags()) | Flags.ENUM;
+        return Class(flags, (com.sun.tools.javac.util.List<JCAnnotation>) modifiers.getAnnotations(), simpleName, typeParameters, extendsClause, implementsClauses, memberDecls);
     }
     
     public CompilationUnitTree CompilationUnit(ExpressionTree packageDecl, 
@@ -1467,5 +1499,52 @@ public class TreeFactory implements TreeMakerInt {
         if (owner instanceof Symbol.ClassSymbol)
             ((Symbol.ClassSymbol)owner).members_field.enter(sym);
         return sym;
+    }
+    
+    private ClassTree Class(long modifiers, 
+                     com.sun.tools.javac.util.List<JCAnnotation> annotations,
+                     CharSequence simpleName,
+                     List<? extends TypeParameterTree> typeParameters,
+                     Tree extendsClause,
+                     List<? extends ExpressionTree> implementsClauses,
+                     List<? extends Tree> memberDecls) {
+        ListBuffer<JCTypeParameter> typarams = new ListBuffer<JCTypeParameter>();
+        for (TypeParameterTree t : typeParameters)
+            typarams.append((JCTypeParameter)t);
+        ListBuffer<JCExpression> impls = new ListBuffer<JCExpression>();
+        for (ExpressionTree t : implementsClauses)
+            impls.append((JCExpression)t);
+        ListBuffer<JCTree> defs = new ListBuffer<JCTree>();
+        for (Tree t : memberDecls)
+            defs.append((JCTree)t);
+        return make.ClassDef(make.Modifiers(modifiers, annotations),
+                             names.fromString(simpleName),
+                             typarams.toList(),
+                             (JCTree)extendsClause,
+                             impls.toList(),
+                             defs.toList());
+        
+    }
+    
+    private long getBitFlags(Set<Modifier> modifiers) {
+        int flags  = 0;
+        for (Modifier modifier : modifiers) {
+            switch (modifier) {
+                case PUBLIC:       flags |= PUBLIC; break;
+                case PROTECTED:    flags |= PROTECTED; break;
+                case PRIVATE:      flags |= PRIVATE; break;   
+                case ABSTRACT:     flags |= ABSTRACT; break;  
+                case STATIC:       flags |= STATIC; break;    
+                case FINAL:        flags |= FINAL; break;     
+                case TRANSIENT:    flags |= TRANSIENT; break; 
+                case VOLATILE:     flags |= VOLATILE; break;  
+                case SYNCHRONIZED: flags |= SYNCHRONIZED; break;
+                case NATIVE:       flags |= NATIVE; break;
+                case STRICTFP:     flags |= STRICTFP; break;
+                default:
+                    break;
+            }
+        }
+        return flags;
     }
 }

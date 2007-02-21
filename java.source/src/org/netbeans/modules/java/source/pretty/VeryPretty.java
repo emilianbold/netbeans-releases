@@ -845,7 +845,8 @@ public class VeryPretty extends JCTree.Visitor {
 	    printFlags(flags & ~(INTERFACE | STATIC | FINAL));
 	else
 	    printFlags(flags & ~(INTERFACE | ABSTRACT));
-	if ((flags & INTERFACE) != 0) {
+	if ((flags & INTERFACE) != 0 || (flags & ANNOTATION) != 0) {
+            if ((flags & ANNOTATION) != 0) print('@');
 	    print("interface ");
 	    print(tree.name);
 	    printTypeParameters(tree.typarams);

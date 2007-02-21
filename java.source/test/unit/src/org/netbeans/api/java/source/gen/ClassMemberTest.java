@@ -36,6 +36,7 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.source.builder.TreeFactory;
 
 /**
  *
@@ -60,9 +61,12 @@ public class ClassMemberTest extends GeneratorTest {
         suite.addTest(new ClassMemberTest("testModifyModifiers"));
         suite.addTest(new ClassMemberTest("testAddToEmptyInterface"));
 //        suite.addTest(new ClassMemberTest("testAddNewClassWithNewMembers"));
-          return suite;
+        suite.addTest(new ClassMemberTest("testAddInnerInterface"));
+        suite.addTest(new ClassMemberTest("testAddInnerAnnotationType"));
+        suite.addTest(new ClassMemberTest("testAddInnerEnum"));
+        return suite;
     }
-    
+
     public void testAddAtIndex0() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
@@ -642,6 +646,141 @@ public class ClassMemberTest extends GeneratorTest {
                         workingCopy.rewrite(classTree, copy);
                     }
                 }
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #96070
+     */
+    public void testAddInnerInterface() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    interface Honza {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree topLevel = (ClassTree) cut.getTypeDecls().get(0);
+                ClassTree innerIntfc = make.Interface(make.Modifiers(
+                        Collections.<Modifier>emptySet()),
+                        "Honza",
+                        Collections.<TypeParameterTree>emptyList(),
+                        null,
+                        Collections.<ExpressionTree>emptyList(),
+                        Collections.<Tree>emptyList()
+                );
+                workingCopy.rewrite(topLevel, make.addClassMember(topLevel, innerIntfc));
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #96070
+     */
+    public void testAddInnerAnnotationType() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public @interface Honza {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree topLevel = (ClassTree) cut.getTypeDecls().get(0);
+                ClassTree innerIntfc = make.AnnotationType(make.Modifiers(
+                        Collections.<Modifier>singleton(Modifier.PUBLIC)),
+                        "Honza",
+                        Collections.<TypeParameterTree>emptyList(),
+                        null,
+                        Collections.<ExpressionTree>emptyList(),
+                        Collections.<Tree>emptyList()
+                );
+                workingCopy.rewrite(topLevel, make.addClassMember(topLevel, innerIntfc));
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #96070
+     */
+    public void testAddInnerEnum() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    protected enum Honza {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree topLevel = (ClassTree) cut.getTypeDecls().get(0);
+                ClassTree innerIntfc = make.Enum(make.Modifiers(
+                        Collections.<Modifier>singleton(Modifier.PROTECTED)),
+                        "Honza",
+                        Collections.<TypeParameterTree>emptyList(),
+                        null,
+                        Collections.<ExpressionTree>emptyList(),
+                        Collections.<Tree>emptyList()
+                );
+                workingCopy.rewrite(topLevel, make.addClassMember(topLevel, innerIntfc));
             }
             
             public void cancel() {

@@ -204,7 +204,75 @@ public final class TreeMaker {
               List<? extends Tree> memberDecls) {
         return delegate.Class(modifiers, simpleName, typeParameters, extendsClause, implementsClauses, memberDecls);
     }
-
+    /**
+     * Creates a new ClassTree representing interface.
+     * 
+     * @param modifiers the modifiers declaration
+     * @param simpleName        the name of the class without its package, such
+     *                          as "String" for the class "java.lang.String".
+     * @param typeParameters    the list of type parameters, or an empty list.
+     * @param extendsClause     the name of the class this class extends, or null.
+     * @param implementsClauses the list of the interfaces this class
+     *                          implements, or an empty list.
+     * @param memberDecls       the list of fields defined by this class, or an
+     *                          empty list.
+     * @see com.sun.source.tree.ClassTree
+     */
+    public ClassTree Interface(ModifiersTree modifiers, 
+             CharSequence simpleName,
+             List<? extends TypeParameterTree> typeParameters,
+             Tree extendsClause,
+             List<? extends ExpressionTree> implementsClauses,
+             List<? extends Tree> memberDecls) {
+        return delegate.Interface(modifiers, simpleName, typeParameters, extendsClause, implementsClauses, memberDecls);
+    }
+    
+    /**
+     * Creates a new ClassTree representing annotation type.
+     * 
+     * @param modifiers the modifiers declaration
+     * @param simpleName        the name of the class without its package, such
+     *                          as "String" for the class "java.lang.String".
+     * @param typeParameters    the list of type parameters, or an empty list.
+     * @param extendsClause     the name of the class this class extends, or null.
+     * @param implementsClauses the list of the interfaces this class
+     *                          implements, or an empty list.
+     * @param memberDecls       the list of fields defined by this class, or an
+     *                          empty list.
+     * @see com.sun.source.tree.ClassTree
+     */
+    public ClassTree AnnotationType(ModifiersTree modifiers, 
+             CharSequence simpleName,
+             List<? extends TypeParameterTree> typeParameters,
+             Tree extendsClause,
+             List<? extends ExpressionTree> implementsClauses,
+             List<? extends Tree> memberDecls) {
+        return delegate.AnnotationType(modifiers, simpleName, typeParameters, extendsClause, implementsClauses, memberDecls);
+    }
+    
+    /**
+     * Creates a new ClassTree representing enum.
+     * 
+     * @param modifiers the modifiers declaration
+     * @param simpleName        the name of the class without its package, such
+     *                          as "String" for the class "java.lang.String".
+     * @param typeParameters    the list of type parameters, or an empty list.
+     * @param extendsClause     the name of the class this class extends, or null.
+     * @param implementsClauses the list of the interfaces this class
+     *                          implements, or an empty list.
+     * @param memberDecls       the list of fields defined by this class, or an
+     *                          empty list.
+     * @see com.sun.source.tree.ClassTree
+     */
+    public ClassTree Enum(ModifiersTree modifiers, 
+             CharSequence simpleName,
+             List<? extends TypeParameterTree> typeParameters,
+             Tree extendsClause,
+             List<? extends ExpressionTree> implementsClauses,
+             List<? extends Tree> memberDecls) {
+        return delegate.Enum(modifiers, simpleName, typeParameters, extendsClause, implementsClauses, memberDecls);
+    }
+    
     /**
      * Creates a new CompilationUnitTree.
      *
