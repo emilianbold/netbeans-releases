@@ -212,21 +212,12 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
      * Decides if a file has to be stored in the Local History or not.
      * 
      * @param file the file to be stored
-     * @param checkTimestamp checks if 
-     * 
      * @return true if the file has to be stored in the Local History, otherwise false 
      */
-    private boolean accept(File file) {       
-        if(file.lastModified() > 0 &&                  
-           file.lastModified() < System.currentTimeMillis() - LocalHistorySettings.getTTL())  // XXX does this make sense?
-        {
-            return false;
-        }
-        
+    private boolean accept(File file) {                       
         if(!LocalHistory.getInstance().isManaged(file)) {
             return false;
-        }               
-                      
+        }                                     
         return true;
     }    
     
