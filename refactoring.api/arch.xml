@@ -325,6 +325,9 @@ TreeElement is then displayed in refactoring preview panel.
     <li>Module wants to add common Refactoring Action into popup. <br></br>
         See <a href="org/netbeans/modules/refactoring/api/ui/RefactoringActionsFactory.html">RefactoringActionsFactory</a>
     </li>
+    <li>
+       <a href="http://wiki.netbeans.org/wiki/view/RefactoringFAQ">RefactoringFAQ</a>
+    </li>
 </ul>
 
  </answer>

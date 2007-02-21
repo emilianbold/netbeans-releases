@@ -33,6 +33,9 @@ import org.openide.util.ContextAwareAction;
  * a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
  * </pre>
  *
+ * For help on creating and registering actions
+ * See <a href=http://wiki.netbeans.org/wiki/view/RefactoringFAQ>Refactoring FAQ</a>
+ *
  * @author Jan Becicka
  */
 public final class RefactoringActionsFactory {

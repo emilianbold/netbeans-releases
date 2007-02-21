@@ -42,6 +42,9 @@ import org.openide.util.Lookup;
  * }
  * </pre>     
  *
+ * For help on creating and registering actions
+ * See <a href=http://wiki.netbeans.org/wiki/view/RefactoringFAQ>Refactoring FAQ</a>
+ * 
  * @author Jan Becicka
  */
 public abstract class ActionsImplementationProvider {
