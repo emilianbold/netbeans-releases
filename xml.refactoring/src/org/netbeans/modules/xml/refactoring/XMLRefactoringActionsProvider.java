@@ -56,11 +56,16 @@ public class XMLRefactoringActionsProvider extends ActionsImplementationProvider
       
  }
 
-  public Runnable findUsagesImpl(Lookup lookup) {
+  public void doFindUsages(Lookup lookup) {
     Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
     Node[] n = nodes.toArray(new Node[0]);
     
-    return new FindUsagesRunnable(n);
+    Referenceable ref = AnalysisUtilities.getReferenceable(n);
+    assert ref != null:"The node's NamedReferenceable should not be null";
+    WhereUsedView wuv = new WhereUsedView(ref);
+    WhereUsedQueryUI ui = new WhereUsedQueryUI(wuv, ref);
+    UI.openRefactoringUI(ui);
+  
   }
   
  public boolean canRename(Lookup lookup) {
@@ -81,33 +86,28 @@ public class XMLRefactoringActionsProvider extends ActionsImplementationProvider
      return false;
  }
 
- public Runnable renameImpl(Lookup lookup) {
-   Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-   System.out.println("my rename impl called");
-   Node[] n = nodes.toArray(new Node[0]);
+ public void doRename(Lookup lookup) {
+     Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+     System.out.println("my rename impl called");
+     Node[] n = nodes.toArray(new Node[0]);
    
-   final Referenceable ref = AnalysisUtilities.getReferenceable(n);
-   final EditorCookie ec = lookup.lookup(EditorCookie.class);
-   
-   return new Runnable() {
-       public void run() {
-           RefactoringUI ui = null;
-           if(ref instanceof Model) {
-               Model model = (Model) ref;
-               ui = new FileRenameRefactoringUI(model);
-           } else if(ref instanceof Nameable) {
-               ui = new RenameRefactoringUI(Nameable.class.cast(ref));
-           }
+     final Referenceable ref = AnalysisUtilities.getReferenceable(n);
+     final EditorCookie ec = lookup.lookup(EditorCookie.class);
+     RefactoringUI ui = null;
+     if(ref instanceof Model) {
+         Model model = (Model) ref;
+         ui = new FileRenameRefactoringUI(model);
+     } else if(ref instanceof Nameable) {
+          ui = new RenameRefactoringUI(Nameable.class.cast(ref));
+     }
            
-           if(isFromEditor(ec)){
-                   TopComponent activetc = TopComponent.getRegistry().getActivated();
-                   UI.openRefactoringUI(ui, activetc);
-           } else {
-                  UI.openRefactoringUI(ui);
-           } 
-       }
-   };
-   
+     if(isFromEditor(ec)){
+           TopComponent activetc = TopComponent.getRegistry().getActivated();
+           UI.openRefactoringUI(ui, activetc);
+     } else {
+           UI.openRefactoringUI(ui);
+    } 
+        
    
    }  
  
@@ -129,7 +129,7 @@ public class XMLRefactoringActionsProvider extends ActionsImplementationProvider
         return false;
     }
  
- public Runnable deleteImpl(Lookup lookup){
+ public void doDelete(Lookup lookup){
       Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
       System.out.println("my delete impl called");
       Node[] n = nodes.toArray(new Node[0]);
@@ -138,18 +138,15 @@ public class XMLRefactoringActionsProvider extends ActionsImplementationProvider
       final Referenceable ref = AnalysisUtilities.getReferenceable(n);
       final EditorCookie ec = lookup.lookup(EditorCookie.class);
    
-   return new Runnable() {
-       public void run() {
-           DeleteRefactoringUI ui = new DeleteRefactoringUI(NamedReferenceable.class.cast(ref));
+      DeleteRefactoringUI ui = new DeleteRefactoringUI(NamedReferenceable.class.cast(ref));
           
-           if(isFromEditor(ec)){
-                   TopComponent activetc = TopComponent.getRegistry().getActivated();
-                   UI.openRefactoringUI(ui, activetc);
-           } else {
-                  UI.openRefactoringUI(ui);
-           } 
-       }
-   };
+      if(isFromEditor(ec)){
+           TopComponent activetc = TopComponent.getRegistry().getActivated();
+           UI.openRefactoringUI(ui, activetc);
+      } else {
+           UI.openRefactoringUI(ui);
+      } 
+      
  }
  
  private boolean isFromEditor(EditorCookie ec) {
