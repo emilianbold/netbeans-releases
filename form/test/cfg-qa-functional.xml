@@ -20,6 +20,15 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="Form config">
 
+<!-- Jiri Vagner -->
+   <testbag testattribs="validation, full, my" executor="ide" name="testbag_Options">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/qa/form/options/*.*"/>
+            </patternset>
+        </testset>
+    </testbag>
+<!--  Jiri Vagner  -->
 
 <!-- Marek G. -->
    <testbag testattribs="validation, full" executor="ide" name="testbag_OpenForms">
