@@ -32,7 +32,7 @@ import org.openide.filesystems.FileObject;
  */
 
 public class RetoucheCommit implements Transaction {
-    ArrayList<Long> ids = new ArrayList();
+    ArrayList<BackupFacility.Handle> ids = new ArrayList();
     private boolean commited = false;
     Collection<ModificationResult> results;
     
@@ -43,9 +43,9 @@ public class RetoucheCommit implements Transaction {
     public void commit() {
         try {
             if (commited) {
-                for (long id:ids) {
+                for (BackupFacility.Handle id:ids) {
                     try {
-                        BackupFacility.getDefault().restore(id);
+                        id.restore();
                     } catch (IOException ex) {
                         throw (RuntimeException) new RuntimeException().initCause(ex);
                     }
@@ -53,9 +53,7 @@ public class RetoucheCommit implements Transaction {
             } else {
                 commited = true;
                 for (ModificationResult result:results) {
-                    for(FileObject fo: result.getModifiedFileObjects()) {
-                        ids.add(BackupFacility.getDefault().backup(fo));
-                    }
+                    ids.add(BackupFacility.getDefault().backup(result.getModifiedFileObjects()));
                     result.commit();
                 }
             }
@@ -66,9 +64,9 @@ public class RetoucheCommit implements Transaction {
     }
     
     public void rollback() {
-        for (long id:ids) {
+        for (BackupFacility.Handle id:ids) {
             try {
-                BackupFacility.getDefault().restore(id);
+                id.restore();
             } catch (IOException ex) {
                 throw (RuntimeException) new RuntimeException().initCause(ex);
             }

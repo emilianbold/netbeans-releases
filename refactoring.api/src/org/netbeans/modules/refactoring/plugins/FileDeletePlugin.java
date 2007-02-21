@@ -86,7 +86,7 @@ public class FileDeletePlugin implements RefactoringPlugin {
 
         public void performChange() {
             session.registerFileChange(new Transaction() {
-               long id;
+               BackupFacility.Handle id;
                 public void commit () {
                     try {
                         if (!fo.isValid()) {
@@ -104,7 +104,7 @@ public class FileDeletePlugin implements RefactoringPlugin {
                 
                 public void rollback() {
                     try {
-                        BackupFacility.getDefault().restore(id);
+                        id.restore();
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }

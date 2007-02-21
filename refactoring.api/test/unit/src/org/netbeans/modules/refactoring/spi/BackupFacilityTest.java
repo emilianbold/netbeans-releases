@@ -48,7 +48,7 @@ public class BackupFacilityTest extends NbTestCase {
         assertNotNull(BackupFacility.getDefault());
     }
 
-    long transactionId;
+    static BackupFacility.Handle transactionId;
     FileObject f;
     public void testBackup() throws Exception {
         transactionId = BackupFacility.getDefault().backup(f);
@@ -57,7 +57,7 @@ public class BackupFacilityTest extends NbTestCase {
     public void testRestore() throws Exception {
         f.delete();
         assertFalse(f.isValid());
-        BackupFacility.getDefault().restore(transactionId);
+        transactionId.restore();
         FileObject newone = FileUtil.toFileObject(new File(f.getPath()));
         assertTrue(newone.isValid());
     }
@@ -65,7 +65,7 @@ public class BackupFacilityTest extends NbTestCase {
     public void testClear() throws IOException {
         BackupFacility.getDefault().clear();
         try {
-            BackupFacility.getDefault().restore(transactionId);
+            transactionId.restore();
         } catch (IllegalArgumentException iae) {
             return;
         }
