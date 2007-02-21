@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.editor.java;
 
+import com.sun.source.tree.Scope;
+import com.sun.source.util.Trees;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -29,8 +31,10 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.swing.text.JTextComponent;
-
-import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.LazyCompletionItem;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
@@ -41,38 +45,54 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  */
 public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCompletionItem {
     
-    public static final LazyTypeCompletionItem create(String name, EnumSet<ElementKind> kinds, int substitutionOffset, CompilationInfo info) {
-        return new LazyTypeCompletionItem(name, kinds, substitutionOffset, info);
+    public static final LazyTypeCompletionItem create(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, JavaSource javaSource) {
+        return new LazyTypeCompletionItem(handle, kinds, substitutionOffset, javaSource);
     }
     
-    private JavaCompletionItem delegate = null;
+    private ElementHandle<TypeElement> handle;
+    private EnumSet<ElementKind> kinds;
+    private JavaSource javaSource;
     private String name;
     private String simpleName;
     private String pkgName;
-    private EnumSet<ElementKind> kinds;
-    private CompilationInfo info;
+    private JavaCompletionItem delegate = null;
+    private LazyTypeCompletionItem nextItem = null;
     
-    private LazyTypeCompletionItem(String name, EnumSet<ElementKind> kinds, int substitutionOffset, CompilationInfo info) {
+    private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, JavaSource javaSource) {
         super(substitutionOffset);
-        this.name = name;
+        this.handle = handle;
+        this.kinds = kinds;
+        this.javaSource = javaSource;
+        this.name = handle.getQualifiedName();
         int idx = name.lastIndexOf('.'); //NOI18N
         this.simpleName = idx > -1 ? name.substring(idx + 1) : name;
         this.pkgName = idx > -1 ? name.substring(0, idx) : ""; //NOI18N
-        this.kinds = kinds;
-        this.info = info;
     }
     
     public boolean accept() {
-        try {
-            if (simpleName.length() == 0 || Character.isDigit(simpleName.charAt(0)))
+        if (handle != null) {
+            if (simpleName.length() == 0 || Character.isDigit(simpleName.charAt(0))) {
+                handle = null;
                 return false;
-            TypeElement e = info.getElements().getTypeElement(name);
-            if (e != null && info.getTrees().isAccessible(info.getTrees().getScope(info.getTreeUtilities().pathFor(substitutionOffset)), e)) {
-                if (isOfKind(e, kinds)) {
-                    delegate = JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), substitutionOffset, true, info.getElements().isDeprecated(e));
-                }
             }
-        } catch(Throwable t) {}        
+            try {
+                javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
+                    public void cancel() {
+                    }
+                    public void run(CompilationController controller) throws Exception {
+                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        Scope scope = controller.getTrees().getScope(controller.getTreeUtilities().pathFor(substitutionOffset));
+                        LazyTypeCompletionItem item = LazyTypeCompletionItem.this;
+                        for (int i = 0; i < 50 && item != null;) {
+                            if (item.init(controller, scope))
+                                i++;
+                            item = item.nextItem;
+                        }
+                    }
+                }, true);
+            } catch(Throwable t) {
+            }
+        }
         return delegate != null;
     }
 
@@ -122,13 +142,25 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
     }
 
     public CharSequence getInsertPrefix() {
-        return getItemText();
-    }
-    
-    String getItemText() {
         return simpleName;
     }
     
+    void setNextItem(LazyTypeCompletionItem nextItem) {
+        this.nextItem = nextItem;
+    }
+    
+    boolean init(CompilationController controller, Scope scope) {
+        if (simpleName.length() >= 0 && !Character.isDigit(simpleName.charAt(0))) {
+            TypeElement e = handle.resolve(controller);
+            if (e != null && controller.getTrees().isAccessible(scope, e)) {
+                if (isOfKind(e, kinds))
+                    delegate = JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e));
+            }
+        }
+        handle = null;
+        return delegate != null;
+    }
+
     private boolean isOfKind(Element e, EnumSet<ElementKind> kinds) {
         if (kinds.contains(e.getKind()))
             return true;

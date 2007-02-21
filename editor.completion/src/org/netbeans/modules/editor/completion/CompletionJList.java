@@ -27,7 +27,6 @@ import javax.swing.*;
 
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.spi.editor.completion.CompletionItem;
-import org.netbeans.spi.editor.completion.LazyCompletionItem;
 
 /**
 * @author Miloslav Metelka, Dusan Balek
@@ -44,17 +43,6 @@ public class CompletionJList extends JList {
 
     private int fixedItemHeight;
     private int maxVisibleRowCount;
-    
-    private LazyListModel.Filter filter = new LazyListModel.Filter() {
-        public boolean accept(Object obj) {
-            if (obj instanceof LazyCompletionItem)
-                return ((LazyCompletionItem)obj).accept();
-            return true;
-        }
-        public void scheduleUpdate(Runnable run) {
-            SwingUtilities.invokeLater( run );
-        }
-    };
     
     public CompletionJList(int maxVisibleRowCount, MouseListener mouseListener) {
         this.maxVisibleRowCount = maxVisibleRowCount;
@@ -111,7 +99,7 @@ public class CompletionJList extends JList {
     void setData(List data) {
         if (data != null) {
             int itemCount = data.size();
-            ListModel lm = LazyListModel.create( new Model(data), filter, 0.9d, LocaleSupport.getString("completion-please-wait") ); //NOI18N
+            ListModel lm = LazyListModel.create( new Model(data), CompletionImpl.filter, 0.9d, LocaleSupport.getString("completion-please-wait") ); //NOI18N
             ListCellRenderer renderer = getCellRenderer();
             int lmSize = lm.getSize();
             int width = 0;
@@ -189,22 +177,14 @@ public class CompletionJList extends JList {
         }
     }
 
-    static class Model extends AbstractListModel {
+    private final class Model extends AbstractListModel {
 
         List data;
-
-        static final long serialVersionUID = 3292276783870598274L;
 
         public Model(List data) {
             this.data = data;
         }
         
-        public void setData(List data) {
-            List oldData = this.data;
-            this.data = data;
-            fireContentsChanged(this, 0, oldData.size());
-        }
-
         public int getSize() {
             return data.size();
         }
@@ -212,11 +192,6 @@ public class CompletionJList extends JList {
         public Object getElementAt(int index) {
             return (index >= 0 && index < data.size()) ? data.get(index) : null;
         }
-
-        List getData() {
-            return data;
-        }
-
     }
     
     private final class RenderComponent extends JComponent {

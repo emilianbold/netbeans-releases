@@ -87,6 +87,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private static final String TOOLTIP_SHOW = "tooltip-show"; //NOI18N
     
     private static final int PLEASE_WAIT_TIMEOUT = 750;
+    private static final int PRESCAN = 50;
     
     public static CompletionImpl get() {
         if (singleton == null)
@@ -94,6 +95,17 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         return singleton;
     }
 
+    static LazyListModel.Filter filter = new LazyListModel.Filter() {
+        public boolean accept(Object obj) {
+            if (obj instanceof LazyCompletionItem)
+                return ((LazyCompletionItem)obj).accept();
+            return true;
+        }
+        public void scheduleUpdate(Runnable run) {
+            SwingUtilities.invokeLater( run );
+        }
+    };
+    
     /** Text component being currently edited. Changed in AWT only. */
     private WeakReference<JTextComponent> activeComponent = null;
     
@@ -665,21 +677,25 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             qType = resultSet.getQueryType();
         }
         
-        final boolean noSuggestions = sortedResultsSize == 0;
-        if (noSuggestions && qType == CompletionProvider.COMPLETION_QUERY_TYPE && allowFallbacks) {
-            showCompletion(this.explicitQuery, false, CompletionProvider.COMPLETION_ALL_QUERY_TYPE);
-            return;
-        }
-
         // Collect and sort the gathered completion items
         final List<CompletionItem> sortedResultItems = new ArrayList<CompletionItem>(sortedResultsSize);
         String title = null;
         int anchorOffset = -1;
+        int cnt = 0;
         for (int i = 0; i < completionResultSets.size(); i++) {
             CompletionResultSetImpl resultSet = (CompletionResultSetImpl)completionResultSets.get(i);
             List<? extends CompletionItem> resultItems = resultSet.getItems();
             if (resultItems.size() > 0) {
-                sortedResultItems.addAll(resultItems);
+                if (cnt < PRESCAN) {
+                    for (CompletionItem item : resultItems) {
+                        if (cnt < PRESCAN && !filter.accept(item))
+                            continue;
+                        sortedResultItems.add(item);
+                        cnt++;
+                    }
+                } else {
+                    sortedResultItems.addAll(resultItems);
+                }
                 if (title == null)
                     title = resultSet.getTitle();
                 if (anchorOffset == -1)
@@ -692,6 +708,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         final String displayTitle = title;
         final int displayAnchorOffset = anchorOffset;
         final int queryType = qType;
+        final boolean noSuggestions = sortedResultsSize == 0;
         Runnable requestShowRunnable = new Runnable() {
             public void run() {
                 int caretOffset = getActiveComponent().getSelectionStart();
