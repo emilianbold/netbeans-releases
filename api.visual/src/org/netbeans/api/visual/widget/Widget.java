@@ -879,6 +879,25 @@ public class Widget {
     }
 
     /**
+     * Converts a rectangle in the scene coordination system to the local coordination system.
+     * @param sceneRectangle the scene rectangle
+     * @return the local rectangle
+     */
+    public final Rectangle convertSceneToLocal (Rectangle sceneRectangle) {
+        Rectangle localRectangle = new Rectangle (sceneRectangle);
+        Widget widget = this;
+        while (widget != null) {
+            if (widget == scene)
+                break;
+            Point location = widget.getLocation ();
+            localRectangle.x -= location.x;
+            localRectangle.y -= location.y;
+            widget = widget.getParentWidget ();
+        }
+        return localRectangle;
+    }
+
+    /**
      * Returns the resolved location of the widget. The location is specified relatively to the location of the parent widget.
      * @return the location in the local coordination system of the parent widget
      */
