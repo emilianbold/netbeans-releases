@@ -46,14 +46,16 @@ public class LoadLocales extends Task {
     public void execute() throws BuildException {
         AntUtils.setProject(getProject());
         
-        String     locales = "";
-        File       file    = null;
-        Properties props   = null;
+        String locales = "";
         
         try {
             // handle the default locale
-            file  = new File(basename + ".properties");
-            props = new Properties();
+            File file  = new File(basename + ".properties");
+            if (!file.equals(file.getAbsoluteFile())) {
+                file = new File(getProject().getBaseDir(), basename + ".properties");
+            }
+            
+            Properties props = new Properties();
             
             props.load(new FileInputStream(file));
             for (Object key: props.keySet()) {

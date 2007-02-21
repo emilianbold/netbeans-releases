@@ -27,12 +27,12 @@ import org.netbeans.installer.infra.build.ant.utils.AntUtils;
 public class Md5 extends Task {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private String file     = null;
+    private String path     = null;
     private String property = null;
     
     // setters //////////////////////////////////////////////////////////////////////
     public void setFile(final String file) {
-        this.file = file;
+        this.path = file;
     }
     
     public void setProperty(final String property) {
@@ -43,8 +43,13 @@ public class Md5 extends Task {
     public void execute() throws BuildException {
         AntUtils.setProject(getProject());
         
+        File file = new File(path);
+        if (!file.equals(file.getAbsoluteFile())) {
+            file = new File(getProject().getBaseDir(), path);
+        }
+        
         try {
-            getProject().setProperty(property, AntUtils.getMd5(new File(file)));
+            getProject().setProperty(property, AntUtils.getMd5(file));
         } catch (IOException e) {
             throw new BuildException(e);
         }

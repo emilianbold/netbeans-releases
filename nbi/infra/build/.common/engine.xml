@@ -49,30 +49,7 @@
     <property file="${common.dir}/engine.properties"/>
     
     <!-- import the common target library -->
-    <import file="${common.dir}/common.xml" optional="false"/>
-    
-    <!-- =======================================================================
-      Aggregates
-    ======================================================================== -->
-    
-    <!--
-      Cleans and builds the engine.
-      
-      This is an aggregation target, which does not contain any functionality,
-      but defines dependencies on the 'clean', 'checkout' and 'build' targets.
-      For more details, please consult the documentation for these targets.
-    -->
-    <target name="build-all" depends="clean,checkout,build"/>
-    
-    <!--
-      Cleans, builds and releases the engine.
-      
-      This is an aggregation target, which does not contain any functionality,
-      but defines dependencies on the 'clean', 'checkout', 'build' and 
-      'release' targets. For more details, please consult the documentation 
-      for these targets.
-    -->
-    <target name="release-all" depends="clean,checkout,build,release"/>
+    <import file="common.xml" optional="false"/>
     
     <!-- =======================================================================
       Initialization
@@ -81,35 +58,13 @@
     <!--
       Initializes the engine's build script.
       
+      This target overrides the '-init' target in common.xml, providing the 
+      custom functionality that is required for the engine's build script
+      initialization.
+      
       In addition to the standard initialization routine, this target defines
       several custom ant tasks, which are specific to the engine's build 
       script.
-      
-      This is an aggregation target, it does not contain any functionality, but 
-      defines dependencies on '-pre-init', '-init' and '-post-init' 
-      targets. The '-pre-init' and '-post-init' targets are empty hooks,
-      which allow derivative scripts to inject custom logic which will be 
-      executed prior to the initialization process or after it. The '-init' 
-      target contains the code which actually initializes the script.
-    -->
-    <target name="init" depends="-pre-init,-init,-post-init"/>
-    
-    <!--
-      An empty hook. 
-      
-      It allows derivative scripts to inject custom logic which will be 
-      executed prior to the script's initialization.
-      
-      This target is not intended to be called directly.
-    -->
-    <target name="-pre-init"/>
-    
-    <!--
-      Initializes the engine's build script.
-      
-      For a detailed description of this target's functionality see the 
-      description of the 'init' target. This is an implementation target
-      and should not be used outside of the context.
       
       This target is not intended to be called directly.
     -->
@@ -121,16 +76,6 @@
             classpath="${custom.tasks.cls}"/>
     </target>
     
-    <!--
-      An empty hook. 
-      
-      It allows derivative scripts to inject custom logic which will be 
-      executed after the script's initialization.
-      
-      This target is not intended to be called directly.
-    -->
-    <target name="-post-init"/>
-    
     <!-- =======================================================================
       Clean-up
     ======================================================================== -->
@@ -138,41 +83,11 @@
     <!--
       Cleans the current working directory and the distributives directory.
       
-      For the working directory, first special clean-up procedures are executed
-      on the native components (literally this means removing the binaries of
-      the jni libraries and launchers) and the engine's netbeans project (this
-      implies executing the 'clean' target on the project's build script. Then
-      the whole working directory is erased.
+      This target overrides the '-clean' target in common.xml, providing the 
+      custom functionality that is required for correctly cleaning the engine.
       
-      Only the engine distributive file is remove from the distributives 
-      directory, which allows to reuse the same directory for multiple 
-      projects.
-      
-      This is an aggregation target, it does not contain any functionality, but 
-      defines dependencies on '-pre-clean', '-clean' and '-post-clean' 
-      targets. The '-pre-clean' and '-post-clean' targets are empty hooks,
-      which allow derivative scripts to inject custom logic which will be 
-      executed prior to the clean process or after it. The '-clean' target 
-      contains the code which actually builds the engine.
-    -->
-    <target name="clean" depends="init,-pre-clean,-clean,-post-clean"/>
-    
-    <!--
-      An empty hook. 
-      
-      It allows derivative scripts to inject custom logic which will be 
-      executed prior to cleaning the engine's local working directory.
-      
-      This target is not intended to be called directly.
-    -->
-    <target name="-pre-clean"/>
-    
-    <!--
-      Cleans the current working directory and the distributives directory.
-      
-      For a detailed description of this target's functionality see the 
-      description of the 'clean' target. This is an implementation target
-      and should not be used outside of the context.
+      In addition to the standard behavior the engine distributive file is 
+      removed from the distributives directory.
       
       This target is not intended to be called directly.
     -->
@@ -181,16 +96,6 @@
              directory -->
         <delete file="${dist.dir}/${engine.dist.file.name}"/>
     </target>
-    
-    <!--
-      An empty hook. 
-      
-      It allows derivative scripts to inject custom logic which will be 
-      executed after cleaning the engine's local working directory.
-      
-      This target is not intended to be called directly.
-    -->
-    <target name="-post-clean"/>
     
     <!--
       Cleans the native components of the engine.
@@ -236,53 +141,10 @@
     ======================================================================== -->
     
     <!--
-      Checks out the the engine's sources from the CVS repository.
-      
-      The functionality of this target is identical to the standard one, which
-      would checkout ${cvs.module}/${cvs.path} from trunk, unless ${cvs.branch}
-      is specified; or copy those from ${sources.location} if 
-      ${checkout.sources} is set to 'false'.
-      
-      This is an aggregation target, it does not contain any functionality, but 
-      defines dependencies on '-pre-checkout', '-checkout' and '-post-checkout' 
-      targets. The '-pre-checkout' and '-post-checkout' target are empty hooks,
-      which allow derivative scripts to inject custom logic which will be 
-      executed prior to the check-out process or after it. The '-checkout' 
-      target contains the code which actually checks out the sources.
+      The functionality of the checkout procedure for the engine is indentical 
+      to the standard one, thus there is not need to override the '-checkout'
+      target, whosew default implementation is present in common.xml.
     -->
-    <target name="checkout" 
-            depends="init,-pre-checkout,-checkout,-post-checkout"/>
-    
-    <!--
-      An empty hook. 
-      
-      It allows derivative scripts to inject custom logic which will be 
-      executed prior to checking out the engine's sources.
-      
-      This target is not intended to be called directly.
-    -->
-    <target name="-pre-checkout"/>
-    
-    <!--
-      Checks out the the engine's sources from the CVS repository.
-      
-      For a detailed description of this target's functionality see the 
-      description of the 'checkout' target. This is an implementation target
-      and should not be used outside of the context.
-      
-      This target is not intended to be called directly.
-    -->
-    <target name="-checkout" depends=".checkout"/>
-    
-    <!--
-      An empty hook. 
-      
-      It allows derivative scripts to inject custom logic which will be 
-      executed after checking out the engine's sources.
-      
-      This target is not intended to be called directly.
-    -->
-    <target name="-post-checkout"/>
     
     <!-- =======================================================================
       Build
@@ -291,42 +153,14 @@
     <!--
       Builds the engine and (optionally) its native components.
       
-      It is assumed that the sources of the engine are already checked out, 
-      but a dependency on the 'checkout' target is not defined as it may be 
-      desirable to check-out the sources once and then rebuild the engine as 
-      appropriate.
+      This target overrides the '-build' target in common.xml, providing the 
+      custom functionality that is required for correctly building the engine.
       
       The build process consists of three steps: first, the native components 
       of the engine (jni libraries and native launcher stubs) are built (if it
       is required), then the engine's netbeans project is compiled and 
       packaged, last the engine jar file is digitally signed and moved to the
       distributives directory.
-      
-      This is an aggregation target, it does not contain any functionality, but 
-      defines dependencies on '-pre-build', '-build' and '-post-build' 
-      targets. The '-pre-build' and '-post-build' target are empty hooks,
-      which allow derivative scripts to inject custom logic which will be 
-      executed prior to the build process or after it. The '-build' target 
-      contains the code which actually builds the engine.
-    -->
-    <target name="build" depends="init,-pre-build,-build,-post-build"/>
-    
-    <!--
-      An empty hook. 
-      
-      It allows derivative scripts to inject custom logic which will be 
-      executed prior to building the engine.
-      
-      This target is not intended to be called directly.
-    -->
-    <target name="-pre-build"/>
-    
-    <!--
-      Builds the engine and (optionally) its native components.
-      
-      For a detailed description of this target's functionality see the 
-      description of the 'build' target. This is an implementation target
-      and should not be used outside of the context.
       
       This target is not intended to be called directly.
     -->
@@ -341,16 +175,6 @@
         <!-- move the built binary to the distributives directory -->
         <move file="${engine.dist.file}" todir="${dist.dir}"/>
     </target>
-    
-    <!--
-      An empty hook. 
-      
-      It allows derivative scripts to inject custom logic which will be 
-      executed after building the engine.
-      
-      This target is not intended to be called directly.
-    -->
-    <target name="-post-build"/>
     
     <!--
       Builds the native components of the engine.
@@ -401,35 +225,12 @@
     <!--
       Releases the engine to the registries server.
       
+      This target overrides the '-release' target in common.xml, providing the 
+      custom functionality that is required for correctly releasing the engine.
+      
       It is assumed that the engine has already been built, but a dependency 
       on the 'build' target is not defined, as it may be desirable to build 
       once and then release several times to different registries servers.
-      
-      This is an aggregation target, it does not contain any functionality, but 
-      defines dependencies on '-pre-release', '-release' and '-post-release' 
-      targets. The '-pre-release' and '-post-release' target are empty hooks,
-      which allow derivative scripts to inject custom logic which will be 
-      executed prior to the release process or after it. The '-release' target 
-      contains the code which actually releases the engine.
-    -->
-    <target name="release" depends="init,-pre-release,-release,-post-release"/>
-    
-    <!--
-      An empty hook. 
-      
-      It allows derivative scripts to inject custom logic which will be 
-      executed prior to releasing the engine.
-      
-      This target is not intended to be called directly.
-    -->
-    <target name="-pre-release"/>
-    
-    <!--
-      Releases the engine to the registries server.
-      
-      For a detailed description of this target's functionality see the 
-      description of the 'release' target. This is an implementation target
-      and should not be used outside of the context.
       
       This target is not intended to be called directly.
     -->
@@ -437,16 +238,6 @@
         <release-engine url="${release.url}"
                         archive="${dist.dir}/${engine.dist.file.name}"/>
     </target>
-    
-    <!--
-      An empty hook. 
-      
-      It allows derivative scripts to inject custom logic which will be 
-      executed after releasing the engine.
-      
-      This target is not intended to be called directly.
-    -->
-    <target name="-post-release"/>
     
     <!-- =======================================================================
       Default

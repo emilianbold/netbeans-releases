@@ -21,55 +21,140 @@
 ============================================================================ -->
 
 <!--
-  This is the base script for building, packaging and releasing nbi group 
-  packages. It is meant to be imported into individual group build scripts, 
-  which define the essential group-specific properties, which, in their turn, 
-  are referenced throughout this script.
+  This is the base build script for an nbi group package.
+  
+  It is not intended to be used directly, but to be imported into derivative
+  implementation scripts, which will provide properties' values that are 
+  specific the concrete group implementation. The derivative scripts may also
+  provide some additional functionality that is required by their respective
+  group implementations.
+  
+  This script exposes five primary targets: 'init', 'clean', 'checkout', 
+  'build' and 'release'; as well as two aggregate targets: 'build-all', 
+  which tranlates into 'init', 'clean', 'checkout', 'build', and 
+  'release-all' - 'init', 'clean', 'checkout', 'build', 'release'. For the 
+  detailed description of the functionality of these targets, consult the 
+  corresponding documentation.
 -->
-<project name="build-group" default="usage" basedir=".">
-    <!-- import the most common properties -->
+<project name="group" default="usage" basedir=".">
+    <!-- a default value for the ${common.dir} property, which allows the user 
+         to see the usage information is he calls this script directly and not
+         via a derivative (which is the proper way to do this) -->
+    <property name="common.dir" value="${basedir}"/>
+    
+    <!-- import the common properties -->
     <property file="${common.dir}/common.properties"/>
     
-    <!-- import the properties common among all group build scripts -->
+    <!-- import properties specific to the group package's build script -->
     <property file="${common.dir}/group.properties"/>
     
     <!-- import the common target library -->
-    <import file="${common.dir}/common.xml" optional="false"/>
+    <import file="common.xml" optional="false"/>
     
-    <!-- define an aggregating target for cleaning and building groups -->
-    <target name="build-all" depends="init,clean,build"/>
-    
-    <!-- define an aggregating target for cleaning, building and 
-         publishing groups -->
-    <target name="release-all" depends="build-all,release"/>
+    <!-- =======================================================================
+      Initialization
+    ======================================================================== -->
     
     <!--
-      Initialization. Initialization for groups is no different from the
-      base intiialization routine, thus the only thing this target does is 
-      falling back to the common initialization procedure.
+      Initializes the group package's build script.
+      
+      This target overrides the '-init' target in common.xml, providing the 
+      custom functionality that is required for the group package's build 
+      script initialization.
+      
+      In addition to the standard initialization routine, this target defines
+      several custom ant tasks, which are specific to the group package's build 
+      script.
+      
+      This target is not intended to be called directly.
     -->
-    <target name="init" depends="-init"/>
+    <target name="-init" depends=".init">
+        <!-- define custom ant tasks -->
+        <taskdef 
+            name="sizeof" 
+            classname="org.netbeans.installer.infra.build.ant.SizeOf" 
+            classpath="${custom.tasks.cls}"/>
+        <taskdef 
+            name="md5" 
+            classname="org.netbeans.installer.infra.build.ant.Md5" 
+            classpath="${custom.tasks.cls}"/>
+        <taskdef 
+            name="load-locales" 
+            classname="org.netbeans.installer.infra.build.ant.LoadLocales" 
+            classpath="${custom.tasks.cls}"/>
+        <taskdef 
+            name="group-descriptor" 
+            classname="org.netbeans.installer.infra.build.ant.XmlGroup" 
+            classpath="${custom.tasks.cls}"/>
+        <taskdef
+            name="release-group"
+            classname="org.netbeans.installer.infra.build.ant.ReleaseGroup"
+            classpath="${custom.tasks.cls}"/>
+    </target>
+    
+    <!-- =======================================================================
+      Clean-up
+    ======================================================================== -->
     
     <!--
-      Clean-up. The clean-up procedure for groups is almost the same as the
-      base one. The only additional action here is to remove the distributive 
-      file.
+      Cleans the current working directory and the distributives directory.
+      
+      This target overrides the '-clean' target in common.xml, providing the 
+      custom functionality that is required for correctly cleaning the group 
+      package.
+      
+      In addition to the standard behavior the group package distributive file 
+      is removed from the distributives directory.
+      
+      This target is not intended to be called directly.
     -->
-    <target name="clean" depends="init,-clean">
+    <target name="-clean" depends=".clean">
+        <!-- remove the group's distributive file from the distributives 
+             directory -->
         <delete file="${dist.dir}/${group.jar.file}"/>
     </target>
     
-    
-    <target name="build" depends="init,-checkout,-pre-build,-build,-post-build"/>
+    <!-- =======================================================================
+      Check-out
+    ======================================================================== -->
     
     <!--
-      This is a hook target. Individual group build scripts may override it in
-      order to add some custom logic which will be executed prior to building 
-      the group package.
+      The functionality of the checkout procedure for the group package is 
+      indentical to the standard one, thus there is not need to override the 
+      '-checkout' target, whosew default implementation is present in 
+      common.xml.
     -->
-    <target name="-pre-build"/>
     
-    <target name="-build"/>
+    <!-- =======================================================================
+      Build
+    ======================================================================== -->
+    
+    <!--
+      Builds the group package.
+      
+      This target overrides the '-build' target in common.xml, providing the 
+      custom functionality that is required for correctly building the group 
+      package.
+      
+      The build process for the grup package consists of five steps.
+      1) The search-and-replace is run over the group's sources, based on the
+         [token] => [value] pairs defined in ${group.params.N.token} and
+         ${group.params.N.value}
+      
+      2) The group's icon is copied from its location to the group's package 
+         directory structure and some metadata is calculated
+      
+      3) The group's localizing bundle is loaded and the group package 
+         descriptor is generated
+      
+      4) The manifest for the group package is generated
+      
+      5) The package directory structure is jarred, digitally signed and moved 
+         to the distributives directory
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-build" depends=".build">
         <!-- substitute the params in group's source tree (normally that would
              consist only of the icon and the localizing bundle -->
         <for-each from="1" to="${group.params.length}" property="i">
@@ -128,8 +213,26 @@
               todir="${dist.dir}"/>
     </target>
     
-    <target name="release" depends="init,build">
-        <update-group url="${release.url}"
+    <!-- =======================================================================
+      Release
+    ======================================================================== -->
+    
+    <!--
+      Releases the group package to the registries server.
+      
+      This target overrides the '-release' target in common.xml, providing the 
+      custom functionality that is required for correctly releasing the group 
+      package.
+      
+      It is assumed that the group package has already been built, but a 
+      dependency on the 'build' target is not defined, as it may be desirable 
+      to build once and then release several times to different registries 
+      servers.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-release">
+        <release-group url="${release.url}"
                       registry="${release.registry}"
                       uid="${release.parent.uid}"
                       version="${release.parent.version}"
@@ -137,17 +240,20 @@
     </target>
     
     <!-- =======================================================================
-        Default Target
+      Default
     ======================================================================== -->
     
     <!--
-      The default target. Does not do anything useful, except depicting the 
-      usage scenario for the script.
+      The default target. 
+      
+      Does nothing except printing the usage information.
     -->
     <target name="usage">
         <echo>
-            This script is a base script for building NBI group packages. It is
-            not intended to be used directly.
+            This is the base build script for nbi group package and is not 
+            intended to be called directly. In order to create a derivative 
+            implementation script, see 
+            ${basedir}/.templates/group-template.xml
         </echo>
     </target>
 </project>

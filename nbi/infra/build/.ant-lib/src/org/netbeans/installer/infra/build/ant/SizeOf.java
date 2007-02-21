@@ -26,12 +26,12 @@ import org.netbeans.installer.infra.build.ant.utils.AntUtils;
 public class SizeOf extends Task {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private String file     = null;
+    private String path     = null;
     private String property = null;
     
     // setters //////////////////////////////////////////////////////////////////////
     public void setFile(final String file) {
-        this.file = file;
+        this.path = file;
     }
     
     public void setProperty(final String property) {
@@ -42,6 +42,11 @@ public class SizeOf extends Task {
     public void execute() throws BuildException {
         AntUtils.setProject(getProject());
         
-        getProject().setProperty(property, "" + AntUtils.size(new File(file)));
+        File file = new File(path);
+        if (!file.equals(file.getAbsoluteFile())) {
+            file = new File(getProject().getBaseDir(), path);
+        }
+        
+        getProject().setProperty(property, "" + AntUtils.size(file));
     }
 }

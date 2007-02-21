@@ -35,8 +35,46 @@
 -->
 <project name="common" default="usage" basedir=".">
     <!-- =======================================================================
+      Aggregates
+    ======================================================================== -->
+    
+    <!--
+      Cleans and builds the project.
+      
+      This is an aggregation target, which does not contain any functionality,
+      but defines dependencies on the 'clean', 'checkout' and 'build' targets.
+      For more details, please consult the documentation for these targets. The 
+      targets themselves are declared in the derivative scripts.
+    -->
+    <target name="build-all" depends="clean,checkout,build"/>
+    
+    <!--
+      Cleans, builds and releases the project.
+      
+      This is an aggregation target, which does not contain any functionality,
+      but defines dependencies on the 'clean', 'checkout', 'build' and 
+      'release' targets. For more details, please consult the documentation 
+      for these targets. The targets themselves are declared in the derivative 
+      scripts.
+    -->
+    <target name="release-all" depends="clean,checkout,build,release"/>
+    
+    <!-- =======================================================================
       Initialization
     ======================================================================== -->
+    
+    <!--
+      Initializes the projects's build script.
+      
+      This is an aggregation target, it does not contain any functionality, but 
+      defines dependencies on '-pre-init', '-init' and '-post-init' 
+      targets. The '-pre-init' and '-post-init' targets are empty hooks,
+      which allow derivative scripts to inject custom logic which will be 
+      executed prior to the initialization process or after it. The '-init' 
+      target contains the code which actually initializes the script and should 
+      be overriden in the derivative scripts.
+    -->
+    <target name="init" depends="-pre-init,-init,-post-init"/>
     
     <!--
       Performs the default initialization.
@@ -151,9 +189,52 @@
             debug="true"/>
     </target>
     
+    <!--
+      An empty hook. 
+      
+      It allows derivative scripts to inject custom logic which will be 
+      executed prior to the script's initialization.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-pre-init"/>
+    
+    <!--
+      An empty hook. 
+      
+      It must be overriden in derivative scripts, in order to implement custom
+      functionality required for the build script initialization.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-init" depends=".init"/>
+    
+    <!--
+      An empty hook. 
+      
+      It allows derivative scripts to inject custom logic which will be 
+      executed after the script's initialization.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-post-init"/>
+    
     <!-- =======================================================================
       Clean-up
     ======================================================================== -->
+    
+    <!--
+      Cleans the current working directory and the distributives directory.
+      
+      This is an aggregation target, it does not contain any functionality, but 
+      defines dependencies on '-pre-clean', '-clean' and '-post-clean' 
+      targets. The '-pre-clean' and '-post-clean' targets are empty hooks,
+      which allow derivative scripts to inject custom logic which will be 
+      executed prior to the clean process or after it. The '-clean' target 
+      contains the code which actually cleans the project and should be 
+      overriden in the derivative scripts.
+    -->
+    <target name="clean" depends="init,-pre-clean,-clean,-post-clean"/>
     
     <!--
       Performs the standard clean-up procedures.
@@ -256,10 +337,54 @@
         </if>
     </target>
     
+    <!--
+      An empty hook. 
+      
+      It allows derivative scripts to inject custom logic which will be 
+      executed prior to cleaning the projects's local working directory.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-pre-clean"/>
+    
+    <!--
+      An empty hook. 
+      
+      It must be overriden in derivative scripts, in order to implement custom
+      functionality required for the cleaning the project.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-clean" depends=".clean"/>
+    
+    <!--
+      An empty hook. 
+      
+      It allows derivative scripts to inject custom logic which will be 
+      executed after cleaning the project's local working directory.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-post-clean"/>
+    
     <!-- =======================================================================
       Check-out
     ======================================================================== -->
     
+    <!--
+      Checks out the the project's sources from the CVS repository.
+      
+      This is an aggregation target, it does not contain any functionality, but 
+      defines dependencies on '-pre-checkout', '-checkout' and '-post-checkout' 
+      targets. The '-pre-checkout' and '-post-checkout' target are empty hooks,
+      which allow derivative scripts to inject custom logic which will be 
+      executed prior to the check-out process or after it. The '-checkout' 
+      target contains the code which actually checks out the sources and should 
+      be overriden in the derivative scripts.
+    -->
+    <target name="checkout" 
+            depends="init,-pre-checkout,-checkout,-post-checkout"/>
+            
     <!--
       Checks out sources from a CVS repository with the given coordinates.
       
@@ -344,9 +469,62 @@
         </copy>
     </target>
     
+    <!--
+      An empty hook. 
+      
+      It allows derivative scripts to inject custom logic which will be 
+      executed prior to checking out the project's sources.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-pre-checkout"/>
+    
+    <!--
+      An empty hook. 
+      
+      It must be overriden in derivative scripts, in order to implement custom
+      functionality required for the correctly checking out the project's 
+      sources.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-checkout" depends=".checkout"/>
+    
+    <!--
+      An empty hook. 
+      
+      It allows derivative scripts to inject custom logic which will be 
+      executed after checking out the project's sources.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-post-checkout"/>
+    
     <!-- =======================================================================
       Build
     ======================================================================== -->
+    
+    <!--
+      Builds the project and (optionally) its native components.
+      
+      It is assumed that the sources of the project are already checked out, 
+      but a dependency on the 'checkout' target is not defined as it may be 
+      desirable to check-out the sources once and then rebuild the engine as 
+      appropriate.
+      
+      The build process consists of two steps: first, the native components 
+      of the project (jni libraries) are built (if it is required), then the 
+      projects's netbeans part is compiled and packaged.
+      
+      This is an aggregation target, it does not contain any functionality, but 
+      defines dependencies on '-pre-build', '-build' and '-post-build' 
+      targets. The '-pre-build' and '-post-build' target are empty hooks,
+      which allow derivative scripts to inject custom logic which will be 
+      executed prior to the build process or after it. The '-build' target 
+      contains the code which actually builds the project and should be 
+      overriden in the derivative scripts.
+    -->
+    <target name="build" depends="init,-pre-build,-build,-post-build"/>
     
     <!-- 
       Performs the standard build procedures.
@@ -470,6 +648,87 @@
             <arg value="${nb.custom.tasks.cls}"/>
         </exec>
     </target>
+    
+    <!--
+      An empty hook. 
+      
+      It allows derivative scripts to inject custom logic which will be 
+      executed prior to building the project.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-pre-build"/>
+    
+    <!--
+      An empty hook. 
+      
+      It must be overriden in derivative scripts, in order to implement custom
+      functionality required for the correctly building the project.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-build" depends=".build"/>
+    
+    <!--
+      An empty hook. 
+      
+      It allows derivative scripts to inject custom logic which will be 
+      executed after building the project.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-post-build"/>
+    
+    <!-- =======================================================================
+      Release
+    ======================================================================== -->
+    
+    <!--
+      Releases the project to the registries server.
+      
+      It is assumed that the project has already been built, but a dependency 
+      on the 'build' target is not defined, as it may be desirable to build 
+      once and then release several times to different registries servers.
+      
+      This is an aggregation target, it does not contain any functionality, but 
+      defines dependencies on '-pre-release', '-release' and '-post-release' 
+      targets. The '-pre-release' and '-post-release' target are empty hooks,
+      which allow derivative scripts to inject custom logic which will be 
+      executed prior to the release process or after it. The '-release' target 
+      contains the code which actually releases the project and should be 
+      overriden in the derivative scripts.
+    -->
+    <target name="release" depends="init,-pre-release,-release,-post-release"/>
+    
+    <!--
+      An empty hook. 
+      
+      It allows derivative scripts to inject custom logic which will be 
+      executed prior to releasing the project.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-pre-release"/>
+    
+    <!--
+      An empty hook. 
+      
+      It must be overriden in derivative scripts, in order to implement custom
+      functionality required for the correctly releasing the project.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-release"/>
+    
+    <!--
+      An empty hook. 
+      
+      It allows derivative scripts to inject custom logic which will be 
+      executed after releasing the project.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-post-release"/>
     
     <!-- =======================================================================
       Default
