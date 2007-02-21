@@ -23,16 +23,18 @@ package org.netbeans.modules.vmd.midp.palette.wizard;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
-import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
+import org.netbeans.modules.vmd.midp.serialization.MidpPropertyPresenterSerializer;
+import org.netbeans.modules.vmd.midp.serialization.MidpSetterPresenterSerializer;
+import org.netbeans.modules.vmd.midp.serialization.MidpTypesConvertor;
 import org.openide.ErrorManager;
 
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -42,19 +44,23 @@ import java.util.*;
 /**
  * @author David Kaspar
  */
-public class ComponentInstaller {
+public final class ComponentInstaller {
 
-    public static void install () {
+    public static void install (Map<String, Item> componentsToInstall) {
+        for (Item item : componentsToInstall.values ()) {
+            ComponentSerializationSupport.serialize (MidpDocumentSupport.PROJECT_TYPE_MIDP, item.getTypeDescriptor (), item.getPaletteDescriptor (), item.getProperties (), item.getPresenters ());
+        }
+        ComponentSerializationSupport.refreshDescriptorRegistry (MidpDocumentSupport.PROJECT_TYPE_MIDP);
         // TODO
     }
 
-    public static Map<String, ComponentDescriptor> search (Project project) {
+    public static Map<String,Item> search (Project project) {
         ClasspathInfo info = MidpProjectSupport.getClasspathInfo (project);
         if (info == null)
             return Collections.emptyMap ();
         final Set<ElementHandle<TypeElement>> allHandles = info.getClassIndex ().getDeclaredTypes ("", ClassIndex.NameKind.PREFIX, EnumSet.of (ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES)); // NOI18N
-        final HashMap<String, ComponentDescriptor> registry = resolveRegistryMap (project);
-        final HashMap<String, ComponentDescriptor> result = new HashMap<String, ComponentDescriptor> ();
+        final Map<String, ComponentDescriptor> registry = resolveRegistryMap (project);
+        final HashMap<String, Item> result = new HashMap<String, Item> ();
 
         try {
             JavaSource.create (info).runUserActionTask (new CancellableTask<CompilationController>() {
@@ -74,7 +80,7 @@ public class ComponentInstaller {
                         if (! iterator.hasNext ())
                             break;
                         TypeElement element = iterator.next ();
-                        search (parameter, element, elements, registry, result);
+                        search (element, elements, registry, result);
                     }
                 }
             }, true);
@@ -84,53 +90,114 @@ public class ComponentInstaller {
         return result;
     }
 
-    private static HashMap<String,ComponentDescriptor> resolveRegistryMap (Project project) {
+    private static Map<String,ComponentDescriptor> resolveRegistryMap (Project project) {
         final DescriptorRegistry registry = DescriptorRegistry.getDescriptorRegistry (MidpDocumentSupport.PROJECT_TYPE_MIDP, ProjectUtils.getProjectID (project));
         final HashMap<String, ComponentDescriptor> registryMap = new HashMap<String, ComponentDescriptor> ();
+
         registry.readAccess (new Runnable() {
             public void run () {
                 for (ComponentDescriptor descriptor : registry.getComponentDescriptors ()) {
                     TypeID thisType = descriptor.getTypeDescriptor ().getThisType ();
-                    if (! registry.isInHierarchy (ClassCD.TYPEID, thisType))
-                        continue;
+
                     String string = thisType.getString ();
                     if (! checkForJavaIdentifierCompliant (string))
                         continue;
+
+                    if (! registry.isInHierarchy (ClassCD.TYPEID, thisType)  ||  ClassCD.TYPEID.equals (thisType))
+                        continue;
+
                     registryMap.put (string, descriptor);
                 }
             }
         });
+
         return registryMap;
     }
 
-    private static ComponentDescriptor search (CompilationController parameter, TypeElement element, Set<TypeElement> elements, Map<String, ComponentDescriptor> registry, Map<String, ComponentDescriptor> result) {
+    private static boolean search (TypeElement element, Set<TypeElement> elements, Map<String, ComponentDescriptor> registry, Map<String, Item> result) {
         if (element == null)
-            return null;
+            return false;
+
         elements.remove (element);
+
         if (element.getKind () != ElementKind.CLASS)
-            return null;
+            return false;
 
         String fqn = element.getQualifiedName ().toString ();
 
         ComponentDescriptor descriptor = registry.get (fqn);
         if (descriptor != null)
-            return descriptor;
-        descriptor = result.get (fqn);
-        if (descriptor != null)
-            return descriptor;
+            return true;
+        Item item = result.get (fqn);
+        if (item != null)
+            return true;
 
-        TypeElement superElement = getSuperFQN (element);
+        TypeElement superElement = getSuperElement (element);
         if (superElement == null)
-            return null;
-        ComponentDescriptor superDescriptor = search (parameter, superElement, elements, registry, result);
-        if (superDescriptor == null)
-            return null;
-        
-        // TODO - search and check whether it is deriving from any component which is already in the registry and derives from ClassCD
-        return descriptor;
+            return false;
+        if (! search (superElement, elements, registry, result))
+            return false;
+
+        String superFQN = superElement.getQualifiedName ().toString ();
+        if (! registry.containsKey(superFQN)  &&  ! result.containsKey (superFQN))
+            return false;
+
+        boolean isAbstract = element.getModifiers ().contains (Modifier.ABSTRACT);
+        boolean isFinal = element.getModifiers ().contains (Modifier.FINAL);
+        item = new Item (superFQN, fqn, isAbstract, isFinal);
+
+        boolean hasConstructor = inspectElement (item, element);
+        if (! isAbstract  ||  ! hasConstructor)
+            return false;
+
+        result.put (fqn, item);
+        return true;
     }
 
-    private static TypeElement getSuperFQN (TypeElement element) {
+    private static boolean inspectElement (Item item, TypeElement clazz) {
+        String fqn = clazz.getQualifiedName ().toString ();
+        boolean hasConstructor = false;
+        int constructorIndex = 1;
+
+        for (Element el : clazz.getEnclosedElements ()) {
+            if (! el.getModifiers ().contains (Modifier.PUBLIC))
+                continue;
+
+            if (el.getKind () == ElementKind.CONSTRUCTOR) {
+                ExecutableElement method = (ExecutableElement) el;
+                ArrayList<String> properties = new ArrayList<String> ();
+                int index = 1;
+                for (VariableElement parameter : method.getParameters ()) {
+                    PropertyDescriptor property = MidpTypesConvertor.createPropertyDescriptorForParameter (fqn + "#" + constructorIndex + "#" + index, true, parameter);
+                    item.addProperty (property);
+                    properties.add (property.getName ());
+                    item.addPresenter (new MidpPropertyPresenterSerializer ("" + constructorIndex + ". constructor - " + index + ". parameter", property));
+                    index ++;
+                }
+                item.addPresenter (new MidpSetterPresenterSerializer (null, properties));
+
+            } else if (el.getKind () == ElementKind.METHOD) {
+                ExecutableElement method = (ExecutableElement) el;
+                String name = method.getSimpleName ().toString ();
+                ArrayList<String> properties = new ArrayList<String> ();
+                List<? extends VariableElement> parameters = method.getParameters ();
+                if (parameters.size () != 1)
+                    continue;
+                VariableElement parameter = parameters.iterator ().next ();
+
+                PropertyDescriptor property = MidpTypesConvertor.createPropertyDescriptorForParameter (fqn + "#" + name, false, parameter);
+                item.addProperty (property);
+                properties.add (property.getName ());
+                item.addPresenter (new MidpPropertyPresenterSerializer (name + " method parameter", property));
+
+                item.addPresenter (new MidpSetterPresenterSerializer (name, properties));
+            }
+        }
+
+        return hasConstructor;
+    }
+
+    private static TypeElement getSuperElement (TypeElement element) {
         TypeMirror superType = element.getSuperclass ();
         if (superType.getKind () != TypeKind.DECLARED)
             return null;
@@ -156,6 +223,51 @@ public class ComponentInstaller {
             dot = true;
         }
         return ! dot;
+    }
+
+    public static class Item {
+
+        private TypeDescriptor typeDescriptor;
+        private PaletteDescriptor paletteDescriptor;
+        private String fqn;
+        private ArrayList<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor> ();
+        private ArrayList<PresenterSerializer> presenters = new ArrayList<PresenterSerializer> ();
+
+        public Item (String superFQN, String fqn, boolean isAbstract, boolean isFinal) {
+            this.fqn = fqn;
+            TypeID typeID = new TypeID (TypeID.Kind.COMPONENT, fqn);
+            typeDescriptor = new TypeDescriptor (new TypeID (TypeID.Kind.COMPONENT, superFQN), typeID, isAbstract, isFinal);
+            paletteDescriptor = new PaletteDescriptor (MidpPaletteProvider.CATEGORY_CUSTOM, MidpTypes.getSimpleClassName (typeID), fqn, null, null);
+        }
+
+        public String getFQN () {
+            return fqn;
+        }
+
+        public TypeDescriptor getTypeDescriptor () {
+            return typeDescriptor;
+        }
+
+        public PaletteDescriptor getPaletteDescriptor () {
+            return paletteDescriptor;
+        }
+
+        public List<PropertyDescriptor> getProperties () {
+            return properties;
+        }
+
+        public List<PresenterSerializer> getPresenters () {
+            return presenters;
+        }
+
+        public void addPresenter (PresenterSerializer serializer) {
+            presenters.add (serializer);
+        }
+
+        public void addProperty (PropertyDescriptor property) {
+            properties.add (property);
+        }
+
     }
 
 }

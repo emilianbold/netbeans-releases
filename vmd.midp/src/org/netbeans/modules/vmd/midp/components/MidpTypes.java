@@ -30,6 +30,9 @@ import java.util.HashMap;
  */
 public final class MidpTypes {
 
+    public static final TypeID TYPEID_CHAR = new TypeID (TypeID.Kind.PRIMITIVE, "char"); // NOI18N
+    public static final TypeID TYPEID_BYTE = new TypeID (TypeID.Kind.PRIMITIVE, "byte"); // NOI18N
+    public static final TypeID TYPEID_SHORT = new TypeID (TypeID.Kind.PRIMITIVE, "short"); // NOI18N
     public static final TypeID TYPEID_INT = new TypeID (TypeID.Kind.PRIMITIVE, "int"); // NOI18N
     public static final TypeID TYPEID_LONG = new TypeID (TypeID.Kind.PRIMITIVE, "long"); // NOI18N
     public static final TypeID TYPEID_FLOAT = new TypeID (TypeID.Kind.PRIMITIVE, "float"); // NOI18N
@@ -71,6 +74,18 @@ public final class MidpTypes {
         return PropertyValue.createValue (MidpPrimitiveDescriptor.doublePD, TYPEID_DOUBLE, doubleValue);
     }
 
+    public static PropertyValue createCharValue (char charValue) {
+        return PropertyValue.createValue (MidpPrimitiveDescriptor.charPD, TYPEID_CHAR, charValue);
+    }
+
+    public static PropertyValue createByteValue (byte byteValue) {
+        return PropertyValue.createValue (MidpPrimitiveDescriptor.bytePD, TYPEID_BYTE, byteValue);
+    }
+
+    public static PropertyValue createShortValue (short shortValue) {
+        return PropertyValue.createValue (MidpPrimitiveDescriptor.shortPD, TYPEID_SHORT, shortValue);
+    }
+
     public static PropertyValue createJavaCodeValue (String javaCode) {
         return PropertyValue.createValue (MidpPrimitiveDescriptor.stringPD, TYPEID_JAVA_CODE, javaCode);
     }
@@ -101,6 +116,18 @@ public final class MidpTypes {
 
     public static double getDouble (PropertyValue propertyValue) {
         return (Double) propertyValue.getPrimitiveValue ();
+    }
+
+    public static char getChar (PropertyValue propertyValue) {
+        return (Character) propertyValue.getPrimitiveValue ();
+    }
+
+    public static byte getByte (PropertyValue propertyValue) {
+        return (Byte) propertyValue.getPrimitiveValue ();
+    }
+
+    public static short getShort (PropertyValue propertyValue) {
+        return (Short) propertyValue.getPrimitiveValue ();
     }
 
     public static String getJavaCode (PropertyValue propertyValue) {

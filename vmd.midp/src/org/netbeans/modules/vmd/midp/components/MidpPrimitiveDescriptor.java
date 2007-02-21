@@ -27,6 +27,9 @@ import org.netbeans.modules.vmd.api.model.PrimitiveDescriptorFactory;
 // HINT - after making change, update MidpCodeSupport too
 public final class MidpPrimitiveDescriptor implements PrimitiveDescriptorFactory {
 
+    static final CharPD charPD = new CharPD ();
+    static final BytePD bytePD = new BytePD ();
+    static final ShortPD shortPD = new ShortPD ();
     static final IntPD intPD = new IntPD ();
     static final LongPD longPD = new LongPD ();
     static final FloatPD floatPD = new FloatPD ();
@@ -39,6 +42,12 @@ public final class MidpPrimitiveDescriptor implements PrimitiveDescriptorFactory
     }
 
     public PrimitiveDescriptor getDescriptorForTypeIDString (String string) {
+        if (MidpTypes.TYPEID_CHAR.getString ().equals (string))
+            return intPD;
+        if (MidpTypes.TYPEID_BYTE.getString ().equals (string))
+            return bytePD;
+        if (MidpTypes.TYPEID_SHORT.getString ().equals (string))
+            return shortPD;
         if (MidpTypes.TYPEID_INT.getString ().equals (string))
             return intPD;
         if (MidpTypes.TYPEID_LONG.getString ().equals (string))
@@ -55,6 +64,54 @@ public final class MidpPrimitiveDescriptor implements PrimitiveDescriptorFactory
             return stringPD;
         //TODO
         return null;
+    }
+
+    private static class CharPD implements PrimitiveDescriptor {
+
+        public String serialize (Object value) {
+            return value.toString ();
+        }
+
+        public Object deserialize (String serialized) {
+            return serialized.charAt (0);
+        }
+
+        public boolean isValidInstance (Object object) {
+            return object instanceof Character;
+        }
+
+    }
+
+    private static class BytePD implements PrimitiveDescriptor {
+
+        public String serialize (Object value) {
+            return value.toString ();
+        }
+
+        public Object deserialize (String serialized) {
+            return Byte.parseByte (serialized);
+        }
+
+        public boolean isValidInstance (Object object) {
+            return object instanceof Byte;
+        }
+
+    }
+
+    private static class ShortPD implements PrimitiveDescriptor {
+
+        public String serialize (Object value) {
+            return value.toString ();
+        }
+
+        public Object deserialize (String serialized) {
+            return Short.parseShort (serialized);
+        }
+
+        public boolean isValidInstance (Object object) {
+            return object instanceof Short;
+        }
+
     }
 
     private static class IntPD implements PrimitiveDescriptor {

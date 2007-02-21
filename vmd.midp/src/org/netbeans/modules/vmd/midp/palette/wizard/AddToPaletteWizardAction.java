@@ -30,14 +30,15 @@ import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import javax.swing.*;
 import java.awt.*;
 import java.text.MessageFormat;
+import java.util.Map;
 
 /**
  * @author David Kaspar
  */
 public final class AddToPaletteWizardAction extends CallableSystemAction {
-    
+
     private WizardDescriptor.Panel[] panels;
-    
+
     public void performAction() {
         DesignDocument document = ActiveDocumentSupport.getDefault ().getActiveDocument ();
         if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (document.getDocumentInterface ().getProjectType ()))
@@ -53,10 +54,10 @@ public final class AddToPaletteWizardAction extends CallableSystemAction {
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
 
         if (!cancelled) {
-            ComponentInstaller.install ();
+            ComponentInstaller.install ((Map<String, ComponentInstaller.Item>) wizardDescriptor.getProperty ("descriptors")); // NOI18N
         }
     }
-    
+
     /**
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
@@ -91,22 +92,22 @@ public final class AddToPaletteWizardAction extends CallableSystemAction {
         }
         return panels;
     }
-    
+
     public String getName() {
         return "Add to Palette Wizard";
     }
-    
+
     public String iconResource() {
         return null;
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     protected boolean asynchronous() {
         return false;
     }
-    
+
 }
 

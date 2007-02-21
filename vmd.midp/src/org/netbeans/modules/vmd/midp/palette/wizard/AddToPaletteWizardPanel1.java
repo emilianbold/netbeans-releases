@@ -20,14 +20,16 @@
 package org.netbeans.modules.vmd.midp.palette.wizard;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author David Kaspar
@@ -83,7 +85,7 @@ public class AddToPaletteWizardPanel1 implements WizardDescriptor.Panel {
         getComponent();
         Project project = component.getActiveProject ();
         ((WizardDescriptor) settings).putProperty ("project", project); // NOI18N
-        Map<String, ComponentDescriptor> descriptors = ComponentInstaller.search (project);
+        Map<String, ComponentInstaller.Item> descriptors = ComponentInstaller.search (project);
         ((WizardDescriptor) settings).putProperty ("descriptors", descriptors); // NOI18N
     }
 
