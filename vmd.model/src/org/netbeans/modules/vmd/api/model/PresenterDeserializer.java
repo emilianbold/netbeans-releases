@@ -59,7 +59,7 @@ public abstract class PresenterDeserializer {
     /**
      * Describes presenters and should create a list of presenters when asked.
      */
-    public abstract class PresenterFactory {
+    public static abstract class PresenterFactory {
 
         /**
          * Called to create presenters from descriptor when an instance of a component descriptor is going to be created.

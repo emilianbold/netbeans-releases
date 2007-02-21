@@ -95,7 +95,7 @@ public class ComponentSerializationSupport {
 
         Element presentersNode = document.createElement (XMLComponentDescriptor.PRESENTERS_NODE);
         for (PresenterSerializer serializer : presenters) {
-            List<Node> nodes = serializer.serialize (document);
+            List<Element> nodes = serializer.serialize (document);
             if (nodes != null)
                 for (Node node : nodes) {
                     if (node != null)

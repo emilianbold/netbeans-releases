@@ -20,8 +20,8 @@
 
 package org.netbeans.modules.vmd.api.model;
 
-import org.w3c.dom.Node;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import java.util.List;
 
@@ -39,6 +39,6 @@ public interface PresenterSerializer {
      * @param document the xml document
      * @return the list of newly created nodes that contains serialized data of custom presenters.
      */
-    List<Node> serialize (Document document);
+    List<Element> serialize (Document document);
 
 }

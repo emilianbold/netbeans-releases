@@ -43,5 +43,4 @@ public class PresenterDeserializerSupport {
         return null;
     }
 
-
 }
