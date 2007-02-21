@@ -23,7 +23,6 @@ import java.awt.image.BufferedImage;
 import java.io.PrintStream;
 import java.lang.ref.SoftReference;
 import java.net.URL;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

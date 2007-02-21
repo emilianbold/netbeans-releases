@@ -48,9 +48,7 @@ public class GameCodeSupport {
 
                 String name = MidpTypes.getString (component.readProperty (SequenceCD.PROPERTY_NAME));
                 int frameMillis = MidpTypes.getInteger (component.readProperty (SequenceCD.PROPERTY_FRAME_MS));
-                DesignComponent imageResource = component.readProperty (SequenceCD.PROPERTY_IMAGE_RESOURCE).getComponent ();
-                String imageResourceNameNoExt = getImageName (imageResource);
-
+				
                 writer.write ("public int " + name + "_delay = " + frameMillis + ";\n"); // NOI18N
                 writer.write ("public int[] " + name + " = {"); // NOI18N
 
@@ -88,7 +86,10 @@ public class GameCodeSupport {
                 section.switchToGuarded ();
 
                 section.getWriter ().write (name + " = Image.createImage(\"" + path + "\");\n"); // NOI18N
-                section.getWriter ().write ("}\n"); // NOI18N
+				
+				//XXX insert editable code here
+                
+				section.getWriter ().write ("}\n"); // NOI18N
 
                 section.getWriter ().commit ();
                 section.switchToEditable (getComponent ().getComponentID () + "-postInit"); // NOI18N
@@ -208,6 +209,9 @@ public class GameCodeSupport {
                 section.switchToGuarded ();
 
                 section.getWriter ().write ("}\n"); // NOI18N
+				
+				//XXX insert editable code here 
+				
 				section.getWriter ().write ("	return " + layerName + ";\n"); // NOI18N
                 section.getWriter ().write ("}\n"); // NOI18N
                 section.getWriter ().write ("\n"); // NOI18N
@@ -297,7 +301,6 @@ public class GameCodeSupport {
 					DesignComponent defSeq = animtile.readProperty(SequenceContainerCDProperties.PROP_DEFAULT_SEQUENCE).getComponent();
 
 	                String seqName = MidpTypes.getString(defSeq.readProperty (SequenceCD.PROPERTY_NAME));
-					String imageResourceNameNoExt = getImageName(imageResource);
 					section.getWriter().write(animTileName + "_"  + layerName + " = " + layerName + ".createAnimatedTile(" + seqName + "[0]);\n"); // NOI18N
 				}
 				Map<Integer, String> indexNames = new HashMap<Integer, String>();
