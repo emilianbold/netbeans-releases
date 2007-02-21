@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
+                <exclude name="**/ReadOnlyAccessTest.class"/>
             </patternset>
         </testset>
     </testbag>
