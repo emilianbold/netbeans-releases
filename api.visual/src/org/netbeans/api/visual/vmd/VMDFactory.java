@@ -21,6 +21,8 @@ package org.netbeans.api.visual.vmd;
 import org.netbeans.api.visual.border.Border;
 
 /**
+ * Used as a factory class for VMD-plugin specific components.
+ *
  * @author David Kaspar
  */
 public final class VMDFactory {
@@ -30,6 +32,10 @@ public final class VMDFactory {
     private VMDFactory () {
     }
 
+    /**
+     * Creates a border used by VMD node.
+     * @return the VMD node border
+     */
     public static Border createVMDNodeBorder () {
         return BORDER_NODE;
     }

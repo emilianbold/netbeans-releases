@@ -184,6 +184,31 @@ public final class ActionFactory {
     }
 
     /**
+     * Creates a align-with resize action.
+     * @param collectionLayer the layer with objects that the alignment is checked against.
+     * @param interractionLayer the interraction layer where the align-with hint lines are placed
+     * @param decorator the align-with move decorator
+     * @return the align-with resize action
+     */
+    public static WidgetAction createAlignWithResizeAction (LayerWidget collectionLayer, LayerWidget interractionLayer, AlignWithMoveDecorator decorator) {
+        assert collectionLayer != null;
+        return createAlignWithResizeAction (new SingleLayerAlignWithWidgetCollector (collectionLayer), interractionLayer, decorator != null ? decorator : ALIGN_WITH_MOVE_DECORATOR_DEFAULT);
+    }
+
+    /**
+     * Creates a align-with resize action.
+     * @param collector the collector of objects that the alignment is checked against.
+     * @param interractionLayer the interraction layer where the align-with hint lines are placed
+     * @param decorator the align-with move decorator
+     * @return the align-with resize action
+     */
+    public static WidgetAction createAlignWithResizeAction (AlignWithWidgetCollector collector, LayerWidget interractionLayer, AlignWithMoveDecorator decorator) {
+        assert collector != null && interractionLayer != null && decorator != null;
+        AlignWithResizeStrategyProvider sp = new AlignWithResizeStrategyProvider (collector, interractionLayer, decorator);
+        return createResizeAction (sp, sp);
+    }
+
+    /**
      * Creates a connect action with a default decorator.
      * @param interractionLayer the interraction layer where the temporary connection is visualization placed.
      * @param provider the connect logic provider
