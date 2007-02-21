@@ -48,16 +48,4 @@ public final class TreeElementFactory {
         }
         return null;
     }
-
-    /**
-     * this method is implementation detail.
-     * It calls cleanUp on all known TreeElementFactoryImplementations
-     */
-    public static void cleanUp() {
-        for (TreeElementFactoryImplementation fac: implementations.allInstances()) {
-            fac.cleanUp();
-        }
-    }
-    
-    
 }

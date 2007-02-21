@@ -40,12 +40,14 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringCustomUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
+import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -669,10 +671,10 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                         }
                         UndoManager.getDefault().watch(editorSupports, RefactoringPanel.this);
                     } catch (RuntimeException t) {
-                        TreeElementFactory.cleanUp();
+                        cleanupTreeElements();
                         throw t;
                     } catch (Error e) {
-                        TreeElementFactory.cleanUp();
+                        cleanupTreeElements();
                         throw e;
                     } finally {
                         progressHandle.finish();
@@ -947,8 +949,14 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                 tc.requestActive();
             }
         }
-        TreeElementFactory.cleanUp();
+        cleanupTreeElements();
         //super.closeNotify();
+    }
+    
+    private void cleanupTreeElements() {
+        for (TreeElementFactoryImplementation tefi: Lookup.getDefault().lookupAll(TreeElementFactoryImplementation.class)) {
+            tefi.cleanUp();
+        }
     }
 
     private static class ProgressL implements ProgressListener {
