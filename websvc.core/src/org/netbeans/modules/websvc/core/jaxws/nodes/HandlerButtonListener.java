@@ -99,10 +99,8 @@ public class HandlerButtonListener implements ActionListener{
                             TreeMaker make = workingCopy.getTreeMaker();
                             TypeElement chainElement = workingCopy.getElements().getTypeElement("javax.jws.HandlerChain"); //NOI18N
                             List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
-                            AssignmentTree attr1 = make.Assignment(make.Identifier("name"), make.Literal(service.getName() + "_handlerChain"));
-
-                            AssignmentTree attr2 = make.Assignment(make.Identifier("file"), make.Literal(handlerFileName + ".xml"));
-                            attrs.add(attr1);attrs.add(attr2);
+                            AssignmentTree attr1 = make.Assignment(make.Identifier("file"), make.Literal(handlerFileName + ".xml"));
+                            attrs.add(attr1);
                             AnnotationTree chainAnnotation = make.Annotation(
                                     make.QualIdent(chainElement), 
                                     attrs
