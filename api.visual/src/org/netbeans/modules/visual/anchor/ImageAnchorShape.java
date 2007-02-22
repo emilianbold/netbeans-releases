@@ -28,10 +28,12 @@ import java.awt.*;
 public class ImageAnchorShape implements AnchorShape {
 
     private Image image;
+    private boolean lineOriented;
     private int radius;
     private int x, y;
 
-    public ImageAnchorShape (Image image) {
+    public ImageAnchorShape (Image image, boolean lineOriented) {
+        this.lineOriented = lineOriented;
         assert image != null;
         this.image = image;
         x = image.getWidth (null);
@@ -42,7 +44,7 @@ public class ImageAnchorShape implements AnchorShape {
     }
 
     public boolean isLineOriented () {
-        return false;
+        return lineOriented;
     }
 
     public int getRadius () {

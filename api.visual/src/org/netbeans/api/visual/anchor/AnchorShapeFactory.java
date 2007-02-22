@@ -40,7 +40,17 @@ public class AnchorShapeFactory {
      * @return the anchor shape
      */
     public static AnchorShape createImageAnchorShape (Image image) {
-        return new ImageAnchorShape (image);
+        return createImageAnchorShape (image, false);
+    }
+
+    /**
+     * Creates an image anchor shape with ability to specify line orientation.
+     * @param image the image
+     * @param lineOriented if true, then the image is line oriented
+     * @return the anchor shape
+     */
+    public static AnchorShape createImageAnchorShape (Image image, boolean lineOriented) {
+        return new ImageAnchorShape (image, lineOriented);
     }
 
     /**
