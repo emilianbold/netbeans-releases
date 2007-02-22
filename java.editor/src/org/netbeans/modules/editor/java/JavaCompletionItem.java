@@ -1251,8 +1251,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             merged = new ImageIcon( org.openide.util.Utilities.mergeImages(
                 superIcon.getImage(), 
                 implement ? implementBadge.getImage() : overrideBadge.getImage(), 
-                16 - 9, 
-                16 - 9) );
+                16 - 8, 
+                16 - 8) );
             
             merged_icon[implement? 0 : 1][level] = merged;
             
