@@ -64,7 +64,7 @@ public class Root implements AbstractRoot {
     
     public Root addChild(String child){
         Root current = this;
-        StringTokenizer st = new StringTokenizer(child,"/");
+        StringTokenizer st = new StringTokenizer(child,"/\\"); // NOI18N
         while(st.hasMoreTokens()){
             String segment = st.nextToken();
             if (st.hasMoreTokens()) {

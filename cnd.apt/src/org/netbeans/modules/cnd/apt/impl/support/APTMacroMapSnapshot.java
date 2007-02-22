@@ -29,33 +29,25 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author gorrus
  */
 public class APTMacroMapSnapshot {
-    protected final Map/*<getTokenTextKey(token), APTMacro>*/ defined_macros;
-    protected final Map/*<getTokenTextKey(token), APTMacro>*/ undefined_macros;
+    protected final Map/*<getTokenTextKey(token), APTMacro>*/ macros = new HashMap();
     protected final APTMacroMapSnapshot parent;
 
-    public APTMacroMapSnapshot(boolean syncronizedMacros, APTMacroMapSnapshot parent) {
-        if (syncronizedMacros) {
-            defined_macros = Collections.synchronizedMap(new HashMap());
-            undefined_macros = Collections.synchronizedMap(new HashMap());
-        } else {
-            defined_macros = new HashMap();
-            undefined_macros = new HashMap();
-        }
+    public APTMacroMapSnapshot(APTMacroMapSnapshot parent) {
         this.parent = parent;
     }
-
-    public APTMacro getMacro(Token token) {
-        APTMacro macro = (APTMacro) defined_macros.get(APTUtils.getTokenTextKey(token));
-        if (macro != null) {
-            return macro;
+    
+    public final APTMacro getMacro(Token token) {
+        Object key = APTUtils.getTokenTextKey(token);
+        APTMacroMapSnapshot currentSnap = this;
+        while (currentSnap != null) {
+            Object macro = currentSnap.macros.get(key);
+            if (macro != null) {
+                // If UNDEFINED_MACRO is found then the requested macro is undefined, return null
+                return (macro != UNDEFINED_MACRO) ? (APTMacro)macro : null;
+            }
+            currentSnap = currentSnap.parent;
         }
-        if (undefined_macros.containsKey(APTUtils.getTokenTextKey(token))) {
-            return null;
-        }
-        if (parent == null) {
-            return null;
-        }
-        return parent.getMacro(token);
+        return null;
     }
     
     public String toString() {
@@ -68,13 +60,26 @@ public class APTMacroMapSnapshot {
         if (snap.parent != null) {
             addAllMacros(snap.parent, out);
         }
-        out.putAll(snap.defined_macros);
-        for (Iterator iter=snap.undefined_macros.keySet().iterator();iter.hasNext();) {
-            out.remove(iter.next());
+        for (Iterator iter=snap.macros.entrySet().iterator(); iter.hasNext();) {
+            Map.Entry cur = (Map.Entry)iter.next();
+            if (cur.getValue() != UNDEFINED_MACRO) {
+                out.put(cur.getKey(), cur.getValue());
+            } else {
+                out.remove(cur.getKey());
+            }
         }
     }    
     
     public boolean isEmtpy() {
-        return (defined_macros.size() + undefined_macros.size()) == 0;
+        return macros.isEmpty();
+    }
+    
+    //This is a single instance of a class to indicate that macro is undefined,
+    //not a child of APTMacro to track errors more easily
+    public static final UndefinedMacro UNDEFINED_MACRO = new UndefinedMacro();
+    private static class UndefinedMacro {
+        public String toString() {
+            return "Macro undefined"; // NOI18N
+        }
     }
 }

@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.cnd.dwarfdump.reader;
 
+import java.io.RandomAccessFile;
+import org.netbeans.modules.cnd.dwarfdump.Magic;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATE;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.FORM;
@@ -33,7 +35,6 @@ import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
 import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfAttribute;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfNameLookupTableSection;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -42,11 +43,11 @@ import java.io.IOException;
  */
 public class DwarfReader extends ElfReader {
     
-    public DwarfReader(String fname) throws FileNotFoundException, IOException {
-        super(fname);
+    public DwarfReader(String fname, RandomAccessFile reader, Magic magic, long shift, long length) throws IOException {
+        super(fname, reader, magic, shift, length);
         getSection(SECTIONS.DEBUG_STR); 
     }
-    
+
     public Object readAttrValue(DwarfAttribute attr) throws IOException {
         Object value = readForm(attr.valueForm);
         

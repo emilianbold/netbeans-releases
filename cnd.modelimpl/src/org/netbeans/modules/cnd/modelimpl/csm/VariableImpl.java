@@ -22,12 +22,17 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.uid.CsmObjectAccessor;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  *
@@ -35,23 +40,16 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
  */
 public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements CsmVariable<T>, Disposable {
     
-    private String name;
-    private CsmType type;
-    private byte _static = -1;
+    private final String name;
+    private final CsmType type;
+    private boolean _static = false;
     
     // only one of scopeOLD/scopeAccessor must be used (based on USE_REPOSITORY)
     private CsmScope scopeOLD;
-    private CsmObjectAccessor scopeAccessor;
+    private CsmUID<CsmScope> scopeUID;
     
-    private byte _extern = -1;
+    private final boolean _extern;
     private ExpressionBase initExpr;
-    
-    /** Creates a new instance of VariableImpl */
-    public <T> VariableImpl(String name, CsmFile file) {
-        super(file);
-        this.name = name;
-//        registerInProject();
-    }
     
     /** Creates a new instance of VariableImpl */
     public <T> VariableImpl(AST ast, CsmFile file, CsmType type, String name) {
@@ -62,8 +60,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public <T> VariableImpl(AST ast, CsmFile file, CsmType type, String name, boolean registerInProject) {
         super(ast, file);
         initInitialValue(ast);
-        _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static) ? (byte)1 : (byte)0;
-        _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern) ? (byte)1 : (byte)0;
+        _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
+        _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
         this.name = name;
         this.type = type;
         if (registerInProject) {
@@ -99,11 +97,6 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
         return getName();
     }
-    
-// Moved to OffsetableDeclarationBase
-//    public String getUniqueName() {
-//        return getQualifiedName();
-//    }
     
     /** Gets this variable type */
     // TODO: fix it
@@ -146,15 +139,15 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
     
     public boolean isStatic() {
-        return _static > 0;
+        return _static;
     }
     
     public void setStatic(boolean _static) {
-        this._static = _static ? (byte) 1 : (byte) 0;
+        this._static = _static;
     }
     
     public boolean isExtern() {
-        return _extern > 0;
+        return _extern;
     }
     
     public boolean isConst() {
@@ -211,8 +204,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     
     private CsmScope _getScope() {
         if (TraceFlags.USE_REPOSITORY) {
-            CsmScope scope = UIDCsmConverter.accessorToScope(this.scopeAccessor);
-            assert (scope != null || scopeAccessor == null);
+            CsmScope scope = UIDCsmConverter.UIDToScope(this.scopeUID);
+            assert (scope != null || scopeUID == null);
             return scope;
         } else {
             return scopeOLD;
@@ -221,8 +214,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     
     private void _setScope(CsmScope scope) {
         if (TraceFlags.USE_REPOSITORY) {
-            this.scopeAccessor = UIDCsmConverter.scopeToAccessor(scope);
-            assert (scopeAccessor != null || scope == null);
+            this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+            assert (scopeUID != null || scope == null);
         } else {
             this.scopeOLD = scope;
         }
@@ -246,4 +239,27 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this.registered = false;
         cleanUID();
     }    
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);      
+        output.writeUTF(this.name);
+        output.writeBoolean(this._static);
+        output.writeBoolean(this._extern);
+        UIDObjectFactory.getDefaultFactory().writeUID(scopeUID, output);
+        PersistentUtils.writeExpression(initExpr, output);
+        PersistentUtils.writeType(type, output);
+    }  
+    
+    public VariableImpl(DataInput input) throws IOException {
+        super(input);
+        this.name = TextCache.getString(input.readUTF());
+        this._static = input.readBoolean();
+        this._extern = input.readBoolean();
+        this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        this.initExpr = (ExpressionBase) PersistentUtils.readExpression(input);
+        this.type = PersistentUtils.readType(input);
+    }     
 }

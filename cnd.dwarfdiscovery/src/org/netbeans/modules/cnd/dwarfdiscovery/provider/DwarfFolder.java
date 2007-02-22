@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -53,17 +51,7 @@ public class DwarfFolder implements FolderProperties {
         files.add(source);
         userIncludes.addAll(source.getUserInludePaths());
         for (String path : source.getUserInludePaths()) {
-            if (!path.startsWith(File.separator)){
-                if (path.equals(".")) { // NOI18N
-                    userIncludes.add(source.getCompilePath());
-                } else {
-                    try {
-                        userIncludes.add((new File(source.getCompilePath()+File.separator+path)).getCanonicalPath());
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            }
+            userIncludes.add(DwarfSource.convertRelativePathToAbsolute(source,path));
         }
         systemIncludes.addAll(source.getSystemInludePaths());
         userMacros.putAll(source.getUserMacros());

@@ -107,7 +107,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
     }     
     
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
-        return new APTMacroMapSnapshot(false, parent);
+        return new APTMacroMapSnapshot(parent);
     }
     
     

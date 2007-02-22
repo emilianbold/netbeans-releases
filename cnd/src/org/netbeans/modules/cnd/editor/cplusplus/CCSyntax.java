@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,11 +23,9 @@ import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
 
 /**
-* Syntax analyzes for CC source files.
-* Tokens and internal states are given below.
-*
-*/
-
+ * Syntax analyzes for CC source files.
+ * Tokens and internal states are given below.
+ */
 public class CCSyntax extends Syntax {
 
     // Internal states
@@ -71,9 +69,15 @@ public class CCSyntax extends Syntax {
     private static final int ISI_USR_START_INCLUDE = 41; // inside "filename" include directive at first '"'
     private static final int ISI_USR_INCLUDE = 42; // inside "filename" include directive
     private static final int ISA_COLON = 43; // after ':'
+    
+    protected static final String IS_CPLUSPLUS = "C++"; // NOI18N
+    protected static final String IS_C = "C"; // NOI18N
+    
+    protected String lang;
 
     public CCSyntax() {
         tokenContextPath = CCTokenContext.contextPath;
+        lang = IS_CPLUSPLUS;
     }
 
     protected TokenID parseToken() {
@@ -1065,7 +1069,10 @@ public class CCSyntax extends Syntax {
         }
     }
 
-    public static TokenID matchKeyword(char[] buffer, int offset, int len) {
+    public TokenID matchKeyword(char[] buffer, int offset, int len) {
+//        String kw = new String(buffer, offset, len);
+//        System.err.println("matchKeyword[" + lang + "]: " + kw);
+        
         if (len > 16)
             return null;
         if (len <= 1)
@@ -1075,15 +1082,11 @@ public class CCSyntax extends Syntax {
             if (len <= 2)
                 return null;
             switch (buffer[offset++]) {
-	    case 's':
-	      return (len == 3
-		      && buffer[offset++] == 'm')
-		? CCTokenContext.ASM : null;
-	    case 'u':
-	      return (len == 4
-		      && buffer[offset++] == 't'
-		      && buffer[offset++] == 'o')
-		? CCTokenContext.AUTO : null;
+	    case 's':   // keyword "asm" (C++ only)
+	      return (lang == IS_CPLUSPLUS && len == 3 && buffer[offset++] == 'm') ? CCTokenContext.ASM : null;
+	    case 'u':   // keyword "auto"
+	      return (len == 4 && buffer[offset++] == 't' && buffer[offset++] == 'o')
+                    ? CCTokenContext.AUTO : null;
 	    default:
 	      return null;
 	    }
@@ -1091,22 +1094,17 @@ public class CCSyntax extends Syntax {
             if (len <= 3)
                 return null;
             switch (buffer[offset++]) {
-            case 'o':
-                return (len == 4
+            case 'o':   // keyword "bool" (C++ only)
+                return (lang == IS_CPLUSPLUS && len == 4
                         && buffer[offset++] == 'o'
                         && buffer[offset++] == 'l')
                        ? CCTokenContext.BOOLEAN : null;
-            case 'r':
+            case 'r':   // keyword "break"
                 return (len == 5
                         && buffer[offset++] == 'e'
                         && buffer[offset++] == 'a'
                         && buffer[offset++] == 'k')
                        ? CCTokenContext.BREAK : null;
-            case 'y':
-                return (len == 4
-                        && buffer[offset++] == 't'
-                        && buffer[offset++] == 'e')
-                       ? CCTokenContext.BYTE : null;
             default:
                 return null;
             }
@@ -1116,25 +1114,23 @@ public class CCSyntax extends Syntax {
 	    switch (buffer[offset++]) {
 	    case 'a':
 		switch (buffer[offset++]) {
-		case 's':
-		    return (len == 4
-			    && buffer[offset++] == 'e')
-			? CCTokenContext.CASE : null;
-		case 't':
-		    return (len == 5
+		case 's': // keyword "case"
+		    return (len == 4 && buffer[offset++] == 'e') ? CCTokenContext.CASE : null;
+		case 't': // keyword "catch" (C++ only)
+		    return (lang == IS_CPLUSPLUS && len == 5
 			    && buffer[offset++] == 'c'
 			    && buffer[offset++] == 'h')
 			? CCTokenContext.CATCH : null;
 		default:
 		    return null;
 		}
-	    case 'h':
+	    case 'h': // keyword "char"
 		return (len == 4
 			&& buffer[offset++] == 'a'
 			&& buffer[offset++] == 'r')
 		    ? CCTokenContext.CHAR : null;
-	    case 'l':
-		return (len == 5
+	    case 'l': // keyword "class" (C++ only)
+		return (lang == IS_CPLUSPLUS && len == 5
 			&& buffer[offset++] == 'a'
 			&& buffer[offset++] == 's'
 			&& buffer[offset++] == 's')
@@ -1146,10 +1142,9 @@ public class CCSyntax extends Syntax {
 		    return null;
 		switch (buffer[offset++]) {
 		case 's':
-		    if (len == 5) {
-			return (buffer[offset++] == 't')
-			    ? CCTokenContext.CONST : null;
-		    } else if (len == 10) {
+		    if (lang == IS_CPLUSPLUS && len == 5) { // keyword "const" (C++ only)
+			return (buffer[offset++] == 't') ? CCTokenContext.CONST : null;
+		    } else if (lang == IS_CPLUSPLUS && len == 10) { // keyword "const_cast" (C++ only)
 			return (buffer[offset++] == 't'
 				&& buffer[offset++] == '_'
 				&& buffer[offset++] == 'c'
@@ -1160,7 +1155,7 @@ public class CCSyntax extends Syntax {
 		    } else {
 			return null;
 		    }
-		case 't':
+		case 't': // keyword "continue"
 		    return (len == 8
 			    && buffer[offset++] == 'i'
 			    && buffer[offset++] == 'n'
@@ -1179,15 +1174,15 @@ public class CCSyntax extends Syntax {
 	    switch (buffer[offset++]) {
 	    case 'e':
 		switch (buffer[offset++]) {
-		case 'f':
+		case 'f': // keyword "default"
 		    return (len == 7
 			    && buffer[offset++] == 'a'
 			    && buffer[offset++] == 'u'
 			    && buffer[offset++] == 'l'
 			    && buffer[offset++] == 't')
 			? CCTokenContext.DEFAULT : null;
-		case 'l':
-		    return (len == 6
+		case 'l': // keyword "delete" (C++ only)
+		    return (lang == IS_CPLUSPLUS && len == 6
 			    && buffer[offset++] == 'e'
 			    && buffer[offset++] == 't'
 			    && buffer[offset++] == 'e')
@@ -1196,17 +1191,17 @@ public class CCSyntax extends Syntax {
 		    return null;
 		}
 	    case 'o':
-		if (len == 2) {
+		if (len == 2) { // keyword "do"
 		    return CCTokenContext.DO;
 		}
-		return (len == 6
+		return (len == 6 // keyword "double"
 			&& buffer[offset++] == 'u'
 			&& buffer[offset++] == 'b'
 			&& buffer[offset++] == 'l'
 			&& buffer[offset++] == 'e')
 		    ? CCTokenContext.DOUBLE : null;
-	    case 'y':
-		return (len == 12
+	    case 'y': // keyword "dynamic_cast" (C++ only)
+		return (lang == IS_CPLUSPLUS && len == 12
 			&& buffer[offset++] == 'n'
 			&& buffer[offset++] == 'a'
 			&& buffer[offset++] == 'm'
@@ -1225,12 +1220,12 @@ public class CCSyntax extends Syntax {
 	    if (len <= 3)
 		return null;
 	    switch (buffer[offset++]) {
-	    case 'l':
+	    case 'l': // keyword "else"
 		return (len == 4
 			&& buffer[offset++] == 's'
 			&& buffer[offset++] == 'e')
 		    ? CCTokenContext.ELSE : null;
-	    case 'n':
+	    case 'n': // keyword "enum"
 		return (len == 4
 			&& buffer[offset++] == 'u'
 			&& buffer[offset++] == 'm')
@@ -1239,22 +1234,22 @@ public class CCSyntax extends Syntax {
 		switch (buffer[offset++]) {
 		case 'p':
 		    switch (buffer[offset++]) {
-		    case 'l':
-			return (len == 8
+		    case 'l': // keyword "explicit" (C++ only)
+			return (lang == IS_CPLUSPLUS && len == 8
 				&& buffer[offset++] == 'i'
 				&& buffer[offset++] == 'c'
 				&& buffer[offset++] == 'i'
 				&& buffer[offset++] == 't')
 			    ? CCTokenContext.EXPLICIT : null;
-		    case 'o':
-			return (len == 6
+		    case 'o': // keyword "export" (C++ only)
+			return (lang == IS_CPLUSPLUS && len == 6
 				&& buffer[offset++] == 'r'
 				&& buffer[offset++] == 't')
 			    ? CCTokenContext.EXPORT : null;
 		    default:
 			return null;
 		    }
-		case 't':
+		case 't': // keyword "extern"
 		    return (len == 6
 			    && buffer[offset++] == 'e'
 			    && buffer[offset++] == 'r'
@@ -1270,24 +1265,24 @@ public class CCSyntax extends Syntax {
             if (len <= 2)
                 return null;
             switch (buffer[offset++]) {
-            case 'a':
-                return (len == 5
+            case 'a': // keyword "false" (C++ only)
+                return (lang == IS_CPLUSPLUS && len == 5
                         && buffer[offset++] == 'l'
                         && buffer[offset++] == 's'
                         && buffer[offset++] == 'e')
                        ? CCTokenContext.FALSE : null;
-            case 'l':
+            case 'l': // keyword "float"
                 return (len == 5
                         && buffer[offset++] == 'o'
                         && buffer[offset++] == 'a'
                         && buffer[offset++] == 't')
                        ? CCTokenContext.FLOAT : null;
-            case 'o':
+            case 'o': // keyword "for"
                 return (len == 3
                         && buffer[offset++] == 'r')
                        ? CCTokenContext.FOR : null;
-            case 'r':
-                return (len == 6
+            case 'r': // keyword "friend" (C++ only)
+                return (lang == IS_CPLUSPLUS && len == 6
                         && buffer[offset++] == 'i'
                         && buffer[offset++] == 'e'
                         && buffer[offset++] == 'n'
@@ -1296,7 +1291,7 @@ public class CCSyntax extends Syntax {
             default:
                 return null;
             }
-        case 'g':
+        case 'g': // keyword "goto"
             return (len == 4
                     && buffer[offset++] == 'o'
                     && buffer[offset++] == 't'
@@ -1304,15 +1299,15 @@ public class CCSyntax extends Syntax {
                    ? CCTokenContext.GOTO : null;
         case 'i':
             switch (buffer[offset++]) {
-            case 'f':
+            case 'f': // keyword "if"
                 return (len == 2)
                        ? CCTokenContext.IF : null;
 	    case 'n':
 		switch (buffer[offset++]) {
-		case 't':
+		case 't': // keyword "int"
 		    return (len == 3)
 			? CCTokenContext.INT : null;
-		case 'l':
+		case 'l': // keyword "inline"
 		    return (len == 6
 			    && buffer[offset++] == 'i'
 			    && buffer[offset++] == 'n'
@@ -1324,14 +1319,14 @@ public class CCSyntax extends Syntax {
             default:
                 return null;
             }
-        case 'l':
+        case 'l': // keyword "long"
             return (len == 4
                     && buffer[offset++] == 'o'
                     && buffer[offset++] == 'n'
                     && buffer[offset++] == 'g')
                    ? CCTokenContext.LONG : null;
-        case 'm':
-            return (len == 7
+        case 'm': // keyword "mutable" (C++ only)
+            return (lang == IS_CPLUSPLUS && len == 7
                     && buffer[offset++] == 'u'
                     && buffer[offset++] == 't'
                     && buffer[offset++] == 'a'
@@ -1343,8 +1338,8 @@ public class CCSyntax extends Syntax {
             if (len <= 2)
                 return null;
             switch (buffer[offset++]) {
-            case 'a':
-                return (len == 9
+            case 'a': // keyword "namespace" (C++ only)
+                return (lang == IS_CPLUSPLUS && len == 9
                         && buffer[offset++] == 'm'
                         && buffer[offset++] == 'e'
                         && buffer[offset++] == 's'
@@ -1353,20 +1348,20 @@ public class CCSyntax extends Syntax {
                         && buffer[offset++] == 'c'
                         && buffer[offset++] == 'e')
                        ? CCTokenContext.NAMESPACE : null;
-            case 'e':
-                return (len == 3
+            case 'e': // keyword "new" (C++ only)
+                return (lang == IS_CPLUSPLUS && len == 3
                         && buffer[offset++] == 'w')
                        ? CCTokenContext.NEW : null;
-            case 'u':
-                return (len == 4
+            case 'u': // keyword "null" (C++ only)
+                return (lang == IS_CPLUSPLUS && len == 4
                         && buffer[offset++] == 'l'
                         && buffer[offset++] == 'l')
                        ? CCTokenContext.NULL : null;
             default:
                 return null;
             }
-        case 'o':
-            return (len == 8
+        case 'o': // keyword "operator" (C++ only)
+            return (lang == IS_CPLUSPLUS && len == 8
                     && buffer[offset++] == 'p'
                     && buffer[offset++] == 'e'
                     && buffer[offset++] == 'r'
@@ -1376,21 +1371,21 @@ public class CCSyntax extends Syntax {
                     && buffer[offset++] == 'r')
                    ? CCTokenContext.OPERATOR : null;
         case 'p':
-            if (len <= 5)
+            if (lang == IS_C || len <= 5)
                 return null;
             switch (buffer[offset++]) {
             case 'r':
                 if (len <= 6)
                     return null;
                 switch (buffer[offset++]) {
-                case 'i':
+                case 'i': // keyword "private" (C++ only)
                     return (len == 7
                             && buffer[offset++] == 'v'
                             && buffer[offset++] == 'a'
                             && buffer[offset++] == 't'
                             && buffer[offset++] == 'e')
                            ? CCTokenContext.PRIVATE : null;
-                case 'o':
+                case 'o': // keyword "protected" (C++ only)
                     return (len == 9
                             && buffer[offset++] == 't'
                             && buffer[offset++] == 'e'
@@ -1402,7 +1397,7 @@ public class CCSyntax extends Syntax {
                 default:
                     return null;
                 }
-            case 'u':
+            case 'u': // keyword "public" (C++ only)
                 return (len == 6
                         && buffer[offset++] == 'b'
                         && buffer[offset++] == 'l'
@@ -1417,7 +1412,7 @@ public class CCSyntax extends Syntax {
 	    return null;
 
 	  switch (buffer[offset++]) {
-	  case 'g':
+	  case 'g': // keyword "register"
 	      return (len == 8
 		      && buffer[offset++] == 'i'
 		      && buffer[offset++] == 's'
@@ -1425,8 +1420,8 @@ public class CCSyntax extends Syntax {
 		      && buffer[offset++] == 'e'
 		      && buffer[offset++] == 'r')
 		? CCTokenContext.REGISTER : null;
-	  case 'i':
-	      return (len == 16
+	  case 'i': // keyword "reinterpret_cast" (C++ only)
+	      return (lang == IS_CPLUSPLUS && len == 16
 		      && buffer[offset++] == 'n'
 		      && buffer[offset++] == 't'
 		      && buffer[offset++] == 'e'
@@ -1441,7 +1436,15 @@ public class CCSyntax extends Syntax {
 		      && buffer[offset++] == 's'
 		      && buffer[offset++] == 't')
 		? CCTokenContext.REINTERPRET_CAST : null;
-	  case 't':
+	  case 's': // keyword "restrict"
+            return (lang == IS_C && len == 8
+                    && buffer[offset++] == 't'
+                    && buffer[offset++] == 'r'
+                    && buffer[offset++] == 'i'
+                    && buffer[offset++] == 'c'
+                    && buffer[offset++] == 't')
+                   ? CCTokenContext.RESTRICT : null;
+	  case 't': // keyword "return"
             return (len == 6
                     && buffer[offset++] == 'u'
                     && buffer[offset++] == 'r'
@@ -1454,7 +1457,7 @@ public class CCSyntax extends Syntax {
 	    if (len <= 4)
 		return null;
 	    switch (buffer[offset++]) {
-	    case 'h':
+	    case 'h': // keyword "short"
 		return (len == 5
 			&& buffer[offset++] == 'o'
 			&& buffer[offset++] == 'r'
@@ -1462,13 +1465,13 @@ public class CCSyntax extends Syntax {
 		    ? CCTokenContext.SHORT : null;
 	    case 'i':
 		switch (buffer[offset++]) {
-		case 'z':
+		case 'z': // keyword "sizeof"
 		    return (len == 6
 			    && buffer[offset++] == 'e'
 			    && buffer[offset++] == 'o'
 			    && buffer[offset++] == 'f')
 			? CCTokenContext.SIZEOF : null;
-		case 'g':
+		case 'g': // keyword "signed"
 		    return (len == 6
 			    && buffer[offset++] == 'n'
 			    && buffer[offset++] == 'e'
@@ -1479,19 +1482,19 @@ public class CCSyntax extends Syntax {
 		}
 	    case 't':
 		switch (buffer[offset++]) {
-		case 'r':
+		case 'r': // keyword "struct"
 		    return (len == 6
 			    && buffer[offset++] == 'u'
 			    && buffer[offset++] == 'c'
 			    && buffer[offset++] == 't')
 			? CCTokenContext.STRUCT : null;
 		case 'a':
-		    if (len == 6) {
+		    if (len == 6) { // keyword "static"
 			return (buffer[offset++] == 't'
 				&& buffer[offset++] == 'i'
 				&& buffer[offset++] == 'c')
 			    ? CCTokenContext.STATIC : null;
-		    } else if (len == 11) {
+		    } else if (lang == IS_CPLUSPLUS && len == 11) { // keyword "static_cast" (C++ only)
 			return (buffer[offset++] == 't'
 				&& buffer[offset++] == 'i'
 				&& buffer[offset++] == 'c'
@@ -1507,7 +1510,7 @@ public class CCSyntax extends Syntax {
 		default:
 		    return null;
 		}
-	    case 'w':
+	    case 'w': // keyword "switch"
 		return (len == 6
 			&& buffer[offset++] == 'i'
 			&& buffer[offset++] == 't'
@@ -1521,8 +1524,8 @@ public class CCSyntax extends Syntax {
 	    if (len <= 2)
 		return null;
 	    switch (buffer[offset++]) {
-	    case 'e':
-		return (len == 8
+	    case 'e': // keyword "template" (C++ only)
+		return (lang == IS_CPLUSPLUS && len == 8
 			&& buffer[offset++] == 'm'
 			&& buffer[offset++] == 'p'
 			&& buffer[offset++] == 'l'
@@ -1532,12 +1535,12 @@ public class CCSyntax extends Syntax {
 		    ? CCTokenContext.TEMPLATE : null;
 	    case 'h':
 		switch (buffer[offset++]) {
-		case 'i':
-		    return (len == 4
+		case 'i': // keyword "this" (C++ only)
+		    return (lang == IS_CPLUSPLUS && len == 4
 			    && buffer[offset++] == 's')
 			? CCTokenContext.THIS : null;
-		case 'r':
-		    return (len == 5
+		case 'r': // keyword "throw" (C++ only)
+		    return (lang == IS_CPLUSPLUS && len == 5
 			    && buffer[offset++] == 'o'
 			    && buffer[offset++] == 'w')
 			? CCTokenContext.THROW : null;
@@ -1546,12 +1549,12 @@ public class CCSyntax extends Syntax {
 		}
 	    case 'r':
 		switch (buffer[offset++]) {
-		case 'u':
-		    return (len == 4
+		case 'u': // keyword "true" (C++ only)
+		    return (lang == IS_CPLUSPLUS && len == 4
 			    && buffer[offset++] == 'e')
 			? CCTokenContext.TRUE : null;
-		case 'y':
-		    return (len == 3)
+		case 'y': // keyword "try" (C++ only)
+		    return (lang == IS_CPLUSPLUS && len == 3)
 			? CCTokenContext.TRY : null;
 		default:
 		    return null;
@@ -1561,22 +1564,22 @@ public class CCSyntax extends Syntax {
                     return null;
                 } else {
                     switch (buffer[offset++]) {
-                        case 'd':                    
+                        case 'd':    // keyword "typedef"                 
                             return (len == 7
                                     && buffer[offset++] == 'e'
                                     && buffer[offset++] == 'f')
                                         ? CCTokenContext.TYPEDEF : null;
-                        case 'i':
-                            return (len == 6 && buffer[offset++] == 'd')
+                        case 'i': // keyword "typeid" (C++ only)
+                            return (lang == IS_CPLUSPLUS && len == 6 && buffer[offset++] == 'd')
                                 ? CCTokenContext.TYPEID : null;       
-                        case 'n':
-                            return (len == 8 
+                        case 'n': // keyword "typename" (C++ only)
+                            return (lang == IS_CPLUSPLUS && len == 8 
                                     && buffer[offset++] == 'a'
                                     && buffer[offset++] == 'm'
                                     && buffer[offset++] == 'e')
-                                    ? CCTokenContext.TYPENAME : null;     
-                        case 'o':
-                            return (len == 6 && buffer[offset++] == 'f')
+                                    ? CCTokenContext.TYPENAME : null;
+                        case 'o': // keyword "typeof" (C only)
+                            return (lang == IS_C && len == 6 && buffer[offset++] == 'f')
                                 ? CCTokenContext.TYPEOF : null;      
                         default:
                             return null;                                
@@ -1589,20 +1592,20 @@ public class CCSyntax extends Syntax {
 	    if (len <= 4)
 		return null;
 	    switch (buffer[offset++]) {
-	    case 's':
-		return (len == 5
+	    case 's': // keyword "using" (C++ only)
+		return (lang == IS_CPLUSPLUS && len == 5
 			&& buffer[offset++] == 'i'
 			&& buffer[offset++] == 'n'
 			&& buffer[offset++] == 'g')
 		    ? CCTokenContext.USING : null;
 	    case 'n':
 		switch (buffer[offset++]) {
-		case 'i':
+		case 'i': // keyword "union"
 		    return (len == 5
 			    && buffer[offset++] == 'o'
 			    && buffer[offset++] == 'n')
 			? CCTokenContext.UNION : null;
-		case 's':
+		case 's': // keyword "unsigned"
 		    return (len == 8
 			    && buffer[offset++] == 'i'
 			    && buffer[offset++] == 'g'
@@ -1620,8 +1623,8 @@ public class CCSyntax extends Syntax {
 	    if (len <= 3)
 		return null;
 	    switch (buffer[offset++]) {
-	    case 'i':
-		return (len == 7
+	    case 'i': // keyword "virtual" (C++ only)
+		return (lang == IS_CPLUSPLUS && len == 7
 			&& buffer[offset++] == 'r'
 			&& buffer[offset++] == 't'
 			&& buffer[offset++] == 'u'
@@ -1630,11 +1633,11 @@ public class CCSyntax extends Syntax {
 		    ? CCTokenContext.VIRTUAL : null;
 	    case 'o':
 		switch (buffer[offset++]) {
-		case 'i':
+		case 'i': // keyword "void"
 		    return (len == 4
 			    && buffer[offset++] == 'd')
 			? CCTokenContext.VOID : null;
-		case 'l':
+		case 'l': // keyword "volatile"
 		    return (len == 8
 			    && buffer[offset++] == 'a'
 			    && buffer[offset++] == 't'
@@ -1652,15 +1655,15 @@ public class CCSyntax extends Syntax {
 	    if (len <= 4)
 		return null;
 	    switch (buffer[offset++]) {
-	    case 'c':
-		return (len == 7
+	    case 'c': // keyword "wchar_t" (C++ only)
+		return (lang == IS_CPLUSPLUS && len == 7
 			&& buffer[offset++] == 'h'
 			&& buffer[offset++] == 'a'
 			&& buffer[offset++] == 'r'
 			&& buffer[offset++] == '_'
 			&& buffer[offset++] == 't')
 		    ? CCTokenContext.WCHAR_T : null;
-	    case 'h':
+	    case 'h': // keyword "while"
 		return (len == 5
 			&& buffer[offset++] == 'i'
 			&& buffer[offset++] == 'l'
@@ -1669,6 +1672,38 @@ public class CCSyntax extends Syntax {
 	    default:
 	      return null;
 	    }
+            case '_':
+                if (len <= 4) {
+                    return null;
+                }
+                switch (buffer[offset++]) {
+                case 'B': // keyword "_Bool" (C only)
+                    return (lang == IS_C && len == 5
+                            && buffer[offset++] == 'o'
+                            && buffer[offset++] == 'o'
+                            && buffer[offset++] == 'l')
+                        ? CCTokenContext._BOOL : null;
+                case 'C': // keyword "_Complex" (C only)
+                    return (lang == IS_C && len == 8
+                            && buffer[offset++] == 'o'
+                            && buffer[offset++] == 'm'
+                            && buffer[offset++] == 'p'
+                            && buffer[offset++] == 'l'
+                            && buffer[offset++] == 'e'
+                            && buffer[offset++] == 'x')
+                        ? CCTokenContext._COMPLEX : null;
+                case 'I': // keyword "_Imaginary" (C only)
+                    return (lang == IS_C && len == 10
+                            && buffer[offset++] == 'm'
+                            && buffer[offset++] == 'a'
+                            && buffer[offset++] == 'g'
+                            && buffer[offset++] == 'i'
+                            && buffer[offset++] == 'n'
+                            && buffer[offset++] == 'a'
+                            && buffer[offset++] == 'r'
+                            && buffer[offset++] == 'y')
+                        ? CCTokenContext._IMAGINARY : null;
+                }
 	default:
 	  return null;
 	}

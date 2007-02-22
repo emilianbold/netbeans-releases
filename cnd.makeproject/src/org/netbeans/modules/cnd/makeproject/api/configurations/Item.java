@@ -38,6 +38,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.loaders.CDataLoader;
 import org.netbeans.modules.cnd.loaders.FortranDataLoader;
+import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
@@ -50,6 +51,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.ExtensionList;
 
 public class Item implements NativeFileItem, PropertyChangeListener {
     private String path;
@@ -340,15 +342,28 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return vec;
     }
 
+    private boolean isHeaderFile() {
+        ExtensionList hlist = HDataLoader.getInstance().getExtensions();
+        if (hlist.isRegistered(getPath())) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     /**
      * NativeFileItem interface
      **/
     public Language getLanguage() {
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
-        if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: itemConfiguration should never be null
-            return NativeFileItem.Language.OTHER;
-        else if (itemConfiguration.getTool() == Tool.CCompiler)
+        if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {// FIXUP: itemConfiguration should never be null
+            if (isHeaderFile()) {
+                return NativeFileItem.Language.C_HEADER;
+            } else {
+                return NativeFileItem.Language.OTHER;
+            }
+        } else if (itemConfiguration.getTool() == Tool.CCompiler) 
             return NativeFileItem.Language.C;
         else if (itemConfiguration.getTool() == Tool.CCCompiler)
             return NativeFileItem.Language.CPP;

@@ -23,6 +23,7 @@ import antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -35,10 +36,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.uid.CsmObjectAccessor;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 /**
  * Implements CsmTypedef
@@ -51,7 +49,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
     
     // only one of containerOLD/containerUID must be used (based on USE_REPOSITORY)
     private CsmObject containerOLD;
-    private CsmObjectAccessor    containerAccessor;
+    private CsmUID<CsmIdentifiable> containerUID;
             
     public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name) {
         super(ast, file);
@@ -171,8 +169,8 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
 
     private CsmObject _getContainer() {
         if (TraceFlags.USE_REPOSITORY) {
-            CsmObject container = UIDCsmConverter.accessorToObject(this.containerAccessor);
-            assert (container != null || containerAccessor == null);
+            CsmObject container = (CsmObject) UIDCsmConverter.UIDToIdentifiable(this.containerUID);
+            assert (container != null || containerUID == null);
             return container;
         } else {
             return containerOLD;
@@ -181,8 +179,8 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
 
     private void _setContainer(CsmObject container) {
         if (TraceFlags.USE_REPOSITORY) {
-            this.containerAccessor = UIDCsmConverter.objectToAccessor(container);
-            assert (containerAccessor != null || container == null);
+            this.containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable)container);
+            assert (containerUID != null || container == null);
         } else {
             this.containerOLD = container;
         }

@@ -19,12 +19,18 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import antlr.Token;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * Implements CsmNamespaceAlias
@@ -35,7 +41,9 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
     private final String alias;
     private final String namespace;
     private final String[] rawName;
-    private CsmNamespace referencedNamespace = null;
+    
+    private CsmNamespace referencedNamespaceOLD = null;
+    private CsmUID<CsmNamespace> referencedNamespaceUID = null;
     
     public NamespaceAliasImpl(AST ast, CsmFile file) {
         super(ast, file);
@@ -73,18 +81,41 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         if (ResolverFactory.resolver != 2)
             return getContainingFile().getProject().findNamespace(namespace);
         else {
+            CsmNamespace referencedNamespace = _getReferencedNamespace();
             if (referencedNamespace == null) {
+                _setReferencedNamespace(null);
                 CsmObject result = ResolverFactory.createResolver(
                         getContainingFile(),
                         getStartOffset()).
                         resolve(namespace);
-                if (result != null && result instanceof CsmNamespaceDefinition)
+                if (result != null && result instanceof CsmNamespaceDefinition) {
                     referencedNamespace = ((CsmNamespaceDefinition)result).getNamespace();
+                    _setReferencedNamespace(referencedNamespace);
+                }
             }
             return referencedNamespace;
         }
     }
 
+    private CsmNamespace _getReferencedNamespace() {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmNamespace referencedNamespace = UIDCsmConverter.UIDtoNamespace(referencedNamespaceUID);
+            assert referencedNamespace != null || referencedNamespaceUID == null;
+            return referencedNamespace;
+        } else {
+            return this.referencedNamespaceOLD;
+        }
+    }    
+
+    private void _setReferencedNamespace(CsmNamespace referencedNamespace) {
+        if (TraceFlags.USE_REPOSITORY) {
+            this.referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
+            assert this.referencedNamespaceUID != null || referencedNamespace == null;
+        } else {
+            this.referencedNamespaceOLD = referencedNamespace;
+        }
+    }
+    
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.NAMESPACE_ALIAS;
     }
@@ -127,10 +158,27 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         //TODO: implement!
         return null;
     }
-
-//    Moved to OffsetableDeclarationBase
-//    public String getUniqueName() {
-//        return getQualifiedName();
-//    }
     
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        output.writeUTF(this.alias);
+        output.writeUTF(this.namespace);
+        PersistentUtils.writeStrings(this.rawName, output);
+        
+        // save cached namespace
+        UIDObjectFactory.getDefaultFactory().writeUID(this.referencedNamespaceUID, output);
+    }
+    
+    public NamespaceAliasImpl(DataInput input) throws IOException {
+        super(input);
+        this.alias = TextCache.getString(input.readUTF());
+        this.namespace = TextCache.getString(input.readUTF());
+        this.rawName = PersistentUtils.readStrings(input, TextCache.getManager());
+        
+        // read cached namespace
+        this.referencedNamespaceUID = UIDObjectFactory.getDefaultFactory().readUID(input);        
+    }    
 }

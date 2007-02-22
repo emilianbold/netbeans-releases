@@ -63,6 +63,6 @@ public class DiscoveryExtension implements IteratorExtension {
         return !descriptor.isInvokeProvider() &&
                descriptor.getConfigurations() != null &&
                descriptor.getIncludedFiles() != null &&
-               descriptor.getIncludedFiles() != null;
+               descriptor.getAdditionalFiles() != null;
     }
 }

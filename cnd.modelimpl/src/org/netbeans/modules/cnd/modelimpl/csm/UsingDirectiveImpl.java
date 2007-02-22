@@ -21,9 +21,16 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * Implements CsmUsingDirective
@@ -35,7 +42,8 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     private final int startOffset;
     private final String[] rawName;
     // TODO: don't store declaration here since the instance might change
-    private CsmNamespace referencedNamespace = null;
+    private CsmNamespace referencedNamespaceOLD = null;
+    private CsmUID<CsmNamespace> referencedNamespaceUID = null;
     
     public UsingDirectiveImpl(AST ast, CsmFile file) {
         super(ast, file);
@@ -52,15 +60,38 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
         if (ResolverFactory.resolver != 2)
             return ((ProjectBase) getContainingFile().getProject()).findNamespace(name, true);
         else {
+            CsmNamespace referencedNamespace = _getReferencedNamespace();
             if (referencedNamespace == null) {
+                _setReferencedNamespace(null);
                 CsmObject result = ResolverFactory.createResolver(
                         getContainingFile(),
                         startOffset).
                         resolve(name);
-                if (result != null && result instanceof CsmNamespaceDefinition)
+                if (result != null && result instanceof CsmNamespaceDefinition) {
                     referencedNamespace = ((CsmNamespaceDefinition)result).getNamespace();
+                    _setReferencedNamespace(referencedNamespace);
+                }
             }
             return referencedNamespace;
+        }
+    }
+    
+    private CsmNamespace _getReferencedNamespace() {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmNamespace referencedNamespace = UIDCsmConverter.UIDtoNamespace(referencedNamespaceUID);
+            assert referencedNamespace != null || referencedNamespaceUID == null;
+            return referencedNamespace;
+        } else {
+            return this.referencedNamespaceOLD;
+        }
+    }    
+
+    private void _setReferencedNamespace(CsmNamespace referencedNamespace) {
+        if (TraceFlags.USE_REPOSITORY) {
+            this.referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
+            assert this.referencedNamespaceUID != null || referencedNamespace == null;
+        } else {
+            this.referencedNamespaceOLD = referencedNamespace;
         }
     }
     
@@ -93,8 +124,27 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
         return null;
     }
     
-//    public String getUniqueName() {
-//        return getQualifiedName();
-//    }
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        output.writeUTF(this.name);
+        output.writeInt(this.startOffset);
+        PersistentUtils.writeStrings(this.rawName, output);
+        
+        // save cached namespace
+        UIDObjectFactory.getDefaultFactory().writeUID(this.referencedNamespaceUID, output);
+    }
+    
+    public UsingDirectiveImpl(DataInput input) throws IOException {
+        super(input);
+        this.name = TextCache.getString(input.readUTF());
+        this.startOffset = input.readInt();
+        this.rawName = PersistentUtils.readStrings(input, TextCache.getManager());
+        
+        // read cached namespace
+        this.referencedNamespaceUID = UIDObjectFactory.getDefaultFactory().readUID(input);        
+    }  
     
 }

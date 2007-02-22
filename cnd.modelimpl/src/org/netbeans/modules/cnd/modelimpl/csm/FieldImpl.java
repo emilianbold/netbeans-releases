@@ -31,31 +31,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
  */
 public class FieldImpl extends VariableImpl<CsmField> implements CsmField {
 
-    // only one of containingClassOLD/containingClassUID must be used (based on USE_REPOSITORY)  
-//    private /*final*/ CsmClass containingClassOLD;
-//    private /*final*/ CsmUID<CsmClass> containingClassUID;
     private final CsmVisibility visibility;
-
-    public FieldImpl(ClassImpl cls, CsmVisibility visibility, String name) {
-        super(name, cls.getContainingFile());
-        this.visibility = visibility;
-        setScope(cls);
-    }
-    
-//    public FieldImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
-//        super(""/*AstUtil.findId(ast)*/, cls.getContainingFile(), 0, 0);
-//        AST var = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_VARIABLE_DECLARATION);
-//        setName(AstUtil.findId(var == null ? ast : var));
-//        init(cls, visibility);
-//        setAst(ast);
-//        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
-//            switch( token.getType() ) {
-//                case CPPTokenTypes.LITERAL_static:
-//                    setStatic(true);
-//                    break;
-//            }
-//        }
-//    }
     
     public FieldImpl(AST ast, CsmFile file, CsmType type, String name, ClassImpl cls, CsmVisibility visibility) {
         super(ast, file, type, name, false);
@@ -67,14 +43,8 @@ public class FieldImpl extends VariableImpl<CsmField> implements CsmField {
             }
         }
         this.visibility = visibility;
-//        this._setContainingClass(cls);
         setScope(cls);
     }
-    
-//    private void init(ClassImpl cls, CsmVisibility visibility) {
-//        this.visibility = visibility;
-//        this.containingClass = cls;
-//    }
     
     public CsmClass getContainingClass() {
         return (CsmClass) getScope();
@@ -83,27 +53,4 @@ public class FieldImpl extends VariableImpl<CsmField> implements CsmField {
     public CsmVisibility getVisibility() {
         return visibility;
     }
-     
-//    public void setVisibility(CsmVisibility visibility) {
-//        this.visibility = visibility;
-//    }
-
-//    private CsmClass _getContainingClass() {
-//        if (TraceFlags.USE_REPOSITORY) {
-//            CsmClass containingClass = UIDCsmConverter.UIDtoClass(containingClassUID);
-//            assert (containingClass != null || containingClassUID == null);
-//            return containingClass;            
-//        } else {
-//            return containingClassOLD;
-//        }
-//    }
-//
-//    private void _setContainingClass(CsmClass containingClass) {
-//        if (TraceFlags.USE_REPOSITORY) {
-//            containingClassUID = UIDCsmConverter.ClassToUID(containingClass);
-//            assert (containingClassUID != null || containingClass == null);
-//        } else {
-//            this.containingClassOLD = containingClass;
-//        }     
-//    }
 }

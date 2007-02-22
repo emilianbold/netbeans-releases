@@ -34,14 +34,19 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class SelectObjectFilesWizard implements WizardDescriptor.Panel, ChangeListener {
+public class SelectObjectFilesWizard implements WizardDescriptor.Panel, ChangeListener, WizardDescriptor.FinishablePanel {
     
     private DiscoveryDescriptor wizardDescriptor;
     private SelectObjectFilesPanel component;
     private String name;
-    
-    /** Create the wizard panel descriptor. */
-    public SelectObjectFilesWizard() {
+    private boolean finishable = true;
+
+    public SelectObjectFilesWizard(){
+        this(true);
+    }
+
+    public SelectObjectFilesWizard(boolean finishable){
+        this.finishable = finishable;
 	name = NbBundle.getMessage(SelectObjectFilesPanel.class, "SelectObjectRootName"); // NOI18N
     }
     
@@ -107,6 +112,9 @@ public class SelectObjectFilesWizard implements WizardDescriptor.Panel, ChangeLi
     public void storeSettings(Object settings) {
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
     }
-    
+
+    public boolean isFinishPanel() {
+        return finishable;
+    }
 }
 

@@ -20,7 +20,6 @@
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -31,6 +30,7 @@ import org.netbeans.modules.cnd.discovery.api.FolderProperties;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -39,7 +39,6 @@ import org.openide.util.Utilities;
  */
 public class DwarfProject implements ProjectProperties {
     private static boolean gatherFolders = true;
-    private static boolean isLogicalStructure = false;
     
     private ItemProperties.LanguageKind language;
     private Set<String> userIncludes = new LinkedHashSet<String>();
@@ -55,21 +54,7 @@ public class DwarfProject implements ProjectProperties {
     void update(SourceFileProperties source){
         userIncludes.addAll(source.getUserInludePaths());
         for (String path : source.getUserInludePaths()) {
-            if (!path.startsWith(File.separator)){
-                if (path.equals(".")) { // NOI18N
-                    userIncludes.add(source.getCompilePath());
-                } else {
-                    try {
-                        path = (new File(source.getCompilePath()+File.separator+path)).getCanonicalPath();
-                        if (Utilities.isWindows()) {
-                            path = path.replace('\\', '/');
-                        }
-                        userIncludes.add(path);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            }
+            userIncludes.add(DwarfSource.convertRelativePathToAbsolute(source,path));
         }
         userMacros.putAll(source.getUserMacros());
         if (gatherFolders) {
@@ -78,33 +63,12 @@ public class DwarfProject implements ProjectProperties {
     }
     
     private void updateFolder(SourceFileProperties source){
-        //String path = source.getItemPath();
-        //if (path.lastIndexOf('/')>0){
-        //    path = path.substring(0,path.lastIndexOf('/'));
-        //}
-        String path = null;
-        if (isLogicalStructure) {
-            path = source.getCompilePath();
-        } else {
-            File file = new File(source.getItemPath());
-            if (file.exists()) {
-                try {
-                    path = file.getParentFile().getCanonicalPath();
-                    if (Utilities.isWindows()) {
-                        path = path.replace('\\', '/');
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-            if (path == null) {
-                path = source.getItemPath();
-                if (path.lastIndexOf('/')>0){
-                    path = path.substring(0,path.lastIndexOf('/'));
-                }
-            }
+        File file = new File(source.getItemPath());
+        String path = FileUtil.normalizeFile(file.getParentFile()).getAbsolutePath();
+        // folders should use unix style
+        if (Utilities.isWindows()) {
+            path = path.replace('\\', '/');
         }
-        
         FolderProperties folder = folders.get(path);
         if (folder == null) {
             folders.put(path,new DwarfFolder(path,source));

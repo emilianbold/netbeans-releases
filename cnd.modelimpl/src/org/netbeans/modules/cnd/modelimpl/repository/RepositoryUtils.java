@@ -19,8 +19,11 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -59,6 +62,7 @@ public class RepositoryUtils {
             for (CsmUID uid : uids) {
                 remove(uid);
             }
+            uids.clear();
         }
     }
 
@@ -75,6 +79,16 @@ public class RepositoryUtils {
         return uid;
     }
     
+    public static <T extends CsmOffsetableDeclaration> List<CsmUID<T>> put(List<T> decls) {
+        assert decls != null;
+        List<CsmUID<T>> uids = new ArrayList<CsmUID<T>>(decls.size());
+        for (T decl: decls) {
+            CsmUID<T> uid = put(decl);
+            uids.add(uid);
+        }
+        return uids;
+    }
+        
     ////////////////////////////////////////////////////////////////////////////
     // 
     private static Key UIDtoKey(CsmUID uid) {
@@ -84,5 +98,4 @@ public class RepositoryUtils {
             return null;
         }
     }
-    
 }

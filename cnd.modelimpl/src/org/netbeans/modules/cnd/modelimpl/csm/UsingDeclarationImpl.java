@@ -21,9 +21,16 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * Implements CsmUsingDeclaration
@@ -35,7 +42,8 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     private final int startOffset;
     private final String[] rawName;
     // TODO: don't store declaration here since the instance might change
-    private CsmDeclaration referencedDeclaration = null;
+    private CsmDeclaration referencedDeclarationOLD = null;
+    private CsmUID<CsmDeclaration> referencedDeclarationUID = null;
     
     public UsingDeclarationImpl(AST ast, CsmFile file) {
         super(ast, file);
@@ -52,13 +60,35 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         if (ResolverFactory.resolver != 2)
             return ((ProjectBase) getContainingFile().getProject()).findClassifier(name, true);
         else {
+            CsmDeclaration referencedDeclaration = _getReferencedDeclaration();
             if (referencedDeclaration == null) {
+                _setReferencedDeclaration(null);
                 referencedDeclaration = (CsmDeclaration)ResolverFactory.createResolver(
                         getContainingFile(),
                         startOffset).
                         resolve(name);
+                _setReferencedDeclaration(referencedDeclaration);                
             }
             return referencedDeclaration;
+        }
+    }
+    
+    private CsmDeclaration _getReferencedDeclaration() {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmDeclaration referencedDeclaration = UIDCsmConverter.UIDtoDeclaration(referencedDeclarationUID);
+            assert referencedDeclaration != null || referencedDeclarationUID == null;
+            return referencedDeclaration;
+        } else {
+            return this.referencedDeclarationOLD;
+        }
+    }    
+
+    private void _setReferencedDeclaration(CsmDeclaration referencedDeclaration) {
+        if (TraceFlags.USE_REPOSITORY) {
+            this.referencedDeclarationUID = UIDCsmConverter.declarationToUID(referencedDeclaration);
+            assert this.referencedDeclarationUID != null || referencedDeclaration == null;
+        } else {
+            this.referencedDeclarationOLD = referencedDeclaration;
         }
     }
     
@@ -90,10 +120,27 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         //TODO: implement!
         return null;
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
     
-//    Moved to OffsetableDeclarationBase
-//    public String getUniqueName() {
-//        return getQualifiedName();
-//    }
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        output.writeUTF(this.name);
+        output.writeInt(this.startOffset);
+        PersistentUtils.writeStrings(this.rawName, output);
+        
+        // save cached declaration
+        UIDObjectFactory.getDefaultFactory().writeUID(this.referencedDeclarationUID, output);
+    }
     
+    public UsingDeclarationImpl(DataInput input) throws IOException {
+        super(input);
+        this.name = TextCache.getString(input.readUTF());
+        this.startOffset = input.readInt();
+        this.rawName = PersistentUtils.readStrings(input, TextCache.getManager());
+        
+        // read cached declaration
+        this.referencedDeclarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);        
+    }      
 }

@@ -34,14 +34,19 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class SelectConfigurationWizard implements WizardDescriptor.Panel, ChangeListener {
+public class SelectConfigurationWizard implements WizardDescriptor.Panel, ChangeListener, WizardDescriptor.FinishablePanel {
     
     private DiscoveryDescriptor wizardDescriptor;
     private SelectConfigurationPanel component;
     private String name;
-    
-    /** Create the wizard panel descriptor. */
-    public SelectConfigurationWizard() {
+    private boolean finishable = true;
+
+    public SelectConfigurationWizard(){
+        this(true);
+    }
+
+    public SelectConfigurationWizard(boolean finishable){
+        this.finishable = finishable;
 	name = NbBundle.getMessage(SelectObjectFilesPanel.class, "SelectConfigurationName"); // NOI18N
     }
     
@@ -61,13 +66,7 @@ public class SelectConfigurationWizard implements WizardDescriptor.Panel, Change
     }
     
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
-        return true;
-        // If it depends on some condition (form filled out...), then:
-        // return someCondition();
-        // and when this condition changes (last form field filled in...) then:
-        // fireChangeEvent();
-        // and uncomment the complicated stuff below.
+        return component.isValid(wizardDescriptor);
     }
     
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
@@ -108,5 +107,8 @@ public class SelectConfigurationWizard implements WizardDescriptor.Panel, Change
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
     }
 
+    public boolean isFinishPanel() {
+        return finishable;
+    }
 }
 

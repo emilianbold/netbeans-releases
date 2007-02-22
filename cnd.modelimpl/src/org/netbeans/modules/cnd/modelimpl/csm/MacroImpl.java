@@ -19,13 +19,20 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.modelimpl.csm.core.LineColOffsetableBase;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 
 /**
  * Implements CsmMacro
@@ -36,28 +43,28 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.LineColOffsetableBase;
  *
  * @author Vladimir Voskresensky
  */
-public class MacroImpl extends LineColOffsetableBase implements CsmMacro {
+public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements CsmMacro {
     
     /** name of macros, i.e. SUM or MACRO */
-    private String name;
+    private final String name;
     
     /** 
      * body of macros, 
      * i.e. ((a)+(b)) or VALUE, or empty string
      */
-    private String body;
+    private final String body;
     
     /** 
      * flag to distinguish system and other types of macros 
      * now we support only macros in file => all macros are not system
      */
-    private boolean system;
+    private final boolean system;
     
     /** 
      * immutable list of parameters, 
      * i.e. [a, b] or null if macros without parameters
      */
-    private List/*<String>*/ params;
+    private final List<String> params;
     
     /** Creates new instance of MacroImpl based on existed macro and specified container */
     public MacroImpl(CsmMacro macro, CsmFile containingFile) {
@@ -65,7 +72,7 @@ public class MacroImpl extends LineColOffsetableBase implements CsmMacro {
     }
     
     /** Creates new instance of MacroImpl based on macro information and specified position */
-    public MacroImpl(String macroName, List/*<String>*/ macroParams, String macroBody, CsmOffsetable macroPos) {
+    public MacroImpl(String macroName, List<String> macroParams, String macroBody, CsmOffsetable macroPos) {
         this(macroName, macroParams, macroBody, null, macroPos);
     }
     
@@ -79,10 +86,12 @@ public class MacroImpl extends LineColOffsetableBase implements CsmMacro {
         this.body = macroBody;
         if (macroParams != null) {
             this.params = Collections.unmodifiableList(macroParams);
+        } else {
+            this.params = null;
         }
     }
     
-    public List/*<String>*/ getParameters() {
+    public List<String> getParameters() {
         return params;
     }
     
@@ -145,5 +154,43 @@ public class MacroImpl extends LineColOffsetableBase implements CsmMacro {
         retValue = 31*retValue + getStartOffset();
         retValue = 31*retValue + getName().hashCode();
         return retValue;
+    }    
+
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        output.writeUTF(name);
+        output.writeUTF(body);
+        output.writeBoolean(system);
+        int size = params == null ? 0 : params.size();
+        output.writeInt(size);
+        if (size > 0) {
+            for (String param : params) {
+                output.writeUTF((String)param);
+            }
+        }
+    }
+
+    /*package*/ MacroImpl(DataInput input) throws IOException {
+        super(input);
+        name = TextCache.getString(input.readUTF());
+        body = TextCache.getString(input.readUTF());
+        system = input.readBoolean();
+        int size = input.readInt();
+        if (size > 0) {
+            List readParams = new ArrayList<String>();
+            for (int i = 0; i < size; i++) {
+                String param = TextCache.getString(input.readUTF());
+                assert param != null;
+                readParams.add(param);
+            }
+            this.params = Collections.unmodifiableList(readParams);
+        } else {
+            this.params = null;
+        }
+    }
+
+
+    protected CsmUID createUID() {
+        return UIDUtilities.createMacroUID(this);
     }    
 }

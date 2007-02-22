@@ -73,8 +73,9 @@ public class FolderConfigurationImpl extends NodeConfigurationImpl implements Fo
     }
 
     public String getFolderName() {
-        if(path.lastIndexOf("/")>=0){
-            return path.substring(path.lastIndexOf("/")+1);
+        int i = path.lastIndexOf("/"); // NOI18N
+        if(i>=0){
+            return path.substring(i+1);
         }
         return path;
     }

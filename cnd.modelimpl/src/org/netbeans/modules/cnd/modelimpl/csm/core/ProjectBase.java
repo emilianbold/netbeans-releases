@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.utils.APTMacroUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
@@ -53,18 +54,21 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyHolder;
+import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * Base class for CsmProject implementation
  * @author Dmitry Ivanov
  * @author Vladimir Kvashin
  */
-public abstract class ProjectBase implements CsmProject, Disposable, Persistent {
+public abstract class ProjectBase implements CsmProject, Disposable, Persistent, SelfPersistent {
     
     /** Creates a new instance of CsmProjectImpl */
     public ProjectBase(ModelImpl model, Object platformProject, String name) {
@@ -94,6 +98,11 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent 
     /** Gets an object, which represents correspondent IDE project */
     public Object getPlatformProject() {
         return platformProject;
+    }
+    
+    /** Gets an object, which represents correspondent IDE project */
+    protected void setPlatformProject(Object platformProject) {
+        this.platformProject = platformProject;
     }
     
     /** Finds namespace by its qualified name */
@@ -347,7 +356,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent 
     }
     
     public boolean isLanguageSupported(NativeFileItem.Language language) {
-	return language == NativeFileItem.Language.C || language == NativeFileItem.Language.CPP;
+	return language == NativeFileItem.Language.C || language == NativeFileItem.Language.CPP || language == NativeFileItem.Language.C_HEADER;
     }    
     
     protected synchronized void ensureFilesCreated() {
@@ -593,7 +602,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent 
                 if (prj != null){
                     NativeFileItem nativeFile = prj.findFileItem(new File(absolutePath));
                     if( nativeFile == null ) {
-                        nativeFile = new DefaultFileItem(prj, absolutePath);
+                        // if not belong to NB project => not our file
+                        return null;
+                        // nativeFile = new DefaultFileItem(prj, absolutePath);
                     }
 		    if( ! isLanguageSupported(nativeFile.getLanguage()) ) {
 			return null;
@@ -908,21 +919,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent 
     public String toString() {
         return getName() + ' ' + getClass().getName() + " @" + hashCode(); // NOI18N
     }
-    
-    /**
-     * Repository Serialization
-     */
-    public void write(OutputStream out) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-    }
-    
-    /**
-     * Repository Deserialization
-     */
-    public void read(InputStream in) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-    }
-    
+       
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
     public static final boolean REMEMBER_RESTORED = TraceFlags.CLEAN_MACROS_AFTER_PARSE && (DebugUtils.getBoolean("cnd.remember.restored", false) || TRACE_PP_STATE_OUT);
     
@@ -1042,13 +1039,11 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent 
         }
         
         public Language getLanguage() {
-            //return nativeFile.getLanguage(); // FIXUP
-            return NativeFileItem.Language.OTHER; // FIXUP
+            return NativeFileItem.Language.C_HEADER;
         }
         
         public LanguageFlavor getLanguageFlavor() {
-            //return nativeFile.getLanguageFlavor(); // FIXUP
-            return NativeFileItem.LanguageFlavor.GENERIC; // FIXUP
+            return NativeFileItem.LanguageFlavor.GENERIC;
         }
     }
     
@@ -1111,40 +1106,43 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent 
     protected static final boolean ONLY_LEX_INCLUDES = Boolean.getBoolean("cnd.modelimpl.lex.include");
     protected static final boolean ONLY_LEX_SYS_INCLUDES = Boolean.getBoolean("cnd.modelimpl.lex.sys.include");
 
+    ////////////////////////////////////////////////////////////////////////////
     /**
      * for tests only
      */
     public static List testGetRestoredFiles() {
         return testRestoredFiles;
     }
-
-    public void write(DataOutput aStream) throws IOException, IllegalArgumentException {
-        //throw new UnsupportedOperationException("Not yet implemented");
+    
+    private static List testRestoredFiles = null;
+    ////////////////////////////////////////////////////////////////////////////
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of persistent
+    
+    public void write(DataOutput aStream) throws IOException {
         assert aStream != null;
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null;
         
         aStream.writeUTF(name);
-        aFactory.write(globalNamespaceUID, aStream);
+        aFactory.writeUID(globalNamespaceUID, aStream);
         aFactory.writeStringToUIDMap(namespaces, aStream);
         aFactory.writeStringToUIDMap(files, aStream);
         aFactory.writeStringToUIDMap(classifiers, aStream);
         aFactory.writeStringToUIDMap(declarations, aStream);
     }
 
-    void read(DataInput aStream) throws IOException, IllegalArgumentException {
+    protected ProjectBase(DataInput aStream) throws IOException {
         assert aStream != null;
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null;
         
-        name = aStream.readUTF();
-        globalNamespaceUID = aFactory.read(aStream);
-        aFactory.readStringToUIDMap(namespaces, aStream);
-        aFactory.readStringToUIDMap(files, aStream);
-        aFactory.readStringToUIDMap(classifiers, aStream);
-        aFactory.readStringToUIDMap(declarations, aStream);        
-        
-    }
-    
-    private static List testRestoredFiles = null;
+        name = ProjectNameCache.getString(aStream.readUTF());
+        globalNamespaceUID = aFactory.readUID(aStream);
+        aFactory.readStringToUIDMap(namespaces, aStream, QualifiedNameCache.getManager());
+        aFactory.readStringToUIDMap(files, aStream, FilePathCache.getManager());
+        aFactory.readStringToUIDMap(classifiers, aStream, QualifiedNameCache.getManager());
+        aFactory.readStringToUIDMap(declarations, aStream, TextCache.getManager());        
+    }    
 }

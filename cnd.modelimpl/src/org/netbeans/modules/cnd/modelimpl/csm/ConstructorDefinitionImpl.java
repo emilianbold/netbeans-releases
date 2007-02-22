@@ -20,18 +20,15 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
-import java.util.*;
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-
-import org.netbeans.modules.cnd.modelimpl.platform.*;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Vladimir Kvasihn
  */
-public class ConstructorDefinitionImpl extends FunctionDefinitionImpl {
+public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl {
 
     public ConstructorDefinitionImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
@@ -41,4 +38,14 @@ public class ConstructorDefinitionImpl extends FunctionDefinitionImpl {
         return NoType.instance();
     }
     
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+    }
+    
+    public ConstructorDefinitionImpl(DataInput input) throws IOException {
+        super(input);
+    }     
 }

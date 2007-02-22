@@ -84,7 +84,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     }
     
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
-        return new APTMacroMapSnapshot(true, parent);
+        return new APTMacroMapSnapshot(parent);
     }
     
     public State getState() {

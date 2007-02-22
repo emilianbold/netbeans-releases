@@ -19,7 +19,10 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -30,7 +33,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
-import org.netbeans.modules.cnd.modelimpl.csm.*;
 
 /**
  * Project implementation
@@ -40,10 +42,6 @@ public class ProjectImpl extends ProjectBase {
 
     public ProjectImpl(ModelImpl model, Object platformProject, String name) {
         super(model, platformProject, name);
-    }
-    
-    /* package */ ProjectImpl () {
-        
     }
     
     protected void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile) {
@@ -206,4 +204,15 @@ public class ProjectImpl extends ProjectBase {
         }
         return retValue;
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of persistent
+        
+    public void write(DataOutput aStream) throws IOException {
+        super.write(aStream);
+    }
+    
+    public ProjectImpl (DataInput input) throws IOException {
+        super(input);      
+    }    
 }

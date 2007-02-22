@@ -39,17 +39,18 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 public class RunDialogAction extends NodeAction {
-    protected JButton runButton;
+    protected JButton runButton = null;
     private Object options[];
 
-    public RunDialogAction() {
-	super();
-	runButton = new JButton(getString("RunButtonText")); // NOI18N
-        runButton.getAccessibleContext().setAccessibleDescription(getString("RunButtonAD"));
-	options = new Object[] {
-	    runButton,
-	    DialogDescriptor.CANCEL_OPTION,
-	};
+    private void init() {
+	if (runButton == null) {
+	    runButton = new JButton(getString("RunButtonText")); // NOI18N
+	    runButton.getAccessibleContext().setAccessibleDescription(getString("RunButtonAD"));
+	    options = new Object[] {
+		runButton,
+		DialogDescriptor.CANCEL_OPTION,
+	    };
+	}
     }
 
     public String getName () {
@@ -78,10 +79,16 @@ public class RunDialogAction extends NodeAction {
     }
 
     public void perform(String executablePath) {
+	if (runButton == null) {
+	    init();
+	}
 	perform(new RunDialogPanel(executablePath, true, runButton));
     }
 
     protected void perform(RunDialogPanel runDialogPanel) {
+	if (runButton == null) {
+	    init();
+	}
 	DialogDescriptor dialogDescriptor = new DialogDescriptor(
 	    runDialogPanel,
 	    getString("RunDialogTitle"),

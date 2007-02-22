@@ -21,15 +21,17 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public abstract class OffsetableDeclarationBase<T> extends OffsetableBase implements CsmOffsetableDeclaration<T>, Persistent {
+public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiableBase<T> implements CsmOffsetableDeclaration<T> {
     
     public static final char UNIQUE_NAME_SEPARATOR = ':';
     
@@ -67,15 +69,19 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableBase implem
         return "[" + this.getContainingFile().getName() + ":" + this.getStartOffset() + "-" + this.getEndOffset() + "]"; // NOI18N
     }   
     
-    public CsmUID<T> getUID() {
-        if (uid == null) {
-            uid = UIDUtilities.createDeclarationUID(this);
-        }
-        return uid;
+    protected CsmUID createUID() {
+        return UIDUtilities.createDeclarationUID(this);
     }
     
-    protected void cleanUID() {
-        this.uid = null;
-    }
-    private CsmUID uid = null;       
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+    }  
+    
+    protected OffsetableDeclarationBase(DataInput input) throws IOException {
+        super(input);
+    }    
+    
 }

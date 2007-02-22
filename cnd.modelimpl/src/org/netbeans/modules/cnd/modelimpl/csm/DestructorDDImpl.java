@@ -19,17 +19,16 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.api.model.deep.*;
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Vladimir Kvasihn
  */
-public class DestructorDDImpl extends MethodDDImpl {
+public final class DestructorDDImpl extends MethodDDImpl {
 
     public DestructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
         super(ast, cls, visibility);
@@ -43,5 +42,14 @@ public class DestructorDDImpl extends MethodDDImpl {
         return DestructorImpl.getDestructorName(this);
     }
     
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
     
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+    }
+    
+    public DestructorDDImpl(DataInput input) throws IOException {
+        super(input);
+    }    
 }

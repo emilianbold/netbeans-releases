@@ -47,7 +47,7 @@ public final class SelectObjectFilesPanel extends JPanel {
         initComponents();
         addListeners();
     }
-
+    
     private void addListeners(){
         DocumentListener documentListener = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
@@ -76,27 +76,29 @@ public final class SelectObjectFilesPanel extends JPanel {
             rootFolder.setText(path);
         }
     }
-
+    
     void read(DiscoveryDescriptor wizardDescriptor) {
         String oldSelectorID = selectorID;
         DiscoveryProvider provider = wizardDescriptor.getProvider();
-        for(String key : provider.getPropertyKeys()){
-            ProviderProperty property = provider.getProperty(key);
-            LabelForRoot.setText(property.getName());
-            instructionsTextArea.setText(property.getDescription());
-            selectorID = key;
-            switch (property.getKind()){
-                case BinaryFile:
-                    chooserMode = JFileChooser.FILES_ONLY;
-                    break;
-                case Folder:
-                    chooserMode = JFileChooser.DIRECTORIES_ONLY;
-                    break;
-                default:
-                    // unsuported UI
-                    continue;
+        if (provider != null) {
+            for(String key : provider.getPropertyKeys()){
+                ProviderProperty property = provider.getProperty(key);
+                LabelForRoot.setText(property.getName());
+                instructionsTextArea.setText(property.getDescription());
+                selectorID = key;
+                switch (property.getKind()){
+                    case BinaryFile:
+                        chooserMode = JFileChooser.FILES_ONLY;
+                        break;
+                    case Folder:
+                        chooserMode = JFileChooser.DIRECTORIES_ONLY;
+                        break;
+                    default:
+                        // unsuported UI
+                        continue;
+                }
+                break;
             }
-            break;
         }
         if (!selectorID.equals(oldSelectorID)) {
             initFields(wizardDescriptor.getRootFolder());
@@ -105,7 +107,13 @@ public final class SelectObjectFilesPanel extends JPanel {
     }
     
     void store(DiscoveryDescriptor wizardDescriptor) {
-        wizardDescriptor.getProvider().getProperty(selectorID).setValue(rootFolder.getText());
+        DiscoveryProvider provider = wizardDescriptor.getProvider();
+        if (provider != null) {
+            ProviderProperty property = provider.getProperty(selectorID);
+            if (property != null) {
+                property.setValue(rootFolder.getText());
+            }
+        }
         wizardDescriptor.setInvokeProvider(true);
     }
     
@@ -127,7 +135,7 @@ public final class SelectObjectFilesPanel extends JPanel {
         }
         return false;
     }
-
+    
     private void update(DocumentEvent e) {
         if (ignoreEvent) {
             // side-effect of changes done in this handler
@@ -139,7 +147,7 @@ public final class SelectObjectFilesPanel extends JPanel {
         ignoreEvent = false;
         wizard.stateChanged(null);
     }
-
+    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -218,7 +226,7 @@ public final class SelectObjectFilesPanel extends JPanel {
         add(LabelForRoot, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
-
+    
     private void rootFolderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rootFolderButtonActionPerformed
         String seed = null;
         if (rootFolder.getText().length() > 0) {
@@ -232,7 +240,7 @@ public final class SelectObjectFilesPanel extends JPanel {
         JFileChooser fileChooser = new FileChooser(
                 getString("ROOT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
                 getString("ROOT_DIR_BUTTON_TXT"), // NOI18N
-                chooserMode, false, 
+                chooserMode, false,
                 null,
                 seed,
                 false
@@ -244,7 +252,7 @@ public final class SelectObjectFilesPanel extends JPanel {
         //path = FilePathAdaptor.normalize(path);
         rootFolder.setText(path);
     }//GEN-LAST:event_rootFolderButtonActionPerformed
-
+    
     private String getString(String key) {
         return NbBundle.getBundle(SelectObjectFilesPanel.class).getString(key);
     }

@@ -44,9 +44,20 @@ public class ByteStreamReader implements DataInput {
     public static final int LSB = 1;
     public static final int MSB = 2;
     
-    public ByteStreamReader(String fname) throws FileNotFoundException {
-        file = new RandomAccessFile(fname, "r"); // NOI18N
+    public ByteStreamReader(String fname, RandomAccessFile reader) {
+        file = reader;
         this.fileName = fname;
+    }
+    
+    public void dispose(){
+        if (file != null) {
+            try {
+                file.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            file = null;
+        }
     }
     
     public String getFileName() {

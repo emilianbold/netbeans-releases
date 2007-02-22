@@ -22,20 +22,20 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-
-import org.netbeans.modules.cnd.modelimpl.platform.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  * Implements both CsmFunction and CsmFunctionDefinition -
  * for those cases, when they coinside (i.e. implivit inlines)
  * @author Vladimir Kvasihn
  */
-public class FunctionDDImpl extends FunctionImpl<CsmFunctionDefinition> implements CsmFunctionDefinition {
+public final class FunctionDDImpl extends FunctionImpl<CsmFunctionDefinition> implements CsmFunctionDefinition {
     
     private final CsmCompoundStatement body;
 
@@ -70,5 +70,17 @@ public class FunctionDDImpl extends FunctionImpl<CsmFunctionDefinition> implemen
         return l;
     }
     
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        PersistentUtils.writeCompoundStatement(body, output);
+    }
+    
+    public FunctionDDImpl(DataInput input) throws IOException {
+        super(input);
+        this.body = PersistentUtils.readCompoundStatement(input);
+    }       
 }
 

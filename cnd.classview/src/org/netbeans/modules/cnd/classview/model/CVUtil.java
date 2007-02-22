@@ -29,7 +29,8 @@ import org.openide.nodes.*;
  * @author Vladimir Kvasihn
  */
 public class CVUtil {
-    
+    private static final boolean showParamNames = getBoolean("cnd.classview.show-param-names", true); // NOI18N
+
     public static String getSignature(CsmFunction fun) {
         StringBuffer sb = new StringBuffer(fun.getName());
         sb.append('(');
@@ -49,8 +50,13 @@ public class CVUtil {
             } else if (par.isVarArgs()){
                 sb.append("..."); // NOI18N
             }
-            // Signature should't contain parameter name
-            //sb.append(par.getName());
+            if (showParamNames) {
+                String name = par.getName();
+                if (name != null && name.length() >0) {
+                    sb.append(' ');
+                    sb.append(name);
+                }
+            }
         }
         
         sb.append(')');
@@ -68,6 +74,14 @@ public class CVUtil {
         BaseNode node = new LoadingNode();
         return node;
     }
+
+    private static boolean getBoolean(String name, boolean result) {
+        String text = System.getProperty(name);
+        if( text != null ) {
+            result = Boolean.parseBoolean(text);
+        }
+        return result;
+    } 
     
     public static final class ClassViewComparator implements Comparator {
         public ClassViewComparator() {

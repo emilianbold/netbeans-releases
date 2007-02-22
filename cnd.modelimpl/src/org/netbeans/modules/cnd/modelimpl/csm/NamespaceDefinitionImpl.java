@@ -23,34 +23,49 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import java.util.*;
 
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * Implements CsmNamespaceDefinition
  * @author Vladimir Kvasihn
  */
-public class NamespaceDefinitionImpl extends OffsetableDeclarationBase<CsmNamespaceDefinition>
+public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<CsmNamespaceDefinition>
     implements CsmNamespaceDefinition, MutableDeclarationsContainer, Disposable {
 
     private List declarationsOLD = Collections.synchronizedList(new ArrayList());
     private List<CsmUID<CsmDeclaration>> declarations = Collections.synchronizedList(new ArrayList<CsmUID<CsmDeclaration>>());
     
-    private String name;
+    private final String name;
     
     // only one of namespaceOLD/namespaceUID must be used (based on USE_REPOSITORY)
-    private NamespaceImpl namespaceOLD;
-    private CsmUID<CsmNamespace> namespaceUID;
+    private final NamespaceImpl namespaceOLD;
+    private final CsmUID<CsmNamespace> namespaceUID;
     
     public NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
         super(ast, file);
         assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
         name = ast.getText();
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespace(parent, name, true);
-        _setNamespaceImpl(nsImpl);
+        
+        // set parent ns, do it in constructor to have final fields
+        if (TraceFlags.USE_REPOSITORY) {
+            namespaceUID = UIDCsmConverter.namespaceToUID(nsImpl);
+            assert namespaceUID != null;
+            this.namespaceOLD = null;
+        } else {
+            this.namespaceOLD = nsImpl;
+            this.namespaceUID = null;
+        }
+        
         if( nsImpl instanceof NamespaceImpl ) {
             nsImpl.addNamespaceDefinition(this);
         }
@@ -138,15 +153,27 @@ public class NamespaceDefinitionImpl extends OffsetableDeclarationBase<CsmNamesp
             return namespaceOLD;
         }
     }
-
-    private void _setNamespaceImpl(NamespaceImpl ns) {
-        if (TraceFlags.USE_REPOSITORY) {
-            namespaceUID = UIDCsmConverter.namespaceToUID(ns);
-            assert namespaceUID != null;
-        } else {
-            this.namespaceOLD = ns;
-        }
-    }
     
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
     
+    public void write(DataOutput output) throws IOException {
+        super.write(output);  
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        factory.writeUIDCollection(this.declarations, output);
+        factory.writeUID(namespaceUID, output);
+        output.writeUTF(name);
+    }  
+    
+    public NamespaceDefinitionImpl(DataInput input) throws IOException {
+        super(input);
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        this.declarations = (List<CsmUID<CsmDeclaration>>) factory.readUIDCollection(Collections.synchronizedList(new ArrayList<CsmUID<CsmDeclaration>>()), input);
+        this.namespaceUID = factory.readUID(input);
+        this.name = TextCache.getString(input.readUTF());
+        
+        assert TraceFlags.USE_REPOSITORY;
+        this.declarationsOLD = null;
+        this.namespaceOLD = null;
+    }      
 }

@@ -21,10 +21,11 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-
-import org.netbeans.modules.cnd.modelimpl.platform.*;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  * CsmFunction + CsmMember implementation
@@ -32,19 +33,13 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  */
 public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
 
-    //private ClassImpl containingClass;
-    private CsmVisibility visibility;
+    private final CsmVisibility visibility;
     private boolean _static = false;
     private boolean _abstract = false;
-    
-//    public MethodImpl(ClassImpl cls, CsmVisibility visibility, String name, int start, int end) {
-//        super(name, cls.getContainingFile(), start, end);
-//        init(cls, visibility);
-//    }
 
     public MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
         super(ast, cls.getContainingFile(), cls);
-        init(cls, visibility);
+        this.visibility = visibility;
         //this(cls, visibility, AstUtil.findId(ast), 0, 0);
         //setAst(ast);
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
@@ -55,21 +50,9 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
             }
         }
     }
-    
-//    /** overrides FunctionImpl.registerInProject */
-//    protected void registerInProject() {
-//        // do NOT register in project - only in class!
-//        //super.registerInProject();
-//    }
-    
-    private void init(ClassImpl cls, CsmVisibility visibility) {
-        //this.containingClass = cls;
-        this.visibility = visibility;
-    }
 
     public CsmClass getContainingClass() {
         return (CsmClass) getScope();
-        //return containingClass;
     }
 
     public CsmVisibility getVisibility() {
@@ -102,13 +85,25 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
         return false;
     }
 
-    // getScope is defined in parent class
-//    public CsmScope getScope() {
-//        return getContainingClass();
-//    }
-
     public boolean isConst() {
 	return super.isConst();
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        PersistentUtils.writeVisibility(this.visibility, output);
+        output.writeBoolean(this._abstract);
+        output.writeBoolean(this._static);
+    }
+    
+    public MethodImpl(DataInput input) throws IOException {
+        super(input);
+        this.visibility = PersistentUtils.readVisibility(input);
+        this._abstract = input.readBoolean();
+        this._static = input.readBoolean();
+    }      
 }
 

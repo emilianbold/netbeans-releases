@@ -23,6 +23,7 @@ import java.io.*;
 import java.util.*;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 
 /**
@@ -30,68 +31,14 @@ import org.netbeans.modules.cnd.modelimpl.platform.*;
  */
 public class LibProjectImpl extends ProjectBase {
     
-    private File includePath;
-//    private ProjectCache projectCache;
-    private boolean filled;
-//    private File zipFile;
-    
-//    private class LibCache extends ProjectZipCache {
-//
-//        public LibCache(CsmProject project, String pathBase) throws IOException {
-//            super(project,  pathBase);
-//        }
-//
-//        protected File findProjectPathFile() throws IOException {
-//            return zipFile;
-//        }
-//
-//    }
+    private String includePath;
     
     public LibProjectImpl(ModelImpl model, String includePathName) {
         super(model, new File(includePathName), includePathName);
-        this.includePath = (File) super.getPlatformProject();
-//        String zipName = "cache-" + CacheUtil.mangleFileName(includePathName, '-') + ".zip";
-//        zipFile = ModelSupport.instance().locateFile("modules/" + zipName);
-//        if( zipFile != null && zipFile.exists() ) {
-//            try {
-//                projectCache = new LibCache(this, includePathName);
-//            } catch( IOException ex ) {
-//                ex.printStackTrace(System.err);
-//            }
-//        }
-//        if( projectCache == null ) {
-//            projectCache = new ProejctDummyCache();
-//        }
-        filled = false;
+        this.includePath = includePathName;
     }
     
-    /* package */ LibProjectImpl () {
-        
-    }
-    
-    
-    //protected void parseAllIfNeed() {
     protected void ensureFilesCreated() {
-        if( ! filled ) {
-            synchronized( this ) {
-                if( ! filled ) {
-                    filled = true;
-                    // TODO-threading: this makes it render restored AST in the current thread,
-                    // which is incorrect. It's ok now since cache isn't used, but
-                    // should be definitely changed prior than switching the cache on!
-                    fill();
-                }
-            }
-        }
-    }
-    
-    private void fill() {
-//        for( Iterator iter = projectCache.getEntries(); iter.hasNext(); ) {
-//            ProjectCache.Entry entry = (ProjectCache.Entry) iter.next();
-//            if( entry != null && entry.cache != null ) {
-//                    createFile(entry.sourceFile, entry.cache, (APTPreprocState)null);
-//            }
-//        }
     }
     
     protected void createIfNeed(NativeFileItem file, boolean isSourceFile) {
@@ -171,16 +118,17 @@ public class LibProjectImpl extends ProjectBase {
         return null;
     }
     
-    public void write(DataOutput aStream) throws IOException, IllegalArgumentException {
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of persistent
+    
+    public void write(DataOutput aStream) throws IOException {
         super.write(aStream);
-        aStream.writeBoolean(filled);
-        aStream.writeUTF(includePath.getCanonicalPath());
+        aStream.writeUTF(includePath);
     }
     
-    void read(DataInput aStream) throws IOException, IllegalArgumentException {
-        super.read(aStream);
-        filled = aStream.readBoolean();
-        includePath = new File (aStream.readUTF());
-        
+    public LibProjectImpl (DataInput aStream)  throws IOException {
+        super(aStream);
+        includePath = FilePathCache.getString(aStream.readUTF());
+        setPlatformProject(new File(includePath));
     }
 }

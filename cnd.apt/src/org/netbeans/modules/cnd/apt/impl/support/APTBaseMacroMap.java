@@ -56,15 +56,11 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
 
     public void define(Token name, Collection params, List value) {
-        active.undefined_macros.remove(APTUtils.getTokenTextKey(name));
-        // remove old one
-        active.defined_macros.remove(APTUtils.getTokenTextKey(name));
-        active.defined_macros.put(APTUtils.getTokenTextKey(name), createMacro(name, params, value));
+        active.macros.put(APTUtils.getTokenTextKey(name), createMacro(name, params, value));
     }
     
     public void undef(Token name) {
-        active.defined_macros.remove(APTUtils.getTokenTextKey(name));
-        active.undefined_macros.put(APTUtils.getTokenTextKey(name), null);
+        active.macros.put(APTUtils.getTokenTextKey(name), APTMacroMapSnapshot.UNDEFINED_MACRO);
     }
     
     /** method to implement in children */
@@ -120,11 +116,9 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
         public boolean clean() {
             boolean cleaned = false;
             if (snap != null) {
-                if (snap.parent != null) {
-                    cleaned = true;
-                }
                 while (snap.parent != null) {
                     snap = snap.parent;
+                    cleaned = true;
                 }
             }
             return cleaned;

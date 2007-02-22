@@ -20,17 +20,20 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Enumeration;
 
 import org.netbeans.modules.cnd.MIMENames;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.ExtensionList;
 import org.openide.util.SharedClassObject;
+import org.openide.util.Utilities;
 
 /**
  *  Recognizes .h header files and create .h data objects for them
@@ -96,6 +99,34 @@ public final class HDataLoader extends CndAbstractDataLoader {
     /** Override because we don't have secondary files */
     protected FileObject findSecondaryFile(FileObject fo){
 	return null;
+    }
+    
+    protected FileObject findPrimaryFile(FileObject fo) {
+        if (fo.isFolder()) {
+            return null;
+        }
+        if (fo.getExt().length() == 0) {
+            File file = FileUtil.toFile(fo);
+            if (file != null) {
+                try {
+                    // Headerless include files in the Sun Studio compiler set usually
+                    // have a symlink to <file>.SUNWCCh. Try this check on Solaris because
+                    // its cheaper than detectCPPByComment().
+                    if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+                        String path = file.getCanonicalPath();
+                        File sunwcch = new File(path + ".SUNWCCh");  // NOI18N
+                        if (sunwcch.exists()) {
+                            return fo;
+                        }
+                    }
+                } catch (IOException ex) {
+                }
+                if (detectCPPByComment(fo)) {
+                    return fo;
+                }
+            }
+        }
+        return super.findPrimaryFile(fo);
     }
 
     /**

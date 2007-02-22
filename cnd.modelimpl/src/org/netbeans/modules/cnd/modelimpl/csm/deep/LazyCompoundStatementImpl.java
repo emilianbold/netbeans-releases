@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
-import antlr.RecognitionException;
 import antlr.Token;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
@@ -32,6 +31,9 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -43,7 +45,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 public class LazyCompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
     
     private SoftReference<List/*<CsmStatement>*/> statements = null;
-    private int firstTokenOffset;
+    private final int firstTokenOffset;
     
     public LazyCompoundStatementImpl(AST ast, CsmFile file) {
         super(ast, file);
@@ -173,4 +175,15 @@ public class LazyCompoundStatementImpl extends StatementBase implements CsmCompo
         }
         return out;
     }
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        output.writeInt(this.firstTokenOffset);
+    }
+    
+    public LazyCompoundStatementImpl(DataInput input) throws IOException {
+        super(input);
+        this.firstTokenOffset = input.readInt();
+        this.statements = null;
+    }      
 }

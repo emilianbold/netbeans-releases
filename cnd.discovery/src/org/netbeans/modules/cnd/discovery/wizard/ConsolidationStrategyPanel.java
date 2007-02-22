@@ -21,7 +21,7 @@ public class ConsolidationStrategyPanel extends JPanel {
     public static final String PROJECT_LEVEL = "project"; // NOI18N
     public static final String FOLDER_LEVEL = "folder"; // NOI18N
     public static final String FILE_LEVEL = "file"; // NOI18N
-    private String level = FOLDER_LEVEL;
+    private String level = FILE_LEVEL;
     
     public ConsolidationStrategyPanel(ConsolidationStrategyWizard wizard) {
         this.wizard = wizard;
@@ -125,7 +125,6 @@ public class ConsolidationStrategyPanel extends JPanel {
         add(projectConsolidation, gridBagConstraints);
 
         consolidationGroup.add(folderConsolidation);
-        folderConsolidation.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(folderConsolidation, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle").getString("ConsolidateToFolderLabel"));
         folderConsolidation.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         folderConsolidation.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -136,6 +135,7 @@ public class ConsolidationStrategyPanel extends JPanel {
         add(folderConsolidation, gridBagConstraints);
 
         consolidationGroup.add(fileConsolidation);
+        fileConsolidation.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(fileConsolidation, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle").getString("FileConsolidateLabel"));
         fileConsolidation.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         fileConsolidation.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -145,7 +145,8 @@ public class ConsolidationStrategyPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(fileConsolidation, gridBagConstraints);
 
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle").getString("ConsolidationLevelText"));
+        jLabel1.setLabelFor(projectConsolidation);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle").getString("ConsolidationLevelText"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

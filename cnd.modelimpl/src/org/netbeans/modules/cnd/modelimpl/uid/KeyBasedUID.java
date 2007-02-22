@@ -28,21 +28,18 @@ import org.netbeans.modules.cnd.modelimpl.repository.KeyHolder;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * help class for CsmUID based on repository Key
  * @author Vladimir Voskresensky
  */
-public class KeyBasedUID<T extends CsmIdentifiable> implements CsmUID<T>, KeyHolder {
-    private /* final*/ Key key;
+public abstract class KeyBasedUID<T extends CsmIdentifiable> implements CsmUID<T>, KeyHolder, SelfPersistent, Comparable {
+    private final Key key;
     
-    public KeyBasedUID(Key key) {
+    protected KeyBasedUID(Key key) {
         assert key != null;
         this.key = key;
-    }
-    
-    /* package */ KeyBasedUID() {
-        
     }
     
     public T getObject() {
@@ -74,13 +71,19 @@ public class KeyBasedUID<T extends CsmIdentifiable> implements CsmUID<T>, KeyHol
         return retValue;
     }
 
-    public void write(DataOutput aStream) throws IOException, IllegalArgumentException {
-        KeyObjectFactory.getDefaultFactory().write(key, aStream);
+    public void write(DataOutput aStream) throws IOException {
+        KeyObjectFactory.getDefaultFactory().writeKey(key, aStream);
     }
 
-    public void read(DataInput aStream) throws IOException, IllegalArgumentException {
-        key = KeyObjectFactory.getDefaultFactory().read(aStream);
+    /* package */ KeyBasedUID(DataInput aStream) throws IOException {
+        key = KeyObjectFactory.getDefaultFactory().readKey(aStream);
     }
-    
-    
+
+    public int compareTo(Object o) {
+        assert o != null;
+        assert o instanceof KeyBasedUID;
+        Comparable o1 = (Comparable)this.key;
+        Comparable o2 = (Comparable)((KeyBasedUID)o).key;
+        return o1.compareTo(o2);
+    }
 }    

@@ -101,4 +101,15 @@ public class FileBufferFile extends AbstractFileBuffer {
     public boolean isFileBased() {
         return true;
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+    }  
+    
+    public FileBufferFile(DataInput input) throws IOException {
+        super(input);
+    }
 }

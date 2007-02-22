@@ -19,9 +19,12 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.io.DataOutput;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
@@ -42,7 +45,7 @@ public class BuiltinTypes {
         private BuiltinImpl(String name) {
             this.name = TextCache.getString(name);
             if (TraceFlags.USE_REPOSITORY) {
-                this.uid = new ObjectBasedUID<CsmBuiltIn>(this);
+                this.uid = new BuiltInUID(this);
             } else {
                 this.uid = null;
             }
@@ -114,4 +117,31 @@ public class BuiltinTypes {
         return builtIn;
     }
 
+    public static ObjectBasedUID readUID(DataInput aStream) throws IOException {
+        String name = aStream.readUTF(); // no need for text manager
+        CsmBuiltIn builtIn = BuiltinTypes.getBuiltIn(name);
+        BuiltInUID anUID = (BuiltInUID) builtIn.getUID();
+        assert anUID != null;
+        return anUID;
+    }
+
+    /**
+     * UID for CsmBuiltIn
+     */    
+    public static final class BuiltInUID extends ObjectBasedUID<CsmBuiltIn> {
+        private BuiltInUID(CsmBuiltIn decl) {
+            super(decl);
+        }
+        
+        public String toString() {
+            String retValue = "<BUILT-IN UID> " + super.toString(); // NOI18N
+            return retValue;
+        } 
+
+        public void write(DataOutput output) throws IOException {
+            BuiltinImpl ref = (BuiltinImpl) getObject();
+            assert ref != null;
+            output.writeUTF(ref.getName());
+        }
+    }     
 }

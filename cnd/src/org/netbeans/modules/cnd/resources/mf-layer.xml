@@ -43,7 +43,6 @@ Microsystems, Inc. All Rights Reserved.
 	</folder>
 
 	<folder name="text">
-
 	    <folder name="x-c++">
 		<file name="Settings.settings" url="CCOptions.settings"/>
                 <folder name="Defaults">
@@ -58,13 +57,6 @@ Microsystems, Inc. All Rights Reserved.
                         </file>
                     </folder>
                 </folder>
-                <folder name="CityLights">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="cplusplus/CityLights-CC-fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.BundleColors"/>
-                        </file>
-                    </folder>
-                </folder>                
 
 		<file name="EditorKit.instance">
 		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
@@ -107,16 +99,21 @@ Microsystems, Inc. All Rights Reserved.
 	    </folder>
 
 	    <folder name="x-c">
-                <!-- 
-                    Seems it's not necessary to register here colorings, settings, other?
-                    because C is used with C++ 
-                -->
-
+		<file name="Settings.settings" url="CCOptions.settings"/>
 		<folder name="Defaults">
                     <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
                 </folder>
+                  
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="cplusplus/Netbeans-CC-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.cplusplus.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                
                 <file name="EditorKit.instance">
-		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
+		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
 		</file>
 
 		<folder name="SideBar">
@@ -125,7 +122,7 @@ Microsystems, Inc. All Rights Reserved.
 		</folder>
 
 		<folder name="FoldManager">
-		    <file name="org-netbeans-modules-cnd-editor-CppFoldManagerxx$Factory.instance"/>
+		    <file name="org-netbeans-modules-cnd-editor-CppFoldManager$Factory.instance"/>
 		</folder>
                 <folder name="Popup">
                     <attr name="org-openide-actions-GotoAction.instance/goto" boolvalue="true"/>

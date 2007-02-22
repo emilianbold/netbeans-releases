@@ -19,9 +19,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import antlr.RecognitionException;
 import antlr.TokenStream;
-import antlr.TokenStreamException;
 import antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
@@ -31,7 +29,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
@@ -46,19 +43,21 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocState;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * CsmFile implementations
  * @author Vladimir Kvashin
  */
 public class FileImpl implements CsmFile, MutableDeclarationsContainer, 
-        ChangeListener, Disposable, Persistent {
+        ChangeListener, Disposable, Persistent, SelfPersistent {
     
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
     private static final boolean reportParse = Boolean.getBoolean("parser.log.parse");
@@ -72,8 +71,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private FileBuffer fileBuffer;
     
     // only one of project/projectUID must be used 
-    private ProjectBase projectOLD;
-    private CsmUID<CsmProject> projectUID;
+    private final ProjectBase projectOLD;
+    private final CsmUID<CsmProject> projectUID;
 
     /** 
      * It's a map since we need to eliminate duplications 
@@ -81,8 +80,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private Map/*<String, CsmOffsetableDeclaration>*/ declarationsOLD = Collections.synchronizedSortedMap(new TreeMap/*<String, CsmOffsetableDeclaration>*/());
     private Map<String, CsmUID<CsmOffsetableDeclaration>> declarations = Collections.synchronizedSortedMap(new TreeMap<String, CsmUID<CsmOffsetableDeclaration>>());
 
-    private Set<CsmInclude> includes = Collections.synchronizedSortedSet(new TreeSet<CsmInclude>(START_OFFSET_COMPARATOR));
-    private Set<CsmMacro> macros = Collections.synchronizedSortedSet(new TreeSet<CsmMacro>(START_OFFSET_COMPARATOR));    
+    private Set<CsmInclude> includesOLD = Collections.synchronizedSortedSet(new TreeSet<CsmInclude>(START_OFFSET_COMPARATOR));
+    private Set<CsmUID<CsmInclude>> includes = Collections.synchronizedSortedSet(new TreeSet<CsmUID<CsmInclude>>(UID_START_OFFSET_COMPARATOR));
+
+    private Set<CsmMacro> macrosOLD = Collections.synchronizedSortedSet(new TreeSet<CsmMacro>(START_OFFSET_COMPARATOR));    
+    private Set<CsmUID<CsmMacro>> macros = Collections.synchronizedSortedSet(new TreeSet<CsmUID<CsmMacro>>(UID_START_OFFSET_COMPARATOR));    
     
     private int errorCount = 0;
     
@@ -99,13 +101,20 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private Object stateLock = new Object();
     
-    private Collection/*<FunctionDefinitionImpl>*/ fakeRegistrations = new ArrayList();
+    private Collection/*<FunctionDefinitionImpl>*/ fakeRegistrationsOLD = new ArrayList();
+    private Collection<CsmUID<FunctionDefinitionImpl>> fakeRegistrationUIDs = new ArrayList();
     
     private final Object fakeLock;
 
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, APTPreprocState preprocState) {
         setBuffer(fileBuffer);
-        _setProject(project);
+        if (TraceFlags.USE_REPOSITORY) {
+            this.projectUID = UIDCsmConverter.projectToUID(project);
+            this.projectOLD = null;
+        } else {
+            this.projectOLD = project;
+            this.projectUID = null;
+        }
         this.preprocState = preprocState;
         this.fileType = fileType;
         this.fakeLock = new String("File Lock for " + fileBuffer.getFile().getAbsolutePath()); // NOI18N
@@ -114,14 +123,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public FileImpl(FileBuffer fileBuffer, ProjectBase project) {
 	this(fileBuffer, project, UNDEFINED_FILE, (APTPreprocState)null);
-    }
-    
-    private void _setProject(ProjectBase project) {
-        if (TraceFlags.USE_REPOSITORY) {
-            this.projectUID = UIDCsmConverter.projectToUID(project);
-        } else {
-            this.projectOLD = project;
-        }
     }
     
     private ProjectBase _getProject() {
@@ -269,8 +270,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if( TraceFlags.DEBUG ) Diagnostic.trace("------ reparsing " + fileBuffer.getFile().getName()); // NOI18N
 	//Notificator.instance().startTransaction();
 	try {
-            includes.clear();
-            macros.clear();
+            _clearIncludes();
+            _clearMacros();
             AST ast = doParse();
             if (ast != null) {
                 disposeAll(false);
@@ -299,8 +300,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values());
                 declarations.clear();
                 if (clearNonDisposable) {
-                    includes.clear();
-                    macros.clear();
+                    _clearIncludes();
+                    _clearMacros();
                 }
             }       
             List<CsmOffsetableDeclaration> arr = UIDCsmConverter.UIDsToDeclarations(uids);
@@ -317,8 +318,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 arr = declarationsOLD.values().toArray();
                 declarationsOLD.clear();
                 if (clearNonDisposable) {
-                    includes.clear();
-                    macros.clear();
+                    _clearIncludes();
+                    _clearMacros();
                 }
             }
             for (int i = 0; i < arr.length; i++) {
@@ -331,6 +332,22 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     }
         
+    private void _clearMacros() {
+        if (TraceFlags.USE_REPOSITORY) {
+            RepositoryUtils.remove(macros);
+        } else {
+            macrosOLD.clear();
+        }        
+    }
+    
+    private void _clearIncludes() {
+        if (TraceFlags.USE_REPOSITORY) {
+            RepositoryUtils.remove(includes);
+        } else {
+            includesOLD.clear();
+        }
+    }
+    
     public AST parse(APTPreprocState preprocState) {
         synchronized( stateLock ) {
             state = STATE_BEING_PARSED;
@@ -498,59 +515,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return ast;
     }
     
-    // TODO: review due to new CsmInclude interface implementation
-    private void addIncludes(List/*<String>*/ includes) {
-        for(Iterator i = includes.iterator(); i.hasNext(); ) {
-            String fileName = (String)i.next();
-            addInclude(fileName.substring(1, fileName.length()-1), fileName.charAt(0) == '<');
-        }
-    }
-    
-    private void addIncludes(Collection/*<CsmInclude>*/ includes) {
-        addMacrosOrIncludes(includes, this.includes, false);     
-    }
-    
-    private void addMacros(Collection/*<CsmMacro>*/ macros) {
-        addMacrosOrIncludes(macros, this.macros, true);        
-    }
-    
     public void addInclude(IncludeImpl includeImpl) {
-	includes.add(includeImpl);
-    }
-    
-    private void addMacrosOrIncludes(Collection/*<CsmOffsetable>*/ src,
-            Set/*<CsmOffsetable>*/ dest, boolean macrosVsIncludes) {
-        // set container file information
-        for (Iterator it = src.iterator(); it.hasNext();) {
-            CsmOffsetable elem = (CsmOffsetable) it.next();
-            if (!dest.contains(elem)) {
-                if (elem instanceof LineColOffsetableBase) {
-                    assert (macrosVsIncludes ? (elem instanceof CsmMacro) : (elem instanceof CsmInclude));
-                    ((LineColOffsetableBase)elem).setContainingFile(this);
-                } else {
-                    CsmOffsetable newElem = null;
-                    if (macrosVsIncludes) {
-                        assert(elem instanceof CsmMacro);
-                        newElem = new MacroImpl((CsmMacro) elem, this);
-                    } else {
-                        assert(elem instanceof CsmInclude);
-                        newElem = new IncludeImpl((CsmInclude) elem, this);
-                    }
-                    elem = newElem;
-                }
-                dest.add(elem);
-            }
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmUID<CsmInclude> uid = RepositoryUtils.put(includeImpl);
+            assert uid != null;
+            includes.add(uid);
+        } else {
+            includesOLD.add(includeImpl);
         }
-        if( TraceFlags.DEBUG) {
-            System.err.println((macrosVsIncludes?"#Defined":"#Included")+" in file " + fileBuffer.getFile().getPath());
-            if (dest.size() == 0) {
-                System.err.println("   no elements");
-            }                
-            for (Iterator it = dest.iterator(); it.hasNext();) {
-                CsmOffsetable elem = (CsmOffsetable) it.next();
-                System.err.println("   " + elem);
-            }
-        }         
     }
     
     static final private Comparator/*<? super CsmOffsetable>*/ START_OFFSET_COMPARATOR = new Comparator() {
@@ -565,7 +537,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (ofs1 == ofs2) {
                 return 0;
             } else {
-                return (ofs1 > ofs2) ? +1 : -1;
+                return (ofs1 - ofs2);
             }
         }   
         
@@ -578,49 +550,27 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }          
     };
         
-//    private static boolean globalDebugFunAdded = false;
-//    
-//    private void lightParse() {
-//        LightParser.Callback callback = new LightParser.Callback() {
-//            public void addClass(CsmDeclaration.Kind kind, String name, 
-//                                int start, int end, boolean template, NamespaceImpl namespace) {
-//                
-//                if( kind == CsmDeclaration.Kind.ENUM ) {
-//                    EnumImpl impl = new EnumImpl(name, namespace, FileImpl.this,  start, end);
-//                    //Faker.fill(impl);
-//                    addDeclaration(impl);
-//                }
-//                else if( kind == CsmDeclaration.Kind.CLASS 
-//                    || kind == CsmDeclaration.Kind.STRUCT 
-//                    || kind == CsmDeclaration.Kind.UNION ) {
-//                    
-//                    ClassImpl impl = new ClassImpl(kind, name, namespace, FileImpl.this,  start, end);
-//                    //Faker.fill(impl);
-//                    addDeclaration(impl);
-//                }
-//                if (!globalDebugFunAdded && namespace.isGlobal()) {
-//                    //Faker.fill(namespace, FileImpl.this);  
-//                    globalDebugFunAdded = true;
-//                }                   
-//            }
-//            
-//        };
-//        try {
-//            LightParser lp = new LightParser(this, callback, (NamespaceImpl) project.getGlobalNamespace());
-//            try {
-//                if( TraceFlags.DEBUG ) Diagnostic.trace("Parsing " + this.getName() + "...");
-//                lp.parse();
-//            }
-//            catch( LightParser.SyntaxError e ) {
-//                System.err.println(e.getMessage());
-//            }
-//        }
-//        catch( IOException e ) {
-//            e.printStackTrace(System.err);
-//        }
-//    }
-    
+    static final private Comparator<CsmUID> UID_START_OFFSET_COMPARATOR = new Comparator() {
+        public int compare(Object o1, Object o2) {
+            if (o1 == o2) {
+                return 0;
+            }
+            Comparable i1 = (Comparable)o1;
+            Comparable i2 = (Comparable)o2; 
+            assert i1 != null;
+            assert i2 != null;
+            return i1.compareTo(i2);
+        }   
+        
+        public boolean equals(Object obj) {
+            return super.equals(obj);
+        }
 
+        public int hashCode() {
+            return 11; // any dummy value
+        }          
+    };
+    
     public String getText(int start, int end) {
         try {
             return fileBuffer.getText(start, end);
@@ -655,12 +605,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public List/*<CsmInclude>*/ getIncludes() {
-        return new ArrayList(includes);
-    }
-
-    // TODO: review due to new CsmInclude interface implementation
-    public void addInclude(String fileName, boolean system) {
-        includes.add(new IncludeImpl(fileName, system, this));
+        if (TraceFlags.USE_REPOSITORY) {
+            List out = UIDCsmConverter.UIDsToIncludes(includes);
+            return out;
+        } else {
+            return new ArrayList(includesOLD);
+        }
     }
 
     public List/*<CsmDeclaration>*/ getDeclarations() {
@@ -673,16 +623,23 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
     
-//    public List/*<CsmDeclaration>*/ getObjects() {
-//        return objects;
-//    }
-    
     public void addMacro(CsmMacro macro) {
-        macros.add(macro);
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmUID<CsmMacro> uid = RepositoryUtils.put(macro);
+            assert uid != null;
+            macros.add(uid);
+        } else {
+            macrosOLD.add(macro);
+        }
     }
     
     public List/*<CsmMacro>*/ getMacros() {
-        return new ArrayList(macros);
+        if (TraceFlags.USE_REPOSITORY) {
+            List out = UIDCsmConverter.UIDsToMacros(macros);
+            return out;
+        } else {
+            return new ArrayList(macrosOLD);
+        }
     }
     
     public void addDeclaration(CsmOffsetableDeclaration decl) {
@@ -829,18 +786,34 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }    
     
     public void onFakeRegisration(FunctionDefinitionImpl decl) {
-        synchronized( fakeLock ) {
-            fakeRegistrations.add(decl);
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmUID<FunctionDefinitionImpl> uid = UIDCsmConverter.declarationToUID(decl);
+            synchronized( fakeLock ) {
+                fakeRegistrationUIDs.add(uid);
+            }
+        } else {
+            synchronized( fakeLock ) {
+                fakeRegistrationsOLD.add(decl);
+            }
         }
     }
     
     public void fixFakeRegistrations() {
         Collection fakes;
-        synchronized( fakeLock ) {
-            // Right now we do not need to make a copy, fakeRegistrations is cleared anyway
-            fakes = fakeRegistrations;
-            //fakes = (FunctionDefinitionImpl[]) fakeRegistrations.toArray(new FunctionDefinitionImpl[fakeRegistrations.size()]);
-            fakeRegistrations = new ArrayList();
+        if (TraceFlags.USE_REPOSITORY) {
+            Collection<CsmUID<FunctionDefinitionImpl>> fakeUIDs;
+            synchronized ( fakeLock ) {
+                fakeUIDs = fakeRegistrationUIDs;
+                fakeRegistrationUIDs = new ArrayList();
+            }
+            fakes = UIDCsmConverter.UIDsToDeclarations(fakeUIDs);
+        } else {
+            synchronized( fakeLock ) {
+                // Right now we do not need to make a copy, fakeRegistrations is cleared anyway
+                fakes = fakeRegistrationsOLD;
+                //fakes = (FunctionDefinitionImpl[]) fakeRegistrations.toArray(new FunctionDefinitionImpl[fakeRegistrations.size()]);
+                fakeRegistrationsOLD = new ArrayList();
+            }
         }
 	for (Iterator iter = fakes.iterator(); iter.hasNext();) {
             FunctionDefinitionImpl curElem = (FunctionDefinitionImpl)iter.next();
@@ -851,20 +824,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public String toString() {
 	return "FileImpl @" + hashCode() + ' ' + getAbsolutePath(); // NOI18N
     }
-    
-    /**
-     * Repository Serialization 
-     */
-    public void write(OutputStream out) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-    }
-    
-    /**
-     * Repository Deserialization 
-     */
-    public void read(InputStream in) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N        
-    }    
 
     public CsmUID<CsmFile> getUID() {
         if (uid == null) {
@@ -872,6 +831,37 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         return uid;
     }
-    
     private CsmUID<CsmFile> uid = null;   
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of persistent
+
+    public void write(DataOutput output) throws IOException {
+        PersistentUtils.writeBuffer(this.fileBuffer, output);
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        factory.writeUID(this.projectUID, output);
+        factory.writeStringToUIDMap(declarations, output);
+        factory.writeUIDCollection(this.includes, output);
+        factory.writeUIDCollection(this.macros, output);
+        factory.writeUIDCollection(this.fakeRegistrationUIDs, output);
+    }
+    
+    public FileImpl(DataInput input) throws IOException {
+        this.fileBuffer = PersistentUtils.readBuffer(input);
+        
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();        
+        this.projectUID = factory.readUID(input);
+        assert this.projectUID != null;
+        factory.readStringToUIDMap(this.declarations, input, null);
+        factory.readUIDCollection(this.includes, input);
+        factory.readUIDCollection(this.macros, input);
+        factory.readUIDCollection(this.fakeRegistrationUIDs, input);
+        
+        assert fileBuffer != null;
+        assert fileBuffer.isFileBased();
+        fakeLock = new String("File Lock for " + fileBuffer.getFile().getAbsolutePath()); // NOI18N        
+        
+        assert TraceFlags.USE_REPOSITORY;
+        this.projectOLD = null;
+    }
 }

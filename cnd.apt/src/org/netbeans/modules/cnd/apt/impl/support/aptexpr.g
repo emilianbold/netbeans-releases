@@ -140,8 +140,8 @@ prodExpr  returns [long r] : {long b;}  r=signExpr (STAR^ b=signExpr { r=r*b; }
                                                    |DIVIDE^ b=signExpr { r=r/b; }
                                                    |MOD^ b=signExpr { r=r%b; } )* ;
 signExpr  returns [long r] {r=0;}:   
-                      m:MINUS^ /*{#m.setType(SIGN_MINUS);}*/ r=atom { r=-1*r; }
-                    | p:PLUS^  /*{#p.setType(SIGN_PLUS);}*/ r=atom { r= (r<0) ? 0-r : r; }
+                      MINUS^ r=atom { r=-1*r; }
+                    | PLUS^  r=atom { r= (r<0) ? 0-r : r; }
                     | NOT^ r=atom { r=toLong(!toBoolean(r)); }
                     | TILDE^ r=atom { r=~r; }
                 | r=atom ;

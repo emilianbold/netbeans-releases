@@ -139,6 +139,10 @@ public class MakefileDataLoader extends UniFileLoader {
 
     /** Find the primary file */
     protected FileObject findPrimaryFile(FileObject fo) {
+        
+        if (fo.isFolder()) {
+            return null;
+        }
 
 	/*
 	 * Some Makefiles don't follow standard Makefile naming conventions.

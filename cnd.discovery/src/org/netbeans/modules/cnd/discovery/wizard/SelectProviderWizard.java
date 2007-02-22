@@ -11,12 +11,22 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListener {
+public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListener, WizardDescriptor.FinishablePanel {
     
     private DiscoveryDescriptor wizardDescriptor;
     private SelectProviderPanel component;
     private String name;
     private boolean inited = false;
+    private boolean finishable = true;
+
+    public SelectProviderWizard(){
+        this(true);
+    }
+
+    public SelectProviderWizard(boolean finishable){
+        this.finishable = finishable;
+        name = NbBundle.getMessage(SelectProviderPanel.class, "SelectProviderName"); // NOI18N
+    }
     
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -25,7 +35,6 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
     public Component getComponent() {
         if (component == null) {
             component = new SelectProviderPanel(this);
-            name = NbBundle.getMessage(SelectProviderPanel.class, "SelectProviderName"); // NOI18N
       	    component.setName(name);
         }
         return component;
@@ -89,5 +98,8 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
     }
 
+    public boolean isFinishPanel() {
+        return finishable;
+    }
 }
 

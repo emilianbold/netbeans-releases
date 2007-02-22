@@ -19,11 +19,15 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
+import java.io.DataInput;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  *
@@ -76,5 +80,22 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     private CsmObject resolve() {
         Resolver resolver = ResolverFactory.createResolver(this);
         return resolver.resolve(nameParts);
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
+
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        output.writeUTF(name);
+        PersistentUtils.writeStrings(nameParts, output);
+    }
+    
+    public ClassForwardDeclarationImpl(DataInput input) throws IOException {
+        super(input);
+        String str = input.readUTF();
+        assert str != null;
+        this.name = TextCache.getString(str);
+        this.nameParts = PersistentUtils.readStrings(input, TextCache.getManager());
     }
 }

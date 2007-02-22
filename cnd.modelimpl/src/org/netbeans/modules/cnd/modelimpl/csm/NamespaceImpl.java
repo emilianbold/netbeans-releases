@@ -19,24 +19,30 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * CsmNamespace implementation
  * @author Vladimir Kvashin
  */
 public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer,
-                                        Persistent {
+                                        Persistent, SelfPersistent {
 
     // only one of project/projectUID must be used (based on USE_REPOSITORY)
     private ProjectBase projectOLD;
@@ -50,7 +56,8 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private String qualifiedName;
 
     /** maps namespaces FQN to namespaces */
-    private Map/*<String, CsmNamespaceImpl>*/ nestedMap = Collections.synchronizedMap(new HashMap/*<String, CsmNamespaceImpl>*/());
+    private Map/*<String, CsmNamespaceImpl>*/ nestedMapOLD = Collections.synchronizedMap(new HashMap/*<String, CsmNamespaceImpl>*/());
+    private Map<String, CsmUID<CsmNamespace>> nestedMap = Collections.synchronizedMap(new HashMap<String, CsmUID<CsmNamespace>>());
     
     private Map/*<String,CsmDeclaration>*/ declarationsOLD = Collections.synchronizedMap(new HashMap/*<String,CsmDeclaration>*/());
     private Map<String,CsmUID<CsmOffsetableDeclaration>> declarations = Collections.synchronizedMap(new HashMap<String,CsmUID<CsmOffsetableDeclaration>>());
@@ -111,22 +118,13 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     public Collection/*<CsmNamespace>*/ getNestedNamespaces() {
-        //return new ArrayList(nestedNamespaces);
-        return new ArrayList(nestedMap.values());
+        if (TraceFlags.USE_REPOSITORY) {
+            List<CsmNamespace> out = UIDCsmConverter.UIDsToNamespaces(new ArrayList(nestedMap.values()));
+            return out;
+        } else {
+            return new ArrayList(nestedMapOLD.values());
+        }
     }
-    
-//    public Collection/*<CsmDeclaration>*/ getDeclarations() {
-//        return getDeclarations(true);
-//    }
-//    
-//    public Collection/*<CsmDeclaration>*/ getDeclarations(boolean wait) {
-//        if( wait ) {
-//            long l = Diagnostic.start();
-//            project.waitParse();
-//            Diagnostic.stop(l, "%% getDeclarations(): ensureAllParsed took ");
-//        }
-//        return new ArrayList(declarations.values());
-//    }
     
     public Collection/*<CsmDeclaration>*/ getDeclarations() {
         if (TraceFlags.USE_REPOSITORY) {
@@ -148,7 +146,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     /** creates or gets (if already exists) namespace with the given name and current parent */
     public NamespaceImpl getNamespace(String name) {
         String fqn = Utils.getQualifiedName(name,  this);
-        NamespaceImpl impl = (NamespaceImpl) nestedMap.get(fqn);
+        NamespaceImpl impl = _getNestedNamespace(fqn);
         if( impl == null ) {
                 impl = new NamespaceImpl(_getProject(), this, name);
                 // it would register automatically
@@ -162,10 +160,26 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return name;
     }
 
+    private NamespaceImpl _getNestedNamespace(String fqn) {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmUID<CsmNamespace> uid = nestedMap.get(fqn);
+            NamespaceImpl out = (NamespaceImpl)UIDCsmConverter.UIDtoNamespace(uid);
+            assert out != null || uid == null;
+            return out;
+        } else {
+            return (NamespaceImpl) nestedMapOLD.get(fqn);
+        }
+    }
 
     private void addNestedNamespace(NamespaceImpl nsp) {
-        //nestedNamespaces.add(nsp);
-        nestedMap.put(nsp.getQualifiedName(), nsp);
+        if (TraceFlags.USE_REPOSITORY) {
+            assert nsp != null;
+            CsmUID<CsmNamespace> uid = RepositoryUtils.put(nsp);
+            assert uid != null;
+            nestedMap.put(nsp.getQualifiedName(), uid);
+        } else {
+            nestedMapOLD.put(nsp.getQualifiedName(), nsp);
+        }
     }
      
     public void addDeclaration(CsmOffsetableDeclaration declaration) {
@@ -306,20 +320,6 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return uid;
     }   
     
-    /**
-     * Repository Serialization 
-     */
-    public void write(OutputStream out) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-    }
-    
-    /**
-     * Repository Deserialization 
-     */
-    public void read(InputStream in) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N        
-    }    
-
     private void _setProject(ProjectBase project) {
         if (TraceFlags.USE_REPOSITORY) {
             this.projectUID = UIDCsmConverter.projectToUID(project);
@@ -351,5 +351,34 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         } else {
             return parentOLD;
         }        
+    }    
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of persistent
+    
+    public void write(DataOutput output) throws IOException {
+        UIDObjectFactory theFactory = UIDObjectFactory.getDefaultFactory();
+        theFactory.writeUID(projectUID, output);
+        theFactory.writeUID(parentUID, output);
+        output.writeUTF(name);
+        output.writeUTF(qualifiedName);
+        theFactory.writeStringToUIDMap(nestedMap, output);
+        theFactory.writeStringToUIDMap(declarations, output);
+        theFactory.writeStringToUIDMap(nsDefinitions, output);
+        output.writeBoolean(global);
     }
+
+    public NamespaceImpl (DataInput input) throws IOException {
+        UIDObjectFactory theFactory = UIDObjectFactory.getDefaultFactory();
+        this.projectUID = theFactory.readUID(input);
+        this.parentUID = theFactory.readUID(input);
+        this.name = TextCache.getString(input.readUTF());
+        this.qualifiedName = QualifiedNameCache.getString(input.readUTF());
+        theFactory.readStringToUIDMap(nestedMap, input, QualifiedNameCache.getManager());
+        theFactory.readStringToUIDMap(declarations, input, TextCache.getManager());
+        theFactory.readStringToUIDMap(nsDefinitions, input, QualifiedNameCache.getManager());
+        this.global = input.readBoolean();
+    }
+    
+    
 }

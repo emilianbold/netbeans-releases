@@ -113,8 +113,7 @@ public class CCTokenContext extends TokenContext {
     public static final int ASM_ID = OR_OR_ID + 1;
     public static final int AUTO_ID = ASM_ID + 1;
     public static final int BOOLEAN_ID = AUTO_ID + 1;
-    public static final int BYTE_ID = BOOLEAN_ID + 1;
-    public static final int CHAR_ID = BYTE_ID + 1;
+    public static final int CHAR_ID = BOOLEAN_ID + 1;
     public static final int DOUBLE_ID = CHAR_ID + 1;
     public static final int ENUM_ID = DOUBLE_ID + 1;
     public static final int EXPORT_ID = ENUM_ID + 1;
@@ -130,7 +129,7 @@ public class CCTokenContext extends TokenContext {
     public static final int TYPEDEF_ID = STRUCT_ID + 1;
     public static final int TYPEID_ID = TYPEDEF_ID + 1;
     public static final int TYPENAME_ID = TYPEID_ID + 1;
-    public static final int TYPEOF_ID = TYPENAME_ID + 1;    
+    public static final int TYPEOF_ID = TYPENAME_ID + 1;
     public static final int UNSIGNED_ID = TYPEOF_ID + 1;
 
     // Void type keyword numeric-id
@@ -181,9 +180,15 @@ public class CCTokenContext extends TokenContext {
     public static final int STATIC_CAST_ID = DYNAMIC_CAST_ID + 1;
     public static final int REINTERPRET_CAST_ID = STATIC_CAST_ID + 1;
     public static final int CONST_CAST_ID = REINTERPRET_CAST_ID + 1;
+    
+    // New C keywords
+    public static final int RESTRICT_ID = CONST_CAST_ID + 1;
+    public static final int _BOOL_ID = RESTRICT_ID + 1;
+    public static final int _COMPLEX_ID = _BOOL_ID + 1;
+    public static final int _IMAGINARY_ID = _COMPLEX_ID + 1;
 
     // Preprocessor directives
-    public static final int CPPDEFINE_ID = CONST_CAST_ID + 1;
+    public static final int CPPDEFINE_ID = _IMAGINARY_ID + 1;
     public static final int CPPELIF_ID = CPPDEFINE_ID + 1;
     public static final int CPPELSE_ID = CPPELIF_ID + 1;
     public static final int CPPENDIF_ID = CPPELSE_ID + 1;
@@ -458,9 +463,6 @@ public class CCTokenContext extends TokenContext {
     public static final BaseImageTokenID BOOLEAN
     = new BaseImageTokenID("bool", BOOLEAN_ID, KEYWORDS);  // NOI18N
 
-    public static final BaseImageTokenID BYTE
-    = new BaseImageTokenID("byte", BYTE_ID, KEYWORDS);  // NOI18N
-
     public static final BaseImageTokenID CHAR
     = new BaseImageTokenID("char", CHAR_ID, KEYWORDS);  // NOI18N
 
@@ -647,6 +649,18 @@ public class CCTokenContext extends TokenContext {
 
     public static final BaseImageTokenID CONST_CAST
     = new BaseImageTokenID("const_cast", CONST_CAST_ID, KEYWORDS);  // NOI18N
+
+    public static final BaseImageTokenID RESTRICT
+    = new BaseImageTokenID("restrict", RESTRICT_ID, KEYWORDS);  // NOI18N
+
+    public static final BaseImageTokenID _BOOL
+    = new BaseImageTokenID("_Bool", _BOOL_ID, KEYWORDS);  // NOI18N
+
+    public static final BaseImageTokenID _COMPLEX
+    = new BaseImageTokenID("_Complex", _COMPLEX_ID, KEYWORDS);  // NOI18N
+
+    public static final BaseImageTokenID _IMAGINARY
+    = new BaseImageTokenID("_Imaginary", _IMAGINARY_ID, KEYWORDS);  // NOI18N
 
     // Preprocessor directives
     public static final BaseImageTokenID CPPDEFINE

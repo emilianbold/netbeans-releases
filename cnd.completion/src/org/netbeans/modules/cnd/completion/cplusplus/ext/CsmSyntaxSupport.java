@@ -664,7 +664,6 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
 
             switch (tokenID.getNumericID()) {
                 case CCTokenContext.BOOLEAN_ID:
-                case CCTokenContext.BYTE_ID:
                 case CCTokenContext.CHAR_ID:
                 case CCTokenContext.DOUBLE_ID:
                 case CCTokenContext.FLOAT_ID:

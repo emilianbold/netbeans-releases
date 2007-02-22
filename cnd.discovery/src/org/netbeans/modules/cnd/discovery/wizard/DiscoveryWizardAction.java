@@ -34,9 +34,12 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -126,12 +129,12 @@ public final class DiscoveryWizardAction extends NodeAction {
                 if (items.length>0){
                     String path =items[0].getPath();
                     StringBuffer newBase = null;
-                    if (path.startsWith("..")){
+                    if (path.startsWith("..")){ // NOI18N
                         newBase = new StringBuffer(base);
                     } else {
                         newBase = new StringBuffer();
                     }
-                    StringTokenizer st = new StringTokenizer(path, "/");
+                    StringTokenizer st = new StringTokenizer(path, "/\\"); // NOI18N
                     while(st.hasMoreTokens()){
                         String segment = st.nextToken();
                         newBase.append(File.separator);
@@ -167,7 +170,20 @@ public final class DiscoveryWizardAction extends NodeAction {
             if( pdp == null ) {
                 return null;
             }
-            projects.add(project);
+            MakeConfigurationDescriptor make = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+            if( make == null ) {
+                return null;
+            }
+            Configurations confs = make.getConfs();
+            if (confs == null) {
+                return null;
+            }
+            Configuration conf = confs.getActive();
+            if (conf instanceof MakeConfiguration){
+                if (((MakeConfiguration)conf).isMakefileConfiguration()){
+                    projects.add(project);
+                }
+            }
         }
         return projects;
     }
@@ -178,10 +194,10 @@ public final class DiscoveryWizardAction extends NodeAction {
      */
     private InstantiatingIterator getPanels() {
         WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {
-            new SelectProviderWizard(),
-            new SelectObjectFilesWizard(),
-            new ConsolidationStrategyWizard(),
-            new SelectConfigurationWizard(),
+            new SelectProviderWizard(false),
+            new SelectObjectFilesWizard(false),
+            new ConsolidationStrategyWizard(false),
+            new SelectConfigurationWizard(false),
             new RemoveUnusedWizard()
         };
         String[] steps = new String[panels.length];

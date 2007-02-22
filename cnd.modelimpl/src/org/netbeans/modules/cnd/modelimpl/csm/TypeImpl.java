@@ -19,18 +19,23 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.io.DataInput;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import java.util.*;
 
 import antlr.collections.AST;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  *
@@ -391,6 +396,38 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         } else {
             this.classifierOLD = classifier;
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of persistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        output.writeInt(pointerDepth);
+        output.writeBoolean(reference);
+        output.writeInt(arrayDepth);
+        output.writeBoolean(_const);
+        output.writeUTF(classifierText);
+        
+        PersistentUtils.writeStrings(qname, output);
+        output.writeInt(firstOffset);
+        UIDObjectFactory.getDefaultFactory().writeUID(classifierUID, output);
+    }
+
+    public TypeImpl(DataInput input) throws IOException {
+        super(input);
+        this.pointerDepth = input.readInt();
+        this.reference = input.readBoolean();
+        this.arrayDepth= input.readInt();
+        this._const = input.readBoolean();
+        this.classifierText = TextCache.getString(input.readUTF());
+        
+        this.qname = PersistentUtils.readStrings(input, TextCache.getManager());
+        this.firstOffset = input.readInt();
+        this.classifierUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        
+        assert TraceFlags.USE_REPOSITORY;
+        this.classifierOLD = null;
     }
     
 }

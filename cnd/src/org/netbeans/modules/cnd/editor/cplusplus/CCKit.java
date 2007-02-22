@@ -21,10 +21,6 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
-import java.util.List;
-import java.util.ArrayList;
-import java.lang.reflect.*;
-import javax.swing.JEditorPane;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -37,41 +33,50 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
 
-import java.io.Writer;
-import java.io.IOException;
-import java.io.CharArrayWriter;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.GotoDeclarationProvider;
 import org.openide.awt.Mnemonics;
-
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.loaders.DataObject;
-import org.netbeans.editor.*;
-import org.netbeans.editor.ext.*;
-import org.netbeans.modules.editor.*;
-import org.netbeans.api.editor.fold.FoldHierarchy;
-import org.netbeans.api.editor.fold.FoldUtilities;
-import org.netbeans.editor.ext.CompletionJavaDoc;
-
-import org.netbeans.modules.cnd.MIMENames;
-import org.netbeans.modules.cnd.editor.CppFoldManagerBase;
-
-import org.netbeans.modules.cnd.editor.spi.cplusplus.CompletionProvider;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
 import org.openide.util.NbBundle;
 
-/**
-* C++ editor kit with appropriate document
-*/
+import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.BaseKit.InsertBreakAction;
+import org.netbeans.editor.Formatter;
+import org.netbeans.editor.Syntax;
+import org.netbeans.editor.SyntaxSupport;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.Completion;
+import org.netbeans.editor.ext.CompletionJavaDoc;
+import org.netbeans.editor.ext.ExtEditorUI;
+import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.editor.ext.ExtKit.CommentAction;
+import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
+import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
+import org.netbeans.editor.ext.ExtKit.UncommentAction;
+import org.netbeans.editor.ext.ExtUtilities;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.modules.editor.NbEditorKit.NbGenerateGoToPopupAction;
 
+import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.editor.spi.cplusplus.CompletionProvider;
+import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
+import org.netbeans.modules.cnd.editor.spi.cplusplus.GotoDeclarationProvider;
+
+
+/** C++ editor kit with appropriate document */
 public class CCKit extends NbEditorKit {
 
     public String getContentType() {
         return MIMENames.CPLUSPLUS_MIME_TYPE;
     }
     
-    public void install(JEditorPane c) {
-        super.install(c);
-    }
+// Work-in-progress...
+//    public HelpCtx getHelpCtx() {
+//        System.err.println("CCKit.getHelpCts: Using JavaKit help ID");
+//        return new HelpCtx("org.netbeans.modules.editor.java.JavaKit");
+//    }
 
     public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
 	CompletionProvider cc = (CompletionProvider) Lookup.getDefault().lookup(CompletionProvider.class);

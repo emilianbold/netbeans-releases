@@ -16,9 +16,9 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-   
+
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
-                               
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -37,7 +37,7 @@ import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -49,6 +49,7 @@ public class DwarfSource implements SourceFileProperties{
     private static boolean ourGatherIncludes = true;
     private static final String CYG_DRIVE_UNIX = "/cygdrive/"; // NOI18N
     private static final String CYG_DRIVE_WIN = "\\cygdrive\\"; // NOI18N
+    private static final String CYGWIN_PATH = ":/cygwin"; // NOI18N
     private String cygwinPath;
     
     private String compilePath;
@@ -99,37 +100,59 @@ public class DwarfSource implements SourceFileProperties{
     public ItemProperties.LanguageKind getLanguageKind() {
         return language;
     }
-   
+    
+    /**
+     * Path is include path like:
+     * .
+     * ../
+     * include
+     * Returns path in unix style
+     */
+    public static String convertRelativePathToAbsolute(SourceFileProperties source, String path){
+        if ( !( path.startsWith("/") || (path.length()>1 && path.charAt(1)==':') ) ) { // NOI18N
+            if (path.equals(".")) { // NOI18N
+                path = source.getCompilePath();
+            } else {
+                path = source.getCompilePath()+File.separator+path;
+            }
+            File file = new File(path);
+            path = FileUtil.normalizeFile(file).getAbsolutePath();
+        }
+        if (Utilities.isWindows()) {
+            path = path.replace('\\', '/');
+        }
+        return path;
+    }
     
     private String fixFileName(String fileName) {
-        if (Utilities.isWindows()) {
+        if (fileName != null && Utilities.isWindows()) {
             //replace /cygdrive/<something> prefix with <something>:/ prefix:
             if (fileName.startsWith(CYG_DRIVE_UNIX)) {
                 fileName = fileName.substring(CYG_DRIVE_UNIX.length()); // NOI18N
-                fileName = "" + Character.toUpperCase(fileName.charAt(0)) + ':' + fileName.substring(1);
+                fileName = "" + Character.toUpperCase(fileName.charAt(0)) + ':' + fileName.substring(1); // NOI18N
                 fileName = fileName.replace('\\', '/');
-                cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + ":/cygwin";
+                cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + CYGWIN_PATH;
             } else {
                 int i = fileName.indexOf(CYG_DRIVE_WIN);
                 if (i > 0) {
                     //replace C:\cygdrive\c\<something> prefix with <something>:\ prefix:
                     fileName = fileName.substring(0,i)+fileName.substring(i+CYG_DRIVE_UNIX.length()+1);
                     fileName = fileName.replace('\\', '/');
-                    cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + ":/cygwin";
+                    cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + CYGWIN_PATH; // NOI18N
                 }
             }
         }
         return fileName;
     }
-
+    
     private void init(CompilationUnit cu, boolean isCPP){
         userIncludes = new ArrayList<String>();
         systemIncludes = new ArrayList<String>();
         userMacros = new HashMap<String,String>();
         includedFiles = new HashSet<String>();
-        fullName = fixFileName(cu.getSourceFileFullName());
-        compilePath = fixFileName(cu.getCompilationDir());
-        sourceName = cu.getSourceFileName();
+        fullName = PathCache.getString(fixFileName(cu.getSourceFileAbsolutePath()));
+        compilePath = PathCache.getString(fixFileName(cu.getCompilationDir()));
+        sourceName = PathCache.getString(cu.getSourceFileName());
         
         if (compilePath == null && sourceName.lastIndexOf('/')>0) {
             int i = sourceName.lastIndexOf('/');
@@ -160,12 +183,12 @@ public class DwarfSource implements SourceFileProperties{
                 String macro = option.substring(2);
                 int i = macro.indexOf(' ');
                 if (i>0){
-                    userMacros.put(macro.substring(0,i), macro.substring(i+1).trim());
+                    userMacros.put(PathCache.getString(macro.substring(0,i)), PathCache.getString(macro.substring(i+1).trim()));
                 } else {
-                    userMacros.put(macro, null);
+                    userMacros.put(PathCache.getString(macro), null);
                 }
             } else if (option.startsWith("-I")){ // NOI18N
-                String include = option.substring(2);
+                String include = PathCache.getString(option.substring(2));
                 userIncludes.add(include);
             }
         }
@@ -183,7 +206,7 @@ public class DwarfSource implements SourceFileProperties{
             String path = it.next();
             if (path.startsWith("/usr")) { // NOI18N
                 if (cygwinPath != null) {
-                    if (path.startsWith("/usr/lib/")){
+                    if (path.startsWith("/usr/lib/")){// NOI18N
                         path = cygwinPath+path.substring(4);
                     } else {
                         path = cygwinPath+path;
@@ -192,9 +215,9 @@ public class DwarfSource implements SourceFileProperties{
                 if (Utilities.isWindows()) {
                     path = path.replace('\\', '/');
                 }
-                systemIncludes.add(path);
+                systemIncludes.add(PathCache.getString(path));
             } else {
-                userIncludes.add(path);
+                userIncludes.add(PathCache.getString(path));
             }
         }
         List<String> list = grepSourceFile(fullName);
@@ -208,7 +231,7 @@ public class DwarfSource implements SourceFileProperties{
                     if (dwarfPath.endsWith(dir) && !dwarfPath.startsWith("/usr")){ // NOI18N
                         String found = dwarfPath.substring(0,dwarfPath.length()-dir.length());
                         if (!userIncludes.contains(found)) {
-                            userIncludes.add(found);
+                            userIncludes.add(PathCache.getString(found));
                         }
                     }
                 }
@@ -224,7 +247,7 @@ public class DwarfSource implements SourceFileProperties{
                 fullName = compilePath+File.separator+path;
             } else {
                 if (cygwinPath != null && path.startsWith("/usr")) { // NOI18N
-                    if (path.startsWith("/usr/lib/")){
+                    if (path.startsWith("/usr/lib/")){ // NOI18N
                         fullName = cygwinPath+path.substring(4);
                     } else {
                         fullName = cygwinPath+path;
@@ -234,7 +257,7 @@ public class DwarfSource implements SourceFileProperties{
             if (Utilities.isWindows()) {
                 fullName = fullName.replace('\\', '/');
             }
-            includedFiles.add(fullName);
+            includedFiles.add(PathCache.getString(fullName));
         }
     }
     
@@ -256,7 +279,7 @@ public class DwarfSource implements SourceFileProperties{
             if (Utilities.isWindows()) {
                 fullName = fullName.replace('\\', '/');
             }
-            includedFiles.add(fullName);
+            includedFiles.add(PathCache.getString(fullName));
         }
     }
     
@@ -274,9 +297,9 @@ public class DwarfSource implements SourceFileProperties{
             String def = entry.definition;
             int i = def.indexOf(' ');
             if (i>0){
-                userMacros.put(def.substring(0,i), def.substring(i+1).trim());
+                userMacros.put(PathCache.getString(def.substring(0,i)), PathCache.getString(def.substring(i+1).trim()));
             } else {
-                userMacros.put(def, null);
+                userMacros.put(PathCache.getString(def), null);
             }
         }
     }

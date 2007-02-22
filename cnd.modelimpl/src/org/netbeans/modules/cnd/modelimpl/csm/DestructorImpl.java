@@ -20,12 +20,15 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 
 /**
  * @author Vladimir Kvasihn
  */
-public class DestructorImpl extends MethodImpl{
+public final class DestructorImpl extends MethodImpl{
 
     public DestructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
         super(ast, cls, visibility);
@@ -43,5 +46,14 @@ public class DestructorImpl extends MethodImpl{
         return "~" + method.getContainingClass().getName(); // NOI18N
     }
     
-   
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+    }
+    
+    public DestructorImpl(DataInput input) throws IOException {
+        super(input);
+    }    
 }

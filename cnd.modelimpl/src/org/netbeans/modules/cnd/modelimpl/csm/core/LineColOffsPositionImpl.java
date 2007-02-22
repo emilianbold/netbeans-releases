@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 
 /**
@@ -66,5 +69,17 @@ public class LineColOffsPositionImpl implements CsmOffsetable.Position {
     
     public String toString() {
         return "" + getLine() + ':' + getColumn() + '/' + getOffset();
+    }
+
+    /* package */ void toStream(DataOutput output) throws IOException {
+        output.writeInt(line);
+        output.writeInt(col);
+        output.writeInt(offset);
+    }
+
+    /* package */ LineColOffsPositionImpl(DataInput input) throws IOException {
+        line = input.readInt();
+        col = input.readInt();
+        offset = input.readInt();
     }
 }       

@@ -17,18 +17,25 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/**
-* C++ editor kit with appropriate document
-*
-*/
-
+/** C++ editor kit with appropriate document */ 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
+import javax.swing.text.Document;
+import org.netbeans.editor.Syntax;
 import org.netbeans.modules.cnd.MIMENames;
 
 public class CKit extends CCKit {
 
     public String getContentType() {
         return MIMENames.C_MIME_TYPE;
+    }
+
+    /**
+     * Create new instance of a C syntax coloring scanner.
+     *
+     * @param doc document to operate on
+     */
+    public Syntax createSyntax(Document doc) {
+        return new CSyntax();
     }
 }

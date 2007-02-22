@@ -20,27 +20,41 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * CsmEnumerator implementation
  * @author Vladimir Kvashin
  */
-public class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerator> implements CsmEnumerator {
+public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerator> implements CsmEnumerator {
     private final String name;
     
-    private /*final*/ CsmEnum enumerationOLD;    
-    private /*final*/ CsmUID<CsmEnum> enumerationUID;
+    private final CsmEnum enumerationOLD;    
+    private final CsmUID<CsmEnum> enumerationUID;
 
     public EnumeratorImpl(AST ast, EnumImpl enumeration) {
         super(ast, enumeration.getContainingFile());
         this.name = ast.getText();
-        this._setEnumeration(enumeration);
+        
+        // set parent enum, do it in constructor to have final fields
+        if (TraceFlags.USE_REPOSITORY) {
+            this.enumerationUID = UIDCsmConverter.declarationToUID((CsmEnum)enumeration);
+            this.enumerationOLD = null;
+        } else {
+            this.enumerationOLD = enumeration;
+            this.enumerationUID = null;
+        }
+        
         enumeration.addEnumerator(this);
     }
     
@@ -77,12 +91,22 @@ public class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerator> imp
             return enumerationOLD;
         }
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
 
-    private void _setEnumeration(CsmEnum enumeration) {
-        if (TraceFlags.USE_REPOSITORY) {
-            this.enumerationUID = UIDCsmConverter.declarationToUID(enumeration);
-        } else {
-            this.enumerationOLD = enumeration;
-        }
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        output.writeUTF(name);
+        UIDObjectFactory.getDefaultFactory().writeUID(enumerationUID, output);
+    }
+    
+    public EnumeratorImpl(DataInput input) throws IOException {
+        super(input);
+        this.name = TextCache.getString(input.readUTF());
+        this.enumerationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        
+        assert TraceFlags.USE_REPOSITORY;
+        this.enumerationOLD = null;
     }
 }

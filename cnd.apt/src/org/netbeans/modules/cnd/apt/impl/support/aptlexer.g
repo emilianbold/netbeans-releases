@@ -37,7 +37,7 @@ options {
     k = 2;
     exportVocab = APTGenerated;
     testLiterals = false;
-    charVocabulary = '\u0003'..'\u1fff';  // NOI18N
+    charVocabulary = '\u0003'..'\uffff';  // NOI18N
 }
 
 // DW 4/11/02 put in to support manual hoisting

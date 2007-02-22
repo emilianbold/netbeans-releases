@@ -290,5 +290,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         return getMembers();
     }
     
+    public void dispose() {
+        _clearMembers();
+        super.dispose();
+    }    
+    
+    private void _clearMembers() {
+        if (TraceFlags.USE_REPOSITORY) {
+            RepositoryUtils.remove(members);
+        } else {
+            membersOLD.clear();
+        }        
+    }    
 }
 

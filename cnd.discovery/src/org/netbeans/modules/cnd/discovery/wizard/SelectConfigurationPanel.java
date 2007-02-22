@@ -73,15 +73,9 @@ public final class SelectConfigurationPanel extends JPanel {
                 updateListModels();
             }
         });
-        showNodeConfiguration.addActionListener(new ActionListener(){
+        showInherited.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                showResulting = false;
-                updateListModels();
-            }
-        });
-        showResultingConfiguration.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e) {
-                showResulting = true;
+                showResulting = showInherited.isSelected();
                 updateListModels();
             }
         });
@@ -133,7 +127,6 @@ public final class SelectConfigurationPanel extends JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        presentationGroup = new javax.swing.ButtonGroup();
         jSplitPane1 = new javax.swing.JSplitPane();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -152,8 +145,7 @@ public final class SelectConfigurationPanel extends JPanel {
         macrosList = new javax.swing.JList();
         macroInherate = new javax.swing.JCheckBox();
         jPanel5 = new javax.swing.JPanel();
-        showNodeConfiguration = new javax.swing.JRadioButton();
-        showResultingConfiguration = new javax.swing.JRadioButton();
+        showInherited = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -265,27 +257,16 @@ public final class SelectConfigurationPanel extends JPanel {
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
-        presentationGroup.add(showNodeConfiguration);
-        showNodeConfiguration.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(showNodeConfiguration, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle").getString("ShowNodeConfigurationLabel"));
-        showNodeConfiguration.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        showNodeConfiguration.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(showInherited, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle").getString("ShowInheritedConfigurationName"));
+        showInherited.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        showInherited.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
-        jPanel5.add(showNodeConfiguration, gridBagConstraints);
-
-        presentationGroup.add(showResultingConfiguration);
-        org.openide.awt.Mnemonics.setLocalizedText(showResultingConfiguration, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle").getString("ShowResultingConfigurationLabel"));
-        showResultingConfiguration.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        showResultingConfiguration.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel5.add(showResultingConfiguration, gridBagConstraints);
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel5.add(showInherited, gridBagConstraints);
 
         add(jPanel5, java.awt.BorderLayout.SOUTH);
 
@@ -304,8 +285,10 @@ public final class SelectConfigurationPanel extends JPanel {
         }
         String root = wizardDescriptor.getRootFolder();
         if (wizardDescriptor.isInvokeProvider()) {
-            buildModel(root, wizardDescriptor.getProvider());
+            buildModel(root, wizardDescriptor.getProvider(), wizardDescriptor);
             wizardDescriptor.setInvokeProvider(false);
+            // clear result for next step
+            wizardDescriptor.setAdditionalFiles(null);
         } else if (changedConsolidation){
             if (projectConfigurations != null) {
                 for(ProjectConfiguration project : projectConfigurations){
@@ -326,13 +309,13 @@ public final class SelectConfigurationPanel extends JPanel {
         }
     }
     
-    private void buildModel(String rootFolder, DiscoveryProvider provider){
-        List<Configuration> configs = provider.getConfigurations(new ProjectProxy() {
+    private void buildModel(String rootFolder, DiscoveryProvider provider, final DiscoveryDescriptor wizardDescriptor){
+        List<Configuration> configs = provider.analyze(new ProjectProxy() {
             public boolean createSubProjects() {
                 return false;
             }
             public Object getProject() {
-                return null;
+                return wizardDescriptor.getProject();
             }
         });
         ConfigurationTreeModel model = new ConfigurationTreeModel();
@@ -358,7 +341,14 @@ public final class SelectConfigurationPanel extends JPanel {
         wizardDescriptor.setConfigurations(projectConfigurations);
         wizardDescriptor.setIncludedFiles(includedFiles);
     }
-    
+
+    boolean isValid(DiscoveryDescriptor settings) {
+        if (projectConfigurations == null || projectConfigurations.isEmpty()) {
+            return false;
+        }
+        return projectConfigurations.get(0).getFiles().size()>0;
+    }
+
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTree configurationTree;
@@ -379,9 +369,7 @@ public final class SelectConfigurationPanel extends JPanel {
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JCheckBox macroInherate;
     private javax.swing.JList macrosList;
-    private javax.swing.ButtonGroup presentationGroup;
-    private javax.swing.JRadioButton showNodeConfiguration;
-    private javax.swing.JRadioButton showResultingConfiguration;
+    private javax.swing.JCheckBox showInherited;
     // End of variables declaration//GEN-END:variables
     
     

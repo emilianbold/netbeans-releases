@@ -23,9 +23,15 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * CsmInheritance implementation
@@ -129,4 +135,27 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
             this.ancestorCacheOLD = ancestorCache;
         }        
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of persistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        PersistentUtils.writeVisibility(this.visibility, output);
+        output.writeBoolean(virtual);
+        output.writeUTF(ancestorName);        
+
+        // save cache
+        UIDObjectFactory.getDefaultFactory().writeUID(ancestorCacheUID, output);        
+    }
+
+    public InheritanceImpl(DataInput input) throws IOException {
+        super(input);
+        this.visibility = PersistentUtils.readVisibility(input);
+        this.virtual = input.readBoolean();
+        this.ancestorName = TextCache.getString(input.readUTF());
+
+        // restore cached value
+        this.ancestorCacheUID = UIDObjectFactory.getDefaultFactory().readUID(input);        
+    }    
 }

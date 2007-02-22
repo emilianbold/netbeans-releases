@@ -19,43 +19,42 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.modelimpl.csm.core.LineColOffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 
 /**
  * Implements CsmInclude
  * @author Vladimir Kvasihn,
  *         Vladimir Voskresensky
  */
-public class IncludeImpl extends LineColOffsetableBase implements CsmInclude {
-
-    private String text;
-    private String name;
-    private boolean system;
+public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implements CsmInclude {
+    private final String name;
+    private final boolean system;
     
     // only one of includeFileOLD/includeFileUID must be used (based on USE_REPOSITORY)   
-    private CsmFile includeFileOLD;
-    private CsmUID<CsmFile> includeFileUID;
-
-    public IncludeImpl(String name, boolean system, CsmFile includeFile) {
-        this(name, system, includeFile, null, null);
-    }
-
-    public IncludeImpl(String name, boolean system, CsmFile includeFile, CsmOffsetable inclPos) {
-        this(name, system, includeFile, null, inclPos);
-    }
-    
-    public IncludeImpl(CsmInclude incl, CsmFile containingFile) {
-        this(incl.getIncludeName(), incl.isSystem(), incl.getIncludeFile(), containingFile, incl);
-    }
+    private final CsmFile includeFileOLD;
+    private final CsmUID<CsmFile> includeFileUID;
     
     public IncludeImpl(String name, boolean system, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
         super(containingFile, inclPos);
-        this.name = name;
+        this.name = FileNameCache.getString(name);
         this.system = system;
-        this._setIncludeFile(includeFile);
+        if (TraceFlags.USE_REPOSITORY) {
+            this.includeFileUID = UIDCsmConverter.fileToUID(includeFile);
+            assert (includeFileUID != null || includeFile == null);
+            this.includeFileOLD = null;// to prevent error with "final"            
+        } else {
+            this.includeFileOLD = includeFile;
+            this.includeFileUID = null;// to prevent error with "final"            
+        }
     }
     
     public CsmFile getIncludeFile() {
@@ -106,15 +105,6 @@ public class IncludeImpl extends LineColOffsetableBase implements CsmInclude {
         retValue = 31*retValue + getIncludeName().hashCode();
         return retValue;
     }
-//
-//    public String getText() {
-//        if (text == null) {
-//            char beg = isSystem() ? '<' : '"';
-//            char end = isSystem() ? '>' : '"';
-//            text = beg + getIncludeName() + end;   
-//        }
-//        return text;
-//    }
 
     private CsmFile _getIncludeFile() {
         if (TraceFlags.USE_REPOSITORY) {
@@ -126,12 +116,24 @@ public class IncludeImpl extends LineColOffsetableBase implements CsmInclude {
         }
     }
 
-    private void _setIncludeFile(CsmFile includeFile) {
-        if (TraceFlags.USE_REPOSITORY) {
-            includeFileUID = UIDCsmConverter.fileToUID(includeFile);
-            assert (includeFileUID != null || includeFile == null);
-        } else {
-            this.includeFileOLD = includeFile;
-        }
+    protected CsmUID createUID() {
+        return UIDUtilities.createIncludeUID(this);
     }
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        output.writeUTF(name);
+        output.writeBoolean(system);
+        UIDObjectFactory.getDefaultFactory().writeUID(includeFileUID, output);
+    }
+
+    /*package*/ IncludeImpl(DataInput input) throws IOException {
+        super(input);
+        name = FileNameCache.getString(input.readUTF());
+        system = input.readBoolean();
+        includeFileUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        
+        assert TraceFlags.USE_REPOSITORY;
+        this.includeFileOLD = null;// to prevent error with "final"        
+    }    
 }

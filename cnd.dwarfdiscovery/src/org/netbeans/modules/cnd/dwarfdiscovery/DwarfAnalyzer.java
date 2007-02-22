@@ -50,7 +50,7 @@ public class DwarfAnalyzer {
     }
     
     private static void dumpProject(DwarfProvider provider, ProjectProxy project){
-        List<Configuration> confs = provider.getConfigurations(project);
+        List<Configuration> confs = provider.analyze(project);
         for (Iterator<Configuration> it = confs.iterator(); it.hasNext();) {
             Configuration conf = it.next();
             List<ProjectProperties> langList = conf.getProjectConfiguration();

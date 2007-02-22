@@ -25,12 +25,18 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.uid.CsmObjectAccessor;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  *
@@ -40,32 +46,51 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     
     private String name;
     private final CsmType returnType;
-    private final List/*<CsmParameter>*/  parameters;
+    private final List/*<CsmParameter>*/  parametersOLD;
+    private final List<CsmUID<CsmParameter>>  parameters;
     private String signature;
     
     // only one of scopeOLD/scopeAccessor must be used (based on USE_REPOSITORY)
-    private /*final*/ CsmScope scopeOLD;
-    private /*final*/ CsmObjectAccessor scopeAccessor;
+    private final CsmScope scopeOLD;
+    private final CsmUID<CsmScope> scopeUID;
 
     private final String[] rawName;
     
     /** see comments to isConst() */
-    private final byte _const;
-
-//    public FunctionImpl(String name, CsmFile file, int start, int end) {
-//        super(file, start, end);
-//        this.name = name;
-//        registerInProject();
-//    }
+    private final boolean _const;
     
     public FunctionImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file);
-        _setScope(scope);
+
+        // set scope, do it in constructor to have final fields
+        if (TraceFlags.USE_REPOSITORY) {
+            this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+            assert (this.scopeUID != null || scope == null);
+            this.scopeOLD = null;
+        } else {
+            this.scopeOLD = scope;
+            this.scopeUID = null;
+        }
+        
         name = initName(ast);
         rawName = AstUtil.getRawNameInChildren(ast);
         _const = initConst(ast);
         returnType = initReturnType(ast);
-        parameters = initParameters(ast);
+
+        // set parameters, do it in constructor to have final fields
+        List parameters = initParameters(ast);
+        if (TraceFlags.USE_REPOSITORY) {
+            if (parameters == null) {
+                this.parameters = null;
+            } else {
+                this.parameters = RepositoryUtils.put(parameters);
+            }
+            this.parametersOLD = null;
+        } else {
+            this.parametersOLD = parameters;
+            this.parameters = null;
+        }
+        
         if( name == null ) {
             name = "<null>"; // just to avoid NPE // NOI18N
         }
@@ -80,20 +105,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     protected String initName(AST node) {
         return findFunctionName(node);
     }
-    
-    /*private AST findLastID(AST ast) {
-        return getQialifiedId();
-//        AST last = null;
-//        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
-//            int type = token.getType();
-//            if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
-//                last = token;
-//            } else if ( type == CPPTokenTypes.COLON ){
-//                break;
-//            }
-//        }
-//        return last;
-    }*/
     
     private static String extractName(AST token){
 	int type = token.getType();
@@ -302,7 +313,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
     
     public List/*<CsmParameter>*/  getParameters() {
-        return parameters;
+        return _getParameters();
     }
     
     public CsmScope getScope() {
@@ -346,17 +357,18 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         if( scope instanceof MutableDeclarationsContainer ) {
             ((MutableDeclarationsContainer) scope).removeDeclaration(this);
         }
+        _disposeParameters();
     }
     
-    private static byte initConst(AST node) {
-        byte ret = 0;
+    private static boolean initConst(AST node) {
+        boolean ret = false;
         AST token = node.getFirstChild();
         while( token != null &&  token.getType() != CPPTokenTypes.CSM_QUALIFIED_ID) {
             token = token.getNextSibling();
         }
         while( token != null ) {
             if( token.getType() == CPPTokenTypes.LITERAL_const ) {
-                ret = 1;
+                ret = true;
                 break;
             }
             token = token.getNextSibling();
@@ -371,26 +383,72 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
      * Thereform it's moved here as a protected method.
      */
     protected boolean isConst() {
-        return _const > 0;
+        return _const;
     }
 
     private CsmScope _getScope() {
         if (TraceFlags.USE_REPOSITORY) {
-            CsmScope scope = UIDCsmConverter.accessorToScope(this.scopeAccessor);
-            assert (scope != null || scopeAccessor == null);
-            return scope;
+            CsmScope out = UIDCsmConverter.UIDToScope(this.scopeUID);
+            assert (out != null || this.scopeUID == null);
+            return out;
         } else {
             return scopeOLD;
         }
     }
-    
-    private void _setScope(CsmScope scope) {
+
+    private List _getParameters() {
         if (TraceFlags.USE_REPOSITORY) {
-            this.scopeAccessor = UIDCsmConverter.scopeToAccessor(scope);
-            assert (scopeAccessor != null || scope == null);
+            if (this.parameters == null) {
+                return Collections.EMPTY_LIST;
+            } else {
+                List<CsmParameter> out = UIDCsmConverter.UIDsToDeclarations(parameters);
+                return out;
+            }
         } else {
-            this.scopeOLD = scope;
+            return parametersOLD;
+        }
+    }
+
+    private void _disposeParameters() {
+        if (TraceFlags.USE_REPOSITORY) {
+            if (parameters != null) {
+                RepositoryUtils.remove(parameters);
+            }
+        } else {
+            this.parametersOLD.clear();
         }
     }
     
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        output.writeUTF(this.name);
+        PersistentUtils.writeType(this.returnType, output);
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        factory.writeUIDCollection(this.parameters, output);
+        factory.writeUID(this.scopeUID, output);
+        PersistentUtils.writeStrings(this.rawName, output);
+        output.writeBoolean(this._const);
+        
+        output.writeUTF(this.signature);
+    }
+    
+    public FunctionImpl(DataInput input) throws IOException {
+        super(input);
+        this.name = TextCache.getString(input.readUTF());
+        this.returnType = PersistentUtils.readType(input);
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        this.parameters = (List<CsmUID<CsmParameter>>) factory.readUIDCollection(new ArrayList<CsmUID<CsmParameter>>(), input);
+        this.scopeUID =factory.readUID(input);
+        this.rawName = PersistentUtils.readStrings(input, TextCache.getManager());
+        this._const = input.readBoolean();
+        
+        assert TraceFlags.USE_REPOSITORY;
+        parametersOLD = null;
+        this.scopeOLD = null;
+        
+        this.signature = QualifiedNameCache.getString(input.readUTF());
+    }    
 }

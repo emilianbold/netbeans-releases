@@ -22,13 +22,15 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * CsmConstructor implementation
  * @author Vladimir Kvasihn
  */
-public class ConstructorImpl extends MethodImpl<CsmConstructor> implements CsmConstructor {
+public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements CsmConstructor {
 
     public ConstructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
         super(ast, cls, visibility);
@@ -42,5 +44,15 @@ public class ConstructorImpl extends MethodImpl<CsmConstructor> implements CsmCo
     public CsmType getReturnType() {
         return NoType.instance();
     }
-        
+
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+    }
+    
+    public ConstructorImpl(DataInput input) throws IOException {
+        super(input);
+    }    
 }

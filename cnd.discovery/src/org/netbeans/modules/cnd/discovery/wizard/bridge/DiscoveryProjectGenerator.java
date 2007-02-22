@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.discovery.wizard.bridge;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,13 +38,14 @@ import org.netbeans.modules.cnd.discovery.wizard.checkedtree.AbstractRoot;
 import org.netbeans.modules.cnd.discovery.wizard.checkedtree.UnusedFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Alexander Simon
  */
 public class DiscoveryProjectGenerator {
-    private static boolean DEBUG = false;
+    private static boolean DEBUG = Boolean.getBoolean("cnd.discovery.trace.project_update"); // NOI18N
     private ProjectBridge projectBridge;
     private DiscoveryDescriptor wizard;
     private String baseFolder;
@@ -78,15 +80,17 @@ public class DiscoveryProjectGenerator {
         Set<String> used = new HashSet<String>();
         List<String> list = wizard.getIncludedFiles();
         for (String name : list){
-            if (name.startsWith(base)){
+            String path = name;
+            if (Utilities.isWindows()) {
+                path = path.replace('\\', '/');
+            }
+            if (path.startsWith(base)){
                 used.add(name);
             }
         }
         list = wizard.getAdditionalFiles();
         for (String name : list){
-            if (name.startsWith(base)){
-                used.add(name);
-            }
+            used.add(name);
         }
         AbstractRoot additional = UnusedFactory.createRoot(used);
         if (used.size()>0) {
@@ -107,6 +111,7 @@ public class DiscoveryProjectGenerator {
         for (Item item : projectBridge.getAllSources()){
             sorted.put(item.getPath(),item);
         }
+        Map<String,Item> unused = new HashMap<String,Item>();
         for (Map.Entry<String,Item> entry : sorted.entrySet()){
             String path = entry.getKey();
             Item item = entry.getValue();
@@ -115,6 +120,7 @@ public class DiscoveryProjectGenerator {
                 Folder parent = item.getFolder();
                 if (DEBUG) System.out.println("Remove Item "+path); // NOI18N
                 parent.removeItem(item);
+                unused.put(path,item);
                 while (parent.getElements().size() == 0) {
                     Folder parentFolder = parent.getParent();
                     if (DEBUG) System.out.println("Remove Empty Folder "+parent.getName()); // NOI18N
@@ -126,7 +132,45 @@ public class DiscoveryProjectGenerator {
                 }
             }
         }
+        createUnusedFilder(unused);
     }
+    
+    private void createUnusedFilder(Map<String,Item> unused){
+        if (unused.size()==0){
+            return;
+        }
+        Folder sourceRoot = projectBridge.getRoot();
+        String name = "unused_files"; // NOI18N
+        Folder added = sourceRoot.findFolderByName("unused_files"); // NOI18N
+        if (added == null) {
+            added = projectBridge.createFolder(sourceRoot, name);
+            sourceRoot.addFolder(added);
+        }
+        AbstractRoot additional = UnusedFactory.createRoot(unused.keySet());
+        addFolder(added, additional, unused);
+    }
+
+    private void addFolder(Folder folder, AbstractRoot used, Map<String,Item> unused){
+        String name = used.getName();
+        Folder added = folder.findFolderByName(name);
+        if (added == null) {
+            added = projectBridge.createFolder(folder, name);
+            folder.addFolder(added);
+        }
+        for(AbstractRoot sub : used.getChildren()){
+            addFolder(added, sub, unused);
+        }
+        List<String> files = used.getFiles();
+        if (files != null) {
+            for(String file : files){
+                Item item = unused.get(file);
+                if (item != null) {
+                    added.addItem(item);
+                }
+            }
+        }
+    }
+    
     
     private void addFolder(Folder folder, AbstractRoot used){
         String name = used.getName();

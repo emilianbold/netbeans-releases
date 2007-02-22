@@ -19,20 +19,20 @@
 
 package org.netbeans.modules.cnd.dwarfdump.reader;
 
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.dwarfdump.FileMagic;
+import org.netbeans.modules.cnd.dwarfdump.Magic;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.elf.ElfHeader;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
-import org.netbeans.modules.cnd.dwarfdump.section.DwarfDebugInfoSection;
 import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
 import org.netbeans.modules.cnd.dwarfdump.elf.ProgramHeaderTable;
 import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
 import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.HashMap;
 
 /**
@@ -48,10 +48,13 @@ public class ElfReader extends ByteStreamReader {
     private HashMap<String, Integer> sectionsMap = new HashMap<String, Integer>();
     private StringTableSection stringTableSection = null;
     private long shiftIvArchive = 0;
+    private long lengthIvArchive = 0;
     
-    public ElfReader(String fname) throws FileNotFoundException, IOException {
-        super(fname);
-        readHeader();
+    public ElfReader(String fname, RandomAccessFile reader, Magic magic, long shift, long length) throws IOException {
+        super(fname, reader);
+        shiftIvArchive = shift;
+        lengthIvArchive = length;
+        readHeader(magic);
         readProgramHeaderTable();
         readSectionHeaderTable();
         
@@ -69,7 +72,7 @@ public class ElfReader extends ByteStreamReader {
             sectionsMap.put(getSectionName(i), i);
         }
     }
-    
+        
     public String getSectionName(int sectionIdx) {
         if (!isCoffFormat) {
             if (stringTableSection == null) {
@@ -83,38 +86,24 @@ public class ElfReader extends ByteStreamReader {
         }
     }
     
-    public void readHeader() throws WrongFileFormatException, IOException {
+    public void readHeader(Magic magic) throws WrongFileFormatException, IOException {
         elfHeader = new ElfHeader();
-        
+        seek(shiftIvArchive);
         byte[] bytes = new byte[16];
         read(bytes);
-        if (isElfMagic(bytes)) {
-            readElfHeader(bytes);
-            return;
-        } else if (isCoffMagic(bytes)) {
-            readCoffHeader(0);
-            return;
-        } else if (isExeMagic(bytes)) {
-            readPeHeader(true);
-            return;
-        } else if (isPeMagic(bytes)) {
-            readPeHeader(false);
-            return;
-        } else if (isArchiveMagic(bytes)) {
-            skipFirstHeader();
-            List<Long> offsets = getElfTable();
-            if (offsets.size()==0) {
-                throw new WrongFileFormatException("Not an ELF file"); // NOI18N
-            }
-            shiftIvArchive = offsets.get(0).longValue();
-            seek(shiftIvArchive);
-            read(bytes);
-            if (isElfMagic(bytes)) {
+        switch (magic) {
+            case Elf:
                 readElfHeader(bytes);
-            } else if (isCoffMagic(bytes)) {
+                return;
+            case Coff:
                 readCoffHeader(shiftIvArchive);
-            }
-            return;
+                return;
+            case Exe:
+                readPeHeader(true);
+                return;
+            case Pe:
+                readPeHeader(false);
+                return;
         }
         throw new WrongFileFormatException("Not an ELF/PE/COFF file"); // NOI18N
     }
@@ -144,27 +133,6 @@ public class ElfReader extends ByteStreamReader {
         elfHeader.e_shstrndx  = readShort();
     }
     
-    private boolean isExeMagic(byte[] bytes){
-        return bytes[0] == 'M' && bytes[1] == 'Z';
-    }
-
-    private boolean isPeMagic(byte[] bytes){
-        return bytes[0] == 'P' && bytes[1] == 'E' && bytes[2] == 0 && bytes[3] == 0;
-    }
-
-    private boolean isCoffMagic(byte[] bytes){
-        return bytes[0] == 0x4c && bytes[1] == 0x01;
-    }
-    
-    private boolean isElfMagic(byte[] bytes){
-        return bytes[0] == 0x7f && bytes[1] == 'E' && bytes[2] == 'L' && bytes[3] == 'F';
-    }
-    
-    private boolean isArchiveMagic(byte[] bytes){
-        return bytes[0] == '!' && bytes[1] == '<' && bytes[2] == 'a' && bytes[3] == 'r' &&
-                bytes[4] == 'c' && bytes[5] == 'h' && bytes[6] == '>' && bytes[7] == '\n';
-    }
-    
     private void readPeHeader(boolean isExe) throws IOException{
         elfHeader.elfData = LSB;
         elfHeader.elfClass = ElfConstants.ELFCLASS32;
@@ -177,7 +145,7 @@ public class ElfReader extends ByteStreamReader {
             seek(peOffset);
             byte[] bytes = new byte[4];
             read(bytes);
-            if (!isPeMagic(bytes)) {
+            if (!FileMagic.isPeMagic(bytes)) {
                 throw new WrongFileFormatException("Not an ELF/PE/COFF file"); // NOI18N
             }
         }
@@ -197,10 +165,10 @@ public class ElfReader extends ByteStreamReader {
         //skip time stump
         readInt();
         // read string table
-        int symbolTableOffset = readInt();
+        long symbolTableOffset = shiftIvArchive+readInt();
         int symbolTableEntries = readInt();
-        int stringTableOffset = symbolTableOffset+symbolTableEntries*18;
-        int stringTableLength = (int)length() - stringTableOffset;
+        long stringTableOffset = symbolTableOffset+symbolTableEntries*18;
+        int stringTableLength = (int)(shiftIvArchive + lengthIvArchive - stringTableOffset);
         long pointer = getFilePointer();
         seek(stringTableOffset);
         byte[] strings = new byte[stringTableLength];
@@ -227,59 +195,6 @@ public class ElfReader extends ByteStreamReader {
         }
         return str.toString();
     }
-    
-    private void skipFirstHeader() throws IOException{
-        byte[] next = new byte[52];
-        read(next);
-        int length = 0;
-        for (int i = 0; i < 10; i++){
-            byte c = next[i+40];
-            if (c == ' ' ){
-                break;
-            }
-            length*=10;
-            length+=(c-'0');
-        }
-        // Skip first header
-        skipBytes(length);
-    }
-    
-    private List<Long> getElfTable() throws IOException{
-        byte[] next = new byte[60];
-        ArrayList<Long> offsets= new ArrayList<Long>();
-        while(true) {
-            if (getFilePointer()+60 >= length()){
-                break;
-            }
-            read(next);
-            int length = 0;
-            for (int i = 0; i < 10; i++){
-                byte c = next[i+48];
-                if (c == ' '){
-                    break;
-                }
-                length*=10;
-                length+=(c-'0');
-            }
-            //System.out.println(new String(next, 0, 16));
-            if (next[0] == '/') {
-                // skip;
-                skipBytes(length);
-                continue;
-            } else if (next[0] == '\n') {
-                break;
-            }
-            long pointer = getFilePointer();
-            byte[] bytes = new byte[4];
-            read(bytes);
-            if (isElfMagic(bytes)) {
-                offsets.add(new Long(pointer));
-            }
-            skipBytes(length-4);
-        }
-        return offsets;
-    }
-    
     
     private void readProgramHeaderTable() {
         // TODO: Add code
@@ -346,7 +261,7 @@ public class ElfReader extends ByteStreamReader {
         int phisicalAddres = readInt();
         int virtualAddres = readInt();
         h.sh_size = readInt();
-        h.sh_offset = readInt();
+        h.sh_offset = shiftIvArchive + readInt();
         int relocationOffset = readInt();
         int lineNumberOffset = readInt();
         int mumberRelocations = readShort();

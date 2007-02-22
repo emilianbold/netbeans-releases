@@ -7,8 +7,8 @@ import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -198,13 +198,23 @@ public final class SelectProviderPanel extends JPanel {
     private javax.swing.JButton rootFolderButton;
     // End of variables declaration//GEN-END:variables
 
-    void read(DiscoveryDescriptor wizardDescriptor) {
+    void read(final DiscoveryDescriptor wizardDescriptor) {
         Lookup.Result providers = Lookup.getDefault().lookup(new Lookup.Template(DiscoveryProvider.class));
         DefaultComboBoxModel model = (DefaultComboBoxModel)prividersComboBox.getModel();
         model.removeAllElements();
+        ProjectProxy proxy = new ProjectProxy() {
+            public boolean createSubProjects() {
+                return false;
+            }
+            public Object getProject() {
+                return wizardDescriptor.getProject();
+            }
+        };
         for(Object p : providers.allInstances()){
             DiscoveryProvider provider = (DiscoveryProvider)p;
-            model.addElement(new ProviderItem(provider));
+            if (provider.isApplicable(proxy)) {
+                model.addElement(new ProviderItem(provider));
+            }
         }
         String path = wizardDescriptor.getRootFolder();
         if (Utilities.isWindows()) {

@@ -18,7 +18,6 @@ package antlr;
  * @see antlr.CharQueue
  */
 
-import java.io.IOException;
 import java.io.Reader;
 
 // SAS: Move most functionality into InputBuffer -- just the file-specific
@@ -27,24 +26,6 @@ import java.io.Reader;
 public class CharBuffer extends InputBuffer {
     /** Create a character buffer */
     public CharBuffer(Reader input) { // SAS: for proper text i/o
-        int readChunkSize = INITIAL_BUFFER_SIZE;
-        try {
-            int numRead=0;
-            int pos = 0;
-            do {
-                    if ( pos+readChunkSize > data.length ) { // overflow?
-                        resizeData(0);
-                    }
-                    numRead = input.read(data, pos, readChunkSize);
-                    pos += numRead;
-            } while (numRead==readChunkSize);
-
-            if ( pos == data.length ) { //unable to append EOF
-                resizeData(1);
-            }
-            data[pos] = CharScanner.EOF_CHAR; // Append EOF
-	} catch (IOException io) {
-            System.err.println("tmp error: can't load input: " + io);
-        }
+        super(input);
     }
 }

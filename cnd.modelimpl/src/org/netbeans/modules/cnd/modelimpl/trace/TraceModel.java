@@ -241,10 +241,14 @@ public class TraceModel {
 			case 'e':	System.setErr(System.out); break;
 			case 'w':	showAstWindow = true; break;
 			case 'a':	dumpAst = true; break;
-			case 'm':	dumpModel = true; break;
+			case 'm':	dumpModel = true; dumpFileOnly = false; break; // -m overrides -f
 			case 'M':   showMemoryUsage = true; break;
 			case 'u':   testUniqueName = true; break;
-			case 'f':   dumpModel = true; dumpFileOnly = true; break;
+			case 'f':   if( ! dumpModel ) { // do not ovverride -m
+					dumpModel = true; 
+					dumpFileOnly = true; 
+				    } 
+				    break;
 			case 't':	showTime = true; break;
 			//            case 'L':   testLexer = true; break;
 			case 'r':   recursive = true; break;

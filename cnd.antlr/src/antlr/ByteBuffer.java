@@ -19,25 +19,11 @@ package antlr;
  */
 // SAS: added this class to handle Binary input w/ FileInputStream
 
-import java.io.IOException;
 import java.io.InputStream;
 
 public class ByteBuffer extends InputBuffer {
     /** Create a character buffer */
     public ByteBuffer(InputStream input) {
-        try {
-            int pos = 0;
-            char curChar;
-            do {
-                if (pos == data.length) {
-                    resizeData(0);
-                }
-                curChar = (char) input.read();
-                data[pos] = curChar;
-                pos++;
-            } while (curChar != CharScanner.EOF_CHAR);
-	} catch (IOException io) {
-            System.err.println("tmp error: can't load input: " + io);
-        }
+        super(input);
     }
 }

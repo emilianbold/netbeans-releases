@@ -53,7 +53,17 @@ public interface DiscoveryProvider {
     ProviderProperty getProperty(String key);
     
     /**
+     * Is analyzer applicable to project
+     */
+    boolean isApplicable(ProjectProxy project);
+
+    /**
+     * Can analyze project
+     */
+    boolean canAnalyze(ProjectProxy project);
+
+    /**
      * Analyze project and returns list of configuration
      */
-    List<Configuration> getConfigurations(ProjectProxy project);
+    List<Configuration> analyze(ProjectProxy project);
 }

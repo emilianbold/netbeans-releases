@@ -111,6 +111,19 @@ public class CompilationUnit {
         
         return result;
     }
+
+    public String getSourceFileAbsolutePath() {
+        String result = null;
+        
+        String dir = getCompilationDir();
+        if (dir != null) {
+            result = new File(getCompilationDir() + File.separator + getSourceFileName()).getAbsolutePath();
+        } else {
+            result = new File(getSourceFileName()).getAbsolutePath();
+        }
+        
+        return result;
+    }
     
     public String getSourceLanguage() {
         if (root != null) {

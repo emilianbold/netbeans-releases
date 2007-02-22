@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,4 +53,15 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public abstract String getText() throws IOException;
     public abstract InputStream getInputStream() throws IOException;
     public abstract boolean isFileBased();
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
+    
+    protected void write(DataOutput output) throws IOException {
+        output.writeUTF(this.absPath);
+    }  
+    
+    protected AbstractFileBuffer(DataInput input) throws IOException {
+        this.absPath = FilePathCache.getString(input.readUTF());
+    }    
 }

@@ -19,9 +19,13 @@
 
 package org.netbeans.modules.cnd.modelimpl.uid;
 
+import java.io.DataInput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmBuiltIn;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -65,20 +69,19 @@ public class UIDUtilities {
             } else if (declaration instanceof CsmClassifier) {
                 return new ClassifierUID(declaration);
             } else {
-                return new OffsetableDeclarationUID(declaration);
+                return new DeclarationUID(declaration);
             }
         }
     }
-
-//    public static <T extends CsmOffsetableDeclaration> CsmUID<T> createClassifierUID(T classifier, CsmProject prj) {
-//        assert (! (classifier instanceof CsmBuiltIn)) : "built-in have own UIDs";
-//        if (classifier.getName().length() == 0) {
-//            return handleUnnamedDeclaration((CsmOffsetableDeclaration)classifier);
-//        } else {
-//            return new ClassifierUID(classifier, prj);
-//        }
-//    }
     
+    public static CsmUID<CsmMacro> createMacroUID(CsmMacro macro) {
+        return new MacroUID(macro);
+    }    
+
+    public static CsmUID<CsmInclude> createIncludeUID(CsmInclude incl) {
+        return new IncludeUID(incl);
+    }    
+
     private static CsmUID handleUnnamedDeclaration(CsmOffsetableDeclaration decl) {
         if (TraceFlags.TRACE_UNNAMED_DECLARATIONS) {
             System.err.print("\n\ndeclaration with empty name '" + decl.getUniqueName() + "'");
@@ -87,7 +90,7 @@ public class UIDUtilities {
         if (decl instanceof CsmClassifier) {
             return new UnnamedClassifierUID((CsmClassifier)decl);
         } else {
-            return new ObjectBasedUID(decl);
+            return new UnnamedOffsetableDeclarationUID(decl);
         }
     }
     //////////////////////////////////////////////////////////////////////////
@@ -101,8 +104,8 @@ public class UIDUtilities {
             super(KeyUtilities.createProjectKey(project));
         }
         
-        /* package */ ProjectUID (){
-            
+        /* package */ ProjectUID (DataInput aStream) throws IOException {
+            super(aStream);
         }
     }    
   
@@ -114,8 +117,8 @@ public class UIDUtilities {
             super(KeyUtilities.createNamespaceKey(ns));
         }
         
-        /* package */ NamespaceUID () {
-            
+        /* package */ NamespaceUID (DataInput aStream) throws IOException {
+            super(aStream);
         }
     }    
     
@@ -127,21 +130,21 @@ public class UIDUtilities {
             super(KeyUtilities.createFileKey(file));
         }
         
-        /* package */ FileUID () {
-            
+        /* package */ FileUID (DataInput aStream) throws IOException {
+             super(aStream);
         }
     }
     
     /**
-     * UID for CsmDeclaration
+     * base UID for CsmDeclaration
      */
-    private static class OffsetableDeclarationUID<T extends CsmOffsetableDeclaration> extends KeyBasedUID<T> {
-        public OffsetableDeclarationUID(T declaration) {
+    private static abstract class OffsetableDeclarationUIDBase<T extends CsmOffsetableDeclaration> extends KeyBasedUID<T> {
+        public OffsetableDeclarationUIDBase(T declaration) {
             super(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase)declaration));       
         }
         
-        /* package */ OffsetableDeclarationUID (){
-            
+        /* package */ OffsetableDeclarationUIDBase (DataInput aStream) throws IOException {
+            super(aStream);
         }
 
         public String toString() {
@@ -157,7 +160,7 @@ public class UIDUtilities {
     /**
      * UID for CsmTypedef
      */
-    /* package */ static final class TypedefUID<T extends CsmTypedef> extends OffsetableDeclarationUID<T> {
+    /* package */ static final class TypedefUID<T extends CsmTypedef> extends OffsetableDeclarationUIDBase<T> {
         public TypedefUID(T typedef) {
             super(typedef);
 //            assert typedef instanceof RegistarableDeclaration;
@@ -168,8 +171,8 @@ public class UIDUtilities {
 //            assert ((RegistarableDeclaration)typedef).isRegistered();            
         }
         
-        /* package */ TypedefUID() {
-            
+        /* package */ TypedefUID (DataInput aStream) throws IOException {
+            super(aStream);
         }
         
         protected String getToStringPrefix() {
@@ -179,9 +182,53 @@ public class UIDUtilities {
     }
     
     /**
+     * UID for CsmMacro
+     */
+    /* package */ static final class MacroUID extends KeyBasedUID<CsmMacro> {
+        public MacroUID(CsmMacro macro) {
+            super(KeyUtilities.createMacroKey(macro));
+        }
+        
+        /* package */ MacroUID (DataInput aStream) throws IOException {
+            super(aStream);
+        }
+    }
+    
+    /**
+     * UID for CsmInclude
+     */
+    /* package */ static final class IncludeUID extends KeyBasedUID<CsmInclude> {
+        public IncludeUID(CsmInclude incl) {
+            super(KeyUtilities.createIncludeKey(incl));
+        }
+        
+        /* package */ IncludeUID (DataInput aStream) throws IOException {
+            super(aStream);
+        }
+    }
+    
+    /**
      * UID for CsmClassifier
      */
-    /* package */ static final class ClassifierUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUID<T> {
+    /* package */ static final class DeclarationUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
+        public DeclarationUID(T decl) {
+            super(decl);
+        }
+        
+        /* package */ DeclarationUID( DataInput aStream) throws IOException {
+            super(aStream);
+        }
+        
+        protected String getToStringPrefix() {
+            return "DeclarationUID"; // NOI18N
+        }
+        
+    } 
+    
+    /**
+     * UID for CsmClassifier
+     */
+    /* package */ static final class ClassifierUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
         public ClassifierUID(T classifier) {
             super(classifier);
 //            assert classifier instanceof RegistarableDeclaration;
@@ -192,8 +239,8 @@ public class UIDUtilities {
 //            assert ((RegistarableDeclaration)classifier).isRegistered();
         }
         
-        /* package */ ClassifierUID(){
-            
+        /* package */ ClassifierUID( DataInput aStream) throws IOException {
+            super(aStream);
         }
         
         protected String getToStringPrefix() {
@@ -205,14 +252,36 @@ public class UIDUtilities {
     /**
      * UID for CsmClassifier with empty getName()
      */    
-    private static final class UnnamedClassifierUID<T extends CsmClassifier> extends ObjectBasedUID {
+    /* package */ static final class UnnamedClassifierUID<T extends CsmClassifier> extends ObjectBasedUID<T> {
         public UnnamedClassifierUID(T classifier) {
             super(classifier);
         }
 
+        /* package */ UnnamedClassifierUID (DataInput aStream) throws IOException {
+            super(aStream);
+        }
+        
         public String toString() {
             String retValue = "<UNNAMED CLASSIFIER UID> " + super.toString(); // NOI18N
             return retValue;
         } 
     }
+    
+    /**
+     * UID for CsmDeclaration with empty getName()
+     */    
+    /* package */ static final class UnnamedOffsetableDeclarationUID<T extends CsmOffsetableDeclaration> extends ObjectBasedUID<T> {
+        public UnnamedOffsetableDeclarationUID(T decl) {
+            super(decl);
+        }
+
+        /* package */ UnnamedOffsetableDeclarationUID (DataInput aStream) throws IOException {
+            super(aStream);
+        }
+        
+        public String toString() {
+            String retValue = "<UNNAMED OFFS-DECL UID> " + super.toString(); // NOI18N
+            return retValue;
+        } 
+    }    
 }

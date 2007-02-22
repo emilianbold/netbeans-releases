@@ -19,25 +19,29 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
+import java.io.DataInput;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * Abstracr Base class for CsmOffsetable
  * @author Vladimir Kvashin
  */
-public class OffsetableBase implements CsmOffsetable, CsmObject {
+public abstract class OffsetableBase implements CsmOffsetable, CsmObject {
     // only one of fileOLD/fileUID must be used (based on USE_REPOSITORY)
     private final CsmFile fileOLD;
     private final CsmUID<CsmFile> fileUID;
     
-    private final Position startPosition;
-    private final Position endPosition;
+    private final LineColOffsPositionImpl startPosition;
+    private final LineColOffsPositionImpl endPosition;
 
-    public OffsetableBase(AST ast, CsmFile file) {
+    protected OffsetableBase(AST ast, CsmFile file) {
         if (TraceFlags.USE_REPOSITORY) {
             this.fileUID = UIDCsmConverter.fileToUID(file);
             this.fileOLD = null;// to prevent error with "final"
@@ -56,13 +60,27 @@ public class OffsetableBase implements CsmOffsetable, CsmObject {
             new LineColOffsPositionImpl(endAST.getEndLine(), endAST.getEndColumn(), endAST.getEndOffset());
     }
     
-    public OffsetableBase(CsmFile file) {
+    protected OffsetableBase(CsmFile file) {
         this(null, file);
     }
     
-    /*protected AST getAst() {
-        return ast;
-    }*/
+    protected OffsetableBase(CsmFile containingFile, CsmOffsetable pos) {
+        this(containingFile, 
+             pos != null ? pos.getStartPosition() : null, 
+             pos != null ? pos.getEndPosition() : null);
+    }
+    
+    protected OffsetableBase(CsmFile file, CsmOffsetable.Position start, CsmOffsetable.Position end) {
+        if (TraceFlags.USE_REPOSITORY) {
+            this.fileUID = UIDCsmConverter.fileToUID(file);
+            this.fileOLD = null;// to prevent error with "final"
+        } else {
+            this.fileOLD = file;
+            this.fileUID = null;// to prevent error with "final"
+        }        
+        this.startPosition = new LineColOffsPositionImpl(start);
+        this.endPosition = new LineColOffsPositionImpl(end);
+    }
     
     public int getStartOffset() {
         return getStartPosition().getOffset();
@@ -128,5 +146,20 @@ public class OffsetableBase implements CsmOffsetable, CsmObject {
         } else {
             return fileOLD;
         }
+    }
+
+    protected void write(DataOutput output) throws IOException {
+        UIDObjectFactory.getDefaultFactory().writeUID(fileUID, output);
+        startPosition.toStream(output);
+        endPosition.toStream(output);
+    }
+    
+    protected OffsetableBase(DataInput input) throws IOException {
+        fileUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        startPosition = new LineColOffsPositionImpl(input);
+        endPosition = new LineColOffsPositionImpl(input);
+
+        assert TraceFlags.USE_REPOSITORY;
+        this.fileOLD = null;// to prevent error with "final"
     }
 }

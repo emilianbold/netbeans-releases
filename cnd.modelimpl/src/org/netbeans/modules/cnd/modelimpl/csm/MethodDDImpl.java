@@ -24,7 +24,10 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  * Method, which contains it's body right at throws POD (point of declaration)
@@ -57,4 +60,17 @@ public class MethodDDImpl extends MethodImpl<CsmFunctionDefinition> implements C
         l.add(getBody());
         return l;
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        PersistentUtils.writeCompoundStatement(this.body, output);
+    }
+    
+    public MethodDDImpl(DataInput input) throws IOException {
+        super(input);
+        this.body = PersistentUtils.readCompoundStatement(input);
+    }     
 }

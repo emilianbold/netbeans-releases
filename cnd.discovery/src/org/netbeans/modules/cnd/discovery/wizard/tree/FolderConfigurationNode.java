@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.discovery.wizard.tree;
 
+import java.util.TreeMap;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.api.FolderConfiguration;
@@ -37,10 +38,18 @@ public class FolderConfigurationNode extends DefaultMutableTreeNode {
     }
 
     private void addChild(FolderConfiguration root){
+       TreeMap<String, FolderConfiguration> sorted = new TreeMap<String, FolderConfiguration>();
        for(FolderConfiguration child : root.getFolders()){
-           add(new FolderConfigurationNode((FolderConfigurationImpl) child));
+           sorted.put(child.getFolderName(),child);
         }
+       for(FolderConfiguration child :sorted.values()){
+           add(new FolderConfigurationNode((FolderConfigurationImpl) child));
+       }
+       TreeMap<String, FileConfiguration> sorted2 = new TreeMap<String, FileConfiguration>();
        for(FileConfiguration file : root.getFiles()){
+           sorted2.put(file.getFileName(),file);
+        }
+       for(FileConfiguration file : sorted2.values()){
            add(new FileConfigurationNode((FileConfigurationImpl) file));
         }
     }

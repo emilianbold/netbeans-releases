@@ -23,21 +23,27 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import java.util.*;
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-
-import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * @author Vladimir Kvasihn
  */
 public class FunctionDefinitionImpl extends FunctionImpl<CsmFunctionDefinition> implements CsmFunctionDefinition {
 
-    private CsmFunction declaration;
+    private CsmFunction declarationOLD;
+    private CsmUID<CsmFunction> declarationUID;
+    
     private String qualifiedName;
-    //private String name;
     private final CsmCompoundStatement body;
-    private List/*<CsmParameter>*/  parameters;
     private boolean qualifiedNameIsFake = false;
     private String[] classOrNspNames;
     
@@ -57,12 +63,33 @@ public class FunctionDefinitionImpl extends FunctionImpl<CsmFunctionDefinition> 
     }
 
     public CsmFunction getDeclaration() {
+        CsmFunction declaration = _getDeclaration();
 	if( declaration == null ) {
+            _setDeclaration(null);
 	    declaration = findDeclaration();
+            _setDeclaration(declaration);
 	}
 	return declaration;
     }
     
+    private CsmFunction _getDeclaration() {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmFunction decl = UIDCsmConverter.UIDtoDeclaration(this.declarationUID);
+            assert decl != null || declarationUID == null;
+            return decl;
+        } else {
+            return this.declarationOLD;
+        }
+    }
+    
+    private void _setDeclaration(CsmFunction decl) {
+        if (TraceFlags.USE_REPOSITORY) {
+            this.declarationUID = UIDCsmConverter.declarationToUID(decl);
+            assert this.declarationUID != null || decl == null;
+        } else {
+            this.declarationOLD = decl;
+        }
+    }
     private CsmFunction findDeclaration() {
         String uname = CsmDeclaration.Kind.FUNCTION.toString() + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
         CsmDeclaration def = getContainingFile().getProject().findDeclaration(uname);
@@ -140,6 +167,7 @@ public class FunctionDefinitionImpl extends FunctionImpl<CsmFunctionDefinition> 
     }
     
     private String findQualifiedName() {
+        CsmFunction declaration= _getDeclaration();
 	if( declaration != null ) {
 	    return declaration.getQualifiedName();
 	}
@@ -210,46 +238,10 @@ public class FunctionDefinitionImpl extends FunctionImpl<CsmFunctionDefinition> 
 	}
 	return null;
     }
-/*
-    public String getName() {
-        if( name == null ) {
-            AST qid = getQialifiedId();
-            if( qid != null ) {
-                for( AST n = qid.getFirstChild(); n != null; n = n.getNextSibling() ) {
-                    int type = n.getType();
-                    if( type == CPPTokenTypes.ID ) {
-                        name = n.getText();
-                    } else if( type == CPPTokenTypes.LITERAL_OPERATOR ) {
-                        StringBuffer sb = new StringBuffer(n.getText());
-                        sb.append(' ');
-                        AST next = n.getNextSibling();
-                        if( next != null ) {
-                            sb.append(next.getText());
-                            n = next;
-                            name = sb.toString();
-                        }
-                    }
-                }
-            }
-            if( name == null ) {
-                name = "<null>"; // just to avoid NPE
-            }
-        }
-        return name;
-    }
-*/    
 
     public CsmScope getScope() {
         return getContainingFile();
     }
-
-//    public List/*<CsmParameter>*/  getParameters() {
-//        if( parameters == null ) {
-//            AST ast = AstUtil.findChildOfType(getAst(), CPPTokenTypes.CSM_PARMLIST);
-//            parameters = AstRenderer.renderParameters(ast, getContainingFile());
-//        }
-//        return parameters;
-//    }
 
     public List getScopeElements() {
         List l = new ArrayList();
@@ -262,4 +254,28 @@ public class FunctionDefinitionImpl extends FunctionImpl<CsmFunctionDefinition> 
         return this;
     }
   
+    ////////////////////////////////////////////////////////////////////////////
+    // iml of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        output.writeUTF(this.qualifiedName);
+        output.writeBoolean(this.qualifiedNameIsFake);
+        PersistentUtils.writeStrings(this.classOrNspNames, output);
+        PersistentUtils.writeCompoundStatement(this.body, output);
+        
+        // save cached declaration
+        UIDObjectFactory.getDefaultFactory().writeUID(this.declarationUID, output);
+    }
+    
+    public FunctionDefinitionImpl(DataInput input) throws IOException {
+        super(input);
+        this.qualifiedName = input.readUTF();
+        this.qualifiedNameIsFake = input.readBoolean();
+        this.classOrNspNames = PersistentUtils.readStrings(input, TextCache.getManager());
+        this.body = PersistentUtils.readCompoundStatement(input);
+        
+        // read cached declaration
+        this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);        
+    }      
 }

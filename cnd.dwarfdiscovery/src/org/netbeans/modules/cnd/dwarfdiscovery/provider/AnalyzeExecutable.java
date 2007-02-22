@@ -20,19 +20,17 @@
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -86,7 +84,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
         return myProperties.get(key);
     }
     
-    public List<Configuration> getConfigurations(ProjectProxy project) {
+    public List<Configuration> analyze(ProjectProxy project) {
         Configuration conf = new Configuration(){
             private List<SourceFileProperties> myFileProperties;
             private List<String> myIncludedFiles;
@@ -102,7 +100,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                 if (myFileProperties == null){
                     String set = (String)getProperty(EXECUTABLE_KEY).getValue();
                     if (set != null && set.length() > 0) {
-                        myFileProperties = getSourceFileProperties(set);
+                        myFileProperties = getSourceFileProperties(new String[]{set});
                     }
                 }
                 return myFileProperties;
@@ -113,16 +111,13 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                     HashSet<String> set = new HashSet<String>();
                     for(SourceFileProperties source : getSourcesConfiguration()){
                         set.addAll( ((DwarfSource)source).getIncludedFiles() );
+                        set.add(source.getItemPath());
                     }
                     HashSet<String> unique = new HashSet<String>();
                     for(String path : set){
                         File file = new File(path);
                         if (file.exists()) {
-                            try {
-                                unique.add(file.getCanonicalPath());
-                            } catch (IOException ex) {
-                                //ex.printStackTrace();
-                            }
+                            unique.add(FileUtil.normalizeFile(file).getAbsolutePath());
                         }
                     }
                     myIncludedFiles = new ArrayList<String>(unique);

@@ -21,6 +21,7 @@ package test.dwarfdump;
 
 import java.util.TreeSet;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
@@ -40,10 +41,11 @@ import modelutils.Config;
  * @author ak119685
  */
 public class DwarfDump {
-    DwarfReader reader = null;
+
+    Dwarf dwarf = null;
     
     public DwarfDump(String objFileName) throws FileNotFoundException, IOException {
-        this.reader = new DwarfReader(objFileName);
+	this.dwarf = new Dwarf(objFileName);
     }
     
     public static void main(String[] args) {
@@ -101,7 +103,7 @@ public class DwarfDump {
     }
 
     public List<CompilationUnit> getCompilationUnits() {
-        DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)reader.getSection(SECTIONS.DEBUG_INFO);
+        DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)dwarf.getSection(SECTIONS.DEBUG_INFO);
         List<CompilationUnit> result = null;
         
         if (debugInfo != null) {
@@ -118,12 +120,12 @@ public class DwarfDump {
     }
     
     public void dump(PrintStream out) {
-        out.println("Dwarf dump for " + reader.getFileName() + "\n"); // NOI18N
+        out.println("Dwarf dump for " + dwarf.getFileName() + "\n"); // NOI18N
 
 //        ElfSection stringsSection = reader.getSection(".shstrtab");
 //        stringsSection.dump(out);
     
-        DwarfArangesSection aranges = (DwarfArangesSection) reader.getSection(SECTIONS.DEBUG_ARANGES);
+        DwarfArangesSection aranges = (DwarfArangesSection) dwarf.getSection(SECTIONS.DEBUG_ARANGES);
         
         if (aranges != null) {
             aranges.dump(out);
@@ -141,7 +143,7 @@ public class DwarfDump {
         List<CompilationUnit> CUs = getCompilationUnits();
         
         if (CUs == null) {
-            out.println("No Compilation Units found for" + this.reader.getFileName()); // NOI18N
+	out.println("No Compilation Units found for" + this.dwarf.getFileName()); // NOI18N
             return;
         }
         
@@ -183,7 +185,7 @@ public class DwarfDump {
     } 
 
     private void dumpFiles(PrintStream out) {
-        out.println("Files used for building " + reader.getFileName()); // NOI18N
+        out.println("Files used for building " + dwarf.getFileName()); // NOI18N
 
         TreeSet<String> paths = new TreeSet();
         

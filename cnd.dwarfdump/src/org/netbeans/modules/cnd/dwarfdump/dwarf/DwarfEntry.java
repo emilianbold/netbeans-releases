@@ -397,7 +397,7 @@ public class DwarfEntry {
     
     public String getDeclarationFilePath() {
         int fileIdx = (Integer)getUintAttributeValue(ATTR.DW_AT_decl_file);
-        return (fileIdx == -1) ? null : compilationUnit.getStatementList().getFilePath(fileIdx);
+        return (fileIdx <= 0) ? null : compilationUnit.getStatementList().getFilePath(fileIdx);
     }
     
     public String getTypeDef() {
