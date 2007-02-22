@@ -50,6 +50,7 @@ public class CLIHandlerRemembersSystemInOutErrTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
+        clearWorkDir();
         LOG = Logger.getLogger("TEST-" + getName());
     }
 
@@ -61,7 +62,7 @@ public class CLIHandlerRemembersSystemInOutErrTest extends NbTestCase {
         // just initialize the CLIHandler
         CLIHandler.Args a = new CLIHandler.Args(args, in, out, err, curDir);
 
-        ArrayList arr = new ArrayList();
+        ArrayList<CLIHandler> arr = new ArrayList<CLIHandler>();
         arr.add(new H(H.WHEN_BOOT));
         arr.add(new H(H.WHEN_INIT));
 
