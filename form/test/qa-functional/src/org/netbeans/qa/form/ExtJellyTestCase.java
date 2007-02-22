@@ -23,12 +23,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.CompileAction;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
@@ -38,7 +39,7 @@ import org.netbeans.jemmy.operators.Operator;
 
 /**
  * Class with helpers for easy creating jemmy/jelly tests
- * 
+ *
  * @author Jiri Vagner
  */
 public abstract class ExtJellyTestCase extends JellyTestCase {
@@ -55,24 +56,24 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     public ExtJellyTestCase(String testName) {
         super(testName);
     }
-
-  /**
-   * Simple console println
-   */
+    
+    /**
+     * Simple console println
+     */
     public void p(String msg) {
         System.out.println(msg);
     }
     
-  /**
-   * Simple console println
-   */
+    /**
+     * Simple console println
+     */
     public void p(Boolean msg) {
         p(String.valueOf(msg));
     }
     
-  /**
-   * Simple console println
-   */
+    /**
+     * Simple console println
+     */
     public void p(int msg) {
         p(String.valueOf(msg));
     }
@@ -85,7 +86,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      * @param category category from first step of new file wizzard
      * @param fileType filetype from first step of new file wizzard
      * @param name name prefix of a new file, timestamp will be added to avoid name clash
-     */ 
+     */
     private String createFile(String project, String packageName, String category, String fileType, String name) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(project);
@@ -93,7 +94,6 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         nfwo.selectFileType(fileType);
         nfwo.next();
         
-        // following code avoids issue nr. 60418
         NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         String fileName = name +  String.valueOf(new Date().getTime());
@@ -101,16 +101,16 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         nfnlso.setPackage(packageName);
         nfnlso.finish();
         
-        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
+        // following code avoids issue nr. 60418
         ProjectsTabOperator pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(project);
         prn.select();
         Node formnode = new Node(prn, "Source Packages|" + packageName + "|" + fileName); // NOI18N
         formnode.select();
-
+        
         OpenAction openAction = new OpenAction();
         openAction.perform(formnode);
-        // end of issue code 
+        // end of issue code
         
         return fileName;
     }
@@ -130,9 +130,51 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     }
     
     /**
+     * Adds new bean into palette
+     *
+     * @param beanFileName
+     */
+    public void addBean(String beanFileName) {
+        Node fileNode = openFile(beanFileName);
+        waitAMoment();
+        
+        new ActionNoBlock("Tools|Add To Palette...", null).perform(); // NOI18N
+        
+        SelectPaletteCategoryOperator op = new SelectPaletteCategoryOperator();
+        op.lstPaletteCategories().selectItem(SelectPaletteCategoryOperator.ITEM_BEANS);
+        op.ok();
+        
+        CompileAction compAct = new CompileAction();
+        compAct.perform(fileNode);
+        waitAMoment();
+    }
+    
+    /**
+     * Opens file into nb editor
+     * @param fileName
+     * @return node
+     */
+    public Node openFile(String fileName) {
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        ProjectRootNode prn = pto.getProjectRootNode(TEST_PROJECT_NAME);
+        prn.select();
+        
+        String path = "Source Packages|" + TEST_PACKAGE_NAME + "|" + fileName; // NOI18N
+        //p(path);
+        Node formnode = new Node(prn, path); // NOI18N
+        formnode.setComparator(new Operator.DefaultStringComparator(true, false));
+        formnode.select();
+        
+        OpenAction openAction = new OpenAction();
+        openAction.perform(formnode);
+        
+        return formnode;
+    }
+    
+    /**
      * Creates new JDialog file in project
      * @return new file name
-     */ 
+     */
     public String createJDialogFile() {
         return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Java GUI Forms",  "JDialog Form", "MyJDialog"); // NOI18N
     }
@@ -140,7 +182,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     /**
      * Creates new JFrame file in project
      * @return new file name
-     */ 
+     */
     public String createJFrameFile() {
         return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Java GUI Forms",  "JFrame Form", "MyJFrame"); // NOI18N
     }
@@ -148,7 +190,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     /**
      * Creates new AWT Frame file in project
      * @return new file name
-     */ 
+     */
     public String createFrameFile() {
         return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Java GUI Forms|AWT Forms",  "Frame Form", "MyFrame"); // NOI18N
     }
@@ -242,16 +284,16 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     
     /**
      * Calls Jelly waitNoEvent()
-     * @param quiet time (miliseconds) 
+     * @param quiet time (miliseconds)
      */
     public static void waitNoEvent(long waitTimeout) {
         new org.netbeans.jemmy.EventTool().waitNoEvent(waitTimeout);
-   }
+    }
     
     /**
-     * Calls Jelly waitNoEvent() with MY_WAIT_MOMENT 
+     * Calls Jelly waitNoEvent() with MY_WAIT_MOMENT
      */
     public static void waitAMoment() {
         waitNoEvent(MY_WAIT_MOMENT);
-   }
+    }
 }

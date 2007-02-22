@@ -21,6 +21,14 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="Form config">
 
 <!-- Jiri Vagner -->
+   <testbag testattribs="validation, full, jv, my" executor="ide" name="testbag_Beans">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/qa/form/beans/AddAndRemoveBeansTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
    <testbag testattribs="validation, full, jv" executor="ide" name="testbag_Options">
         <testset dir="qa-functional/src">
             <patternset>
@@ -28,6 +36,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+
 <!--  Jiri Vagner  -->
 
 <!-- Marek G. -->
