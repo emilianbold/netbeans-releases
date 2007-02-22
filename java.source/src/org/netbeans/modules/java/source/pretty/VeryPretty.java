@@ -20,6 +20,7 @@ package org.netbeans.modules.java.source.pretty;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
+import static com.sun.source.tree.Tree.*;
 import com.sun.source.tree.VariableTree;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
@@ -460,7 +461,7 @@ public class VeryPretty extends JCTree.Visitor {
 	boolean first = true;
 	for (List < T > l = trees; l.nonEmpty(); l = l.tail) {
 	    T t = l.head;
-	    if (isSyntheticStatement(t.pos, parentPos))
+	    if (isSynthetic(t, parentPos))
 		continue;
 	    boolean isDecl = t instanceof JCVariableDecl || t instanceof JCMethodDecl || t instanceof JCClassDecl;
 	    if (!first)
@@ -474,8 +475,16 @@ public class VeryPretty extends JCTree.Visitor {
 	}
     }
     
-    private boolean isSyntheticStatement(int pos, int parentPos) {
-	return pos == parentPos && pos != Query.NOPOS;
+    // consider usage of TreeUtilities.isSynthethic() - currently tree utilities
+    // is not available in printing class and method is insufficient for our
+    // needs.
+    private static boolean isSynthetic(JCTree tree, int parentPos) {
+        // filter syntetic constructors
+        if (Kind.METHOD == tree.getKind() && (((JCMethodDecl) tree).mods.flags & Flags.GENERATEDCONSTR) != 0)
+            return true;
+        // todo (#pf): original method - useless IMO, left here till all 
+        // issues with synthetic things will not be finished.
+	return false;
     }
     
     /** Print a set of annotations.
@@ -909,7 +918,7 @@ public class VeryPretty extends JCTree.Visitor {
                 printStat(l.head);
                 first = false;
             }
-	    else if (!isSyntheticStatement(l.head.pos, parentPos))
+	    else if (!isSynthetic(l.head, parentPos))
 		hasNonEnumerator = true;
         }
 	if (hasNonEnumerator) {
@@ -919,7 +928,7 @@ public class VeryPretty extends JCTree.Visitor {
         for (List<JCTree> l = stats; l.nonEmpty(); l = l.tail) {
 	    JCTree t = l.head;
             if (!isEnumerator(t)) {
-		if (isSyntheticStatement(t.pos, parentPos))
+		if (isSynthetic(t, parentPos))
 		    continue;
                 toColExactly(out.leftMargin);
                 printStat(t);

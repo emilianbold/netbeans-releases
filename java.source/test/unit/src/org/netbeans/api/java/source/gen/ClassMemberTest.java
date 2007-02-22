@@ -60,7 +60,7 @@ public class ClassMemberTest extends GeneratorTest {
         suite.addTest(new ClassMemberTest("testModifyFieldName"));
         suite.addTest(new ClassMemberTest("testModifyModifiers"));
         suite.addTest(new ClassMemberTest("testAddToEmptyInterface"));
-//        suite.addTest(new ClassMemberTest("testAddNewClassWithNewMembers"));
+        suite.addTest(new ClassMemberTest("testAddNewClassWithNewMembers"));
         suite.addTest(new ClassMemberTest("testAddInnerInterface"));
         suite.addTest(new ClassMemberTest("testAddInnerAnnotationType"));
         suite.addTest(new ClassMemberTest("testAddInnerEnum"));
