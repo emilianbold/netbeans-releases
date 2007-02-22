@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html>
+
+<head>
+<title>Configuring Partner Link Types Using the WSDL View</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+
+<h2>Configuring Partner Link Types Using the WSDL View</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>Before you can add a partner link to a BPEL process, 
+you must add a partner link type to the WSDL file.</p>
+
+<p>In a BPEL process, a <i>partner link</i> represents the interaction between the BPEL process and a partner service. 
+  Each partner link is associated with a partner link type.</p>
+
+<p>A <i>partner link type</i> characterizes the conversational relationship between two services. 
+  The partner link type can have one or two roles. 
+  A role describes the function that a service has in the relationship. 
+  Examples of roles are <tt>loanRequestor</tt> and <tt>loanProcessor</tt>. 
+  Each role must specify the port type that the service will use to receive messages.</p>
+
+<p><b>To add a partner link type automatically</b></p>
+
+<ol>
+  <li>When you do either of the following tasks, a partner link type is automatically generated. 
+    The partner link type has a default role.</li>
+  <ul>
+    <li>Create a WSDL file from scratch.</li>
+    <li>Create a port type.</li>
+  </ul>
+  <li>(Optional) To add a second role, do the following:</li>
+  <ol type="a">
+    <li>Right-click the partner link type node and choose Add &gt; role.</li>
+    <li>If the Properties window is not visible, choose Window &gt; Properties.</li>
+    <li>Select the role.</li>
+    <li>(Optional) Change the default name.</li>
+    <li>Specify the port type.</li>
+  </ol>
+</ol>
+
+<p><b>To add a partner link type manually:</b></p>
+
+<ol>
+  <li>In the WSDL view, right-click the Extensibility Elements node and choose Add &gt; PartnerLinkType. <br>
+    A partner link type node appears under the Extensibility Elements node. 
+    The partner link type has a default role.</li>
+  <li>(Optional) To add a second role, right-click the partner link type node and choose Add &gt; role.</li>
+  <li>If the Properties window is not visible, choose Window &gt; Properties.</li>
+  <li>For each role, do the following:</li>
+  <ol type="a">
+    <li>Select the role.</li>
+    <li>(Optional) Change the default name.</li>
+    <li>Specify the port type.</li>
+  </ol>
+</ol>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="nbdocs://org.netbeans.modules.bpel.bpelhelp/org/netbeans/modules/bpel/bpelhelp/elements/partner_link.html" title="Partner Link">Partner Link</a></dd>
+<dd><a href="wsdl_editor_views.html" title="About the WSDL View">About the WSDL View</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

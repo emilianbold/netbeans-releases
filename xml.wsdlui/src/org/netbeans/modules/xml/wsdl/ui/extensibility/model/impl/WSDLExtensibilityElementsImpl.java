@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,7 +27,9 @@ package org.netbeans.modules.xml.wsdl.ui.extensibility.model.impl;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,7 +57,7 @@ public class WSDLExtensibilityElementsImpl implements WSDLExtensibilityElements 
 	
 	private Map elementsMap = new HashMap();
 	
-	private Map schemasMap = new HashMap();
+	private Map<String, XMLSchemaFileInfo> schemasMap = new HashMap<String, XMLSchemaFileInfo>();
 	
 	public WSDLExtensibilityElementsImpl(DataFolder rootFolder) {
 		this.mRootFolder = rootFolder;
@@ -103,11 +105,28 @@ public class WSDLExtensibilityElementsImpl implements WSDLExtensibilityElements 
 		return (InputStream[]) extensionSchemas.toArray( new InputStream[] {});
 	}
 	
-	public XMLSchemaFileInfo getXMLSchemaFileInfo(String fileName) {
-		XMLSchemaFileInfo schemaInfo =  (XMLSchemaFileInfo) this.schemasMap.get(fileName);
+	public XMLSchemaFileInfo getXMLSchemaFileInfoMatchingFileName(String fileName) {
+		XMLSchemaFileInfo schemaInfo =  this.schemasMap.get(fileName);
 		return schemaInfo;
 	}
 	
+	public XMLSchemaFileInfo getXMLSchemaFileInfo(String namespace) {
+	    XMLSchemaFileInfo schemaInfo = null;
+
+	    Iterator<XMLSchemaFileInfo> it = this.schemasMap.values().iterator();
+	    while(it.hasNext()) {
+	        XMLSchemaFileInfo info = it.next();
+            String ns = info.getSchema().getTargetNamespace();
+	        //String ns = info.getNamespace();
+	        if(ns != null && ns.equals(namespace)) {
+	            schemaInfo = info;
+	            break;
+	        }
+	    }
+
+	    return schemaInfo;
+	}
+        
 	private void readAllSchemas() {
 		DataObject[] dataObjects = this.mRootFolder.getChildren();
 		for(int i = 0; i < dataObjects.length; i++ ) {
@@ -118,5 +137,10 @@ public class WSDLExtensibilityElementsImpl implements WSDLExtensibilityElements 
 			}
 		}
 	}
+
+    public XMLSchemaFileInfo[] getAllXMLSchemaFileInfos() {
+        Collection<XMLSchemaFileInfo> infos = schemasMap.values();
+        return infos.toArray(new XMLSchemaFileInfo[infos.size()]);
+    }
 	
 }

@@ -1,36 +1,69 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 -->
+
 <html>
+
 <head>
 <title>About the WSDL View</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
+
 <body>
+
 <h2>About the WSDL View</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
+
 <p>In the WSDL view, you use GUI components to configure the elements and attributes of the WSDL file.</p>
+
 <p>The WSDL view has two subviews: tree view and column view. 
   To switch between the subviews, use the buttons in the WSDL Editor toolbar.</p>
-<p>Some component nodes allow you to add extension attributes. 
-  In the Add Extension Attribute dialog box, you can specify the name and namespace. 
-  Once you add the attribute, you can specify the value from the Properties window. 
-  These component nodes also allow you to remove extension attributes.</p>
-<p>If you right-click a component node and choose Go To Source, 
-  then the Source view appears with the cursor positioned at the beginning of the component's block.</p>
-<p>You can perform <a href="nbdocs://org.netbeans.modules.bpel.bpelhelp/org/netbeans/modules/bpel/bpelhelp/design/refactoring.html" 
-title="Refactoring in BPEL Processes">refactoring</a> by using the following approaches:</p>
+
+<p>The main nodes in the WSDL view correspond to the major elements in a WSDL file.</p>
+
 <ul>
-  <li>If you right-click a component node and choose Find Usages, 
-    then the IDE shows which components use the component that you selected.</li>
-  <li>If you right-click a component node and choose Refactor &gt; Rename, 
-    then you can rename all occurrences in the associated XSD, WSDL, and BPEL files.</li>
-  <li>If you right-click a component node and choose Refactor &gt; Safely Delete, 
-    then you can check for references to the component before you perform the delete.</li>
-  </ul>
-<p>You can also rename a component by changing the value of the Name property. The WSDL Editor renames all occurrences in the same file, but not in other files.</p>
+<li><b>Types.</b> This node enables you to <a href="wsdl_editor_import_schema.html">import XML schemas</a> and to <a href="wsdl_editor_data_types.html">add inline schemas</a>.</li>
+<li><b>Imports.</b> This node enables you to <a href="wsdl_editor_import_wsdl.html">import WSDL files</a>.</li>
+<li><b>Messages.</b> This node enables you to create, edit, and delete <a href="wsdl_editor_messages.html">messages</a>.</li>
+<li><b>Port Types.</b> This node enables you to create, edit, and delete <a href="wsdl_editor_port_types.html">port types</a>.</li>
+<li><b>Bindings.</b> This node enables you to create, edit, and delete <a href="wsdl_editor_bindings.html">bindings</a>.</li>
+<li><b>Services.</b> This node enables you to create, edit, and delete <a href="wsdl_editor_services.html">services</a>.</li>
+<li><b>Extensibility Elements.</b> This node enables you to add the following BPEL extensibility elements: 
+<a href="wsdl_editor_bpel_ext.html">partner link types</a>, 
+<a href="wsdl_editor_prop.html">properties</a>, and 
+<a href="wsdl_editor_prop.html">property aliases</a>.</li>
+</ul>
+
+<p>Some of the nodes in the WSDL view allow you to add extension attributes. 
+  Right-click the node and choose Add Extension Attribute. 
+  In the Add Extension Attribute dialog box, specify the name and namespace. 
+  Once you add the attribute, you can specify the value from the Properties window. 
+  To delete the attribute, right-click the node and choose Remove Attributes.</p>
+
+<p>If you right-click a node and choose Go To &gt; Source, 
+  then the Source view appears with the cursor positioned at the beginning of the component's block.</p>
+
+<h3>WSDL View Tasks</h3>
+
+<ul>
+  <li><a href="wsdl_editor_root.html" title="Configuring the Root Element">Configuring the Root Element</a></li>
+  <li><a href="wsdl_editor_import_schema.html" title="Importing XML Schemas Using the WSDL View">Importing XML Schemas Using the WSDL View</a></li>
+  <li><a href="wsdl_editor_data_types.html" title="Adding Inline Schemas Using the WSDL View">Adding Inline Schemas Using the WSDL View</a></li>
+  <li><a href="wsdl_editor_import_wsdl.html" title="Importing WSDL Files Using the WSDL View">Importing WSDL Files Using the WSDL View</a></li>
+  <li><a href="wsdl_editor_messages.html" title="Configuring Messages Using the WSDL View">Configuring Messages Using the WSDL View</a></li>
+  <li><a href="wsdl_editor_port_types.html" title="Configuring Port Types Using the WSDL View">Configuring Port Types Using the WSDL View</a></li>
+  <li><a href="wsdl_editor_bindings.html" title="Configuring Bindings Using the WSDL View">Configuring Bindings Using the WSDL View</a></li>
+  <li><a href="wsdl_editor_services.html" title="Configuring Services Using the WSDL View">Configuring Services Using the WSDL View</a></li>
+  <li><a href="wsdl_editor_bpel_ext.html" title="Configuring Partner Link Types Using the WSDL View">Configuring Partner Link Types Using the WSDL View</a></li>
+  <li><a href="wsdl_editor_prop.html" title="Configuring Properties and Property Aliases Using the WSDL View">Configuring Properties and Property Aliases Using the WSDL View</a></li>
+  <li><a href="CSH/wsdlui-wsdlview-showusages.html" title="Finding Usages of WSDL Components">Finding Usages of WSDL Components</a></li>
+  <li><a href="wsdl_editor_refactoring.html" title="Using Refactoring to Rename or Delete WSDL File Components">Using Refactoring to Rename or Delete WSDL File Components</a></li>
+  <li><a href="wsdl_editor_documentation.html" title="Adding Documentation">Adding Documentation</a></li>
+  <li><a href="wsdl_editor_find.html" title="Using Find in the WSDL View">Using Find in the WSDL View</a></li>
+</ul>
+
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="wsdl_editor.html" title="About the WSDL Editor">About the WSDL Editor</a></dd>

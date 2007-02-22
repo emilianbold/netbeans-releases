@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -510,28 +510,49 @@ public class NameGenerator {
         
         return exists;
     }
-    
+
     public String generateNamespacePrefix(String optionalPrefixNameString, WSDLComponent element) {
         return generateNamespacePrefix(optionalPrefixNameString, element.getModel());
     }
-    
-    public String generateNamespacePrefix(String optionalPrefixNameString, WSDLModel model) {
-        String prefix = null;
-        if(optionalPrefixNameString == null) {
-            optionalPrefixNameString = NbBundle.getMessage(NameGenerator.class, "NameGenerator_DEFAULT_PREFIX");
-        }
-        
-        int prefixCounter = 0;
-        String prefixStr = optionalPrefixNameString;
-        prefix = prefixStr;
-        
-        while(isPrefixExist(prefix, model)) {
-            prefix = prefixStr + prefixCounter++;
-        }
-        
-        
-        return prefix;
+
+    /**
+     * Generate a unique namespace prefix for the given model. This is
+     * the same as generateNamespacePrefix(String, WSDLModel, int) with
+     * a value of zero for the counter parameter.
+     *
+     * @param  prefix  the desired prefix for the namespace prefix;
+     *                 if null, a default of "ns" will be used.
+     * @param  model   model in which to find unique prefix.
+     * @return  the unique namespace prefix (e.g. "ns0").
+     */
+    public String generateNamespacePrefix(String prefix, WSDLModel model) {
+        return generateNamespacePrefix(prefix, model, 0);
     }
+
+    /**
+     * Generate a unique namespace prefix for the given model.
+     *
+     * @param  prefix   the desired prefix for the namespace prefix;
+     *                  if null, a default of "ns" will be used.
+     * @param  model    model in which to find unique prefix.
+     * @param  counter  minimum number to use as suffix (results in a
+     *                  prefix such as "ns" plus the value of counter).
+     * @return  the unique namespace prefix (e.g. "ns0").
+     */
+    public String generateNamespacePrefix(String prefix, WSDLModel model,
+            int counter) {
+        if (prefix == null) {
+            prefix = NbBundle.getMessage(NameGenerator.class,
+                    "NameGenerator_DEFAULT_PREFIX");
+        }
+        String generated = prefix + counter;
+        while (isPrefixExist(generated, model)) {
+            counter++;
+            generated = prefix + counter;
+        }
+        return generated;
+    }
+
     public boolean isPrefixExist(String prefix, WSDLModel model) {
         return Utility.getNamespaceURI(prefix, model) != null ? true : false;
     }

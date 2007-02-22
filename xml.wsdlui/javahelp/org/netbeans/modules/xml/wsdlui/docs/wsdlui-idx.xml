@@ -3,20 +3,34 @@
                        "http://java.sun.com/products/javahelp/index_2_0.dtd">
 
 <index version="2.0">
-	<indexitem text="BPEL extensibility elements, WSDL Editor" target="wsdlui_prop" />
+
+	<indexitem text="code completion">
+		<indexitem text="WSDL files" target="wsdlui_code_completion" />
+	</indexitem>
+
+	<indexitem text="partner link types" target="wsdlui_partner_types" />
+
 	<indexitem text="WSDL Editor">
 		<indexitem text="about" target="org.netbeans.modules.xml.wsdlui.about" />
-		<indexitem text="views" target="wsdlui_views" />
+		<indexitem text="Partner view" target="wsdlui_partner" />
+		<indexitem text="WSDL view" target="wsdlui_views" />
 	</indexitem>
+
 	<indexitem text="WSDL files">
-		<indexitem text="bindings, configuring" target="wsdlui_bindings" />
-		<indexitem text="BPEL extensibility elements, adding" target="wsdlui_prop" />
-		<indexitem text="components, configuring" target="wsdlui_config" />
+		<indexitem text="bindings" target="wsdlui_bindings" />
+		<indexitem text="code completion" target="wsdlui_code_completion" />
 		<indexitem text="components, finding usages" target="wsdlui_wsdlview_showusages" />
 		<indexitem text="creating" target="wsdlui_creating" />
-		<indexitem text="data types, configuring" target="wsdlui_data" />
-		<indexitem text="messages, configuring" target="wsdlui_messages" />
-		<indexitem text="port types, configuring" target="wsdlui_port" />
-		<indexitem text="services, configuring" target="wsdlui_services" />
+		<indexitem text="documentation, adding" target="wsdlui_documentation" />
+		<indexitem text="messages" target="wsdlui_messages" />
+		<indexitem text="partner link types" target="wsdlui_partner_types" />
+		<indexitem text="port types" target="wsdlui_port" />
+		<indexitem text="properties" target="wsdlui_prop" />
+		<indexitem text="property aliases" target="wsdlui_prop" />
+		<indexitem text="refactoring" target="wsdlui_refactoring" />
+		<indexitem text="root element" target="wsdlui_root" />
+		<indexitem text="services" target="wsdlui_services" />
+		<indexitem text="validating" target="wsdlui_validation" />
 	</indexitem>
+
 </index>

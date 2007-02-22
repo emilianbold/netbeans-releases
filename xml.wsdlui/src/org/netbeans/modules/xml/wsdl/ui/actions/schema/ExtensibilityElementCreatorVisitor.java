@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -367,11 +367,7 @@ public class ExtensibilityElementCreatorVisitor extends AbstractXSDVisitor {
                     boolean isInTransaction = Utility.startTransaction(element.getModel());
                     element.setAttribute(attributeName, 
                             NameGenerator.generateUniqueValueForKeyAttribute(element, attributeName, element.getQName(), keyValuePrefix));
-                    try {
-                        Utility.endTransaction(element.getModel(), isInTransaction);
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
+                    Utility.endTransaction(element.getModel(), isInTransaction);
                 }
             }
         }
@@ -476,11 +472,7 @@ public class ExtensibilityElementCreatorVisitor extends AbstractXSDVisitor {
             
             boolean inTransaction = Utility.startTransaction(mModel);
             ((AbstractDocumentComponent)this.mDefinitions).addPrefix(prefix, targetNamespace);
-            try {
-                Utility.endTransaction(mModel, inTransaction);
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
-            }
+            Utility.endTransaction(mModel, inTransaction);
         }
         
         return prefix;
@@ -511,21 +503,13 @@ public class ExtensibilityElementCreatorVisitor extends AbstractXSDVisitor {
         
         parent.addExtensibilityElement(child);
         
-        try {
-            Utility.endTransaction(mModel, inTransaction);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
+        Utility.endTransaction(mModel, inTransaction);
     }
     
     private void addAttributeToExtensibilityElement(ExtensibilityElement exElement, String attrName, String attrVal) {
         boolean inTransaction = Utility.startTransaction(mModel);
         exElement.setAttribute(attrName, attrVal);
-        try {
-            Utility.endTransaction(mModel, inTransaction);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
+        Utility.endTransaction(mModel, inTransaction);
     }
     
     private void push(WSDLComponent currentComponent) {

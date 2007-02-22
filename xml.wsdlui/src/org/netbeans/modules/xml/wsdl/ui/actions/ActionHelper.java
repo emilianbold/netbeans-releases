@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,9 +26,7 @@
 package org.netbeans.modules.xml.wsdl.ui.actions;
 
 import java.beans.PropertyVetoException;
-
 import javax.swing.SwingUtilities;
-
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLDefinitionNodeCookie;
@@ -40,8 +38,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 
-
-
 /**
  * @author radval
  *
@@ -49,11 +45,23 @@ import org.openide.nodes.Node;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class ActionHelper {
-	
+
+    /**
+     * Show and select the Node which represents the given component.
+     *
+     * @param  comp  model component to select.
+     */
     public static void selectNode(WSDLComponent comp) {
-        ViewComponentCookie cookie = (ViewComponentCookie) getDataObject(comp).getCookie(ViewComponentCookie.class);
-        // Do not switch views, use the currently showing view.
-        cookie.view(ViewComponentCookie.View.CURRENT, comp, (Object[]) null);
+        DataObject dobj = getDataObject(comp);
+        if (dobj != null) {
+            ViewComponentCookie cookie = (ViewComponentCookie) dobj.getCookie(
+                    ViewComponentCookie.class);
+            if (cookie != null) {
+                // Do not switch views, use the currently showing view.
+                cookie.view(ViewComponentCookie.View.CURRENT, comp,
+                        (Object[]) null);
+            }
+        }
     }
     
     public static DataObject getDataObject(WSDLComponent comp) {

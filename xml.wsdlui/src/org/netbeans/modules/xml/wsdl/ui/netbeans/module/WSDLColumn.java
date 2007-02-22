@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -39,6 +39,8 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.DefaultEditorKit;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.DefinitionsNode;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.DummyDefinitionsNode;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.FolderNode;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -107,6 +109,10 @@ public class WSDLColumn extends JPanel
         list.addFocusListener(this);
         list.setCellRenderer(new ColumnListCellRenderer());
         if (rootNode != null) {
+            if (rootNode.getCookie(DummyDefinitionsNode.class) == null &&
+                    rootNode.getCookie(DefinitionsNode.class) != null) {
+                rootNode = new DummyDefinitionsNode(rootNode);
+            }
             getExplorerManager().setRootContext(rootNode);
             rootNode.addNodeListener(this);
             // nochildren label initialization
@@ -167,12 +173,20 @@ public class WSDLColumn extends JPanel
     }
 
     public String getTitle() {
-        return getExplorerManager().getRootContext().getDisplayName();
+        Node node = getExplorerManager().getRootContext();
+        Column col = columnView.getFirstColumn();
+        if (col == this && (node.getCookie(DummyDefinitionsNode.class) != null ||
+                node.getCookie(DefinitionsNode.class) != null)) {
+            return NbBundle.getMessage(WSDLColumn.class,
+                    "LBL_DefinitionsNode_Title");
+        } else {
+            return node.getDisplayName();
+        }
     }
 
     public String getDescription() {
         StringBuilder sb = new StringBuilder();
-        Node node = getExplorerManager().getRootContext();        
+        Node node = getExplorerManager().getRootContext();
         sb.append(node.getDisplayName());
         node = node.getParentNode();
         while (node != null) {

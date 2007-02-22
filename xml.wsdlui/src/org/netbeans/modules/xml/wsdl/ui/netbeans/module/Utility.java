@@ -2,24 +2,23 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -39,7 +38,6 @@ import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Import;
-import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -49,7 +47,6 @@ import org.netbeans.modules.xml.wsdl.ui.actions.schema.ExtensibilityElementCreat
 import org.netbeans.modules.xml.wsdl.ui.schema.visitor.OptionalAttributeFinderVisitor;
 import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
-import org.openide.ErrorManager;
 import org.openide.explorer.view.TreeView;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -154,8 +151,8 @@ public class Utility {
         if (ns == null || model == null)
             return localPart;
         
-        
-        if (!model.getDefinitions().getTargetNamespace().equals(ns)) {
+        String tns = model.getDefinitions().getTargetNamespace();
+        if (tns != null && !tns.equals(ns)) {
             String prefix = getNamespacePrefix(ns, model);
             if (prefix != null) 
                 return prefix + ":" + localPart;
@@ -254,12 +251,7 @@ public class Utility {
                         boolean isAlreadyInTransaction = Utility.startTransaction(document);
                         ((AbstractDocumentComponent)definitions).addPrefix(computedPrefix, schema.getTargetNamespace());
                         
-                        try {
-                            Utility.endTransaction(document, isAlreadyInTransaction);
-                        } catch (IOException e) {
-                            ErrorManager.getDefault().notify(e);
-                        }
-                        
+                        Utility.endTransaction(document, isAlreadyInTransaction);
                         
                     }
                     
@@ -282,7 +274,7 @@ public class Utility {
         return false;
     }
     
-    public static void endTransaction(WSDLModel model, boolean isInTransaction) throws IOException {
+    public static void endTransaction(WSDLModel model, boolean isInTransaction) {
         if (isInTransaction) return;
         model.endTransaction();
     }

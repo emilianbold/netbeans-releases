@@ -1,86 +1,115 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 -->
+
 <html>
+
 <head>
-<title>Configuring WSDL Port Types</title>
+<title>Configuring Port Types Using the WSDL View</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
+
 <body>
-<h2>Configuring WSDL Port Types</h2>
+
+<h2>Configuring Port Types Using the WSDL View</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>You can use the WSDL Editor to create port types. 
-In addition, you can use the WSDL Editor to add operations to an existing port type.</p>
-<p>In a WSDL file, a port type contains one or more related operations that the web service can perform. 
+
+<p>You can use the WSDL Editor to create, edit, and delete port types.</p>
+
+<p>In a WSDL file, a <i>port type</i> contains one or more related operations that the web service can perform. 
   An example of an operation is <tt>GetQuote</tt>.</p>
+
+<!--
 <p>The WSDL 1.1 specification defines the following categories of operations:</p>
+
 <ul>
   <li><b>One-way</b>. The operation receives a message as input.</li>
   <li><b>Request-response</b>. The operation receives a message as input, and sends a message as output.</li>
   <li><b>Solicit-response</b>. The operation sends a message as output, and receives a message as input.</li>
   <li><b>Notification</b>. The operation sends a message as output.</li>
 </ul>
-<p>Each <a href="wsdl_editor_messages.html">message</a> contains one or more logical parts. 
+-->
+
+<p>The WSDL Editor supports the following categories of operations:</p>
+
+<ul>
+  <li><b>One-way</b>. The operation receives a message as input.</li>
+  <li><b>Request-response</b>. The operation receives a message as input, and sends a message as output.</li>
+</ul>
+
+<p>Each message contains one or more logical parts. 
   For each part, you must specify the name and the type of content.</p>
+
 <p>If you change the name of a port type or operation, 
   then the WSDL Editor renames all occurrences in the same file. 
   To rename all occurrences in associated XSD, WSDL, and BPEL files as well, 
   right-click the component node and choose Refactor &gt; Rename.</p>
+
 <p><b>To create a port type:</b></p>
+
 <ol>
   <li>In the WSDL view, right-click the Port Types node and choose Add Port Type. <br>
     The Create New Port Type dialog box appears.</li>
   <li>Supply a name for the port type.</li>
   <li>Supply a name for the operation.</li>
-  <li>Select the category of operation.</li>
-  <li>Depending on the category of operation, you supply message information 
-    for the input, the output, or both the input and output. 
-    You can create a message from scratch by entering a new message name, or you can select an existing message. 
+  <li>Select the category of operation from the Operation Type drop-down list.</li>
+  <li>Depending on the category of operation, you supply message information for the input, or both the input and output. 
+    You can create a message from scratch by entering a new message name, or you can select an existing message from the drop-down list. 
     For a new message, the Add and Remove buttons enable you to add and remove message parts.</li>
-  <li>(Optional) If the category of operation is Request-Response or Solicit-Response, 
-    then you can supply message information for a fault.</li>
+  <li>(Optional) If the operation is a request-response operation, then you can supply message information for a fault.</li>
   <li>Click OK. <br>
     A port type node appears. The port type node contains an operation node. 
-    If you created one or more messages, then the message nodes appear.</li>
+    If you created one or more messages, then the message nodes appear. 
+    In addition, a partner link type is automatically created.</li>
 </ol>
+
 <p><b>To add an operation to an existing port type:</b></p>
+
 <ol>
-  <li>In the WSDL view, right-click the port type node and choose Add Operation. <br>
+  <li>In the WSDL view, right-click the port type node and choose Add &gt; Operation. <br>
     The Create New Operation dialog box appears.</li>
   <li>Supply a name for the operation.</li>
-  <li>Select the category of operation.</li>
-  <li>Depending on the category of operation, you supply message information 
-    for the input, the output, or both the input and output. 
-    You can create a message from scratch by entering a new message name, or you can select an existing message. 
+  <li>Select the category of operation from the Operation Type drop-down list.</li>
+  <li>Depending on the category of operation, you supply message information for the input, or both the input and output.     
+    You can create a message from scratch by entering a new message name, or you can select an existing message from the drop-down list. 
     For a new message, the Add and Remove buttons enable you to add and remove message parts.</li>
-  <li>(Optional) If the category of operation is Request-Response or Solicit-Response, 
-    then you can supply message information for a fault.</li>
+  <li>(Optional) If the operation is a request-response operation, then you can supply message information for a fault.</li>
   <li>Click OK. <br>
     An operation node appears. 
     If you created one or more messages, then the message nodes appear.</li>
 </ol>
+
 <p><b>To change the name of a port type:</b></p>
+
 <ol>
   <li>If the Properties window is not visible, choose Window &gt; Properties.</li>
   <li>Select the port type node.</li>
   <li>Set the Name property to the new name.</li>
 </ol>
+
 <p><b>To change the properties of an operation:</b></p>
+
 <ol>
   <li>If the Properties window is not visible, choose Window &gt; Properties.</li>
   <li>Select the operation node.</li>
   <li>Set the Name property to the new name.</li>
-  <li>If you want to specify the parameter order of an operation, set the Parameter Order property accordingly.</li>
+  <li>If you want to specify the parameter order of an operation, set the Parameter Order property accordingly. 
+    This property is intended for use with RPC bindings.</li>
 </ol>
+
 <p><b>To remove a port type or operation:</b></p>
-<ul>
-  <li>Right-click the port type or operation node and choose Delete.</li>
-</ul>
+
+<ol>
+  <li>Select the port type or operation node.</li>
+  <li>Press Delete.</li>
+</ol>
+
 <dl>
 <dt><a name="seealso">See Also</a></dt>
-<dd><a href="wsdl_editor_config.html" title="Configuring WSDL File Components">Configuring WSDL File Components</a></dd>
+<dd><a href="wsdl_editor_views.html" title="About the WSDL View">About the WSDL View</a></dd>
+<dd><a href="wsdl_editor_messages.html" title="Configuring Messages Using the WSDL View">Configuring Messages Using the WSDL View</a></dd>
 </dl>
 <hr>
 <small>  

@@ -1,37 +1,50 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 -->
 <html>
+
 <head>
-<title>Configuring WSDL Messages</title>
+<title>Configuring Messages Using the WSDL View</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
+
 <body>
-<h2>Configuring WSDL Messages</h2>
+
+<h2>Configuring Messages Using the WSDL View</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>You can use the WSDL Editor to create messages.</p>
-<p>In a WSDL file, a <a href="wsdl_editor_port_types.html">port type</a> contains one or more related operations that the web service can perform. 
+
+<p>You can use the WSDL Editor to create, edit, and delete messages.</p>
+
+<p>In a WSDL file, a port type contains one or more related operations that the web service can perform. 
   An operation receives a message, sends a message, or does both.</p>
-<p>Each message must contain one or more logical parts. 
+
+<p>Each message contains one or more logical parts. 
   For each part, you must specify the name and the type of content.</p>
+
 <p>If you change the name of a message or part, 
   then the WSDL Editor renames all occurrences in the same file. 
   To rename all occurrences in associated XSD, WSDL, and BPEL files as well, 
   right-click the component node and choose Refactor &gt; Rename.</p>
+
 <p><b>To create a message:</b></p>
+
 <ul>
   <li>In the WSDL view, right-click the Messages node and choose Add Message. <br>
     A message node appears. The message contains a default part.</li>
 </ul>
+
 <p><b>To change the name of a message:</b></p>
+
 <ol>
   <li>If the Properties window is not visible, choose Window &gt; Properties.</li>
   <li>Select the message node.</li>
   <li>Set the Name property to the new name.</li>
 </ol>
+
 <p><b>To change the properties of a part:</b></p>
+
 <ol>
   <li>If the Properties window is not visible, choose Window &gt; Properties.</li>
   <li>Select the part node.</li>
@@ -40,22 +53,27 @@
   <li>The Element or Type property specifies the type of content. 
     To set the value, click the ellipsis (...) button. 
     The Element or Type dialog box enables you to select any of the built-in types in W3C XML Schema. 
-    If you added an <a href="wsdl_editor_data_types.html">inline schema type</a>, 
-    then the dialog box enables you to select the inline schema type.</li>
-  </li>
+    If you added an inline schema or imported a schema, then you can select a type from the schema.</li>
 </ol>
+
 <p><b>To add a part to an existing message:</b></p>
+
 <ul>
   <li>Right-click the message node and choose Add &gt; Part. <br>
     A part node appears.</li>
 </ul>
+
 <p><b>To remove a message or part:</b></p>
-<ul>
-  <li>Right-click the message or part node and choose Delete.</li>
-</ul>
+
+<ol>
+  <li>Select the message or part node.</li>
+  <li>Press Delete.</li>
+</ol>
+
 <dl>
 <dt><a name="seealso">See Also</a></dt>
-<dd><a href="wsdl_editor_config.html" title="Configuring WSDL File Components">Configuring WSDL File Components</a></dd>
+<dd><a href="wsdl_editor_views.html" title="About the WSDL View">About the WSDL View</a></dd>
+<dd><a href="wsdl_editor_port_types.html" title="Configuring Port Types Using the WSDL View">Configuring Port Types Using the WSDL View</a></dd>
 </dl>
 <hr>
 <small>  

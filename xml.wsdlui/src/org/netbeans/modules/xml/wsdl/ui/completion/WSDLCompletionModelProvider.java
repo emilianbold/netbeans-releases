@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.wsdl.ui.completion;
@@ -26,6 +26,9 @@ import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
+import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElementsFactory;
+import org.netbeans.modules.xml.wsdl.ui.extensibility.model.XMLSchemaFileInfo;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.openide.util.lookup.Lookups;
@@ -58,9 +61,28 @@ public class WSDLCompletionModelProvider extends CompletionModelProvider {
         CompletionModel cm = new WSDLCompletionModel(context, wsdlSchemaModel, "wsdl"); //NOI18N
         List<CompletionModel> models = new ArrayList<CompletionModel>();
         models.add(cm);
+        
+        try {
+            WSDLExtensibilityElements elements = WSDLExtensibilityElementsFactory.getInstance().getWSDLExtensibilityElements();
+            for (XMLSchemaFileInfo info : elements.getAllXMLSchemaFileInfos()) {
+                CompletionModel model = createExtensibilityElementSchemaCompletionModel(info);
+                if (model != null) {
+                    models.add(model);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return models;
     }
     
+    private CompletionModel createExtensibilityElementSchemaCompletionModel(XMLSchemaFileInfo info) {
+        if (info.getSchema() != null) {
+            return new ExtensibilityElementCompletionModel(info.getSchema().getModel(), info.getPrefix(), info.getSchema().getTargetNamespace());
+        }
+        return null;
+    }
+
     private SchemaModel createWSDLSchemaModel() {
         try {
             InputStream in = getClass().getResourceAsStream("/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl.xsd"); //NOI18N
@@ -74,6 +96,37 @@ public class WSDLCompletionModelProvider extends CompletionModelProvider {
             //just catch
         } 
         return null;
+    }
+    
+    
+    class ExtensibilityElementCompletionModel extends CompletionModel {
+
+        SchemaModel schemaModel;
+        String targetNamespace;
+        String prefix;
+        
+        public ExtensibilityElementCompletionModel(SchemaModel schemaModel, String prefix, String targetNamespace) {
+            this.schemaModel = schemaModel; 
+            this.prefix = prefix;
+            this.targetNamespace = targetNamespace;
+        }
+        
+        @Override
+        public SchemaModel getSchemaModel() {
+            return schemaModel;
+        }
+
+        @Override
+        public String getSuggestedPrefix() {
+            return prefix;
+        }
+
+        @Override
+        public String getTargetNamespace() {
+            
+            return targetNamespace;
+        }
+        
     }
         
 }

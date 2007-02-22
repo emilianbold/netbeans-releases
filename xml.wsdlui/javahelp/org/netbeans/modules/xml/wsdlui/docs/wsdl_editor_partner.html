@@ -1,9 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 -->
+
 <html>
+
 <head>
 <title>About the Partner View</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
@@ -15,19 +17,53 @@
 
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>The Partner view enables you to visualize and configure the partner link types and messages in a WSDL file.</p>
-
-<p>Before you can add a partner link to a BPEL process, 
-the WSDL file must contain a partner link type.</p>
-
-<p>In a BPEL process, a <i>partner link</i> represents the interaction between the BPEL process and a partner service. 
-  Each partner link is associated with a partner link type.</p>
+<p>In the Partner view of the WSDL Editor, you can visualize and configure the abstract elements in a WSDL file. 
+The abstract elements include partner link types, port types, operations, and messages.</p>
 
 <p>A <i>partner link type</i> characterizes the conversational relationship between two services. 
-  The partner link type can have one or two roles. 
+  A partner link type can have one or two roles. 
   A role describes the function that a service has in the relationship. 
   Examples of roles are <tt>loanRequestor</tt> and <tt>loanProcessor</tt>. 
   Each role must specify the port type that the service will use to receive messages.</p>
+
+<p>The Partner view helps you to visualize the following types of interactions:</p>
+
+<ul>
+  <li><b>Client/Server.</b> In this interaction, the partner link type has one role. The role represents the server. 
+    The server can be invoked by one or more unspecified clients.</li>
+  <li><b>Peer to Peer.</b> In this interaction, the partner link type has two roles. Each role represents a peer service.</li>
+</ul>
+
+<p>The Partner view supports the top-down and bottom-up approaches to creating a WSDL file.</p>
+
+<p>The top-down approach consists of the following steps:</p>
+
+<ol>
+  <li>Create a partner link type. 
+    The partner link type contains a default role, which appears on the right. 
+    If you want to define a peer-to-peer interaction, then you must add a second role on the left.</li>
+  <li>Create the messages that will be sent from one partner to another.</li>
+  <li>Assign the messages to the partner link type's operations.</li>
+  <li>Specify the data types for the messages. 
+    Note that you can create or import an XML schema by using the Navigator window, 
+    and then drag the schema elements or types into the messages.</li>
+</ol>
+
+<p>The bottom-up approach consists of the following steps:</p>
+
+<ol>
+  <li>Create or import an XML schema by using the Navigator window.</li>
+  <li>Create the messages that will be sent from one partner to another. 
+    Note that you can drag the schema elements or types from the Navigator window into the messages.</li>
+  <li>Create a partner link type. 
+    The partner link type contains a default role, which appears on the right. 
+    If you want to define a peer-to-peer interaction, then you must add a second role on the left.</li>
+  <li>Assign the messages to the partner link type's operations.</li>
+</ol>
+
+<p>If you are building a composite application, then you can use the 
+Composite Application Service Assembly (CASA) editor to configure the concrete bindings in the WSDL file. 
+This approach prevents the WSDL file from being tied to a particular binding.</p>
 
 <p>The Partner view has the following components:</p>
 
@@ -35,6 +71,8 @@ the WSDL file must contain a partner link type.</p>
   <li><b>Toolbar.</b> The toolbar is located at the top of the view, just below the tab for the WSDL file.</li>
   <li><b>PartnerLinkTypes box.</b> This box contains one configuration box for each partner link type in the WSDL file.</li>
   <li><b>Messages box.</b> This box contains one configuration box for each message in the WSDL file.</li>
+  <li><b>Palette.</b> The Palette contains partner link type, operation, and message icons that you can drag into the configuration boxes. 
+    To display the Palette, choose Window &gt; Palette from the IDE's main menu.</li>
 </ul>
 
 <p>You can expand or collapse the boxes. When a box is collapsed, click the downward arrow to expand the box. When a box is expanded, click the upward arrow to collapse the box.</p>
@@ -42,9 +80,14 @@ the WSDL file must contain a partner link type.</p>
 <p>You can print the contents of the Partner view by using the IDE's standard print feature.</p>
 
 <p>After performing an action in the Partner view, you can reverse the action by choosing Edit &gt; Undo (Ctrl-Z) from the IDE's main menu.</p>
+
 <p>You can reverse an undo command by choosing Edit &gt; Redo (Ctrl-Y) from the IDE's main menu.</p>
 
+<p>If you right-click a component and choose Go To &gt; Source, 
+  then the Source view appears with the cursor positioned at the beginning of the component's block.</p>
+
 <h3>Partner View Tasks</h3>
+
 <ul>
   <li><a href="wsdl_editor_partner_nav.html" title="Navigating in the Partner View">Navigating in the Partner View</a></li>
   <li><a href="wsdl_editor_partner_types.html" title="Configuring Partner Link Types Using the Partner View">Configuring Partner Link Types Using the Partner View</a></li>

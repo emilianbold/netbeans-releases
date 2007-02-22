@@ -1,21 +1,28 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 -->
+
 <html>
+
 <head>
 <title>New WSDL Document Wizard: Abstract Configuration</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
+
 <body>
+
 <h2>New WSDL Document Wizard: Abstract Configuration</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
+
 <p>The Abstract Configuration page of the New WSDL Document wizard prompts you to supply information about the 
 following elements of the WSDL file: port type, operation, and message.</p>
+
 <p>A port type contains one or more related operations that the web service can perform. 
   You can create only one operation in the Abstract Configuration page. 
   To create additional operations, you must do so from the WSDL Editor after the file is created.</p>
+
 <ul>
   <li><b>Port Type Name.</b> Supply a name for the port type. The default value is derived from the WSDL name.</li>
   <li><b>Operation Name.</b> Supply a name for the operation. The default value is derived from the WSDL name.</li>
@@ -23,29 +30,36 @@ following elements of the WSDL file: port type, operation, and message.</p>
   <ul>
     <li><b>Request-Response.</b> The operation receives a message as input, and sends a message as output.</li>
     <li><b>One-Way.</b> The operation receives a message as input.</li>
+<!--
     <li><b>Solicit-Response.</b> The operation sends a message as output, and receives a message as input.</li>
     <li><b>Notification.</b> The operation sends a message as output.</li>
+-->
   </ul>
   </ul>
-<p>Depending on the category of operation, you supply message information for the input, the output, 
-or both the input and output. 
-If the category of operation is Request-Response or Solicit-Response, 
-then you can optionally supply message information for a fault.</p>
+
+<p>Depending on the category of operation, you supply message information for the input, or both the input and output. 
+If the operation is a request-response operation, then you can optionally supply message information for a fault.</p>
+
 <ul>
   <li><b>Input.</b> Supply information about the message that the operation receives as input.</li>
   <li><b>Output.</b> Supply information about the message that the operation sends as output.</li>
   <li><b>Fault.</b> Supply information about the message that the operation sends as a fault.</li>
 </ul>
+
 <p>Each message contains one or more logical parts. 
   The Add and Remove buttons enable you to add and remove parts.</p>
+
 <p>For each part, you must specify the name and the type of content. 
   Be sure to enter a descriptive part name, such as <tt>searchInput</tt> or <tt>resultOutput</tt>. 
   By default, the type of content is set to the built-in string type in W3C XML Schema. 
   To change the type or to select an element instead, click the ellipsis (...) button. 
   A dialog box enables you to select any of the built-in types in W3C XML Schema. 
   If the project includes an XSD file, then the dialog box enables you to select an element or type from the XSD file.</p>
+
 <p>If you click Next, then the Concrete Configuration page appears.</p>
-<p>If you click Finish, then the WSDL file is created. The WSDL Editor appears in WSDL view.</p>
+
+<p>If you click Finish, then the WSDL file is created without any concrete elements. The WSDL Editor appears in WSDL view.</p>
+
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="new_wsdl_wizard_define_concrete.html" title="New WSDL Document Wizard: Concrete Configuration">New WSDL Document Wizard: Concrete Configuration</a></dd>

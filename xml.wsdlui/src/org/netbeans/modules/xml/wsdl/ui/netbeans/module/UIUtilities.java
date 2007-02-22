@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.swing.text.StyledDocument;
 
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode;
 import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategoryNode;
@@ -172,6 +173,9 @@ public class UIUtilities {
             parent = parent.getParent();
         }
         
+        //Expecting schema as the root for this schemacomponent.
+        if (!(path.get(0) instanceof Schema)) return Collections.emptyList();
+        
         Types types = model.getDefinitions().getTypes();
         Collection<WSDLSchema> schemas = types.getExtensibilityElements(WSDLSchema.class);
         
@@ -183,8 +187,8 @@ public class UIUtilities {
             }
         }
         
-        
-        
+        //Should be able to find a schema in the wsdl which contains this SchemaComponent.
+        if (wsdlSchema == null) return Collections.emptyList();
         
         //get the wsdlschema
         List<Node> wsdlPathTillTypes = findPathFromRoot(root, types);
@@ -371,13 +375,39 @@ public class UIUtilities {
         return null;
     }
 
+    /**
+     * Create a dialog to contain a "creator" customizer (a customizer that
+     * is used to create something that does not yet exist), which generally
+     * means the title will be "Add Xyz".
+     *
+     * @return  dialog description with appropriate title.
+     */
+    public static DialogDescriptor getCreatorDialog(
+            Customizer customizer, String title, boolean editable) {
+        title = NbBundle.getMessage(UIUtilities.class,
+                "TITLE_WSDLElementNode_Creator", title);
+        return getCustomizerDialog0(customizer, title, editable);
+    }
+
+    /**
+     * Create a dialog to contain a customizer (a customizer that is used
+     * to edit something that already exists), which generally means the
+     * title will be "Xyz Customizer".
+     *
+     * @return  dialog description with appropriate title.
+     */
     public static DialogDescriptor getCustomizerDialog(
+            Customizer customizer, String title, boolean editable) {
+        title = NbBundle.getMessage(UIUtilities.class,
+                "TITLE_WSDLElementNode_Customizer", title);
+        return getCustomizerDialog0(customizer, title, editable);
+    }
+
+    private static DialogDescriptor getCustomizerDialog0(
             final Customizer customizer, final String title, final boolean editable) {
         java.awt.Component component = customizer.getComponent();
         final DialogDescriptor descriptor = new DialogDescriptor(component,
-                NbBundle.getMessage(UIUtilities.class,
-                "TITLE_WSDLElementNode_Customizer", title),
-                true, null);
+                title, true, null);
         descriptor.setHelpCtx(customizer.getHelpCtx());
         if(editable) {
             // customizer's property change listener to enable/disable OK

@@ -1,95 +1,108 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 -->
+
 <html>
+
 <head>
-<title>Creating a WSDL File</title>
+<title>Creating a WSDL File From Scratch</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
+
 <body>
-<h2>Creating a WSDL File</h2>
+
+<h2>Creating a WSDL File From Scratch</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>When you create a WSDL file, you must choose one of the following approaches:</p>
+
+<p>When you create a WSDL file from scratch, the wizard contains three pages that you can fill out.</p>
+
 <ul>
-  <li>Create a WSDL file from scratch. A wizard guides you through the process.</li>
-  <li>Create a WSDL file based on an existing WSDL file.</li>
+
+<li>The Name and Location page prompts you to supply basic information 
+about the WSDL file.</li>
+
+<li>The Abstract Configuration page prompts you to supply information about the 
+following elements of the WSDL file: port type, operation, and message.</li>
+
+<li>The Concrete Configuration page prompts you to supply information about the 
+following elements of the WSDL file: binding, service, and port. </li>
+
 </ul>
-<p>The wizard enables you to create a basic WSDL file. 
-  If you want a more complicated WSDL file, then use the WSDL Editor to modify the basic WSDL file.</p>
+
+<p>You do <i>not</i> need to complete all three pages. 
+You can fill out the Name and Location page and then click Finish. 
+Or you can fill out the Name and Location page and the Abstract Configuration page and then click Finish.</p>
+
+<!--
+<p>If you want to use the Partner view, it makes sense to fill out the Name and Location page only.</p>
+-->
+
+
+
 <p><b>To create a WSDL file from scratch:</b></p>
+
 <ol>
+
   <li>In the Projects window, right-click the Process Files folder and choose New &gt; WSDL Document.</li>
+
   <li>In the Name and Location wizard page, do the following:</li>
+
   <ol type="a">
     <li>Supply a name for the file. You cannot enter a name that already exists in the project.</li>
     <li>(Optional) Change the default folder by clicking Browse and selecting the new folder.</li>
     <li>Enter the target namespace for the WSDL file. The target namespace will appear in the root element.</li>
     <li>Specify any XML Schema files that you want to import.</li>
-    <li>Click Next.</li>
+    <li>If you want to configure the abstract and concrete information from the wizard, then click Next. 
+        Otherwise, click Finish.</li>
   </ol>
+
   <li>In the Abstract Configuration wizard page, do the following:</li>
+
   <ol type="a">
     <li>Supply a name for the port type.</li>
     <li>Supply a name for the operation.</li>
     <li>Select the category of operation.</li>
     <li>Depending on the category of operation, 
-      you supply message information for the input, the output, or both the input and output. 
+      you supply message information for the input, or both the input and output. 
       Each message contains one or more logical parts. 
       The Add and Remove buttons enable you to add and remove message parts.</li>
-    <li>(Optional) If the category of operation is Request-Response or Solicit-Response, 
+    <li>(Optional) If the operation is a request-response operation, 
       then you can supply message information for a fault.</li>
-    <li>Click Next.</li>
+    <li>If you want to configure the concrete information from the wizard, then click Next. 
+        Otherwise, click Finish.</li>
   </ol>
+
   <li>In the Concrete Configuration wizard page, do the following:</li>
+
   <ol type="a">
     <li>Supply a name for the binding.</li>
-    <li>The binding subtype options indicate how to translate the binding to a SOAP message. 
-      If your settings for message parts and the binding subtype do not conform to 
-      the WS-I Basic Profile, an error message appears at the bottom of the wizard page.</li>
+    <li>Use the binding type field to customize the WSDL file for a particular binding component. 
+        The appropriate extensibility elements will be added to the WSDL file.</li>
+    <li>If the binding type is SOAP, then the binding subtypes indicate how to translate 
+        the binding to a SOAP message. For other binding types, 
+        you typically have only one choice for the binding subtype.</li>
     <li>Supply a name for the service.</li>
     <li>Supply a name for the port.</li>
     <li>Click Finish.</li>
   </ol>
+
   The WSDL file is created. The WSDL Editor appears in WSDL view.
+
 </ol>
+
 <ul class="note">
-  <li>The port's SOAP address node includes a location property, which specifies the address of the port. 
-    The wizard generates a dummy value for the location property. 
-    The location property must be unique; that is, the value must not conflict with any other WSDL files 
-  that are deployed to the same application server.</li>
+  <li>If you selected the SOAP binding type, then the port's <tt>soap:address</tt> node includes a Location property.
+    The Location property specifies the address of the port. 
+    The wizard generates a dummy value for the Location property. 
+    The Location property must be unique; that is, the value must not conflict with any other WSDL files 
+    that are deployed to the same application server.</li>
 </ul>
-<p><b>To create a WSDL file based on an existing WSDL file:</b></p>
-<ol>
-  <li>In the Projects window, right-click the Process Files folder and choose New &gt; File/Folder.</li>
-  <li>In the Choose File Type wizard page, do the following:</li>
-  <ol type="a">
-    <li>In the Categories list, select the XML node.</li>
-    <li>In the File Types list, select the External WSDL Document(s) node.</li>
-    <li>Click Next.</li>
-  </ol>
-  <li>In the Specify Resource Location wizard page, do one of the following:</li>
-  <ul>
-    <li>To create a WSDL file based on a running service:</li>
-    <ol type="a">
-      <li>Select the From URL button.</li>
-      <li>Enter the URL of the service's WSDL file.</li>
-      <li>Click Finish.</li>
-    </ol>
-    <li>To create a WSDL file by using an existing WSDL file on the local file system:</li>
-    <ol type="a">
-      <li>Select the From Local File System button.</li>
-      <li>Specify the folder where the WSDL file is located.</li>
-      <li>Click Finish.</li>
-    </ol>
-  </ul>
-  The WSDL file is created. The WSDL Editor appears in WSDL view.
-  </li></ol>
+
 <dl>
 <dt><a name="seealso">See Also</a></dt>
-<dd><a href="nbdocs://org.netbeans.modules.bpel.bpelhelp/org/netbeans/modules/bpel/bpelhelp/design/import_wsdl_resources.html" title="Addding WSDL and XML Schema Resources">Addding WSDL and XML Schema Resources</a></dd>
-  <dd><a href="wsdl_editor_config.html" title="Configuring WSDL File Components">Configuring WSDL File Components</a></dd>
+<dd><a href="wsdl_editor.html" title="About the WSDL Editor">About the WSDL Editor</a></dd>
 </dl>
 <hr>
 <small>  

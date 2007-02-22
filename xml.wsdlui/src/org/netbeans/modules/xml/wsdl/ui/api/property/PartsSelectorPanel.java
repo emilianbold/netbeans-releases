@@ -2,23 +2,28 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.xml.wsdl.ui.api.property;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JList;
 
@@ -34,11 +39,32 @@ public class PartsSelectorPanel extends javax.swing.JPanel {
      * 
      */
     private static final long serialVersionUID = 8696139559577226547L;
+    private int[] selectedIndices;
+    
     /** Creates new form PartsSelectorPanel */
-    public PartsSelectorPanel(String[] parts, PropertyEnv env) {
+    public PartsSelectorPanel(String[] parts, String[] selectedPartNames, PropertyEnv env) {
         mEnv = env;
         mEnv.setState(PropertyEnv.STATE_INVALID);
         mParts = parts;
+        if (selectedPartNames != null && selectedPartNames.length == 1 && selectedPartNames[0].trim().length() == 0) {
+            selectedIndices = null;
+        } else {
+            selectedIndices = new int[selectedPartNames.length];
+            Map<String, Integer> map = new HashMap<String, Integer>();
+            int j = 0;
+            for (String part : parts) {
+                map.put(part, new Integer(j++));
+            }
+
+            for (int i = 0; i < selectedPartNames.length; i++) {
+                String partName = selectedPartNames[i];
+                if (map.containsKey(partName)) {
+                    selectedIndices[i] = map.get(partName).intValue();
+                } else {
+                    selectedIndices[i] = -1;
+                }
+            }
+        }
         initComponents();
         
     }
@@ -53,7 +79,10 @@ public class PartsSelectorPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
 
-        jList1.setModel(new DefaultComboBoxModel(mParts));
+        ComboBoxModel model = new DefaultComboBoxModel(mParts);
+        jList1.setModel(model);
+        if (selectedIndices != null)
+        jList1.setSelectedIndices(selectedIndices);
         jList1.setToolTipText(org.openide.util.NbBundle.getMessage(PartsSelectorPanel.class, "PartsSelectorPanel.jList1.toolTipText")); // NOI18N
         jList1.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {

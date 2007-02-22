@@ -7,17 +7,24 @@
 		<tocitem text="About the WSDL Editor" target="org.netbeans.modules.xml.wsdlui.about" />
 		<tocitem text="Source View">
 			<tocitem text="About the Source View" target="wsdlui_source" />
+			<tocitem text="Using Code Completion in WSDL Files" target="wsdlui_code_completion" />
 		</tocitem>
 		<tocitem text="WSDL View">
 			<tocitem text="About the WSDL View" target="wsdlui_views" />
-			<tocitem text="Configuring WSDL File Components" target="wsdlui_config" />
-			<tocitem text="Configuring WSDL Data Types" target="wsdlui_data" />
-			<tocitem text="Configuring WSDL Messages" target="wsdlui_messages" />
-			<tocitem text="Configuring WSDL Port Types" target="wsdlui_port" />
-			<tocitem text="Configuring WSDL Bindings" target="wsdlui_bindings" />
-			<tocitem text="Configuring WSDL Services" target="wsdlui_services" />
-			<tocitem text="Adding BPEL Extensibility Elements" target="wsdlui_prop" />
+			<tocitem text="Configuring the Root Element" target="wsdlui_root" />
+			<tocitem text="Importing XML Schemas Using the WSDL View" target="wsdlui_import_schema" />
+			<tocitem text="Adding Inline Schemas Using the WSDL View" target="wsdlui_data" />
+			<tocitem text="Importing WSDL Files Using the WSDL View" target="wsdlui_import_wsdl" />
+			<tocitem text="Configuring Messages Using the WSDL View" target="wsdlui_messages" />
+			<tocitem text="Configuring Port Types Using the WSDL View" target="wsdlui_port" />
+			<tocitem text="Configuring Bindings Using the WSDL View" target="wsdlui_bindings" />
+			<tocitem text="Configuring Services Using the WSDL View" target="wsdlui_services" />
+			<tocitem text="Configuring Partner Link Types Using the WSDL View" target="wsdlui_bpel_ext" />
+			<tocitem text="Configuring Properties and Property Aliases Using the WSDL View" target="wsdlui_prop" />
 			<tocitem text="Finding Usages of WSDL Components" target="wsdlui_wsdlview_showusages" />
+			<tocitem text="Using Refactoring to Rename or Delete WSDL File Components" target="wsdlui_refactoring" />
+			<tocitem text="Adding Documentation" target="wsdlui_documentation" />
+			<tocitem text="Using Find in the WSDL View" target="wsdlui_find" />
 		</tocitem>
 		<tocitem text="Partner View">
 			<tocitem text="About the Partner View" target="wsdlui_partner" />
@@ -26,7 +33,9 @@
 			<tocitem text="Configuring Messages Using the Partner View" target="wsdlui_partner_messages" />
 		</tocitem>
 		<tocitem text="Working with WSDL Files">
-			<tocitem text="Creating a WSDL File" target="wsdlui_creating" />
+			<tocitem text="Creating a WSDL File From Scratch" target="wsdlui_creating" />
+			<tocitem text="Creating a WSDL File Based On an Existing WSDL File" target="wsdlui_creating_existing" />
+			<tocitem text="Validating WSDL Files" target="wsdlui_validation" />
 		</tocitem>
 	</tocitem>
 </toc>

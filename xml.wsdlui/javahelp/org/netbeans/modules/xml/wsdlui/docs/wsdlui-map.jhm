@@ -5,20 +5,30 @@
 <map version="1.0">
 	<mapID target="org.netbeans.modules.xml.wsdlui.about" url="wsdl_editor.html"/>
 	<mapID target="wsdlui_source" url="wsdl_editor_source.html"/>
+	<mapID target="wsdlui_code_completion" url="wsdl_editor_code_completion.html"/>
 	<mapID target="wsdlui_views" url="wsdl_editor_views.html"/>
-	<mapID target="wsdlui_config" url="wsdl_editor_config.html"/>
+	<mapID target="wsdlui_root" url="wsdl_editor_root.html"/>
+	<mapID target="wsdlui_import_schema" url="wsdl_editor_import_schema.html"/>
 	<mapID target="wsdlui_data" url="wsdl_editor_data_types.html"/>
+	<mapID target="wsdlui_import_wsdl" url="wsdl_editor_import_wsdl.html"/>
+	<mapID target="wsdlui_config" url="wsdl_editor_config.html"/>
 	<mapID target="wsdlui_messages" url="wsdl_editor_messages.html"/>
 	<mapID target="wsdlui_port" url="wsdl_editor_port_types.html"/>
 	<mapID target="wsdlui_bindings" url="wsdl_editor_bindings.html"/>
 	<mapID target="wsdlui_services" url="wsdl_editor_services.html"/>
+	<mapID target="wsdlui_bpel_ext" url="wsdl_editor_bpel_ext.html"/>
 	<mapID target="wsdlui_prop" url="wsdl_editor_prop.html"/>
 	<mapID target="wsdlui_wsdlview_showusages" url="CSH/wsdlui-wsdlview-showusages.html"/>
+	<mapID target="wsdlui_refactoring" url="wsdl_editor_refactoring.html"/>
+	<mapID target="wsdlui_documentation" url="wsdl_editor_documentation.html"/>
+	<mapID target="wsdlui_find" url="wsdl_editor_find.html"/>
 	<mapID target="wsdlui_partner" url="wsdl_editor_partner.html"/>
 	<mapID target="wsdlui_partner_nav" url="wsdl_editor_partner_nav.html"/>
 	<mapID target="wsdlui_partner_types" url="wsdl_editor_partner_types.html"/>
 	<mapID target="wsdlui_partner_messages" url="wsdl_editor_partner_messages.html"/>
 	<mapID target="wsdlui_creating" url="wsdl_editor_creating.html"/>
+	<mapID target="wsdlui_creating_existing" url="wsdl_editor_creating_existing.html"/>
+	<mapID target="wsdlui_validation" url="wsdl_editor_validation.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLColumnsView" url="wsdl_editor.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLTreeViewMultiViewDesc" url="wsdl_editor.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLSourceMultiviewDesc" url="nbdocs:/org/netbeans/modules/usersguide/editing/csh/about_source_editor.html"/>

@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -60,19 +60,13 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
     
     public void view(final View view, final Component component,
             final Object... parameters) {
-        
-        if (!EventQueue.isDispatchThread())
-        {
-            EventQueue.invokeLater(new Runnable()
-            {
-                public void run()
-                {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
                     viewInSwingThread(view, component, parameters);
                 }
             });
-        }
-        else
-        {
+        } else {
             viewInSwingThread(view, component, parameters);
         }
     }
@@ -80,68 +74,73 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
     // see schemamultiviewsupport for implementation
     public void viewInSwingThread(View view, Component component,
             Object... parameters) {
-        if(canView(view,component))
-        {
+        if (canView(view,component)) {
             WSDLEditorSupport editor = dobj.getWSDLEditorSupport();
             editor.open();
-            if(view!=null)
-            {
-                switch (view)
-                {
-                    case WSDL:
-                        WSDLMultiViewFactory.requestMultiviewActive(
-                                WSDLTreeViewMultiViewDesc.PREFERRED_ID);
-                        break;
+            if (view != null) {
+                switch (view) {
                     case SOURCE:
                         WSDLMultiViewFactory.requestMultiviewActive(
                                 WSDLSourceMultiviewDesc.PREFERRED_ID);
                         break;
+                    case STRUCTURE:
+                        WSDLMultiViewFactory.requestMultiviewActive(
+                                WSDLTreeViewMultiViewDesc.PREFERRED_ID);
+                        break;
+                    case DESIGN:
+                        WSDLMultiViewFactory.requestMultiviewActive(
+                                WSDLDesignMultiViewDesc.PREFERRED_ID);
+                        break;
                 }
             }
             TopComponent activeTC = TopComponent.getRegistry().getActivated();
-            ShowCookie showCookie = (ShowCookie)activeTC.getLookup().lookup(ShowCookie.class);
+            ShowCookie showCookie = (ShowCookie) activeTC.getLookup().lookup(
+                    ShowCookie.class);
             ResultItem resultItem = null;
-            if (parameters!=null&&parameters.length!=0) {
-                for(Object o :parameters) {
-                    if(o instanceof ResultItem) {
-                        resultItem = (ResultItem)o;
+            if (parameters != null && parameters.length != 0) {
+                for (Object o : parameters) {
+                    if (o instanceof ResultItem) {
+                        resultItem = (ResultItem) o;
                         break;
                     }
                 }
             }
-            if(resultItem == null) resultItem = new ResultItem(null,null,component,null);
-            if(showCookie!=null) showCookie.show(resultItem);
+            if (showCookie != null) {
+                if (resultItem == null) {
+                    resultItem = new ResultItem(null, null, component, null);
+                }
+                showCookie.show(resultItem);
+            }
         }
     }
 
     // see schemamultiviewsupport for implementation
-    public boolean canView(ViewComponentCookie.View view, Component component)
-    {
-        if(view!=null&&component!=null)
-        {
-            switch(view)
-            {
+    public boolean canView(ViewComponentCookie.View view, Component component) {
+        if (view != null && component != null) {
+            switch(view) {
                 case SOURCE:
-                case WSDL:
+                case STRUCTURE:
+                case DESIGN:
+                case CURRENT:
+                case SUPER:
                     return true;
             }
         }
         return false;
     }
-    
         
     public void show(ResultItem resultItem) {
-        View view = View.WSDL;
+        View view = View.STRUCTURE;
         Component component = resultItem.getComponents();
-        if(component == null || component.getModel() == null ||
+        if (component == null || component.getModel() == null ||
                 component.getModel().getState() == WSDLModel.State.NOT_WELL_FORMED) {
             view(View.SOURCE,component,resultItem);
         } else {
-            if(component instanceof DocumentComponent) {
-                UIUtilities.annotateSourceView(dobj, (DocumentComponent) component, 
+            if (component instanceof DocumentComponent) {
+                UIUtilities.annotateSourceView(dobj, (DocumentComponent) component,
                         resultItem.getDescription(), false);
             }
-            
+
             TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
             MultiViewHandler mvh = MultiViews.findMultiViewHandler(tc);
 
@@ -150,10 +149,12 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
             }
 
             MultiViewPerspective mvp = mvh.getSelectedPerspective();
-            if(mvp.preferredID().equals(WSDLTreeViewMultiViewDesc.PREFERRED_ID)) {
-                view(View.WSDL, component, resultItem);
-            } else if(mvp.preferredID().equals(WSDLSourceMultiviewDesc.PREFERRED_ID)) {
+            if (mvp.preferredID().equals(WSDLTreeViewMultiViewDesc.PREFERRED_ID)) {
+                view(View.STRUCTURE, component, resultItem);
+            } else if (mvp.preferredID().equals(WSDLSourceMultiviewDesc.PREFERRED_ID)) {
                 view(View.SOURCE, component, resultItem);
+            } else if (mvp.preferredID().equals(WSDLDesignMultiViewDesc.PREFERRED_ID)) {
+                view(View.DESIGN, component, resultItem);
             }
         }
     }
