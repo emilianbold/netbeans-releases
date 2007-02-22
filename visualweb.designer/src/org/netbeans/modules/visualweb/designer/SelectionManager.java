@@ -1324,7 +1324,24 @@ public class SelectionManager {
 //                List rectangles = ModelViewMapper.getComponentRectangles(pageBox, fo.component);
 ////                Rectangle bounds = mapper.getComponentBounds(fo.component);
 //                Rectangle bounds = ModelViewMapper.getComponentBounds(pageBox, fo.component);
+
+            // XXX #95626 Hack (model might be changing underneath without proper notifications).
+            // The elements might have been changed while the beans remain same.
+            if (primary != null) {
+                Element equivalentElement = webform.getComponentRootElementEquivalentTo(primary);
+                if (equivalentElement != null && equivalentElement != primary) {
+                    primary = equivalentElement;
+                }
+            }
+            
             for (SelectedComponent sc : selectedComponents) {
+                // XXX #95626 Hack (model might be changing underneath without proper notifications).
+                // The elements might have been changed while the beans remain same.
+                Element equivalentElement = webform.getComponentRootElementEquivalentTo(sc.componentRootElement);
+                if (equivalentElement != null && equivalentElement != sc.componentRootElement) {
+                    sc.componentRootElement = equivalentElement;
+                }
+                
                 // XXX I should cache these!!!
 //                ArrayList rectangles = mapper.getComponentRectangles(fo.component);
                 List rectangles = ModelViewMapper.getComponentRectangles(pageBox, sc.componentRootElement);
