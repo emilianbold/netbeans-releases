@@ -12,5 +12,9 @@ from any platform, including GNU/Linux:
 /usr/share/netbeans/5.5/platform6/lib/nbexec.cmd
 /usr/share/netbeans/5.5/platform6/lib/nbexec.exe
 
+NOTE Also:
 
- -- Tom Marble <tom.marble@sun.com>, Thu, 15 Feb 2007 23:21:34 -0600
+Certain zipfiles are included as packed on purpose as they 
+are required to facilitate code inspection and analysis by the IDE.
+
+ -- Tom Marble <tom.marble@sun.com>, Thu, 22 Feb 2007 11:36:13 -0600

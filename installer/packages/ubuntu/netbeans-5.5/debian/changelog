@@ -1,3 +1,12 @@
+netbeans5.5 (5.5-0.53) feisty; urgency=low
+
+  * Added unzip to Build-Depends:
+  * Changed localization Suggests:
+  * removed unnecessary netbeans5.5.conffiles
+  * Updated README.Debian with comment about needing packed *.zip files
+
+ -- Tom Marble <tom.marble@sun.com>  Thu, 22 Feb 2007 11:33:12 -0600
+
 netbeans5.5 (5.5-0.52) feisty; urgency=low
 
   * Added javadoc to doc package
