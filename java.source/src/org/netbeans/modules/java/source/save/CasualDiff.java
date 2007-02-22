@@ -933,9 +933,11 @@ public class CasualDiff {
     protected int diffNewArray(JCNewArray oldT, JCNewArray newT, int[] bounds) {
         int localPointer = bounds[0];
         // elemtype 
-        int[] elemtypeBounds = getBounds(oldT.elemtype);
-        copyTo(localPointer, elemtypeBounds[0]);
-        localPointer = diffTree(oldT.elemtype, newT.elemtype, elemtypeBounds);
+        if (oldT.elemtype != null) {
+            int[] elemtypeBounds = getBounds(oldT.elemtype);
+            copyTo(localPointer, elemtypeBounds[0]);
+            localPointer = diffTree(oldT.elemtype, newT.elemtype, elemtypeBounds);
+        }
         //diffParameterList(oldT.dims, newT.dims, -1);
         //diffList(oldT.elems, newT.elems, LineInsertionType.NONE, Query.NOPOS);
         copyTo(localPointer, bounds[1]);
