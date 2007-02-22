@@ -192,19 +192,19 @@ public class PaletteKit implements Runnable {
         }
         
         // delete empty categories
-        for (FileObject catFolder : categoryFolders.values()) {
-            if (catFolder.getChildren().length == 0) {
-                FileLock lock = null;
-                try {
-                    lock = catFolder.lock();
-                    catFolder.delete(lock);
-                } catch (IOException e) {
-                    Debug.error("Can't delete empty directory for unused palette category: " + e);
-                } finally {
-                    lock.releaseLock();
-                }
-            }
-        }
+//        for (FileObject catFolder : categoryFolders.values()) {
+//            if (catFolder.getChildren().length == 0) {
+//                FileLock lock = null;
+//                try {
+//                    lock = catFolder.lock();
+//                    catFolder.delete(lock);
+//                } catch (IOException e) {
+//                    Debug.error("Can't delete empty directory for unused palette category: " + e);
+//                } finally {
+//                    lock.releaseLock();
+//                }
+//            }
+//        }
     }
     
     void checkValidity(final Lookup lookup) {
