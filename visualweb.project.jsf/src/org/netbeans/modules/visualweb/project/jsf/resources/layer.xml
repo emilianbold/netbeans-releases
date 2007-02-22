@@ -37,26 +37,26 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-    <!-- The following definition is only needed for the framework approach.
+    <!-- The following definition is needed for the framework approach. -->
     <folder name="j2ee">
         <folder name="webtier">
             <folder name="framework">
-                <file name="org-netbeans-modules-visualweb-project-jsf-JSFFrameworkProvider.instance"/> 
+                <file name="org-netbeans-modules-visualweb-project-jsf-framework-JSFFrameworkProvider.instance"/> 
             </folder>
         </folder>
     </folder>
-    -->
     
     <folder name="Templates">
-        <!-- The following templates are only needed for the framework approach.
+        <!-- The following templates are needed for the framework approach. -->
         <folder name="JSP_Servlet">
             <attr name="Html.html/Page.jsp" boolvalue="true"/>
             <attr name="Page.jsp/JSFManagedBean.java" boolvalue="true"/>
             <file name="Page.jsp" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/Page.jsp.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org.netbeans.modules.html.htmlObject.gif"/>
                 <attr name="template" boolvalue="true" />
                 <attr name="templateCategory" stringvalue="servlet-types"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.rave.project.jsf.ui.PageIterator.createWebFormIterator"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createWebFormIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/WebFormTemplateHelp.html" />
             </file>
             <file name="Page.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/Page.java.template">
@@ -64,7 +64,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/pageJavaTemplateHelp.html" />
             </file>
         </folder>
-        -->
 
         <attr name="JsfApps/JSP_Servlet" boolvalue="true"/>
         <folder name="JsfApps">
