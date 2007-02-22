@@ -37,8 +37,8 @@ import javax.swing.event.ChangeListener;
  */
 public class InstanceWatcher {
 
-    private List<WeakReference<Object>> references;
-    private ReferenceQueue queue;
+    private List<Reference<Object>> references;
+    private ReferenceQueue<Object> queue;
     private static ExecutorService executor = Executors.newSingleThreadExecutor();
     
     private transient List<WeakReference<ChangeListener>> changeListenerList;
@@ -46,19 +46,19 @@ public class InstanceWatcher {
     
     /** Creates a new instance of InstanceWatcher */
     public InstanceWatcher() {
-        references = new ArrayList<WeakReference<Object>>();
-        queue = new ReferenceQueue();
+        references = new ArrayList<Reference<Object>>();
+        queue = new ReferenceQueue<Object>();
         new FinalizingToken();
     }
            
     public synchronized void add( Object instance ) {
         if ( ! contains( instance ) ) {
-            references.add( new WeakReference( instance, queue ) );
+            references.add( new WeakReference<Object>( instance, queue ) );
         }
     }
     
     private synchronized boolean contains( Object o ) {
-        for( WeakReference r : references ) {
+        for( Reference r : references ) {
             if ( r.get() == o ) {
                 return true;
             }
@@ -71,9 +71,9 @@ public class InstanceWatcher {
         return references.size();
     }
     
-    public Collection getInstances() {
-        List l = new ArrayList(references.size());
-        for (WeakReference wr : references) {
+    public Collection<?> getInstances() {
+        List<Object> l = new ArrayList<Object>(references.size());
+        for (Reference wr : references) {
             Object inst = wr.get();
             if (inst != null) l.add(inst);
         }
@@ -95,7 +95,7 @@ public class InstanceWatcher {
         if (changeListenerList == null ) {
             changeListenerList = new ArrayList<WeakReference<ChangeListener>>();
         }
-        changeListenerList.add(new WeakReference( listener ) );
+        changeListenerList.add(new WeakReference<ChangeListener>( listener ) );
     }
 
     /**

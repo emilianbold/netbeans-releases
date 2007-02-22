@@ -55,7 +55,7 @@ public final class TimesCollectorPeer {
     
     /** Creates a new instance of TimesCollectorPeer */
     private TimesCollectorPeer() {
-        files = new ArrayList();
+        files = new ArrayList<Reference<FileObject>>();
         fo2Key2Desc = new WeakHashMap<FileObject, Map<String, Description>>();
         
         pcs = new PropertyChangeSupport(this);
@@ -88,7 +88,7 @@ public final class TimesCollectorPeer {
         Map<String, Description> result = fo2Key2Desc.get(fo);
         
         if (result == null) {
-            files.add(new CleanableWeakReference(fo));
+            files.add(new CleanableWeakReference<FileObject>(fo));
             fo2Key2Desc.put(fo, result = new LinkedHashMap<String, Description>());
             pcs.firePropertyChange("fos", null, fo);
             if (fo != null) {
@@ -173,7 +173,7 @@ public final class TimesCollectorPeer {
         public ObjectCountDescripton( TimesCollectorPeer tcp, FileObject fo, String key, String message ) {
             super( message, 0 );
             this.tcp = tcp;
-            this.fo = new WeakReference(fo);
+            this.fo = new WeakReference<FileObject>(fo);
             this.key = key;
             iw.addChangeListener( this );
         }
@@ -200,9 +200,9 @@ public final class TimesCollectorPeer {
         
     }
     
-    private class CleanableWeakReference extends WeakReference implements Runnable {
+    private class CleanableWeakReference<T> extends WeakReference<T> implements Runnable {
         
-        public CleanableWeakReference(Object o) {
+        public CleanableWeakReference(T o) {
             super(o, Utilities.activeReferenceQueue());
         }
 
