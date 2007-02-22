@@ -211,9 +211,9 @@ public class ElementNode extends AbstractNode {
                 
         FileObject fileObject; // For the root description
         
-        String name;
-        ElementHandle<? extends Element> elementHandle;
-        ElementKind kind;
+        final String name;
+        final ElementHandle<? extends Element> elementHandle;
+        final ElementKind kind;
         Set<Modifier> modifiers;        
         List<Description> subs; 
         String htmlHeader;
@@ -221,8 +221,23 @@ public class ElementNode extends AbstractNode {
         
         Description( ClassMemberPanelUI ui ) {
             this.ui = ui;
+            this.name = null;
+            this.elementHandle = null;
+            this.kind = null;            
         }
-                                
+         
+        Description(ClassMemberPanelUI ui,
+                    String name,
+                    ElementHandle<? extends Element> elementHandle,
+                    ElementKind kind ) {
+            this.ui = ui;
+            this.name = name;
+            this.elementHandle = elementHandle;
+            this.kind = kind;
+        }
+
+        
+        
         @Override
         public boolean equals(Object o) {
                         

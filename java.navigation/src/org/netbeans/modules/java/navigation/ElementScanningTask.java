@@ -119,11 +119,8 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         public Void visitType(TypeElement e, Description p) {
             if ( !canceled  && !info.getElementUtilities().isSynthetic(e) ) {            
                 
-                Description d = new Description(p.ui);
-                d.kind = e.getKind();
+                Description d = new Description(p.ui, e.getSimpleName().toString(), ElementHandle.create(e), e.getKind());
                 d.modifiers = e.getModifiers();
-                d.elementHandle = ElementHandle.create(e);
-                d.name = e.getSimpleName().toString();
                 d.subs = new ArrayList<Description>();
                 d.pos = getPosition( e );
                 d.htmlHeader = createHtmlHeader( e, info.getElements().isDeprecated(e) );                
@@ -139,11 +136,8 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         public Void visitVariable(VariableElement e, Description p) {
             if ( !canceled && !info.getElementUtilities().isSynthetic(e) && 
                 ( e.getKind() == ElementKind.FIELD || e.getKind() == ElementKind.ENUM_CONSTANT ) ) {
-                Description d = new Description(p.ui);
-                d.kind = e.getKind();
+                Description d = new Description(p.ui, e.getSimpleName().toString(), ElementHandle.create(e), e.getKind());
                 d.modifiers = e.getModifiers();
-                d.elementHandle = ElementHandle.create(e);
-                d.name = e.getSimpleName().toString();
                 d.pos = getPosition( e );
                 d.htmlHeader = createHtmlHeader( e, info.getElements().isDeprecated(e) ); 
                 if ( d.pos == -1 ) {
@@ -157,11 +151,8 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         
         public Void visitExecutable(ExecutableElement e, Description p) {
             if ( !canceled  && !info.getElementUtilities().isSynthetic(e) ) {
-                Description d = new Description(p.ui);                
-                d.kind = e.getKind();
+                Description d = new Description(p.ui, e.getSimpleName().toString(), ElementHandle.create(e), e.getKind());
                 d.modifiers = e.getModifiers();
-                d.elementHandle = ElementHandle.create(e);
-                d.name = e.getSimpleName().toString();
                 d.pos = getPosition( e );
                 if ( d.pos == -1 ) {
                     return null;
