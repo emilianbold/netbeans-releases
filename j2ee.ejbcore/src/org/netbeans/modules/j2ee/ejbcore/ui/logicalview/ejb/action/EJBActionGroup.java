@@ -20,10 +20,12 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import java.io.IOException;
+import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.openide.nodes.Node;
@@ -101,7 +103,10 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
             if (javaSource == null) {
                 return false;
             }
-            className = _RetoucheUtil.getJavaClassFromNode(activatedNodes[0]).getQualifiedName();
+            ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(activatedNodes[0]);
+            if (elementHandle != null) {
+                className = elementHandle.getQualifiedName();
+            }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }

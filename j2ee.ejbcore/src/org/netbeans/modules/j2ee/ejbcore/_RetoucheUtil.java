@@ -112,7 +112,10 @@ public final class _RetoucheUtil {
                 }
             }
         }, true);
-        return result.get(0);
+        if (result.size() > 0) {
+            return result.get(0);
+        }
+        return null;
     }
 
     public static ExecutableElement getMethodFromNode(Node node) {
