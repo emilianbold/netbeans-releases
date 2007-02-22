@@ -23,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <settings version="1.0">
     <module name="org.netbeans.modules.xml.schema.ui.basic/1" spec="1.0"/>
+    <instanceof class="org.openide.options.SystemOption"/>
     <instanceof class="org.netbeans.modules.xml.schema.ui.basic.SchemaSettings"/>
     <instance class="org.netbeans.modules.xml.schema.ui.basic.SchemaSettings"/>
 </settings>

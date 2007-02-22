@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -55,22 +55,38 @@ public class NameGenerator {
     }
 
     /**
-     * Generate a unique namespace prefix for the given model.
+     * Generate a unique namespace prefix for the given model. This is
+     * the same as generateNamespacePrefix(String, SchemaModel, int) with
+     * a value of zero for the counter parameter.
      *
      * @param  prefix  the desired prefix for the namespace prefix;
      *                 if null, a default of "ns" will be used.
      * @param  model   model in which to find unique prefix.
-     * @return  the unique namespace prefix.
+     * @return  the unique namespace prefix (e.g. "ns0").
      */
     public String generateNamespacePrefix(String prefix,
             SchemaModel model) {
-// WSDL uses zero for the namespace prefix, so let's do the same.
-//        int prefixCounter = COUNTER_START;
-        int prefixCounter = 0;
+        // WSDL uses zero for the namespace prefix, so let's do the same.
+        return generateNamespacePrefix(prefix, model, 0);
+    }
+
+    /**
+     * Generate a unique namespace prefix for the given model.
+     *
+     * @param  prefix   the desired prefix for the namespace prefix;
+     *                  if null, a default of "ns" will be used.
+     * @param  model    model in which to find unique prefix.
+     * @param  counter  minimum number to use as suffix (results in a
+     *                  prefix such as "ns" plus the value of counter).
+     * @return  the unique namespace prefix (e.g. "ns0").
+     */
+    public String generateNamespacePrefix(String prefix,
+            SchemaModel model, int counter) {
         String prefixStr = prefix == null ? PREFIX_PREFIX : prefix;
-        String generated = prefixStr;
+        String generated = prefixStr + counter;
         while (isPrefixExist(generated, model)) {
-            generated = prefixStr + prefixCounter++;
+            counter++;
+            generated = prefixStr + counter;
         }
         return generated;
     }

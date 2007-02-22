@@ -185,6 +185,7 @@
                 <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <package>org.netbeans.modules.xml.refactoring</package>
+                <package>org.netbeans.modules.xml.refactoring.actions</package>
                 <package>org.netbeans.modules.xml.refactoring.spi</package>
                 <package>org.netbeans.modules.xml.refactoring.ui</package>
                 <package>org.netbeans.modules.xml.refactoring.ui.j.spi.ui</package>

@@ -17,41 +17,23 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.xml.schema.ui.nodes.schema;
+/*
+ * ReferencingNodeProvider.java
+ *
+ * Created on January 30, 2007, 2:49 PM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
 
-import org.netbeans.modules.xml.schema.model.Key;
-import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
-import org.netbeans.modules.xml.schema.ui.nodes.*;
-import org.openide.nodes.Children;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.xml.schema.ui.nodes;
+
+import org.openide.nodes.Node;
+
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * @author Ajit
  */
-public class KeyNode extends SchemaComponentNode<Key>
-{
-    /**
-     *
-     *
-     */
-    public KeyNode(SchemaUIContext context,
-		SchemaComponentReference<Key> reference,
-		Children children)
-    {
-        super(context,reference,children);
-	setIconBaseWithExtension(
-			"org/netbeans/modules/xml/schema/ui/nodes/resources/key.png");
-    }
-
-
-	/**
-	 *
-	 *
-	 */
-	@Override
-	public String getTypeDisplayName()
-	{
-		return NbBundle.getMessage(KeyNode.class,
-			"LBL_KeyNode_TypeDisplayName"); // NOI18N
-	}
+public interface ReferencingNodeProvider {
+    public Node getNode();
 }

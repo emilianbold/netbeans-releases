@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -91,10 +91,12 @@ public class AdvancedSchemaComponentNewType extends NewType {
         }
         SchemaModel model = getSchemaComponent().getModel();
         assert model != null;
+        boolean showComponent = false;
         try {
             if(customize()) {
                 model.startTransaction();
                 addComponent(container);
+                showComponent = true;
             }
         } finally {
             if (model.isIntransaction()) {
@@ -102,19 +104,24 @@ public class AdvancedSchemaComponentNewType extends NewType {
             }
         }
         
-        // select in UI
-        try {
-            FileObject fobj = (FileObject) model.getModelSource().
-                    getLookup().lookup(FileObject.class);
-            if (fobj != null) {
-                DataObject dobj = DataObject.find(fobj);
-                if (dobj != null) {
-                    ViewComponentCookie svc = (ViewComponentCookie) dobj.getCookie(
-                            ViewComponentCookie.class);
-                    if(svc!=null) svc.view(ViewComponentCookie.View.SCHEMA,getComponent());
+        // Select in view, only if component was successfully created.
+        if (showComponent) {
+            try {
+                FileObject fobj = (FileObject) model.getModelSource().
+                        getLookup().lookup(FileObject.class);
+                if (fobj != null) {
+                    DataObject dobj = DataObject.find(fobj);
+                    if (dobj != null) {
+                        ViewComponentCookie svc = (ViewComponentCookie) dobj.getCookie(
+                                ViewComponentCookie.class);
+                        if (svc != null) {
+                            svc.view(ViewComponentCookie.View.STRUCTURE,
+                                    getComponent());
+                        }
+                    }
                 }
+            } catch (DataObjectNotFoundException donfe) {
             }
-        } catch (DataObjectNotFoundException donfe) {
         }
     }
     

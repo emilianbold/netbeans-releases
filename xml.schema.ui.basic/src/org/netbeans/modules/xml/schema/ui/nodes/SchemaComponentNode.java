@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,9 +35,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
-import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-
-//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
+import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
+import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
 import org.netbeans.modules.xml.refactoring.ui.ReferenceableProvider;
 import org.netbeans.modules.xml.refactoring.ui.util.AnalysisUtilities;
 import org.netbeans.modules.xml.schema.model.Annotation;
@@ -60,7 +59,6 @@ import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.ui.actions.ShowSchemaAction;
-//import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
 import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
 import org.netbeans.modules.xml.xam.ui.customizer.CustomizerProvider;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
@@ -138,14 +136,14 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
         this.reference=reference;
         this.lookupContents=contents;
         
-        // Add various objects to the lookup
+        // Add various objects to the lookup.
+        contents.add(this);
         // Include the data object in order for the Navigator to
         // show the structure of the current document.
         DataObject dobj = getDataObject();
         if (dobj != null) {
             contents.add(dobj);
         }
-        contents.add(this);
         contents.add(context);
         contents.add(reference);
         contents.add(new DefaultExpandedCookie(false));
@@ -155,19 +153,20 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
 //            contents.add(provider);
 //        }
         
-		// reorder must be enabled only if its editable node
-        if (children instanceof Index && isEditable() && 
-				!(reference.get() instanceof Schema)) { // dont show for schema bug 80138
+        // reorder must be enabled only if its editable node
+        if (children instanceof Index && isEditable() &&
+                // dont show for schema bug 80138
+                !(reference.get() instanceof Schema)) {
             contents.add(children);
         }
-        Component comp = (Component)reference.get();
+        T comp = reference.get();
         contents.add(comp);
         
         // Listen to changes in the model using a WeakListener. I hold onto
         // the WeakListener instance so I can explicitly remove it in the
         // destroy method.
         SchemaModel model = reference.get().getModel();
-        if(model != null) {
+        if (model != null) {
             weakModelListener=
                     WeakListeners.propertyChange(this,model);
             model.addPropertyChangeListener(weakModelListener);
@@ -176,13 +175,12 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
             model.addComponentListener(weakComponentListener);
         }
         // Determine default names for the node
-        T component=reference.get();
-        if (component instanceof Named) {
+        if (comp instanceof Named) {
             // Just set the name, and let the method call below handle
             // the display name
-            _setName(((Named)component).getName());
+            _setName(((Named) comp).getName());
         } else {
-            _setName(component.getPeer().getLocalName());
+            _setName(comp.getPeer().getLocalName());
         }
         // Need a model for the following to work properly.
         if (model != null) {
@@ -215,11 +213,15 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
         // However, we do not want the Nodes or DataObjects, since we
         // provide our own.
         return new ProxyLookup(new Lookup[] {
+            // Keep our lookup contents first, so that whatever we add to
+            // the lookup is at the top of the lookup, such as this node,
+            // which provides certain cookies, rather than that of the
+            // currently selected node.
+            new AbstractLookup(contents),
             Lookups.exclude(context.getLookup(), new Class[] {
                 Node.class,
                 DataObject.class,
             }),
-            new AbstractLookup(contents),
         });
     }
     
@@ -539,7 +541,6 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
                 list.add(type);
             }
         }
-        super.createPasteTypes(transferable, list);
     }
 
     @Override
@@ -551,7 +552,7 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
                 return type;
             }
         }
-        return super.getDropType(transferable, action, index);
+        return null;
     }
 
     @Override
@@ -792,13 +793,9 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
             }
             actions.add(null);
             actions.add(SystemAction.get(GoToAction.class));
-            //actions.add(SystemAction.get(FindUsagesAction.class));
-            //new action based on new refactoring API
-            actions.add(RefactoringActionsFactory.whereUsedAction());
+            actions.add(SystemAction.get(FindUsagesAction.class));
             actions.add(null);
-            //actions.add(SystemAction.get(RefactorAction.class));
-            //new action based on new refactoring API
-            actions.add(RefactoringActionsFactory.editorSubmenuAction());
+            actions.add(SystemAction.get(RefactorAction.class));
             actions.add(null);
             actions.add(SystemAction.get(PropertiesAction.class));
         }
@@ -1040,5 +1037,18 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
             return NamedReferenceable.class.cast(comp);
         }
         return null;
+    }
+    
+    /**
+     * This api is used to set the back pointer to the ReadOnlySchemaComponentNode,
+     * which represents this node on UI in case of refrenced components.
+     */
+    public void setReferencingNode(final Node referencingNode) {
+        getLookupContents().add(
+                new ReferencingNodeProvider() {
+            public Node getNode() {
+                return referencingNode;
+            }
+        });
     }
 }

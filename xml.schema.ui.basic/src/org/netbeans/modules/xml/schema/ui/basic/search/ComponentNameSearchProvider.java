@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -97,38 +97,51 @@ public class ComponentNameSearchProvider extends DeepSchemaVisitor
         }
         results = new ArrayList<Object>();
         // Search for named components with the given name.
-        SchemaComponent component = Providers.getSelectedComponent(category);
-        if (query.useSelected() && component != null) {
-            component.accept(this);
+        if (query.useSelected()) {
+            SchemaComponent component = Providers.getSelectedComponent(category);
+            if (component != null) {
+                component.accept(this);
+            } else {
+                // Maybe it is a category node that is selected.
+                Class<? extends SchemaComponent> childType =
+                        Providers.getSelectedChildType(category);
+                if (childType != null) {
+                    List<? extends SchemaComponent> components =
+                            model.getSchema().getChildren(childType);
+                    for (SchemaComponent comp : components) {
+                        comp.accept(this);
+                    }
+                }
+            }
         } else {
             model.getSchema().accept(this);
         }
         return results;
     }
 
-    protected void visitChildren(SchemaComponent sc) {
-        if (sc instanceof Named) {
-            Named nsc = (Named) sc;
+    protected void visitChildren(SchemaComponent comp) {
+        if (comp instanceof Named) {
+            Named nsc = (Named) comp;
             String name = nsc.getName();
             if (name != null) {
                 if (phrase != null) {
                     name = name.toLowerCase();
                     if (wildcarded) {
                         if (WildcardStringMatcher.match(name, phrase)) {
-                            results.add(sc);
+                            results.add(comp);
                         }
                     } else if (name.indexOf(phrase) > -1) {
-                        results.add(sc);
+                        results.add(comp);
                     }
                 } else if (pattern != null) {
                     Matcher matcher = pattern.matcher(name);
                     if (matcher.find()) {
-                        results.add(sc);
+                        results.add(comp);
                     }
                 }
             }
         }
         // Visit the children last, to get results in breadth-first order.
-        super.visitChildren(sc);
+        super.visitChildren(comp);
     }
 }

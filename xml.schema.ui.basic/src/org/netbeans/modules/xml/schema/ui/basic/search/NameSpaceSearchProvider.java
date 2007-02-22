@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -103,9 +103,22 @@ public class NameSpaceSearchProvider extends DeepSchemaVisitor
         }
         results = new ArrayList<Object>();
         // Search for named references with the given namespace.
-        SchemaComponent component = Providers.getSelectedComponent(category);
-        if (query.useSelected() && component != null) {
-            component.accept(this);
+        if (query.useSelected()) {
+            SchemaComponent component = Providers.getSelectedComponent(category);
+            if (component != null) {
+                component.accept(this);
+            } else {
+                // Maybe it is a category node that is selected.
+                Class<? extends SchemaComponent> childType =
+                        Providers.getSelectedChildType(category);
+                if (childType != null) {
+                    List<? extends SchemaComponent> components =
+                            model.getSchema().getChildren(childType);
+                    for (SchemaComponent comp : components) {
+                        comp.accept(this);
+                    }
+                }
+            }
         } else {
             model.getSchema().accept(this);
         }
@@ -115,24 +128,24 @@ public class NameSpaceSearchProvider extends DeepSchemaVisitor
     /**
      * Compares the given namespace to the query phrase provided by the user.
      *
-     * @param  sc         schema component to add to result set, if matched.
+     * @param  comp       component to add to result set, if matched.
      * @param  namespace  the name space of the given component.
      */
-    private void match(SchemaComponent sc, String namespace) {
+    private void match(SchemaComponent comp, String namespace) {
         if (namespace != null) {
             if (phrase != null) {
                 namespace = namespace.toLowerCase();
                 if (wildcarded) {
                     if (WildcardStringMatcher.match(namespace, phrase)) {
-                        results.add(sc);
+                        results.add(comp);
                     }
                 } else if (namespace.indexOf(phrase) > -1) {
-                    results.add(sc);
+                    results.add(comp);
                 }
             } else if (pattern != null) {
                 Matcher matcher = pattern.matcher(namespace);
                 if (matcher.find()) {
-                    results.add(sc);
+                    results.add(comp);
                 }
             }
         }
