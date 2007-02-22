@@ -52,7 +52,7 @@ public class FileStatusCache {
     /**
      * A special map saying that no file inside the folder is managed.
      */ 
-    private static final Map NOT_MANAGED_MAP = new NotManagedMap();
+    private static final Map<File, FileInformation> NOT_MANAGED_MAP = new NotManagedMap();
         
     private static final int STATUS_MISSING =  
             FileInformation.STATUS_VERSIONED_NEWINREPOSITORY | 
@@ -128,7 +128,7 @@ public class FileStatusCache {
      * @return
      */
     private File [] listFiles(File dir) {
-        Set files = getScannedFiles(dir).keySet();
+        Set<File> files = getScannedFiles(dir).keySet();
         return (File[]) files.toArray(new File[files.size()]);
     }
 
@@ -142,7 +142,7 @@ public class FileStatusCache {
      * @return File [] array of interesting files
      */
     public File [] listFiles(Context context, int includeStatus) {
-        Set set = new HashSet();
+        Set<File> set = new HashSet<File>();
         Map allFiles = cacheProvider.getAllModifiedValues();
         for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
@@ -218,7 +218,7 @@ public class FileStatusCache {
         if (dir == null) {
             return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
         }
-        Map files = getScannedFiles(dir);
+        Map<File, FileInformation> files = getScannedFiles(dir);
         if (files == NOT_MANAGED_MAP) return FILE_INFORMATION_NOTMANAGED;
         FileInformation current = (FileInformation) files.get(file);
         Entry entry = null;
@@ -241,7 +241,7 @@ public class FileStatusCache {
 
         file = FileUtil.normalizeFile(file);
         dir = FileUtil.normalizeFile(dir);
-        Map newFiles = new HashMap(files);
+        Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(files);
         if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
             newFiles.remove(file);
             turbo.writeEntry(file, FILE_STATUS_MAP, null);  // remove mapping in case of directories
@@ -344,12 +344,12 @@ public class FileStatusCache {
      * @param dir directory to cleanup
      */ 
     public void clearVirtualDirectoryContents(File dir, boolean recursive, File [] exclusions) {
-        Map files = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
+        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
         if (files == null) {
            return;
         }
-        Set set = new HashSet(files.keySet());
-        Map newMap = null;
+        Set<File> set = new HashSet<File>(files.keySet());
+        Map<File, FileInformation> newMap = null;
         outter: for (Iterator i = set.iterator(); i.hasNext();) {
             File file = (File) i.next();
             if (exclusions != null) {
@@ -362,7 +362,7 @@ public class FileStatusCache {
             }
             FileInformation fi = refresh(file, REPOSITORY_STATUS_UNKNOWN);
             if ((fi.getStatus() & STATUS_MISSING) != 0) {
-                if (newMap == null) newMap = new HashMap(files);
+                if (newMap == null) newMap = new HashMap<File, FileInformation>(files);
                 newMap.remove(file);
             }
         }
@@ -417,10 +417,10 @@ public class FileStatusCache {
         
     // --- Private methods ---------------------------------------------------
 
-    private Map getScannedFiles(File dir) {
-        Map files;
+    private Map<File, FileInformation> getScannedFiles(File dir) {
+        Map<File, FileInformation> files;
         if (dir.getName().equals(CvsVersioningSystem.FILENAME_CVS)) return NOT_MANAGED_MAP;
-        files = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
+        files = (Map<File, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
         if (files != null) return files;
         if (!dir.exists()) {
             return NOT_MANAGED_MAP; 
@@ -445,10 +445,10 @@ public class FileStatusCache {
      * @param dir directory to scan
      * @return Map map to be included in the status cache (File => FileInformation)
      */ 
-    private Map scanFolder(File dir) {
+    private Map<File, FileInformation> scanFolder(File dir) {
         File [] files = dir.listFiles();
         if (files == null) files = new File[0];
-        Map folderFiles = new HashMap(files.length);
+        Map<File, FileInformation> folderFiles = new HashMap<File, FileInformation>(files.length);
 
         Entry [] entries = null;
         try {
@@ -700,7 +700,7 @@ public class FileStatusCache {
         return files != null ? files.get(file) : null;
     }
 
-    private static final class NotManagedMap extends AbstractMap {
+    private static final class NotManagedMap extends AbstractMap<File, FileInformation> {
         public Set entrySet() {
             return Collections.EMPTY_SET;
         }
