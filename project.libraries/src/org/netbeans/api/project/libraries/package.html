@@ -46,7 +46,7 @@ Contents
 <h2><a name="overview">Overview</a></h2>
 <p>The libraries API provides a client API of the Libraries framework. The <strong>Library</strong> itself is a typed set of
 volumes. The <a name="volumeType"><strong>volume</strong></a> is a ordered list of <strong>resources</strong>. The type of library implies the volumes contained
-in it. For example the J2SE library contains three volumes (sources, classpath and javadoc). The resource is a
+in it. For example the Java SE library contains three volumes (sources, classpath and javadoc). The resource is a
 valid URL of the physical resource.
 </p>
 <h2><a name="manager">How to obtain a list of installed libraries or given library</a></h2>
@@ -119,7 +119,7 @@ The library format is given by the following DTD.
 &lt;!<font CLASS="ID">ELEMENT</font> volume (type, resource*) &gt;
 
 <font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT">- Volume type of a library volume - a string </font>
-<font CLASS="COMMENT"> For example the J2SE library supports the following types of volume:</font>
+<font CLASS="COMMENT"> For example the Java SE library supports the following types of volume:</font>
 
 <font CLASS="COMMENT"> classpath, javadoc and src </font><font CLASS="COMMENT">--&gt;</font>
 &lt;!<font CLASS="ID">ELEMENT</font> type (<font CLASS="ID">#PCDATA</font>) &gt;
