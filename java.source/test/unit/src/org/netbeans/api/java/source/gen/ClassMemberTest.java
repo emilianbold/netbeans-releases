@@ -36,13 +36,12 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.java.source.builder.TreeFactory;
 
 /**
  *
  * @author Pavel Flaska
  */
-public class ClassMemberTest extends GeneratorTest {
+public class ClassMemberTest extends GeneratorTestMDRCompat {
     
     /** Creates a new instance of ClassMemberTest */
     public ClassMemberTest(String testName) {
@@ -52,11 +51,11 @@ public class ClassMemberTest extends GeneratorTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
 //        suite.addTestSuite(ClassMemberTest.class);
-//        suite.addTest(new ClassMemberTest("testAddAtIndex0"));
+        suite.addTest(new ClassMemberTest("testAddAtIndex0"));
         suite.addTest(new ClassMemberTest("testAddAtIndex2"));
         suite.addTest(new ClassMemberTest("testAddToEmpty"));
-//        suite.addTest(new ClassMemberTest("testAddConstructor"));
-//        suite.addTest(new ClassMemberTest("testInsertFieldToIndex0"));
+        suite.addTest(new ClassMemberTest("testAddConstructor"));
+        suite.addTest(new ClassMemberTest("testInsertFieldToIndex0"));
         suite.addTest(new ClassMemberTest("testModifyFieldName"));
         suite.addTest(new ClassMemberTest("testModifyModifiers"));
         suite.addTest(new ClassMemberTest("testAddToEmptyInterface"));
@@ -64,6 +63,8 @@ public class ClassMemberTest extends GeneratorTest {
         suite.addTest(new ClassMemberTest("testAddInnerInterface"));
         suite.addTest(new ClassMemberTest("testAddInnerAnnotationType"));
         suite.addTest(new ClassMemberTest("testAddInnerEnum"));
+        suite.addTest(new ClassMemberTest("testAddAfterEmptyInit1"));
+//        suite.addTest(new ClassMemberTest("testAddAfterEmptyInit2"));
         return suite;
     }
 
@@ -82,9 +83,10 @@ public class ClassMemberTest extends GeneratorTest {
             "package hierbas.del.litoral;\n\n" +
             "public class Test {\n" +
             "    \n" +
+            "    \n" +
             "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" + 
             "    }\n" +
-            "    \n" +
+            "\n" +
             "    public void taragui() {\n" +
             "    }\n" +
             "    \n" +
@@ -228,7 +230,7 @@ public class ClassMemberTest extends GeneratorTest {
             "    \n" +
             "    public Test(boolean prefix) {\n" +
             "    }\n" +
-            "    \n" +
+            "\n" +
             "    public void method() {\n" +
             "    }\n" +
             "    \n" +
@@ -295,8 +297,8 @@ public class ClassMemberTest extends GeneratorTest {
             "package hierbas.del.litoral;\n\n" +
             "public class Test {\n" +
             "    \n" +
-            "    String prefix;\n" +
-            "    \n" +
+            "        String prefix;\n" +
+            "\n" +
             "    int i = 0;\n" +
             "    \n" +
             "    public Test() {\n" +
