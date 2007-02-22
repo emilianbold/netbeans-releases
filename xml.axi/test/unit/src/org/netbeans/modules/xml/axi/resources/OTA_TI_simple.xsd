@@ -79,7 +79,25 @@
 			<xs:minLength value="1"/>
 			<xs:maxLength value="64"/>
 		</xs:restriction>
-	</xs:simpleType>	
+	</xs:simpleType>
+	<xs:simpleType name="StringLength0to64">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Used for Character Strings, length 0 to 64</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="64"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="StringLength1to16">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Used for Character Strings, length 1 to 16</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="16"/>
+		</xs:restriction>
+	</xs:simpleType>
 	<xs:attributeGroup name="ErrorWarningAttributeGroup">
 		<xs:annotation>
 			<xs:documentation xml:lang="en">Used to identify an application error by either text, code, or by an online description and also to give the status, tag, and/or identification of the record that may have caused the error.</xs:documentation>
@@ -154,6 +172,25 @@
 	</xs:element>
         
 	<xs:element name="CancellationStatus2" type="xs:string"/>
+              
+        <xs:element name="MyAddress" type="AddrType"/>
+        
+        <xs:complexType name="AddrType">
+           <xs:annotation>
+              <xs:documentation xml:lang="en">Street name; number on treet.
+              </xs:documentation>
+           </xs:annotation>
+           <xs:simpleContent>
+              <xs:extension base="StringLength0to64">
+                 <xs:attribute name="PO_Box" type="StringLength1to16">
+                    <xs:annotation>
+                       <xs:documentation xml:lang="en">Post Office Box number.
+                       </xs:documentation>
+                    </xs:annotation>
+                 </xs:attribute>
+              </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
         
 </xs:schema>
 

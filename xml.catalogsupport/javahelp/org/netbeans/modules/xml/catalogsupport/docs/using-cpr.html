@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using Cross-Project XML File References</title>
+</head>
+<body>
+<h2>Using Cross-Project XML File References</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Once you have added project references to your project to allow you to use XML file artifacts from another project, you use <tt>import</tt>, <tt>include</tt>, or <tt>redefine</tt> components to reference those artifacts.</p>
+<p>For example, assume you have two projects, a SOA BluePrint project called <tt>BluePrint-1</tt> and a BPEL Module project called <tt>BEPL-1</tt>. <tt>BluePrint-1</tt> has one schema file, <tt>a.xsd</tt>. <tt>BPEL-1</tt> has one schema file, <tt>b.xsd</tt>. While you work with <tt>b.xsd</tt>, you want to have access to all the information in <tt>a.xsd</tt>. To do this, you must do the following:</p>
+<ol>
+<li>In <tt>BluePrint-1</tt>, add <tt>BPEL-1</tt> as project reference.</li>
+<li>Open <tt>b.xsd</tt> and add an <tt>import</tt>, <tt>include</tt>, or <tt>redefine</tt> component to import <tt>a.xsd</tt>.</li>
+</ol>
+<p>The following topics explain how to add <tt>import</tt>, <tt>include</tt>, or <tt>redefine</tt> components to reference files in another project:</p>
+
+<dl>
+<dt>BPEL Designer</dt>
+<dd><a href="nbdocs://org.netbeans.modules.bpel.bpelhelp/org/netbeans/modules/bpel/bpelhelp/design/import_wsdl_resources.html" title="Addding WSDL and XML Schema Imports">Adding WSDL and XML Schema Imports</a></dd>
+</dl>
+
+<dl>
+<dt>XML Schema Editor</dt>
+<dd><a href="nbdocs://org.netbeans.modules.xml.schema.core/org/netbeans/modules/xml/schema/core/tasks/addingimport.html" title="Adding an import Component to an XML Schema File">Adding an <tt>import</tt> Component to an XML Schema File</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.xml.schema.core/org/netbeans/modules/xml/schema/core/tasks/addinginclude.html" title="Adding an include Component to an XML Schema File">Adding an <tt>include</tt> Component to an XML Schema File</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.xml.schema.core/org/netbeans/modules/xml/schema/core/tasks/addingredefine.html" title="Adding a redefine Component to an XML Schema File">Adding a <tt>redefine</tt> Component to an XML Schema File</a></dd>
+</dl>
+
+<dl>
+<dt>WSDL Editor</dt>
+<dd><a href="nbdocs://org.netbeans.modules.xml.wsdlui/org/netbeans/modules/xml/wsdlui/docs/wsdl_editor_import_schema.html" title="Importing XML Schemas Using the WSDL View">Importing XML Schemas Using the WSDL View</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.xml.wsdlui/org/netbeans/modules/xml/wsdlui/docs/wsdl_editor_import_wsdl.html" title="Importing WSDL Files Using the WSDL View">Importing WSDL Files Using the WSDL View</a></dd>
+</dl>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="catalogsupport-about.html" title="About Cross-Project XML File References">About Cross-Project XML File References</a></dd>
+<dd><a href="ww-projectreferences.html" title="Working With Project References">Working With Project References</a></dd>
+<dd><a href="refreshing-cached-refs.html" title="Refreshing Cached XML File References">Refreshing Cached XML File References</a></dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

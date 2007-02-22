@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.axi;
@@ -33,7 +33,6 @@ import org.netbeans.modules.xml.axi.impl.AXIModelBuilder;
 import org.netbeans.modules.xml.axi.impl.AXIModelImpl;
 import org.netbeans.modules.xml.axi.impl.Util;
 import org.netbeans.modules.xml.axi.visitor.AXIVisitor;
-import org.netbeans.modules.xml.axi.visitor.DeepAXITreeVisitor;
 import org.netbeans.modules.xml.schema.model.Documentation;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.AbstractComponent;
@@ -352,20 +351,26 @@ public abstract class AXIComponent extends AbstractComponent<AXIComponent>
     }
     
     /**
-     * Returns the parent element for this component.
+     * Returns the parent {@link Element} for this component, if there is one,
+     * else null. If the component's immediate parent is an {@link Element},
+     * returns the parent, else, goes up in the hierarchy until it finds one.
+     * Returns null if none found.
      */
     public Element getParentElement() {
-        return Util.findParentElement(this);
+        AXIComponent parent = (AXIComponent)getParent();
+        if(parent == null)
+            return null;
+        
+        if(parent instanceof Element)
+            return (Element)parent;
+        
+        return parent.getParentElement();
     }
     
     /**
-     * Returns all the child elements for this component.
+     * Returns all the child {@link AbstractElement}s for this component.
      */
     public List<AbstractElement> getChildElements() {
-        if(getSharedComponent() != null) {
-            return getSharedComponent().getChildElements();
-        }            
-        
         List<AbstractElement> childrenElements = new ArrayList<AbstractElement>();
         populateChildElements(childrenElements, this);
         return Collections.unmodifiableList(childrenElements);
@@ -379,9 +384,9 @@ public abstract class AXIComponent extends AbstractComponent<AXIComponent>
             
             if( child instanceof AbstractElement ) {
                 childrenElements.add((AbstractElement)child);
-            } else {
-                populateChildElements(childrenElements, child);
+                continue;
             }
+            populateChildElements(childrenElements, child);
         }
     }
     
@@ -471,40 +476,7 @@ public abstract class AXIComponent extends AbstractComponent<AXIComponent>
     public AXIComponent copy(AXIComponent parent) {
         AXIComponentFactory f = parent.getModel().getComponentFactory();
         return f.copy(this);
-    }
-        
-    /**
-     * Sets the compositor.
-     */
-    protected void setCompositor(Compositor oldCompositor,
-            CompositorType newType) {
-        //find the existing compositor's position
-        int index = oldCompositor.getIndex();
-        if(index == -1)
-            return;
-        
-        //must deep visit so that we can deep copy.
-        DeepAXITreeVisitor visitor = new DeepAXITreeVisitor();
-        oldCompositor.accept(visitor);
-        
-        Compositor newCompositor = (Compositor)oldCompositor.copy(this);
-        newCompositor.setCompositorType(newType);
-        
-        //remove the existing compositor, insert the new one
-        removeChild(Compositor.PROP_COMPOSITOR, oldCompositor);
-        
-        insertAtIndex(Compositor.PROP_COMPOSITOR, newCompositor, index);
-        copyTree(oldCompositor, newCompositor);
-    }
-    
-    private void copyTree(AXIComponent original, AXIComponent copy) {
-        List<AXIComponent> children = new ArrayList<AXIComponent>();
-        for(AXIComponent child: original.getChildren()) {
-            AXIComponent childCopy = child.copy(copy);
-            copy.appendChild(childCopy);
-            copyTree(child, childCopy);
-        }
-    }
+    }   
     
     /**
      * Checks if a component is part of an AXI model.

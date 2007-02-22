@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -245,6 +245,8 @@ public class SchemaGeneratorUtil {
                     ref = createPrimitiveType(m, u, pc);
                     u.addMemberType(ref);
                 }
+            } else {
+                ref = createFacets(d, sm, st, pc);
             }
         } else {
             if(d instanceof UnionType) {
@@ -1235,7 +1237,7 @@ public class SchemaGeneratorUtil {
                 le.setType(le.createReferenceTo(
                         (GlobalComplexType)((ContentModel)newValue).getPeer(),
                         GlobalComplexType.class));
-            } else
+            } else if(newValue instanceof Datatype)
                 modifyDatatype(sm, le, (Datatype) newValue, pc);
         }
     }
@@ -1290,7 +1292,7 @@ public class SchemaGeneratorUtil {
                 ge.setType(ge.createReferenceTo(
                         (GlobalComplexType)((ContentModel)newValue).getPeer(),
                         GlobalComplexType.class));
-            } else
+            } else if(newValue instanceof Datatype)
                 modifyDatatype(sm, ge, (Datatype) newValue, pc);
         }
     }
@@ -1404,58 +1406,28 @@ public class SchemaGeneratorUtil {
         //check, if any modify minoccurs and maxoccurs
         modifyCardinality(oldc, propertyName, newValue);
         
-        //TODO, take care of removing old schema compositor and add new one
+        //removing old schema compositor and add new one
         if(propertyName.equals(Compositor.PROP_TYPE)) {
-            SchemaComponent parent = oldc.getParent();
-            CompositorType type = (CompositorType) newValue;
-            
-            GlobalComplexType tmpgct = createGlobalComplexType(sm);
-            tmpgct.setName("tempgct___");
-            SchemaComponent oldCCopy = (SchemaComponent) oldc.copy(tmpgct);
-            addChildComponent(sm, tmpgct, oldCCopy, -1);
-            
-            // Cannot remove children until after they are copied.
-            sm.removeChildComponent(oldc);
-            
-            //create new compositor
-            ComplexTypeDefinition newc = null;
-            if(parent instanceof ComplexTypeDefinition) {
-                int index = compositor.getIndex(false);
-                if(type == CompositorType.CHOICE)
-                    newc = createChoice(sm, (ComplexTypeDefinition) parent, index);
-                else if(type == CompositorType.SEQUENCE)
-                    newc = createSequence(sm, (ComplexTypeDefinition) parent, index);
-            } else if(parent instanceof ComplexContentDefinition) {
-                if(type == CompositorType.ALL)
-                    newc = createAll(sm, (ComplexContentDefinition) parent);
-                else if(type == CompositorType.CHOICE)
-                    newc = createChoice(sm, (ComplexContentDefinition) parent);
-                else if(type == CompositorType.SEQUENCE)
-                    newc = createSequence(sm, (ComplexContentDefinition) parent);
-            } else if(parent instanceof ComplexType) {
-                if(type == CompositorType.ALL)
-                    newc = createAll(sm, (ComplexType) parent);
-                else if(type == CompositorType.CHOICE)
-                    newc = createChoice(sm, (ComplexType) parent);
-                else if(type == CompositorType.SEQUENCE)
-                    newc = createSequence(sm, (ComplexType) parent);
+            int index = compositor.getIndex();
+            if(index == -1) index = 0;
+            SchemaComponent ctd = compositor.getPeer();
+            SchemaComponent ctdParent = ctd.getParent();
+            SchemaComponent ctdCopy = (SchemaComponent) ctd.copy(ctd.getParent());
+            ComplexTypeDefinition newctd = null;
+            if(newValue.equals(CompositorType.SEQUENCE))
+                newctd = sm.getFactory().createSequence();
+            else if(newValue.equals(CompositorType.CHOICE))
+                newctd = sm.getFactory().createChoice();
+            else if(newValue.equals(CompositorType.ALL))
+                newctd = sm.getFactory().createAll();
+            //populate min, max occurs, annotation etc., from old compositor
+            SchemaGeneratorUtil.populateCompositor(newctd, compositor);
+            int count = 0;
+            for(SchemaComponent sc: ctdCopy.getChildren()) {
+                sm.addChildComponent(newctd, sc, count++);
             }
-            
-            List<SchemaComponent> copies = new ArrayList<SchemaComponent>();
-            for (SchemaComponent child : oldCCopy.getChildren()) {
-                copies.add((SchemaComponent)child.copy(newc));
-            }
-            
-            // Now add the copies back to the parent.
-            for (SchemaComponent copy : copies) {
-                addChildComponent(sm, newc, copy, -1);
-            }
-            
-            //now set the peer
-            compositor.setPeer(newc);
-            
-            //Now remove temp gc
-            sm.removeChildComponent(tmpgct);
+            sm.removeChildComponent(ctd);
+            sm.addChildComponent(ctdParent, newctd, index);
         }
     }
     

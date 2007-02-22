@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Working With Project References</title>
+</head>
+<body>
+<h2>Working With Project References</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>In order to use artifacts from an XML file in a different project, you must add a project as a project reference to your source project. For example, if you have a BPEL Module project in which you want to use artifacts from an XML file in a Java Application project, you must add the Java Application project as a project reference to your source project, in this example, the BPEL Module project.</p>
+<p>In some cases, you may need to change project references in your project. This may happen if you need to change the dependency of one project to another project to be able to use XML file artifacts from a new project. In this case, you need to remove the old project reference and add a new project reference so you can use XML file artifacts from the new project.</p>
+<h3>Adding Project References</h3>
+<p><b>To add a project reference:</b></p>
+<ol>
+<li>In the Projects window, select the project node for the BPEL Module or XSLT Module project where you want to add a project reference.</li>
+<li>Right-click the node and choose Properties.<br>
+The Project Properties dialog box opens.</li>
+<li>In the Categories list, select the <tt>Project&nbsp;References</tt> node.<br>
+The right panel of the dialog box now contains a Project References box.</li>
+<li>Click the Add Project button.<br>
+The Add Project dialog box opens.</li>
+<li>Navigate to and select the project you want to add as a project reference and click Add Project.<br>
+<b>Note:</b> You can only select BPEL Module projects, XSLT Module projects, Intelligent Event Module Processing Module projects, Web Application projects, EJB Module projects, and Java Application projects.<br>
+The Project References box of the Project Properties dialog box now contains the name of the project you selected.</li>
+<li>Click OK to close the Project Properties dialog box.</li>
+</ol>
+<p><b>Cyclic References</b></p>
+<p>You can add multiple projects as Project References to your source project, as long as the references are not cyclic.</p>
+<p>For example, assume you have 3 projects: a BPEL Module project called <tt>BPEL-1</tt>, a sample SOA BluePrint project called <tt>BluePrint-1</tt>, and a Web application project called <tt>WebApp-1</tt>.</p>
+<p>Now let's assume you add the following project references:</p>
+<ol>
+<li>For <tt>BluePrint-1</tt>, add <tt>WebApp-1</tt> as a project reference.</li>
+<li>For <tt>BPEL-1</tt>, add <tt>BluePrint-1</tt> and <tt>WebApp-1</tt> as project references.</li>
+</ol>
+<p>After adding the project references shown above, if you try to add <tt>BPEL-1</tt> as a project reference in the <tt>BluePrint-1</tt> project, the IDE will not let you do this because it is a cyclic reference. The <tt>BluePrint-1</tt> project is already a project reference in the <tt>BPEL-1</tt> project.</p>
+<h3>Removing Project References</h3>
+<p>When you remove a project reference, the IDE will warn you if there are references to files in the project you are removing.</p>
+<p><b>To remove a project reference:</b></p>
+<ol>
+<li>In the Projects window, select the project node for the project where you want to remove a project reference.</li>
+<li>Right-click the node and choose Properties.<br>
+The Project Properties dialog box opens.</li>
+<li>In the Categories list, select the <tt>Project&nbsp;References</tt> node.<br>
+The right panel of the dialog box now contains a Project References box, with the list of project references.</li>
+<li>In the Project References box, select the reference you want to remove and click Remove.<br>
+If there are references to files in this project, the IDE warns you about this and you must confirm that you want to remove the project reference.</li>
+<li>If a warning dialog box opens, click Yes to remove the project reference.</li>
+</ol>
+<p>After you remove a project reference, you use the XML Catalog node in the Project Properties dialog box to remove XML catalog entries that were created by referencing external artifacts.</p>
+<p><b>To remove an XML catalog entry:</b></p>
+<ol>
+<li>In the Projects window, select the project node for the project.</li>
+<li>Right-click the node and choose Properties.<br>
+The Project Properties dialog box opens.</li>
+<li>In the Project Properties dialog box, in the Categories list, select the <tt>XML&nbsp;Catalog</tt> node.</li>
+<li>Under XML Catalog Entries, select the entry to remove and click Remove.</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="catalogsupport-about.html" title="About Cross-Project XML File References">About Cross-Project XML File References</a></dd>
+<dd><a href="using-cpr.html" title="Using Cross-Project XML File References">Using Cross-Project XML File References</a></dd>
+<dd><a href="refreshing-cached-refs.html" title="Refreshing Cached XML File References">Refreshing Cached XML File References</a></dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

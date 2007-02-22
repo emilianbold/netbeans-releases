@@ -16,30 +16,24 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+package org.netbeans.modules.xml.catalogsupport;
 
-package org.netbeans.modules.xml.axi.datatype;
+import org.netbeans.api.java.project.JavaProjectConstants;
 
 /**
- * This class represents NcNameType. This is one of those atomic types that can
- * be used to type an Attribute or leaf Elements in AXI Model
- *
- *
- *
- * @author Ayub Khan
+ * Commond project constants.
+ * 
+ * @author Nam Nguyen
  */
-public class NcNameType extends NameType {
-    
-    /**
-     * Creates a new instance of NcNameType
+public interface ProjectConstants {
+    /** 
+     * The source group type for XML context.  References to XML files reside
+     * in other project is only supported if that project declare the
+     * following source types though SourceHelper.addTypedSourceRoot: 
+     *    JavaProjectConstants.SOURCES_TYPE_JAVA,
+     *    WebProjectConstants.TYPE_DOC_ROOT,
+     *    WebProjectConstants.TYPE_WEB_INF,
+     *    SOURCES_TYPE_XML
      */
-    public NcNameType() {
-        super(Datatype.Kind.NCNAME);
-    }
-    
-    /**
-     * Creates a new instance of derived of NcNameType
-     */
-    public NcNameType(Datatype.Kind kind) {
-        super(kind);
-    }
+    public static final String SOURCES_TYPE_XML = "xml";
 }

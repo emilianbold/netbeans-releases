@@ -97,10 +97,10 @@ public class SimulationTest extends AbstractSyncTestCase {
         simulateChangeElementsType2();
         simulateChangeElementsType3();
         simulateChangeElementsType4();
-        simulateChangeCompositor1();
-        simulateChangeCompositor2();
+        //simulateChangeCompositor1();
+        //simulateChangeCompositor2();
+        //simulateChangeCompositor3();
         simulateDropOnRussianDoll();
-        //simulateDropOnGardenOfEden();  //not needed anymore
         simulateRenameElementAndCheckReference();
     }
     
@@ -293,7 +293,53 @@ public class SimulationTest extends AbstractSyncTestCase {
             && (evt2.getOldValue() == null) && (evt2.getNewValue() != null));
         assert(!helper.inModel(sequence) && !helper.inModel(e2) && !helper.inModel(choice));
         assert(e1.getChildElements().size() == 2);
-    }    
+    }
+    
+    public void simulateChangeCompositor3() throws Exception {
+        init(Pattern.RUSSIAN_DOLL);
+        //drop a global element E1
+        Element ge = helper.dropGlobalElement("GE1");
+        assert(helper.inModel(ge));
+        assert(doc.getChildren().size() == 1);
+        assert(model.getSchemaModel().getSchema().getChildren().size() == 1);
+        
+        ContentModel cm = helper.dropGlobalComplexType("GCT1");
+        assert(helper.inModel(cm));
+        assert(doc.getChildren().size() == 2);
+        assert(model.getSchemaModel().getSchema().getChildren().size() == 2);
+        //drop an element E1 on GCT1
+        Element e1 = helper.dropElement(cm, "E1");
+        helper.dropElement(e1, "E11");
+        helper.dropElement(e1, "E12");
+        Element e2 = helper.dropElement(cm, "E2");                        
+        helper.dropElement(e2, "E21");
+        helper.dropElement(e2, "E22");
+        Compositor compositor = (Compositor)cm.getChildren().get(0);
+        assert(cm.getChildElements().size() == 2);
+                
+        assert(ge.getChildElements().size() == 0);
+        helper.setElementType(ge, cm);
+        assert(ge.getChildElements().size() == 2);
+        
+        Compositor proxy = (Compositor)ge.getChildren().get(0);
+        assert(proxy instanceof CompositorProxy && proxy.getOriginal() == compositor);
+        helper.setCompositorType(proxy, CompositorType.CHOICE);
+        assert(!helper.inModel(compositor) && !helper.inModel(proxy));        
+        assert(ge.getChildren().size() == 1);
+        assert(cm.getChildren().size() == 1);
+        assert(cm.getChildElements().size() == 2);
+        assert(ge.getChildElements().size() == 2);
+        
+        compositor = (Compositor)cm.getChildren().get(0);
+        proxy = (Compositor)ge.getChildren().get(0);
+        assert(proxy instanceof CompositorProxy && proxy.getOriginal() == compositor);
+        helper.setCompositorType(proxy, CompositorType.ALL);
+        assert(!helper.inModel(compositor) && !helper.inModel(proxy));        
+        assert(ge.getChildren().size() == 1);
+        assert(cm.getChildren().size() == 1);
+        assert(cm.getChildElements().size() == 2);
+        assert(ge.getChildElements().size() == 2);
+    }
     
     public void simulateDropOnRussianDoll() throws IOException {
         init(Pattern.RUSSIAN_DOLL);

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.axi.impl;
@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIComponent.ComponentType;
-import org.netbeans.modules.xml.axi.AXIContainer;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.AXIType;
 import org.netbeans.modules.xml.axi.AnyAttribute;
@@ -278,14 +277,12 @@ public class AXIModelUpdater extends DeepAXITreeVisitor {
             Util.updateGlobalElement(element);
                 
         //if type changed, update children
-        SchemaComponent oldType = element.getTypeSchemaComponent();
         SchemaComponent newType = Util.getSchemaType(model, element.getPeer());
-        if(oldType != newType) {
-            AXIType axiType = Util.getAXIType(element, newType);
+        AXIType axiType = Util.getAXIType(element, newType);
+        if(element.getType() != axiType)
             element.setType(axiType);
-            return;
-        }
-        //type didnt change: sync children as well.
+        
+        //sync children.
         visitChildren(element);
     }
                 
@@ -318,10 +315,18 @@ public class AXIModelUpdater extends DeepAXITreeVisitor {
     
     public void visit(AttributeImpl attribute) {
         SchemaComponent schemaComponent = attribute.getPeer();
-        if(schemaComponent instanceof LocalAttribute)
+        if(schemaComponent instanceof LocalAttribute) {
             Util.updateLocalAttribute(attribute);
-        if(schemaComponent instanceof GlobalAttribute)
+            AXIType type = Util.getDatatype(attribute.getModel(), (LocalAttribute)schemaComponent);
+            if(type != null)
+                attribute.setType(type);
+        }
+        if(schemaComponent instanceof GlobalAttribute) {
             Util.updateGlobalAttribute(attribute);
+            AXIType type = Util.getDatatype(attribute.getModel(), (GlobalAttribute)schemaComponent);
+            if(type != null)
+                attribute.setType(type);
+        }
     }
     
     public void visit(AttributeRef attributeRef) {

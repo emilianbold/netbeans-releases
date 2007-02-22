@@ -77,8 +77,10 @@ public class AXIModelTest extends AbstractTestCase {
         FileUtil.parseXMLAndPopulateAXIModel(
                 referenceXML, getAXIModel());
         ModelValidator visitor = new ModelValidator(referenceXML);
-        Element element = getAXIModel().getRoot().getElements().get(0);
-        boolean result = visitor.visitAndCompareAgainstDOMElement(element);
+        Element po = getAXIModel().getRoot().getElements().get(0);
+        Element first = (Element)po.getChildElements().get(0);
+        assert(first.getParentElement() == po);
+        boolean result = visitor.visitAndCompareAgainstDOMElement(po);
         this.assertEquals(visitor.getErrorMessage(), true, result);
     }
     
@@ -96,18 +98,5 @@ public class AXIModelTest extends AbstractTestCase {
         boolean result = visitor.visitAndCompareAgainstDOMElement(globalElement);
         this.assertEquals(visitor.getErrorMessage(),
                 true, result);
-    }
-    
-    private void emptySchemaFile(AXIModel axiModel) {
-        try {
-            axiModel.startTransaction();
-            SchemaModel model = axiModel.getSchemaModel();
-            for(SchemaComponent child : model.getSchema().getChildren()) {
-                model.removeChildComponent(child);
-            }
-            axiModel.endTransaction();
-        } catch(Exception ex) {
-            ex.printStackTrace();
-        }
-    }
+    }    
 }

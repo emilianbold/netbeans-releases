@@ -13,11 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.axi;
 
+import java.io.IOException;
+import org.netbeans.modules.xml.axi.impl.AXIModelImpl;
 import org.netbeans.modules.xml.axi.visitor.AXIVisitor;
 import org.netbeans.modules.xml.axi.Compositor.CompositorType;
 import org.netbeans.modules.xml.schema.model.All;
@@ -94,8 +96,20 @@ public class Compositor extends AXIComponent {
      * Sets the type of this compositor.
      */
     public void setType(CompositorType value) {
-        Compositor newC = getModel().getComponentFactory().createCompositor(value);
-        getParent().setCompositor(this, value);
+        getModel().startTransaction();
+        try{
+            firePropertyChangeEvent(Compositor.PROP_TYPE, getType(), value);
+        }finally{
+            getModel().endTransaction();
+            try {
+                ((AXIModelImpl)getModel()).setForceSync(true);
+                getModel().sync();
+            } catch(IOException iox) {
+            } finally {
+                if(getModel() != null)
+                    ((AXIModelImpl)getModel()).setForceSync(false);
+            }            
+        }
     }
         
     void setCompositorType(Compositor.CompositorType newType) {

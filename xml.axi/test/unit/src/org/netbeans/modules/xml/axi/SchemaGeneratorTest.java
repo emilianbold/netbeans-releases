@@ -23,6 +23,7 @@ import javax.swing.text.Document;
 import junit.framework.*;
 import org.netbeans.modules.xml.schema.model.AttributeGroupReference;
 import org.netbeans.modules.xml.schema.model.Choice;
+import org.netbeans.modules.xml.schema.model.ComplexContent;
 import org.netbeans.modules.xml.schema.model.GlobalAttributeGroup;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
@@ -30,6 +31,7 @@ import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.LocalComplexType;
 import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.model.SimpleContent;
 import org.netbeans.modules.xml.schema.model.SimpleExtension;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 
@@ -44,6 +46,8 @@ public class SchemaGeneratorTest extends AbstractTestCase {
     public static final String GLOBAL_ELEMENT   = "OTA_TravelItineraryRS";
     
     private Document doc = null;
+    
+    public static final int GE_SIZE = 4;
     
     public SchemaGeneratorTest(String testName) {
         super(testName, TEST_XSD, GLOBAL_ELEMENT);
@@ -74,14 +78,14 @@ public class SchemaGeneratorTest extends AbstractTestCase {
         doc = ((AbstractDocumentModel)sm).getBaseDocument();
         //DefaultSchemaGenerator schemaGenerator = new DefaultSchemaGenerator(getAXIModel());
         
-        assertEquals("global elements",3,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",GE_SIZE,getSchemaModel().getSchema().getElements().size());
         //global element name change
         axiModel.startTransaction();
         for(Element e:axiModel.getRoot().getElements())
             if(e.getName().equals("CancellationStatus"))
                 e.setName(e.getName()+"_");
         axiModel.endTransaction();
-        assertEquals("global elements",3,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",GE_SIZE,getSchemaModel().getSchema().getElements().size());
         boolean found = false;
         for(GlobalElement ge:sm.getSchema().getElements()) {
             if(ge.getName().startsWith("CancellationStatus_")) {
@@ -116,7 +120,7 @@ public class SchemaGeneratorTest extends AbstractTestCase {
         }
         axiModel.endTransaction();
         //System.out.println("doc: "+doc.getText(0, doc.getLength()));
-        assertEquals("global elements",3,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",GE_SIZE,getSchemaModel().getSchema().getElements().size());
         
         found = false;
         for(GlobalElement ge:sm.getSchema().getElements()) {
@@ -141,7 +145,7 @@ public class SchemaGeneratorTest extends AbstractTestCase {
     }
     
     public void testGenerateSchema2() {
-        assertEquals("global elements",3,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",GE_SIZE,getSchemaModel().getSchema().getElements().size());
         Element element = axiModel.getComponentFactory().createElement();
         element.setName("NewElement"+axiModel.getRoot().getElements().size());
         
@@ -151,7 +155,7 @@ public class SchemaGeneratorTest extends AbstractTestCase {
         } finally {
             axiModel.endTransaction();
         }
-        assertEquals("global elements",4,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",GE_SIZE+1,getSchemaModel().getSchema().getElements().size());
         
 //		try {
 //			SchemaModel sm = getSchemaModel();
@@ -167,7 +171,7 @@ public class SchemaGeneratorTest extends AbstractTestCase {
         } finally {
             axiModel.endTransaction();
         }
-        assertEquals("global elements",3,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",GE_SIZE,getSchemaModel().getSchema().getElements().size());
         validateSchema(axiModel.getSchemaModel());
 //		try {
 //			SchemaModel sm = getSchemaModel();
@@ -180,7 +184,7 @@ public class SchemaGeneratorTest extends AbstractTestCase {
     
     
     public void testDeleteExistingGlobalElement() {
-        assertEquals("global elements",3,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",GE_SIZE,getSchemaModel().getSchema().getElements().size());
         Element element = axiModel.getComponentFactory().createElement();
         element.setName("NewElement"+axiModel.getRoot().getElements().size());
         //global element name change
@@ -192,7 +196,7 @@ public class SchemaGeneratorTest extends AbstractTestCase {
         } finally {
             axiModel.endTransaction();
         }
-        assertEquals("global elements",2,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());
         validateSchema(axiModel.getSchemaModel());
 //		try {
 //			SchemaModel sm = getSchemaModel();
@@ -204,7 +208,7 @@ public class SchemaGeneratorTest extends AbstractTestCase {
     }
     
     public void testDeleteExistingLocalElement() {
-        assertEquals("global elements",2,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());
         Element element = axiModel.getComponentFactory().createElement();
         element.setName("NewElement"+axiModel.getRoot().getElements().size());
         axiModel.startTransaction();
@@ -223,7 +227,7 @@ public class SchemaGeneratorTest extends AbstractTestCase {
             }
         }
         axiModel.endTransaction();
-        assertEquals("global elements",2,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());
         validateSchema(axiModel.getSchemaModel());
         
 //		try {
@@ -234,4 +238,29 @@ public class SchemaGeneratorTest extends AbstractTestCase {
 //			ex.printStackTrace();
 //		}
     }
+    
+    public void testSimpleToComplexContent() {
+        assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());        
+        Element newElem = axiModel.getComponentFactory().createElement();
+        newElem.setName("City");
+        GlobalElement ge2 = null;
+        Element e2 = null;
+        for(Element e:axiModel.getRoot().getElements()) {
+            if(e.getName().equals("MyAddress")) {
+                e2 = e;
+                ge2 = (GlobalElement) e.getPeer();
+            }
+        }
+        assertTrue("complexcontent",
+                ((GlobalComplexType)ge2.getType().get()).getDefinition() instanceof SimpleContent);
+        
+        axiModel.startTransaction();
+        e2.addElement(newElem);       
+        axiModel.endTransaction();
+        
+        assertTrue("complexcontent",
+                ((GlobalComplexType)ge2.getType().get()).getDefinition() instanceof ComplexContent);
+        assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());
+        validateSchema(axiModel.getSchemaModel());
+    }    
 }

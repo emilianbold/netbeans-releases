@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Refreshing Cached XML File References</title>
+</head>
+<body>
+<h2>Refreshing Cached XML File References</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>If you realize that a referenced file outside your project has changed, you may need to refresh that reference.</p>
+<p><b>To refresh a cached XML file reference:</b></p>
+<ol>
+<li>In the Projects window, select the project node of the project where you reference the XML file.</li>
+<li>Right-click the node and choose Properties.<br>
+The Project Properties dialog box opens.</li>
+<li>In the Categories list, select the <tt>XML&nbsp;Catalog</tt> node.<br>
+The right panel of the dialog box now contains a list of XML catalog entries.<br>
+Each entry describes an XML reference, with its reference key, the location URI as it appears in the referencing XML document, and referenced location, which is a pointer that could be resolved to an actual location.<br>
+Some entries have an absolute URI that is mapped to a local cache directory, shown in the Cache Location field.</li>
+<li>Click Clear Cache.<br>
+The IDE removes the cached referenced file. The next time your project tries to access the referenced file, the IDE will retrieve a new version.</li>
+<li>Click OK to close the Project Properties dialog box.</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="catalogsupport-about.html" title="About Cross-Project XML File References">About Cross-Project XML File References</a></dd>
+<dd><a href="ww-projectreferences.html" title="Working With Project References">Working With Project References</a></dd>
+<dd><a href="using-cpr.html" title="Using Cross-Project XML File References">Using Cross-Project XML File References</a></dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

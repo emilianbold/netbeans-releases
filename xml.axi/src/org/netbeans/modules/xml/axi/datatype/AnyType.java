@@ -20,26 +20,21 @@
 package org.netbeans.modules.xml.axi.datatype;
 
 /**
- * This class represents NcNameType. This is one of those atomic types that can
+ * This class represents AnyType. This is one of those atomic types that can
  * be used to type an Attribute or leaf Elements in AXI Model
  *
  *
  *
  * @author Ayub Khan
+ * @author Ajit Bhate
  */
-public class NcNameType extends NameType {
+public class AnyType extends StringBase {
     
     /**
-     * Creates a new instance of NcNameType
+     * Creates a new instance of AnyType
      */
-    public NcNameType() {
-        super(Datatype.Kind.NCNAME);
+    public AnyType() {
+        super(Datatype.Kind.ANYTYPE);
     }
     
-    /**
-     * Creates a new instance of derived of NcNameType
-     */
-    public NcNameType(Datatype.Kind kind) {
-        super(kind);
-    }
 }

@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -174,10 +174,15 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
                                     (LocalComplexType) scParent);
                     } else if(scParent instanceof GlobalComplexType) {
                         GlobalComplexType gct = (GlobalComplexType) scParent;
-                        if(gct.getDefinition() != null)
-                            seq = SchemaGeneratorUtil.createSequence(sm,
-                                    gct.getDefinition(), index);
-                        else
+                        if(gct.getDefinition() != null) {
+                            ComplexTypeDefinition ctd = gct.getDefinition();
+                            if(ctd instanceof SimpleContent) {
+                                ComplexContent newctd = transformToComplexContent(ctd);
+                                gct.setDefinition(newctd);
+                                seq = SchemaGeneratorUtil.createSequence(sm, newctd.getLocalDefinition());
+                            } else
+                                seq = SchemaGeneratorUtil.createSequence(sm, ctd, index);
+                        } else
                             seq = SchemaGeneratorUtil.createSequence(sm,
                                     (GlobalComplexType) scParent);
                     }
@@ -219,8 +224,15 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
                 }
                 if(scParent instanceof GlobalComplexType) {
                     GlobalComplexType gct = (GlobalComplexType) scParent;
-                    if(gct.getDefinition() != null)
-                        c = SchemaGeneratorUtil.createChoice(sm, gct.getDefinition(), index);
+                    if(gct.getDefinition() != null) {
+                        ComplexTypeDefinition ctd = gct.getDefinition();
+                        if(ctd instanceof SimpleContent) {
+                            ComplexContent newctd = transformToComplexContent(ctd);
+                            gct.setDefinition(newctd);
+                            c = SchemaGeneratorUtil.createChoice(sm, newctd.getLocalDefinition());
+                        } else
+                            c = SchemaGeneratorUtil.createChoice(sm, ctd, index);
+                    }
                     else
                         c = SchemaGeneratorUtil.createChoice(sm,
                                 (GlobalComplexType) scParent);
@@ -277,6 +289,27 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
             break;
             default: assert false;
         }
+    }
+
+    private ComplexContent transformToComplexContent(final ComplexTypeDefinition ctd) {
+        ComplexContent newctd = null;
+        if(ctd instanceof SimpleContent) {
+            SimpleContent ctdCopy = (SimpleContent) ctd.copy(ctd.getParent());
+            newctd = sm.getFactory().createComplexContent();        
+            if(ctdCopy.getChildren().get(0) instanceof SimpleExtension) {
+                ComplexExtension ce = sm.getFactory().createComplexExtension();
+                SchemaGeneratorUtil.addChildComponent(
+                        sm, newctd, ce, 0);
+                ce.setBase(((SimpleExtension)ctdCopy.getChildren().get(0)).getBase());                                    
+                int count = 0;
+                for(SchemaComponent sc: ctdCopy.getChildren().get(0).getChildren()) {
+                    SchemaGeneratorUtil.addChildComponent(
+                            sm, newctd.getChildren().get(0), 
+                                sc, count++);
+                }
+            }
+        }
+        return newctd;
     }
     
     public void visit(AXIComponent c) {

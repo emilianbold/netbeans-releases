@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.axi;
@@ -76,13 +76,6 @@ public abstract class AXIContainer extends AXIComponent {
      * Compositor must always be at the 0th index.
      */
     public void addCompositor(Compositor compositor) {
-        if(this instanceof Element) {
-            AXIType type = ((Element)this).getType();
-            if(type != null && type instanceof ContentModel) {
-                ((ContentModel)type).addCompositor(compositor);
-                return;
-            }
-        }
         insertAtIndex(Compositor.PROP_COMPOSITOR, compositor, 0);
     }
     
@@ -128,13 +121,6 @@ public abstract class AXIContainer extends AXIComponent {
      * Adds an attribute.
      */
     public void addAttribute(AbstractAttribute attribute) {
-        if(this instanceof Element) {
-            AXIType type = ((Element)this).getType();
-            if(type != null && type instanceof ContentModel) {
-                ((ContentModel)type).addAttribute(attribute);
-                return;
-            }
-        }
         appendChild(AbstractAttribute.PROP_ATTRIBUTE, attribute);
     }
     

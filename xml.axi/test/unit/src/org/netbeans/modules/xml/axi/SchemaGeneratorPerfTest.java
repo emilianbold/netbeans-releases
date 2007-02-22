@@ -160,7 +160,7 @@ public class SchemaGeneratorPerfTest extends AbstractTestCase {
     }
     
     public void testGenerateSchema2() {
-        assertEquals("global elements",3,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",SchemaGeneratorTest.GE_SIZE,getSchemaModel().getSchema().getElements().size());
         Element element = axiModel.getComponentFactory().createElement();
         element.setName("NewElement"+axiModel.getRoot().getElements().size());
         
@@ -170,7 +170,7 @@ public class SchemaGeneratorPerfTest extends AbstractTestCase {
         } finally {
             axiModel.endTransaction();
         }
-        assertEquals("global elements",4,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",SchemaGeneratorTest.GE_SIZE+1,getSchemaModel().getSchema().getElements().size());
         
 //		try {
 //			SchemaModel sm = getSchemaModel();
@@ -186,7 +186,7 @@ public class SchemaGeneratorPerfTest extends AbstractTestCase {
         } finally {
             axiModel.endTransaction();
         }
-        assertEquals("global elements",3,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",SchemaGeneratorTest.GE_SIZE,getSchemaModel().getSchema().getElements().size());
         validateSchema(axiModel.getSchemaModel());
 //		try {
 //			SchemaModel sm = getSchemaModel();

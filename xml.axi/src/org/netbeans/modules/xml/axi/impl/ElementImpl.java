@@ -2,7 +2,7 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
  *
@@ -11,18 +11,20 @@
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.xml.axi.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIType;
+import org.netbeans.modules.xml.axi.AbstractAttribute;
 import org.netbeans.modules.xml.axi.Compositor;
 import org.netbeans.modules.xml.axi.ContentModel;
 import org.netbeans.modules.xml.axi.Element;
@@ -51,14 +53,14 @@ public final class ElementImpl extends Element {
     public ElementImpl(AXIModel model, SchemaComponent schemaComponent) {
         super(model, schemaComponent);
     }
-        
+    
     /**
      * Returns true if it is a reference, false otherwise.
      */
     public boolean isReference() {
         return false;
     }
-        
+    
     /**
      * Returns the referent if isReference() is true.
      */
@@ -199,7 +201,7 @@ public final class ElementImpl extends Element {
             firePropertyChangeEvent(PROP_NILLABLE, oldValue, value);
         }
     }
-        
+    
     /**
      * Returns the AXIType.
      */
@@ -216,7 +218,7 @@ public final class ElementImpl extends Element {
      */
     public void setType(AXIType newValue) {
         if( (this == newValue) ||
-            (this.isGlobal() && (newValue instanceof Element)) )
+                (this.isGlobal() && (newValue instanceof Element)) )
             return;
         
         if(newValue instanceof Element) {
@@ -228,18 +230,18 @@ public final class ElementImpl extends Element {
         if(!Util.canSetType(oldValue, newValue))
             return;
         
-        updateChildren(oldValue, newValue);        
-        this.axiType = newValue;        
+        updateChildren(oldValue, newValue);
+        this.axiType = newValue;
         firePropertyChangeEvent(PROP_TYPE, oldValue, newValue);
         setTypeSchemaComponent(getSchemaType(newValue));
         if(newValue instanceof ContentModel) {
             ((ContentModel)newValue).addListener(this);
         }
     }
-
+    
     private void setElementAsType(final AXIType newValue) {
         if(newValue == this)
-            return;            
+            return;
         int index = this.getIndex();
         AXIComponent parent = getParent();
         Element ref = getModel().getComponentFactory().createElementReference((Element)newValue);
@@ -278,7 +280,7 @@ public final class ElementImpl extends Element {
     SchemaComponent getTypeSchemaComponent() {
         return typeSchemaComponent;
     }
-
+    
     /**
      * Sets the new value for the element's type.
      */
@@ -309,16 +311,15 @@ public final class ElementImpl extends Element {
     private void updateChildren(AXIType oldValue, AXIType newValue) {
         //do not remove children if the old type was SimpleType and
         //user added children on top of it, that makes the type as anonymous.
-        if(newValue instanceof AnonymousType) {
-            return;
-        }
-        
-        if( (newValue == null) || (newValue instanceof Datatype) ) {
-            removeAllChildren();
+        if(oldValue instanceof Datatype && newValue instanceof AnonymousType) {
             return;
         }
                 
+        //remove all children anyway
         removeAllChildren();
+        if( (newValue == null) || (newValue instanceof Datatype) ) {
+            return;
+        }
         
         //remove listener from old content model
         if(oldValue != null && oldValue instanceof ContentModel) {
@@ -329,8 +330,17 @@ public final class ElementImpl extends Element {
         //add proxy children for the new content model
         if(newValue instanceof ContentModel)
             Util.addProxyChildren(this, (ContentModel)newValue, null);
+        
+        if(newValue instanceof AnonymousType) {
+            List<AXIComponent> children = new ArrayList<AXIComponent>();
+            AXIModelBuilder builder = new AXIModelBuilder(this);
+            builder.populateChildren( ((AnonymousType)newValue).getPeer(), false, children);
+            for(AXIComponent child : children) {
+                this.appendChild(child);
+            }
+        }
     }
-            
+    
     /**
      * Represents a local complex type.
      */
@@ -354,17 +364,35 @@ public final class ElementImpl extends Element {
      */
     public void addCompositor(Compositor compositor) {
         if( getType() != null && getType() instanceof ContentModel &&
-            getModel() != ((ContentModel)getType()).getModel() ) {
+                getModel() != ((ContentModel)getType()).getModel() ) {
             //no drops allowed when the element's type
             //belongs to some other model
             return;
         }
         
         if(getType() instanceof Datatype) {
-            setType(null);
+            setType(new AnonymousType(null));
         }
         super.addCompositor(compositor);
     }
+    
+    /**
+     * Overwrites addAttribute of AXIContainer.
+     */
+    public void addAttribute(AbstractAttribute attribute) {
+        AXIType type = getType();
+        if(type != null && type instanceof ContentModel) {
+            ((ContentModel)type).addAttribute(attribute);
+            return;
+        }
+        
+        if(type instanceof Datatype) {
+            setType(new AnonymousType(null));
+        }
+    
+        super.addAttribute(attribute);
+    }
+    
     
     private AXIType axiType;
     private SchemaComponent typeSchemaComponent;

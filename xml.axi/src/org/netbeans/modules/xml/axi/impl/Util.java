@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -179,17 +179,6 @@ public class Util {
             return ContentModel.PROP_CONTENT_MODEL;
         
         return null;
-    }
-    
-    public static Element findParentElement(AXIComponent component) {
-        AXIComponent parent = (AXIComponent) component.getParent();
-        if(parent == null)
-            return null;
-        
-        if(parent instanceof Element)
-            return (Element)parent;
-        else
-            return findParentElement(parent);
     }
     
     public static Datatype getDatatype(AXIModel model, SchemaComponent component) {
