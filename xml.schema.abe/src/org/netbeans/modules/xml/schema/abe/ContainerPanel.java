@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -40,6 +40,9 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.AnyAttribute;
@@ -51,6 +54,8 @@ import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.axi.datatype.Datatype;
 import org.netbeans.modules.xml.axi.visitor.AXIVisitor;
 import org.netbeans.modules.xml.schema.abe.palette.DnDHelper;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -151,6 +156,7 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
         this.remove(childrenPanel);
         childrenPanel = null;
         initChildrenPanel();
+        //childrenAdded = false;
         addAllChildren();
     }
     
@@ -159,18 +165,27 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
         if(childrenAdded)
             return;
         childrenAdded = true;
-        for(AXIComponent axiComp: getAXIChildren()){
-            boolean childAdded = false;
+        final List<? extends AXIComponent> children = getAXIChildren();
+        if(children.size() < InstanceDesignerPanel.EXPAND_BY_DEFAULT_LIMIT){
+            addAllChildren(children) ;
+        }else{
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    addAllChildren(children) ;
+                }
+            });
+        }
+    }
+    
+    private void addAllChildren(List<? extends AXIComponent> children){
+        initProgress(children);
+        for(final AXIComponent axiComp: children){
+            showProgress();
             visitorResult = null;
-            axiComp.accept(this);
-            Component compToAdd = visitorResult;
+            axiComp.accept(ContainerPanel.this);
+            final Component compToAdd = visitorResult;
             if(visitorResult != null){
                 appendChild(compToAdd, false);
-                childAdded = true;
-            }else{
-                continue;
-            }
-            if(childAdded){
                 TweenerPanel tweener = new TweenerPanel(SwingConstants.HORIZONTAL, context);
                 addTweenerListener(tweener);
                 appendChild(tweener, false);
@@ -178,6 +193,41 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
         }
         adjustChildrenPanelSize();
         revalidate();
+        finishProgress();
+    }
+    
+    
+    ProgressHandle progressHandle = null;
+    int stepCount = 0;
+    private void initProgress(List<? extends AXIComponent> children) {
+        final int size = children.size();
+        if( size < InstanceDesignerPanel.EXPAND_BY_DEFAULT_LIMIT){
+            return;
+        }
+        UIUtilities.showBulbMessage(NbBundle.getMessage(ContainerPanel.class,
+                "MSG_RENDERING_CHILDREN")+"...", this.context);
+        progressHandle= ProgressHandleFactory.createHandle(NbBundle.getMessage(
+                ContainerPanel.class, "MSG_RENDERING_CHILDREN")+": ");
+        progressHandle.setInitialDelay(1);
+        progressHandle.start(size+10);
+        UIUtilities.setBusyCursor(this.context);
+        stepCount = 0;
+    }
+    
+    private void showProgress(){
+        if(progressHandle != null){
+            progressHandle.progress(stepCount++);
+        }
+    }
+    
+    private void finishProgress(){
+        if(progressHandle != null){
+            progressHandle.finish();
+            progressHandle = null;
+            UIUtilities.setDefaultCursor(this.context);
+            UIUtilities.hideGlassMessage();
+            stepCount = 0;
+        }
     }
     
     public int getChildrenIndent(){
@@ -373,7 +423,7 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
         
     }
     
-    //Following set of methods needed for the tag size calculation and horizontal bar display logic
+//Following set of methods needed for the tag size calculation and horizontal bar display logic
     public Dimension getPreferredSize() {
         return getMinimumSize();
     }

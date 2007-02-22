@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -61,6 +61,7 @@ import org.openide.windows.TopComponent;
  * @author  Todd Fast, todd.fast@sun.com
  */
 public class InstanceDesignerPanel extends ABEBaseDropPanel {
+    public static final int EXPAND_BY_DEFAULT_LIMIT  = 50;
     private static final long serialVersionUID = 7526472295622776147L;
     /**
      *
@@ -110,19 +111,19 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
         add(getNamespacePanel(), BorderLayout.NORTH);
         //wrapperPanel.add(namespacePanel, BorderLayout.NORTH);
         
+        boolean expand = getAXIModel().getRoot().getElements().size() > EXPAND_BY_DEFAULT_LIMIT ? false : true;
         globalElementsChildrenPanel = new GlobalElementsContainerPanel(
-                getUIContext(), getAXIModel().getRoot(), true);
+                getUIContext(), getAXIModel().getRoot(), expand);
         TitleWrapperPanel geWrapper = new TitleWrapperPanel(globalElementsChildrenPanel,
-                globalElementsStr, getAXIModel().getRoot(), true, context){
+                globalElementsStr, getAXIModel().getRoot(), expand, context){
             private static final long serialVersionUID = 7526472295622776147L;
             public int getChildrenItemsCount() {
                 return getAXIModel().getRoot().getElements().size();
             }
         };
-        wrapperPanel.add(geWrapper, BorderLayout.NORTH);
+        wrapperPanel.add(geWrapper, BorderLayout.NORTH);        
         
-        
-        boolean expand = getAXIModel().getRoot().getContentModels().size() > 0 ? false : true;
+        expand = getAXIModel().getRoot().getContentModels().size() > 0 ? false : true;        
         globalComplextypeChildrenPanel = new GlobalComplextypeContainerPanel(
                 getUIContext(), getAXIModel().getRoot(), expand);
         TitleWrapperPanel gcWrapper = new TitleWrapperPanel(globalComplextypeChildrenPanel,

@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -304,33 +304,34 @@ public abstract class ABEAbstractNode extends AbstractNode
     
     public NewType[] getNewTypes() {
         return new NewType[0];
-    }
-    
+    }    
     
     public void remove() {
-        if(canWrite()){{
-            UIUtilities.setBusyCursor(context);
-            try{
-                if(getReferenceable() != null)
-                    safeDelete();
-                else{
-                    //use normal delete
-                    if(getAXIComponent() == null ||
-                            getAXIComponent().getModel() == null)
-                        return;
-                    AXIModel model = getAXIComponent().getModel();
-                    model.startTransaction();
-                    try{
-                        getAXIComponent().getParent().removeChild(getAXIComponent());
-                    }finally{
-                        model.endTransaction();
-                    }
-                }
-            }finally{
-                UIUtilities.setDefaultCursor(context);
+        if(!canWrite())
+            return;
+        UIUtilities.setBusyCursor(context);
+        try {
+            if(getReferenceable() != null) {
+                safeDelete();
+                return;
             }
+            //use normal delete
+            doDelete();
+        } finally {
+            UIUtilities.setDefaultCursor(context);
         }
-        
+    }
+    
+    private void doDelete() {
+        if(getAXIComponent() == null ||
+                getAXIComponent().getModel() == null)
+            return;
+        AXIModel model = getAXIComponent().getModel();
+        model.startTransaction();
+        try{
+            getAXIComponent().getParent().removeChild(getAXIComponent());
+        }finally{
+            model.endTransaction();
         }
     }
     
@@ -467,6 +468,9 @@ public abstract class ABEAbstractNode extends AbstractNode
     }
     
     public NamedReferenceable getReferenceable() {
+        if(!getAXIComponent().getOriginal().isGlobal())
+            return null;
+        
         SchemaComponent comp = getAXIComponent().getOriginal().getPeer();
         if (comp instanceof NamedReferenceable && isValid() && comp.getModel().
                 getModelSource().getLookup().lookup(FileObject.class) != null){
@@ -475,7 +479,9 @@ public abstract class ABEAbstractNode extends AbstractNode
         return null;
     }
     
-    public NamedReferenceable getReferenceable(AXIComponent axiComponent) {
+    private NamedReferenceable getReferenceable(AXIComponent axiComponent) {
+        if(!axiComponent.getOriginal().isGlobal())
+            return null;
         SchemaComponent comp = axiComponent.getOriginal().getPeer();
         if (comp instanceof NamedReferenceable && isValid() && comp.getModel().
                 getModelSource().getLookup().lookup(FileObject.class) != null){
@@ -488,7 +494,7 @@ public abstract class ABEAbstractNode extends AbstractNode
         return getAXIComponent().getPeer().getModel() != null;
     }
     
-    private void safeDelete(){
+    private void safeDelete() {
         final NamedReferenceable ref = getReferenceable();
         // try delete silently
         DeleteRequest request  = new DeleteRequest(ref);
@@ -514,8 +520,7 @@ public abstract class ABEAbstractNode extends AbstractNode
                         new RefactoringPanel(ui);
                     }
                 }
-            });*/
-            
+            });*/            
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
