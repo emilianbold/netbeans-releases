@@ -31,9 +31,6 @@ import org.netbeans.lib.cvsclient.command.importcmd.ImportCommand;
 import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
-import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
-import org.netbeans.modules.proxy.ClientSocketFactory;
-import org.netbeans.modules.proxy.ConnectivitySettings;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TaskListener;
 import org.openide.util.Task;
@@ -278,7 +275,7 @@ public class ClientRuntime {
      * @return a Client instance
      */ 
     private Client createClient() {
-        Connection connection = setupConnection(CVSRoot.parse(cvsRoot), null);
+        Connection connection = setupConnection(CVSRoot.parse(cvsRoot));
         Client client = new Client(connection, CvsVersioningSystem.getInstance().getAdminHandler());
         client.setUncompressedFileHandler(CvsVersioningSystem.getInstance().getFileHandler());
         client.setGzipFileHandler(CvsVersioningSystem.getInstance().getGzippedFileHandler());
@@ -292,7 +289,7 @@ public class ClientRuntime {
      * @return Connection object ready to connect to the given CVS root
      * @throws IllegalArgumentException if the 'method' part of the supplied CVS Root is not recognized
      */ 
-    public static Connection setupConnection(CVSRoot cvsRoot, ProxyDescriptor proxy) throws IllegalArgumentException {
+    public static Connection setupConnection(CVSRoot cvsRoot) throws IllegalArgumentException {
 
         // for testing porposes allow to use dynamically generated port numbers
         String t9yRoot = System.getProperty("netbeans.t9y.cvs.connection.CVSROOT"); // NOI18N
@@ -320,12 +317,7 @@ public class ClientRuntime {
             return con;
         }
 
-        if (proxy == null ) proxy = CvsModuleConfig.getDefault().getProxyFor(cvsRoot);
-
         SocketFactory factory = SocketFactory.getDefault();
-        if (proxy.needsProxy(cvsRoot.getHostName())) {
-            factory = new ClientSocketFactory(toConnectivitySettings(proxy));
-        }
 
         String method = cvsRoot.getMethod();
         if (CVSRoot.METHOD_PSERVER.equals(method)) {
@@ -371,33 +363,6 @@ public class ClientRuntime {
         }
         
         throw new IllegalArgumentException("Unrecognized CVS Root: " + cvsRoot); // NOI18N
-    }
-
-    public static ConnectivitySettings toConnectivitySettings(ProxyDescriptor pd) {
-        ConnectivitySettings cs = new ConnectivitySettings();
-        String pasword = pd.getPassword();
-        int port = pd.getPort();
-        switch (pd.getType()) {
-            case ProxyDescriptor.TYPE_DIRECT:
-                break;
-            case ProxyDescriptor.TYPE_HTTP:
-                if (port <= 0) {
-                    ErrorManager.getDefault().log("Assuming default port 8080 for " + pd.getHost() + " HTTP proxy.");  // NOI18N
-                    port = 8080;  // could be also 3127, 80, anyway user can specify exact value
-                }
-                cs.setProxy(ConnectivitySettings.CONNECTION_VIA_HTTPS, pd.getHost(), port, pd.getUserName(), pasword == null ? null : pasword.toCharArray());
-                break;
-            case ProxyDescriptor.TYPE_SOCKS:
-                if (port <= 0) {
-                    ErrorManager.getDefault().log("Assuming default port 1080 for " + pd.getHost() + " SOCKS proxy.");  // NOI18N
-                    port = 1080;
-                }
-                cs.setProxy(ConnectivitySettings.CONNECTION_VIA_SOCKS, pd.getHost(), port, pd.getUserName(), pasword == null ? null : pasword.toCharArray());
-                break;
-            default:
-                break;
-        }
-        return cs;
     }
 
     public String toString() {

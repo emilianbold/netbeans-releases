@@ -38,12 +38,10 @@ import java.io.IOException;
 public final class Kit implements Client.Factory {
 
     private CVSRoot factory_cvsRoot;
-    private ProxyDescriptor factory_proxy;
 
     /** Creates Kit that servers as Client.Factory */
-    private Kit(CVSRoot factory_cvsRoot, ProxyDescriptor factory_proxy) {
+    private Kit(CVSRoot factory_cvsRoot) {
         this.factory_cvsRoot = factory_cvsRoot;
-        this.factory_proxy = factory_proxy;
     }
 
     public static File createTmpFolder() {
@@ -82,17 +80,17 @@ public final class Kit implements Client.Factory {
     }
 
     /** Creates client suitable for read only operations */
-    public static Client createClient(CVSRoot cvsRoot, ProxyDescriptor proxy) {
-        Connection connection = ClientRuntime.setupConnection(cvsRoot, proxy);
+    public static Client createClient(CVSRoot cvsRoot) {
+        Connection connection = ClientRuntime.setupConnection(cvsRoot);
         Client client = new Client(connection, new StandardAdminHandler());
         return client;
     }
 
-    public static Client.Factory createClientFactory(CVSRoot cvsRoot, ProxyDescriptor proxy) {
-        return new Kit(cvsRoot, proxy);
+    public static Client.Factory createClientFactory(CVSRoot cvsRoot) {
+        return new Kit(cvsRoot);
     }
 
     public Client createClient() {
-        return createClient(factory_cvsRoot, factory_proxy);
+        return createClient(factory_cvsRoot);
     }
 }

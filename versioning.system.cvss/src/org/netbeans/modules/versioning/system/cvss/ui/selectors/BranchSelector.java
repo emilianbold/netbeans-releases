@@ -57,8 +57,6 @@ public final class BranchSelector implements Runnable {
 
     private File file;
 
-    private ProxyDescriptor proxyDescriptor;
-
     private Node rootNode;
     private BranchNodeChildren rootKids;
 
@@ -68,10 +66,9 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
      * @param file versioned file or folder
      * @return selected tag or <code>null</code> on cancel.
      */
-    public String selectTag(File file, ProxyDescriptor proxy) {
+    public String selectTag(File file) {
 
         this.file = file;
-        this.proxyDescriptor = proxy;
 
         return showSelector();
     }
@@ -87,11 +84,10 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
      * </ul>
      * @return selected tag or <code>null</code> on cancel.
      */
-    public String selectTag(CVSRoot root, String module, ProxyDescriptor proxy) {
+    public String selectTag(CVSRoot root, String module) {
 
         this.root = root;
         this.module = module;
-        this.proxyDescriptor = proxy;
 
         return showSelector();
     }
@@ -157,7 +153,7 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
                 // non recursive operation doe snot work with "." module
                 // #58208 so here a random one is choosen
                 if (".".equals(module)) {  // NOI18N
-                    Client client = Kit.createClient(root, proxyDescriptor);
+                    Client client = Kit.createClient(root);
                     List l = ModuleSelector.listRepositoryPath(client, root, "");  // NOI18N
                     Iterator it = l.iterator();
                     int max = l.size();
@@ -175,7 +171,7 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
                 File[] checkoutFiles = new File[] {checkoutFolder};
                 checkout.setFiles(checkoutFiles);
 
-                Client client = Kit.createClient(root, proxyDescriptor);
+                Client client = Kit.createClient(root);
                 client.setLocalPath(checkoutFolder.getAbsolutePath());
                 client.executeCommand(checkout, gtx);
 
@@ -224,7 +220,7 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
                     }
                 }
             }
-            Client client = Kit.createClient(root, proxyDescriptor);
+            Client client = Kit.createClient(root);
             
             final Set tags = new TreeSet();
             final Set branches = new TreeSet();

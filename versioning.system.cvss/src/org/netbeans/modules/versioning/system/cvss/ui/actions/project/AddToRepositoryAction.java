@@ -33,7 +33,6 @@ import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep;
 import org.netbeans.modules.versioning.system.cvss.ui.wizards.AbstractStep;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ModuleSelector;
-import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
@@ -474,8 +473,7 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
             } else if (e.getSource() == importPanel.moduleButton) {
                 ModuleSelector selector = new ModuleSelector();
                 CVSRoot root = CVSRoot.parse(repositoryStep.getCvsRoot());
-                ProxyDescriptor proxy = repositoryStep.getProxyDescriptor();
-                String path = selector.selectRepositoryPath(root, proxy);
+                String path = selector.selectRepositoryPath(root);
                 if (path != null) {
                     importPanel.moduleTextField.setText(path);
                 }

@@ -28,7 +28,6 @@ import java.io.File;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.FileCollection;
-import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
 import org.netbeans.lib.cvsclient.CVSRoot;
 
 /**
@@ -88,38 +87,6 @@ public class CvsModuleConfig {
     
     // clients code ~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    /**
-     * Loads value stored by {@link #setProxyFor}. By default
-     * it returns {@link org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor#SYSTEM}.
-     *
-     * @return a proxy descriptor, never <code>null</code>
-     */
-    public synchronized ProxyDescriptor getProxyFor(CVSRoot root) {
-        ProxyDescriptor proxyDescriptor = ProxyDescriptor.SYSTEM;
-        if (root != null) {        
-            Map<String, RootSettings> rootsMap = getRootsMap();
-            String rootString = root.toString();
-            RootSettings rootSettings = (RootSettings) rootsMap.get(rootString);
-            if (rootSettings != null && rootSettings.proxyDescriptor != null) {
-                proxyDescriptor = rootSettings.proxyDescriptor;
-            }
-        }
-        return proxyDescriptor;
-    }
-
-    public synchronized void setProxyFor(CVSRoot root, ProxyDescriptor proxyDescriptor) {
-        Map<String, RootSettings> map = getRootsMap();
-        String key = root.toString();
-        RootSettings settings = (RootSettings) map.get(key);
-        if (settings == null) {
-            settings = new RootSettings();
-        }
-        settings.proxyDescriptor = proxyDescriptor;
-        map.put(key, settings);
-
-        storeRootsMap();
-    }
-
     public synchronized boolean hasExtSettingsFor(CVSRoot root) {
         assert "ext".equals(root.getMethod());  // NOI18N
         Map<String, RootSettings> rootsMap = getRootsMap();
@@ -189,16 +156,9 @@ public class CvsModuleConfig {
         for (String s : smap) {
             String [] fields = s.split(FIELD_SEPARATOR);
             if (fields.length >= 8) {
+                // TODO: old settings, remove this block after 6.0
                 RootSettings rs = new RootSettings();
                 map.put(fields[0], rs);
-                int type = Integer.parseInt(fields[1]);
-                int port = Integer.parseInt(fields[2]);
-                String host = fields[3].length() == 0 ? null : fields[3];
-                String userName = fields[4].length() == 0 ? null : fields[4];
-                String password = fields[5].length() == 0 ? null : fields[5];
-                String description = fields[6].length() == 0 ? null : fields[6];
-                boolean system = Boolean.valueOf(fields[7]);
-                rs.proxyDescriptor = new ProxyDescriptor(type, host, port, userName, password, description, system);
                 if (fields.length >= 11) {
                     ExtSettings es = new ExtSettings();
                     rs.extSettings = es;
@@ -207,6 +167,19 @@ public class CvsModuleConfig {
                     es.extCommand = fields[10];
                     if (fields.length >= 12) {
                         es.extPassword = fields[11];
+                    }
+                }
+            } else {
+                if (fields.length >= 4) {
+                    RootSettings rs = new RootSettings();
+                    map.put(fields[0], rs);
+                    ExtSettings es = new ExtSettings();
+                    rs.extSettings = es;
+                    es.extUseInternalSsh = Boolean.valueOf(fields[1]);
+                    es.extRememberPassword = Boolean.valueOf(fields[2]);
+                    es.extCommand = fields[3];
+                    if (fields.length >= 5) {
+                        es.extPassword = fields[4];
                     }
                 }
             }
@@ -220,22 +193,6 @@ public class CvsModuleConfig {
             StringBuffer es = new StringBuffer(100);
             es.append(entry.getKey());
             RootSettings settings = entry.getValue();
-            if (settings.proxyDescriptor != null) {
-                es.append(FIELD_SEPARATOR);
-                es.append(settings.proxyDescriptor.getType());
-                es.append(FIELD_SEPARATOR);
-                es.append(settings.proxyDescriptor.getPort());
-                es.append(FIELD_SEPARATOR);
-                if (settings.proxyDescriptor.getHost() != null) es.append(settings.proxyDescriptor.getHost());
-                es.append(FIELD_SEPARATOR);
-                if (settings.proxyDescriptor.getUserName() != null) es.append(settings.proxyDescriptor.getUserName());
-                es.append(FIELD_SEPARATOR);
-                if (settings.proxyDescriptor.getPassword() != null) es.append(settings.proxyDescriptor.getPassword());
-                es.append(FIELD_SEPARATOR);
-                if (settings.proxyDescriptor.getDescription() != null) es.append(settings.proxyDescriptor.getDescription());
-                es.append(FIELD_SEPARATOR);
-                es.append(settings.proxyDescriptor.isSystemProxyDescriptor());
-            }
             if (settings.extSettings != null) {
                 es.append(FIELD_SEPARATOR);
                 es.append(settings.extSettings.extUseInternalSsh);
@@ -297,8 +254,6 @@ public class CvsModuleConfig {
      * Holds associated settings.
      */
     private final static class RootSettings {
-
-        private ProxyDescriptor proxyDescriptor;
 
         private ExtSettings extSettings;
     }

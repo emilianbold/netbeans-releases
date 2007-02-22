@@ -43,7 +43,6 @@ import java.awt.event.FocusEvent;
 import java.io.File;
 import java.text.MessageFormat;
 
-import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -187,10 +186,6 @@ public final class CheckoutWizard implements ChangeListener{
         return repositoryStep.getCvsRoot();
     }
 
-    public ProxyDescriptor getProxyDescriptor() {
-        return repositoryStep.getProxyDescriptor();
-    }
-
     private class ModuleStep extends AbstractStep implements DocumentListener, FocusListener, ActionListener {
 
         protected JComponent createComponent() {
@@ -295,7 +290,7 @@ public final class CheckoutWizard implements ChangeListener{
                 ModuleSelector selector = new ModuleSelector();
                 String rootString = repositoryStep.getCvsRoot();
                 CVSRoot root = CVSRoot.parse(rootString);
-                Set modules = selector.selectModules(root, getProxyDescriptor());
+                Set modules = selector.selectModules(root);
                 StringBuffer buf = new StringBuffer();
                 String separator = "";  // NOI18N
                 Iterator it = modules.iterator();
@@ -314,7 +309,7 @@ public final class CheckoutWizard implements ChangeListener{
                     s = ".";  // NOI18N
                 }
                 String module = new StringTokenizer(s, ", ").nextToken(); // NOI18N
-                String tag = selector.selectTag(root, module, getProxyDescriptor());
+                String tag = selector.selectTag(root, module);
                 if (tag != null) {
                     modulePanel.tagTextField.setText(tag);
                 }

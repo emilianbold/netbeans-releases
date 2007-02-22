@@ -26,16 +26,12 @@ import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.lib.cvsclient.connection.*;
 import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
-import org.netbeans.modules.versioning.system.cvss.ClientRuntime;
 import org.netbeans.modules.versioning.system.cvss.SSHConnection;
-import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxySelector;
-import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
 import org.netbeans.modules.versioning.util.Utils;
-import org.netbeans.modules.proxy.ConnectivitySettings;
-import org.netbeans.modules.proxy.ClientSocketFactory;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
@@ -68,8 +64,6 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
     private RequestProcessor.Task updatePasswordTask;
     private volatile boolean passwordExpected;
 
-    private boolean userVisitedProxySettings;
-
     private ProgressHandle progress;
     private JComponent progressComponent;
     private JLabel progressLabel;
@@ -77,7 +71,6 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
     private volatile boolean internalDocumentChange;
     private Thread backgroundValidationThread;
     private RepositoryPanel repositoryPanel;
-    private ProxyDescriptor proxyDescriptor;
     private String scrambledPassword;
     private final String initialCvsRoot;
     private String preferedCvsRoot;
@@ -170,7 +163,6 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         } else {
             validateCvsRoot();
             CVSRoot root = getCVSRoot();
-            proxyDescriptor = CvsModuleConfig.getDefault().getProxyFor(root);
             schedulePasswordUpdate();
         }
         textEditor.selectAll();
@@ -239,10 +231,6 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                         invalid(null);
                         progress(NbBundle.getMessage(CheckoutWizard.class, "BK2011"));
                         SocketFactory factory = SocketFactory.getDefault();
-                        if (proxyDescriptor != null && proxyDescriptor.needsProxy(root.getHostName())) {
-                            ConnectivitySettings connectivitySettings = ClientRuntime.toConnectivitySettings(proxyDescriptor);
-                            factory = new ClientSocketFactory(connectivitySettings);
-                        }
 
                         // check raw network reachability
 
@@ -384,9 +372,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
     void storeValidValues() {
         String root = selectedCvsRoot();
         CVSRoot cvsRoot = CVSRoot.parse(root);
-        boolean storeProxySettings = false;
         if (root.startsWith(":pserver:")) { // NOI18N
-            storeProxySettings = true;
             try {
                 // CVSclient library reads password directly from .cvspass file
                 // store it here into the file. It's potentionally necessary for
@@ -400,7 +386,6 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             }
         } else if (root.startsWith(":ext:")) {  // NOI18N
             boolean internalSsh = repositoryPanel.internalSshRadioButton.isSelected();
-            storeProxySettings = internalSsh;
             CvsModuleConfig.ExtSettings extSettings = new CvsModuleConfig.ExtSettings();
             extSettings.extUseInternalSsh = internalSsh;
             extSettings.extPassword = repositoryPanel.extPasswordField.getText();
@@ -409,10 +394,6 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             CvsModuleConfig.getDefault().getPreferences().putBoolean(USE_INTERNAL_SSH, internalSsh);
             CvsModuleConfig.getDefault().getPreferences().put(EXT_COMMAND, extSettings.extCommand);
             CvsModuleConfig.getDefault().setExtSettingsFor(cvsRoot, extSettings);
-        }
-
-        if (storeProxySettings) {
-            CvsModuleConfig.getDefault().setProxyFor(cvsRoot, getProxyDescriptor());
         }
 
         Utils.insert(CvsModuleConfig.getDefault().getPreferences(), RECENT_ROOTS, root, 8);
@@ -455,10 +436,6 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         if (validateCvsRoot()) {
             valid();
             CVSRoot root = getCVSRoot();
-            if (userVisitedProxySettings == false) {
-                // load  proxy from history
-                proxyDescriptor = CvsModuleConfig.getDefault().getProxyFor(root);
-            }
             if (CVSRoot.METHOD_EXT.equals(root.getMethod())) {
                 if (CvsModuleConfig.getDefault().hasExtSettingsFor(root)) {
                     CvsModuleConfig.ExtSettings extSettings = CvsModuleConfig.getDefault().getExtSettingsFor(root);
@@ -597,15 +574,9 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
     }
     
     private void onProxyConfiguration() {
-        ProxySelector selector = new ProxySelector();
-        selector.setProxyDescriptor(proxyDescriptor);
-        ProxyDescriptor pd = selector.selectProxy();
-        if (pd != null) {
-            proxyDescriptor = pd;
-            userVisitedProxySettings = true;
-            if (validateCvsRoot()) {
-                valid();
-            }
+        OptionsDisplayer.getDefault().open("General");
+        if (validateCvsRoot()) {
+            valid();
         }
     }
     
@@ -704,10 +675,6 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
 
     public String getCvsRoot() {
         return selectedCvsRoot();
-    }
-
-    public ProxyDescriptor getProxyDescriptor() {
-        return proxyDescriptor;
     }
 
     public String getScrambledPassword() {

@@ -156,7 +156,7 @@ class SwitchBranchPanel extends javax.swing.JPanel {
             try {
                 CVSRoot.parse(Utils.getCVSRootFor(roots[i]));  // raises exception
                 BranchSelector selector = new BranchSelector();
-                String tag = selector.selectTag(roots[i], null);
+                String tag = selector.selectTag(roots[i]);
                 if (tag != null) {
                     tfBranchName.setText(tag);
                 }

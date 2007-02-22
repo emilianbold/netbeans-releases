@@ -49,16 +49,14 @@ public final class ModuleSelector {
     /**
      * Asks user to select which module to checkout. Popups a modal UI,
      * @param root identifies repository
-     * @param proxy defines which proxy to use or null
-     *        to use one from CVsRootSettings.
      * @return Set of String, possibly empty
      */
-    public Set selectModules(CVSRoot root, ProxyDescriptor proxy) {
+    public Set selectModules(CVSRoot root) {
 
         // create top level node that categorizes to aliases and raw browser
 
         Children.Array kids = new Children.Array();
-        Client.Factory clientFactory = Kit.createClientFactory(root, proxy);
+        Client.Factory clientFactory = Kit.createClientFactory(root);
         Node aliasesNode = AliasesNode.create(clientFactory, root);
         Node pathsNode = RepositoryPathNode.create(clientFactory, root, "");  // NOI18N
         kids.add(new Node[] {aliasesNode, pathsNode});
@@ -106,9 +104,9 @@ public final class ModuleSelector {
      *        to use one from CVsRootSettings.
      * @return '/' separated path or null on cancel.
      */
-    public String selectRepositoryPath(CVSRoot root, ProxyDescriptor proxy) {
+    public String selectRepositoryPath(CVSRoot root) {
 
-        Client.Factory clientFactory = Kit.createClientFactory(root, proxy);
+        Client.Factory clientFactory = Kit.createClientFactory(root);
         Node pathsNode = RepositoryPathNode.create(clientFactory, root, "");  // NOI18N
 
         try {
