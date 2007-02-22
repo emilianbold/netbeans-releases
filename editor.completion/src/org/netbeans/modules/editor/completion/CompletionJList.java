@@ -99,7 +99,7 @@ public class CompletionJList extends JList {
     void setData(List data) {
         if (data != null) {
             int itemCount = data.size();
-            ListModel lm = LazyListModel.create( new Model(data), CompletionImpl.filter, 0.9d, LocaleSupport.getString("completion-please-wait") ); //NOI18N
+            ListModel lm = LazyListModel.create( new Model(data), CompletionImpl.filter, 1.0d, LocaleSupport.getString("completion-please-wait") ); //NOI18N
             ListCellRenderer renderer = getCellRenderer();
             int lmSize = lm.getSize();
             int width = 0;
@@ -128,37 +128,52 @@ public class CompletionJList extends JList {
     public void up() {
         int size = getModel().getSize();
         if (size > 0) {
-            setSelectedIndex((getSelectedIndex() - 1 + size) % size);
-            ensureIndexIsVisible(getSelectedIndex());
+            int idx = (getSelectedIndex() - 1 + size) % size;
+            while(idx > 0 && getModel().getElementAt(idx) == null)
+                idx--;
+            setSelectedIndex(idx);
+            ensureIndexIsVisible(idx);
         }
     }
 
     public void down() {
         int size = getModel().getSize();
         if (size > 0) {
-            setSelectedIndex((getSelectedIndex() + 1) % size);
-            ensureIndexIsVisible(getSelectedIndex());
+            int idx = (getSelectedIndex() + 1) % size;
+            while(idx < size && getModel().getElementAt(idx) == null)
+                idx++;
+            if (idx == size)
+                idx = 0;
+            setSelectedIndex(idx);
+            ensureIndexIsVisible(idx);
         }
     }
 
     public void pageUp() {
         if (getModel().getSize() > 0) {
             int pageSize = Math.max(getLastVisibleIndex() - getFirstVisibleIndex(), 0);
-            int ind = Math.max(getSelectedIndex() - pageSize, 0);
-
-            setSelectedIndex(ind);
-            ensureIndexIsVisible(ind);
+            int idx = Math.max(getSelectedIndex() - pageSize, 0);
+            while(idx > 0 && getModel().getElementAt(idx) == null)
+                idx--;
+            setSelectedIndex(idx);
+            ensureIndexIsVisible(idx);
         }
     }
 
     public void pageDown() {
-        int lastInd = getModel().getSize() - 1;
-        if (lastInd >= 0) {
+        int size = getModel().getSize();
+        if (size > 0) {
             int pageSize = Math.max(getLastVisibleIndex() - getFirstVisibleIndex(), 0);
-            int ind = Math.min(getSelectedIndex() + pageSize, lastInd);
-
-            setSelectedIndex(ind);
-            ensureIndexIsVisible(ind);
+            int idx = Math.min(getSelectedIndex() + pageSize, size - 1);
+            while(idx < size && getModel().getElementAt(idx) == null)
+                idx++;
+            if (idx == size) {
+                idx = Math.min(getSelectedIndex() + pageSize, size - 1);
+                while(idx > 0 && getModel().getElementAt(idx) == null)
+                    idx--;
+            }
+            setSelectedIndex(idx);
+            ensureIndexIsVisible(idx);
         }
     }
 
@@ -170,10 +185,13 @@ public class CompletionJList extends JList {
     }
 
     public void end() {
-        int lastInd = getModel().getSize() - 1;
-        if (lastInd >= 0) {
-            setSelectedIndex(lastInd);
-            ensureIndexIsVisible(lastInd);
+        int size = getModel().getSize();
+        if (size > 0) {
+            int idx = size - 1;
+            while(idx > 0 && getModel().getElementAt(idx) == null)
+                idx--;
+            setSelectedIndex(idx);
+            ensureIndexIsVisible(idx);
         }
     }
 
