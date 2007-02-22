@@ -1549,17 +1549,17 @@ public class WebForm implements Designer {
 
     //////
     // XXX Temporary, see Designer interface
-    public void contextActivated(DesignContext designContext) {
-        if (view != null) {
-            view.contextActivated(designContext);
-        }
-    }
+//    public void contextActivated(DesignContext designContext) {
+//        if (view != null) {
+//            view.contextActivated(designContext);
+//        }
+//    }
 
-    public void contextDeactivated(DesignContext designContext) {
-        if (view != null) {
-            view.contextDeactivated(designContext);
-        }
-    }
+//    public void contextDeactivated(DesignContext designContext) {
+//        if (view != null) {
+//            view.contextDeactivated(designContext);
+//        }
+//    }
 
     public void contextChanged(DesignContext designContext) {
         if (view != null) {
@@ -1567,59 +1567,59 @@ public class WebForm implements Designer {
         }
     }
 
-    public void beanCreated(DesignBean designBean) {
-        if (view != null) {
-            view.beanCreated(designBean);
-        }
-    }
+//    public void beanCreated(DesignBean designBean) {
+//        if (view != null) {
+//            view.beanCreated(designBean);
+//        }
+//    }
 
-    public void beanDeleted(DesignBean designBean) {
-        if (view != null) {
-            view.beanDeleted(designBean);
-        }
-    }
+//    public void beanDeleted(DesignBean designBean) {
+//        if (view != null) {
+//            view.beanDeleted(designBean);
+//        }
+//    }
 
-    public void beanMoved(DesignBean designBean, DesignBean designBean0, Position position) {
-        if (view != null) {
-            view.beanMoved(designBean, designBean0, position);
-        }
-    }
+//    public void beanMoved(DesignBean designBean, DesignBean designBean0, Position position) {
+//        if (view != null) {
+//            view.beanMoved(designBean, designBean0, position);
+//        }
+//    }
 
-    public void beanContextActivated(DesignBean designBean) {
-        if (view != null) {
-            view.beanContextActivated(designBean);
-        }
-    }
+//    public void beanContextActivated(DesignBean designBean) {
+//        if (view != null) {
+//            view.beanContextActivated(designBean);
+//        }
+//    }
 
-    public void beanContextDeactivated(DesignBean designBean) {
-        if (view != null) {
-            view.beanContextDeactivated(designBean);
-        }
-    }
+//    public void beanContextDeactivated(DesignBean designBean) {
+//        if (view != null) {
+//            view.beanContextDeactivated(designBean);
+//        }
+//    }
 
-    public void instanceNameChanged(DesignBean designBean, String string) {
-        if (view != null) {
-            view.instanceNameChanged(designBean, string);
-        }
-    }
+//    public void instanceNameChanged(DesignBean designBean, String string) {
+//        if (view != null) {
+//            view.instanceNameChanged(designBean, string);
+//        }
+//    }
 
-    public void beanChanged(DesignBean designBean) {
-        if (view != null) {
-            view.beanChanged(designBean);
-        }
-    }
+//    public void beanChanged(DesignBean designBean) {
+//        if (view != null) {
+//            view.beanChanged(designBean);
+//        }
+//    }
 
-    public void propertyChanged(DesignProperty designProperty, Object object) {
-        if (view != null) {
-            view.propertyChanged(designProperty, object);
-        }
-    }
+//    public void propertyChanged(DesignProperty designProperty, Object object) {
+//        if (view != null) {
+//            view.propertyChanged(designProperty, object);
+//        }
+//    }
 
-    public void eventChanged(DesignEvent designEvent) {
-        if (view != null) {
-            view.eventChanged(designEvent);
-        }
-    }
+//    public void eventChanged(DesignEvent designEvent) {
+//        if (view != null) {
+//            view.eventChanged(designEvent);
+//        }
+//    }
     // XXX
     //////
 
@@ -2047,53 +2047,53 @@ public class WebForm implements Designer {
             webForm.inlineEdit(designBeans);
         }
 
-        public void designContextActivated(DesignContext designContext) {
-            webForm.contextActivated(designContext);
-        }
+//        public void designContextActivated(DesignContext designContext) {
+//            webForm.contextActivated(designContext);
+//        }
 
-        public void designContextDeactivated(DesignContext designContext) {
-            webForm.contextDeactivated(designContext);
-        }
+//        public void designContextDeactivated(DesignContext designContext) {
+//            webForm.contextDeactivated(designContext);
+//        }
 
         public void designContextChanged(DesignContext designContext) {
             webForm.contextChanged(designContext);
         }
 
-        public void designBeanCreated(DesignBean designBean) {
-            webForm.beanCreated(designBean);
-        }
+//        public void designBeanCreated(DesignBean designBean) {
+//            webForm.beanCreated(designBean);
+//        }
 
-        public void designBeanDeleted(DesignBean designBean) {
-            webForm.beanDeleted(designBean);
-        }
+//        public void designBeanDeleted(DesignBean designBean) {
+//            webForm.beanDeleted(designBean);
+//        }
 
-        public void designBeanMoved(DesignBean designBean, DesignBean designBean0, Position position) {
-            webForm.beanMoved(designBean, designBean0, position);
-        }
+//        public void designBeanMoved(DesignBean designBean, DesignBean designBean0, Position position) {
+//            webForm.beanMoved(designBean, designBean0, position);
+//        }
 
-        public void designBeanContextActivated(DesignBean designBean) {
-            webForm.beanContextActivated(designBean);
-        }
+//        public void designBeanContextActivated(DesignBean designBean) {
+//            webForm.beanContextActivated(designBean);
+//        }
 
-        public void designBeanContextDeactivated(DesignBean designBean) {
-            webForm.beanContextDeactivated(designBean);
-        }
+//        public void designBeanContextDeactivated(DesignBean designBean) {
+//            webForm.beanContextDeactivated(designBean);
+//        }
 
-        public void designBeanNameChanged(DesignBean designBean, String string) {
-            webForm.instanceNameChanged(designBean, string);
-        }
+//        public void designBeanNameChanged(DesignBean designBean, String string) {
+//            webForm.instanceNameChanged(designBean, string);
+//        }
 
-        public void designBeanChanged(DesignBean designBean) {
-            webForm.beanChanged(designBean);
-        }
+//        public void designBeanChanged(DesignBean designBean) {
+//            webForm.beanChanged(designBean);
+//        }
 
-        public void designPropertyChanged(DesignProperty designProperty, Object object) {
-            webForm.propertyChanged(designProperty, object);
-        }
+//        public void designPropertyChanged(DesignProperty designProperty, Object object) {
+//            webForm.propertyChanged(designProperty, object);
+//        }
 
-        public void designEventChanged(DesignEvent designEvent) {
-            webForm.eventChanged(designEvent);
-        }
+//        public void designEventChanged(DesignEvent designEvent) {
+//            webForm.eventChanged(designEvent);
+//        }
     } // End of HtmlDomProviderListener.
     
 

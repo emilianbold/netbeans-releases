@@ -867,19 +867,19 @@ class JsfForm {
         }
     }
 
-    private void fireDesignContextActivated(DesignContext designContext) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.designContextActivated(designContext);
-        }
-    }
+//    private void fireDesignContextActivated(DesignContext designContext) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.designContextActivated(designContext);
+//        }
+//    }
 
-    private void fireDesignContextDeactivated(DesignContext designContext) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.designContextDeactivated(designContext);
-        }
-    }
+//    private void fireDesignContextDeactivated(DesignContext designContext) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.designContextDeactivated(designContext);
+//        }
+//    }
 
     private void fireDesignContextChanged(DesignContext designContext) {
         HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
@@ -888,68 +888,68 @@ class JsfForm {
         }
     }
 
-    private void fireDesignBeanCreated(DesignBean designBean) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.designBeanCreated(designBean);
-        }
-    }
+//    private void fireDesignBeanCreated(DesignBean designBean) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.designBeanCreated(designBean);
+//        }
+//    }
 
-    private void fireDesignBeanDeleted(DesignBean designBean) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.designBeanDeleted(designBean);
-        }
-    }
+//    private void fireDesignBeanDeleted(DesignBean designBean) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.designBeanDeleted(designBean);
+//        }
+//    }
 
-    private void fireDesignBeanMoved(DesignBean designBean, DesignBean designBean0, Position position) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.designBeanMoved(designBean, designBean0, position);
-        }
-    }
+//    private void fireDesignBeanMoved(DesignBean designBean, DesignBean designBean0, Position position) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.designBeanMoved(designBean, designBean0, position);
+//        }
+//    }
 
-    private void fireDesignBeanContextActivated(DesignBean designBean) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.designBeanContextActivated(designBean);
-        }
-    }
+//    private void fireDesignBeanContextActivated(DesignBean designBean) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.designBeanContextActivated(designBean);
+//        }
+//    }
 
-    private void fireDesignBeanContextDeactivated(DesignBean designBean) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.designBeanContextDeactivated(designBean);
-        }
-    }
+//    private void fireDesignBeanContextDeactivated(DesignBean designBean) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.designBeanContextDeactivated(designBean);
+//        }
+//    }
 
-    private void fireDesignBeanNameChanged(DesignBean designBean, String string) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.designBeanNameChanged(designBean, string);
-        }
-    }
+//    private void fireDesignBeanNameChanged(DesignBean designBean, String string) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.designBeanNameChanged(designBean, string);
+//        }
+//    }
 
-    private void fireDesignBeanChanged(DesignBean designBean) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.designBeanChanged(designBean);
-        }
-    }
+//    private void fireDesignBeanChanged(DesignBean designBean) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.designBeanChanged(designBean);
+//        }
+//    }
 
-    private void fireDesignPropertyChanged(DesignProperty designProperty, Object object) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.designPropertyChanged(designProperty, object);
-        }
-    }
+//    private void fireDesignPropertyChanged(DesignProperty designProperty, Object object) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.designPropertyChanged(designProperty, object);
+//        }
+//    }
 
-    private void fireDesignEventChanged(DesignEvent designEvent) {
-        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
-        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.designEventChanged(designEvent);
-        }
-    }
+//    private void fireDesignEventChanged(DesignEvent designEvent) {
+//        HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
+//        for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
+//            listener.designEventChanged(designEvent);
+//        }
+//    }
 
 //    public URL getBaseUrl() {
 //        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
@@ -1186,13 +1186,13 @@ class JsfForm {
         public void contextActivated(DesignContext designContext) {
             jsfForm.getDomSynchronizer().contextActivated(designContext);
 //            jsfForm.designer.contextActivated(designContext);
-            jsfForm.fireDesignContextActivated(designContext);
+//            jsfForm.fireDesignContextActivated(designContext);
         }
         
         public void contextDeactivated(DesignContext designContext) {
             jsfForm.getDomSynchronizer().contextDeactivated(designContext);
 //            jsfForm.designer.contextDeactivated(designContext);
-            jsfForm.fireDesignContextDeactivated(designContext);
+//            jsfForm.fireDesignContextDeactivated(designContext);
         }
         
         public void contextChanged(DesignContext designContext) {
@@ -1204,55 +1204,55 @@ class JsfForm {
         public void beanCreated(DesignBean designBean) {
             jsfForm.getDomSynchronizer().beanCreated(designBean);
 //            jsfForm.designer.beanCreated(designBean);
-            jsfForm.fireDesignBeanCreated(designBean);
+//            jsfForm.fireDesignBeanCreated(designBean);
         }
         
         public void beanDeleted(DesignBean designBean) {
             jsfForm.getDomSynchronizer().beanDeleted(designBean);
 //            jsfForm.designer.beanDeleted(designBean);
-            jsfForm.fireDesignBeanDeleted(designBean);
+//            jsfForm.fireDesignBeanDeleted(designBean);
         }
         
         public void beanMoved(DesignBean designBean, DesignBean designBean0, Position position) {
             jsfForm.getDomSynchronizer().beanMoved(designBean, designBean0, position);
 //            jsfForm.designer.beanMoved(designBean, designBean0, position);
-            jsfForm.fireDesignBeanMoved(designBean, designBean0, position);
+//            jsfForm.fireDesignBeanMoved(designBean, designBean0, position);
         }
         
         public void beanContextActivated(DesignBean designBean) {
             jsfForm.getDomSynchronizer().beanContextActivated(designBean);
 //            jsfForm.designer.beanContextActivated(designBean);
-            jsfForm.fireDesignBeanContextActivated(designBean);
+//            jsfForm.fireDesignBeanContextActivated(designBean);
         }
         
         public void beanContextDeactivated(DesignBean designBean) {
             jsfForm.getDomSynchronizer().beanContextDeactivated(designBean);
 //            jsfForm.designer.beanContextDeactivated(designBean);
-            jsfForm.fireDesignBeanContextDeactivated(designBean);
+//            jsfForm.fireDesignBeanContextDeactivated(designBean);
         }
         
         public void instanceNameChanged(DesignBean designBean, String string) {
             jsfForm.getDomSynchronizer().instanceNameChanged(designBean, string);
 //            jsfForm.designer.instanceNameChanged(designBean, string);
-            jsfForm.fireDesignBeanNameChanged(designBean, string);
+//            jsfForm.fireDesignBeanNameChanged(designBean, string);
         }
         
         public void beanChanged(DesignBean designBean) {
             jsfForm.getDomSynchronizer().beanChanged(designBean);
 //            jsfForm.designer.beanChanged(designBean);
-            jsfForm.fireDesignBeanChanged(designBean);
+//            jsfForm.fireDesignBeanChanged(designBean);
         }
         
         public void propertyChanged(DesignProperty designProperty, Object object) {
             jsfForm.getDomSynchronizer().propertyChanged(designProperty, object);
 //            jsfForm.designer.propertyChanged(designProperty, object);
-            jsfForm.fireDesignPropertyChanged(designProperty, object);
+//            jsfForm.fireDesignPropertyChanged(designProperty, object);
         }
         
         public void eventChanged(DesignEvent designEvent) {
             jsfForm.getDomSynchronizer().eventChanged(designEvent);
 //            jsfForm.designer.eventChanged(designEvent);
-            jsfForm.fireDesignEventChanged(designEvent);
+//            jsfForm.fireDesignEventChanged(designEvent);
         }
     } // End of JsfDesignContextListener.
     
