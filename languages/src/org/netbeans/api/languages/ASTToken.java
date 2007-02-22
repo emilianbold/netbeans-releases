@@ -161,11 +161,29 @@ public class ASTToken extends ASTItem {
             sb.append ('<').append (type);
             if (identifier != null)
                 sb.append (",'").
-                   append (identifier).
+                   append (e (identifier)).
                    append ("'");
             sb.append ('>');
             toString = sb.toString ();
         }
         return toString;
+    }
+        
+    private static String e (CharSequence t) {
+        StringBuilder sb = new StringBuilder ();
+        int i, k = t.length ();
+        for (i = 0; i < k; i++) {
+            if (t.charAt (i) == '\t')
+                sb.append ("\\t");
+            else
+            if (t.charAt (i) == '\r')
+                sb.append ("\\r");
+            else
+            if (t.charAt (i) == '\n')
+                sb.append ("\\n");
+            else
+                sb.append (t.charAt (i));
+        }
+        return sb.toString ();
     }
 }

@@ -80,10 +80,8 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
         if (tokensMap == null) createTokenIds ();
         return new SLexer (
             getLanguage (), 
-            info.input (), 
-            info.tokenFactory (), 
             tokensMap, 
-            info.state ()
+            info
         );
     }
 

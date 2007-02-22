@@ -225,7 +225,7 @@ public class Language {
         Map properties
     ) throws ParseException {
         String mimeType = (String) ((Evaluator) properties.get ("mimeType")).evaluate ();
-        Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
+        Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
         if (properties.containsKey ("token")) {
             String token = (String) ((Evaluator) properties.get ("token")).evaluate ();
             addFeature (
@@ -233,10 +233,29 @@ public class Language {
                 Language.createIdentifier (token), 
                 properties
             );
-            importedLangauges.add (l);
+            importedLangauges.add (language);
             return;
         }
         if (properties.containsKey ("start")) {
+            Iterator<Language> it = importedLangauges.iterator ();
+            while (it.hasNext ()) {
+                Language l = it.next ();
+                l.addSkipTokenType (name);
+                l.addToken (
+                    null,
+                    name,
+                    null,
+                    null,
+                    null
+                );
+                l.addFeature (
+                    Language.IMPORT, 
+                    createIdentifier (name), 
+                    properties
+                );
+                l.importedLangauges.add (language);
+            }
+            addSkipTokenType (name);
             addToken (
                 null,
                 name,
@@ -249,15 +268,14 @@ public class Language {
                 createIdentifier (name), 
                 properties
             );
-            addSkipTokenType (name);
-            importedLangauges.add (l);
+            importedLangauges.add (language);
             return;
         }
         Evaluator stateEvaluator = (Evaluator) properties.get ("state");
         String state = stateEvaluator == null ? null : (String) stateEvaluator.evaluate ();
         
         // import tokenTypes
-        Iterator<TokenType> it = l.getTokenTypes ().iterator ();
+        Iterator<TokenType> it = language.getTokenTypes ().iterator ();
         while (it.hasNext ()) {
             TokenType tt = it.next ();
             String startState = tt.getStartState ();
@@ -275,30 +293,30 @@ public class Language {
         }
         
         // import grammar rues
-        grammarASTNodes.addAll (l.grammarASTNodes);
+        grammarASTNodes.addAll (language.grammarASTNodes);
         // import colorings
-        importColorings (l);
+        importColorings (language);
         // import other features
-        importFeature (ACTION, l);
-        importFeature (BRACE, l);
-        importFeature (COLOR, l);
-        //importFeature (COMPLETE, l);
-        importFeature (COMPLETION, l);
-        importFeature (FOLD, l);
-        importFeature (HYPERLINK, l);
-        importFeature (INDENT, l);
-        importFeature (MARK, l);
-        importFeature (NAVIGATOR, l);
-        importFeature (PARSE, l);
+        importFeature (ACTION, language);
+        importFeature (BRACE, language);
+        importFeature (COLOR, language);
+        //importFeature (COMPLETE, language);
+        importFeature (COMPLETION, language);
+        importFeature (FOLD, language);
+        importFeature (HYPERLINK, language);
+        importFeature (INDENT, language);
+        importFeature (MARK, language);
+        importFeature (NAVIGATOR, language);
+        importFeature (PARSE, language);
         // import properties
-        this.properties.putAll (l.properties);
-        importFeature (REFORMAT, l);
+        this.properties.putAll (language.properties);
+        importFeature (REFORMAT, language);
         // import skip tokenTypes
-        skipTokenTypes.addAll (l.skipTokenTypes);
-        importFeature (STORE, l);
-        importFeature (TOOLTIP, l);
-        importFeature (IMPORT, l);
-        importedLangauges.addAll (l.importedLangauges);
+        skipTokenTypes.addAll (language.skipTokenTypes);
+        importFeature (STORE, language);
+        importFeature (TOOLTIP, language);
+        importFeature (IMPORT, language);
+        importedLangauges.addAll (language.importedLangauges);
     }
     
     private void importColorings (Language l) {

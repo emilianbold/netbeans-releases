@@ -25,14 +25,18 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.api.languages.LanguagesManager;
+import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 import org.netbeans.modules.languages.Evaluator;
-import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.spi.lexer.TokenPropertyProvider;
 import org.openide.ErrorManager;
@@ -54,17 +58,22 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     
     SLexer (
         Language        language, 
-        LexerInput      input, 
-        TokenFactory    tokenFactory,
         Map             tokensMap,
-        Object          state
+        LexerRestartInfo<STokenId> info
     ) {
         this.language = language;
-        this.input = createInputBridge (input, language);
-        this.tokenFactory = tokenFactory;
+        this.tokenFactory = info.tokenFactory ();
         this.tokensMap = tokensMap;
-        this.state = state;
+        this.state = info.state ();
         parser = language.getParser ();
+        String outerMimeType = info.languagePath ().language (0).mimeType ();
+        try {
+            Language outerLanguage = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+                getLanguage (outerMimeType);
+            this.input = createInputBridge (info.input (), outerLanguage);
+        } catch (ParseException ex) {
+            this.input = createInputBridge (info.input (), new Language (outerMimeType));
+        }
     }
     
     public Token<STokenId> nextToken () {
@@ -170,6 +179,11 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         List embeddings = ((DelegatingInputBridge) input).getEmbeddings ();
         if (embeddings.isEmpty ())
             return tokenFactory.createToken ((STokenId) tokensMap.get (type));
+        Map imports = language.getFeature (Language.IMPORT);
+        if (imports != null && 
+            imports.containsKey (type)
+        )
+            return tokenFactory.createToken ((STokenId) tokensMap.get (type));
         Marenka marenka = new Marenka ((Integer) state);
         String property = "S";
         Iterator it = embeddings.iterator ();
@@ -194,6 +208,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             this.state = marenka.getState ();
         else
             this.state = marenka;
+        //S ystem.out.println("nextToken <" + v.type + "," + e (input.getString (v.startOffset, v.endOffset)) + "," + v.startOffset + "," + v.endOffset);
         if (v.property instanceof TokenProperties)
             return tokenFactory.createPropertyToken (
                 (STokenId) tokensMap.get (v.type),
@@ -208,6 +223,24 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
                 tokenPropertyProvider,
                 v.property
             );
+    }
+        
+    private static String e (CharSequence t) {
+        StringBuilder sb = new StringBuilder ();
+        int i, k = t.length ();
+        for (i = 0; i < k; i++) {
+            if (t.charAt (i) == '\t')
+                sb.append ("\\t");
+            else
+            if (t.charAt (i) == '\r')
+                sb.append ("\\r");
+            else
+            if (t.charAt (i) == '\n')
+                sb.append ("\\n");
+            else
+                sb.append (t.charAt (i));
+        }
+        return sb.toString ();
     }
     
     

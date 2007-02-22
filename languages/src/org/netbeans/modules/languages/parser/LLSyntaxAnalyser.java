@@ -132,7 +132,7 @@ public class LLSyntaxAnalyser {
                         return root.createASTNode ();
                     }
                     //S ystem.out.println(input.getIndex () + ": no rule for " + nt + "&" + input.next (0));
-                    createErrorNode (node, input.getOffset ()).addItem (input.read ());
+                    createErrorNode (node, input.getOffset ()).addItem (readEmbeddings (input.read (), skipErrors));
                 } else {
                     Rule rule = (Rule) rules.get (newRule);
                     Evaluator.Method evaluator = null;
@@ -187,10 +187,10 @@ public class LLSyntaxAnalyser {
                 if (!token.isCompatible (input.next (1))) {
                     if (!skipErrors)
                         throw new ParseException ("Unexpected token " + input.next (1) + " in " + input + ". Ecpecting " + token, root.createASTNode ());
-                    createErrorNode (node, input.getOffset ()).addItem (input.read ());
+                    createErrorNode (node, input.getOffset ()).addItem (readEmbeddings (input.read (), skipErrors));
                     //S ystem.out.println(input.getIndex () + ": unrecognized token " + token + "<>" + input.next (1));
                 } else {
-                    node.addItem (input.read ());
+                    node.addItem (readEmbeddings (input.read (), skipErrors));
                     //S ystem.out.println(input.getIndex () + ": token readed " + input.next (1));
                 }
             }
@@ -199,7 +199,7 @@ public class LLSyntaxAnalyser {
             !input.eof () //&& 
             //input.next (1).getMimeType () == mimeType
         )
-            createErrorNode (node, input.getOffset ()).addItem (input.read ());
+            createErrorNode (node, input.getOffset ()).addItem (readEmbeddings (input.read (), skipErrors));
         return root.createASTNode ();
     }
     
@@ -235,7 +235,14 @@ public class LLSyntaxAnalyser {
         TokenInput in = TokenInput.create (children);
         Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
             getLanguage (children.get (0).getMimeType ());
-        return language.getAnalyser ().read (in, skipErrors);
+        ASTNode root = language.getAnalyser ().read (in, skipErrors);
+        return ASTToken.create (
+            token.getType (),
+            token.getIdentifier (),
+            token.getOffset (),
+            token.getLength (),
+            Collections.singletonList (root)
+        );
     }
     
     private ASTNode readNoGrammar (

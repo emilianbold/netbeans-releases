@@ -280,7 +280,7 @@ public class ParserManagerImpl extends ParserManager {
             String type = t.id ().name ();
             int offset = ts.offset ();
             String ttype = (String) t.getProperty ("type");
-            if (ttype == null) {
+            if (ttype == null || ttype.equals ("E")) {
                 List<ASTToken> children = null;
                 TokenSequence ts2 = ts.embedded ();
                 if (ts2 != null)
@@ -294,17 +294,14 @@ public class ParserManagerImpl extends ParserManager {
                     children
                 ));
             } else
-            if (ttype.equals ("E"))
-                continue;
-            else
             if (ttype.equals ("S")) {
                 StringBuilder sb = new StringBuilder (t.text ().toString ());
                 List<ASTToken> children = new ArrayList<ASTToken> ();
                 TokenSequence ts2 = ts.embedded ();
-                if (ts2 != null)
-                    children.addAll (
-                        getTokens (ts2)
-                    );
+//                if (ts2 != null)
+//                    children.addAll (
+//                        getTokens (ts2)
+//                    );
                 while (ts.moveNext ()) {
                     t = ts.token ();
                     ttype = (String) t.getProperty ("type");
@@ -314,14 +311,17 @@ public class ParserManagerImpl extends ParserManager {
                     }
                     if (ttype.equals ("E")) {
                         ts2 = ts.embedded ();
-                        children.add (ASTToken.create (
-                            ts2.language ().mimeType (),
-                            t.id ().name (), 
-                            t.text ().toString (), 
-                            ts.offset (),
-                            t.length (),
+//                        children.add (ASTToken.create (
+//                            ts2.language ().mimeType (),
+//                            t.id ().name (), 
+//                            t.text ().toString (), 
+//                            ts.offset (),
+//                            t.length (),
+//                            getTokens (ts2)
+//                        ));
+                        children.addAll (
                             getTokens (ts2)
-                        ));
+                        );
                         continue;
                     }
                     if (ttype.equals ("S")) {
@@ -330,11 +330,11 @@ public class ParserManagerImpl extends ParserManager {
                     }
                     if (!ttype.equals ("C"))
                         throw new IllegalArgumentException ();
-                    ts2 = ts.embedded ();
-                    if (ts2 != null)
-                        children.addAll (
-                            getTokens (ts2)
-                        );
+//                    ts2 = ts.embedded ();
+//                    if (ts2 != null)
+//                        children.addAll (
+//                            getTokens (ts2)
+//                        );
                     if (!type.equals (t.id ().name ()))
                         throw new IllegalArgumentException ();
                     sb.append (t.text ().toString ());
