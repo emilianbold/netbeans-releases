@@ -164,7 +164,7 @@ public abstract class Field {
      */
     public final Annotation getAnnotation(final ClassName annotationClass) {
 	loadAnnotations();
-	return (Annotation)annotations.get(annotationClass);
+	return annotations.get(annotationClass);
     }
     
     /**

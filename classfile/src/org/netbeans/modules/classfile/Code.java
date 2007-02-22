@@ -126,11 +126,11 @@ public final class Code {
     }
     
     public final byte[] getByteCodes() {
-        return (byte[])byteCodes.clone();
+        return byteCodes.clone();
     }
     
     public final ExceptionTableEntry[] getExceptionTable() {
-        return (ExceptionTableEntry[])exceptionTable.clone();
+        return exceptionTable.clone();
     }
 
     /**
@@ -139,14 +139,14 @@ public final class Code {
      * [2] = second pc, etc.
      */
     public final int[] getLineNumberTable() {
-        return (int[])lineNumberTable.clone();
+        return lineNumberTable.clone();
     }
 
     /**
      * Returns the local variable table for this code.
      */
     public final LocalVariableTableEntry[] getLocalVariableTable() {
-        return (LocalVariableTableEntry[])localVariableTable.clone();
+        return localVariableTable.clone();
     }
 
     /**
@@ -155,7 +155,7 @@ public final class Code {
      * are generic.
      */
     public final LocalVariableTypeTableEntry[] getLocalVariableTypeTable() {
-        return (LocalVariableTypeTableEntry[])localVariableTypeTable.clone();
+        return localVariableTypeTable.clone();
     }
     
     /**
@@ -163,7 +163,7 @@ public final class Code {
      * information needed by the new classfile verifier in Java 6.
      */
     public final StackMapFrame[] getStackMapTable() {
-        return (StackMapFrame[])stackMapTable.clone();
+        return stackMapTable.clone();
     }
 
     public String toString() {

@@ -99,7 +99,7 @@ public final class Method extends Field {
 	    if (exceptions == null)
 		exceptions = new CPClassInfo[0];
 	}
-        return (CPClassInfo[])exceptions.clone();
+        return exceptions.clone();
     }
     
     /**

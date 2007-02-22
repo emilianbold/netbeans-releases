@@ -270,7 +270,7 @@ public abstract class StackMapFrame {
          * locals.
          */
         public VerificationTypeInfo[] getLocals() {
-            return (VerificationTypeInfo[])locals.clone();
+            return locals.clone();
         }
     }
     
@@ -302,7 +302,7 @@ public abstract class StackMapFrame {
          * locals.
          */
         public VerificationTypeInfo[] getLocals() {
-            return (VerificationTypeInfo[])locals.clone();
+            return locals.clone();
         }
         
         /**
@@ -310,7 +310,7 @@ public abstract class StackMapFrame {
          * stack items.
          */
         public VerificationTypeInfo[] getStackItems() {
-            return (VerificationTypeInfo[])stackItems.clone();
+            return stackItems.clone();
         }
     }
 }

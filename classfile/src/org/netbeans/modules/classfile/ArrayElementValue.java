@@ -38,7 +38,7 @@ public final class ArrayElementValue extends ElementValue {
      * Returns the set of ElementValue instances for this component.
      */
     public ElementValue[] getValues() {
-	return (ElementValue[])values.clone();
+	return values.clone();
     }
 
     public String toString() {
