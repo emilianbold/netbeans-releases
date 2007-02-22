@@ -32,6 +32,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import java.util.*;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -300,6 +301,14 @@ public final class TreeUtilities {
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el != null && el.getKind() == ElementKind.CONSTRUCTOR)
                 p.addAll(((ExecutableElement)el).getThrownTypes());
+            return null;
+        }
+
+        public Void visitThrow(ThrowTree node, Set<TypeMirror> p) {
+            super.visitThrow(node, p);
+            TypeMirror tm = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getExpression()));
+            if (tm != null && tm.getKind() == TypeKind.DECLARED)
+                p.add(tm);
             return null;
         }
 
