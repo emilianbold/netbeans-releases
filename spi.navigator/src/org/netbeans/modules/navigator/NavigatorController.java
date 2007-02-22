@@ -74,26 +74,26 @@ public final class NavigatorController implements LookupListener, ActionListener
     private final Object NODE_SETTER_LOCK = new Object();
     
     /** template for finding current nodes in actions global context */
-    private static final Lookup.Template CUR_NODES = new Lookup.Template(Node.class);
+    private static final Lookup.Template<Node> CUR_NODES = 
+            new Lookup.Template<Node>(Node.class);
     /** template for finding nav hints in actions global context */
-    private static final Lookup.Template CUR_HINTS = new Lookup.Template(NavigatorLookupHint.class);
+    private static final Lookup.Template<NavigatorLookupHint> CUR_HINTS = 
+            new Lookup.Template<NavigatorLookupHint>(NavigatorLookupHint.class);
     
     /** current nodes (lookup result) to listen on when we are active */
-    private Lookup.Result curNodes;
+    private Lookup.Result<Node> curNodes;
     /** current navigator hints (lookup result) to listen on when we are active */
-    private Lookup.Result curHints;     
+    private Lookup.Result<NavigatorLookupHint> curHints;     
     
     /** current node to show content for */
     private Node curNode;
-    /** Previous activated node */
-    private WeakReference oldNodeRef;
     /** Lookup that is passed to clients */
     private final Lookup clientsLookup;
     /** Lookup that wraps lookup of active panel */
     private final Lookup panelLookup; 
     
     /** A TopComponent which was active in winsys before navigator */
-    private Reference lastActivatedRef;
+    private Reference<TopComponent> lastActivatedRef;
     
     
     /** Creates a new instance of NavigatorController */
@@ -213,10 +213,7 @@ public final class NavigatorController implements LookupListener, ActionListener
         // body, to prevent situation when curNode is null in getLookup
         curNode = node;
         
-        Node oldNode = oldNodeRef != null ? (Node)oldNodeRef.get() : null;
-        oldNodeRef = node != null ? new WeakReference(node) : null;
-        
-        List providers = obtainProviders(node);
+        List<NavigatorPanel> providers = obtainProviders(node);
         List oldProviders = navigatorTC.getPanels();
 
         // set Navigator's active node to be the same as the content
@@ -283,16 +280,16 @@ public final class NavigatorController implements LookupListener, ActionListener
      *
      * @node Node context, may be also null.
      */
-    /* package private for tests */ List obtainProviders (Node node) {
-        List result = null; 
+    /* package private for tests */ List<NavigatorPanel> obtainProviders (Node node) {
+        List<NavigatorPanel> result = null; 
         // search in global lookup first, they had preference
         Collection<? extends NavigatorLookupHint> lkpHints =
                 Utilities.actionsGlobalContext().lookupAll(NavigatorLookupHint.class);
         for (NavigatorLookupHint curHint : lkpHints) {
-            List providers = ProviderRegistry.getInstance().getProviders(curHint.getContentType());
+            Collection<? extends NavigatorPanel> providers = ProviderRegistry.getInstance().getProviders(curHint.getContentType());
             if (providers != null && !providers.isEmpty()) {
                 if (result == null) {
-                    result = new ArrayList(providers.size() * lkpHints.size());
+                    result = new ArrayList<NavigatorPanel>(providers.size() * lkpHints.size());
                 }
                 result.addAll(providers);
             }
@@ -310,10 +307,10 @@ public final class NavigatorController implements LookupListener, ActionListener
                 // #65589: be no friend with virtual files
                 if (!fo.isVirtual()) {
                 String contentType = fo.getMIMEType();
-                    List providers = ProviderRegistry.getInstance().getProviders(contentType);
+                    Collection<? extends NavigatorPanel> providers = ProviderRegistry.getInstance().getProviders(contentType);
                     if (providers != null && !providers.isEmpty()) {
                         if (result == null) {
-                            result = new ArrayList(providers.size());
+                            result = new ArrayList<NavigatorPanel>(providers.size());
                         }
                         result.addAll(providers);
                     }
@@ -356,7 +353,7 @@ public final class NavigatorController implements LookupListener, ActionListener
         if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
             TopComponent tc = TopComponent.getRegistry().getActivated();
             if (tc != null && tc != navigatorTC) {
-                lastActivatedRef = new WeakReference(tc);
+                lastActivatedRef = new WeakReference<TopComponent>(tc);
             }
         }
     }
@@ -374,7 +371,7 @@ public final class NavigatorController implements LookupListener, ActionListener
                 focusOwner instanceof JComboBox) {
                 return;
             }
-            TopComponent prevFocusedTc = (TopComponent) lastActivatedRef.get();
+            TopComponent prevFocusedTc = lastActivatedRef.get();
             if (prevFocusedTc != null) {
                 prevFocusedTc.requestActive();
             }

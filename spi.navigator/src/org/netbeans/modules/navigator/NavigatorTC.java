@@ -211,6 +211,7 @@ public final class NavigatorTC extends TopComponent {
     }
 
     /** Overriden to pass focus directly into content panel */
+    @SuppressWarnings("deprecation")
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow();
         boolean result = false;

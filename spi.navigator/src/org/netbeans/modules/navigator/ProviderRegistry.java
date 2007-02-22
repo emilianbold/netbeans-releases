@@ -20,6 +20,7 @@
 package org.netbeans.modules.navigator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,8 +50,8 @@ class ProviderRegistry {
     /** folder in layer file system where navigator panels are searched for */
     private static final String PANELS_FOLDER = "/Navigator/Panels/"; //NOI18N
     /** template for finding all NavigatorPanel instances in lookup */
-    private static final Lookup.Template NAV_PANEL_TEMPLATE = 
-            new Lookup.Template(NavigatorPanel.class);
+    private static final Lookup.Template<NavigatorPanel> NAV_PANEL_TEMPLATE = 
+            new Lookup.Template<NavigatorPanel>(NavigatorPanel.class);
     
     /** singleton instance */
     private static ProviderRegistry instance;
@@ -59,8 +60,8 @@ class ProviderRegistry {
      * Collections.EMPTY_LIST serves as special value telling us that
      * we already searched for providers for specific content type and found
      * no providers. This ensures no useless repetitive searches. 
-     * <String, List<NavigatorPanel> > */
-    private Map contentTypes2Providers;
+     */
+    private Map<String, Collection<? extends NavigatorPanel>> contentTypes2Providers;
 
 
     /** Singleton, no external instantiation */
@@ -80,14 +81,14 @@ class ProviderRegistry {
      * (similar to mime type)
      * and returns list of provider classes.
      *
-     * @return List<Class> of providers, which implements NavigatorPanel interface.
+     * @return Collection of providers, which implements NavigatorPanel interface.
      * Never return null, only empty List if no provider exists for given content type.
      */
-    public List getProviders (String contentType) {
+    public Collection<? extends NavigatorPanel> getProviders (String contentType) {
         if (contentTypes2Providers == null) {
-            contentTypes2Providers = new HashMap(15);
+            contentTypes2Providers = new HashMap<String, Collection<? extends NavigatorPanel>>(15);
         }
-        List result = (List)contentTypes2Providers.get(contentType);
+        Collection<? extends NavigatorPanel> result = contentTypes2Providers.get(contentType);
         if (result == null) {
             // load and instantiate provider classes
             result = loadProviders(contentType);
@@ -100,17 +101,17 @@ class ProviderRegistry {
     /******* private stuff ***********/
 
     
-    /** Returns List<NavigatorPanel> or Collections.EMPTY_LIST if no provider
+    /** Returns collection of NavigatorPanels or empty collection if no provider
      * exist for given content type
      */
-    private List loadProviders (String contentType) {
+    private Collection<? extends NavigatorPanel> loadProviders (String contentType) {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         FileObject fo = fs.findResource(PANELS_FOLDER + contentType);
 
         if (fo == null) {
             // no available providers or malformed contentType 
             Logger.getAnonymousLogger().fine("No providers for content type " + contentType); //NOI18N
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         
         DataFolder.Container dContainer;
@@ -121,13 +122,13 @@ class ProviderRegistry {
                 "Navigator content type " + contentType +
                 " is probably malformed, as it doesn't point to folder.");            
             ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         
         FolderLookup fLookup = new FolderLookup(dContainer, "");
-        Lookup.Result result = fLookup.getLookup().lookup(NAV_PANEL_TEMPLATE);
+        Lookup.Result<NavigatorPanel> result = fLookup.getLookup().lookup(NAV_PANEL_TEMPLATE);
 
-        return (List)result.allInstances();
+        return result.allInstances();
     }
 
 }
