@@ -39,6 +39,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import com.sun.javadoc.*;
 import com.sun.javadoc.AnnotationDesc.ElementValuePair;
+import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -666,7 +667,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
     }
     
     private int createLink(StringBuilder sb, Element e, String text) {
-        if (e != null) {
+        if (e != null && e.asType().getKind() != TypeKind.ERROR) {
             String link = "*" + linkCounter++; //NOI18N
             links.put(link, ElementHandle.create(e));
             sb.append("<a href='").append(link).append("'>"); //NOI18N
