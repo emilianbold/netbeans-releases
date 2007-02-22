@@ -17,34 +17,32 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.exceptions.settings;
+package org.netbeans.modules.exceptions;
 
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.exceptions.settings.ExceptionsSettings;
 
 /**
  *
  * @author jindra
  */
-public class ExceptionsSettings {
+public class ExceptionsSettingsTest extends NbTestCase {
     
-    private static final String userProp = "UserName";       // NOI18N
+    public ExceptionsSettingsTest(String testName) {
+        super(testName);
+    }
     
-    
-    /** Creates a new instance of ExceptionsSettings */
-    public ExceptionsSettings() {
+    public void testUserName() {
+        String str = "Moje_Jmeno";
+        String previous;
+        ExceptionsSettings settings = new ExceptionsSettings();
+        assertNotNull(settings);
+        previous = settings.getUserName();
+        settings.setUserName(str);
+        assertEquals(str, settings.getUserName());
+        settings.setUserName(previous);
+        assertEquals(previous, settings.getUserName());
     }
 
-    private Preferences prefs() {
-        return NbPreferences.forModule(ExceptionsSettings.class);
-    }
-    
-    public String getUserName() {
-        return prefs().get(userProp, "");
-    }
 
-    public void setUserName(String userName) {
-        prefs().put(userProp, userName);
-    }
-        
 }

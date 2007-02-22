@@ -18,18 +18,18 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
-  <!ENTITY api-questions SYSTEM "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
+<!ENTITY api-questions SYSTEM "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
 
 <api-answers
-  question-version="1.28"
-  author="jtulach@netbeans.org"
+    question-version="1.28"
+    author="jtulach@netbeans.org"
 >
-
-  &api-questions;
-
-
-<!--
+    
+    &api-questions;
+    
+    
+    <!--
         <question id="arch-overall" when="init">
             Describe the overall architecture. 
             <hint>
@@ -45,166 +45,166 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="arch-overall">
-  <p>
-  This module tracks certain UI gestures produced by user and collects a log
-  of his actions. It is capable to display such log and also upload it to 
-  a central server for additional processing and analysis.
-  </p>
- </answer>
-
-
-
- <answer id="arch-quality">
-  <p>
-  Client side is going to be covered with unit tests to certain extent.
-  </p>
- </answer>
-
-
-
- <answer id="arch-time">
-  <p>
-  The module shall work with NetBeans 6.0. As it needs certain cooperation
-  with modules in standard distribution, like 
-  <api name="UI-Actions-org.openide.awt" type="import" group="logger" category="friend">
-      which log info about invoked actions
-  </api> and
-  <api name="UI-Actions-org.openide.windows" type="import" group="logger" category="friend">
-      which log info about invoked actions by keystrokes
-  </api>.
-  </p>
- </answer>
-
- <answer id="arch-usecases">
-     <usecase id="gather-info" name="Gather information about UI gestures">
-         <p>
-             Primary purpose of this module is collect information about
-             the user actions that take place in the running NetBeans based
-             application.
-         </p>
-         
-         <p>
-             <api name="org.netbeans.ui" group="logger" category="devel" type="export">
-             The info about various UI events in the system is collected thru
-             listening on 
-             <a href="@JDK@/java/util/logging/LogRecord.html">log records</a> send to
-             <a href="@JDK@/java/util/logging/Logger.html">
-                Logger.getLogger("org.netbeans.ui")
-             </a>. Any code in the system can get instance of this logger
-             or any child logger and send useful informations to it. 
-             At the end of the session the last few hundereds events
-             is taken and displayed to the user for further processing.
-             </api>
-         </p>
-         
-     </usecase>
-     <usecase id="showing-results" name="Presenting usage statistics">
-         <p>
-             Important part of the behaviour of this module is the ability
-             to cooperate with information analyzing tools and present their 
-             results. This is done thru special HTTP contracts, where the 
-             module reads and understands various server responses and is
-             able to open browser after submitting data to analysis.
-         </p>
-         
-         <p>
-             <api name="WELCOME_URL" group="property" category="private" type="export">
-                 There is a key in the <code>org.netbeans.modules.uihandler.Bundle</code>
-                 that specifies the location of the page on a server one shall
-                 query and display to the user when the module is about the
-                 submit data for analysis.
-             </api>
-             <api name="WelcomePageContent" group="java.io.File" category="friend" type="export">
-                 The page pointed by <code>WELCOME_URL</code> can contain
-                 any XHTML text, but it also should contain a &lt;form/&gt; tag 
-                 that defines &lt;input type="hidden" name="submit" value="localizedName"/&gt;.
-                 The <code>localizedName</code> is then going to be used for a button
-                 for the dialog displaying the summary. When this button is invoked,
-                 the "action" URL is then feed with data from the UI logs.
-                 The server is then supposed to process the data, create 
-                 some analytics pages and return them back to the client.
-                 If the returned page contains tag like
-                 &lt;meta http-equiv='Refresh' content='3; URL=somepage'&gt;
-                 an (external) browser is opened with the specified URL and
-                 the user can then interact directly with the server, thru
-                 pages it serves.
-             </api>
-             <api name="org.netbeans.modules.uihandler.Submit" group="property"
-                category="private" type="export">
+    <answer id="arch-overall">
+        <p>
+            This module tracks certain UI gestures produced by user and collects a log
+            of his actions. It is capable to display such log and also upload it to 
+            a central server for additional processing and analysis.
+        </p>
+    </answer>
+    
+    
+    
+    <answer id="arch-quality">
+        <p>
+            Client side is going to be covered with unit tests to certain extent.
+        </p>
+    </answer>
+    
+    
+    
+    <answer id="arch-time">
+        <p>
+            The module shall work with NetBeans 6.0. As it needs certain cooperation
+            with modules in standard distribution, like 
+            <api name="UI-Actions-org.openide.awt" type="import" group="logger" category="friend">
+                which log info about invoked actions
+            </api> and
+            <api name="UI-Actions-org.openide.windows" type="import" group="logger" category="friend">
+                which log info about invoked actions by keystrokes
+            </api>.
+        </p>
+    </answer>
+    
+    <answer id="arch-usecases">
+        <usecase id="gather-info" name="Gather information about UI gestures">
+            <p>
+                Primary purpose of this module is collect information about
+                the user actions that take place in the running NetBeans based
+                application.
+            </p>
+            
+            <p>
+                <api name="org.netbeans.ui" group="logger" category="devel" type="export">
+                    The info about various UI events in the system is collected thru
+                    listening on 
+                    <a href="@JDK@/java/util/logging/LogRecord.html">log records</a> send to
+                    <a href="@JDK@/java/util/logging/Logger.html">
+                        Logger.getLogger("org.netbeans.ui")
+                    </a>. Any code in the system can get instance of this logger
+                    or any child logger and send useful informations to it. 
+                    At the end of the session the last few hundereds events
+                    is taken and displayed to the user for further processing.
+                </api>
+            </p>
+            
+        </usecase>
+        <usecase id="showing-results" name="Presenting usage statistics">
+            <p>
+                Important part of the behaviour of this module is the ability
+                to cooperate with information analyzing tools and present their 
+                results. This is done thru special HTTP contracts, where the 
+                module reads and understands various server responses and is
+                able to open browser after submitting data to analysis.
+            </p>
+            
+            <p>
+                <api name="WELCOME_URL" group="property" category="private" type="export">
+                    There is a key in the <code>org.netbeans.modules.uihandler.Bundle</code>
+                    that specifies the location of the page on a server one shall
+                    query and display to the user when the module is about the
+                    submit data for analysis.
+                </api>
+                <api name="WelcomePageContent" group="java.io.File" category="friend" type="export">
+                    The page pointed by <code>WELCOME_URL</code> can contain
+                    any XHTML text, but it also should contain a &lt;form/&gt; tag 
+                    that defines &lt;input type="hidden" name="submit" value="localizedName"/&gt;.
+                    The <code>localizedName</code> is then going to be used for a button
+                    for the dialog displaying the summary. When this button is invoked,
+                    the "action" URL is then feed with data from the UI logs.
+                    The server is then supposed to process the data, create 
+                    some analytics pages and return them back to the client.
+                    If the returned page contains tag like
+                    &lt;meta http-equiv='Refresh' content='3; URL=somepage'&gt;
+                    an (external) browser is opened with the specified URL and
+                    the user can then interact directly with the server, thru
+                    pages it serves.
+                </api>
+                <api name="org.netbeans.modules.uihandler.Submit" group="property"
+                     category="private" type="export">
                     
-                 For testing purposes one can 
-                 specify different URL for upload of files, by setting
-                 <code>org.netbeans.modules.uihandler.Submit</code>
-                 property when invoking NetBeans.
-             </api>
-         </p>
-     </usecase>
-     <usecase id="extending-info" name="Adding own UI gestures">
-         <p>
-             The base module is in fact just an infrastructure which collects
-             data about UI gestures, but the actual gestures need to be delivered
-             to it somehow. Here is the description of the ways how one can
-             extend own modules to cooperate with this UI gestures infrastructure.
-         </p>
-         
-         <p>
-             To feed own data about special UI gestures one can just create own
-             <a href="@JDK@/java/util/logging/Logger.html">
-                Logger.getLogger("org.netbeans.ui.ownname")
-             </a> and send own log records to it. The format of the log
-             messages shall follow the one described by the
-             <a href="@org-openide-util@/org/openide/util/doc-files/logging.html">
-                 structured logging 
-             </a> document, e.g. the 
-             <a href="@JDK@/java/util/logging/LogRecord.html">LogRecord</a>
-             shall have associated 
-             <a href="@JDK@/java/util/ResourceBundle.html">ResourceBundle</a>
-             and the record's <code>getMessage</code> shall point to a key
-             in that bundle.
-             
-             <api name="ICON_BASE" group="property" type="export" category="devel">
-                 there is an extension to the regular formatting done by
-                 the <a href="@JDK@/java/util/logging/Formatter.html">logging
-                 formatter</a> that, in order to achieve nicer appearance to
-                 the user, allows each record to be associated with an icon. 
-                 Just define <code>MSG_KEY_ICON_BASE</code> in the bundle associated
-                 with the
-                 <a href="@JDK@/java/util/logging/LogRecord.html">LogRecord</a>
-                 (where the MSG_KEY is the string returned by <code>record.getMessage()</code>)
-                 and the value is then going to be used for the 
-                 <a href="@org-openide-nodes@/org/openide/nodes/AbstractNode.html#setIconBaseWithExtension(java.lang.String)">
-                     Node
-                 </a> representing the UI gesture.
-             </api>
-         </p>
-         
-         <p>
-             Sometimes direct logging may not be possible. For example for
-             performance data it might be meaningful to collect the information
-             over a longer time period and only at the end output some statistics.
-             This is supported as well. Just implement and register one
-             of the 
-             <api name="CallbackInterfaces" group="java" type="export" category="devel" 
-            url="@TOP@/org/netbeans/modules/uihandler/api/Activated.html">interfaces from the API of this module</api> 
-             and properly register
-             them and the implementation will be called when the logger module
-             is activated or when the user finishes the work with the application.
-             In order to keep dependencies clean, it is strongly adviced 
-             to make modules that implement this API 
-             <a href="@org-openide-modules@/org/openide/modules/doc-files/classpath.html#special-modules">
-             eager</a>,
-             so they get enabled as soon as the UI logger module is enabled.
-         </p>
-     </usecase>
-     <p>
-         These usecases are realized as described in
-         <a href="@TOP@/org/netbeans/modules/uihandler/api/doc-files/ui.html">
-         here in provided UI specification</a>.
-     </p>
- </answer>
-
-<!--
+                    For testing purposes one can 
+                    specify different URL for upload of files, by setting
+                    <code>org.netbeans.modules.uihandler.Submit</code>
+                    property when invoking NetBeans.
+                </api>
+            </p>
+        </usecase>
+        <usecase id="extending-info" name="Adding own UI gestures">
+            <p>
+                The base module is in fact just an infrastructure which collects
+                data about UI gestures, but the actual gestures need to be delivered
+                to it somehow. Here is the description of the ways how one can
+                extend own modules to cooperate with this UI gestures infrastructure.
+            </p>
+            
+            <p>
+                To feed own data about special UI gestures one can just create own
+                <a href="@JDK@/java/util/logging/Logger.html">
+                    Logger.getLogger("org.netbeans.ui.ownname")
+                </a> and send own log records to it. The format of the log
+                messages shall follow the one described by the
+                <a href="@org-openide-util@/org/openide/util/doc-files/logging.html">
+                    structured logging 
+                </a> document, e.g. the 
+                <a href="@JDK@/java/util/logging/LogRecord.html">LogRecord</a>
+                shall have associated 
+                <a href="@JDK@/java/util/ResourceBundle.html">ResourceBundle</a>
+                and the record's <code>getMessage</code> shall point to a key
+                in that bundle.
+                
+                <api name="ICON_BASE" group="property" type="export" category="devel">
+                    there is an extension to the regular formatting done by
+                    the <a href="@JDK@/java/util/logging/Formatter.html">logging
+                    formatter</a> that, in order to achieve nicer appearance to
+                    the user, allows each record to be associated with an icon. 
+                    Just define <code>MSG_KEY_ICON_BASE</code> in the bundle associated
+                    with the
+                    <a href="@JDK@/java/util/logging/LogRecord.html">LogRecord</a>
+                    (where the MSG_KEY is the string returned by <code>record.getMessage()</code>)
+                    and the value is then going to be used for the 
+                    <a href="@org-openide-nodes@/org/openide/nodes/AbstractNode.html#setIconBaseWithExtension(java.lang.String)">
+                        Node
+                    </a> representing the UI gesture.
+                </api>
+            </p>
+            
+            <p>
+                Sometimes direct logging may not be possible. For example for
+                performance data it might be meaningful to collect the information
+                over a longer time period and only at the end output some statistics.
+                This is supported as well. Just implement and register one
+                of the 
+                <api name="CallbackInterfaces" group="java" type="export" category="devel" 
+                     url="@TOP@/org/netbeans/modules/uihandler/api/Activated.html">interfaces from the API of this module</api> 
+                and properly register
+                them and the implementation will be called when the logger module
+                is activated or when the user finishes the work with the application.
+                In order to keep dependencies clean, it is strongly adviced 
+                to make modules that implement this API 
+                <a href="@org-openide-modules@/org/openide/modules/doc-files/classpath.html#special-modules">
+                eager</a>,
+                so they get enabled as soon as the UI logger module is enabled.
+            </p>
+        </usecase>
+        <p>
+            These usecases are realized as described in
+            <a href="@TOP@/org/netbeans/modules/uihandler/api/doc-files/ui.html">
+            here in provided UI specification</a>.
+        </p>
+    </answer>
+    
+    <!--
         <question id="arch-what" when="init">
             What is this project good for?
             <hint>
@@ -214,15 +214,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="arch-what">
-  <p>
-   XXX no answer for arch-what
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="arch-what">
+        <p>
+            XXX no answer for arch-what
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="arch-where" when="impl">
             Where one can find sources for your module?
             <hint>
@@ -232,13 +232,13 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="arch-where">
-  <defaultanswer generate='here' />
- </answer>
-
-
-
-<!--
+    <answer id="arch-where">
+        <defaultanswer generate='here' />
+    </answer>
+    
+    
+    
+    <!--
         <question id="compat-deprecation" when="init">
             How the introduction of your project influences functionality
             provided by previous version of the product?
@@ -249,15 +249,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="compat-deprecation">
-  <p>
-   XXX no answer for compat-deprecation
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="compat-deprecation">
+        <p>
+            XXX no answer for compat-deprecation
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="compat-i18n" when="impl">
             Is your module correctly internationalized?
             <hint>
@@ -267,29 +267,29 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="compat-i18n">
-  <p>
-   XXX no answer for compat-i18n
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="compat-i18n">
+        <p>
+            XXX no answer for compat-i18n
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="compat-standards" when="init">
             Does the module implement or define any standards? Is the 
             implementation exact or does it deviate somehow?
         </question>
 -->
- <answer id="compat-standards">
-  <p>
-   XXX no answer for compat-standards
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="compat-standards">
+        <p>
+            XXX no answer for compat-standards
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="compat-version" when="impl">
             Can your module coexist with earlier and future
             versions of itself? Can you correctly read all old settings? Will future
@@ -303,15 +303,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="compat-version">
-  <p>
-   XXX no answer for compat-version
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="compat-version">
+        <p>
+            XXX no answer for compat-version
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="dep-jre" when="final">
             Which version of JRE do you need (1.2, 1.3, 1.4, etc.)?
             <hint>
@@ -321,28 +321,28 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="dep-jre">
-  <p>
-   XXX no answer for dep-jre
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="dep-jre">
+        <p>
+            XXX no answer for dep-jre
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="dep-jrejdk" when="final">
             Do you require the JDK or is the JRE enough?
         </question>
 -->
- <answer id="dep-jrejdk">
-  <p>
-   XXX no answer for dep-jrejdk
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="dep-jrejdk">
+        <p>
+            XXX no answer for dep-jrejdk
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="dep-nb" when="init">
             What other NetBeans projects and modules does this one depend on?
             <hint>
@@ -363,34 +363,34 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="dep-nb">
-  <defaultanswer generate='none' />
-
-    <ul>
-        <li><api type='import' group='java' category='private' name='org.jdesktop.layout'>
-            jdesktop layout is used to make the dialog provided by this module to look better
-            </api>
-        </li>            
-        <li><api type='import' group='java' category='private' name='org.openide.explorer' url='../org-openide-explorer/overview-summary.html' >
-            The module uses explorer view to present the results before they get submitted to
-            the analysis server.
-            </api>
-        </li>            
-        <li><api type='import' group='java' category='friend' name='uihandler-hooks' >
-                This module makes on of its <code>Handler</code> implement
-                <code>Callable&lt;JButton&gt;</code> which is a signal for
-                core providing the exception dialog to include such a 
-                <code>JButton</code> in its list of options. That way this 
-                module can enhance the dialog with "Report..." button.
-            </api>
-        </li>            
-    </ul>
-  
- </answer>
-
-
-
-<!--
+    <answer id="dep-nb">
+        <defaultanswer generate='none' />
+        
+        <ul>
+            <li><api type='import' group='java' category='private' name='org.jdesktop.layout'>
+                    jdesktop layout is used to make the dialog provided by this module to look better
+                </api>
+            </li>            
+            <li><api type='import' group='java' category='private' name='org.openide.explorer' url='../org-openide-explorer/overview-summary.html' >
+                    The module uses explorer view to present the results before they get submitted to
+                    the analysis server.
+                </api>
+            </li>            
+            <li><api type='import' group='java' category='friend' name='uihandler-hooks' >
+                    This module makes on of its <code>Handler</code> implement
+                    <code>Callable&lt;JButton&gt;</code> which is a signal for
+                    core providing the exception dialog to include such a 
+                    <code>JButton</code> in its list of options. That way this 
+                    module can enhance the dialog with "Report..." button.
+                </api>
+            </li>            
+        </ul>
+        
+    </answer>
+    
+    
+    
+    <!--
         <question id="dep-non-nb" when="init">
             What other projects outside NetBeans does this one depend on?
             
@@ -408,15 +408,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="dep-non-nb">
-  <p>
-   XXX no answer for dep-non-nb
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="dep-non-nb">
+        <p>
+            XXX no answer for dep-non-nb
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="dep-platform" when="init">
             On which platforms does your module run? Does it run in the same
             way on each?
@@ -436,15 +436,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="dep-platform">
-  <p>
-   XXX no answer for dep-platform
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="dep-platform">
+        <p>
+            XXX no answer for dep-platform
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="deploy-dependencies" when="final">
             What do other modules need to do to declare a dependency on this one,
             in addition to or instead of the normal module dependency declaration
@@ -460,20 +460,20 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="deploy-dependencies">
-  <p>
-  Modules may use functionality of this module either by depending on its presence
-  and registering <a href="@TOP@/org/netbeans/modules/uihandler/api/Deactivated.html">callback interfaces</a> 
-  provided by its API. Or the modules do not need to depend on this module at all,
-  and just generate <a href="@JDK@/java/util/logging/LogRecord.html">log records</a>
-  to the <code>org.netbeans.ui.someloggername</code> log. These records are 
-  then going to be consumed by this module, if enabled.
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="deploy-dependencies">
+        <p>
+            Modules may use functionality of this module either by depending on its presence
+            and registering <a href="@TOP@/org/netbeans/modules/uihandler/api/Deactivated.html">callback interfaces</a> 
+            provided by its API. Or the modules do not need to depend on this module at all,
+            and just generate <a href="@JDK@/java/util/logging/LogRecord.html">log records</a>
+            to the <code>org.netbeans.ui.someloggername</code> log. These records are 
+            then going to be consumed by this module, if enabled.
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="deploy-jar" when="impl">
             Do you deploy just module JAR file(s) or other files as well?
             <hint>
@@ -493,15 +493,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="deploy-jar">
-  <p>
-   XXX no answer for deploy-jar
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="deploy-jar">
+        <p>
+            XXX no answer for deploy-jar
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="deploy-nbm" when="impl">
             Can you deploy an NBM via the Update Center?
             <hint>
@@ -509,15 +509,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="deploy-nbm">
-  <p>
-   XXX no answer for deploy-nbm
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="deploy-nbm">
+        <p>
+            XXX no answer for deploy-nbm
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="deploy-packages" when="init">
             Are packages of your module made inaccessible by not declaring them
             public?
@@ -530,15 +530,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="deploy-packages">
-  <p>
-   XXX no answer for deploy-packages
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="deploy-packages">
+        <p>
+            XXX no answer for deploy-packages
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="deploy-shared" when="final">
             Do you need to be installed in the shared location only, or in the user directory only,
             or can your module be installed anywhere?
@@ -548,15 +548,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="deploy-shared">
-  <p>
-   XXX no answer for deploy-shared
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="deploy-shared">
+        <p>
+            XXX no answer for deploy-shared
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="exec-ant-tasks" when="impl">
             Do you define or register any ant tasks that other can use?
             
@@ -568,15 +568,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-ant-tasks">
-  <p>
-   XXX no answer for exec-ant-tasks
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="exec-ant-tasks">
+        <p>
+            XXX no answer for exec-ant-tasks
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="exec-classloader" when="impl">
             Does your code create its own class loader(s)?
             <hint>
@@ -584,15 +584,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-classloader">
-  <p>
-   XXX no answer for exec-classloader
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="exec-classloader">
+        <p>
+            XXX no answer for exec-classloader
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="exec-component" when="impl">
             Is execution of your code influenced by any (string) property
             of any of your components?
@@ -607,15 +607,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-component">
-  <p>
-   XXX no answer for exec-component
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="exec-component">
+        <p>
+            XXX no answer for exec-component
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="exec-introspection" when="impl">
             Does your module use any kind of runtime type information (<code>instanceof</code>,
             work with <code>java.lang.Class</code>, etc.)?
@@ -627,15 +627,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-introspection">
-  <p>
-   XXX no answer for exec-introspection
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="exec-introspection">
+        <p>
+            XXX no answer for exec-introspection
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="exec-privateaccess" when="final">
             Are you aware of any other parts of the system calling some of 
             your methods by reflection?
@@ -645,15 +645,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-privateaccess">
-  <p>
-   XXX no answer for exec-privateaccess
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="exec-privateaccess">
+        <p>
+            XXX no answer for exec-privateaccess
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="exec-process" when="impl">
             Do you execute an external process from your module? How do you ensure
             that the result is the same on different platforms? Do you parse output?
@@ -663,15 +663,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-process">
-  <p>
-   XXX no answer for exec-process
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="exec-process">
+        <p>
+            XXX no answer for exec-process
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="exec-property" when="impl">
             Is execution of your code influenced by any environment or
             Java system (<code>System.getProperty</code>) property?
@@ -689,31 +689,37 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-property">
-  <p>
-              <api name="org.netbeans.ui.MSG_USER_CONFIGURATION" group="logger" category="devel" type="export">
-              Before the results are submitted one more LogRecord is added. This LogRecord message is
-              set to <code>MSG_USER_CONFIGURATION</code> . Four upto six parameters are added.
-              Four common parameters are added always before sending logger info and two error 
-              parameters are added only if an exception rised.
-              
-              <ul title="common parameters">
-                  <li>Operating system name, version and architecture</li>
-                  <li>Virtual machine name and version</li>
-                  <li>NetBeans version and build number</li>
-                  <li>User name</li>
-              </ul>
-              <ul title="error parameters">
-                  <li>Error summary</li>
-                  <li>User's comment to an error situation</li>
-              </ul>
-              </api>
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="exec-property">
+        <p>
+            <api name="org.netbeans.ui.MSG_USER_CONFIGURATION" group="logger" category="devel" type="export">
+                Before the results are submitted one more LogRecord is added. This LogRecord message is
+                set to <code>MSG_USER_CONFIGURATION</code> . Four upto six parameters are added.
+                Four common parameters are added always before sending logger info and two error 
+                parameters are added only if an exception rised.
+                
+                <ul title="common parameters">
+                    <li>Operating system name, version and architecture</li>
+                    <li>Virtual machine name and version</li>
+                    <li>NetBeans version and build number</li>
+                    <li>User name</li>
+                </ul>
+                <ul title="error parameters">
+                    <li>Error summary</li>
+                    <li>User's comment to an error situation</li>
+                </ul>
+            </api>
+            <api name="REGISTRATION_URL" group="property" category="private" type="export">
+                There is a key in the <code>org.netbeans.modules.exceptions.Bundle</code>
+                that specifies the location of the page on a server. This page 
+                should be display to the user when he uses a &quot;register here&quot; link on ReportPanel.
+            </api>
+            
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="exec-reflection" when="impl">
             Does your code use Java Reflection to execute other code?
             <hint>
@@ -723,15 +729,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-reflection">
-  <p>
-   XXX no answer for exec-reflection
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="exec-reflection">
+        <p>
+            XXX no answer for exec-reflection
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="exec-threading" when="init">
             What threading models, if any, does your module adhere to? How the
             project behaves with respect to threading?
@@ -755,15 +761,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-threading">
-  <p>
-   XXX no answer for exec-threading
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="exec-threading">
+        <p>
+            XXX no answer for exec-threading
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="format-clipboard" when="impl">
             Which data flavors (if any) does your code read from or insert to
             the clipboard (by access to clipboard on means calling methods on <code>java.awt.datatransfer.Transferable</code>?
@@ -774,15 +780,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="format-clipboard">
-  <p>
-   XXX no answer for format-clipboard
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="format-clipboard">
+        <p>
+            XXX no answer for format-clipboard
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="format-dnd" when="impl">
             Which protocols (if any) does your code understand during Drag &amp; Drop?
             <hint>
@@ -792,15 +798,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="format-dnd">
-  <p>
-   XXX no answer for format-dnd
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="format-dnd">
+        <p>
+            XXX no answer for format-dnd
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="format-types" when="impl">
             Which protocols and file formats (if any) does your module read or write on disk,
             or transmit or receive over the network? Do you generate an ant build script?
@@ -823,15 +829,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="format-types">
-  <p>
-   XXX no answer for format-types
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="format-types">
+        <p>
+            XXX no answer for format-types
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="lookup-lookup" when="init">
             Does your module use <code>org.openide.util.Lookup</code>
             or any similar technology to find any components to communicate with? Which ones?
@@ -855,15 +861,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="lookup-lookup">
-  <p>
-   XXX no answer for lookup-lookup
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="lookup-lookup">
+        <p>
+            XXX no answer for lookup-lookup
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="lookup-register" when="final">
             Do you register anything into lookup for other code to find?
             <hint>
@@ -872,15 +878,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="lookup-register">
-  <p>
-   XXX no answer for lookup-register
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="lookup-register">
+        <p>
+            XXX no answer for lookup-register
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="lookup-remove" when="final">
             Do you remove entries of other modules from lookup?
             <hint>
@@ -889,42 +895,42 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="lookup-remove">
-  <p>
-   XXX no answer for lookup-remove
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="lookup-remove">
+        <p>
+            XXX no answer for lookup-remove
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="perf-exit" when="final">
             Does your module run any code on exit?
         </question>
 -->
- <answer id="perf-exit">
-  <p>
-   XXX no answer for perf-exit
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="perf-exit">
+        <p>
+            XXX no answer for perf-exit
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="perf-huge_dialogs" when="final">
             Does your module contain any dialogs or wizards with a large number of
             GUI controls such as combo boxes, lists, trees, or text areas?
         </question>
 -->
- <answer id="perf-huge_dialogs">
-  <p>
-   XXX no answer for perf-huge_dialogs
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="perf-huge_dialogs">
+        <p>
+            XXX no answer for perf-huge_dialogs
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="perf-limit" when="init">
             Are there any hard-coded or practical limits in the number or size of
             elements your code can handle?
@@ -943,29 +949,29 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="perf-limit">
-  <p>
-   XXX no answer for perf-limit
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="perf-limit">
+        <p>
+            XXX no answer for perf-limit
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="perf-mem" when="final">
             How much memory does your component consume? Estimate
             with a relation to the number of windows, etc.
         </question>
 -->
- <answer id="perf-mem">
-  <p>
-   XXX no answer for perf-mem
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="perf-mem">
+        <p>
+            XXX no answer for perf-mem
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="perf-menus" when="final">
             Does your module use dynamically updated context menus, or
             context-sensitive actions with complicated and slow enablement logic?
@@ -979,15 +985,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="perf-menus">
-  <p>
-   XXX no answer for perf-menus
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="perf-menus">
+        <p>
+            XXX no answer for perf-menus
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="perf-progress" when="final">
             Does your module execute any long-running tasks?
             
@@ -1003,15 +1009,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="perf-progress">
-  <p>
-   XXX no answer for perf-progress
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="perf-progress">
+        <p>
+            XXX no answer for perf-progress
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="perf-scale" when="init">
             Which external criteria influence the performance of your
             program (size of file in editor, number of files in menu, 
@@ -1022,15 +1028,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="perf-scale">
-  <p>
-   XXX no answer for perf-scale
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="perf-scale">
+        <p>
+            XXX no answer for perf-scale
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="perf-spi" when="init">
             How the performance of the plugged in code will be enforced?
             <hint>
@@ -1040,42 +1046,42 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="perf-spi">
-  <p>
-   XXX no answer for perf-spi
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="perf-spi">
+        <p>
+            XXX no answer for perf-spi
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="perf-startup" when="final">
             Does your module run any code on startup?
         </question>
 -->
- <answer id="perf-startup">
-  <p>
-   XXX no answer for perf-startup
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="perf-startup">
+        <p>
+            XXX no answer for perf-startup
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="perf-wakeup" when="final">
             Does any piece of your code wake up periodically and do something
             even when the system is otherwise idle (no user interaction)?
         </question>
 -->
- <answer id="perf-wakeup">
-  <p>
-   XXX no answer for perf-wakeup
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="perf-wakeup">
+        <p>
+            XXX no answer for perf-wakeup
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="resources-file" when="final">
             Does your module use <code>java.io.File</code> directly?
             
@@ -1088,15 +1094,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="resources-file">
-  <p>
-   XXX no answer for resources-file
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="resources-file">
+        <p>
+            XXX no answer for resources-file
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="resources-layer" when="final">
             Does your module provide own layer? Does it create any files or
             folders in it? What it is trying to communicate by that and with which 
@@ -1111,15 +1117,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="resources-layer">
-  <p>
-   XXX no answer for resources-layer
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="resources-layer">
+        <p>
+            XXX no answer for resources-layer
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="resources-mask" when="final">
             Does your module mask/hide/override any resources provided by other modules in
             their layers?
@@ -1132,15 +1138,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="resources-mask">
-  <p>
-   XXX no answer for resources-mask
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="resources-mask">
+        <p>
+            XXX no answer for resources-mask
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="resources-read" when="final">
             Does your module read any resources from layers? For what purpose?
             
@@ -1152,15 +1158,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="resources-read">
-  <p>
-   XXX no answer for resources-read
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="resources-read">
+        <p>
+            XXX no answer for resources-read
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="security-grant" when="final">
             Does your code grant additional rights to some other code?
             <hint>Avoid using a class loader that adds extra
@@ -1170,15 +1176,15 @@ Microsystems, Inc. All Rights Reserved.
             calling AccessController.doPrivileged().</hint>
         </question>
 -->
- <answer id="security-grant">
-  <p>
-   XXX no answer for security-grant
-  </p>
- </answer>
-
-
-
-<!--
+    <answer id="security-grant">
+        <p>
+            XXX no answer for security-grant
+        </p>
+    </answer>
+    
+    
+    
+    <!--
         <question id="security-policy" when="final">
             Does your functionality require modifications to the standard policy file?
             <hint>Your code might pass control to third-party code not
@@ -1187,16 +1193,16 @@ Microsystems, Inc. All Rights Reserved.
             with NetBeans. Which permissions need to be granted to which domains?</hint>
         </question>
 -->
- <answer id="security-policy">
-  <p>
-   XXX no answer for security-policy
-  </p>
- </answer>
-
-
-
-
-<!--
+    <answer id="security-policy">
+        <p>
+            XXX no answer for security-policy
+        </p>
+    </answer>
+    
+    
+    
+    
+    <!--
         <question id="resources-preferences" when="final">
             Does your module uses preferences via Preferences API? Does your module use NbPreferences or
             or regular JDK Preferences ? Does it read, write or both ? 
@@ -1213,12 +1219,12 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="resources-preferences">
-  <p>
-   <api name="org.netbeans.modules.autoupdate.ideIdentity" category="friend" group="preferences" type="import">
-       This module shares the identity with autoupdate and reads it from its preferences node.
-   </api>
-  </p>
- </answer>
-
+    <answer id="resources-preferences">
+        <p>
+            <api name="org.netbeans.modules.autoupdate.ideIdentity" category="friend" group="preferences" type="import">
+                This module shares the identity with autoupdate and reads it from its preferences node.
+            </api>
+        </p>
+    </answer>
+    
 </api-answers>

@@ -225,7 +225,7 @@ public class Installer extends ModuleInstall {
         return v;
     }
     
-    private static Throwable getThrown(){
+    protected static Throwable getThrown(){
         List<LogRecord> list = getLogs();
         ListIterator<LogRecord> it = list.listIterator(list.size());
         while (it.hasPrevious()){
@@ -461,6 +461,7 @@ public class Installer extends ModuleInstall {
             params.add(getOS());
             params.add(getVM());
             params.add(getVersion());
+            reportPanel.saveUserName();
             params.add(settings.getUserName());
             if (reportPanel != null){
                 params.add(reportPanel.getSummary());
