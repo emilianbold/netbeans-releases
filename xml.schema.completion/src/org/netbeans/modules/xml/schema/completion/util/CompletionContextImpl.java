@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.schema.completion.util;
@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
-import java.util.StringTokenizer;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.w3c.dom.Attr;
@@ -34,6 +33,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIModelFactory;
+import org.netbeans.modules.xml.axi.AbstractElement;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
@@ -60,19 +60,19 @@ public class CompletionContextImpl extends CompletionContext {
             XMLSyntaxSupport support, int offset) {
         try {
             this.primaryFile = primaryFile;
-            this.xmlFileLocation = getFileLocation();
             this.document = support.getDocument();
             this.element = support.getElementChain(offset);
             this.token = support.getPreviousToken(offset);
-            this.docRoot = getRoot(element);
-            populateNamespaces();
-            initContext();
+            this.docRoot = CompletionUtil.getRoot(element);
+            this.lastTypedChar = support.lastTypedChar();
+            populateNamespaces();            
         } catch(Exception ex) {
             //in the worst case, there will not be
             //any code completion help.
         }
     }
     
+    ////////////////START CompletionContext Implementations////////////////
     public CompletionType getCompletionType() {
         return completionType;
     }
@@ -94,7 +94,7 @@ public class CompletionContextImpl extends CompletionContext {
     }
     
     public HashMap<String, String> getDeclaredNamespaces() {
-        return namespaces;
+        return declaredNamespaces;
     }
     
     public String getTypedChars() {
@@ -106,38 +106,15 @@ public class CompletionContextImpl extends CompletionContext {
     }
 
     public List<URI> getSchemas() {
-        if(schemaLocation == null)
-            return null;
-        List<URI> schemas = new ArrayList<URI>();
-        StringTokenizer st = new StringTokenizer(
-                schemaLocation.replaceAll("\n", " "), " "); //NOI18N
-        while(st.hasMoreTokens()) {
-            String namespace = st.nextToken().trim();
-            if(st.hasMoreTokens()) {
-                String schema = st.nextToken().trim();
-                try {
-                    URI uri = URI.create(schema);
-                    if(uri != null)
-                        schemas.add(uri);
-                } catch (Exception ex) {
-                    //just catch
-                }
-            }
-        }
+        List<URI> uris = new ArrayList<URI>();
+        if(schemaLocation != null)
+            CompletionUtil.loadSchemaURIs(schemaLocation, uris, false);
+        if(noNamespaceSchemaLocation != null)
+            CompletionUtil.loadSchemaURIs(noNamespaceSchemaLocation, uris, true);        
+        return uris;
+    }
+    ////////////////END CompletionContext Implementations////////////////
         
-        return schemas;
-    }
-    
-    private String getFileLocation() {
-        String path = primaryFile.getPath();
-        String fileLocation = path.substring(0, path.indexOf(primaryFile.getName()));
-        if("/".equals(System.getProperty("file.separator")) && //NOI18N
-                !fileLocation.startsWith("/")) {  //NOI18N
-            fileLocation = "/" + fileLocation;  //NOI18N
-        }
-        return fileLocation;
-    }
-    
     /**
      * Keeps all namespaces along with their prefixes in a HashMap.
      * This is obtained from the root element's attributes, with
@@ -150,8 +127,7 @@ public class CompletionContextImpl extends CompletionContext {
      */
     private void populateNamespaces() {
         if(docRoot == null)
-            return;
-        
+            return;        
         //Check if the tag has any prefix. If yes, the defaultNamespace
         //is the one with this prefix.
         String tagName = docRoot.getTagName();
@@ -161,16 +137,22 @@ public class CompletionContextImpl extends CompletionContext {
         NamedNodeMap attributes = docRoot.getAttributes();
         for(int index=0; index<attributes.getLength(); index++) {
             Attr attr = (Attr)attributes.item(index);
-            if(attr.getName().endsWith(XSI_SCHEMALOCATION)) {
+            String attrName = attr.getName();
+            if(CompletionUtil.getLocalNameFromTag(attrName).
+                    equals(XSI_SCHEMALOCATION)) {
                 schemaLocation = attr.getValue().trim();
                 continue;
             }
-            if(!attr.getName().startsWith(XMLConstants.XMLNS_ATTRIBUTE))
+            if(CompletionUtil.getLocalNameFromTag(attrName).
+                    equals(XSI_NONS_SCHEMALOCATION)) {
+                noNamespaceSchemaLocation = attr.getValue().trim();
                 continue;
-            if(attr.getName().equals(defNS)) {
+            }            
+            if(!attr.getName().startsWith(XMLConstants.XMLNS_ATTRIBUTE))
+                continue;            
+            if(attr.getName().equals(defNS))
                 this.defaultNamespace = attr.getValue();
-            }
-            namespaces.put(attr.getName(), attr.getValue());
+            declaredNamespaces.put(attr.getName(), attr.getValue());
         }
     }
             
@@ -179,7 +161,9 @@ public class CompletionContextImpl extends CompletionContext {
      * in the document, finds the type of query that needs to be
      * carried out and finds the path from root.
      */
-    private void initContext() {
+    public void initContext() {
+        fromNoNamespace = false;
+        noNamespaceModel = null;
         int id = token.getTokenID().getNumericID();
         switch ( id) {
             //user enters < character
@@ -201,12 +185,17 @@ public class CompletionContextImpl extends CompletionContext {
                 
             //start tag of an element
             case XMLDefaultTokenContext.TAG_ID:
+                if(lastTypedChar == '>') {
+                    completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                    //pathFromRoot = getPathFromRoot(element);
+                    break;
+                }
                 if(element instanceof StartTag) {
                     StartTag tag = (StartTag)element;
                     typedChars = tag.getTagName();
                 }
                 completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
-                pathFromRoot = getPathFromRoot(element);
+                pathFromRoot = getPathFromRoot(element.getPrevious());
                 break;
                 
             //user enters an attribute name
@@ -260,10 +249,14 @@ public class CompletionContextImpl extends CompletionContext {
     private List<QName> getPathFromRoot(SyntaxElement se) {
         assert(se != null);
         Stack stack = new Stack();
-        while( se != null) {
+        while( se != null) {            
             if( (se instanceof EndTag) ||
                 (se instanceof StartTag && stack.isEmpty()) ) {
                 stack.push(se);
+                if(defaultNamespace == null && (se instanceof StartTag) &&
+                   isRootInNoNSModels(((StartTag)se).getTagName())) {
+                    break;
+                }
                 se = se.getPrevious();
                 continue;
             }
@@ -275,13 +268,8 @@ public class CompletionContextImpl extends CompletionContext {
                         stack.pop();
                     }
                 } else {
-                    //if current element and previous element are from
-                    //diff namespaces or current element is same as docroot
-                    //the current element is treated as the root
                     StartTag current = (StartTag)stack.peek();
-                    if( !fromSameNamespace(current, start) ||
-                            CompletionUtil.getLocalNameFromTag(current.getTagName()).
-                            equals(CompletionUtil.getLocalNameFromTag(docRoot.getTagName())) )
+                    if(isRoot(current.getTagName()))
                         break;
                     stack.push(se);
                 }
@@ -290,15 +278,15 @@ public class CompletionContextImpl extends CompletionContext {
         }
         
         return createPath(stack);
-    }
-    
+    }    
+        
     private boolean fromSameNamespace(StartTag current, StartTag previous) {
         String prevPrefix = CompletionUtil.getPrefixFromTag(previous.getTagName());
         String thisPrefix = CompletionUtil.getPrefixFromTag(current.getTagName());
-        String thisNS = (thisPrefix == null) ? namespaces.get(XMLConstants.XMLNS_ATTRIBUTE) :
-            namespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+thisPrefix);
-        String prevNS = (prevPrefix == null) ? namespaces.get(XMLConstants.XMLNS_ATTRIBUTE) :
-            namespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+prevPrefix);
+        String thisNS = (thisPrefix == null) ? declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE) :
+            declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+thisPrefix);
+        String prevNS = (prevPrefix == null) ? declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE) :
+            declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+prevPrefix);
         
         return (thisNS == null && prevNS == null) ||
                (thisNS != null && thisNS.equals(prevNS)) ||
@@ -311,53 +299,95 @@ public class CompletionContextImpl extends CompletionContext {
             StartTag tag = (StartTag)stack.pop();
             String prefix = CompletionUtil.getPrefixFromTag(tag.getTagName());
             String lName = CompletionUtil.getLocalNameFromTag(tag.getTagName());
+            if(fromNoNamespace) {
+                path.add(new QName(lName));
+                continue;
+            }
+            
             QName qname = (prefix == null)?
-                new QName(namespaces.get(XMLConstants.XMLNS_ATTRIBUTE), lName) :
-                new QName(namespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix), lName, prefix); //NOI18N            
+                new QName(declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE), lName) :
+                new QName(declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix), lName, prefix); //NOI18N            
             path.add(qname);
         }
-        //printPath(path);
+        //CompletionUtil.printPath(path);
         return path;
     }
-
-    private void printPath(List<QName> path) {
-        StringBuffer buffer = new StringBuffer();
-        for(QName item: path) {
-            if(buffer.toString().equals(""))
-                buffer.append(item);
-            else
-                buffer.append("/" + item);
+    
+    private boolean isRoot(String tag) {
+        //if no default namespace found, try the no namespace models
+        if(defaultNamespace == null) {
+            if(isRootInNoNSModels(tag))
+                return true;
         }
-        //System.out.println(buffer);
+        //now try all models, including no NS models
+        String prefix = CompletionUtil.getPrefixFromTag(tag);
+        if(prefix == null) {
+            //try default namespace first
+            CompletionModel cm = getCompletionModelMap().get(getDefaultNamespace());
+            if(CompletionUtil.isRoot(tag, cm))
+                return true;
+            if(isRootInNoNSModels(tag))
+                return true;
+            return false;
+        }
+        String tns = getDeclaredNamespaces().
+                get(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix);
+        CompletionModel cm = getCompletionModelMap().get(tns);
+        return CompletionUtil.isRoot(tag, cm);
+    }
+    
+    private boolean isRootInNoNSModels(String tag) {
+        for(CompletionModel m : noNSModels) {
+            if(CompletionUtil.isRoot(tag, m)) {
+                fromNoNamespace = true;
+                noNamespaceModel = m;
+                return true;
+            }
+        }
+        return false;
+    }    
+                
+    /**
+     * Returns the active no namespace model.
+     */
+    public CompletionModel getActiveNoNSModel() {
+        return noNamespaceModel;
     }
     
     /**
-     * Returns the StartTag corresponding to the root element.
-     */
-    private StartTag getRoot(SyntaxElement se) {
-        StartTag root = null;
-        while( se != null) {
-            if(se instanceof StartTag) {
-                root = (StartTag)se;
-            }
-            se = se.getPrevious();
-        }
-        
-        return root;
-    }
-        
-    /**
-     * Returns the completion model map.
+     * Returns the CompletionModel map.
+     * Maps target namespaces to the CompletionModels
      */
     public HashMap<String, CompletionModel> getCompletionModelMap() {
-        return completionModelMap;
+        return nsModelMap;
     }
     
+    /**
+     * Returns the list of no namespace CompletionModels.
+     */
+    public List<CompletionModel> getNoNamespaceModels() {
+        return noNSModels;
+    }
+    
+    /**
+     * Returns the combined list of CompletionModels.
+     */
+    public List<CompletionModel> getCompletionModels() {
+        List<CompletionModel> models = new ArrayList<CompletionModel>();
+        models.addAll(nsModelMap.values());
+        models.addAll(noNSModels);
+        return models;
+    }
+    
+    /**
+     * Finds all CompletionModelProviders and builds a model map for schemas having TNS
+     * and builds a list for all no namespace models.
+     */
     public boolean initModels() {
-        HashMap<String, CompletionModel> modelMap = new HashMap<String, CompletionModel>();
         Lookup.Template templ = new Lookup.Template(CompletionModelProvider.class);
         Lookup.Result result = Lookup.getDefault().lookup(templ);
         Collection impls = result.allInstances();
+        CompletionModel primaryCompletionModel = null;
         for(Object obj: impls) {
             CompletionModelProvider modelProvider = (CompletionModelProvider)obj;
             List<CompletionModel> models = modelProvider.getModels(this);
@@ -365,37 +395,85 @@ public class CompletionContextImpl extends CompletionContext {
                 continue;
             for(CompletionModel m: models) {
                 String tns = m.getSchemaModel().getSchema().getTargetNamespace();
-                modelMap.put(tns, m);
-                if(getDefaultNamespace() != null &&
-                   getDefaultNamespace().equals(tns))
-                    this.primaryCompletionModel = m;
+                if(tns == null) {
+                    noNSModels.add(m); //no namespace models
+                    continue;
+                }
+                //models with namespaces
+                nsModelMap.put(tns, m);
             }
         }
         
-        if(primaryCompletionModel == null)
-            return false;
-        
-        this.primaryAXIModel = AXIModelFactory.getDefault().
-                getModel(primaryCompletionModel.getSchemaModel());
-        this.completionModelMap = modelMap;
         return true;
     }
     
+    /**
+     * Lets first try with "xmlns:ns1". If not used, use it. If used, we
+     * keep trying with ns2, ns3 etc.
+     */
+    String suggestPrefix(String tns) {
+        if(tns == null)
+            return null;
+        //if the tns is already present in declared namespaces,
+        //return the prefix
+        for(String key : getDeclaredNamespaces().keySet()) {
+            String ns = getDeclaredNamespaces().get(key);
+            if(ns.equals(tns))
+                return key;
+        }
+        
+        int index = suggestedNamespaces.size() + 1;
+        String prefix = PREFIX + index;
+        String nsDecl = XMLConstants.XMLNS_ATTRIBUTE+":"+prefix;
+        while(getDeclaredNamespaces().get(nsDecl) != null) {
+            prefix = PREFIX + index++;
+            nsDecl = XMLConstants.XMLNS_ATTRIBUTE+":" + prefix;
+        }        
+        suggestedNamespaces.put(prefix, tns);        
+        return prefix;
+    }
+    
+    public boolean isPrefixBeingUsed(String prefix) {
+        return getDeclaredNamespaces().
+                get(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix) != null;
+    }
+    
+    /**
+     * Returns target namespace for a given prefix.
+     */
+    public String getTargetNamespaceByPrefix(String prefix) {
+        for(CompletionModel cm : getCompletionModelMap().values()) {
+            if(prefix.equals(cm.getSuggestedPrefix()))
+                return cm.getTargetNamespace();
+        }
+        
+        return null;
+    }
+        
     private FileObject primaryFile;
-    private String xmlFileLocation;
     private String typedChars;
     private TokenItem token;
     private SyntaxElement element;
     private StartTag docRoot;
-    private HashMap<String, String> namespaces = new HashMap<String, String>();
+    private char lastTypedChar;
     private CompletionType completionType;
     private List<QName> pathFromRoot;
     private String schemaLocation;
+    private String noNamespaceSchemaLocation;
     private String defaultNamespace;
     private BaseDocument document;
-    private HashMap<String, CompletionModel> completionModelMap;
-    private AXIModel primaryAXIModel;
-    private CompletionModel primaryCompletionModel;
+    private HashMap<String, CompletionModel> nsModelMap =
+            new HashMap<String, CompletionModel>();
+    private List<CompletionModel> noNSModels =
+            new ArrayList<CompletionModel>();
+    private HashMap<String, String> declaredNamespaces =
+            new HashMap<String, String>();
+    private HashMap<String, String> suggestedNamespaces =
+            new HashMap<String, String>();
+    private boolean fromNoNamespace = false;
+    private CompletionModel noNamespaceModel;
     
-    public static final String XSI_SCHEMALOCATION   = "schemaLocation"; //NOI18N
+    public static final String PREFIX                   = "ns"; //NOI18N
+    public static final String XSI_SCHEMALOCATION       = "schemaLocation"; //NOI18N
+    public static final String XSI_NONS_SCHEMALOCATION  = "noNamespaceSchemaLocation"; //NOI18N
 }

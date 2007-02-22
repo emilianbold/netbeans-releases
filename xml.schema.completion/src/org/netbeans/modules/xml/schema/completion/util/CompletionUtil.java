@@ -2,27 +2,26 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.schema.completion.util;
 
-import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.StringTokenizer;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.axi.AXIComponent;
@@ -39,6 +38,7 @@ import org.netbeans.modules.xml.schema.completion.*;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
 import org.netbeans.modules.xml.schema.model.Form;
+import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
@@ -56,22 +56,44 @@ public class CompletionUtil {
     }
     
     /**
-     * Suggests a new prefix if the prefix specified is already in use.
+     * Returns the StartTag corresponding to the root element.
      */
-    public static String getSuggestedPrefix(CompletionContextImpl context,
-            String prefix, String tns) {
-        String newPrefix = prefix;
-        String nsDecl = XMLConstants.XMLNS_ATTRIBUTE+":"+newPrefix;
-        int i = 0;
-        while(context.getDeclaredNamespaces().get(nsDecl) != null) {
-            String ns = context.getDeclaredNamespaces().get(nsDecl);
-            if(ns.equals(tns))
-                return null;
-            newPrefix = newPrefix + 1;  //NOI18N
-            nsDecl = XMLConstants.XMLNS_ATTRIBUTE+":"+newPrefix;
-        }        
-        return newPrefix;
+    public static StartTag getRoot(SyntaxElement se) {
+        StartTag root = null;
+        while( se != null) {
+            if(se instanceof StartTag) {
+                root = (StartTag)se;
+            }
+            se = se.getPrevious();
+        }
+        
+        return root;
     }
+    
+    /**
+     * For debugging purposes only.
+     */
+    public static void printPath(List<QName> path) {
+        StringBuffer buffer = new StringBuffer();
+        for(QName item: path) {
+            if(buffer.toString().equals(""))
+                buffer.append(item);
+            else
+                buffer.append("/" + item);
+        }
+        //System.out.println(buffer);
+    }
+    
+    public static boolean isRoot(String tag, CompletionModel cm) {
+        if(cm == null)
+            return false;
+        AXIModel model = AXIModelFactory.getDefault().getModel(cm.getSchemaModel());
+        for(AbstractElement element : model.getRoot().getChildElements()) {
+            if(tag.endsWith(element.getName()))
+                return true;
+        }
+        return false;
+    }        
     
     /**
      * Returns the prefix from the element's tag.
@@ -124,20 +146,37 @@ public class CompletionUtil {
         
         return list;
     }
-    
+            
     /**
-     * Returns target namespace for a given prefix.
+     * Populates schema URIs from schemaLocation and noNamespaceSchemaLocation
+     * attributes of the doc-root. For schemaLocation, uses the 2nd token, where as
+     * for the later, uses every token.
      */
-    public static String getTargetNamespaceByPrefix(
-            CompletionContextImpl context, String prefix) {
-        for(CompletionModel cm : context.getCompletionModelMap().values()) {
-            if(cm.getSuggestedPrefix().equals(prefix))
-                return cm.getTargetNamespace();
+    public static void loadSchemaURIs(String schemaLocation, List<URI> uris, boolean noNS) {
+        StringTokenizer st = new StringTokenizer(
+                schemaLocation.replaceAll("\n", " "), " "); //NOI18N
+        while(st.hasMoreTokens()) {
+            URI uri = null;
+            try {
+                String token1 = st.nextToken().trim();
+                if(noNS) {
+                    uri = URI.create(token1); //every token is a schema
+                    if(uri != null)
+                        uris.add(uri);
+                    continue;
+                }
+                if(st.hasMoreTokens()) {
+                    String token2 = st.nextToken().trim();
+                        uri = URI.create(token2); //every 2nd token is a schema
+                        if(uri != null)
+                            uris.add(uri);
+                }
+            } catch (Exception ex) {
+                continue;
+            }
         }
-        
-        return null;
-    }    
-        
+    }
+    
     /**
      * Returns the list of attributes for a given element.
      */
@@ -154,6 +193,10 @@ public class CompletionUtil {
                 continue;
             }
             CompletionResultItem item = null;
+            if(aa.getTargetNamespace() == null) {  //no namespace
+                results.add(new AttributeResultItem(aa, context));
+                continue;
+            }            
             if(!isFormQualified(aa)) {
                 item = new AttributeResultItem(aa, context);
                 if(typedChars == null) {
@@ -197,6 +240,10 @@ public class CompletionUtil {
                 continue;
             }
             CompletionResultItem item = null;
+            if(ae.getTargetNamespace() == null) {  //no namespace
+                results.add(new ElementResultItem(ae, context));
+                continue;
+            }
             if(!isFormQualified(ae)) {
                 item = new ElementResultItem(ae, context);
                 if(typedChars == null) {
@@ -205,7 +252,7 @@ public class CompletionUtil {
                     results.add(item);
                 } else
                     continue;                
-            } else {
+            } else {                
                 List<String> prefixes = getPrefixesAgainstTargetNamespace(
                         context, ae.getTargetNamespace());
                 for(String prefix: prefixes) {
@@ -255,8 +302,14 @@ public class CompletionUtil {
         if(path == null || path.size() == 0)
             return null;
         
-        String tns = context.getPathFromRoot().get(0).getNamespaceURI();
-        CompletionModel cm = context.getCompletionModelMap().get(tns);
+        CompletionModel cm = null;
+        QName tag = context.getPathFromRoot().get(0);
+        String tns = tag.getNamespaceURI();
+        if(tns != null && tns.equals(XMLConstants.NULL_NS_URI)) {
+            cm = context.getActiveNoNSModel();
+        } else {
+            cm = context.getCompletionModelMap().get(tns);
+        }
         if(cm == null)
             return null;
         
@@ -294,28 +347,37 @@ public class CompletionUtil {
             CompletionContextImpl context) {
         List<CompletionResultItem> items = new ArrayList<CompletionResultItem>();
         String anyNamespace = any.getTargetNamespace();
-        String tns = any.getModel().getRoot().getTargetNamespace();
-        HashMap<String, CompletionModel> modelMap = context.getCompletionModelMap();
-        if(modelMap == null || modelMap.size() == 0)
-            return items;
-        
-        for(CompletionModel cm : modelMap.values()) {
-            //all other models except default namespace
-            if(anyNamespace.equals("##other") &&
-               cm.getTargetNamespace().equals(tns))
-                continue;
+        String tns = any.getModel().getRoot().getTargetNamespace();        
+        for(CompletionModel cm : context.getCompletionModels()) {            
+            //##other => items from other namespaces
+            if(anyNamespace.equals("##other")) { //NOI18N
+               if(tns != null && !tns.equals(cm.getTargetNamespace()))
+                populateItemsForAny(cm,any,context,items);
+            }
 
-            //only from default namespace
-            if(anyNamespace.equals("##targetNamespace") &&
-               !cm.getTargetNamespace().equals(tns))
-                continue;
+            //##targetNamespace => items from target namespace
+            if(anyNamespace.equals("##targetNamespace")) { //NOI18N
+               if(tns != null && tns.equals(cm.getTargetNamespace()))
+                populateItemsForAny(cm,any,context,items);
+            }
+            
+            //##local => unqualified items
+            if(anyNamespace.equals("##local") && //NOI18N
+               cm.getTargetNamespace() == null) {
+                populateItemsForAny(cm,any,context,items);
+            }
             
             //only specfied namespaces
-            if(!anyNamespace.startsWith("##") &&
-               anyNamespace.indexOf(cm.getTargetNamespace()) == -1)
-                continue;
+            if(!anyNamespace.startsWith("##") &&  //NOI18N
+               cm.getTargetNamespace() != null &&
+               anyNamespace.indexOf(cm.getTargetNamespace()) != -1) {
+                populateItemsForAny(cm,any,context,items);
+            }
             
-            populateItemsForAny(cm,any,context,items);
+            //##any => unconditional
+            if(anyNamespace.equals("##any")) { //NOI18N
+                populateItemsForAny(cm,any,context,items);
+            }
         }
         
         return items;

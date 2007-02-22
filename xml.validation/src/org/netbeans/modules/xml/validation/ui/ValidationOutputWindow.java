@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -48,6 +48,10 @@ public class ValidationOutputWindow {
     
     OutputWriter normalWriter;
     OutputWriter errorWriter;
+    
+    private String warningMsgType = null;
+    
+    private String errorMsgType = null;
     
     /**
      * Creates a new instance of ValidationOutputWindow
@@ -97,6 +101,13 @@ public class ValidationOutputWindow {
         
         normalWriter = io.getOut();
         errorWriter = io.getErr();
+        
+        warningMsgType = NbBundle.
+                getMessage(ValidationOutputWindow.class, "MSG_WARNING");
+        
+        errorMsgType = NbBundle.
+                getMessage(ValidationOutputWindow.class, "MSG_ERROR");
+                
     }
     
     
@@ -105,7 +116,7 @@ public class ValidationOutputWindow {
      */
     private void showError(ResultItem resultItem)
     throws IOException {
-        showMessage(resultItem, true);
+        showMessage(errorMsgType, resultItem, true);
     }
     
     
@@ -114,10 +125,10 @@ public class ValidationOutputWindow {
      */
     private void showWarning(ResultItem resultItem)
     throws IOException {
-        showMessage(resultItem, false);
+        showMessage(warningMsgType, resultItem, false);
     }
     
-    private void showMessage(ResultItem resultItem, boolean importance)
+    private void showMessage(String errorTypeStr, ResultItem resultItem, boolean importance)
     throws IOException {
         OutputListener listener = new ValidationOutputListener(resultItem);
         int lineNumber = getLineNumber(resultItem);
@@ -131,7 +142,7 @@ public class ValidationOutputWindow {
                     + "," + columnNumber,
                     listener, importance);
         }
-        errorWriter.println(resultItem.getDescription());
+        errorWriter.println(errorTypeStr + " " + resultItem.getDescription());
     }
     
     
