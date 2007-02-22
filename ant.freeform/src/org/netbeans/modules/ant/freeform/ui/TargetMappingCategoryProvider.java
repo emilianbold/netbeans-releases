@@ -48,7 +48,7 @@ public class TargetMappingCategoryProvider implements org.netbeans.spi.project.u
         assert project != null;
         if (project.usesAntScripting()) {
             return org.netbeans.spi.project.ui.support.ProjectCustomizer.Category.create("targetMapping", 
-                    NbBundle.getMessage(TargetMappingPanel.class, "LBL_ProjectCustomizer_Category_Targets"), null, null);
+                    NbBundle.getMessage(TargetMappingPanel.class, "LBL_ProjectCustomizer_Category_Targets"), null);
         }
         return null;
     }
