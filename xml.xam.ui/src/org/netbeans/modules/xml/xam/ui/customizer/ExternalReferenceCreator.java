@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -74,8 +75,6 @@ public abstract class ExternalReferenceCreator<T extends Component>
     private Map<DataObject, NodeSet> registeredNodes;
     /** The file being modified (where the import will be added). */
     private transient FileObject sourceFO;
-    /** The file selected by the user. */
-    private transient FileObject referencedFO;
     /** Used to deal with project catalogs. */
     private transient DefaultProjectCatalogSupport catalogSupport;
 
@@ -99,20 +98,31 @@ public abstract class ExternalReferenceCreator<T extends Component>
     }
 
     public void applyChanges() throws IOException {
-        if (referencedFO != null) {
-            try {
-                if (catalogSupport.needsCatalogEntry(sourceFO, referencedFO)) {
-                    // Remove the previous catalog entry, then create new one.
-                    URI uri = catalogSupport.getReferenceURI(sourceFO, referencedFO);
-                    catalogSupport.removeCatalogEntry(uri);
-                    catalogSupport.createCatalogEntry(sourceFO, referencedFO);
+        List<Node> nodes = getSelectedNodes();
+        for (Node node : nodes) {
+            if (node instanceof ExternalReferenceNode) {
+                Model model = ((ExternalReferenceNode) node).getModel();
+                // Without a model, the selection is completely invalid.
+                if (model != null && model != getModelComponent().getModel()) {
+                    FileObject fileObj = (FileObject) model.getModelSource().
+                            getLookup().lookup(FileObject.class);
+                    if (fileObj != null) {
+                        try {
+                            if (catalogSupport.needsCatalogEntry(sourceFO, fileObj)) {
+                                // Remove the previous catalog entry, then create new one.
+                                URI uri = catalogSupport.getReferenceURI(sourceFO, fileObj);
+                                catalogSupport.removeCatalogEntry(uri);
+                                catalogSupport.createCatalogEntry(sourceFO, fileObj);
+                            }
+                        } catch (URISyntaxException use) {
+                            ErrorManager.getDefault().notify(use);
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ioe);
+                        } catch (CatalogModelException cme) {
+                            ErrorManager.getDefault().notify(cme);
+                        }
+                    }
                 }
-            } catch (URISyntaxException urise) {
-                ErrorManager.getDefault().notify(urise);
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
-            } catch (CatalogModelException cme) {
-                ErrorManager.getDefault().notify(cme);
             }
         }
     }
@@ -144,6 +154,29 @@ public abstract class ExternalReferenceCreator<T extends Component>
             }
         }
         return results;
+    }
+
+    /**
+     * Check if prefix is unique on UI.
+     *
+     * @return  true if Prefix is not unique on UI, false otherwise.
+     */
+    private boolean isValidPrefix(ExternalReferenceDataNode node) {
+        DataObject dobj = (DataObject) node.getLookup().lookup(DataObject.class);
+        NodeSet nodeSet = registeredNodes.get(dobj);
+        List<Node> results = new LinkedList<Node>();
+        Collection<NodeSet> sets = registeredNodes.values();
+        for (NodeSet set : sets) {
+            // Ignore the set which contains the given node.
+            if (!set.equals(nodeSet)) {
+                for (ExternalReferenceDataNode n : set.getNodes()) {
+                    if (node.getPrefix().equals(n.getPrefix())) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -192,6 +225,16 @@ public abstract class ExternalReferenceCreator<T extends Component>
     public abstract boolean mustNamespaceDiffer();
 
     /**
+     * Return the proper name of the type of reference this creator is to
+     * be used for. This will become the title of the first column in the
+     * tree-table. Generally this should be something of the form of
+     * "Import", "Include", "Redefine", etc.
+     *
+     * @return  human-readable name for the first column title.
+     */
+    protected abstract String referenceTypeName();
+
+    /**
      * Called from constructor, after the interface components have been
      * constructed, but before they have been initialized. Gives subclasses
      * a chance to perform initialization based on the given component.
@@ -215,7 +258,7 @@ public abstract class ExternalReferenceCreator<T extends Component>
         locationView.getAccessibleContext().setAccessibleDescription(locationLabel.getToolTipText());
         Node.Property[] columns = new Node.Property[] {
             new Column(ExternalReferenceDataNode.PROP_NAME, String.class, true),
-            new Column(ExternalReferenceDataNode.PROP_SELECTED, Boolean.TYPE, false),
+            new ImportColumn(referenceTypeName()),
             new Column(ExternalReferenceDataNode.PROP_PREFIX, String.class, false),
         };
         locationView.setProperties(columns);
@@ -261,7 +304,8 @@ public abstract class ExternalReferenceCreator<T extends Component>
             ExternalReferenceDataNode erdn = (ExternalReferenceDataNode) node;
             Map<String, String> prefixMap = getPrefixes(getModelComponent().getModel());
             String ep = erdn.getPrefix();
-            if (erdn.isPrefixChanged() && (ep.length() == 0 || prefixMap.containsKey(ep))) {
+            if (erdn.isPrefixChanged() && (ep.length() == 0 || 
+                    prefixMap.containsKey(ep) || !isValidPrefix(erdn))) {
                 msg = NbBundle.getMessage(ExternalReferenceCreator.class,
                         "LBL_ExternalReferenceCreator_InvalidPrefix");
             }
@@ -298,7 +342,7 @@ public abstract class ExternalReferenceCreator<T extends Component>
      * A TreeTableView that toggles the selection of the external reference
      * data nodes using a single mouse click.
      */
-    private static class LocationView extends TreeTableView {
+    private class LocationView extends TreeTableView {
         /** silence compiler warnings */
         private static final long serialVersionUID = 1L;
 
@@ -319,7 +363,22 @@ public abstract class ExternalReferenceCreator<T extends Component>
                             ExternalReferenceDataNode erdn =
                                     (ExternalReferenceDataNode) node;
                             if (erdn.canSelect()) {
-                                erdn.setSelected(!erdn.isSelected());
+                                boolean selected = !erdn.isSelected();
+                                String ns = null;
+                                if (selected) {
+                                    // Have to collect the namespace value
+                                    // when the node is selected.
+                                    Model model = erdn.getModel();
+                                    if (model != null) {
+                                        ns = getTargetNamespace(model);
+                                    }
+                                }
+                                // This will clear the field if the user has
+                                // deselected the file, which is to prevent
+                                // the user from being confused as to what
+                                // the namespace field represents.
+                                namespaceTextField.setText(ns);
+                                erdn.setSelected(selected);
                             }
                         }
                     }
@@ -329,31 +388,32 @@ public abstract class ExternalReferenceCreator<T extends Component>
     }
 
     protected Node createRootNode() {
-        Set refProjects = null;
+        Set/*<Project>*/ refProjects = null;
         if (catalogSupport.supportsCrossProject()) {
             refProjects = catalogSupport.getProjectReferences();
         }
         ExternalReferenceDecorator decorator = getNodeDecorator();
-        Node[] rootNodes = new Node[1 + (refProjects == null ? 0: refProjects.size())];
+        Node[] rootNodes = new Node[1 + (refProjects == null ? 0 : refProjects.size())];
         Project prj = FileOwnerQuery.getOwner(sourceFO);
         LogicalViewProvider viewProvider = (LogicalViewProvider) prj.getLookup().
                 lookup(LogicalViewProvider.class);
         rootNodes[0] = decorator.createExternalReferenceNode(
                 viewProvider.createLogicalView());
-        int i = 1;
+        int rootIndex = 1;
+        List<FileObject> projectRoots = new ArrayList<FileObject>();
+        projectRoots.add(prj.getProjectDirectory());
         if (refProjects != null) {
             for (Object o : refProjects) {
                 Project refPrj = (Project) o;
                 viewProvider = (LogicalViewProvider) refPrj.getLookup().
                         lookup(LogicalViewProvider.class);
-                rootNodes[i++] = decorator.createExternalReferenceNode(
+                rootNodes[rootIndex++] = decorator.createExternalReferenceNode(
                         viewProvider.createLogicalView());
+                projectRoots.add(refPrj.getProjectDirectory());
             }
         }
-        FileObject[] roots = new FileObject [] {
-            prj.getProjectDirectory(),
-            // add ref project directories as well?
-        };
+        FileObject[] roots = projectRoots.toArray(
+                new FileObject[projectRoots.size()]);
         Children fileChildren = new Children.Array();
         fileChildren.add(rootNodes);
         Node byFilesNode = new FolderNode(fileChildren);
@@ -383,7 +443,13 @@ public abstract class ExternalReferenceCreator<T extends Component>
         Children categories = new Children.Array();
 //        categories.add(new Node[]{ byFilesNode, byNsNode, retrievedNode });
         categories.add(new Node[] { byFilesNode, byNsNode });
-        return new AbstractNode(categories);
+        Node rootNode = new AbstractNode(categories);
+        // Surprisingly, this becomes the name and description of the first column.
+        rootNode.setDisplayName(NbBundle.getMessage(ExternalReferenceCreator.class,
+                "CTL_ExternalReferenceCreator_Column_Name_name"));
+        rootNode.setShortDescription(NbBundle.getMessage(ExternalReferenceCreator.class,
+                "CTL_ExternalReferenceCreator_Column_Desc_name"));
+        return rootNode;
     }
 
 //    private CatalogWriteModel getCatalogWriteModel() {
@@ -402,8 +468,6 @@ public abstract class ExternalReferenceCreator<T extends Component>
         String pname = event.getPropertyName();
         if (ExplorerManager.PROP_SELECTED_NODES.equals(pname)) {
             showMessage(null);
-            String ns = null;
-            referencedFO = null;
             Node[] nodes = (Node[]) event.getNewValue();
             // Validate the node selection.
             if (nodes != null && nodes.length > 0 &&
@@ -412,11 +476,6 @@ public abstract class ExternalReferenceCreator<T extends Component>
                 Model model = node.getModel();
                 // Without a model, the selection is completely invalid.
                 if (model != null) {
-                    ns = getTargetNamespace(model);
-                    if (model != getModelComponent().getModel()) {
-                        referencedFO = (FileObject) model.getModelSource().
-                                getLookup().lookup(FileObject.class);
-                    }
                     // Ask decorator if selection is valid or not.
                     String msg = getNodeDecorator().validate(node);
                     if (msg != null) {
@@ -427,10 +486,22 @@ public abstract class ExternalReferenceCreator<T extends Component>
                     }
                 }
             }
-            namespaceTextField.setText(ns);
         } else if (pname.equals(ExternalReferenceDataNode.PROP_PREFIX)) {
-            ExternalReferenceNode ern = (ExternalReferenceNode) event.getSource();
-            validateInput(ern);
+            ExternalReferenceDataNode erdn =
+                    (ExternalReferenceDataNode) event.getSource();
+            // Look up the node in the map of sets, and ensure they all
+            // have the same prefix.
+            String prefix = (String) event.getNewValue();
+            DataObject dobj = (DataObject) erdn.getLookup().lookup(DataObject.class);
+            NodeSet set = registeredNodes.get(dobj);
+            // Ideally the set should already exist, but cope gracefully.
+            assert set != null : "node not created by customizer";
+            if (set == null) {
+                set = new NodeSet(this);
+                set.add(erdn);
+            }
+            set.setPrefix(prefix);
+            validateInput(erdn);
         } else if (pname.equals(ExternalReferenceDataNode.PROP_SELECTED)) {
             ExternalReferenceDataNode erdn =
                     (ExternalReferenceDataNode) event.getSource();
@@ -580,6 +651,34 @@ public abstract class ExternalReferenceCreator<T extends Component>
     }
 
     /**
+     * Special column for the reference customizer table's import column.
+     *
+     * @author  Nathan Fiedler
+     */
+    protected class ImportColumn extends PropertySupport.ReadOnly {
+        /** The keyword for this column. */
+        private String key;
+
+        /**
+         * Creates a new instance of ImportColumn.
+         *
+         * @param  name  the column's name.
+         */
+        public ImportColumn(String name) {
+            super("selected", Boolean.TYPE, name,
+                  NbBundle.getMessage(Column.class,
+                    "CTL_ExternalReferenceCreator_Column_Desc_selected"));
+            this.key = "selected";
+            setValue("TreeColumnTTV", Boolean.FALSE);
+        }
+
+        public Object getValue()
+                throws IllegalAccessException, InvocationTargetException {
+            return key;
+        }
+    }
+
+    /**
      * Manages the state of a set of nodes.
      */
     private static class NodeSet {
@@ -627,6 +726,21 @@ public abstract class ExternalReferenceCreator<T extends Component>
          */
         public boolean isSelected() {
             return selected;
+        }
+
+        /**
+         * Set the prefix for Nodes in this group.
+         *
+         * @param  prefix  new namespace prefix.
+         */
+        public void setPrefix(String prefix) {
+            for (ExternalReferenceDataNode node : nodes) {
+                if (!node.getPrefix().equals(prefix)) {
+                    node.removePropertyChangeListener(listener);
+                    node.setPrefix(prefix);
+                    node.addPropertyChangeListener(listener);
+                }
+            }
         }
 
         /**
@@ -684,13 +798,13 @@ public abstract class ExternalReferenceCreator<T extends Component>
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(locationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+                    .add(locationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(namespaceLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(namespaceTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
                     .add(locationLabel)
-                    .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE))
+                    .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

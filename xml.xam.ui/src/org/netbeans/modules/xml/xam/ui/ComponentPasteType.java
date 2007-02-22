@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -103,7 +103,7 @@ public class ComponentPasteType {
             Node[] nodes = NodeTransfer.nodes(transfer, oper);
             if (nodes != null) {
                 // Can any of these be pasted into the target?
-                if (canBePasted(nodes, target, oper, type)) {
+                if (canPaste(nodes, target, oper, type)) {
                     retVal = new PasteTypeImpl(Arrays.asList(nodes), target,
                             oper, index);
                     break;
@@ -123,34 +123,46 @@ public class ComponentPasteType {
      *                    or null to allow all types.
      * @return  true if the nodes can be pasted.
      */
-    private static boolean canBePasted(Node[] nodes,
-            Component target, int operation,
-            Class<? extends Component> type) {
-        Set<Node> pasteables = new HashSet<Node>();
-        for (Node node : nodes) {
+    private static boolean canPaste(Node[] nodes, Component target,
+            int operation, Class<? extends Component> type) {
+        Set<Node> pasteableNodes = new HashSet<Node>();
+        for (Node pasteableNode : nodes) {
             // The node must provide a Component, otherwise we cannot use it.
-            GetComponentCookie gcc = (GetComponentCookie) node.
+            GetComponentCookie gcc = (GetComponentCookie) pasteableNode.
                     getLookup().lookup(GetComponentCookie.class);
             if (gcc != null) {
-                Component component = gcc.getComponent();
+                Component pasteableComponent = gcc.getComponent();
                 // Check that the target can receive this component.
                 // Ensure that the model is still valid, in case the
                 // component was deleted or moved elsewhere.
-                if ((type == null || type.isAssignableFrom(gcc.getComponentType())) &&
-                        component.getModel() != null && target.canPaste(component)) {
+                if ((type == null ||
+                        type.isAssignableFrom(gcc.getComponentType())) &&
+                        pasteableComponent.getModel() != null &&
+                        target.canPaste(pasteableComponent)) {
                     boolean isCopyPaste = (operation & NodeTransfer.COPY) != 0;
                     // Prevent cutting and pasting into the same component.
                     boolean isCutPaste = (operation & NodeTransfer.MOVE) != 0 &&
-                            !(component.getParent() == target) && node.canDestroy();
+                            !(pasteableComponent.getParent().equals(target)) &&
+                            pasteableNode.canDestroy();
                     if (isCopyPaste || isCutPaste) {
+                        if (isCutPaste) {
+                            // Prevent cutting/pasting into a child component.
+                            Component parent = target;
+                            while (parent != null) {
+                                if (parent.equals(pasteableComponent)) {
+                                    return false;
+                                }
+                                parent = parent.getParent();
+                            }
+                        }
                         // We could check for duplicates here, but at this
                         // time we are allowing them.
-                        pasteables.add(node);
+                        pasteableNodes.add(pasteableNode);
                     }
                 }
             }
         }
-        return pasteables.size() == nodes.length;
+        return pasteableNodes.size() == nodes.length;
     }
 
     /**

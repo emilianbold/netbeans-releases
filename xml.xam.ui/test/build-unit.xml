@@ -26,7 +26,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="default-compiler">
         <!-- Build application before tests -->
-        <echo message="CP Extra: ${test.unit.cp.extra}"/>
         <ant dir=".." target="jar"/>
         <buildTests srcdir="unit/src" compileexcludes="**/data/**">
             <property name="javac.source" value="1.5"/>

@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,6 +24,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -81,10 +83,27 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
         catalogSupport = DefaultProjectCatalogSupport.getInstance(sourceFO);
         init(component, model);
         initializeUI();
-        Node root = createRootNode();
-        explorerManager.setRootContext(root);
+        // View for selecting an external reference.
+        BeanTreeView locationView = new BeanTreeView();
+        locationView.setPopupAllowed(false);
+        locationView.setDefaultActionAllowed(false);
+        locationView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        locationView.setRootVisible(false);
+        locationView.getAccessibleContext().setAccessibleName(locationLabel.getToolTipText());
+        locationView.getAccessibleContext().setAccessibleDescription(locationLabel.getToolTipText());
+        locationPanel.add(locationView, BorderLayout.CENTER);
+        explorerManager = new ExplorerManager();
+        explorerManager.addPropertyChangeListener(this);
+        explorerManager.setRootContext(createRootNode());
     }
-    
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        // Force the Ok button to be disabled initially.
+        firePropertyChange(PROP_ACTION_APPLY, true, false);
+    }
+
     public void applyChanges() throws IOException {
         if (mustNamespaceDiffer() && isPrefixChanged()) {
             prefixTextField.setEditable(false);
@@ -227,17 +246,6 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
     }
     
     protected void initializeUI() {
-        // View for selecting a external ref.
-        BeanTreeView locationView = new BeanTreeView();
-        locationView.setPopupAllowed(false);
-        locationView.setDefaultActionAllowed(false);
-        locationView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        locationView.setRootVisible(false);
-        locationView.getAccessibleContext().setAccessibleName(locationLabel.getToolTipText());
-        locationView.getAccessibleContext().setAccessibleDescription(locationLabel.getToolTipText());
-        locationPanel.add(locationView, BorderLayout.CENTER);
-        explorerManager = new ExplorerManager();
-        explorerManager.addPropertyChangeListener(this);
         // TODO select in panel
         if (mustNamespaceDiffer()) {
             namespaceTextField.setText(getNamespace());
@@ -276,10 +284,7 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
     }
     
     public ExternalReferenceDataNode createExternalReferenceNode(Node original) {
-        ExternalReferenceDataNode erdn = new ExternalReferenceDataNode(
-                original, getNodeDecorator());
-        erdn.addPropertyChangeListener(this);
-        return erdn;
+        return new ExternalReferenceDataNode(original, getNodeDecorator());
     }
     
     /**
@@ -331,31 +336,32 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
     }
 
     protected Node createRootNode() {
-        Set refProjects = null;
+        Set/*<Project>*/ refProjects = null;
         if (catalogSupport.supportsCrossProject()) {
             refProjects = catalogSupport.getProjectReferences();
         }
         ExternalReferenceDecorator decorator = getNodeDecorator();
-        Node[] rootNodes = new Node[1 + (refProjects == null ? 0: refProjects.size())];
+        Node[] rootNodes = new Node[1 + (refProjects == null ? 0 : refProjects.size())];
         Project prj = FileOwnerQuery.getOwner(sourceFO);
         LogicalViewProvider viewProvider = (LogicalViewProvider) prj.getLookup().
                 lookup(LogicalViewProvider.class);
         rootNodes[0] = decorator.createExternalReferenceNode(
                 viewProvider.createLogicalView());
-        int i = 1;
+        int rootIndex = 1;
+        List<FileObject> projectRoots = new ArrayList<FileObject>();
+        projectRoots.add(prj.getProjectDirectory());
         if (refProjects != null) {
             for (Object o : refProjects) {
                 Project refPrj = (Project) o;
                 viewProvider = (LogicalViewProvider) refPrj.getLookup().
                         lookup(LogicalViewProvider.class);
-                rootNodes[i++] = decorator.createExternalReferenceNode(
+                rootNodes[rootIndex++] = decorator.createExternalReferenceNode(
                         viewProvider.createLogicalView());
+                projectRoots.add(refPrj.getProjectDirectory());
             }
         }
-        FileObject[] roots = new FileObject [] {
-            prj.getProjectDirectory(),
-            // add ref project directories as well?
-        };
+        FileObject[] roots = projectRoots.toArray(
+                new FileObject[projectRoots.size()]);
         Children fileChildren = new Children.Array();
         fileChildren.add(rootNodes);
         Node byFilesNode = new FolderNode(fileChildren);
@@ -484,8 +490,8 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
-                    .add(locationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+                    .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
+                    .add(locationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(namespaceLabel)

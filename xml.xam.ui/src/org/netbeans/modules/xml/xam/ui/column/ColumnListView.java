@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,6 +26,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
+import javax.accessibility.AccessibleContext;
 import javax.swing.Action;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
@@ -56,6 +57,7 @@ import org.openide.util.actions.SystemAction;
  * @author  Nathan Fiedler
  */
 public class ColumnListView extends ListView {
+    /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
     /** Popup menu support. */
     private transient PopupSupport popupSupport;
@@ -204,7 +206,8 @@ public class ColumnListView extends ListView {
      *
      * @author  Nathan Fiedler
      */
-    private static class ColumnList extends JList {
+    private class ColumnList extends JList {
+        /** silence compiler warnings */
         private static final long serialVersionUID = 1L;
 
         ColumnList() {
@@ -225,6 +228,31 @@ public class ColumnListView extends ListView {
         public boolean getScrollableTracksViewportWidth() {
             // Prevent horizontal scrolling in the column view.
             return true;
+        }
+
+        // Accessibility:
+        public AccessibleContext getAccessibleContext() {
+            if (accessibleContext == null) {
+                accessibleContext = new AccessibleColumnList();
+            }
+
+            return accessibleContext;
+        }
+
+        private class AccessibleColumnList extends AccessibleJList {
+            /** silence compiler warnings */
+            private static final long serialVersionUID = 1L;
+
+            AccessibleColumnList() {
+            }
+
+            public String getAccessibleName() {
+                return ColumnListView.this.getAccessibleContext().getAccessibleName();
+            }
+
+            public String getAccessibleDescription() {
+                return ColumnListView.this.getAccessibleContext().getAccessibleDescription();
+            }
         }
     }
 }
