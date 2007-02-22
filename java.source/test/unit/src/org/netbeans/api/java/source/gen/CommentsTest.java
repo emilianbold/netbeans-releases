@@ -28,6 +28,7 @@ import org.netbeans.api.java.source.Comment.Style;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.query.CommentHandler;
+import org.netbeans.api.java.source.query.CommentSet;
 import org.netbeans.api.java.source.query.Query;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -49,7 +50,7 @@ public class CommentsTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite(CommentsTest.class);
-  //      suite.addTest(new CommentsTest("testAddStatement"));
+//        suite.addTest(new CommentsTest("testAddStatement"));
         return suite;
     }
 
@@ -89,7 +90,16 @@ public class CommentsTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
-                String bodyText = "{ // test\nint a;\n/** becko */\nint b;\n/* cecko */\nint c;}";
+                String bodyText = 
+                        "{" +
+                        "    // test\n" +
+                        "    int a;\n" +
+                        "    /** becko */\n" +
+                        "    int b;\n" +
+                        "    /* cecko */" +
+                        "    \n" +
+                        "    int c;" +
+                        "}";
                 BlockTree block = make.createMethodBody(method, bodyText);
                 CommentHandler comments = workingCopy.getCommentHandler();
                 mapComments(block, bodyText, workingCopy, comments);
@@ -103,6 +113,39 @@ public class CommentsTest extends GeneratorTestMDRCompat {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
+    }
+    
+    public void testGetComment1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.File;\n\n" +
+            "public class Test {\n\n" +
+            "    void method() {\n" +
+            "        // preceding comment\n" +
+            "        int a; // trailing comment\n" +
+            "        // what's up?" +
+            "    }\n\n" +
+            "}\n"
+            );
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                CommentHandler comments = workingCopy.getCommentHandler();
+                CommentSet s = comments.getComments(method.getBody().getStatements().get(0));
+                System.err.println(s);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
     }
     
     String getGoldenPckg() {
