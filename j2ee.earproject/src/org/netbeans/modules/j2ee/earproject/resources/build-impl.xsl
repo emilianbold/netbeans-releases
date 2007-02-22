@@ -624,34 +624,33 @@ to simulate
         </target>
     </xsl:template>
 
-    <target name="-init-debug-args">
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
-                <exec executable="${{platform.java}}" outputproperty="version-output">
-                    <arg value="-version"/>
-                </exec>
-            </xsl:when>
-            <xsl:otherwise>
-                <property name="version-output" value="java version &quot;${{ant.java.version}}"/>
-            </xsl:otherwise>
-        </xsl:choose>
-        <condition property="have-jdk-older-than-1.4">
-            <!-- <matches pattern="^java version &quot;1\.[0-3]" string="${version-output}"/> (ANT 1.7) -->
-            <or>
-                <contains string="${{version-output}}" substring="java version &quot;1.0"/>
-                <contains string="${{version-output}}" substring="java version &quot;1.1"/>
-                <contains string="${{version-output}}" substring="java version &quot;1.2"/>
-                <contains string="${{version-output}}" substring="java version &quot;1.3"/>
-            </or>
-        </condition>
-        <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
-            <istrue value="${{have-jdk-older-than-1.4}}"/>
-        </condition>
-    </target>
-
     <xsl:template name="debug.target">
         <xsl:param name="id"/>
         <xsl:param name="type"/>
+        <target name="-init-debug-args">
+            <xsl:choose>
+                <xsl:when test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
+                    <exec executable="${{platform.java}}" outputproperty="version-output">
+                        <arg value="-version"/>
+                    </exec>
+                </xsl:when>
+                <xsl:otherwise>
+                    <property name="version-output" value="java version &quot;${{ant.java.version}}"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            <condition property="have-jdk-older-than-1.4">
+                <!-- <matches pattern="^java version &quot;1\.[0-3]" string="${version-output}"/> (ANT 1.7) -->
+                <or>
+                    <contains string="${{version-output}}" substring="java version &quot;1.0"/>
+                    <contains string="${{version-output}}" substring="java version &quot;1.1"/>
+                    <contains string="${{version-output}}" substring="java version &quot;1.2"/>
+                    <contains string="${{version-output}}" substring="java version &quot;1.3"/>
+                </or>
+            </condition>
+            <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
+                <istrue value="${{have-jdk-older-than-1.4}}"/>
+            </condition>
+        </target>
         <target name="run-debug-appclient" depends="init,-init-debug-args" if="can.debug.appclient">
                 <macrodef>
                     <xsl:attribute name="name">debug-appclient</xsl:attribute>
