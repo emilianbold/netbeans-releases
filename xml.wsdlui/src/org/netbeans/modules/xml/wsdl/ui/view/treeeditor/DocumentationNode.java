@@ -30,9 +30,10 @@ import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 
 import javax.swing.Action;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 
-import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
-import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
+//import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
+//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
 import org.netbeans.modules.xml.wsdl.model.Documentation;
 import org.netbeans.modules.xml.wsdl.ui.api.property.PropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.CommonAttributePropertyAdapter;
@@ -75,9 +76,10 @@ public class DocumentationNode extends WSDLElementNode {
         SystemAction.get(DeleteAction.class),
         null,
         SystemAction.get(GoToAction.class),
-        SystemAction.get(FindUsagesAction.class),
+        //SystemAction.get(FindUsagesAction.class),
+        (SystemAction)RefactoringActionsFactory.whereUsedAction(),
         null,
-        SystemAction.get(RefactorAction.class),
+        (SystemAction)RefactoringActionsFactory.editorSubmenuAction(),
         null,
         SystemAction.get(PropertiesAction.class),
     };

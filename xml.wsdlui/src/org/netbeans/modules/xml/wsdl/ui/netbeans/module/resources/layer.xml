@@ -88,11 +88,18 @@
                     <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                    <attr name="sep-4.instance/org-netbeans-modules-xml-refactoring-actions-FindUsagesAction.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-xml-refactoring-actions-FindUsagesAction.instance"/>
-                    <attr name="org-netbeans-modules-xml-refactoring-actions-FindUsagesAction.instance/org-netbeans-modules-xml-refactoring-actions-FileRefactorAction.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-xml-refactoring-actions-FileRefactorAction.instance"/>
-		    <attr name="org-netbeans-modules-xml-refactoring-actions-FileRefactorAction.instance/sep-5.instance" boolvalue="true"/>
+                    
+                     <attr boolvalue="true" name="sep-4.instance/RefactoringWhereUsed.instance"/>
+                    <file name="RefactoringWhereUsed.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                   </file>
+                   
+                    <attr boolvalue="true" name="RefactoringWhereUsed.instance/RefactoringAll.instance"/>
+                    <file name="RefactoringAll.instance">
+                       <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
+                   </file>
+                   <attr name="RefactoringAll.instance/sep-5.instance" boolvalue="true"/>
+                   
                     <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>

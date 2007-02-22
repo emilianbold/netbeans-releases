@@ -27,9 +27,10 @@ import java.util.logging.Level;
 
 import javax.swing.Action;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 
-import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
-import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
+//import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
+//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Message;
@@ -90,9 +91,10 @@ public class PartNode extends WSDLNamedElementNode {
         SystemAction.get(RemoveAttributesAction.class),
         null,
         SystemAction.get(GoToAction.class),
-        SystemAction.get(FindUsagesAction.class),
+        //SystemAction.get(FindUsagesAction.class),
+        (SystemAction)RefactoringActionsFactory.whereUsedAction(),
         null,
-        SystemAction.get(RefactorAction.class),
+        (SystemAction)RefactoringActionsFactory.editorSubmenuAction(),
         null,
         SystemAction.get(PropertiesAction.class)
     };

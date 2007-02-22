@@ -38,9 +38,10 @@ import java.util.logging.Logger;
 
 import javax.swing.Action;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 
-import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
-import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
+//import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
+//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
 import org.netbeans.modules.xml.refactoring.ui.ReferenceableProvider;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -139,9 +140,10 @@ public abstract class WSDLElementNode extends AbstractNode
         SystemAction.get(ReorderAction.class),
         null,
         SystemAction.get(GoToAction.class),
-        SystemAction.get(FindUsagesAction.class),
+        //SystemAction.get(FindUsagesAction.class),
+        (SystemAction)RefactoringActionsFactory.whereUsedAction(),
         null,
-        SystemAction.get(RefactorAction.class),
+        (SystemAction)RefactoringActionsFactory.editorSubmenuAction(),
         null,
         SystemAction.get(PropertiesAction.class),
     };
