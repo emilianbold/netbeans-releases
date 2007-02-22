@@ -190,8 +190,7 @@ public class SimulationTest extends AbstractSyncTestCase {
         Element e2 = helper.dropElement(e1, "E2");
         assert(helper.inModel(e2));
         assert(e1.getChildElements().size() == 1);
-        //assert(e1.getType() instanceof AnonymousType);
-        assert(e1.getType() == null);
+        assert(e1.getType() instanceof AnonymousType);
         Compositor c = (Compositor)e1.getChildren().get(0);
         assert(c.getChildren().get(0) == e2);
     }
@@ -232,8 +231,7 @@ public class SimulationTest extends AbstractSyncTestCase {
         
         Compositor sequence = helper.dropCompositor(e1, CompositorType.SEQUENCE);
         assert(helper.inModel(sequence));
-        //assert(e1.getType() instanceof AnonymousType);
-        assert(e1.getType() == null);
+        assert(e1.getType() instanceof AnonymousType);
         
         Element e11 = helper.dropElementOnCompositor(sequence, "E11");
         Element e12 = helper.dropElementOnCompositor(sequence, "E12");
