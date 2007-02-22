@@ -247,8 +247,7 @@ public class EditorContextImpl extends EditorContext {
     ) {
         Coloring coloring;
         if (EditorContext.CURRENT_LAST_OPERATION_ANNOTATION_TYPE.equals(annotationType)) {
-//            coloring = new Coloring(null, Coloring.FONT_MODE_DEFAULT, null, null, getColor(annotationType), null);
-            coloring = new Coloring(null, Coloring.FONT_MODE_DEFAULT, null, null, null, null, getColor(annotationType));            
+            coloring = new Coloring(null, Coloring.FONT_MODE_DEFAULT, null, null, getColor(annotationType), null, null);
         } else {
             coloring = new Coloring(null, null, getColor(annotationType));
         }
