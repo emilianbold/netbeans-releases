@@ -190,8 +190,9 @@ public class FileWizardIterator implements TemplateWizard.Iterator {
                     new IllegalStateException(message),
                     ErrorManager.USER, null, message,
                     null, null);
-
+        
         DataObject fromTemplate = tpl.createFromTemplate (target, name);
+        fromTemplate.getPrimaryFile ().getParent ().refresh (true);
         fromTemplate = DataObject.find (fromTemplate.getPrimaryFile ());
         return fromTemplate;
     }
