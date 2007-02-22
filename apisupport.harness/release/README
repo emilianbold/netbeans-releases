@@ -631,6 +631,9 @@ override directly; override ${module.jar.basename} (default
 "${code.name.base.dashes}.jar") and/or ${module.jar.dir} (default "modules") if
 necessary (not without a good reason!).
 
+module.jar.verifylinkageignores - regexp pattern for class names that are 
+excluded from a linkage check
+
 module.javadoc.packages - comma-separated list of packages to be included in
 Javadoc. Defaulted according to <public-packages> or <friend-packages>, but if
 you used <subpackages> (or if you have not specified any public or friend

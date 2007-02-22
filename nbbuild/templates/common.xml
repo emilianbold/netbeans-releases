@@ -54,6 +54,7 @@ Microsystems, Inc. All Rights Reserved.
             <available file="${module.auto.deps.xml}"/>
         </condition>
         <property name="jar-excludes" value="**/*.java,**/*.form,**/package.html,**/doc-files/"/>
+        <property name="module.jar.verifylinkageignores" value=""/>
     </target>
 
     <target name="-release.dir">
@@ -204,7 +205,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="verify-class-linkage" depends="jar,release">
-        <verifyclasslinkage jar="${cluster}/${module.jar}" failonerror="false">
+        <verifyclasslinkage jar="${cluster}/${module.jar}" failonerror="false" 
+            ignores="${module.jar.verifylinkageignores}">
             <classpath refid="cp"/>
             <classpath path="${nbjdk.bootclasspath}"/>
         </verifyclasslinkage>

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -38,6 +37,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -69,6 +69,7 @@ public class VerifyClassLinkage extends Task {
     private boolean failOnError = true;
     private boolean warnOnDefaultPackage = true;
     private Path classpath = new Path(getProject());
+    private String ignores;
 
     /**
      * Intended static classpath for this JAR.
@@ -94,6 +95,14 @@ public class VerifyClassLinkage extends Task {
     public void setFailOnError(boolean failOnError) {
         this.failOnError = failOnError;
     }
+    
+    /** 
+     * Sets the pattern for classes that are not verified.
+     * Allows to skip linkage verification of some classes.
+     */
+    public void setIgnores(String ignores) {
+        this.ignores = ignores;
+    }
 
     /**
      * If true (default), warn if any classes are found in the default
@@ -115,7 +124,7 @@ public class VerifyClassLinkage extends Task {
             for (String clazz: classfiles.keySet()) {
                 // All classes we define are obviously loadable:
                 loadable.put(clazz, Boolean.TRUE);
-                if (warnOnDefaultPackage && clazz.indexOf('/') == -1) {
+                if (warnOnDefaultPackage && clazz.indexOf('.') == -1) {
                     log("Warning: class '" + clazz + "' found in default package", Project.MSG_WARN);
                 }
             }
@@ -137,6 +146,7 @@ public class VerifyClassLinkage extends Task {
         }
         log("Reading " + jar, Project.MSG_VERBOSE);
         JarFile jf = new JarFile(jar);
+        Pattern p = (ignores != null)? Pattern.compile(ignores): null;
         try {
             Enumeration e = jf.entries();
             while (e.hasMoreElements()) {
@@ -145,7 +155,10 @@ public class VerifyClassLinkage extends Task {
                 if (!name.endsWith(".class")) {
                     continue;
                 }
-                String clazz = name.substring(0, name.length() - 6);
+                String clazz = name.substring(0, name.length() - 6).replace('/', '.');
+                if (p != null && p.matcher(clazz).matches()) {
+                    continue;
+                }
                 ByteArrayOutputStream baos = new ByteArrayOutputStream(Math.max((int) entry.getSize(), 0));
                 InputStream is = jf.getInputStream(entry);
                 try {
@@ -245,13 +258,13 @@ public class VerifyClassLinkage extends Task {
             } else {
                 clazz2 = vmname;
             }
-            Boolean exists = (Boolean) loadable.get(clazz2);
+            Boolean exists = loadable.get(clazz2.replace('/', '.'));
             if (exists == null) {
                 exists = Boolean.valueOf(loader.getResource(clazz2 + ".class") != null);
                 loadable.put(clazz2, exists);
             }
             if (!exists.booleanValue()) {
-                String message = clazz.replace('/', '.') + " cannot access " + clazz2.replace('/', '.');
+                String message = clazz + " cannot access " + clazz2.replace('/', '.');
                 if (failOnError) {
                     throw new BuildException(message, getLocation());
                 } else {
