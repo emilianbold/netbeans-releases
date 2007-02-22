@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,6 +41,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -53,15 +54,16 @@ public class CommonMessageConfigurationPanel extends javax.swing.JPanel {
     private Project mProject;
     
     private ElementOrTypeTableCellRenderer elementOrTypeRenderer;
+    private WSDLModel mModel;
     
     /** Creates new form CommonMessageConfigurationPanel */
-    public CommonMessageConfigurationPanel(Project project, Map<String, String> namespaceToPrefixMap) {
+    public CommonMessageConfigurationPanel(Project project, Map<String, String> namespaceToPrefixMap, WSDLModel model) {
         mProject = project;
         this.namespaceToPrefixMap = namespaceToPrefixMap;
+        mModel = model;
         initComponents();
         initGUI();
     }
-    
     
     /** Mattise require default constructor otherwise will not load in design view of mattise
      **/
@@ -207,7 +209,7 @@ public class CommonMessageConfigurationPanel extends javax.swing.JPanel {
     
     
     public void setUpElementOrTypeColumn(TableColumn elementOrTypeColumn) {
-        elementOrTypeColumn.setCellEditor(new ElementOrTypeTableCellEditor(partsTable, namespaceToPrefixMap, mProject));
+        elementOrTypeColumn.setCellEditor(new ElementOrTypeTableCellEditor(partsTable, namespaceToPrefixMap, mProject, mModel));
         
         //Set up tool tips for the sport cells.
         elementOrTypeRenderer =

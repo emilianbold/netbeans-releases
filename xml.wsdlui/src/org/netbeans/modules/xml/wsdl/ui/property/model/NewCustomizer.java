@@ -1,9 +1,28 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
 /**
  *	This generated bean class NewCustomizer
  *	matches the schema element 'NewCustomizer'.
  *  The root bean class is ElementProperties
  *
- *	Generated on Tue Jan 23 19:08:48 PST 2007
+ *	Generated on Tue Jan 30 20:45:13 PST 2007
  * @Generated
  */
 
@@ -235,9 +254,9 @@ public class NewCustomizer {
                 <xsd:element ref="tns:PropertyGroup" maxOccurs="unbounded" />
                 <xsd:element ref="tns:Property" maxOccurs="unbounded" />
             </xsd:sequence>
-            <xsd:attribute name="elementName" type="xsd:string" use="required"/>
         </xsd:complexType>
     </xsd:element>            
+    
     <xsd:element name="PropertyGroup">
         <xsd:complexType>
             <xsd:attribute name="name" type="xsd:string" use="required"/>
@@ -247,23 +266,87 @@ public class NewCustomizer {
     <xsd:element name="Property">
         <xsd:complexType>
             <xsd:choice>
+                <xsd:element name="SchemaCustomizer">
+                </xsd:element>
                 <xsd:element name="BuiltInCustomizer">
                     <xsd:complexType xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                        <xsd:sequence/>
-                        <xsd:attribute name="name" type="xsd:string"/>
+                        <xsd:choice>
+                            <xsd:element name="DependsOnCustomizer">
+                                <xsd:complexType>
+                                    <xsd:choice>
+                                        <xsd:element name="StaticCustomizer">
+                                            <xsd:complexType>
+                                                <xsd:attribute name="dependsOnAttributeName" type="xsd:QName"/>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                        <xsd:element name="DynamicCustomizer">
+                                            <xsd:complexType>
+                                                <xsd:attribute name="dependsOnAttributeValueType" type="xsd:string"/>
+                                                <xsd:attribute name="attributeValueProviderClass" type="xsd:string"/>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                    </xsd:choice>
+                                    <xsd:attribute name="name" type="tns:builtInCustomizerTypes"/>
+                                </xsd:complexType>
+                            </xsd:element>
+                            <xsd:element name="SimpleCustomizer">
+                                <xsd:complexType xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+                                    <xsd:sequence/>
+                                    <xsd:attribute name="name" type="tns:builtInCustomizerTypes"/>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:choice>
                     </xsd:complexType>
                 </xsd:element>
-                <xsd:element name="NewCustomizer">
-                    <xsd:complexType>
-                        <xsd:attribute name="className" type="xsd:string"/>
-                    </xsd:complexType>
-                </xsd:element>
+                <xsd:element ref="tns:NewCustomizer"/>
             </xsd:choice>
             <xsd:attribute name="attributeName" type="xsd:string" use="required"/>
             <xsd:attribute name="groupName" type="xsd:string"/>
             <xsd:attribute name="propertyOrder" type="xsd:int"/>
         </xsd:complexType>
     </xsd:element>
+    <xsd:element name="GroupedProperty">
+        <xsd:complexType>
+            <xsd:choice>
+                <xsd:element name="BuiltInCustomizer">
+                    <xsd:complexType>
+                        <xsd:attribute name="name" type="tns:GroupedAttributeBuiltInCustomizerTypes"/>
+                        <xsd:attribute name="attributeValueSetterClass" type="xsd:string"/>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element ref="tns:NewCustomizer"/>
+            </xsd:choice>
+            <xsd:attribute name="groupedAttributeNames" type="tns:attributeList"/>
+            <xsd:attribute name="groupName" type="xsd:string"/>
+            <xsd:attribute name="propertyOrder" type="xsd:int"/>
+            <xsd:attribute name="groupDisplayName" type="xsd:string"/>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:element name="NewCustomizer">
+        <xsd:complexType>
+            <xsd:attribute name="className" type="xsd:string"/>
+        </xsd:complexType>
+    </xsd:element>
+                
+    <xsd:simpleType name="builtInCustomizerTypes">
+		<xsd:restriction base="xsd:string">
+                        <xsd:enumeration value="MessageChooser"/>
+			<xsd:enumeration value="PartChooser"/>
+		</xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="GroupedAttributeBuiltInCustomizerTypes">
+		<xsd:restriction base="xsd:string">
+                        <xsd:enumeration value="ElementOrTypeChooser"/>
+		</xsd:restriction>
+    </xsd:simpleType>
+    
+    
+    <xsd:simpleType name="attributeList">
+        <xsd:list itemType="xsd:QName"/>
+    </xsd:simpleType>
+        
 </xsd:schema>
 
 */

@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -31,17 +31,22 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Vector;
 
+import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
+import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
+import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
@@ -59,8 +64,11 @@ import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplaceEditor;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplaceEditorProvider;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.HoverActionProvider;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.MessageNode;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.util.DisplayObject;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -68,8 +76,7 @@ import org.openide.util.NbBundle;
  *
  * @author radval
  */
-public class OperationParameterWidget extends AbstractWidget<OperationParameter>
-        {
+public class OperationParameterWidget extends AbstractWidget<OperationParameter> implements DnDHandler {
 
     private LabelWidget mParameterMessage;
     private OperationParameter mParameter;
@@ -85,11 +92,9 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
     public OperationParameterWidget(Scene scene, OperationParameter parameter,
             Lookup lookup) {
         super(scene, parameter, lookup);
-        setOpaque(true);
         mParameter = parameter;
         setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.JUSTIFY, 1));
         mParameterMessage = new LabelWidget (scene);
-        mParameterMessage.setOpaque (true);
         mParameterMessage.setBackground (Color.WHITE);
         if (parameter.getMessage() != null &&
                 parameter.getMessage().get() != null) {
@@ -101,10 +106,12 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
         mParameterMessage.setVerticalAlignment(VerticalAlignment.CENTER);
         mParameterMessage.setAlignment(Alignment.CENTER);
         
-       
         mParameterMessage.getActions().addAction(ActionFactory.createInplaceEditorAction(new ComboBoxInplaceEditorProvider(new ComboBoxInplaceEditor() {
             public boolean isEnabled(Widget widget) {
-                return true;
+                if (getWSDLComponent() != null) {
+                    return XAMUtils.isWritable(getWSDLComponent().getModel());
+                }
+                return false;
             }
 
 
@@ -164,7 +171,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
                 }
             }
 
-        }, EnumSet.<InplaceEditorProvider.ExpansionDirection>of (InplaceEditorProvider.ExpansionDirection.RIGHT))));
+        },  EnumSet.<InplaceEditorProvider.ExpansionDirection>of (InplaceEditorProvider.ExpansionDirection.RIGHT))));
         
         if (parameter instanceof Fault) {
             Widget widget = new Widget(scene);
@@ -173,7 +180,6 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
             
             mParameter = parameter;
             LabelWidget mLabel = new LabelWidget (scene);
-            mLabel.setOpaque (true);
             mLabel.setBackground (Color.WHITE);
             if (mParameter != null) {
                 mLabel.setLabel (mParameter.getName());
@@ -191,7 +197,10 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
                     }
 
                     public boolean isEnabled(Widget widget) {
-                        return true;
+                        if (getWSDLComponent() != null) {
+                            return XAMUtils.isWritable(getWSDLComponent().getModel());
+                        }
+                        return false;
                     }
 
                     public String getText(Widget widget) {
@@ -211,7 +220,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
         } else {
             addChild(mParameterMessage);
         }
-
+        getActions().addAction(((PartnerScene) getScene()).getDnDAction());
     }
     
     public void setText(String text) {
@@ -314,9 +323,78 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
         }
 
         public boolean requiresJustification(Widget widget) {
-            // TODO Auto-generated method stub
             return true;
         }
 
+    }
+
+    public void dragExit() {
+        setBorder(BorderFactory.createEmptyBorder());
+    }
+
+    public boolean dragOver(Point scenePoint, WidgetDropTargetDragEvent event) {
+
+        Transferable transferable = event.getTransferable();
+
+        try {
+            if (transferable != null) {
+                for (DataFlavor flavor : transferable.getTransferDataFlavors()) {
+                    Class repClass = flavor.getRepresentationClass();
+                    if (Node.class.isAssignableFrom(repClass)) {
+                        Node node = Node.class.cast(transferable.getTransferData(flavor));
+                        if (node instanceof MessageNode) {
+                            setBorder(BorderFactory.createLineBorder(WidgetConstants.HIT_POINT_BORDER, 2));
+                            event.acceptDrag(event.getDropAction());
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            //do nothing
+        }
+        
+        return false;
+    }
+
+    public boolean drop(Point scenePoint, WidgetDropTargetDropEvent event) {
+        Transferable transferable = event.getTransferable();
+        try {
+            if (transferable != null) {
+                for (DataFlavor flavor : transferable.getTransferDataFlavors()) {
+                    Class repClass = flavor.getRepresentationClass();
+                    Object data = transferable.getTransferData(flavor);
+                    if (Node.class.isAssignableFrom(repClass)) {
+                        Node node = (Node) data;
+                        if (node instanceof MessageNode) {
+                            setBorder(BorderFactory.createEmptyBorder());
+                            setMessage((MessageNode)node);
+                        }
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            //do nothing
+        }
+        return false;
+    }
+
+    private void setMessage(MessageNode node) {
+        Message message = (Message) node.getWSDLComponent();
+        if (getWSDLComponent().getModel().startTransaction()) {
+            try {
+            getWSDLComponent().setMessage(getWSDLComponent().createReferenceTo(message, Message.class));
+            } finally {
+                getWSDLComponent().getModel().endTransaction();
+            }
+        }
+        
+    }
+
+    public void expandForDragAndDrop() {}
+
+    public boolean isCollapsed() {
+        return false;
     }
 }

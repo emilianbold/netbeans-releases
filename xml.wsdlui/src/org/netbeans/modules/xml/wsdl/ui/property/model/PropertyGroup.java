@@ -1,9 +1,40 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
 /**
  *	This generated bean class PropertyGroup
  *	matches the schema element 'PropertyGroup'.
  *  The root bean class is ElementProperties
  *
- *	Generated on Tue Jan 23 19:08:48 PST 2007
+ *	===============================================================
+ *	Used to create groups in the property sheet. 
+ *	                By default, if no groups are defined all the properties will be shown 
+ *	                in the default Property sheet called "Properties".
+ *	                name : defines the name of the Group.
+ *	                groupOrder : defines the order in which the groups will be created. The groupOrder starts with 1.
+ *	                isDefault : overrides the default property sheet to be this group rather than "Properties".
+ *	                This enables the user to put non-customized properties (which do not have a Property defined in this xml) to go into this property sheet.
+ *	                
+ *	                
+ *	            
+ *	===============================================================
+ *	Generated on Mon Feb 05 17:54:51 PST 2007
  * @Generated
  */
 
@@ -12,9 +43,11 @@ package org.netbeans.modules.xml.wsdl.ui.property.model;
 public class PropertyGroup {
 	public static final String NAME = "Name";	// NOI18N
 	public static final String GROUPORDER = "GroupOrder";	// NOI18N
+	public static final String ISDEFAULT = "IsDefault";	// NOI18N
 
 	private java.lang.String _Name;
 	private int _GroupOrder;
+	private boolean _IsDefault = false;
 
 	/**
 	 * Normal starting point constructor.
@@ -26,8 +59,9 @@ public class PropertyGroup {
 	/**
 	 * Required parameters constructor
 	 */
-	public PropertyGroup(java.lang.String name) {
+	public PropertyGroup(java.lang.String name, boolean isDefault) {
 		_Name = name;
+		_IsDefault = isDefault;
 	}
 
 	/**
@@ -44,6 +78,7 @@ public class PropertyGroup {
 	public PropertyGroup(org.netbeans.modules.xml.wsdl.ui.property.model.PropertyGroup source, boolean justData) {
 		_Name = source._Name;
 		_GroupOrder = source._GroupOrder;
+		_IsDefault = source._IsDefault;
 	}
 
 	// This attribute is mandatory
@@ -62,6 +97,15 @@ public class PropertyGroup {
 
 	public int getGroupOrder() {
 		return _GroupOrder;
+	}
+
+	// This attribute is mandatory
+	public void setIsDefault(boolean value) {
+		_IsDefault = value;
+	}
+
+	public boolean isIsDefault() {
+		return _IsDefault;
 	}
 
 	public void writeNode(java.io.Writer out) throws java.io.IOException {
@@ -100,6 +144,10 @@ public class PropertyGroup {
 		// groupOrder is an attribute with namespace http://xml.netbeans.org/schema/wsdlui/property
 		out.write(" groupOrder='");
 		out.write(""+_GroupOrder);
+		out.write("'");	// NOI18N
+		// isDefault is an attribute with namespace http://xml.netbeans.org/schema/wsdlui/property
+		out.write(" isDefault='");
+		out.write(_IsDefault ? "true" : "false");
 		out.write("'");	// NOI18N
 	}
 
@@ -147,6 +195,11 @@ public class PropertyGroup {
 			attrValue = attr.getValue();
 			_GroupOrder = Integer.parseInt(attrValue);
 		}
+		attr = (org.w3c.dom.Attr) attrs.getNamedItem("isDefault");
+		if (attr != null) {
+			attrValue = attr.getValue();
+			_IsDefault = java.lang.Boolean.valueOf(attrValue).booleanValue();
+		}
 	}
 
 	protected void readNodeChildren(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
@@ -159,6 +212,8 @@ public class PropertyGroup {
 			setName((java.lang.String)value);
 		else if (name == "groupOrder")
 			setGroupOrder(((java.lang.Integer)value).intValue());
+		else if (name == "isDefault")
+			setIsDefault(((java.lang.Boolean)value).booleanValue());
 		else
 			throw new IllegalArgumentException(name+" is not a valid property name for PropertyGroup");
 	}
@@ -168,6 +223,8 @@ public class PropertyGroup {
 			return getName();
 		if (name == "groupOrder")
 			return new java.lang.Integer(getGroupOrder());
+		if (name == "isDefault")
+			return (isIsDefault() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
 		throw new IllegalArgumentException(name+" is not a valid property name for PropertyGroup");
 	}
 
@@ -194,17 +251,17 @@ public class PropertyGroup {
 	 * @return null if not found
 	 */
 	public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName, boolean returnXPathName) {
-		if (childObj instanceof java.lang.String) {
-			java.lang.String child = (java.lang.String) childObj;
-			if (child == _Name) {
+		if (childObj instanceof java.lang.Boolean) {
+			java.lang.Boolean child = (java.lang.Boolean) childObj;
+			if (((java.lang.Boolean)child).booleanValue() == _IsDefault) {
 				if (returnConstName) {
-					return NAME;
+					return ISDEFAULT;
 				} else if (returnSchemaName) {
-					return "name";
+					return "isDefault";
 				} else if (returnXPathName) {
-					return "@name";
+					return "@isDefault";
 				} else {
-					return "Name";
+					return "IsDefault";
 				}
 			}
 		}
@@ -219,6 +276,20 @@ public class PropertyGroup {
 					return "@groupOrder";
 				} else {
 					return "GroupOrder";
+				}
+			}
+		}
+		if (childObj instanceof java.lang.String) {
+			java.lang.String child = (java.lang.String) childObj;
+			if (child == _Name) {
+				if (returnConstName) {
+					return NAME;
+				} else if (returnSchemaName) {
+					return "name";
+				} else if (returnXPathName) {
+					return "@name";
+				} else {
+					return "Name";
 				}
 			}
 		}
@@ -258,6 +329,9 @@ public class PropertyGroup {
 		if (!(_GroupOrder == inst._GroupOrder)) {
 			return false;
 		}
+		if (!(_IsDefault == inst._IsDefault)) {
+			return false;
+		}
 		return true;
 	}
 
@@ -265,6 +339,7 @@ public class PropertyGroup {
 		int result = 17;
 		result = 37*result + (_Name == null ? 0 : _Name.hashCode());
 		result = 37*result + (_GroupOrder);
+		result = 37*result + (_IsDefault ? 0 : 1);
 		return result;
 	}
 
@@ -281,40 +356,219 @@ public class PropertyGroup {
             xmlns:tns="http://xml.netbeans.org/schema/wsdlui/property"
             elementFormDefault="qualified">
     <xsd:element name="ElementProperties">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en-US">Root node for specifying customizers for a element.
+                This needs to be on the GlobalElement which would represent the node in the WSDL tree.
+            If this is defined in local elements it is ignored.</xsd:documentation>
+        </xsd:annotation>
         <xsd:complexType>
             <xsd:sequence>
                 <xsd:element ref="tns:PropertyGroup" maxOccurs="unbounded" />
                 <xsd:element ref="tns:Property" maxOccurs="unbounded" />
+                <xsd:element ref="tns:GroupedProperty" maxOccurs="unbounded" />
             </xsd:sequence>
-            <xsd:attribute name="elementName" type="xsd:string" use="required"/>
         </xsd:complexType>
     </xsd:element>            
+    
     <xsd:element name="PropertyGroup">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en-US">Used to create groups in the property sheet. 
+                By default, if no groups are defined all the properties will be shown 
+                in the default Property sheet called "Properties".
+                name : defines the name of the Group.
+                groupOrder : defines the order in which the groups will be created. The groupOrder starts with 1.
+                isDefault : overrides the default property sheet to be this group rather than "Properties".
+                This enables the user to put non-customized properties (which do not have a Property defined in this xml) to go into this property sheet.
+                
+                
+            </xsd:documentation>
+        </xsd:annotation>
         <xsd:complexType>
             <xsd:attribute name="name" type="xsd:string" use="required"/>
             <xsd:attribute name="groupOrder" type="xsd:int"/>
+            <xsd:attribute name="isDefault" type="xsd:boolean" default="false"/>
         </xsd:complexType>
     </xsd:element>
     <xsd:element name="Property">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en-US">Property represents each attribute that would be created for the Node in the wsdleditor tree.
+                It defines a way to specify customizers for attributes. 
+                There are 3 types of Property customizers:
+                SchemaCustomizer : The default Customizer is the SchemaCustomizer, which shows drop downs for enumerations and boolean attributes,
+                and String customizer for all other types. So if there is no Property defined for a attribute, it will have 
+                SchemaCustomizer.
+                BuiltInCustomizer : specifies a way to put already defined customizer to be shown. Examples are part chooser, message chooser etc.
+                NewCustomizer : provides a way to create a custom customizer specific to the user requirement.  When using this the developer has
+                to implement the SPI org.netbeans.modules.xml.wsdl.ui.spi.WSDLLookupProvider, and add a implementation of 
+                org.netbeans.modules.xml.wsdl.ui.spi.NewCustomizerProvider, which will provide the custom Node.Property to be shown in the 
+                wsdl editor property sheet.
+            </xsd:documentation>
+        </xsd:annotation>
         <xsd:complexType>
             <xsd:choice>
+                <xsd:element name="SchemaCustomizer"/>
                 <xsd:element name="BuiltInCustomizer">
                     <xsd:complexType xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                        <xsd:sequence/>
-                        <xsd:attribute name="name" type="xsd:string"/>
+                        <xsd:choice>
+                            <xsd:element name="DependsOnCustomizer">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en-US">Use a built-in customizer whose value(s) depend on some other attribute 
+                                        of the the same element or some other source.                                        
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                                <xsd:complexType>
+                                    <xsd:choice>
+                                        <xsd:element name="StaticCustomizer">
+                                            <xsd:annotation>
+                                                <xsd:documentation xml:lang="en-US">dependsOnAttributeName :  the attribute on which the value(s) of the chooser would depend on.
+                                                    For example: some elements may have a attribute for message and another for part, and the PartsChooser should show parts from the message that is selected in the message attribute.
+                                                    In that the dependsOnAttributeName for PartChooser would be message.
+                                                </xsd:documentation>
+                                            </xsd:annotation>
+                                            <xsd:complexType>
+                                                <xsd:attribute name="dependsOnAttributeName" type="xsd:QName"/>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                        <!--No use case as of yet, xsd:element name="DynamicCustomizer">
+                                            <xsd:annotation>
+                                                <xsd:documentation xml:lang="en-US">
+                                                    
+                                                </xsd:documentation>
+                                            </xsd:annotation>
+                                            <xsd:complexType>
+                                                <xsd:attribute name="dependsOnAttributeValueType" type="xsd:string"/>
+                                                <xsd:attribute name="attributeValueProviderClass" type="xsd:string"/>
+                                            </xsd:complexType>
+                                        </xsd:element-->
+                                    </xsd:choice>
+                                    <xsd:attribute name="name" type="tns:builtInCustomizerTypes"/>
+                                </xsd:complexType>
+                            </xsd:element>
+                            <xsd:element name="SimpleCustomizer">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en-US">
+                                        Use the builtin chooser that are available (the names are defined under builtInCustomizerTypes simple type as enumerations, 
+                                        name: specifies which builtin chooser to use.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                                <xsd:complexType xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+                                    <xsd:sequence/>
+                                    <xsd:attribute name="name" type="tns:builtInCustomizerTypes"/>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:choice>
                     </xsd:complexType>
                 </xsd:element>
-                <xsd:element name="NewCustomizer">
-                    <xsd:complexType>
-                        <xsd:attribute name="className" type="xsd:string"/>
-                    </xsd:complexType>
-                </xsd:element>
+                <xsd:element ref="tns:NewCustomizer"/>
             </xsd:choice>
             <xsd:attribute name="attributeName" type="xsd:string" use="required"/>
+            <xsd:attribute name="isNameableAttribute" type="xsd:boolean" default="false"/>
+            <xsd:attribute name="decoratorAttribute" type="xsd:QName"/>
             <xsd:attribute name="groupName" type="xsd:string"/>
             <xsd:attribute name="propertyOrder" type="xsd:int"/>
         </xsd:complexType>
     </xsd:element>
+    <xsd:element name="GroupedProperty">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en-US">Some attributes in a element are mutually exclusive, so in the UI, for unambiguous usage, the user may want to add a single property chooser for 2 or more attributes, which will set the appropriate attribute depending on some criteria that the customizer may determine.
+                groupedAttributeNames : specify all the mutually exclusive attributes. There will be a single customizer for all these attributes.
+                groupName : specifies which PropertyGroup this belongs to.
+                propertyOrder : specifies the order in the PropertyGroup where this property would be placed.
+                displayName: specifies the Display name of the combined chooser.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:choice>
+                <xsd:element name="BuiltInCustomizer" >
+                    <xsd:annotation>
+                        <xsd:documentation xml:lang="en-US">To use pre-built customizers.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                    <xsd:complexType>
+                        <xsd:choice>
+                            <xsd:element name="ElementOrTypeChooser">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en-US">Shows a Tree based selector, which shows all the elements/types from Inline/Imported schemas.
+                                        elementAttributeName : the attribute on which GlobalElement data type would be set.
+                                        typeAttributeName : the attribute on which GlobalType data type would be set.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                                <xsd:complexType>
+                                    <xsd:attribute name="elementAttributeName" type="xsd:NCName"/>
+                                    <xsd:attribute name="typeAttributeName" type="xsd:NCName"/>
+                                </xsd:complexType>
+                            </xsd:element>
+                            <xsd:element name="ElementOrTypeOrMessagePartChooser">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en-US">Shows a Tree based selector, which shows all the elements/types from Inline/Imported schemas and also the messages from all imported and existing wsdls.
+                                        elementAttributeName : the attribute on which GlobalElement data type would be set.
+                                        typeAttributeName : the attribute on which GlobalType data type would be set.
+                                        messageAttributeName : the attribute on which Message data type would be set.
+                                        partAttributeName : the attribute on which part would be set.
+                                        This chooser can select between a GlobalElement or GlobalType or a wsdl Part.
+                                        
+                                    </xsd:documentation>
+                                </xsd:annotation>                                
+                                <xsd:complexType>
+                                    <xsd:attribute name="elementAttributeName" type="xsd:NCName"/>
+                                    <xsd:attribute name="typeAttributeName" type="xsd:NCName"/>
+                                    <xsd:attribute name="messageAttributeName" type="xsd:NCName"/>
+                                    <xsd:attribute name="partAttributeName" type="xsd:NCName"/>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:choice>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element ref="tns:NewCustomizer"/>
+            </xsd:choice>
+            <xsd:attribute name="groupedAttributeNames" type="tns:attributeList" use="required"/>
+            <xsd:attribute name="groupName" type="xsd:string"/>
+            <xsd:attribute name="propertyOrder" type="xsd:int"/>
+            <xsd:attribute name="displayName" type="xsd:NCName" use="required"/>
+        </xsd:complexType>
+    </xsd:element>
+    
+    
+    <xsd:element name="NewCustomizer">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en-US">Provides a way for developer to provide a custom property customizer for the attribute, if the builtin chooser dont satisfy their requirements.
+When using this the developer has to implement the SPI org.netbeans.modules.xml.wsdl.ui.spi.WSDLLookupProvider, and add a implementation of org.netbeans.modules.xml.wsdl.ui.spi.NewCustomizerProvider, which will provide the custom Node.Property to be shown in the wsdl editor property sheet.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+    
+    
+    <xsd:simpleType name="builtInCustomizerTypes">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="MessageChooser">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en-US">Shows a drop down of all messages in the current WSDL document and also ones in imported WSDL documents.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PartChooser">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en-US">Show a drop down of all parts for a message. By default, the chooser assumes that it is in the binding section under input/output/fault, and shows all the parts for the message selected in the input/output/fault.
+    If not, then the dependsOnCustomizer needs to be used to specify the attribute which represents the message, whose parts will be shown</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PortTypeChooser">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en-US">Show a drop down of all port types in the WSDL Document/Imported WSDL Documents.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PartsChooser">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en-US">Show a dialog of all parts for a message, from which multiple parts can be selected. By default, the chooser assumes that it is in the binding section under input/output/fault, and shows all the parts for the message selected in the input/output/fault.
+    If not, then the dependsOnCustomizer needs to be used to specify the attribute which represents the message, whose parts will be shown</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="attributeList">
+        <xsd:list itemType="xsd:string"/>
+    </xsd:simpleType>
+    
 </xsd:schema>
 
 */

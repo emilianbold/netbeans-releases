@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Document   : __NAME__
+    Created on : __DATE__, __TIME__
+    Author     : __USER__
+    Description:
+        Purpose of the document follows.
+-->
+<templateGroup namespace="http://schemas.xmlsoap.org/wsdl/http/" 
+		xmlns="http://xml.netbeans.org/schema/templates"
+		xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance"
+        xsi:schemaLocation="http://xml.netbeans.org/schema/templates 
+        templates.xsd" prefix="http">
+            
+    <template name="GET-urlEncoded" default="true">
+        <!-- specify what can be inserted inside binding tag-->
+        <wsdlElement name="Binding">
+            <extensionElement name="binding" >
+                <extensionAttr name="verb" required="true" defaultValue="GET" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation" >
+                <extensionAttr name="location" required="true" defaultValue="" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="urlEncoded" >
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address" >
+                <extensionAttr name="location" required="true" defaultValue="http://localhost"/>
+            </extensionElement>
+        </wsdlElement>
+    </template>
+    
+    <template name="GET-urlReplacement">
+        <wsdlElement name="Binding">
+            <extensionElement name="binding" >
+                <extensionAttr name="verb" required="true" defaultValue="GET" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation" >
+                <extensionAttr name="location" required="true" defaultValue="" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="urlReplacement" >
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address" >
+                <extensionAttr name="location" required="true" defaultValue="http://localhost"/>
+            </extensionElement>
+        </wsdlElement>
+    </template>
+    
+    <template name="POST-urlEncoded">
+        <!-- specify what can be inserted inside binding tag-->
+        <wsdlElement name="Binding">
+            <extensionElement name="binding" >
+                <extensionAttr name="verb" required="true" defaultValue="POST" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation" >
+                <extensionAttr name="location" required="true" defaultValue="" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="urlEncoded" >
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address" >
+                <extensionAttr name="location" required="true" defaultValue="http://localhost"/>
+            </extensionElement>
+        </wsdlElement>
+    </template>
+    
+    <template name="POST-urlReplacement">
+        <!-- specify what can be inserted inside binding tag-->
+        <wsdlElement name="Binding">
+            <extensionElement name="binding" >
+                <extensionAttr name="verb" required="true" defaultValue="POST" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation" >
+                <extensionAttr name="location" required="true" defaultValue="" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="urlReplacement" >
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address" >
+                <extensionAttr name="location" required="true" defaultValue="http://localhost"/>
+            </extensionElement>
+        </wsdlElement>
+    </template>
+
+</templateGroup>

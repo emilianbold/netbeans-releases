@@ -1,6 +1,7 @@
-java -cp c:\Sun\jse_release5.5.1\nb_all\schema2beans\dev\schema2beansde
-v.jar;c:\sun\jse_release5.5.1\nb_all\nbbuild\netbeans\ide7\modules\org-netbeans-
-modules-schema2beans.jar org.netbeans.modules.schema2beansdev.GenBeans -f proper
-tyCustomization.xsd -javabeans -p org.netbeans.modules.xml.wsdl.ui.property.mode
-l -r c:\Sun\jse\nb_all\entpack\xml\wsdlui\src
+For Ritesh,
+java -cp c:\Sun\jse_release5.5.1\nb_all\schema2beans\dev\schema2beansdev.jar;c:\sun\jse_release5.5.1\nb_all\nbbuild\netbeans\ide7\modules\org-netbeans-modules-schema2beans.jar org.netbeans.modules.schema2beansdev.GenBeans -f propertyCustomization.xsd -javabeans -p org.netbeans.modules.xml.wsdl.ui.property.model -r c:\Sun\jse\nb_all\entpack\xml\wsdlui\src
 
+For Kini,
+cd C:\Alaska\nb_all\entpack\xml\wsdlui\src\org\netbeans\modules\xml\wsdl\ui\property\model
+set CLASSPATH=c:\workingarea\schema2beans\schema2beansdev.jar;c:\workingarea\schema2beans\org-netbeans-modules-schema2beans.jar
+java org.netbeans.modules.schema2beansdev.GenBeans -f propertyCustomization.xsd -javabeans -p org.netbeans.modules.xml.wsdl.ui.property.model -r c:\Alaska\nb_all\entpack\xml\wsdlui\src

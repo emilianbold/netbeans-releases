@@ -2,25 +2,30 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
+import java.awt.Dialog;
 import java.awt.datatransfer.Transferable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -30,12 +35,12 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.Action;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 
-//import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
-//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
+import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
+import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
 import org.netbeans.modules.xml.refactoring.ui.ReferenceableProvider;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -47,6 +52,7 @@ import org.netbeans.modules.xml.wsdl.ui.commands.XMLAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.cookies.RemoveWSDLElementCookie;
 import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLAttributeCookie;
 import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLElementCookie;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.property.BaseAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.DocumentationNewType;
@@ -55,6 +61,7 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
@@ -62,9 +69,13 @@ import org.netbeans.modules.xml.xam.ui.ComponentPasteType;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
 import org.netbeans.modules.xml.xam.ui.cookies.CountChildrenCookie;
+import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
+import org.netbeans.modules.xml.xam.ui.customizer.CustomizerProvider;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
 import org.netbeans.modules.xml.xam.ui.highlight.HighlightManager;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlighted;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
@@ -78,7 +89,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.nodes.Node.Cookie;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -97,22 +107,27 @@ import org.openide.util.lookup.InstanceContent;
  */
 public abstract class WSDLElementNode extends AbstractNode
         implements ComponentListener, ReferenceableProvider, Highlighted,
-        CountChildrenCookie {
+        CountChildrenCookie, PropertyChangeListener {
     
     protected static final Logger mLogger = Logger.getLogger(WSDLElementNode.class.getName());
     
     private WSDLComponent mElement;
-    
+    /** Customizer soft reference; */
+    private Reference<Customizer> customizerReference;
     private NewTypesFactory mNewTypesFactory;
     
     public static final String WSDL_NAMESPACE = "http://schemas.xmlsoap.org/wsdl/";//NOI18N
     private InstanceContent mLookupContents;
     protected Sheet mSheet;
+    private PropertyChangeListener weakModelListener;
     private ComponentListener weakComponentListener;
     /** Used for the highlighting API. */
     private Set<Component> referenceSet;
     /** Ordered list of highlights applied to this node. */
     private List<Highlight> highlights;
+    
+    /** cached so that during destroy all listeners can be cleaned up, nullified in destroy*/
+    private WSDLModel model;
     
     private static final SystemAction[] ACTIONS = new SystemAction[] {
         SystemAction.get(CutAction.class),
@@ -124,10 +139,9 @@ public abstract class WSDLElementNode extends AbstractNode
         SystemAction.get(ReorderAction.class),
         null,
         SystemAction.get(GoToAction.class),
-        //SystemAction.get(FindUsagesAction.class),
-        (SystemAction)RefactoringActionsFactory.whereUsedAction(),
+        SystemAction.get(FindUsagesAction.class),
         null,
-        (SystemAction)RefactoringActionsFactory.editorSubmenuAction(),
+        SystemAction.get(RefactorAction.class),
         null,
         SystemAction.get(PropertiesAction.class),
     };
@@ -135,6 +149,9 @@ public abstract class WSDLElementNode extends AbstractNode
     public WSDLElementNode(Children children, WSDLComponent element, NewTypesFactory newTypesFactory) {
         this(children, element);
         this.mNewTypesFactory = newTypesFactory;
+        if (element != null) {
+            model = element.getModel();
+        }
     }
 
     public WSDLElementNode(Children children, WSDLComponent element) {
@@ -154,6 +171,12 @@ public abstract class WSDLElementNode extends AbstractNode
         mElement = element;
         mLookupContents = contents;
 
+        // Add various objects to the lookup.
+        // Keep this node and its cookie implementation at the top of the
+        // lookup, as they provide cookies needed elsewhere, and we want
+        // this node to provide them, not the currently selected node.
+        contents.add(this);
+        contents.add(new WSDLElementCookie(mElement));
         // Include the data object in order for the Navigator to
         // show the structure of the current document.
         DataObject dobj = getDataObject();
@@ -161,16 +184,18 @@ public abstract class WSDLElementNode extends AbstractNode
             contents.add(dobj);
         }
         contents.add(new SaveCookieDelegate());
-        contents.add(new WSDLElementCookie(mElement));
         contents.add(new RemoveWSDLElementCookie(mElement));
-        contents.add(this);
         contents.add(element);
         Model model = element.getModel();
+        weakModelListener = WeakListeners.propertyChange(this, model);
+        model.addPropertyChangeListener(weakModelListener);
         weakComponentListener = (ComponentListener) WeakListeners.create(
                 ComponentListener.class, this, model);
         model.addComponentListener(weakComponentListener);
         addNodeListener(new WSDLNodeListener(this));
         mSheet = new Sheet();
+        // Let the node try to update its display name.
+        updateDisplayName();
         
         referenceSet = Collections.singleton((Component) element);
         highlights = new LinkedList<Highlight>();
@@ -201,44 +226,54 @@ public abstract class WSDLElementNode extends AbstractNode
     }
     
     @Override
-    public void destroy () throws IOException {
-        //remove the xml element listener when node is destroyed
-        getWSDLComponent().getModel().removeComponentListener(weakComponentListener);
-        WSDLComponent parent = getWSDLComponent().getParent();
-        WSDLComponent nextSelection = parent;
-        if (parent == null) {
-            return;
+    public void destroy() throws IOException {
+        //get the stored model.
+        if (model != null) {
+            //remove the xml element listener when node is destroyed
+            model.removePropertyChangeListener(weakModelListener);
+            model.removeComponentListener(weakComponentListener);
+            //remove reference for WSDLModel
+            model = null;
         }
         
-        if (parent.getChildren() != null) {
-            int size = parent.getChildren().size();
-            if (size > 0) {
-                int currentPos = parent.getChildren().indexOf(getWSDLComponent());
-                if (currentPos + 1 < size) { 
-                    nextSelection = parent.getChildren().get(currentPos + 1);
-                } else if (currentPos - 1 >= 0) {
-                    nextSelection = parent.getChildren().get(currentPos - 1);
-                }
+        WSDLModel wsdlModel = getWSDLComponent() != null ? getWSDLComponent().getModel() : null;
+        if (wsdlModel != null) {
+            //if we can get the model from wsdlcomponent, then delete the wsdlcomponent from model and appropriately select the node.
+            WSDLComponent parent = getWSDLComponent().getParent();
+            //try to select the parent.
+            WSDLComponent nextSelection = parent;
+            if (parent == null) {
+                return;
             }
-            if (parent instanceof Definitions) {
-                //need to find a way to get the folder nodes selected
-                //for now select the root node.
-                if (!getWSDLComponent().getClass().isAssignableFrom(nextSelection.getClass())) {
-                    nextSelection = parent; 
-                }
-            }
-        }
 
-        
-        WSDLModel model = getWSDLComponent().getModel();
-        try {
-            model.startTransaction();
-            model.removeChildComponent(getWSDLComponent());
-        } finally {
-                model.endTransaction();
+            if (parent.getChildren() != null) {
+                int size = parent.getChildren().size();
+                if (size > 0) {
+                    int currentPos = parent.getChildren().indexOf(getWSDLComponent());
+                    if (currentPos + 1 < size) {
+                        nextSelection = parent.getChildren().get(currentPos + 1);
+                    } else if (currentPos - 1 >= 0) {
+                        nextSelection = parent.getChildren().get(currentPos - 1);
+                    }
+                }
+                if (parent instanceof Definitions) {
+                    //need to find a way to get the folder nodes selected
+                    //for now select the root node.
+                    if (!getWSDLComponent().getClass().isAssignableFrom(nextSelection.getClass())) {
+                        nextSelection = parent;
+                    }
+                }
+            }
+
+            try {
+                wsdlModel.startTransaction();
+                wsdlModel.removeChildComponent(getWSDLComponent());
+            } finally {
+                wsdlModel.endTransaction();
+            }
+            ActionHelper.selectNode(nextSelection);
         }
         super.destroy();
-        ActionHelper.selectNode(nextSelection);
     }
 
     @Override
@@ -261,7 +296,6 @@ public abstract class WSDLElementNode extends AbstractNode
                 list.add(type);
             }
         }
-        super.createPasteTypes(transferable, list);
     }
 
     @Override
@@ -274,7 +308,7 @@ public abstract class WSDLElementNode extends AbstractNode
                 return type;
             }
         }
-        return super.getDropType(transferable, action, index);
+        return null;
     }
 
     @Override
@@ -300,6 +334,44 @@ public abstract class WSDLElementNode extends AbstractNode
     }
 
     /**
+     * Subclasses wishing to provide a customizer must override this
+     * method and supply a customizer provider, and override the
+     * hasCustomizer() method to return true.
+     *
+     * @return  customizer provider.
+     */
+    protected CustomizerProvider getCustomizerProvider() {
+        return null;
+    }
+
+    @Override
+    public java.awt.Component getCustomizer() {
+        if (!hasCustomizer() || !isEditable()) {
+            return null;
+        }
+        Customizer customizer = customizerReference == null ? null :
+            customizerReference.get();
+        if (customizer == null) {
+            CustomizerProvider cp = getCustomizerProvider();
+            if (cp == null) {
+                return null;
+            }
+            customizer = cp.getCustomizer();
+            if (customizer == null || customizer.getComponent() == null) {
+                return null;
+            }
+            customizerReference = new WeakReference<Customizer>(customizer);
+        } else {
+            customizer.reset();
+        }
+        DialogDescriptor descriptor = UIUtilities.getCustomizerDialog(
+                customizer, getTypeDisplayName(), isEditable());
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        dlg.getAccessibleContext().setAccessibleDescription(dlg.getTitle());
+        return dlg;
+    }
+
+    /**
      * call this method before any method of XMLElementListener to check
      * if this is the same source.
      * @param node
@@ -313,28 +385,80 @@ public abstract class WSDLElementNode extends AbstractNode
         return false;
     }
 
-
     public void childrenAdded(ComponentEvent evt) {
-
     }
-
 
     public void childrenDeleted(ComponentEvent evt) {
     }
 
-
     public void valueChanged(ComponentEvent evt) {
-        if(!isSameAsMyWSDLElement((Component) evt.getSource())) {
+        if (!isSameAsMyWSDLElement((Component) evt.getSource())) {
             return;
         }
-                
+        updateDisplayName();
         refreshSheet();
-        fireDisplayNameChange(null,getDisplayName());
-        //fire a propertysets change so that property sheet
-        //can be refreshed
-        this.firePropertySetsChange(new Node.PropertySet[] {}, this.getPropertySets());
+        //fire a propertysets change so that property sheet can be refreshed
+        firePropertySetsChange(new Node.PropertySet[] {}, getPropertySets());
     }
-    
+
+    public void propertyChange(PropertyChangeEvent event) {
+        if (isValid() && event.getSource() == mElement) {
+            try {
+                updateDisplayName();
+                String propName = event.getPropertyName();
+                Sheet.Set propertySet = getSheet().get(Sheet.PROPERTIES);
+                if (propertySet != null) {
+                    if (propertySet.get(propName) != null) {
+                        firePropertyChange(propName, event.getOldValue(),
+                                event.getNewValue());
+                    } else {
+                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
+                                propName + " property is not defined in " +
+                                getTypeDisplayName());
+                    }
+                }
+            } catch (IllegalStateException ise) {
+                // Component is not in the model.
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ise);
+            } catch (NullPointerException npe) {
+                // Does not reproduce reliably, but catch and log regardless.
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
+            }
+        }
+    }
+
+    /**
+     * Determines if this node represents a component that is contained
+     * in a valid (non-null) model.
+     *
+     * @return  true if model is valid, false otherwise.
+     */
+    protected boolean isValid() {
+        return mElement.getModel() != null;
+    }
+
+    /**
+     * Used by subclasses to update the display name as needed. The default
+     * implementation updates the display name for named WSDL components.
+     * Note, this method may be called from the constructor, so be sure to
+     * avoid using member variables!
+     */
+    protected void updateDisplayName() {
+        // Need a component connected to a model to work properly.
+        if (isValid()) {
+            // Automatically keep the name in sync for named components.
+            if (mElement instanceof Named) {
+                String name = ((Named) mElement).getName();
+                // Prevent getting an NPE from ExplorerManager.
+                super.setName(name == null ? "" : name);
+                if (name == null || name.length() == 0) {
+                    name = mElement.getPeer().getLocalName();
+                }
+                setDisplayName(name);
+            }
+        }
+    }
+
     @Override
     protected final Sheet createSheet() {
         refreshSheet();
@@ -346,6 +470,7 @@ public abstract class WSDLElementNode extends AbstractNode
     }
 
     private final void refreshSheet() {
+        if (getWSDLComponent() != null && !getWSDLComponent().isInDocumentModel()) return; 
         refreshAttributesSheetSet();
         refreshOtherAttributesSheetSet();
         Cookie cookie = getCookie(WSDLAttributeCookie.class);
@@ -667,9 +792,13 @@ public abstract class WSDLElementNode extends AbstractNode
     class SaveCookieDelegate implements SaveCookie {
         
         public void save() throws IOException {
-            SaveCookie cookie = (SaveCookie) getDataObject().getCookie(SaveCookie.class);
-            if(cookie != null) {
-                cookie.save();
+            DataObject dobj = getDataObject();
+            // May be null if component was removed from the model.
+            if (dobj != null) {
+                SaveCookie cookie = (SaveCookie) dobj.getCookie(SaveCookie.class);
+                if (cookie != null) {
+                    cookie.save();
+                }
             }
         }
     }

@@ -182,7 +182,7 @@
       <SubComponents>
         <Component class="org.netbeans.modules.xml.wsdl.ui.view.CommonMessageConfigurationPanel" name="outputMessagePartsConfigurationTable">
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.xml.wsdl.ui.view.CommonMessageConfigurationPanel(mProject, namespaceToPrefixMap);"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.xml.wsdl.ui.view.CommonMessageConfigurationPanel(mProject, namespaceToPrefixMap, mModel);"/>
           </AuxValues>
         </Component>
         <Component class="org.netbeans.modules.xml.wsdl.ui.view.MessageNameConfigurationPanel" name="outputMessageNameConfigurationPanel1">
@@ -215,7 +215,7 @@
       <SubComponents>
         <Component class="org.netbeans.modules.xml.wsdl.ui.view.CommonMessageConfigurationPanel" name="faultMessagePartsConfigurationTable">
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.xml.wsdl.ui.view.CommonMessageConfigurationPanel(mProject, namespaceToPrefixMap);"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.xml.wsdl.ui.view.CommonMessageConfigurationPanel(mProject, namespaceToPrefixMap, mModel);"/>
           </AuxValues>
         </Component>
         <Component class="org.netbeans.modules.xml.wsdl.ui.view.MessageNameConfigurationPanel" name="faultMessageNameConfigurationPanel1">

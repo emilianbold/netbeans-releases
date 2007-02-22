@@ -2,23 +2,24 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -107,6 +108,8 @@ public class SchemaImportsGenerator implements Command {
          Map<String, String> existingLocationToNamespaceMap = new HashMap<String, String>();
          
          FileObject wsdlFileObj = (FileObject) mModel.getModelSource().getLookup().lookup(FileObject.class);
+         URI wsdlFileURI = FileUtil.toFile(wsdlFileObj).toURI();
+         
          Definitions def = mModel.getDefinitions();
          Types types = def.getTypes();
          if (types == null) {
@@ -141,6 +144,17 @@ public class SchemaImportsGenerator implements Command {
              existingLocationToNamespaceMap.put(imp.getSchemaLocation(), imp.getNamespace());
          }
          
+         if (!fromWizard) {
+             Collection<Schema> schemas = types.getSchemas();
+             if (schemas != null) {
+                  for (Schema schema : schemas) {
+                      Collection<Import> schemaImports = schema.getImports();
+                      for (Import imp : schemaImports) {
+                          existingLocationToNamespaceMap.put(imp.getSchemaLocation(), imp.getNamespace());
+                      }
+                  }
+             }
+         }
          
          for (PartAndElementOrType part : allParts) {
              ElementOrType eot = part.getElementOrType();
@@ -159,17 +173,22 @@ public class SchemaImportsGenerator implements Command {
                          !schemaTNS.equals("http://www.w3.org/2001/XMLSchema")) {
                      
                      FileObject fo = (FileObject) model.getModelSource().getLookup().lookup(FileObject.class);
+                     
                      if (fo != null) {
-                         String path = null; 
+                         String path = null;
+
                          if (fromWizard) {
                              // generate absolute URI, this will get changed later in wizard post process import
                              path = FileUtil.toFile(fo).toURI().toString();
                          } else {
-                             path = RelativePath.getRelativePath(FileUtil.toFile(wsdlFileObj).getParentFile(), FileUtil.toFile(fo));
+                             //should be different files. in case of inline schemas.
+                             if (!FileUtil.toFile(fo).toURI().equals(wsdlFileURI)) {
+                                 path = RelativePath.getRelativePath(FileUtil.toFile(wsdlFileObj).getParentFile(), FileUtil.toFile(fo));
+                             }
                          }
-                         if (!existingLocationToNamespaceMap.containsKey(path) ||
+                         if (path != null && (!existingLocationToNamespaceMap.containsKey(path) ||
                                  existingLocationToNamespaceMap.get(path) == null ||
-                                 !existingLocationToNamespaceMap.get(path).equals(schemaTNS))
+                                 !existingLocationToNamespaceMap.get(path).equals(schemaTNS)))
                          { 
                              locationToNamespaceMap.put(path, schemaTNS);
                          }

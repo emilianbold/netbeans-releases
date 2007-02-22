@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -98,17 +98,30 @@ public class AttributeNameSearchProvider extends ChildVisitor
         }
         results = new ArrayList<Object>();
         // Search for components with the given attribute name.
-        WSDLComponent component = Providers.getSelectedComponent(category);
-        if (query.useSelected() && component != null) {
-            component.accept(this);
+        if (query.useSelected()) {
+            WSDLComponent component = Providers.getSelectedComponent(category);
+            if (component != null) {
+                component.accept(this);
+            } else {
+                // Maybe it is a category node that is selected.
+                Class<? extends WSDLComponent> childType =
+                        Providers.getSelectedChildType(category);
+                if (childType != null) {
+                    List<? extends WSDLComponent> components =
+                            model.getDefinitions().getChildren(childType);
+                    for (WSDLComponent comp : components) {
+                        comp.accept(this);
+                    }
+                }
+            }
         } else {
             model.getDefinitions().accept(this);
         }
         return results;
     }
 
-    protected void visitComponent(WSDLComponent sc) {
-        NamedNodeMap attrs = sc.getPeer().getAttributes();
+    protected void visitComponent(WSDLComponent comp) {
+        NamedNodeMap attrs = comp.getPeer().getAttributes();
         for (int ii = 0; ii < attrs.getLength(); ii++) {
             Node attr = attrs.item(ii);
             String name = attr.getNodeName();
@@ -116,21 +129,21 @@ public class AttributeNameSearchProvider extends ChildVisitor
                 name = name.toLowerCase();
                 if (wildcarded) {
                     if (WildcardStringMatcher.match(name, phrase)) {
-                        results.add(sc);
+                        results.add(comp);
                     }
                 } else if (name.indexOf(phrase) > -1) {
-                    results.add(sc);
+                    results.add(comp);
                     break;
                 }
             } else if (pattern != null) {
                 Matcher matcher = pattern.matcher(name);
                 if (matcher.find()) {
-                    results.add(sc);
+                    results.add(comp);
                     break;
                 }
             }
         }
         // Visit the children last, to get results in breadth-first order.
-        super.visitComponent(sc);
+        super.visitComponent(comp);
     }
 }

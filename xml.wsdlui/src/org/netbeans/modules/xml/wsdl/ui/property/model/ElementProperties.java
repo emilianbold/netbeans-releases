@@ -1,25 +1,71 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
 /**
  *	This generated bean class ElementProperties
  *	matches the schema element 'ElementProperties'.
  *
- *	Generated on Tue Jan 23 19:08:48 PST 2007
+ *	===============================================================
+ *	Root node for specifying customizers for a element.
+ *	                This needs to be on the GlobalElement which would represent the node in the WSDL tree.
+ *	            If this is defined in local elements it is ignored.
+ *	===============================================================
+ *	Generated on Mon Feb 05 17:54:51 PST 2007
  *
  *	This class matches the root element of the XML Schema,
  *	and is the root of the bean graph.
  *
  * 	elementProperties <ElementProperties> : ElementProperties
- * 		[attr: elementName CDATA #REQUIRED  : java.lang.String]
  * 		propertyGroup <PropertyGroup> : PropertyGroup[1,n]
  * 			[attr: name CDATA #REQUIRED  : java.lang.String]
  * 			[attr: groupOrder CDATA #IMPLIED  : int]
+ * 			[attr: isDefault CDATA #IMPLIED false : boolean]
  * 		property <Property> : Property[1,n]
  * 			[attr: attributeName CDATA #REQUIRED  : java.lang.String]
+ * 			[attr: isNameableAttribute CDATA #IMPLIED false : boolean]
+ * 			[attr: decoratorAttribute CDATA #IMPLIED  : javax.xml.namespace.QName]
  * 			[attr: groupName CDATA #IMPLIED  : java.lang.String]
  * 			[attr: propertyOrder CDATA #IMPLIED  : int]
+ * 			| schemaCustomizer <SchemaCustomizer> : java.lang.Boolean
  * 			| builtInCustomizer <BuiltInCustomizer> : BuiltInCustomizer
- * 			| 	[attr: name CDATA #IMPLIED  : java.lang.String]
- * 			| newCustomizer <NewCustomizer> : NewCustomizer
- * 			| 	[attr: className CDATA #IMPLIED  : java.lang.String]
+ * 			| 	| dependsOnCustomizer <DependsOnCustomizer> : DependsOnCustomizer
+ * 			| 	| 	[attr: name CDATA #IMPLIED MessageChooser : java.lang.String] 	[enumeration (MessageChooser), enumeration (PartChooser), enumeration (PortTypeChooser), enumeration (PartsChooser)]
+ * 			| 	| 	staticCustomizer <StaticCustomizer> : StaticCustomizer
+ * 			| 	| 		[attr: dependsOnAttributeName CDATA #IMPLIED  : javax.xml.namespace.QName]
+ * 			| 	| simpleCustomizer <SimpleCustomizer> : SimpleCustomizer
+ * 			| 	| 	[attr: name CDATA #IMPLIED MessageChooser : java.lang.String] 	[enumeration (MessageChooser), enumeration (PartChooser), enumeration (PortTypeChooser), enumeration (PartsChooser)]
+ * 			| newCustomizer <NewCustomizer> : String
+ * 		groupedProperty <GroupedProperty> : GroupedProperty[1,n]
+ * 			[attr: groupedAttributeNames CDATA #REQUIRED ]
+ * 			[attr: groupName CDATA #IMPLIED  : java.lang.String]
+ * 			[attr: propertyOrder CDATA #IMPLIED  : int]
+ * 			[attr: displayName CDATA #REQUIRED  : java.lang.String] 	[whiteSpace (collapse)]
+ * 			| builtInCustomizer <BuiltInCustomizer> : BuiltInCustomizerGroupedProperty
+ * 			| 	| elementOrTypeChooser <ElementOrTypeChooser> : ElementOrTypeChooser
+ * 			| 	| 	[attr: elementAttributeName CDATA #IMPLIED  : java.lang.String] 	[whiteSpace (collapse)]
+ * 			| 	| 	[attr: typeAttributeName CDATA #IMPLIED  : java.lang.String] 	[whiteSpace (collapse)]
+ * 			| 	| elementOrTypeOrMessagePartChooser <ElementOrTypeOrMessagePartChooser> : ElementOrTypeOrMessagePartChooser
+ * 			| 	| 	[attr: elementAttributeName CDATA #IMPLIED  : java.lang.String] 	[whiteSpace (collapse)]
+ * 			| 	| 	[attr: typeAttributeName CDATA #IMPLIED  : java.lang.String] 	[whiteSpace (collapse)]
+ * 			| 	| 	[attr: messageAttributeName CDATA #IMPLIED  : java.lang.String] 	[whiteSpace (collapse)]
+ * 			| 	| 	[attr: partAttributeName CDATA #IMPLIED  : java.lang.String] 	[whiteSpace (collapse)]
+ * 			| newCustomizer <NewCustomizer> : String
  *
  * @Generated
  */
@@ -27,27 +73,25 @@
 package org.netbeans.modules.xml.wsdl.ui.property.model;
 
 public class ElementProperties {
-	public static final String ELEMENTNAME = "ElementName";	// NOI18N
 	public static final String PROPERTYGROUP = "PropertyGroup";	// NOI18N
 	public static final String PROPERTY = "Property";	// NOI18N
+	public static final String GROUPEDPROPERTY = "GroupedProperty";	// NOI18N
 
-	private java.lang.String _ElementName;
 	private java.util.List _PropertyGroup = new java.util.ArrayList();	// List<PropertyGroup>
 	private java.util.List _Property = new java.util.ArrayList();	// List<Property>
+	private java.util.List _GroupedProperty = new java.util.ArrayList();	// List<GroupedProperty>
 	private java.lang.String schemaLocation;
 
 	/**
 	 * Normal starting point constructor.
 	 */
 	public ElementProperties() {
-		_ElementName = "";
 	}
 
 	/**
 	 * Required parameters constructor
 	 */
-	public ElementProperties(java.lang.String elementName, org.netbeans.modules.xml.wsdl.ui.property.model.PropertyGroup[] propertyGroup, org.netbeans.modules.xml.wsdl.ui.property.model.Property[] property) {
-		_ElementName = elementName;
+	public ElementProperties(org.netbeans.modules.xml.wsdl.ui.property.model.PropertyGroup[] propertyGroup, org.netbeans.modules.xml.wsdl.ui.property.model.Property[] property, org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty[] groupedProperty) {
 		if (propertyGroup!= null) {
 			((java.util.ArrayList) _PropertyGroup).ensureCapacity(propertyGroup.length);
 			for (int i = 0; i < propertyGroup.length; ++i) {
@@ -58,6 +102,12 @@ public class ElementProperties {
 			((java.util.ArrayList) _Property).ensureCapacity(property.length);
 			for (int i = 0; i < property.length; ++i) {
 				_Property.add(property[i]);
+			}
+		}
+		if (groupedProperty!= null) {
+			((java.util.ArrayList) _GroupedProperty).ensureCapacity(groupedProperty.length);
+			for (int i = 0; i < groupedProperty.length; ++i) {
+				_GroupedProperty.add(groupedProperty[i]);
 			}
 		}
 	}
@@ -74,7 +124,6 @@ public class ElementProperties {
 	 * @param justData just copy the XML relevant data
 	 */
 	public ElementProperties(org.netbeans.modules.xml.wsdl.ui.property.model.ElementProperties source, boolean justData) {
-		_ElementName = source._ElementName;
 		for (java.util.Iterator it = source._PropertyGroup.iterator(); 
 			it.hasNext(); ) {
 			org.netbeans.modules.xml.wsdl.ui.property.model.PropertyGroup srcElement = (org.netbeans.modules.xml.wsdl.ui.property.model.PropertyGroup)it.next();
@@ -85,16 +134,12 @@ public class ElementProperties {
 			org.netbeans.modules.xml.wsdl.ui.property.model.Property srcElement = (org.netbeans.modules.xml.wsdl.ui.property.model.Property)it.next();
 			_Property.add((srcElement == null) ? null : newProperty(srcElement, justData));
 		}
+		for (java.util.Iterator it = source._GroupedProperty.iterator(); 
+			it.hasNext(); ) {
+			org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty srcElement = (org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty)it.next();
+			_GroupedProperty.add((srcElement == null) ? null : newGroupedProperty(srcElement, justData));
+		}
 		schemaLocation = source.schemaLocation;
-	}
-
-	// This attribute is mandatory
-	public void setElementName(java.lang.String value) {
-		_ElementName = value;
-	}
-
-	public java.lang.String getElementName() {
-		return _ElementName;
 	}
 
 	// This attribute is an array containing at least one element
@@ -197,6 +242,56 @@ public class ElementProperties {
 		return pos;
 	}
 
+	// This attribute is an array containing at least one element
+	public void setGroupedProperty(org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty[] value) {
+		if (value == null)
+			value = new GroupedProperty[0];
+		_GroupedProperty.clear();
+		((java.util.ArrayList) _GroupedProperty).ensureCapacity(value.length);
+		for (int i = 0; i < value.length; ++i) {
+			_GroupedProperty.add(value[i]);
+		}
+	}
+
+	public void setGroupedProperty(int index, org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty value) {
+		_GroupedProperty.set(index, value);
+	}
+
+	public org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty[] getGroupedProperty() {
+		GroupedProperty[] arr = new GroupedProperty[_GroupedProperty.size()];
+		return (GroupedProperty[]) _GroupedProperty.toArray(arr);
+	}
+
+	public java.util.List fetchGroupedPropertyList() {
+		return _GroupedProperty;
+	}
+
+	public org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty getGroupedProperty(int index) {
+		return (GroupedProperty)_GroupedProperty.get(index);
+	}
+
+	// Return the number of groupedProperty
+	public int sizeGroupedProperty() {
+		return _GroupedProperty.size();
+	}
+
+	public int addGroupedProperty(org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty value) {
+		_GroupedProperty.add(value);
+		int positionOfNewItem = _GroupedProperty.size()-1;
+		return positionOfNewItem;
+	}
+
+	/**
+	 * Search from the end looking for @param value, and then remove it.
+	 */
+	public int removeGroupedProperty(org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty value) {
+		int pos = _GroupedProperty.indexOf(value);
+		if (pos >= 0) {
+			_GroupedProperty.remove(pos);
+		}
+		return pos;
+	}
+
 	public void _setSchemaLocation(String location) {
 		schemaLocation = location;
 	}
@@ -237,6 +332,22 @@ public class ElementProperties {
 		return new org.netbeans.modules.xml.wsdl.ui.property.model.Property(source, justData);
 	}
 
+	/**
+	 * Create a new bean using it's default constructor.
+	 * This does not add it to any bean graph.
+	 */
+	public org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty newGroupedProperty() {
+		return new org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty();
+	}
+
+	/**
+	 * Create a new bean, copying from another one.
+	 * This does not add it to any bean graph.
+	 */
+	public org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty newGroupedProperty(GroupedProperty source, boolean justData) {
+		return new org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty(source, justData);
+	}
+
 	public void write(org.openide.filesystems.FileObject fo) throws java.io.IOException {
 		org.openide.filesystems.FileLock lock = fo.lock();
 		try {
@@ -248,19 +359,12 @@ public class ElementProperties {
 		}
 	}
 
-	public void write(final org.openide.filesystems.FileObject dir, final String filename) throws java.io.IOException {
-		org.openide.filesystems.FileSystem fs = dir.getFileSystem();
-		fs.runAtomicAction(new org.openide.filesystems.FileSystem.AtomicAction()
-		{
-			public void run() throws java.io.IOException {
-				org.openide.filesystems.FileObject file = dir.getFileObject(filename);
-				if (file == null) {
-					file = dir.createData(filename);
-				}
-				write(file);
-			}
+	public void write(org.openide.filesystems.FileObject dir, String filename) throws java.io.IOException {
+		org.openide.filesystems.FileObject file = dir.getFileObject(filename);
+		if (file == null) {
+			file = dir.createData(filename);
 		}
-		);
+		write(file);
 	}
 
 	public void write(java.io.File f) throws java.io.IOException {
@@ -342,12 +446,6 @@ public class ElementProperties {
 	}
 
 	protected void writeNodeAttributes(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
-		// elementName is an attribute with namespace http://xml.netbeans.org/schema/wsdlui/property
-		if (_ElementName != null) {
-			out.write(" elementName='");
-			org.netbeans.modules.xml.wsdl.ui.property.model.ElementProperties.writeXML(out, _ElementName, true);
-			out.write("'");	// NOI18N
-		}
 	}
 
 	protected void writeNodeChildren(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
@@ -363,6 +461,13 @@ public class ElementProperties {
 			org.netbeans.modules.xml.wsdl.ui.property.model.Property element = (org.netbeans.modules.xml.wsdl.ui.property.model.Property)it.next();
 			if (element != null) {
 				element.writeNode(out, "Property", null, nextIndent, namespaceMap);
+			}
+		}
+		for (java.util.Iterator it = _GroupedProperty.iterator(); 
+			it.hasNext(); ) {
+			org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty element = (org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty)it.next();
+			if (element != null) {
+				element.writeNode(out, "GroupedProperty", null, nextIndent, namespaceMap);
 			}
 		}
 	}
@@ -427,11 +532,6 @@ public class ElementProperties {
 		readNode(document.getDocumentElement());
 	}
 
-	protected static class ReadState {
-		int lastElementType;
-		int elementPosition;
-	}
-
 	public void readNode(org.w3c.dom.Node node) {
 		readNode(node, new java.util.HashMap());
 	}
@@ -478,48 +578,36 @@ public class ElementProperties {
 	protected void readNodeAttributes(org.w3c.dom.Node node, java.util.Map namespacePrefixes, org.w3c.dom.NamedNodeMap attrs) {
 		org.w3c.dom.Attr attr;
 		java.lang.String attrValue;
-		attr = (org.w3c.dom.Attr) attrs.getNamedItem("elementName");
-		if (attr != null) {
-			attrValue = attr.getValue();
-			_ElementName = attrValue;
-		}
 	}
 
 	protected void readNodeChildren(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
 		org.w3c.dom.NodeList children = node.getChildNodes();
 		for (int i = 0, size = children.getLength(); i < size; ++i) {
 			org.w3c.dom.Node childNode = children.item(i);
-			if (!(childNode instanceof org.w3c.dom.Element)) {
-				continue;
-			}
 			String childNodeName = (childNode.getLocalName() == null ? childNode.getNodeName().intern() : childNode.getLocalName().intern());
 			String childNodeValue = "";
 			if (childNode.getFirstChild() != null) {
 				childNodeValue = childNode.getFirstChild().getNodeValue();
 			}
-			boolean recognized = readNodeChild(childNode, childNodeName, childNodeValue, namespacePrefixes);
-			if (!recognized) {
+			if (childNodeName == "PropertyGroup") {
+				PropertyGroup aPropertyGroup = newPropertyGroup();
+				aPropertyGroup.readNode(childNode, namespacePrefixes);
+				_PropertyGroup.add(aPropertyGroup);
+			}
+			else if (childNodeName == "Property") {
+				Property aProperty = newProperty();
+				aProperty.readNode(childNode, namespacePrefixes);
+				_Property.add(aProperty);
+			}
+			else if (childNodeName == "GroupedProperty") {
+				GroupedProperty aGroupedProperty = newGroupedProperty();
+				aGroupedProperty.readNode(childNode, namespacePrefixes);
+				_GroupedProperty.add(aGroupedProperty);
+			}
+			else {
 				// Found extra unrecognized childNode
 			}
 		}
-	}
-
-	protected boolean readNodeChild(org.w3c.dom.Node childNode, String childNodeName, String childNodeValue, java.util.Map namespacePrefixes) {
-		// assert childNodeName == childNodeName.intern()
-		if (childNodeName == "PropertyGroup") {
-			PropertyGroup aPropertyGroup = newPropertyGroup();
-			aPropertyGroup.readNode(childNode, namespacePrefixes);
-			_PropertyGroup.add(aPropertyGroup);
-		}
-		else if (childNodeName == "Property") {
-			Property aProperty = newProperty();
-			aProperty.readNode(childNode, namespacePrefixes);
-			_Property.add(aProperty);
-		}
-		else {
-			return false;
-		}
-		return true;
 	}
 
 	/**
@@ -566,9 +654,7 @@ public class ElementProperties {
 	public void changePropertyByName(String name, Object value) {
 		if (name == null) return;
 		name = name.intern();
-		if (name == "elementName")
-			setElementName((java.lang.String)value);
-		else if (name == "propertyGroup")
+		if (name == "propertyGroup")
 			addPropertyGroup((PropertyGroup)value);
 		else if (name == "propertyGroup[]")
 			setPropertyGroup((PropertyGroup[]) value);
@@ -576,17 +662,21 @@ public class ElementProperties {
 			addProperty((Property)value);
 		else if (name == "property[]")
 			setProperty((Property[]) value);
+		else if (name == "groupedProperty")
+			addGroupedProperty((GroupedProperty)value);
+		else if (name == "groupedProperty[]")
+			setGroupedProperty((GroupedProperty[]) value);
 		else
 			throw new IllegalArgumentException(name+" is not a valid property name for ElementProperties");
 	}
 
 	public Object fetchPropertyByName(String name) {
-		if (name == "elementName")
-			return getElementName();
 		if (name == "propertyGroup[]")
 			return getPropertyGroup();
 		if (name == "property[]")
 			return getProperty();
+		if (name == "groupedProperty[]")
+			return getGroupedProperty();
 		throw new IllegalArgumentException(name+" is not a valid property name for ElementProperties");
 	}
 
@@ -613,18 +703,24 @@ public class ElementProperties {
 	 * @return null if not found
 	 */
 	public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName, boolean returnXPathName) {
-		if (childObj instanceof java.lang.String) {
-			java.lang.String child = (java.lang.String) childObj;
-			if (child == _ElementName) {
-				if (returnConstName) {
-					return ELEMENTNAME;
-				} else if (returnSchemaName) {
-					return "elementName";
-				} else if (returnXPathName) {
-					return "@elementName";
-				} else {
-					return "ElementName";
+		if (childObj instanceof GroupedProperty) {
+			GroupedProperty child = (GroupedProperty) childObj;
+			int index = 0;
+			for (java.util.Iterator it = _GroupedProperty.iterator(); 
+				it.hasNext(); ) {
+				org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty element = (org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty)it.next();
+				if (child == element) {
+					if (returnConstName) {
+						return GROUPEDPROPERTY;
+					} else if (returnSchemaName) {
+						return "GroupedProperty";
+					} else if (returnXPathName) {
+						return "GroupedProperty[position()="+index+"]";
+					} else {
+						return "GroupedProperty."+Integer.toHexString(index);
+					}
 				}
+				++index;
 			}
 		}
 		if (childObj instanceof Property) {
@@ -703,6 +799,16 @@ public class ElementProperties {
 				beans.add(element);
 			}
 		}
+		for (java.util.Iterator it = _GroupedProperty.iterator(); 
+			it.hasNext(); ) {
+			org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty element = (org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty)it.next();
+			if (element != null) {
+				if (recursive) {
+					element.childBeans(true, beans);
+				}
+				beans.add(element);
+			}
+		}
 	}
 
 	public boolean equals(Object o) {
@@ -714,9 +820,6 @@ public class ElementProperties {
 			return true;
 		}
 		if (inst == null) {
-			return false;
-		}
-		if (!(_ElementName == null ? inst._ElementName == null : _ElementName.equals(inst._ElementName))) {
 			return false;
 		}
 		if (sizePropertyGroup() != inst.sizePropertyGroup())
@@ -741,14 +844,25 @@ public class ElementProperties {
 				return false;
 			}
 		}
+		if (sizeGroupedProperty() != inst.sizeGroupedProperty())
+			return false;
+		// Compare every element.
+		for (java.util.Iterator it = _GroupedProperty.iterator(), it2 = inst._GroupedProperty.iterator(); 
+			it.hasNext() && it2.hasNext(); ) {
+			org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty element = (org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty)it.next();
+			org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty element2 = (org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty)it2.next();
+			if (!(element == null ? element2 == null : element.equals(element2))) {
+				return false;
+			}
+		}
 		return true;
 	}
 
 	public int hashCode() {
 		int result = 17;
-		result = 37*result + (_ElementName == null ? 0 : _ElementName.hashCode());
 		result = 37*result + (_PropertyGroup == null ? 0 : _PropertyGroup.hashCode());
 		result = 37*result + (_Property == null ? 0 : _Property.hashCode());
+		result = 37*result + (_GroupedProperty == null ? 0 : _GroupedProperty.hashCode());
 		return result;
 	}
 
@@ -765,40 +879,219 @@ public class ElementProperties {
             xmlns:tns="http://xml.netbeans.org/schema/wsdlui/property"
             elementFormDefault="qualified">
     <xsd:element name="ElementProperties">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en-US">Root node for specifying customizers for a element.
+                This needs to be on the GlobalElement which would represent the node in the WSDL tree.
+            If this is defined in local elements it is ignored.</xsd:documentation>
+        </xsd:annotation>
         <xsd:complexType>
             <xsd:sequence>
                 <xsd:element ref="tns:PropertyGroup" maxOccurs="unbounded" />
                 <xsd:element ref="tns:Property" maxOccurs="unbounded" />
+                <xsd:element ref="tns:GroupedProperty" maxOccurs="unbounded" />
             </xsd:sequence>
-            <xsd:attribute name="elementName" type="xsd:string" use="required"/>
         </xsd:complexType>
     </xsd:element>            
+    
     <xsd:element name="PropertyGroup">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en-US">Used to create groups in the property sheet. 
+                By default, if no groups are defined all the properties will be shown 
+                in the default Property sheet called "Properties".
+                name : defines the name of the Group.
+                groupOrder : defines the order in which the groups will be created. The groupOrder starts with 1.
+                isDefault : overrides the default property sheet to be this group rather than "Properties".
+                This enables the user to put non-customized properties (which do not have a Property defined in this xml) to go into this property sheet.
+                
+                
+            </xsd:documentation>
+        </xsd:annotation>
         <xsd:complexType>
             <xsd:attribute name="name" type="xsd:string" use="required"/>
             <xsd:attribute name="groupOrder" type="xsd:int"/>
+            <xsd:attribute name="isDefault" type="xsd:boolean" default="false"/>
         </xsd:complexType>
     </xsd:element>
     <xsd:element name="Property">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en-US">Property represents each attribute that would be created for the Node in the wsdleditor tree.
+                It defines a way to specify customizers for attributes. 
+                There are 3 types of Property customizers:
+                SchemaCustomizer : The default Customizer is the SchemaCustomizer, which shows drop downs for enumerations and boolean attributes,
+                and String customizer for all other types. So if there is no Property defined for a attribute, it will have 
+                SchemaCustomizer.
+                BuiltInCustomizer : specifies a way to put already defined customizer to be shown. Examples are part chooser, message chooser etc.
+                NewCustomizer : provides a way to create a custom customizer specific to the user requirement.  When using this the developer has
+                to implement the SPI org.netbeans.modules.xml.wsdl.ui.spi.WSDLLookupProvider, and add a implementation of 
+                org.netbeans.modules.xml.wsdl.ui.spi.NewCustomizerProvider, which will provide the custom Node.Property to be shown in the 
+                wsdl editor property sheet.
+            </xsd:documentation>
+        </xsd:annotation>
         <xsd:complexType>
             <xsd:choice>
+                <xsd:element name="SchemaCustomizer"/>
                 <xsd:element name="BuiltInCustomizer">
                     <xsd:complexType xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                        <xsd:sequence/>
-                        <xsd:attribute name="name" type="xsd:string"/>
+                        <xsd:choice>
+                            <xsd:element name="DependsOnCustomizer">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en-US">Use a built-in customizer whose value(s) depend on some other attribute 
+                                        of the the same element or some other source.                                        
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                                <xsd:complexType>
+                                    <xsd:choice>
+                                        <xsd:element name="StaticCustomizer">
+                                            <xsd:annotation>
+                                                <xsd:documentation xml:lang="en-US">dependsOnAttributeName :  the attribute on which the value(s) of the chooser would depend on.
+                                                    For example: some elements may have a attribute for message and another for part, and the PartsChooser should show parts from the message that is selected in the message attribute.
+                                                    In that the dependsOnAttributeName for PartChooser would be message.
+                                                </xsd:documentation>
+                                            </xsd:annotation>
+                                            <xsd:complexType>
+                                                <xsd:attribute name="dependsOnAttributeName" type="xsd:QName"/>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                        <!--No use case as of yet, xsd:element name="DynamicCustomizer">
+                                            <xsd:annotation>
+                                                <xsd:documentation xml:lang="en-US">
+                                                    
+                                                </xsd:documentation>
+                                            </xsd:annotation>
+                                            <xsd:complexType>
+                                                <xsd:attribute name="dependsOnAttributeValueType" type="xsd:string"/>
+                                                <xsd:attribute name="attributeValueProviderClass" type="xsd:string"/>
+                                            </xsd:complexType>
+                                        </xsd:element-->
+                                    </xsd:choice>
+                                    <xsd:attribute name="name" type="tns:builtInCustomizerTypes"/>
+                                </xsd:complexType>
+                            </xsd:element>
+                            <xsd:element name="SimpleCustomizer">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en-US">
+                                        Use the builtin chooser that are available (the names are defined under builtInCustomizerTypes simple type as enumerations, 
+                                        name: specifies which builtin chooser to use.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                                <xsd:complexType xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+                                    <xsd:sequence/>
+                                    <xsd:attribute name="name" type="tns:builtInCustomizerTypes"/>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:choice>
                     </xsd:complexType>
                 </xsd:element>
-                <xsd:element name="NewCustomizer">
-                    <xsd:complexType>
-                        <xsd:attribute name="className" type="xsd:string"/>
-                    </xsd:complexType>
-                </xsd:element>
+                <xsd:element ref="tns:NewCustomizer"/>
             </xsd:choice>
             <xsd:attribute name="attributeName" type="xsd:string" use="required"/>
+            <xsd:attribute name="isNameableAttribute" type="xsd:boolean" default="false"/>
+            <xsd:attribute name="decoratorAttribute" type="xsd:QName"/>
             <xsd:attribute name="groupName" type="xsd:string"/>
             <xsd:attribute name="propertyOrder" type="xsd:int"/>
         </xsd:complexType>
     </xsd:element>
+    <xsd:element name="GroupedProperty">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en-US">Some attributes in a element are mutually exclusive, so in the UI, for unambiguous usage, the user may want to add a single property chooser for 2 or more attributes, which will set the appropriate attribute depending on some criteria that the customizer may determine.
+                groupedAttributeNames : specify all the mutually exclusive attributes. There will be a single customizer for all these attributes.
+                groupName : specifies which PropertyGroup this belongs to.
+                propertyOrder : specifies the order in the PropertyGroup where this property would be placed.
+                displayName: specifies the Display name of the combined chooser.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:choice>
+                <xsd:element name="BuiltInCustomizer" >
+                    <xsd:annotation>
+                        <xsd:documentation xml:lang="en-US">To use pre-built customizers.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                    <xsd:complexType>
+                        <xsd:choice>
+                            <xsd:element name="ElementOrTypeChooser">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en-US">Shows a Tree based selector, which shows all the elements/types from Inline/Imported schemas.
+                                        elementAttributeName : the attribute on which GlobalElement data type would be set.
+                                        typeAttributeName : the attribute on which GlobalType data type would be set.
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                                <xsd:complexType>
+                                    <xsd:attribute name="elementAttributeName" type="xsd:NCName"/>
+                                    <xsd:attribute name="typeAttributeName" type="xsd:NCName"/>
+                                </xsd:complexType>
+                            </xsd:element>
+                            <xsd:element name="ElementOrTypeOrMessagePartChooser">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en-US">Shows a Tree based selector, which shows all the elements/types from Inline/Imported schemas and also the messages from all imported and existing wsdls.
+                                        elementAttributeName : the attribute on which GlobalElement data type would be set.
+                                        typeAttributeName : the attribute on which GlobalType data type would be set.
+                                        messageAttributeName : the attribute on which Message data type would be set.
+                                        partAttributeName : the attribute on which part would be set.
+                                        This chooser can select between a GlobalElement or GlobalType or a wsdl Part.
+                                        
+                                    </xsd:documentation>
+                                </xsd:annotation>                                
+                                <xsd:complexType>
+                                    <xsd:attribute name="elementAttributeName" type="xsd:NCName"/>
+                                    <xsd:attribute name="typeAttributeName" type="xsd:NCName"/>
+                                    <xsd:attribute name="messageAttributeName" type="xsd:NCName"/>
+                                    <xsd:attribute name="partAttributeName" type="xsd:NCName"/>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:choice>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element ref="tns:NewCustomizer"/>
+            </xsd:choice>
+            <xsd:attribute name="groupedAttributeNames" type="tns:attributeList" use="required"/>
+            <xsd:attribute name="groupName" type="xsd:string"/>
+            <xsd:attribute name="propertyOrder" type="xsd:int"/>
+            <xsd:attribute name="displayName" type="xsd:NCName" use="required"/>
+        </xsd:complexType>
+    </xsd:element>
+    
+    
+    <xsd:element name="NewCustomizer">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en-US">Provides a way for developer to provide a custom property customizer for the attribute, if the builtin chooser dont satisfy their requirements.
+When using this the developer has to implement the SPI org.netbeans.modules.xml.wsdl.ui.spi.WSDLLookupProvider, and add a implementation of org.netbeans.modules.xml.wsdl.ui.spi.NewCustomizerProvider, which will provide the custom Node.Property to be shown in the wsdl editor property sheet.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+    
+    
+    <xsd:simpleType name="builtInCustomizerTypes">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="MessageChooser">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en-US">Shows a drop down of all messages in the current WSDL document and also ones in imported WSDL documents.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PartChooser">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en-US">Show a drop down of all parts for a message. By default, the chooser assumes that it is in the binding section under input/output/fault, and shows all the parts for the message selected in the input/output/fault.
+    If not, then the dependsOnCustomizer needs to be used to specify the attribute which represents the message, whose parts will be shown</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PortTypeChooser">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en-US">Show a drop down of all port types in the WSDL Document/Imported WSDL Documents.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="PartsChooser">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en-US">Show a dialog of all parts for a message, from which multiple parts can be selected. By default, the chooser assumes that it is in the binding section under input/output/fault, and shows all the parts for the message selected in the input/output/fault.
+    If not, then the dependsOnCustomizer needs to be used to specify the attribute which represents the message, whose parts will be shown</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="attributeList">
+        <xsd:list itemType="xsd:string"/>
+    </xsd:simpleType>
+    
 </xsd:schema>
 
 */

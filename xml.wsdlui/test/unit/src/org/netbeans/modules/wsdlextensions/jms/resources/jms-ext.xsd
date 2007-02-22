@@ -1,5 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:jms="http://schemas.sun.com/jbi/wsdl-extensions/jms/" targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/jms/">
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:jms="http://schemas.sun.com/jbi/wsdl-extensions/jms/" targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/jms/"  >
 	<xs:import namespace="http://schemas.xmlsoap.org/wsdl/" schemaLocation="http://schemas.xmlsoap.org/wsdl/"/>
 
     <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -175,6 +195,17 @@ This causes no delay up to the 5th delivery; a 1000 ms delay is invoked when the
 			<xs:documentation>
 	      	"message" indicates a JMS protocol based JMS message to/from WSDL message mapping
 	      </xs:documentation>
+              <xs:appinfo>
+                <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                    <prop:PropertyGroup name="basic" groupOrder="1" />
+                    <prop:PropertyGroup name="advance" groupOrder="2" />
+                    <prop:Property attributeName="correlationIdPart" groupName="basic" propertyOrder="1" >
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="MessageChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                </prop:ElementProperties>
+               </xs:appinfo>
 		</xs:annotation>
 	</xs:element>
 	<xs:complexType name="tMessage">

@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <NonVisualComponents>
+    <Component class="org.netbeans.modules.xml.wsdl.ui.view.SolicitResponseOperationPanel" name="solicitResponseOperationPanel1">
+      <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.xml.wsdl.ui.view.SolicitResponseOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes, mModel);"/>
+      </AuxValues>
+    </Component>
+    <Component class="org.netbeans.modules.xml.wsdl.ui.view.NotificationOperationPanel" name="notificationOperationPanel1">
+      <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.xml.wsdl.ui.view.NotificationOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap,  mIsShowMessageComboBoxes, mModel);"/>
+      </AuxValues>
+    </Component>
+  </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
@@ -18,7 +30,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="contentPanel" alignment="0" max="32767" attributes="0"/>
+          <Component id="contentPanel" alignment="0" pref="432" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -35,7 +47,7 @@
             <Property name="focusable" type="boolean" value="false"/>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.xml.wsdl.ui.view.RequestReplyOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes);"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.xml.wsdl.ui.view.RequestReplyOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes, mModel);"/>
           </AuxValues>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
@@ -45,31 +57,11 @@
         </Component>
         <Component class="org.netbeans.modules.xml.wsdl.ui.view.OneWayOperationPanel" name="oneWayOperationPanel1">
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.xml.wsdl.ui.view.OneWayOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes);"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.xml.wsdl.ui.view.OneWayOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes, mModel);"/>
           </AuxValues>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
               <CardConstraints cardName="OPERATION_ONE_WAY"/>
-            </Constraint>
-          </Constraints>
-        </Component>
-        <Component class="org.netbeans.modules.xml.wsdl.ui.view.NotificationOperationPanel" name="notificationOperationPanel1">
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.xml.wsdl.ui.view.NotificationOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap,  mIsShowMessageComboBoxes);"/>
-          </AuxValues>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
-              <CardConstraints cardName="OPERATION_NOTIFICATION"/>
-            </Constraint>
-          </Constraints>
-        </Component>
-        <Component class="org.netbeans.modules.xml.wsdl.ui.view.SolicitResponseOperationPanel" name="solicitResponseOperationPanel1">
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.xml.wsdl.ui.view.SolicitResponseOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes);"/>
-          </AuxValues>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
-              <CardConstraints cardName="OPERATION_SOLICIT_RESPONSE"/>
             </Constraint>
           </Constraints>
         </Component>

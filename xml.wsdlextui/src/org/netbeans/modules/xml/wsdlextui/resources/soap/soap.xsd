@@ -55,7 +55,7 @@ POSSIBILITY OF SUCH DAMAGES.
            xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
            targetNamespace="http://schemas.xmlsoap.org/wsdl/soap/" >
 
-  <xs:import namespace = "http://schemas.xmlsoap.org/wsdl/" />
+  <xs:import namespace = "http://schemas.xmlsoap.org/wsdl/" schemaLocation="wsdl.xsd" />
 
   <xs:simpleType name="encodingStyle" >
     <xs:annotation>
@@ -107,11 +107,20 @@ POSSIBILITY OF SUCH DAMAGES.
   </xs:complexType>
 
   <xs:element name="body" type="soap:tBody" >
-   <xs:annotation>
-	      <xs:documentation>
-	      	"body" indicates a  soap protocol body.
-	      </xs:documentation>
-	    </xs:annotation>
+      <xs:annotation>
+          <xs:documentation>
+              "body" indicates a  soap protocol body.
+          </xs:documentation>
+          <xs:appinfo>
+              <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                  <prop:Property attributeName="parts" propertyOrder="1">
+                      <prop:BuiltInCustomizer>
+                          <prop:SimpleCustomizer name="PartsChooser"/>
+                      </prop:BuiltInCustomizer>
+                  </prop:Property>
+              </prop:ElementProperties>
+          </xs:appinfo>
+      </xs:annotation>
    </xs:element>
    
   <xs:attributeGroup name="tBodyAttributes" >
@@ -165,9 +174,25 @@ POSSIBILITY OF SUCH DAMAGES.
   	  <xs:annotation>
 	      <xs:documentation>
 	      	"header" indicates a soap protocol header.
-	      </xs:documentation>
-	    </xs:annotation>
-    </xs:element>
+        </xs:documentation>
+        <xs:appinfo>
+            <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                <prop:Property attributeName="message" propertyOrder="1">
+                    <prop:BuiltInCustomizer>
+                        <prop:SimpleCustomizer name="MessageChooser"/>
+                    </prop:BuiltInCustomizer>
+                </prop:Property>
+                <prop:Property attributeName="part" propertyOrder="2">
+                    <prop:BuiltInCustomizer>
+                        <prop:DependsOnCustomizer name="PartChooser">
+                            <prop:StaticCustomizer dependsOnAttributeName="soap:message"/>
+                        </prop:DependsOnCustomizer>
+                    </prop:BuiltInCustomizer> 
+                </prop:Property>
+            </prop:ElementProperties>
+        </xs:appinfo>
+    </xs:annotation>
+</xs:element>
   
   <xs:attributeGroup name="tHeaderAttributes" >
     <xs:attribute name="message" type="xs:QName" use="required" />
@@ -192,6 +217,22 @@ POSSIBILITY OF SUCH DAMAGES.
 	      <xs:documentation>
 	      	"headerfault" indicates a soap protocol headerfault.
 	      </xs:documentation>
+          <xs:appinfo>
+            <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                <prop:Property attributeName="message" propertyOrder="1">
+                    <prop:BuiltInCustomizer>
+                        <prop:SimpleCustomizer name="MessageChooser"/>
+                    </prop:BuiltInCustomizer>
+                </prop:Property>
+                <prop:Property attributeName="part" propertyOrder="2">
+                    <prop:BuiltInCustomizer>
+                        <prop:DependsOnCustomizer name="PartChooser">
+                            <prop:StaticCustomizer dependsOnAttributeName="soap:message"/>
+                        </prop:DependsOnCustomizer>
+                    </prop:BuiltInCustomizer> 
+                </prop:Property>
+            </prop:ElementProperties>
+        </xs:appinfo>
 	    </xs:annotation>
    </xs:element>
     

@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-The contents of this file are subject to the terms of the Common Development
-and Distribution License (the License). You may not use this file except in
-compliance with the License.
-
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
  You can obtain a copy of the License at http://www.netbeans.org/cddl.html
-or http://www.netbeans.org/cddl.txt.
-
-When distributing Covered Code, include this CDDL Header Notice in each file
-and include the License file at http://www.netbeans.org/cddl.txt.
-If applicable, add the following below the CDDL Header, with the fields
-enclosed by brackets [] replaced by your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
-
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
  The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -75,6 +75,20 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 	        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/header.png" /> 
 	      </file>
 	      
+            <file name="HttpBindingOperationInputUrlEncoded">
+                <attr name="xsdFileName" stringvalue="http" />
+                <attr name="element" stringvalue="urlEncoded" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/http/code.gif" /> 
+            </file>
+            
+            <file name="HttpBindingOperationInputUrlReplacement">
+                <attr name="xsdFileName" stringvalue="http" />
+                <attr name="element" stringvalue="urlReplacement" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/http/code.gif" /> 
+            </file>
+            
 	      </folder>	        
 	      
 	      <folder name ="BindingOperationOutput">
@@ -92,20 +106,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 		        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/header.png" /> 
 		      </file>
 		      
-            <file name="HttpBindingOperationInputUrlEncoded">
-                <attr name="xsdFileName" stringvalue="http" />
-                <attr name="element" stringvalue="urlEncoded" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/http/code.gif" /> 
-            </file>
-            
-            <file name="HttpBindingOperationInputUrlReplacement">
-                <attr name="xsdFileName" stringvalue="http" />
-                <attr name="element" stringvalue="urlReplacement" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/http/code.gif" /> 
-            </file>
-            
 	       </folder>	        
 	       
 	      <folder name ="BindingOperationFault">

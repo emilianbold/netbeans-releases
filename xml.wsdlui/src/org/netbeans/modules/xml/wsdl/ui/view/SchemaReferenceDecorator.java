@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,9 +27,8 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceCreator;
+import org.netbeans.modules.xml.xam.ui.customizer.AbstractReferenceDecorator;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceDataNode;
-import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceDecorator;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -39,16 +38,18 @@ import org.openide.util.NbBundle;
  *
  * @author  Nathan Fiedler
  */
-public class SchemaReferenceDecorator implements ExternalReferenceDecorator {
+public class SchemaReferenceDecorator extends AbstractReferenceDecorator {
     /** The customizer that created this decorator. */
-    private ExternalReferenceCreator customizer;
+    private ImportSchemaCustomizer customizer;
+    /** Used to generate unique namespace prefixes. */
+    private int prefixCounter;
 
     /**
      * Creates a new instance of SchemaReferenceDecorator.
      *
      * @param  customizer  provides information about the edited component.
      */
-    public SchemaReferenceDecorator(ExternalReferenceCreator customizer) {
+    public SchemaReferenceDecorator(ImportSchemaCustomizer customizer) {
         this.customizer = customizer;
     }
 
@@ -111,13 +112,11 @@ public class SchemaReferenceDecorator implements ExternalReferenceDecorator {
         return customizer.createExternalReferenceNode(original);
     }
 
-    public String generatePrefix(ExternalReferenceNode node) {
-        if (node.hasModel()) {
-            Model model = node.getModel();
-            if (model != null && model instanceof WSDLModel) {
-                return NameGenerator.getInstance().generateNamespacePrefix(
-                        null, (WSDLModel) model);
-            }
+    protected String generatePrefix(Model model) {
+        WSDLModel wModel = customizer.getModel();
+        if (wModel != null) {
+            return NameGenerator.getInstance().generateNamespacePrefix(
+                    null, wModel, prefixCounter++);
         }
         return "";
     }

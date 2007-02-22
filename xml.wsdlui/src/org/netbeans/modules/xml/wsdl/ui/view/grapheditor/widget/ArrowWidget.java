@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
@@ -42,7 +42,7 @@ public class ArrowWidget extends Widget {
     private int _x = 0;
     private int _y = 0;
     private int _thickness = 1;
-    private Color _color = new Color(0x3244A0);
+    private Color _color = WidgetConstants.INPUT_OUTPUT_ARROW_COLOR;
     private boolean mToEast;
     private ParameterType _type;
     private Stroke _stroke;
@@ -62,12 +62,10 @@ public class ArrowWidget extends Widget {
         this(scene);
         this.mToEast = toEast;
         _type = type;
-        if (_type == ParameterType.FAULT) {
-            _stroke = new BasicStroke(_thickness, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL, 1, new float[]{20, 15, 20,15}, 0);
-        } else if (_type == ParameterType.OUTPUT) {
-            _stroke = new BasicStroke(_thickness, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND, 1, new float[]{5, 10, 5,10}, 0);
-        } else {
+        if (_type == ParameterType.INPUT) {
             _stroke = new BasicStroke(_thickness);
+        } else {
+            _stroke = new BasicStroke(_thickness, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND, 1, new float[]{5, 10, 5,10}, 0);
         }
     }
     

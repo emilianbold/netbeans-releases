@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -37,7 +37,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
@@ -52,13 +54,16 @@ import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.BgBorder;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 
 public class MessagesWidget extends Widget implements  
@@ -78,6 +83,8 @@ public class MessagesWidget extends Widget implements
     private int messageHitPointIndex = -1;
     
     private StubWidget stubWidget;
+    /** The Node for the WSDLComponent, if it has been created. */
+    private Node componentNode;
     
     public MessagesWidget(Scene scene, WSDLModel model) {
         super(scene);
@@ -127,7 +134,7 @@ public class MessagesWidget extends Widget implements
             addChild(contentWidget);
         }
 
-        getActions().addAction(((ExScene) scene).getDnDAction());
+        getActions().addAction(((PartnerScene) scene).getDnDAction());
         getActions().addAction(ActionFactory.createPopupMenuAction(this));
         createContent();
     }
@@ -145,7 +152,7 @@ public class MessagesWidget extends Widget implements
         }
         
         Scene scene = getScene();
-        Widget label = new ExLabelWidget(scene, IMAGE, NbBundle.getMessage(
+        Widget label = new ImageLabelWidget(scene, IMAGE, NbBundle.getMessage(
                 MessagesWidget.class,
                 "LBL_MessagesWidget_Messages"), // NOI18N
                 "(" + messages.size() + ")"); // NOI18N
@@ -177,23 +184,27 @@ public class MessagesWidget extends Widget implements
     
     public void actionPerformed(ActionEvent event) {
         if (event.getSource() == addMessageButton) {
+            Message message = null;
             try {
                 if (model.startTransaction()) {
-                    Message newMessage = model.getFactory().createMessage();
-                    newMessage.setName(MessagesUtils.createNewMessageName(model));
+                    message = model.getFactory().createMessage();
+                    message.setName(MessagesUtils.createNewMessageName(model));
 
                     Part newPart = model.getFactory().createPart();
-                    newPart.setName(MessagesUtils.createNewPartName(newMessage));
+                    newPart.setName(MessagesUtils.createNewPartName(message));
                     newPart.setType(MessagesUtils.getDefaultTypeReference(model));
 
-                    newMessage.addPart(newPart);
+                    message.addPart(newPart);
 
-                    copyView(null, newMessage);
+                    copyView(null, message);
 
-                    model.getDefinitions().addMessage(newMessage);
+                    model.getDefinitions().addMessage(message);
                 }
             } finally {
                 model.endTransaction();
+            }
+            if (message != null) {
+                ActionHelper.selectNode(message);
             }
         } else if (event.getSource() == removeMessageButton) {
             for (MessageWidget messageWidget : getMessageWidgets()) {
@@ -232,11 +243,13 @@ public class MessagesWidget extends Widget implements
     
     
     public void collapseWidget(ExpanderWidget expander) {
-        removeChild(contentWidget);
+        if (contentWidget.getParentWidget() != null)
+            removeChild(contentWidget);
     }
 
     public void expandWidget(ExpanderWidget expander) {
-        addChild(contentWidget);
+        if (contentWidget.getParentWidget() == null)
+            addChild(contentWidget);
     }
     
     
@@ -322,7 +335,7 @@ public class MessagesWidget extends Widget implements
         MessageWidget oldWidget = null;
         
         if (oldMessage != null) {
-            oldWidget = (MessageWidget) ((ExScene) getScene())
+            oldWidget = (MessageWidget) ((PartnerScene) getScene())
                     .findWidget(oldMessage);
         }
         
@@ -341,7 +354,7 @@ public class MessagesWidget extends Widget implements
     }
     
     public void expandForDragAndDrop() {
-        expanderWidget.actionPerformed(null);
+        expanderWidget.setExpanded(true);
     }
 
     
@@ -423,17 +436,56 @@ public class MessagesWidget extends Widget implements
         return model.getDefinitions().getName();
     }
 
+    /**
+     * Locates the TopComponent parent of the view containing the Scene
+     * that owns this widget, if possible.
+     *
+     * @return  the parent TopComponent, or null if not found.
+     */
+    protected TopComponent findTopComponent() {
+        return (TopComponent) SwingUtilities.getAncestorOfClass(
+                TopComponent.class, getScene().getView());
+    }
+
+    /**
+     * Returns a Node for the WSDL component that this widget represents.
+     * If this widget does not have an assigned WSDL component, then this
+     * returns an AbstractNode with no interesting properties.
+     */
+    private synchronized Node getNode() {
+        if (componentNode == null) {
+            // Use the factory to construct the Node.
+            NodesFactory factory = NodesFactory.getInstance();
+            componentNode = factory.create(model.getDefinitions());
+            componentNode = new WidgetFilterNode(componentNode);
+        }
+        return componentNode;
+    }
+
     public JPopupMenu getPopupMenu(Widget widget, Point point) {
-        // Use the factory to construct the Node.
-        NodesFactory factory = NodesFactory.getInstance();
-        Node node = factory.create(model.getDefinitions());
+        Node node = getNode();
         if (node != null) {
-            return node.getContextMenu();
+            // Using Node.getContextMenu() appears to bypass our FilterNode,
+            // so we must build out the context menu as follows.
+            TopComponent tc = findTopComponent();
+            Lookup lookup;
+            if (tc != null) {
+                // Activate the node just as any explorer view would do.
+                tc.setActivatedNodes(new Node[] { node });
+                // To get the explorer actions enabled, must have the
+                // lookup from the parent TopComponent.
+                lookup = tc.getLookup();
+            } else {
+                lookup = Lookup.EMPTY;
+            }
+            // Remove the actions that we do not want to support in this view.
+            Action[] actions = node.getActions(true);
+            return Utilities.actionsToPopup(actions, lookup);
         }
         return null;
     }
 
-    public static final Border MAIN_BORDER = new BgBorder(1, 1, 8, 8, 
+    public static final Border MAIN_BORDER = new FilledBorder(1, 1, 8, 8, 
             new Color(0x888888), Color.WHITE);
     
     

@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -71,9 +71,9 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.BgBorder;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.ButtonBorder;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.GradientBgBorder;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.GradientFillBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
@@ -135,7 +135,7 @@ public class MessageWidget extends AbstractWidget<Message>
         if (expanded) {
             addChild(contentWidget);
         }
-        getActions().addAction(((ExScene) scene).getDnDAction());
+        getActions().addAction(((PartnerScene) scene).getDnDAction());
     }
     
 
@@ -419,7 +419,7 @@ public class MessageWidget extends AbstractWidget<Message>
             name = NbBundle.getMessage(MessageWidget.class, "LBL_Empty"); // NOI18N
         }
         
-        ExLabelWidget result = new ExLabelWidget(scene, IMAGE, name, 
+        ImageLabelWidget result = new ImageLabelWidget(scene, IMAGE, name, 
                 getPartCount(message));
         result.getActions().addAction(ActionFactory
                 .createInplaceEditorAction((InplaceEditorProvider<JTextField>) 
@@ -497,11 +497,13 @@ public class MessageWidget extends AbstractWidget<Message>
     
     
     public void collapseWidget(ExpanderWidget expander) {
-        removeChild(contentWidget);
+        if (contentWidget.getParentWidget() != null)
+            removeChild(contentWidget);
     }
 
     public void expandWidget(ExpanderWidget expander) {
-        addChild(contentWidget);
+        if (contentWidget.getParentWidget() == null)
+            addChild(contentWidget);
     }
 
     public boolean isCollapsed() {
@@ -617,7 +619,7 @@ public class MessageWidget extends AbstractWidget<Message>
     
     
     public void expandForDragAndDrop() {
-        expanderWidget.actionPerformed(null);
+        expanderWidget.setExpanded(true);
     }
 
     public Object hashKey() {
@@ -625,18 +627,18 @@ public class MessageWidget extends AbstractWidget<Message>
         return comp != null ? comp.getName() : this;
     }
 
-    private static final Border HEADER_BORDER = new GradientBgBorder(0, 0, 4, 8,
+    private static final Border HEADER_BORDER = new GradientFillBorder(0, 0, 4, 8,
             null, new Color(0xF2B6AF), new Color(0xFDECE2));
 
-    private static final Border BUTTONS_BORDER = new BgBorder(
+    private static final Border BUTTONS_BORDER = new FilledBorder(
             new Insets(1, 0, 0, 0), new Insets(4, 8, 4, 8),
             new Color(0x95301F), Color.WHITE);
     
     
-    private static final Border MAIN_BORDER = new BgBorder(1, 1, 0, 0, 
+    private static final Border MAIN_BORDER = new FilledBorder(1, 1, 0, 0, 
             new Color(0x95301F), Color.WHITE);
 
-    private static final Border TABLE_BORDER = new BgBorder(
+    private static final Border TABLE_BORDER = new FilledBorder(
             new Insets(1, 0, 0, 0), new Insets(0, 0, 0, 0),
             new Color(0x95301F), new Color(0x999999));
 
@@ -646,7 +648,7 @@ public class MessageWidget extends AbstractWidget<Message>
     private static final Image EXPANDED_IMAGE = new BufferedImage(12, 12, 
             BufferedImage.TYPE_INT_ARGB);
     
-    public static final Border HEADER_CELL_BORDER = new BgBorder(0, 0, 1, 8, null, 
+    public static final Border HEADER_CELL_BORDER = new FilledBorder(0, 0, 1, 8, null, 
             new Color(0xEEEEEE));
     
     

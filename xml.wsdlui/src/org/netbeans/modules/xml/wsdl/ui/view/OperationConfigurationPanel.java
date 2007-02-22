@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,7 +56,8 @@ public class OperationConfigurationPanel extends javax.swing.JPanel {
     private Project mProject;
     
     private Document mCommonOperationTextFieldDocument = new JTextField().getDocument();
-    private Map<String, String> namespaceToPrefixMap;;
+    private Map<String, String> namespaceToPrefixMap;
+    private WSDLModel mModel;
     
     
     private boolean mIsShowMessageComboBoxes = false;
@@ -66,16 +67,14 @@ public class OperationConfigurationPanel extends javax.swing.JPanel {
         mProject = project;
         this.mIsShowMessageComboBoxes = isShowMessageComboBoxes;
         if (model != null) {
-            if (model != null) {
-                namespaceToPrefixMap = new HashMap<String, String>();
-                Map<String, String> prefixes = ((AbstractDocumentComponent)model.getDefinitions()).getPrefixes();
-                if (prefixes != null) {
-                    for (String prefix : prefixes.keySet()) {
-                        namespaceToPrefixMap.put(prefixes.get(prefix), prefix);
-                    }
+            mModel = model;
+            namespaceToPrefixMap = new HashMap<String, String>();
+            Map<String, String> prefixes = ((AbstractDocumentComponent)model.getDefinitions()).getPrefixes();
+            if (prefixes != null) {
+                for (String prefix : prefixes.keySet()) {
+                    namespaceToPrefixMap.put(prefixes.get(prefix), prefix);
                 }
             }
-            this.namespaceToPrefixMap = namespaceToPrefixMap;
         } else {
             namespaceToPrefixMap = new HashMap<String, String>();
             if (!namespaceToPrefixMap.containsKey("xsd")) {
@@ -100,11 +99,11 @@ public class OperationConfigurationPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        notificationOperationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.NotificationOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap,  mIsShowMessageComboBoxes, mModel);
+        solicitResponseOperationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.SolicitResponseOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes, mModel);
         contentPanel = new javax.swing.JPanel();
-        requestReplyOperationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.RequestReplyOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes);
-        oneWayOperationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.OneWayOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes);
-        notificationOperationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.NotificationOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap,  mIsShowMessageComboBoxes);
-        solicitResponseOperationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.SolicitResponseOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes);
+        requestReplyOperationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.RequestReplyOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes, mModel);
+        oneWayOperationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.OneWayOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes, mModel);
 
         contentPanel.setLayout(new java.awt.CardLayout());
 
@@ -114,10 +113,6 @@ public class OperationConfigurationPanel extends javax.swing.JPanel {
 
         contentPanel.add(oneWayOperationPanel1, "OPERATION_ONE_WAY");
 
-        contentPanel.add(notificationOperationPanel1, "OPERATION_NOTIFICATION");
-
-        contentPanel.add(solicitResponseOperationPanel1, "OPERATION_SOLICIT_RESPONSE");
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -126,7 +121,7 @@ public class OperationConfigurationPanel extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(contentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(contentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -220,7 +215,7 @@ public class OperationConfigurationPanel extends javax.swing.JPanel {
         OperationType op4 = new OperationType(OperationType.OPERATION_NOTIFICATION,
                 NbBundle.getMessage(OperationConfigurationPanel.class, "OperationConfigurationPanel.NOTIFICATION"));
         
-        DefaultComboBoxModel model = new DefaultComboBoxModel(new OperationType[] {op1, op2, op3, op4});
+        DefaultComboBoxModel model = new DefaultComboBoxModel(new OperationType[] {op1, op2/*, op3, op4*/});
         
 //        operationTypeComboBox.setModel(model);
         

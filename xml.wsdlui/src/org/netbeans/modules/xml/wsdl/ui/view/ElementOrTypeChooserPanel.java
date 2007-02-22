@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,11 +27,11 @@ package org.netbeans.modules.xml.wsdl.ui.view;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -44,13 +44,18 @@ import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.schema.model.SchemaModelReference;
 import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
-import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.nodes.BuiltInTypeFolderNode;
+import org.netbeans.modules.xml.wsdl.ui.wsdl.nodes.XSDTypesNode;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.ui.ProjectConstants;
 import org.openide.explorer.ExplorerManager;
@@ -63,6 +68,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -72,11 +78,13 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
     
     private Map<String, String> namespaceToPrefixMap;
     private Project mProject;
+    private WSDLModel mModel;
     
     /** Creates new form ElementOrTypeChooserPanel */
-    public ElementOrTypeChooserPanel(Project project, Map<String, String> namespaceToPrefixMap) {
+    public ElementOrTypeChooserPanel(Project project, Map<String, String> namespaceToPrefixMap, WSDLModel model) {
         this.namespaceToPrefixMap = namespaceToPrefixMap;
         this.mProject = project;
+        this.mModel = model;
         initComponents();
         initGUI();
     }
@@ -116,32 +124,41 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
     }
     
     private void populateRootNode(Node rootNode) {
+        ArrayList<Node> nodes = new ArrayList<Node>();
         BuiltInTypeFolderNode builtInTypes = new BuiltInTypeFolderNode();
-        
+        nodes.add(builtInTypes);
+        if (mModel != null) {
+            Definitions def = mModel.getDefinitions();
+            if (def.getTypes() != null) {
+                Collection<Schema> schemas = def.getTypes().getSchemas();
+                if (schemas != null && !schemas.isEmpty()) {
+                    InlineTypesFolderNode inlineTypesFolderNode = new InlineTypesFolderNode(NodesFactory.getInstance().create(def.getTypes()), schemas);
+                    nodes.add(0, inlineTypesFolderNode);
+                }
+            }
+        }
         if (mProject != null) {
             FileObject projectDir = mProject.getProjectDirectory();
             Node projectNode  = null;
             try {
                 projectNode = new ProjectFolderNode(DataObject.find(projectDir).getNodeDelegate(), projectDir);
+                if (projectNode != null && nodes.size() == 1)  {
+                    nodes.add(0, projectNode);
+                } else {
+                    nodes.add(1, projectNode);
+                }
             } catch (DataObjectNotFoundException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            if (projectNode != null) {
-                Node[] nodes = new Node[2];
-                nodes[0] = projectNode;
-                nodes[1] = builtInTypes;
-                rootNode.getChildren().add(nodes);
-                beanTreeView1.expandNode(builtInTypes);
-                beanTreeView1.expandNode(projectNode);
-            } else {
-                rootNode.getChildren().add(new Node[] {builtInTypes});
-                beanTreeView1.expandNode(builtInTypes);
-            }
-        } else {
-            rootNode.getChildren().add(new Node[] {builtInTypes});
-            beanTreeView1.expandNode(builtInTypes);
         }
+        Node[] nodesArr = nodes.toArray(new Node[nodes.size()]);
+        rootNode.getChildren().add(nodesArr);
+        for (int i = 1; i < nodesArr.length; i++) {
+            beanTreeView1.expandNode(nodesArr[i]);
+        }
+        beanTreeView1.expandNode(nodesArr[0]);
+        
         
     }
     
@@ -350,8 +367,8 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
         }
         
         @Override
-        protected Node[] createNodes(Node key) {
-            return new Node[] {new CategoryFilterNode(key)};
+        protected Node[] createNodes(Node n) {
+            return new Node[] {new CategoryFilterNode(n)};
         }
         
     }
@@ -372,8 +389,8 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
          }
          
          @Override
-         protected Node[] createNodes(Node key) {
-             return new Node[] {new ChildLessNode(key)};
+         protected Node[] createNodes(Node n) {
+             return new Node[] {new ChildLessNode(n)};
          }
          
      }
@@ -386,5 +403,68 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
          }
          
      }
+     
+     static class InlineTypesFolderNode extends FilterNode {
+         private Collection mSchemas;
+         
+         public InlineTypesFolderNode(Node node, Collection schemas) {
+             super(node);
+             mSchemas = schemas;
+             setDisplayName(NbBundle.getMessage(XSDTypesNode.class, "INLINE_SCHEMATYPE_NAME"));
+             setChildren(new TypesChildren());
+         }
+         
+         
+         class TypesChildren extends Children.Keys {
+    
+        public TypesChildren() {
+            
+        }
+        
+        @Override
+        protected Node[] createNodes(Object key) {
+            List<Class<? extends SchemaComponent>> filters = new ArrayList<Class<? extends SchemaComponent>>();
+            filters.add(GlobalSimpleType.class);
+            filters.add(GlobalComplexType.class);
+            filters.add(GlobalElement.class);
+            filters.add(SchemaModelReference.class);
+            CategorizedSchemaNodeFactory factory = new CategorizedSchemaNodeFactory(
+                    ((Schema)key).getModel(), filters, Lookup.EMPTY);
+            Node node = factory.createNode((Schema) key);
+            return new Node[] { node };
 
+        }
+        
+        
+        @Override
+        protected void addNotify() {
+            resetKeys();
+        }
+        
+        @Override
+        protected void removeNotify() {
+            this.setKeys(Collections.EMPTY_SET);
+            
+        }
+        
+        private void resetKeys() {
+                this.setKeys(mSchemas);
+        }
+        
+        @Override
+        public boolean remove (final Node[] arr) {
+            //HACK: we want to reset the keys
+            //and also want to call super.remove
+            //so that tree gets refreshed.
+            //we need to add resetkeys
+            //because when nodes are created from 
+            //persisted bpel info
+            //super.remove() does not delete a node.(it is not in nodes collection)
+            //supper.remove() removes node when user create
+            //a new node for the first time. So we need both here.
+            resetKeys();
+            return super.remove(arr);
+        }
+    }
+     }
 }

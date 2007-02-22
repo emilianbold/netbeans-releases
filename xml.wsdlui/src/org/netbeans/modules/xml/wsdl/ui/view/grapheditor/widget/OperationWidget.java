@@ -2,40 +2,36 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.awt.Font;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.EnumSet;
-import java.util.List;
 
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
-import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.modules.xml.wsdl.model.Operation;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.HoverActionProvider;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.util.Lookup;
 
 /**
@@ -55,7 +51,6 @@ public abstract class OperationWidget<T extends Operation>
         mOperationConstruct = operation;
         mOperationNameLabelWidget = new LabelWidget(getScene());
         mOperationNameLabelWidget.setLabel(mOperationConstruct.getName());
-        mOperationNameLabelWidget.setOpaque(true);
         mOperationNameLabelWidget.setAlignment(Alignment.CENTER);
         mOperationNameLabelWidget.setFont(getScene().getDefaultFont().deriveFont(Font.BOLD));
         mOperationNameLabelWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
@@ -72,7 +67,10 @@ public abstract class OperationWidget<T extends Operation>
             }
             
             public boolean isEnabled(Widget widget) {
-                return true;
+                if (getWSDLComponent() != null) {
+                    return XAMUtils.isWritable(getWSDLComponent().getModel());
+                }
+                return false;
             }
             
             public String getText(Widget widget) {
@@ -82,7 +80,6 @@ public abstract class OperationWidget<T extends Operation>
         },
                 EnumSet.<InplaceEditorProvider.ExpansionDirection>of(InplaceEditorProvider.ExpansionDirection.LEFT,
                 InplaceEditorProvider.ExpansionDirection.RIGHT)));
-        mOperationNameLabelWidget.getActions().addAction(HoverActionProvider.getDefault(getScene()).getHoverAction());
         
         mOperationRectangleWidget = new RectangleWidget(getScene(), 10, 67);
     }
@@ -134,66 +131,4 @@ public abstract class OperationWidget<T extends Operation>
         }
     }
     
-    public class OneSideJustifiedOtherNotLayout implements Layout {
-        
-        boolean isRightSided;
-        
-        public OneSideJustifiedOtherNotLayout(boolean rightSided) {
-            isRightSided = rightSided;
-        }
-        
-        public void justify(Widget widget) {
-            List<Widget> children = widget.getChildren();
-            assert children.size() == 2 : "this layout cannot take more than 2 child widgets";
-            
-            Widget first = children.get(0);
-            Widget second = children.get(1);
-            
-            Rectangle parentBounds = widget.getClientArea();
-            
-            
-            Rectangle secondBounds = second.getBounds();
-            Rectangle firstBounds = first.getBounds();
-            
-            
-            firstBounds.width = parentBounds.width - secondBounds.width;
-            secondBounds.height= Math.max(firstBounds.height + 6, secondBounds.height);
-            
-            if (isRightSided) {
-                first.resolveBounds(new Point(0,0), firstBounds);
-                second.resolveBounds(new Point(parentBounds.width - secondBounds.width, 0), secondBounds);
-            } else {
-                first.resolveBounds(new Point(secondBounds.width,0), firstBounds);
-                second.resolveBounds(new Point(0, 0), secondBounds);
-            }
-        }
-        
-        public void layout(Widget widget) {
-            List<Widget> children = widget.getChildren();
-            assert children.size() == 2 : "this layout cannot take more than 2 child widgets";
-            
-            Widget first = children.get(0);
-            Widget second = children.get(1);
-            
-            
-            Rectangle secondBounds = second.getPreferredBounds();
-            Rectangle firstBounds = first.getPreferredBounds();
-            
-            
-            secondBounds.height= Math.max(firstBounds.height + 6, secondBounds.height);
-            
-            if (isRightSided) {
-                first.resolveBounds(new Point(0,0), firstBounds);
-                second.resolveBounds(new Point(firstBounds.width, 0), secondBounds);
-            } else {
-                first.resolveBounds(new Point(secondBounds.width,0), firstBounds);
-                second.resolveBounds(new Point(0, 0), secondBounds);
-            }
-        }
-        
-        public boolean requiresJustification(Widget widget) {
-            return true;
-        }
-        
-    }
 }

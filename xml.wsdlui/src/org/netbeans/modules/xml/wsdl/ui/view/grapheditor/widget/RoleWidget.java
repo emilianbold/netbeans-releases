@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,14 +23,16 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.EnumSet;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 
 import org.netbeans.api.visual.action.ActionFactory;
-import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
+import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
+import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
@@ -43,18 +45,22 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.HoverActionProvider;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortTypeNode;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  * Represents a role in the WSDL model.
  */
-public class RoleWidget extends AbstractWidget<Role> {
+public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     private PortTypeWidget mPortTypeWidget;
     private CenteredLabelWidget mLabelWidget;
     private PartnerLinkType mPartnerLinkType;
+    private boolean leftSided;
 
     /**
      * Creates a new instance of RoleWidget.
@@ -73,8 +79,9 @@ public class RoleWidget extends AbstractWidget<Role> {
         setLayout(new RoleWidgetLayout(10));
         
         setOpaque(true);
-        refreshPortTypeColumn();
-        
+        updateContent();
+        if (getWSDLComponent() != null)
+            getActions().addAction(((PartnerScene)getScene()).getDnDAction());
         //setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
     }
     
@@ -87,6 +94,14 @@ public class RoleWidget extends AbstractWidget<Role> {
         return role.getName();
     }
 
+    protected void setLeftSided(boolean isLeftSided) {
+        leftSided = isLeftSided;
+    }
+    
+    protected boolean isLeftSided() {
+        return leftSided;
+    }
+    
     public void showHotSpot(boolean show) {
         if (show) {
             mPortTypeWidget.showHotSpot();
@@ -98,6 +113,7 @@ public class RoleWidget extends AbstractWidget<Role> {
     @Override
     public void updateContent() {
         refreshPortTypeColumn();
+        getScene().validate();
     }
 
     @Override
@@ -111,11 +127,11 @@ public class RoleWidget extends AbstractWidget<Role> {
             PortType widgetPT = mPortTypeWidget.getWSDLComponent();
             if (widgetPT != null && portType == null) {
                 if (EventQueue.isDispatchThread()) {
-                    refreshPortTypeColumn();
+                    updateContent();
                 } else {
                     EventQueue.invokeLater(new Runnable(){
                         public void run() {
-                            refreshPortTypeColumn();
+                            updateContent();
                         }
                     });
                 }
@@ -146,7 +162,13 @@ public class RoleWidget extends AbstractWidget<Role> {
 
     private void refreshPortTypeColumn() {
         removeChildren();
-        mLabelWidget = new CenteredLabelWidget(getScene(), getName(), Color.WHITE);
+        if (getWSDLComponent() == null) {
+            mLabelWidget = new CenteredLabelWidget(getScene(), getName(), Color.LIGHT_GRAY);
+            mLabelWidget.setToolTipText(NbBundle.getMessage(RoleWidget.class, "RoleWidget_DBL_CLICK_CREATE_NEW_ROLE_TT"));
+        } else {
+            mLabelWidget = new CenteredLabelWidget(getScene(), getName(), Color.WHITE);
+            mLabelWidget.setToolTipText(null);
+        }
         addChild(mLabelWidget);
         //mLabelWidget.setBackground(Color.WHITE);
         mLabelWidget.setBorder(BorderFactory.createLineBorder(Color.GRAY));
@@ -175,25 +197,32 @@ public class RoleWidget extends AbstractWidget<Role> {
                     model.endTransaction();
                 }
                 if (newRoleCreated) {
-                    refreshPortTypeColumn();
+                    updateContent();
                 }
             }
 
             public boolean isEnabled(Widget widget) {
-                return true;
+                if (mPartnerLinkType != null) {
+                    return XAMUtils.isWritable(mPartnerLinkType.getModel());
+                }
+                return false;
             }
 
             public String getText(Widget widget) {
                 Role role = getWSDLComponent();
                 if (role == null) {
-                    return mPartnerLinkType.getName() + "Role"; //generate a new name;
+                    String name = mPartnerLinkType.getName() + "Role"; //generate a new name;
+                    if (mPartnerLinkType.getRole1() != null && mPartnerLinkType.getRole1().getName().equals(name)
+                            || mPartnerLinkType.getRole2() != null && mPartnerLinkType.getRole2().getName().equals(name)) {
+                        name = name + "1";
+                    }
+                    
+                    return name; 
                 }
                 return role.getName();
             }
 
-        },
-        EnumSet.<InplaceEditorProvider.ExpansionDirection>of (InplaceEditorProvider.ExpansionDirection.LEFT, 
-                InplaceEditorProvider.ExpansionDirection.RIGHT)));
+        }, null));
         mLabelWidget.getActions().addAction(HoverActionProvider.getDefault(
                 getScene()).getHoverAction());
         WidgetFactory factory = WidgetFactory.getInstance();
@@ -207,7 +236,6 @@ public class RoleWidget extends AbstractWidget<Role> {
         }
         
         addChild(mPortTypeWidget);
-        getScene().revalidate();
     }
     
     /**
@@ -276,4 +304,72 @@ public class RoleWidget extends AbstractWidget<Role> {
         }
         
     }
+
+    public void dragExit() {
+        mPortTypeWidget.setBorder(BorderFactory.createEmptyBorder());
+        
+    }
+
+    public boolean dragOver(Point scenePoint, WidgetDropTargetDragEvent event) {
+        Transferable transferable = event.getTransferable();
+
+        try {
+            if (transferable != null) {
+                for (DataFlavor flavor : transferable.getTransferDataFlavors()) {
+                    Class repClass = flavor.getRepresentationClass();
+                    if (Node.class.isAssignableFrom(repClass)) {
+                        Node node = Node.class.cast(transferable.getTransferData(flavor));
+                        if (node instanceof PortTypeNode) {
+                            mPortTypeWidget.setBorder(BorderFactory.createLineBorder(WidgetConstants.HIT_POINT_BORDER, 2));
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            //do nothing
+        }
+        return false;
+    }
+
+    public boolean drop(Point scenePoint, WidgetDropTargetDropEvent event) {
+        Transferable transferable = event.getTransferable();
+        try {
+            if (transferable != null) {
+                for (DataFlavor flavor : transferable.getTransferDataFlavors()) {
+                    Class repClass = flavor.getRepresentationClass();
+                    Object data = transferable.getTransferData(flavor);
+                    if (Node.class.isAssignableFrom(repClass)) {
+                        Node node = (Node) data;
+                        if (node instanceof PortTypeNode) {
+                            mPortTypeWidget.setBorder(BorderFactory.createEmptyBorder());
+                            setPortType((PortTypeNode)node);
+                        }
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            //do nothing
+        }
+        return false;
+    }
+
+    private void setPortType(PortTypeNode node) {
+        PortType pt = (PortType) node.getWSDLComponent();
+        if (getWSDLComponent().getModel().startTransaction()) {
+            try {
+                getWSDLComponent().setPortType(getWSDLComponent().createReferenceTo(pt, PortType.class));
+            } finally {
+                getWSDLComponent().getModel().endTransaction();
+            }
+        }
+    }
+
+    public void expandForDragAndDrop() {}
+
+    public boolean isCollapsed() {
+        return false;
+    }
+    
 }

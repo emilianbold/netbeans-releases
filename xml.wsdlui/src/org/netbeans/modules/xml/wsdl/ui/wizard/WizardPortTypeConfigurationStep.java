@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -54,6 +54,7 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationType;
 import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
 import org.netbeans.modules.xml.wsdl.ui.view.PortTypeConfigurationPanel;
@@ -271,9 +272,7 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
                 }
 
                 if(this.mNewMessageList != null) {
-                    Iterator<Message> it = mNewMessageList.iterator();
-                    while(it.hasNext()) {
-                        Message msg = it.next();
+                    for (Message msg : mNewMessageList) {
                         this.mTempModel.getDefinitions().removeMessage(msg);
                     }
                 }
@@ -283,14 +282,18 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
                 }
 
                 if(this.mImports != null) {
-                    Collection<Schema> schemas = this.mTempModel.getDefinitions().getTypes().getSchemas();
-                    if(schemas.size() != 0) {
-                        Schema schema = schemas.iterator().next();
-                        Iterator<Import> it = this.mImports.iterator();
-                        while(it.hasNext()) {
-                            Import imp = it.next();
-                            schema.removeExternalReference(imp);
+                    //Cleanup all inline schemas and remove the imported schemas from the inline schema.
+                    Collection<WSDLSchema> wSchemas = mTempModel.getDefinitions().getTypes().getExtensibilityElements(WSDLSchema.class);
+                    for (WSDLSchema wSchema : wSchemas) {
+                        Schema schema = wSchema.getSchemaModel().getSchema();
+                        //Wizard adds all imported schemas in a inline schema with same TNS as the definitions.
+                        //So remove from that schema.
+                        if (schema.getTargetNamespace().equals(mTempModel.getDefinitions().getTargetNamespace())) {
+                            for (Import imp : mImports) {
+                                schema.removeExternalReference(imp);
+                            }
                         }
+                        mTempModel.getDefinitions().getTypes().removeExtensibilityElement(wSchema);
                     }
                 }
                 

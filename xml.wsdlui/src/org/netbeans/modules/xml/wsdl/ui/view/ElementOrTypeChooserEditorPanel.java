@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,7 +26,6 @@
 package org.netbeans.modules.xml.wsdl.ui.view;
 
 import java.awt.Dialog;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -34,16 +33,14 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
 
+import javax.swing.AbstractAction;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -57,12 +54,14 @@ public class ElementOrTypeChooserEditorPanel extends javax.swing.JPanel {
     private final JTable mPartsTable;
     private final Map<String, String> namespaceToPrefixMap;
     private Project mProject;
+    private WSDLModel mModel;
     /** Creates new form ElementOrTypeChooserPanel 
      * @param partsTable */
-    public ElementOrTypeChooserEditorPanel(JTable partsTable, Map<String, String> namespaceToPrefixMap, Project project ) {
+    public ElementOrTypeChooserEditorPanel(JTable partsTable, Map<String, String> namespaceToPrefixMap, Project project, WSDLModel model ) {
         this.mPartsTable = partsTable;
         this.namespaceToPrefixMap = namespaceToPrefixMap;
         mProject = project;
+        mModel = model;
         initComponents();
         initGUI();
     }
@@ -112,7 +111,7 @@ public class ElementOrTypeChooserEditorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jButton1ActionPerformed
     
     public void openSchemaComponentChooser() {
-        panel = new ElementOrTypeChooserPanel(mProject, namespaceToPrefixMap);
+        panel = new ElementOrTypeChooserPanel(mProject, namespaceToPrefixMap, mModel);
         final DialogDescriptor descriptor = new DialogDescriptor(panel , NbBundle.getMessage(ElementOrTypeChooserEditorPanel.class, "ElementOrTypeChooserEditorPanel.Dialog.title"), true, null);
         final PropertyChangeListener pcl = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

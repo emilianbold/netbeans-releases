@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -35,12 +35,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
-
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
 import org.netbeans.api.visual.border.Border;
@@ -50,22 +52,29 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.BgBorder;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.ButtonBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.openide.ErrorManager;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 
 public class CollaborationsWidget extends Widget
         implements ExpandableWidget, DnDHandler, PopupMenuProvider {
@@ -73,7 +82,7 @@ public class CollaborationsWidget extends Widget
     private WSDLModel mModel;
     private Widget mCollaborationContentWidget;
     private Image IMAGE = Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/grapheditor/palette/resources/partnerlinkTypesFolder.png");
-    public static final Border MAIN_BORDER = new BgBorder(1, 1, 8, 8, new Color(0x888888), Color.WHITE);
+    public static final Border MAIN_BORDER = new FilledBorder(1, 1, 8, 8, new Color(0x888888), Color.WHITE);
     private static final int GAP = 10;
     private Widget mLabelWidget;
     private Widget mHeaderWidget;
@@ -82,11 +91,17 @@ public class CollaborationsWidget extends Widget
     private PartnerLinkTypeHitPointWidget partnerLinkTypeHitPoint; 
     private Object draggedObject = null;
     private int partnerLinkTypesHitPointIndex = -1;
+    private Widget stubWidget;
+    /** The Node for the WSDLComponent, if it has been created. */
+    private Node componentNode;
     
     public CollaborationsWidget(Scene scene, WSDLModel model) {
         super(scene);
         mModel = model;
         partnerLinkTypeHitPoint = new PartnerLinkTypeHitPointWidget(scene);
+        stubWidget = new StubWidget(scene, NbBundle.getMessage(
+                CollaborationsWidget.class, 
+                "LBL_CollaborationsWidget_ThereAreNoPartnerLinkTypes")); // MOI18N
         init();
     }
 
@@ -112,7 +127,7 @@ public class CollaborationsWidget extends Widget
             addChild(mCollaborationContentWidget);
         }
         mCollaborationContentWidget.setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.JUSTIFY, GAP));
-        getActions().addAction(((ExScene)getScene()).getDnDAction());
+        getActions().addAction(((PartnerScene)getScene()).getDnDAction());
         getActions().addAction(ActionFactory.createPopupMenuAction(this));
         createContent();
         //initially all plt widgets should be collapsed
@@ -124,12 +139,8 @@ public class CollaborationsWidget extends Widget
         actionWidget.setLayout(LayoutFactory.createHorizontalLayout(SerialAlignment.JUSTIFY, 8));
 
         // Auto-create button.
-        Definitions defs = mModel.getDefinitions();
-        List<PartnerLinkType> partnerLinkTypes =
-                defs.getExtensibilityElements(PartnerLinkType.class);
-        Collection<PortType> portTypes = defs.getPortTypes();
-        if ((partnerLinkTypes == null || partnerLinkTypes.size() == 0) &&
-                (portTypes != null && portTypes.size() > 0)) {
+        Collection<PortType> ports = getUnusedPortTypes();
+        if (ports.size() > 0) {
             ButtonWidget createButtonWidget = new ButtonWidget(getScene(),
                     NbBundle.getMessage(CollaborationsWidget.class,
                     "LBL_CollaborationsWidget_AutoCreate"));
@@ -140,11 +151,11 @@ public class CollaborationsWidget extends Widget
                     QName qname = BPELQName.PARTNER_LINK_TYPE.getQName();
                     try {
                         if (mModel.startTransaction()) {
-                            Definitions defs = mModel.getDefinitions();
-                            Collection<PortType> portTypes = defs.getPortTypes();
-                            for (PortType pt : portTypes) {
+                            Definitions definitions = mModel.getDefinitions();
+                            Collection<PortType> ports = getUnusedPortTypes();
+                            for (PortType pt : ports) {
                                 PartnerLinkType plt = (PartnerLinkType) factory.create(
-                                        defs, qname);
+                                        definitions, qname);
                                 String name = pt.getName();
                                 int idx = name.toLowerCase().indexOf("porttype");
                                 if (idx > 0) {
@@ -159,7 +170,7 @@ public class CollaborationsWidget extends Widget
                                         role.createReferenceTo(pt, PortType.class);
                                 role.setPortType(ptref);
                                 plt.setRole1(role);
-                                defs.addExtensibilityElement(plt);
+                                definitions.addExtensibilityElement(plt);
                             }
                         }
                     } finally {
@@ -182,9 +193,10 @@ public class CollaborationsWidget extends Widget
                 "LBL_CollaborationsWidget_AddPartnerLinkType"));
         addButtonWidget.setActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                PartnerLinkType plt = null;
                 try {
                     if (mModel.startTransaction()) {
-                        PartnerLinkType plt = (PartnerLinkType) mModel.
+                        plt = (PartnerLinkType) mModel.
                                 getFactory().create(mModel.getDefinitions(),
                                 BPELQName.PARTNER_LINK_TYPE.getQName());
                         // TODO: Should use file name instead of definitions name
@@ -199,6 +211,9 @@ public class CollaborationsWidget extends Widget
                     }
                 } finally {
                     mModel.endTransaction();
+                }
+                if (plt != null) {
+                    ActionHelper.selectNode(plt);
                 }
             }
         });
@@ -263,22 +278,34 @@ public class CollaborationsWidget extends Widget
 
 
     private void createContent() {
-        mLabelWidget = new ExLabelWidget(getScene(), IMAGE, "PartnerLinkTypes", 
+        mLabelWidget = new ImageLabelWidget(getScene(), IMAGE, "PartnerLinkTypes", 
                 "(" + mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class).size() + ")");
         mHeaderWidget.addChild(0, mLabelWidget);
         
+        if (stubWidget.getParentWidget() != null) {
+            stubWidget.getParentWidget().removeChild(stubWidget);
+        }
         
         List<PartnerLinkType> partnerLinkTypes = mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class);
-        Scene scene = getScene();
-        WidgetFactory factory = WidgetFactory.getInstance();
-        for (PartnerLinkType plType : partnerLinkTypes) {
-            Widget widget = factory.createWidget(scene, plType, true);
-            mCollaborationContentWidget.addChild(widget);
+        if (partnerLinkTypes != null && partnerLinkTypes.isEmpty()) {
+            mCollaborationContentWidget.addChild(stubWidget);
+        } else {
+            Scene scene = getScene();
+            WidgetFactory factory = WidgetFactory.getInstance();
+            for (PartnerLinkType plType : partnerLinkTypes) {
+                Widget widget = factory.createWidget(scene, plType, true);
+                mCollaborationContentWidget.addChild(widget);
+            }
         }
         
         removeButtonWidget.setButtonEnabled(false);
     }
 
+    private boolean hasPartnerLinkTypes() {
+        List<PartnerLinkType> partnerLinkTypes = mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class);
+        return partnerLinkTypes == null || !partnerLinkTypes.isEmpty();
+    }
+    
     //first time createContent is called all partnerlinktype widgets are in collapsed state.
     private void collapsePartnerLinkTypeWidgets() {
         for (Widget w : mCollaborationContentWidget.getChildren()) {
@@ -352,9 +379,13 @@ public class CollaborationsWidget extends Widget
                             getFactory().create(mModel.getDefinitions(),
                             BPELQName.PARTNER_LINK_TYPE.getQName());
                     String pltName = NameGenerator.generateUniquePartnerLinkType(
-                            null, BPELQName.PARTNER_LINK_TYPE.getQName(), mModel);
+                            mModel.getDefinitions().getName(), BPELQName.PARTNER_LINK_TYPE.getQName(), mModel);
                     plt.setName(pltName);
-
+                    Role role = (Role) mModel.getFactory().create(
+                            plt, BPELQName.ROLE.getQName());
+                    role.setName("role1");
+                    plt.setRole1(role);
+                    
                     if (index == plts.length) {
                         mModel.getDefinitions().addExtensibilityElement(plt);
                     } else {
@@ -395,6 +426,9 @@ public class CollaborationsWidget extends Widget
             partnerLinkTypeHitPoint.getParentWidget().removeChild(partnerLinkTypeHitPoint);
         }
         
+        if (stubWidget.getParentWidget() != null) {
+            stubWidget.getParentWidget().removeChild(stubWidget);
+        }
         mCollaborationContentWidget.addChild(partnerLinkTypesHitPointIndex, partnerLinkTypeHitPoint);
     }
     
@@ -402,10 +436,76 @@ public class CollaborationsWidget extends Widget
         if (partnerLinkTypeHitPoint.getParentWidget() != null) {
             partnerLinkTypeHitPoint.getParentWidget().removeChild(partnerLinkTypeHitPoint);
         }
+        
+        if (!hasPartnerLinkTypes() && stubWidget.getParentWidget() == null) {
+            mCollaborationContentWidget.addChild(stubWidget);
+        }
         partnerLinkTypesHitPointIndex = -1;
         draggedObject = null;
     }
-    
+
+    /**
+     * Return a collection of the PortTypes which are not referenced by
+     * any Role in our WSDL model. This includes PortTypes in the imported
+     * WSDL documents.
+     *
+     * @return  collection of unused port types, or the empty list.
+     */
+    private Collection<PortType> getUnusedPortTypes() {
+        // Make a list that we can modify (and is our non-null return value).
+        List<PortType> allPorts = new ArrayList<PortType>();
+        Definitions defs = mModel.getDefinitions();
+        Collection<PortType> ports = defs.getPortTypes();
+        if (ports != null) {
+            allPorts.addAll(ports);
+        }
+        Collection<Import> imports = defs.getImports();
+        for (Import imp : imports) {
+            try {
+                WSDLModel importedModel = imp.getImportedWSDLModel();
+                Definitions importedDefs = importedModel.getDefinitions();
+                ports = importedDefs.getPortTypes();
+                if (ports != null) {
+                    allPorts.addAll(ports);
+                }
+            } catch (CatalogModelException cme) {
+                ErrorManager.getDefault().notify(cme);
+            }
+        }
+        List<PartnerLinkType> partners = defs.getExtensibilityElements(
+                PartnerLinkType.class);
+        if ((partners != null && partners.size() > 0) &&
+                (allPorts != null && allPorts.size() > 0)) {
+            for (PartnerLinkType partner : partners) {
+                PortType pt1 = getPortType(partner.getRole1());
+                if (pt1 != null) {
+                    allPorts.remove(pt1);
+                }
+                PortType pt2 = getPortType(partner.getRole2());
+                if (pt2 != null) {
+                    allPorts.remove(pt2);
+                }
+            }
+        }
+        return allPorts;
+    }
+
+    /**
+     * Retrieve the PortType from the given Role, if possible.
+     * 
+     * @param  role  the Role from which to get the PortType.
+     * @return  PortType from Role, or null if none.
+     */
+    private PortType getPortType(Role role) {
+        if (role != null) {
+            NamedComponentReference<PortType> ref = role.getPortType();
+            if (ref != null) {
+                return ref.get();
+            }
+        }
+        return null;
+    }
+
     private List<PartnerLinkTypeWidget> getPartnerLinkTypeWidgets() {
         if (mCollaborationContentWidget.getParentWidget() == null) return null;
         
@@ -445,12 +545,51 @@ public class CollaborationsWidget extends Widget
         return partnerLinkTypeWidgets.size();
     }
 
+    /**
+     * Locates the TopComponent parent of the view containing the Scene
+     * that owns this widget, if possible.
+     *
+     * @return  the parent TopComponent, or null if not found.
+     */
+    protected TopComponent findTopComponent() {
+        return (TopComponent) SwingUtilities.getAncestorOfClass(
+                TopComponent.class, getScene().getView());
+    }
+
+    /**
+     * Returns a Node for the WSDL component that this widget represents.
+     * If this widget does not have an assigned WSDL component, then this
+     * returns an AbstractNode with no interesting properties.
+     */
+    private synchronized Node getNode() {
+        if (componentNode == null) {
+            // Use the factory to construct the Node.
+            NodesFactory factory = NodesFactory.getInstance();
+            componentNode = factory.create(mModel.getDefinitions());
+            componentNode = new WidgetFilterNode(componentNode);
+        }
+        return componentNode;
+    }
+
     public JPopupMenu getPopupMenu(Widget widget, Point point) {
-        // Use the factory to construct the Node.
-        NodesFactory factory = NodesFactory.getInstance();
-        Node node = factory.create(mModel.getDefinitions());
+        Node node = getNode();
         if (node != null) {
-            return node.getContextMenu();
+            // Using Node.getContextMenu() appears to bypass our FilterNode,
+            // so we must build out the context menu as follows.
+            TopComponent tc = findTopComponent();
+            Lookup lookup;
+            if (tc != null) {
+                // Activate the node just as any explorer view would do.
+                tc.setActivatedNodes(new Node[] { node });
+                // To get the explorer actions enabled, must have the
+                // lookup from the parent TopComponent.
+                lookup = tc.getLookup();
+            } else {
+                lookup = Lookup.EMPTY;
+            }
+            // Remove the actions that we do not want to support in this view.
+            Action[] actions = node.getActions(true);
+            return Utilities.actionsToPopup(actions, lookup);
         }
         return null;
     }

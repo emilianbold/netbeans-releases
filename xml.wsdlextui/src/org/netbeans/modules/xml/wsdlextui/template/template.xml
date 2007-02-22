@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    Document   : template.xml
-    Created on : August 25, 2006, 5:39 PM
-    Author     : radval
+    Document   : __NAME__
+    Created on : __DATE__, __TIME__
+    Author     : __USER__
     Description:
         Purpose of the document follows.
 -->
-<templateGroup namespace="http://schemas.xmlsoap.org/wsdl/soap/" 
+<templateGroup namespace="http://schemas.xmlsoap.org/wsdl/soap/"
 		xmlns="http://xml.netbeans.org/schema/templates"
 		xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance"
-        xsi:schemaLocation="http://xml.netbeans.org/schema/templates 
+        xsi:schemaLocation="http://xml.netbeans.org/schema/templates
         templates.xsd" prefix="soap">
-            
+
     <template name="rpcLiteral" default="true">
         <!-- specify what can be inserted inside binding tag-->
         <wsdlElement name="Binding">
@@ -36,21 +36,21 @@
                 <extensionAttr name="parts"  />
             </extensionElement>
         </wsdlElement>
-        
+
         <wsdlElement name="BindingOperationFault">
             <extensionElement name="fault" >
                 <extensionAttr name="name"  />
                 <extensionAttr name="use" defaultValue="literal"  />
             </extensionElement>
         </wsdlElement>
-        
+
         <wsdlElement name="ServicePort">
             <extensionElement name="address" >
                 <extensionAttr name="location" required="true" defaultValue="http://localhost:18181/service"/>
             </extensionElement>
         </wsdlElement>
     </template>
-    
+
     <template name="documentLiteral">
         <wsdlElement name="Binding">
             <extensionElement name="binding" >
@@ -72,21 +72,21 @@
                 <extensionAttr name="use" defaultValue="literal" />
             </extensionElement>
         </wsdlElement>
-        
+
         <wsdlElement name="BindingOperationFault">
             <extensionElement name="fault" >
                 <extensionAttr name="name"  />
                 <extensionAttr name="use" defaultValue="literal"  />
             </extensionElement>
         </wsdlElement>
-        
+
         <wsdlElement name="ServicePort">
             <extensionElement name="address" >
                 <extensionAttr name="location"  defaultValue="http://localhost:18181/service"/>
             </extensionElement>
         </wsdlElement>
     </template>
-    
+
     <template name="rpcEncoded">
         <!-- specify what can be inserted inside binding tag-->
         <wsdlElement name="Binding">
@@ -113,7 +113,7 @@
                 <extensionAttr name="encodingStyle" defaultValue="http://schemas.xmlsoap.org/soap/encoding/"  />
             </extensionElement>
         </wsdlElement>
-        
+
         <wsdlElement name="BindingOperationFault">
             <extensionElement name="fault" >
                 <extensionAttr name="name"  />
@@ -122,7 +122,7 @@
                 <extensionAttr name="encodingStyle" defaultValue="http://schemas.xmlsoap.org/soap/encoding/"  />
             </extensionElement>
         </wsdlElement>
-        
+
         <wsdlElement name="ServicePort">
             <extensionElement name="address" >
                 <extensionAttr name="location"  defaultValue="http://localhost:18181/service"/>

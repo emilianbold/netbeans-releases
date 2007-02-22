@@ -2,28 +2,19 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-
-/*
- * GraphView.java
- *
- * Created on August 15, 2006, 11:15 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor;
@@ -34,11 +25,12 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseWheelListener;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
-
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -46,7 +38,6 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.LayerWidget;
@@ -54,8 +45,9 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.visual.border.EmptyBorder;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.CollaborationsWidget;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.ExScene;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.PartnerScene;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.MessagesWidget;
+import org.netbeans.modules.xml.xam.Component;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -68,12 +60,12 @@ import org.openide.util.Utilities;
  */
 public class GraphView extends JPanel  {
     /** Manages the state of the widgets and corresponding objects. */
-    private ExScene scene;
-    
+    private PartnerScene scene;
+    /** Layer containing the visible widgets. */
     private Widget mMainLayer;
-
+    /** The component model. */
     private WSDLModel mModel;
-
+    /** Layer for drag and drop actions. */
     private DragOverSceneLayer mDragLayer;
     /** Manages the zoom level. */
     private ZoomManager zoomer;
@@ -84,32 +76,31 @@ public class GraphView extends JPanel  {
     /** That which contains the collaborations and messages widgets. */
     private Widget contentWidget;
 
-    /** Creates a new instance of GraphView */
+    /**
+     * Creates a new instance of GraphView.
+     */
     public GraphView(WSDLModel model) {
         super(new BorderLayout());
         this.mModel = model;
 
-        scene = new ExScene(mModel);
-        scene.createView();
+        scene = new PartnerScene(mModel);
+        JComponent sceneView = scene.createView();
         scene.setBackground(Color.WHITE);
         zoomer = new ZoomManager(scene);
-        
-        //scene.setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.CENTER, 0));
-        /*scene.getActions().addAction (ActionFactory.createZoomAction ());
-        scene.getActions().addAction (ActionFactory.createPanAction ());*/
 
+        // dirty hack to fix issue 93508
+        if (sceneView instanceof MouseWheelListener) {
+            sceneView.removeMouseWheelListener((MouseWheelListener) sceneView);
+        }        
         
-        //mMainLayer.setOpaque(true);
-        
-
-//        mMainLayer.setBorder(BorderFactory.createLineBorder(Color.ORANGE));
-        collaborationsWidget = scene.getCollaborationsWidget(); // new CollaborationsWidget(scene, mModel);
+        collaborationsWidget = scene.getCollaborationsWidget();
         messagesWidget = scene.getMessagesWidget();
         // Note that the arrangement of collaborationsWidget and
         // messagesWidget is also controlled by the View actions below.
         contentWidget = new Widget(scene);
         contentWidget.setBorder(new EmptyBorder(24, 24, 24, 24, false));
-        contentWidget.setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.JUSTIFY, 16));
+        contentWidget.setLayout(LayoutFactory.createVerticalLayout(
+                SerialAlignment.JUSTIFY, 16));
         contentWidget.addChild(collaborationsWidget);
         contentWidget.addChild(messagesWidget);
 
@@ -117,23 +108,50 @@ public class GraphView extends JPanel  {
         mMainLayer.addChild(contentWidget);
         mMainLayer.setPreferredLocation(new Point(0, 0));
         mMainLayer.setBackground(Color.WHITE);
-//        mMainLayer.getActions().addAction(new ButtonAction());
-        
+
         mDragLayer = scene.getDragOverLayer();
-        
+
         scene.addChild(mMainLayer);
         scene.addChild(mDragLayer);
 
-        JComponent sceneView = scene.getView ();
+        JScrollPane panel = new JScrollPane(sceneView);
+        panel.getVerticalScrollBar().setUnitIncrement(16);
+        panel.getHorizontalScrollBar().setUnitIncrement(16);
+        panel.setBorder(null);
+        add(panel, BorderLayout.CENTER);
+    }
 
-        JScrollPane panel = new JScrollPane ();
-        panel.setBounds(this.getBounds());
-// XXX: This is not sufficient to make scrolling work, please see the javadoc
-//      for JComponent.setAutoscrolls() on what else is needed.
-        panel.setWheelScrollingEnabled(true);
-        sceneView.setAutoscrolls(true);
-        panel.setViewportView(sceneView);
-        this.add(panel, BorderLayout.CENTER);
+    /**
+     * Adds the graph actions to the given toolbar (no separators are
+     * added to either the beginning or end).
+     *
+     * @param  toolbar  to which the actions are added.
+     */
+    public void addToolbarActions(JToolBar toolbar) {
+        zoomer.addToolbarActions(toolbar);
+        toolbar.addSeparator();
+        Border border = UIManager.getBorder("nb.tabbutton.border"); //NOI18N
+        Action[] actions = new Action[] {
+            new ViewCollaborationsAction(),
+            new ViewMessagesAction(),
+        };
+        boolean[] visible = new boolean[] {
+            isCollaborationsShowing(),
+            isMessagesShowing(),
+        };
+        for (int ii = 0; ii < actions.length; ii++) {
+            Action action = actions[ii];
+            JToggleButton button = new JToggleButton(action);
+            // Action has a name for accessibility purposes, but we do
+            // not want that to appear in the button label.
+            button.setText(null);
+            button.setRolloverEnabled(true);
+            if (border != null) {
+                button.setBorder(border);
+            }
+            button.setSelected(visible[ii]);
+            toolbar.add(button);
+        }
     }
 
     /**
@@ -156,32 +174,21 @@ public class GraphView extends JPanel  {
     }
 
     /**
-     * Adds the graph actions to the given toolbar (no separators are
-     * added to either the beginning or end).
+     * Indicates if the collaborations container widget is visible or not.
      *
-     * @param  toolbar  to which the actions are added.
+     * @return  true if collaborations is showing, false otherwise.
      */
-    public void addToolbarActions(JToolBar toolbar) {
-        zoomer.addToolbarActions(toolbar);
-        toolbar.addSeparator();
-        Border border = UIManager.getBorder("nb.tabbutton.border"); //NOI18N
-        Action[] actions = new Action[] {
-            new ViewCollaborationsAction(),
-            new ViewMessagesAction(),
-        };
-        for (Action action : actions) {
-            JToggleButton button = new JToggleButton(action);
-            // Action has a name for accessibility purposes, but we do
-            // not want that to appear in the button label.
-            button.setText(null);
-            button.setRolloverEnabled(true);
-            if (border != null) {
-                button.setBorder(border);
-            }
-            // Everything is initially visible.
-            button.setSelected(true);
-            toolbar.add(button);
-        }
+    public boolean isCollaborationsShowing() {
+        return collaborationsWidget.getParentWidget() != null;
+    }
+
+    /**
+     * Indicates if the messages container widget is visible or not.
+     *
+     * @return  true if messages is showing, false otherwise.
+     */
+    public boolean isMessagesShowing() {
+        return messagesWidget.getParentWidget() != null;
     }
 
     public void requestFocus() {
@@ -194,6 +201,61 @@ public class GraphView extends JPanel  {
         super.requestFocusInWindow();
         // Ensure the graph widgets have the focus.
         return scene.getView().requestFocusInWindow();
+    }
+
+    /**
+     * Change the visibility of the collaborations container widget.
+     *
+     * @param  visible  true to make visible, false to hide.
+     */
+    public void setCollaborationsVisible(boolean visible) {
+        if (visible) {
+            assert !isCollaborationsShowing() : "collaborations already showing!";
+            // Ensure that collaborations appears before messages.
+            List<Widget> children = contentWidget.getChildren();
+            int index = children.indexOf(messagesWidget);
+            if (index < 0) {
+                index = 0;
+            }
+            contentWidget.addChild(index, collaborationsWidget);
+        } else {
+            assert isCollaborationsShowing() : "collaborations already hidden!";
+            contentWidget.removeChild(collaborationsWidget);
+        }
+        scene.validate();
+    }
+
+    /**
+     * Change the visibility of the messages container widget.
+     *
+     * @param  visible  true to make visible, false to hide.
+     */
+    public void setMessagesVisible(boolean visible) {
+        if (visible) {
+            assert !isMessagesShowing() : "messages already showing!";
+            // Messages should come after collaborations.
+            contentWidget.addChild(messagesWidget);
+        } else {
+            assert isMessagesShowing() : "messages already hidden!";
+            contentWidget.removeChild(messagesWidget);
+        }
+        scene.validate();
+    }
+
+    /**
+     * Attempt to show the corresponding widget for the given component.
+     *
+     * @param  comp  model component to show.
+     */
+    public void showComponent(Component comp) {
+        Widget widget = scene.findWidget(comp);
+        if (widget != null) {
+            // Make the widget visible and select it (our select provider
+            // will make the widget visible within the scroll pane).
+            // Reset whatever the current selection is first.
+            scene.setSelectedObjects(Collections.emptySet());
+            scene.getSelectProvider().select(widget, widget.getLocation(), true);
+        }
     }
 
     /**
@@ -224,18 +286,7 @@ public class GraphView extends JPanel  {
         }
 
         public void run() {
-            if (collaborationsWidget.getParentWidget() == null) {
-                // Ensure that collaborations appears before messages.
-                List<Widget> children = contentWidget.getChildren();
-                int index = children.indexOf(messagesWidget);
-                if (index < 0) {
-                    index = 0;
-                }
-                contentWidget.addChild(index, collaborationsWidget);
-            } else {
-                contentWidget.removeChild(collaborationsWidget);
-            }
-            scene.validate();
+            setCollaborationsVisible(!isCollaborationsShowing());
         }
     }
 
@@ -267,13 +318,7 @@ public class GraphView extends JPanel  {
         }
 
         public void run() {
-            if (messagesWidget.getParentWidget() == null) {
-                // Messages should come after collaborations.
-                contentWidget.addChild(messagesWidget);
-            } else {
-                contentWidget.removeChild(messagesWidget);
-            }
-            scene.validate();
+            setMessagesVisible(!isMessagesShowing());
         }
     }
 }

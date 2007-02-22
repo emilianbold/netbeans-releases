@@ -92,8 +92,8 @@
     </Component>
     <Component class="javax.swing.JComboBox" name="bindingTypeComboBox">
       <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="new DefaultComboBoxModel(protocols)" type="code"/>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor" preCode="DefaultComboBoxModel model = new DefaultComboBoxModel(protocols);&#xa;model.setSelectedItem(defaultSelection);">
+          <Connection code="model" type="code"/>
         </Property>
       </Properties>
       <Events>

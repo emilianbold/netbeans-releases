@@ -2,26 +2,24 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.awt.Color;
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 
@@ -83,21 +81,41 @@ public class PartnerLinkTypeContentWidget extends Widget {
         
         
         WidgetFactory factory = WidgetFactory.getInstance();
-        List<Role> roles = getRoles();
-        if (roles.size() == 0) {
-            //draw dummy roles
-            mRightRoleWidget = (RoleWidget) factory.createWidget(scene, Role.class, mLookup);
-            mLeftRoleWidget = (RoleWidget) factory.createWidget(scene, Role.class, mLookup);
-        } else if (roles.size() == 1) {
-            //draw only right side
-            mRightRoleWidget = (RoleWidget) factory.createWidget(scene, roles.get(0), mLookup, true);
-            mLeftRoleWidget = (RoleWidget) factory.createWidget(scene, Role.class, mLookup);
-        } else if (roles.size() == 2) {
-            //draw both sides
-            mRightRoleWidget = (RoleWidget) factory.createWidget(scene, roles.get(0), mLookup, true);
-            mLeftRoleWidget = (RoleWidget) factory.createWidget(scene, roles.get(1), mLookup, true);
+
+        Role role1 = mPartnerLinkType.getRole1();
+        Role role2 = mPartnerLinkType.getRole2();
+        
+        //if role1 is deleted then role1 becomes previous role2.
+        //we need to find out which rolewidget was for role2 and keep it in the same place.
+        RoleWidget role1Widget = null;
+        if (role1 != null) {
+            role1Widget = (RoleWidget) factory.createWidget(scene, role1, mLookup, true);
+        } else {
+            role1Widget = (RoleWidget) factory.createWidget(scene, Role.class, mLookup);
+        }
+        RoleWidget role2Widget = null;
+        if (role2 != null) {
+            role2Widget = (RoleWidget) factory.createWidget(scene, role2, mLookup, true);
+        } else {
+            role2Widget = (RoleWidget) factory.createWidget(scene, Role.class, mLookup);
         }
 
+        //Check did left one become right one?
+        if (role1Widget.isLeftSided() || role2Widget.isLeftSided()) {
+            if (role1Widget.isLeftSided()) {
+                mLeftRoleWidget = role1Widget;
+                mRightRoleWidget = role2Widget;
+            } else if (role2Widget.isLeftSided()){
+                mLeftRoleWidget = role2Widget;
+                mRightRoleWidget = role1Widget;
+            }
+        } else {
+            mRightRoleWidget = role1Widget;
+            mLeftRoleWidget = role2Widget;
+        }
+        
+        mLeftRoleWidget.setLeftSided(true);
+        mRightRoleWidget.setLeftSided(false);
         addChild(mLeftRoleWidget);
         addChild(mRightRoleWidget);
         
@@ -112,20 +130,6 @@ public class PartnerLinkTypeContentWidget extends Widget {
         
         addChild(roleLabel);
         addChild(portTypesLabel);
-        
-    }
-    
-    private List<Role> getRoles() {
-        List<Role> roles = new ArrayList<Role>();
-        if (mPartnerLinkType.getRole1() != null) {
-            roles.add(mPartnerLinkType.getRole1());
-        }
-        
-        if (mPartnerLinkType.getRole2() != null) {
-            roles.add(mPartnerLinkType.getRole2());
-        }
-        
-        return roles;
     }
     
     public RoleWidget getLeftRoleWidget() {

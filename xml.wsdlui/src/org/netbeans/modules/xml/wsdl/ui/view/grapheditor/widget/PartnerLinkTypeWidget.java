@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,15 +21,13 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Point;
-import java.util.EnumSet;
-
+import java.awt.Rectangle;
 import javax.swing.BorderFactory;
 import javax.swing.border.EmptyBorder;
-
 import org.netbeans.api.visual.action.ActionFactory;
-import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
@@ -40,9 +38,10 @@ import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.GradientBgBorder;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.GradientFillBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -63,8 +62,8 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
 
     private static final Image IMAGE = Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/treeeditor/extension/bpel/resources/partnerlinktype.png");
 
-    private static final Border HEADER_BORDER = new GradientBgBorder(0, 0, 4, 8,
-            null, new Color(189, 198, 222), new Color(230, 233,242));
+    private static final Border HEADER_BORDER = new GradientFillBorder(0, 0, 4, 8,
+            null, WidgetConstants.PARTNERLINKTYPE_GRADIENT_TOP_COLOR, WidgetConstants.PARTNERLINKTYPE_GRADIENT_BOTTOM_COLOR);
     
     public PartnerLinkTypeWidget(Scene scene, PartnerLinkType partnerLinkType, Lookup lookup) {
         super(scene, partnerLinkType, lookup);
@@ -92,7 +91,19 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
         
         mHeaderWidget.setMinimumSize(new Dimension(0, 30));
 
-        mLabelWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
+        mContentWidget = new PartnerLinkTypeContentWidget(getScene(), mPartnerLinkType);
+        if (ExpanderWidget.isExpanded(this, EXPANDED_DEFAULT)) {
+            addChild(mContentWidget);
+        }
+
+        getActions().addAction(((PartnerScene) getScene()).getDnDAction());
+    }
+
+    private Widget createLabelWidget() {
+        Widget labelWidget = new ImageLabelWidget(getScene(), IMAGE, mPartnerLinkType.getName());
+        labelWidget.setBorder(new EmptyBorder(4, 4, 1, 1));
+        labelWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(
+                new TextFieldInplaceEditor() {
 
             public void setText(Widget widget, String text) {
                 Model model = mPartnerLinkType.getModel();
@@ -106,28 +117,17 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
             }
 
             public boolean isEnabled(Widget widget) {
-                return true;
+                if (getWSDLComponent() != null) {
+                    return XAMUtils.isWritable(getWSDLComponent().getModel());
+                }
+                return false;
             }
 
             public String getText(Widget widget) {
                 return mPartnerLinkType.getName();
             }
 
-        }, 
-        EnumSet.<InplaceEditorProvider.ExpansionDirection>of (InplaceEditorProvider.ExpansionDirection.LEFT, 
-                                                              InplaceEditorProvider.ExpansionDirection.RIGHT)));
-        mContentWidget = new PartnerLinkTypeContentWidget(getScene(), mPartnerLinkType);
-        if (ExpanderWidget.isExpanded(this, EXPANDED_DEFAULT)) {
-            addChild(mContentWidget);
-        }
-
-        getActions().addAction(((ExScene) getScene()).getDnDAction());
-    }
-    
-    
-    Widget createLabelWidget() {
-        Widget labelWidget = new ExLabelWidget(getScene(), IMAGE, mPartnerLinkType.getName());
-        labelWidget.setBorder(new EmptyBorder(4, 4, 1, 1));
+        }, null));
         return labelWidget;
     }
 
@@ -143,13 +143,27 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
     }
 
     public void expandWidget(ExpanderWidget expander) {
-        addChild(mContentWidget);
-        getScene().revalidate();
+        if (mContentWidget.getParentWidget() == null) {
+            addChild(mContentWidget);
+            getScene().revalidate();
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    // It is quite likely that this widget just got wider
+                    // because of the new children widgets. Save this width
+                    // as the minimum size so we do not shrink when we are
+                    // collapsed, which would probably annoy the user.
+                    Rectangle bounds = getBounds();
+                    setMinimumSize(new Dimension(bounds.width, 0));
+                }
+            });
+        }
     }
 
     public void collapseWidget(ExpanderWidget expander) {
-        removeChild(mContentWidget);
-        getScene().revalidate();
+        if (mContentWidget.getParentWidget() != null) {
+            removeChild(mContentWidget);
+            getScene().revalidate();
+        }
     }
     
     public void collapseWidget() {

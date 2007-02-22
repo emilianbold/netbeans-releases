@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,28 +25,17 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Point;
 import java.util.HashMap;
 import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
 import java.util.Map;
 
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.Document;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 
 /**
@@ -59,6 +48,7 @@ public class NotificationOperationPanel extends javax.swing.JPanel implements Op
     private Document mCommonOperationTextFieldDocument;
     private Map<String, String> namespaceToPrefixMap = new HashMap<String, String>();
     private boolean mIsShowMessageComboBoxes = false;
+    private WSDLModel mModel;
     
     /** Creates new form OperationConfigurationPanel 
      * @param project */
@@ -68,11 +58,12 @@ public class NotificationOperationPanel extends javax.swing.JPanel implements Op
     public NotificationOperationPanel(Project project, 
                                       Document operationNameTextFieldDocument, 
                                       Map<String, String> namespaceToPrefixMap,
-                                      boolean isShowMessageComboBoxes) {
+                                      boolean isShowMessageComboBoxes, WSDLModel model) {
         this.mProject = project;
         this.mCommonOperationTextFieldDocument = operationNameTextFieldDocument;
         this.namespaceToPrefixMap = namespaceToPrefixMap;
         this.mIsShowMessageComboBoxes = isShowMessageComboBoxes;
+        mModel = model;
         initComponents();
         initGUI();
     }
@@ -100,7 +91,7 @@ public class NotificationOperationPanel extends javax.swing.JPanel implements Op
         operationTypeComboBox = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        outputMessagePartsConfigurationTable = new org.netbeans.modules.xml.wsdl.ui.view.CommonMessageConfigurationPanel(mProject, namespaceToPrefixMap);
+        outputMessagePartsConfigurationTable = new org.netbeans.modules.xml.wsdl.ui.view.CommonMessageConfigurationPanel(mProject, namespaceToPrefixMap, mModel);
         outputMessageNameConfigurationPanel1 = new MessageNameConfigurationPanel(outputMessagePartsConfigurationTable);
 
         OperationNameLabel.setLabelFor(operationNameTextField);

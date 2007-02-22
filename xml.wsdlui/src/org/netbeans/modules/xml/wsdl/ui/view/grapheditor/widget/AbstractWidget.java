@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -27,8 +27,6 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -36,11 +34,17 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.Stroke;
-import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.ListIterator;
+
+import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.WidgetAction;
@@ -53,10 +57,12 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Model;
+import org.openide.actions.ReorderAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -72,9 +78,7 @@ import org.openide.windows.TopComponent;
  */
 public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         implements ComponentListener, PopupMenuProvider {
-    private static final Stroke SELECTION_STROKE = new BasicStroke(2, BasicStroke
-            .CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[] {4, 6}, 0);
-    private static final Paint SELECTION_PAINT = new Color(0x5D5C98);
+    
     /** The WSDL component this widget represents; may be null. */
     private T wsdlComponent;
     /** The Lookup for this widget. */
@@ -85,7 +89,8 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
     private Node componentNode;
     /** Used to weakly listen to the component model. */
     private ComponentListener weakComponentListener;
-
+    
+    
     /**
      * Creates a new instance of AbstractWidget.
      *
@@ -105,33 +110,6 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         }
         setWSDLComponent(component);
         getActions().addAction(ActionFactory.createPopupMenuAction(this));
-        getActions().addAction(new WidgetAction.Adapter() {
-            @Override
-            public WidgetAction.State keyReleased(Widget widget,
-                    WidgetAction.WidgetKeyEvent event) {
-                // Check if we are selected, otherwise ignore the event.
-                if (event.getKeyCode() == KeyEvent.VK_DELETE &&
-                        getState().isSelected()) {
-                    deleteComponent();
-                    return WidgetAction.State.CONSUMED;
-                }
-                return super.keyTyped(widget, event);
-            }
-        });
-    }
-
-    /**
-     * Activate the corresponding Node in the parent TopComponent, in
-     * response to the user selecting this widget (as in clicking or
-     * right-clicking on the widget). If there is no TopComponent in
-     * the visual component heirarchy, nothing happens.
-     */
-    protected void activateNode() {
-        TopComponent tc = findTopComponent();
-        if (tc != null) {
-            Node node = getNode();
-            tc.setActivatedNodes(new Node[] { node });
-        }
     }
 
     /**
@@ -166,7 +144,8 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
      *
      * @param  model  the model that is in transaction.
      */
-    protected void postDeleteComponent(Model model) {
+    protected void postDeleteComponent(@SuppressWarnings("unused")
+    Model model) {
         // Do nothing here, as this is exclusively for subclasses to override.
     }
 
@@ -181,6 +160,7 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
                 TopComponent.class, getScene().getView());
     }
 
+    @Override
     public Lookup getLookup() {
         return widgetLookup;
     }
@@ -211,15 +191,45 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
                 NodesFactory factory = NodesFactory.getInstance();
                 componentNode = factory.create(wsdlComponent);
             }
+            componentNode = getNodeFilter(componentNode);
         }
         return componentNode;
+    }
+
+    /**
+     * Method for subclasses to have an opportunity to wrap the original
+     * Node in a FilterNode, which can then be customized to suit the
+     * individual widget (e.g. to filter the NewType list).
+     *
+     * the current widget is passed so that delete can work.
+     * @param  original  the Node to be filtered.
+     * @return  the filtered node.
+     */
+    protected Node getNodeFilter(Node original) {
+        return new WidgetFilterNode(original, this);
     }
 
     public JPopupMenu getPopupMenu(Widget widget, Point point) {
         Node node = getNode();
         if (node != null) {
-            activateNode();
-            return node.getContextMenu();
+            TopComponent tc = findTopComponent();
+            Lookup lookup;
+            if (tc != null) {
+                // Activate the node just as any explorer view would do.
+                tc.setActivatedNodes(new Node[] { node });
+                // To get the explorer actions enabled, must have the
+                // lookup from the parent TopComponent.
+                lookup = tc.getLookup();
+            } else {
+                lookup = Lookup.EMPTY;
+            }
+            // Remove the actions that we do not want to support in this view.
+            Action[] actions = node.getActions(true);
+            List<Action> list = new ArrayList<Action>();
+            Collections.addAll(list, actions);
+            updateActions(list);
+            actions = list.toArray(new Action[list.size()]);
+            return Utilities.actionsToPopup(actions, lookup);
         }
         return null;
     }
@@ -233,22 +243,17 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         return wsdlComponent;
     }
 
-//    /**
-//     * Indicates if the given model component is the one this widget
-//     * represents. Useful for listeners that want to check the source
-//     * of the event before responding to it.
-//     *
-//     * @param  node  the model component.
-//     * @return  true if same, false otherwise.
-//     */
-//    protected boolean isSameWSDLComponent(Component node) {
-//        return node != null && node.equals(getWSDLComponent());
-//    }
-
+    @Override
     protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
         super.notifyStateChanged(previousState, state);
+        //add delete action only if the widget is selected.
         if (state.isSelected()) {
-            activateNode();
+            TopComponent tc = findTopComponent();
+            if (tc != null) {
+                Node node = getNode();
+                tc.setActivatedNodes(new Node[] { node });
+            }
+            
         }
         repaint();
     }
@@ -286,6 +291,7 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         wsdlComponent = component;
     }
 
+    @Override
     protected void paintChildren() {
         super.paintChildren();
         
@@ -294,18 +300,15 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
 
             Object oldStrokeControl = g2.getRenderingHint(RenderingHints
                     .KEY_STROKE_CONTROL);
-            Stroke oldStroke = g2.getStroke();
             Paint oldPaint = g2.getPaint();
             
             g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
                     RenderingHints.VALUE_STROKE_PURE);
 
-            g2.setStroke(SELECTION_STROKE);
-            g2.setPaint(SELECTION_PAINT);
+            g2.setPaint(WidgetConstants.SELECTION_COLOR);
             
             g2.draw(createSelectionShape());
 
-            g2.setStroke(oldStroke);
             g2.setPaint(oldPaint);
             
             g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
@@ -323,18 +326,25 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         return new Rectangle2D.Double(rect.x + 1, rect.y + 1, rect.width - 2, 
                 rect.height - 2);
     }
-    
-//    private static class RenameAction extends InplaceEditorAction.TextFieldEditor {
-//
-//        protected String getText (Widget widget) {
-//            return ((LabelWidget) widget).getLabel ();
-//        }
-//
-//        protected void setText (Widget widget, String text) {
-//            ((LabelWidget) widget).setLabel (text);
-//        }
-//
-//    }
+
+    /**
+     * Add/remove actions from the given list, as needed for each type
+     * of widget. For instance, the default implementation removes the
+     * ReorderAction instance from the list provided by the backing Node.
+     * Subclasses may add or remove additional actions. To prevent removing
+     * the default actions, override without calling this superclass method.
+     *
+     * @param  actions  list of Action instances to be updated.
+     */
+    protected void updateActions(List<Action> actions) {
+        ListIterator<Action> liter = actions.listIterator();
+        while (liter.hasNext()) {
+            Action action = liter.next();
+            if (action instanceof ReorderAction) {
+                liter.remove();
+            }
+        }
+    }
 
     /**
      * Invoked when the model component has changed in some way (either

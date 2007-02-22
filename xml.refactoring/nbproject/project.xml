@@ -188,6 +188,7 @@
                 <package>org.netbeans.modules.xml.refactoring.actions</package>
                 <package>org.netbeans.modules.xml.refactoring.spi</package>
                 <package>org.netbeans.modules.xml.refactoring.ui</package>
+                <package>org.netbeans.modules.xml.refactoring.ui.j.ui</package>
                 <package>org.netbeans.modules.xml.refactoring.ui.j.spi.ui</package>
                 <package>org.netbeans.modules.xml.refactoring.ui.readers</package>
                 <package>org.netbeans.modules.xml.refactoring.ui.util</package>

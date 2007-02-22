@@ -2,18 +2,18 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,7 +29,7 @@ import javax.swing.Action;
 import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.ui.actions.CommonAddExtensibilityAttributeAction;
 import org.netbeans.modules.xml.wsdl.ui.actions.RemoveAttributesAction;
-import org.netbeans.modules.xml.wsdl.ui.commands.PropertyAdapter;
+import org.netbeans.modules.xml.wsdl.ui.api.property.PropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.view.property.BaseAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.property.ImportLocationPropertyEditor;
 import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
@@ -83,8 +83,6 @@ public class ImportNode extends WSDLElementContainerNode {
                       Import wsdlConstruct) {
         super(children, wsdlConstruct);
         mWSDLConstruct = wsdlConstruct;
-        this.setDisplayName(mWSDLConstruct.getNamespace());
-        
         this.mPropertyAdapter = new ImportPropertyAdapter();
     }
     
@@ -135,6 +133,11 @@ public class ImportNode extends WSDLElementContainerNode {
         } catch(Exception ex) {
             mLogger.log(Level.SEVERE, "failed to create property sheet for "+ mWSDLConstruct, ex);
         }
+    }
+
+    @Override
+    protected void updateDisplayName() {
+        setDisplayName(mWSDLConstruct.getNamespace());
     }
     
     public class ImportPropertyAdapter extends PropertyAdapter {

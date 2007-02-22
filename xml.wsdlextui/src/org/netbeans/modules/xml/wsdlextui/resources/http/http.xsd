@@ -35,7 +35,7 @@ POSSIBILITY OF SUCH DAMAGES.
     xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
     targetNamespace="http://schemas.xmlsoap.org/wsdl/http/" >
 
-    <xs:import namespace = "http://schemas.xmlsoap.org/wsdl/" />
+    <xs:import namespace = "http://schemas.xmlsoap.org/wsdl/" schemaLocation="wsdl.xsd" />
 
     <xs:simpleType name="encodingStyle" >
         <xs:annotation>
@@ -79,7 +79,7 @@ POSSIBILITY OF SUCH DAMAGES.
     <xs:complexType name="tOperation" >
         <xs:complexContent>
             <xs:extension base="wsdl:tExtensibilityElement" >
-                <xs:attribute name="location" type="xs:uriReference" use="required" />
+                <xs:attribute name="location" type="xs:anyURI" use="required" />
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -95,7 +95,7 @@ POSSIBILITY OF SUCH DAMAGES.
     <xs:complexType name="tAddress" >
         <xs:complexContent>
             <xs:extension base="wsdl:tExtensibilityElement" >
-                <xs:attribute name="location" type="xs:uriReference" use="required" />
+                <xs:attribute name="location" type="xs:anyURI" use="required" />
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
