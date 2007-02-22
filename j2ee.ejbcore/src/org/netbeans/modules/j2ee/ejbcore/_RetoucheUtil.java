@@ -35,6 +35,9 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -223,6 +226,62 @@ public final class _RetoucheUtil {
             result.append(defaultValue);
         }
         return result.toString();
+    }
+
+    /**
+     * Tries to find {@link FileObject} which contains class with given className.<br>
+     * This method will enter javac context for referenceFileObject to find class by its className,
+     * therefore don't call this method within other javac context.
+     * 
+     * @param referenceFileObject helper file for entering javac context
+     * @param className fully-qualified class name to resolve file for
+     * @return resolved file or null if not found
+     */
+    public static FileObject resolveFileObjectForClass(FileObject referenceFileObject, final String className) throws IOException {
+        final FileObject[] result = new FileObject[1];
+        JavaSource javaSource = JavaSource.forFileObject(referenceFileObject);
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) {
+                TypeElement typeElement = controller.getElements().getTypeElement(className);
+                result[0] = org.netbeans.api.java.source.SourceUtils.getFile(typeElement, controller.getClasspathInfo());
+            }
+        }, true);
+        return result[0];
+    }
+    
+    //TODO: RETOUCHE move/reuse in SourceUtil, or best - get from java/source!
+    // package private only for unit test
+    // see #90968
+    public static String getTypeName(CompilationController controller, TypeMirror typeMirror) {
+        TypeKind typeKind = typeMirror.getKind();
+        switch (typeKind) {
+            case BOOLEAN : return "boolean"; // NOI18N
+            case BYTE : return "byte"; // NOI18N
+            case CHAR : return "char"; // NOI18N
+            case DOUBLE : return "double"; // NOI18N
+            case FLOAT : return "float"; // NOI18N
+            case INT : return "int"; // NOI18N
+            case LONG : return "long"; // NOI18N
+            case SHORT : return "short"; // NOI18N
+            case VOID : return "void"; // NOI18N
+            case DECLARED : 
+                Element element = controller.getTypes().asElement(typeMirror);
+                return ((TypeElement) element).getQualifiedName().toString();
+            case ARRAY : 
+                ArrayType arrayType = (ArrayType) typeMirror;
+                Element componentTypeElement = controller.getTypes().asElement(arrayType.getComponentType());
+                return ((TypeElement) componentTypeElement).getQualifiedName().toString() + "[]";
+            case ERROR :
+            case EXECUTABLE :
+            case NONE :
+            case NULL :
+            case OTHER :
+            case PACKAGE :
+            case TYPEVAR :
+            case WILDCARD :
+            default:break;
+        }
+        return null;
     }
 
 }
