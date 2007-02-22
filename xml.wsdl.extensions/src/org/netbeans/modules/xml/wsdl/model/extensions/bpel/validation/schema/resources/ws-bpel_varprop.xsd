@@ -58,7 +58,10 @@
 		</xsd:documentation>
 	</xsd:annotation>
 	
-	<xsd:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+	<!-- keep a local copy to avoid network trip for this well known xsd
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd"/>-->
+	<xsd:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>
+	
 	
 	<xsd:element name="property">
 		<xsd:complexType>
