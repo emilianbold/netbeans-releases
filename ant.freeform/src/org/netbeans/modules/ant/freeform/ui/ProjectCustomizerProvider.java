@@ -50,14 +50,14 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
     
     public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-ant-freeform/Customizer"; //NO18N
     
-    private static Map /*<Project,Dialog>*/project2Dialog = new HashMap(); 
+    private static Map<Project,Dialog> project2Dialog = new HashMap<Project,Dialog>(); 
     
     public ProjectCustomizerProvider(FreeformProject project) {
         this.project = project;
     }
             
     public void showCustomizer() {
-        Dialog dialog = (Dialog)project2Dialog.get (project);
+        Dialog dialog = project2Dialog.get (project);
         if ( dialog != null ) {            
             dialog.setVisible(true);
             return;
@@ -101,7 +101,7 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
                 "Some of the customizer panels has written the changed data before OK Button was pressed. Please file it as bug."; //NOI18N
             
             // Close & dispose the the dialog
-            Dialog dialog = (Dialog)project2Dialog.get( project );
+            Dialog dialog = project2Dialog.get( project );
             if ( dialog != null ) {
                 dialog.setVisible(false);
                 dialog.dispose();
@@ -117,7 +117,7 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
         public void windowClosing (WindowEvent e) {
             //Dispose the dialog otherwsie the {@link WindowAdapter#windowClosed}
             //may not be called
-            Dialog dialog = (Dialog)project2Dialog.get( project );
+            Dialog dialog = project2Dialog.get( project );
             if ( dialog != null ) {
                 dialog.setVisible(false);
                 dialog.dispose();
