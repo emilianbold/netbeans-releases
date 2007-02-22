@@ -113,8 +113,8 @@ public class JsfProjectUtils {
         if (project == null) {
             return false;
         }
-        JsfProjectClassPathExtender extender = (JsfProjectClassPathExtender) project.getLookup().lookup(JsfProjectClassPathExtender.class);
-        return extender != null;
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        return wm != null;
     }
 
     /**
@@ -122,6 +122,13 @@ public class JsfProjectUtils {
      * @param fo FileObject to be checked
      */
     public static boolean isJsfProjectFile(FileObject fo) {
+        if (fo == null) {
+            return false;
+        }
+        WebModule wm = WebModule.getWebModule(fo);
+        return wm != null;
+
+        /* XXX No project property "creator" for web project
         while (fo != null) {
             if (fo.isFolder()) {
                 final FileObject propFile = fo.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -153,6 +160,7 @@ public class JsfProjectUtils {
         }
 
         return false;
+        */
     }
 
     public static String getProjectProperty(Project project, String propName) {
