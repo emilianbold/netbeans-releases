@@ -1,134 +1,223 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  - The contents of this file are subject to the terms of the Common Development
-  - and Distribution License (the License). You may not use this file except in
-  - compliance with the License.
-  - 
-  - You can obtain a copy of the License at http://www.netbeans.org/cddl.html
-  - or http://www.netbeans.org/cddl.txt.
-  - 
-  - When distributing Covered Code, include this CDDL Header Notice in each file
-  - and include the License file at http://www.netbeans.org/cddl.txt.
-  - If applicable, add the following below the CDDL Header, with the fields
-  - enclosed by brackets [] replaced by your own identifying information:
-  - "Portions Copyrighted [year] [name of copyright owner]"
-  - 
-  - The Original Software is NetBeans. The Initial Developer of the Original
-  - Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
-  - Microsystems, Inc. All Rights Reserved.
-  - 
-  - $Id$
--->
+<!-- ===========================================================================
+  The contents of this file are subject to the terms of the Common Development
+  and Distribution License (the License). You may not use this file except in
+  compliance with the License.
+  
+  You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+  or http://www.netbeans.org/cddl.txt.
+  
+  When distributing Covered Code, include this CDDL Header Notice in each file
+  and include the License file at http://www.netbeans.org/cddl.txt.
+  If applicable, add the following below the CDDL Header, with the fields
+  enclosed by brackets [] replaced by your own identifying information:
+  "Portions Copyrighted [year] [name of copyright owner]"
+  
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+  Microsystems, Inc. All Rights Reserved.
+  
+  $Id$
+============================================================================ -->
 
 <!--
-    This is a base script for building NBI product packages and 
-    releasing them to the managing server.
+  This is the base build script for an nbi product package.
+  
+  It is not intended to be used directly, but to be imported into derivative
+  implementation scripts, which will provide properties' values that are 
+  specific the concrete product implementation. The derivative scripts may also
+  provide some additional functionality that is required by their respective
+  product implementations.
+  
+  This script exposes five primary targets: 'init', 'clean', 'checkout', 
+  'build' and 'release'; as well as two aggregate targets: 'build-all', 
+  which tranlates into 'init', 'clean', 'checkout', 'build', and 
+  'release-all' - 'init', 'clean', 'checkout', 'build', 'release'. For the 
+  detailed description of the functionality of these targets, consult the 
+  corresponding documentation.
 -->
-<project name="build-product" default="usage" basedir=".">
-    <!-- load properties specific to product's build script. First try to 
-         load them from the specified ${.product.dir}, then from the current 
-         directory -->
-    <property file="${.product.dir}/build.properties"/>
+<project name="product" default="usage" basedir=".">
+    <!-- a default value for the ${common.dir} property, which allows the user 
+         to see the usage information is he calls this script directly and not
+         via a derivative (which is the proper way to do this) -->
+    <property name="common.dir" value="${basedir}"/>
     
-    <!-- import the common target library, fail if it cannot be loaded -->
-    <import file="${.common.dir}/build.xml" optional="false"/>
+    <!-- import the common properties -->
+    <property file="${common.dir}/common.properties"/>
     
-    <target name="everything" depends="init,clean,build"/>
+    <!-- import properties specific to the product package's build script -->
+    <property file="${common.dir}/product.properties"/>
+    
+    <!-- import the common target library -->
+    <import file="common.xml" optional="false"/>
+    
+    <!-- =======================================================================
+      Initialization
+    ======================================================================== -->
     
     <!--
-      - Builds and releases the product. This target just calls the 
-      - initialization, clean-up, build and release targets in a proper 
-      - sequence.
+      Initializes the product package's build script.
+      
+      This target overrides the '-init' target in common.xml, providing the 
+      custom functionality that is required for the product package's build 
+      script initialization.
+      
+      In addition to the standard initialization routine, this target defines
+      several custom ant tasks, which are specific to the product package's build 
+      script.
+      
+      This target is not intended to be called directly.
     -->
-    <target name="all" depends="init,clean,build,release"/>
-    
-    <!--
-      - Initializes the product's build script. This target calls the 
-      - initialization target in the target library and additionally 
-      - reevaluates several properties, since they can be yet unitialized at 
-      - this point. It also checks whether the engine should be built.
-    -->
-    <target name="init" depends="-init">
-        <!-- reevaluate properties -->
-        <evaluate property="engine.basedir"/>
-        <evaluate property="engine..common.dir"/>
-        <evaluate property="engine.build.native"/>
-        <evaluate property="engine.work.dir"/>
-        <evaluate property="engine.move.to.dist"/>
+    <target name="-init" depends=".init">
+        <!-- define custom ant tasks -->
+        <taskdef 
+            name="sizeof" 
+            classname="org.netbeans.installer.infra.build.ant.SizeOf" 
+            classpath="${custom.tasks.cls}"/>
+        <taskdef 
+            name="md5" 
+            classname="org.netbeans.installer.infra.build.ant.Md5" 
+            classpath="${custom.tasks.cls}"/>
+        <taskdef 
+            name="load-locales" 
+            classname="org.netbeans.installer.infra.build.ant.LoadLocales" 
+            classpath="${custom.tasks.cls}"/>
+        <taskdef 
+            name="product-descriptor" 
+            classname="org.netbeans.installer.infra.build.ant.XmlProduct" 
+            classpath="${custom.tasks.cls}"/>
+        <taskdef
+            name="release-product"
+            classname="org.netbeans.installer.infra.build.ant.ReleaseProduct"
+            classpath="${custom.tasks.cls}"/>
+        <taskdef
+            name="absolutize"
+            classname="org.netbeans.installer.infra.build.ant.Absolutize"
+            classpath="${custom.tasks.cls}"/>
         
         <!-- check whether the engine should be built -->
         <condition property="do.build.engine">
             <equals arg1="${build.engine}" arg2="true"/>
         </condition>
         
-        <!-- check whether the configuration logic should be built -->
-        <condition property="do.build.logic">
-            <equals arg1="${build.logic}" arg2="true"/>
-        </condition>
+        <!-- make the engine-related paths absolute -->
+        <absolutize property="engine.work.dir"/>
+        <absolutize property="engine.dist.dir"/>
         
-        <!-- check whether we should release the product -->
-        <condition property="do.release.product">
-            <equals arg1="${release.product}" arg2="true"/>
-        </condition>
+        <absolutize property="engine.jar.file"/>
+        
+        <!-- define the javac.classpath for the netbeans project -->
+        <property 
+            name="nb.custom.parameter" 
+            value="-Dtrue=true"/>
+            
+            <echo message="${nb.custom.parameter}"/>
     </target>
     
+    <!-- =======================================================================
+      Clean-up
+    ======================================================================== -->
+    
     <!--
-      - Performs clean-up. Additional clean-up in this case - remove the 
-      - product's distributive file.
+      Cleans the current working directory and the distributives directory.
+      
+      This target overrides the '-clean' target in common.xml, providing the 
+      custom functionality that is required for correctly cleaning the product 
+      package.
+      
+      In addition to the standard behavior the product package distributive file 
+      is removed from the distributives directory.
+      
+      This target is not intended to be called directly.
     -->
-    <target name="clean" depends="init,-clean,-clean-engine">
+    <target name="-clean" depends=".clean,-clean-engine">
+        <!-- remove the product's distributive file from the distributives 
+             directory -->
         <delete file="${dist.dir}/${product.jar.file}"/>
     </target>
     
     <!--
-      - Overrides -pre-build in ${.common.dir}/build.xml. It is needed to 
-      - replace some tokens in product's bundles and code prior to building.
+      Cleans the engine.
+      
+      It runs the 'clean' target on the engine's build script.
+      
+      This target is only executed if the the ${build.engine} property was 
+      set to 'true'.
+      
+      This target is not intended to be called directly.
     -->
-    <target name="-pre-build">
-        <!-- reevaluate properties -->
-        <evaluate property="product.dir"/>
-        <evaluate property="product.logic.dir"/>
-        <evaluate property="product.data.dir"/>
-        <evaluate property="product.icon.file"/>
-        <evaluate property="product.descriptor.file"/>
-        <evaluate property="product.jar.file"/>
-        <evaluate property="product.jar.manifest.file"/>
-        
-        <evaluate property="product.logic.file"/>
-        <evaluate property="product.data.file"/>
-        <evaluate property="product.release.data.file"/>
-        
-        <evaluate property="product.icon"/>
-        <evaluate property="product.bundle"/>
-        
-        <!-- replace the tokens -->
+    <target name="-clean-engine" depends="init" if="do.build.engine">
+        <exec executable="${ant.executable}" 
+              dir="${engine.dir}" 
+              failonerror="false">
+            <arg value="clean"/>
+            
+            <arg value="-Dwork.dir=${engine.work.dir}"/>
+            <arg value="-Ddist.dir=${engine.dist.dir}"/>
+            
+            <arg value="-Dbuild.native=false"/>
+            
+            <arg value="-Dskip.build.custom.tasks=true"/>
+            <arg value="-Dcustom.tasks.cls=${custom.tasks.cls}"/>
+            
+            <arg line="-propertyfile ${properties.file}"/>
+        </exec>
+    </target>
+    
+    <!-- =======================================================================
+      Check-out
+    ======================================================================== -->
+    
+    <!--
+      The functionality of the checkout procedure for the product package is 
+      indentical to the standard one, thus there is not need to override the 
+      '-checkout' target, whosew default implementation is present in 
+      common.xml.
+    -->
+    
+    <!-- =======================================================================
+      Build
+    ======================================================================== -->
+    
+    <!--
+      Builds the product package.
+      
+      This target overrides the '-build' target in common.xml, providing the 
+      custom functionality that is required for correctly building the product 
+      package.
+      
+      The build process for the grup package consists of five steps.
+      1) The search-and-replace is run over the product's sources, based on the
+         [token] => [value] pairs defined in ${product.params.N.token} and
+         ${product.params.N.value}
+      
+      2) The product's icon is copied from its location to the product's package 
+         directory structure and some metadata is calculated
+      
+      3) The product's localizing bundle is loaded and the product package 
+         descriptor is generated
+      
+      4) The manifest for the product package is generated
+      
+      5) The package directory structure is jarred, digitally signed and moved 
+         to the distributives directory
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-build" depends="-build-engine,.build">
+        <!-- substitute the params in product's source tree (normally that would
+             consist only of the icon and the localizing bundle -->
         <for-each from="1" to="${product.params.length}" property="i">
             <set property="current.token" 
-                          source="product.params.${i}.token"/>
+                 source="product.params.${i}.token"/>
             <set property="current.value" 
-                          source="product.params.${i}.value"/>
+                 source="product.params.${i}.value"/>
             
             <replace dir="${cvs.dir}" 
                      token="${current.token}" 
                      value="${current.value}"/>
         </for-each>
-    </target>
-    
-    <!--
-      - Builds the product. First the engine is compiled, as it needs to be in
-      - the product's classpath. Then the configuration logic is built. After 
-      - that the following prodedures are performed:
-      -     * fetch all configuration logic jars
-      -     * fetch all installation data zip files and for each of them:
-      -         * unzip
-      -         * repackage (pack200 on jars)
-      -         * build files list
-      -         * jar
-      -     * fetch the icon
-      -     * create the xml descriptor
-      -     * create the distributive jar file
-    -->
-    <target name="build" depends="init,build-logic">
+        
         <!-- init the required disk space -->
         <property name="product.disk.space" 
                   value="${product.disk.space.modificator}"/>
@@ -136,17 +225,11 @@
         <!-- fetch the configuration logic jars -->
         <mkdir dir="${work.dir}/${product.logic.dir}"/>
         <for-each from="1" to="${product.logic.length}" property="i">
-            <!-- reevaluate the properties -->
-            <evaluate property="product.logic.${i}.uri"/>
-            <evaluate property="product.data.${i}.uri"/>
-            <evaluate property="product.packaged.data.${i}.file"/>
-            <evaluate property="product.packaged.data.${i}.size.file"/>
-            
             <!-- set the properties relevant to the current file -->
             <set property="current.uri" 
-                          source="product.logic.${i}.uri"/>
+                 source="product.logic.${i}.uri"/>
             <set property="current.file" 
-                          value="${work.dir}/${product.logic.dir}/${product.logic.file}"/>
+                 value="${work.dir}/${product.logic.dir}/${product.logic.file}"/>
             
             <get src="${current.uri}" dest="${current.file}"/>
             
@@ -161,7 +244,7 @@
             <sizeof file="${current.file}" property="product.logic.${i}.size"/>
             <md5 file="${current.file}" property="product.logic.${i}.md5"/>
             <set property="product.logic.${i}.uri"
-                          value="resource:${product.logic.dir}/${product.logic.file}"/>
+                 value="resource:${product.logic.dir}/${product.logic.file}"/>
         </for-each>
         
         <!-- fetch and repackage installation data zips -->
@@ -176,16 +259,13 @@
                 property="current.temp" 
                 value="${work.dir}/${product.data.dir}/tmpdir"/>
             <set property="current.uri" 
-                          source="product.data.${i}.uri"/>
+                 source="product.data.${i}.uri"/>
             <set property="current.packaged.uri" 
-                          source="product.packaged.data.${i}.file"/>
+                 source="product.packaged.data.${i}.file"/>
             <set property="current.packaged.size.uri" 
-                          source="product.packaged.data.${i}.size.file"/>
+                 source="product.packaged.data.${i}.size.file"/>
             <set property="current.size.file" 
-                          value="${work.dir}/size"/>
-            
-            <available file="${current.packaged.uri}" 
-                       property="packaged.data.available"/>
+                 value="${work.dir}/size"/>
             
             <condition property="do.package.data" value="true">
                 <or>
@@ -193,7 +273,7 @@
                     <and>
                         <equals arg1="${package.data}" arg2="default"/>
                         <not>
-                            <equals arg1="${packaged.data.available}" arg2="true"/>
+                            <available file="${current.packaged.uri}"/>
                         </not>
                     </and>
                 </or>
@@ -203,7 +283,7 @@
                     <equals arg1="${package.data}" arg2="false"/>
                     <and>
                         <equals arg1="${package.data}" arg2="default"/>
-                        <equals arg1="${packaged.data.available}" arg2="true"/>
+                        <available file="${current.packaged.uri}"/>
                     </and>
                 </or>
             </condition>
@@ -257,7 +337,7 @@
                 <property file="${current.size.file}"/>
                 
                 <set property="current.disk.space" 
-                              source="product.packaged.data.${i}.real.size"/>
+                     source="product.packaged.data.${i}.real.size"/>
                 <sum arg1="${product.disk.space}" arg2="${current.disk.space}" 
                      property="product.disk.space"/>
             </if>
@@ -273,7 +353,7 @@
             <sizeof file="${current.file}" property="product.data.${i}.size"/>
             <md5 file="${current.file}" property="product.data.${i}.md5"/>
             <set property="product.data.${i}.uri"
-                          value="resource:${product.data.dir}/${product.data.file}"/>
+                 value="resource:${product.data.dir}/${product.data.file}"/>
         </for-each>
         
         <!-- fetch the icon -->
@@ -323,124 +403,88 @@
             </fileset>
         </jar>
         
+        <copy file="${work.dir}/${product.jar.file}" todir="${dist.dir}"/>
+        
         <!-- sign it -->
-        <signjar jar="${work.dir}/${product.jar.file}" 
+        <signjar jar="${dist.dir}/${product.jar.file}" 
                  keystore="${jarsigner.keystore}"
                  storepass="${jarsigner.storepass}"
                  alias="${jarsigner.alias}"
                  maxmemory="${jarsigner.xmx}"/>
-        
-        <if property="move.to.dist" value="true">
-            <move file="${work.dir}/${product.jar.file}" 
-                  todir="${dist.dir}"/>
-        </if>
     </target>
     
     <!--
-      - Builds the configuration logic for the product. This target first 
-      - builds the engine, then the resulting jar is used as a classpath entry
-      - for the actual configuration logic build.
-      - 
-      - The engine building step is optional and is controlled by 
-      - ${build.engine}, which can be either "true" or "false". Note that it is
-      - impossible to supply a custom path to the engine jar, the build script 
-      - will always assume that it's in the same working directory as the 
-      - product's configuration logic sources. Therefore it is only feasible
-      - to skip this step if you are building several products in the same 
-      - working directory - in this case it is enough to build the engine once,
-      - and it will be reused for all successive products.
-    -->
-    <target name="build-logic" 
-            depends="-build-engine,-build" 
-            if="do.build.logic"/>
-    
-    <!-- 
-      - Releases the product package to the server. A single custom ant task 
-      - is called which generates and sends an HTTP POST request to an 
-      - appropriate servlet, which handles the rest. Tis task will fail if the
-      - server returns something other that code 200.
-    -->
-    <target name="release" depends="init,build">
-        <if property="move.to.dist" value="true">
-            <update-product url="${release.url}"
-                            registry="${release.registry}"
-                            uid="${release.parent.uid}"
-                            version="${release.parent.version}"
-                            archive="${dist.dir}/${product.jar.file}"/>
-        </if>
-        <if property="move.to.dist" value="false">
-            <update-product url="${release.url}"
-                            registry="${release.registry}"
-                            uid="${release.parent.uid}"
-                            version="${release.parent.version}"
-                            platforms="${product.platforms}"
-                            archive="${work.dir}/${product.jar.file}"/>
-        </if>
-    </target>
-    
-    <!-- =======================================================================
-        Utility Targets
-    ======================================================================== -->
-    <!--
-      - An utility target, which performs the clean-up of the engine. It calls
-      - an appropriate target on the engine's build script.
-      - 
-      - Execution of the target is controlled by the ${do.build.engine} 
-      - property, whose existance in turn is controlled by the value of the 
-      - ${build.engine} property ("true"/"false").
-    -->
-    <target name="-clean-engine" depends="init" if="do.build.engine">
-        <subant buildpath="${engine.basedir}" 
-                target="clean" 
-                failonerror="false" 
-                inheritall="false" 
-                inheritrefs="false">
-            <property name=".common.dir" value="${engine..common.dir}"/>
-            <property name="build.native" value="${engine.build.native}"/>
-            <property name="work.dir" value="${engine.work.dir}"/>
-            <property name="skip.build.custom.tasks" value="true"/>
-        </subant>
-    </target>
-    
-    <!--
-      - An utility target, which builds the engine. It calls an appropriate 
-      - target on the engine's build script.
-      - 
-      - Execution of the target is controlled by the ${do.build.engine} 
-      - property, whose existance in turn is controlled by the value of the 
-      - ${build.engine} property ("true"/"false").
+      Builds the engine.
+      
+      It runs the 'build-all' target on the engine's build script.
+      
+      This target is only executed if the the ${build.engine} property was 
+      set to 'true'.
+      
+      This target is not intended to be called directly.
     -->
     <target name="-build-engine" depends="init" if="do.build.engine">
-        <subant buildpath="${engine.basedir}" 
-                target="build" 
-                failonerror="true" 
-                inheritall="false" 
-                inheritrefs="false">
-            <property name=".common.dir" value="${engine..common.dir}"/>
-            <property name="build.native" value="${engine.build.native}"/>
-            <property name="work.dir" value="${engine.work.dir}"/>
-            <property name="move.to.dist" value="${engine.move.to.dist}"/>
-            <property name="skip.build.custom.tasks" value="true"/>
-        </subant>
+        <exec executable="${ant.executable}" 
+              dir="${engine.dir}" 
+              failonerror="true"
+              failifexecutionfails="true"
+              errorproperty="error.code">
+            <arg value="build-all"/>
+            
+            <arg value="-Dwork.dir=${engine.work.dir}"/>
+            <arg value="-Ddist.dir=${engine.dist.dir}"/>
+            
+            <arg value="-Dbuild.native=false"/>
+            
+            <arg value="-Dskip.build.custom.tasks=true"/>
+            <arg value="-Dcustom.tasks.cls=${custom.tasks.cls}"/>
+            
+            <arg line="-propertyfile ${properties.file}"/>
+        </exec>
     </target>
     
     <!-- =======================================================================
-        Default Target
+      Release
     ======================================================================== -->
+    
     <!--
-      - The default target. Does nto do anything useful, except depiting the 
-      - usage scenario for the script.
+      Releases the product package to the registries server.
+      
+      This target overrides the '-release' target in common.xml, providing the 
+      custom functionality that is required for correctly releasing the product 
+      package.
+      
+      It is assumed that the product package has already been built, but a 
+      dependency on the 'build' target is not defined, as it may be desirable 
+      to build once and then release several times to different registries 
+      servers.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-release">
+        <release-product url="${release.url}"
+                         registry="${release.registry}"
+                         uid="${release.parent.uid}"
+                         version="${release.parent.version}"
+                         platforms="${product.platforms}"
+                         archive="${work.dir}/${product.jar.file}"/>
+    </target>
+    
+    <!-- =======================================================================
+      Default
+    ======================================================================== -->
+    
+    <!--
+      The default target. 
+      
+      Does nothing except printing the usage information.
     -->
     <target name="usage">
         <echo>
-            This script builds and releases an NBI product. In order for it 
-            to function correctly, set up properties in 
-            ${.product.dir}/build.properties, 
-            ${.common.dir}/common.properties and 
-            ${.common.dir}/native/*.properties.
-            
-            It is not meant to be used directly. Script fot individual 
-            products should import this script and use it as a target library.
+            This is the base build script for nbi product package and is not 
+            intended to be called directly. In order to create a derivative 
+            implementation script, see 
+            ${basedir}/.templates/product-template.xml
         </echo>
     </target>
 </project>

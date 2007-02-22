@@ -159,21 +159,21 @@
       The build process consists of three steps: first, the native components 
       of the engine (jni libraries and native launcher stubs) are built (if it
       is required), then the engine's netbeans project is compiled and 
-      packaged, last the engine jar file is digitally signed and moved to the
+      packaged, last the engine jar file is digitally signed and copied to the
       distributives directory.
       
       This target is not intended to be called directly.
     -->
     <target name="-build" depends=".build">
+        <!-- copy the built binary to the distributives directory -->
+        <copy file="${engine.dist.file}" todir="${dist.dir}"/>
+        
         <!-- digitally sign the built binary -->
-        <signjar jar="${engine.dist.file}" 
+        <signjar jar="${dist.dir}/${engine.dist.file.name}" 
                  keystore="${jarsigner.keystore}"
                  storepass="${jarsigner.storepass}"
                  alias="${jarsigner.alias}"
                  maxmemory="${jarsigner.xmx}"/>
-        
-        <!-- move the built binary to the distributives directory -->
-        <move file="${engine.dist.file}" todir="${dist.dir}"/>
     </target>
     
     <!--

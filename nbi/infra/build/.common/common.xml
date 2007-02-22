@@ -175,9 +175,12 @@
       tasks compilation, recreates it and runs javac on the custom tasks' 
       sources.
       
+      It also sets a special property which will prevent it from repeated 
+      execution.
+      
       This target is not intended to be called directly.
     -->
-    <target name=".build-custom-tasks">
+    <target name=".build-custom-tasks" unless="skip.build.custom.tasks">
         <!-- quick clean-up and initialization -->
         <delete dir="${custom.tasks.cls}"/>
         <mkdir dir="${custom.tasks.cls}"/>
@@ -187,6 +190,8 @@
             srcdir="${custom.tasks.src}" 
             destdir="${custom.tasks.cls}" 
             debug="true"/>
+        
+        <property name="skip.build.custom.tasks" value="true"/>
     </target>
     
     <!--
@@ -333,6 +338,7 @@
                 <arg value="${nb.no.dependencies}"/>
                 <arg value="${nb.skip.build.custom.tasks}"/>
                 <arg value="${nb.custom.tasks.cls}"/>
+                <arg value="${nb.custom.parameter}"/>
             </exec>
         </if>
     </target>
@@ -384,7 +390,7 @@
     -->
     <target name="checkout" 
             depends="init,-pre-checkout,-checkout,-post-checkout"/>
-            
+    
     <!--
       Checks out sources from a CVS repository with the given coordinates.
       
@@ -638,7 +644,9 @@
     <target name=".build-nbproject" if="do.build.nbproject">
         <exec executable="${ant.executable}" 
               dir="${cvs.dir}/${nbproject.path}" 
-              failonerror="false">
+              failonerror="true"
+              failifexecutionfails="true"
+              errorproperty="error.code">
             <arg value="${nb.target.build}"/>
             
             <arg value="${nb.platform.home}"/>
@@ -646,6 +654,7 @@
             <arg value="${nb.no.dependencies}"/>
             <arg value="${nb.skip.build.custom.tasks}"/>
             <arg value="${nb.custom.tasks.cls}"/>
+            <arg value="${nb.custom.parameter}"/>
         </exec>
     </target>
     
