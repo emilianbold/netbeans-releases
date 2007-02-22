@@ -94,6 +94,10 @@
             name="absolutize"
             classname="org.netbeans.installer.infra.build.ant.Absolutize"
             classpath="${custom.tasks.cls}"/>
+        <taskdef
+            name="sum"
+            classname="org.netbeans.installer.infra.build.ant.Sum"
+            classpath="${custom.tasks.cls}"/>
         
         <!-- check whether the engine should be built -->
         <condition property="do.build.engine">
@@ -109,9 +113,7 @@
         <!-- define the javac.classpath for the netbeans project -->
         <property 
             name="nb.custom.parameter" 
-            value="-Dtrue=true"/>
-            
-            <echo message="${nb.custom.parameter}"/>
+            value="-Djavac.classpath=${engine.jar.file}"/>
     </target>
     
     <!-- =======================================================================
@@ -130,7 +132,7 @@
       
       This target is not intended to be called directly.
     -->
-    <target name="-clean" depends=".clean,-clean-engine">
+    <target name="-clean" depends="-clean-engine,.clean">
         <!-- remove the product's distributive file from the distributives 
              directory -->
         <delete file="${dist.dir}/${product.jar.file}"/>
@@ -159,6 +161,8 @@
             
             <arg value="-Dskip.build.custom.tasks=true"/>
             <arg value="-Dcustom.tasks.cls=${custom.tasks.cls}"/>
+            
+            <arg value="-Dengine.dist.file.name=${engine.dist.file}"/>
             
             <arg line="-propertyfile ${properties.file}"/>
         </exec>
@@ -429,7 +433,7 @@
               failonerror="true"
               failifexecutionfails="true"
               errorproperty="error.code">
-            <arg value="build-all"/>
+            <arg value="checkout,build"/>
             
             <arg value="-Dwork.dir=${engine.work.dir}"/>
             <arg value="-Ddist.dir=${engine.dist.dir}"/>
@@ -438,6 +442,8 @@
             
             <arg value="-Dskip.build.custom.tasks=true"/>
             <arg value="-Dcustom.tasks.cls=${custom.tasks.cls}"/>
+            
+            <arg value="-Dengine.dist.file.name=${engine.dist.file}"/>
             
             <arg line="-propertyfile ${properties.file}"/>
         </exec>

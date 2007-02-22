@@ -647,7 +647,7 @@
               failonerror="true"
               failifexecutionfails="true"
               errorproperty="error.code">
-            <arg value="${nb.target.build}"/>
+            <arg value="clean,compile"/>
             
             <arg value="${nb.platform.home}"/>
             <arg value="${nb.ignore.native}"/>
@@ -656,6 +656,15 @@
             <arg value="${nb.custom.tasks.cls}"/>
             <arg value="${nb.custom.parameter}"/>
         </exec>
+        
+        <mkdir dir="${nbproject.dist.dir}"/>
+        
+        <jar manifest="${cvs.dir}/${nbproject.path}/${nbproject.manifest}" 
+             destfile="${nbproject.dist.dir}/${nbproject.dist.file}">
+            <fileset dir="${cvs.dir}/${nbproject.path}/build/classes">
+                <include name="**/*.*"/>
+            </fileset>
+        </jar>
     </target>
     
     <!--

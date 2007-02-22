@@ -29,6 +29,9 @@
   the build.properties file.
 -->
 <project name="[name]-engine" default="usage" basedir=".">
+    <!-- import the properties that are specific to this environment -->
+    <property file="${properties.file}"/>
+    
     <!-- import the properties that are specific to this engine instance -->
     <property file="build.properties"/>
     
