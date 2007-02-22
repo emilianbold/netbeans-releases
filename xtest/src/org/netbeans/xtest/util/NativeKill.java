@@ -13,24 +13,22 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
+package org.netbeans.xtest.util;
+
+import java.io.File;
+import java.io.IOException;
+
+/**
  * NativeKill.java
  *
  * methods in this class are able to run and execute native kill utility on all platforms
  * (on windows only with supplied exe utility)
  * Created on April 16, 2002, 6:10 PM
- */
-
-package org.netbeans.xtest.util;
-
-import java.io.*;
-
-/**
- *
+ * 
  * @author  mb115822
  */
 public class NativeKill {
@@ -39,42 +37,8 @@ public class NativeKill {
     public NativeKill() {
     }
 
-    private static final String UNIX = "unix";
-    private static final String WINDOWS = "windows";
-    private static final String UNKNOWN = "unknown";
     private static final int SIGKILL = 9;
     private static final int SIGQUIT = 3;
-   
-    
-    private static final String [][] SUPPORTED_PLATFORMS = { 
-        {"Linux,i386",UNIX},
-        {"SunOS,sparc",UNIX},
-        {"SunOS,x86",UNIX},
-        {"Windows_NT,x86",WINDOWS},
-        {"Windows_2000,x86",WINDOWS},
-        {"Windows_XP,x86",WINDOWS},
-        {"Windows_95,x86",WINDOWS},
-        {"Windows_98,x86",WINDOWS},        
-        {"Windows_Me,x86",WINDOWS},
-        {"Windows_2003,amd64",WINDOWS}
-    };
-    
-    
-    // get platform on which the code is executed 
-    private static String getPlatform() {
-        
-        String platformString=(System.getProperty("os.name","")+","+
-                        /*
-                        System.getProperty("os.version","")+","+
-                         */
-                        System.getProperty("os.arch","")).replace(' ','_');        
-        for (int i=0; i<SUPPORTED_PLATFORMS.length; i++) {
-            if (platformString.equalsIgnoreCase(SUPPORTED_PLATFORMS[i][0])) {
-                return SUPPORTED_PLATFORMS[i][1];
-            }
-        } 
-        return UNKNOWN;
-    }
     
     // execute kill 
     private static boolean executeKillCommand(String killCommand) throws IOException {
@@ -122,14 +86,11 @@ public class NativeKill {
      * kills process with given pid 
      */
     private static boolean killProcess(long pid, int signal) {
-        String platform = getPlatform();
         try {
-            if (platform.equals(UNIX)) {
+            if(System.getProperty("os.name").toUpperCase().indexOf("WINDOWS") > -1) {
+                return killOnWindows(pid, signal);
+            } else {
                 return killOnUnix(pid, signal);
-                } else {
-                if (platform.equals(WINDOWS)) {
-                    return killOnWindows(pid, signal);
-                }
             }
         } catch (IOException ioe) {
             System.out.println("Kill command not found on your computer");

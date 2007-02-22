@@ -13,15 +13,18 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.xtest.plugin.ide.test;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.xtest.util.NativeKill;
 
 /** Test of IdeWatchdog. First testbag satisfies that watchdog stays alive.
  * Second testbag checks that watchdog first clears previous one and
@@ -53,4 +56,23 @@ public class IdeWatchdogTest extends NbTestCase {
         Thread.sleep(60000);
     }
 
+    /** This test is in second testbag. It tests NativeKill functionality. */
+    public void testNativeKill() throws Exception {
+        String xtestWorkdir = System.getProperty("xtest.workdir");
+        File idePidFile = new File(xtestWorkdir, "ide.pid");
+        LineNumberReader reader = new LineNumberReader(new FileReader(idePidFile));
+        String line = reader.readLine();
+        if (line != null) {
+            long pid = Long.parseLong(line);
+            boolean result = NativeKill.dumpProcess(pid);
+            assertTrue("NativeKill.dumpProcess("+pid+") failed.", result);
+            // sleep a bit, so resources can be released
+            Thread.sleep(2000);
+            result = NativeKill.killProcess(pid);
+            // it return false because it kills its own JVM
+            assertFalse("NativeKill.killProcess("+pid+") failed.", result);
+        } else {
+            fail("Cannot read PID from file "+idePidFile);
+        }
+    }
 }
