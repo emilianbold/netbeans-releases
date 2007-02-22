@@ -172,6 +172,8 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Editors">
+        <file name="org-netbeans-modules-editor-impl-highlighting-HLFactory.instance" />
+
         <folder name="Popup">
             <file name="org-netbeans-modules-editor-NbSelectInPopupAction.instance"/>
             <attr name="org-netbeans-modules-editor-NbSelectInPopupAction.instance/format" boolvalue="true"/>
