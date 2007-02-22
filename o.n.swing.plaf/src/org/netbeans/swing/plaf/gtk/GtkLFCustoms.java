@@ -20,11 +20,27 @@
 package org.netbeans.swing.plaf.gtk;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.Transparency;
+import java.lang.reflect.Method;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JTree;
+import javax.swing.LookAndFeel;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.FontUIResource;
+import javax.swing.plaf.synth.Region;
+import javax.swing.plaf.synth.SynthConstants;
+import javax.swing.plaf.synth.SynthContext;
+import javax.swing.plaf.synth.SynthLookAndFeel;
+import javax.swing.plaf.synth.SynthStyle;
 import org.netbeans.swing.plaf.LFCustoms;
 import org.netbeans.swing.plaf.util.UIUtils;
 
@@ -64,7 +80,7 @@ public class GtkLFCustoms extends LFCustoms {
         if (borderColor == null) {
             borderColor = new Color(144,150,162);
         }
-                
+        
         Object[] result = {
             PROPSHEET_SELECTION_BACKGROUND, selBg,
             PROPSHEET_SELECTION_FOREGROUND, selFg,
@@ -117,6 +133,18 @@ public class GtkLFCustoms extends LFCustoms {
     }
     
     public Object[] createLookAndFeelCustomizationKeysAndValues() {
+        JTree tree = new JTree();
+        Icon treeExpandedIcon = SynthIconWrapper.createSynthIconWrapper("Tree.expandedIcon", tree, Region.TREE);
+        // fallback
+        if (treeExpandedIcon == null) {
+            treeExpandedIcon = new GTKExpandedIcon();
+        }
+        Icon treeCollapsedIcon = SynthIconWrapper.createSynthIconWrapper("Tree.collapsedIcon", tree, Region.TREE);
+        // fallback
+        if (treeCollapsedIcon == null) {
+            treeCollapsedIcon = new GTKCollapsedIcon();
+        }
+                
         if (ThemeValue.functioning()) {
             return new Object[] {
                 //XXX once the JDK team has integrated support for standard
@@ -162,6 +190,9 @@ public class GtkLFCustoms extends LFCustoms {
                                 "BACK_SPACE", "Go Up", // NOI18N
                                 "ENTER", "approveSelection" // NOI18N
                             }),
+                // workaround for GTK: put GTK icons on place where there are also on other LFs            
+                "Tree.expandedIcon", treeExpandedIcon,
+                "Tree.collapsedIcon", treeCollapsedIcon,
             };
         } else {
             Object[] result = new Object[] {
@@ -170,5 +201,207 @@ public class GtkLFCustoms extends LFCustoms {
             return result;
         }
     }
+    
+    /** Workaround for GTK - retrieves GTK icon and returns it in static form
+     * which is usable also outside Synth implementation (doesn't need SynthContext).
+     */
+    private static final class SynthIconWrapper implements Icon {
+
+        /** Creates wrapper for Synth icon of given iconID, which can be used
+         * outside Synth.
+         * 
+         * @return Icon or null if Icon can't be created for some reason
+         */
+        public static Icon createSynthIconWrapper (String iconID, JComponent comp, Region region) {
+            LookAndFeel laf = UIManager.getLookAndFeel();
+
+            if (!(laf instanceof SynthLookAndFeel)) {
+                return null;
+            }
+
+            SynthStyle style = ((SynthLookAndFeel)laf).getStyleFactory().getStyle(comp, region);
+            SynthContext context = new SynthContext(comp, region, style, SynthConstants.ENABLED);
+            Icon synthIcon = style.getIcon(context, iconID);
+
+            if (synthIcon == null) {
+                return null;
+            }
+
+            Method paintMethod;
+            try {
+                paintMethod = synthIcon.getClass().getMethod(
+                        "paintIcon", SynthContext.class, Graphics.class, 
+                        Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE);
+                paintMethod.setAccessible(true);
+            } catch (Exception e) {
+                // return null in case of any problems (method not available anymore)
+                return null;
+            }
+            
+            GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().
+                    getDefaultScreenDevice().getDefaultConfiguration();
+
+            // Create an image that supports transparent pixels
+            Image img = gc.createCompatibleImage(synthIcon.getIconWidth(), 
+                    synthIcon.getIconHeight(), Transparency.BITMASK);
+            
+            return new SynthIconWrapper(synthIcon, context, paintMethod, img);
+        }
+        
+        private Icon original;
+        
+        private Method paintMethod;
+        
+        private SynthContext context;
+        
+        private Image image;
+        
+        private SynthIconWrapper(Icon original, SynthContext context, Method paintMethod, Image image) {
+            this.original = original;
+            this.paintMethod = paintMethod;
+            this.context = context;
+            this.image = image;
+        }
+        
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            try {
+                paintMethod.invoke(original, context, image.getGraphics(), 0, 0,
+                                   getIconWidth(), getIconHeight());
+            } catch (Exception ex) {
+                // fail silently, image will just be empty, no tragedy
+                return;
+            }
+            g.drawImage(image, x, y, null);
+        }
+
+        public int getIconWidth() {
+            return original.getIconWidth();
+        }
+
+        public int getIconHeight() {
+            return original.getIconHeight();
+        }
+}
+    
+    
+    /** Temporary workaround for GTK L&F */
+    private static abstract class GTKIcon implements Icon {
+        private static final int SIZE = 11;
+        public int getIconWidth() {
+            return GTKIcon.SIZE;
+        }
+        
+        public int getIconHeight() {
+            return GTKIcon.SIZE;
+        }
+    }
+
+    /**
+     * Temporary workaround for GTK L&F - they provide an icon which does not
+     * know its width or height until it has been painted.  So for it to work
+     * correctly, we have this silliness.
+     */
+    private static final class GTKCollapsedIcon extends GTKIcon {
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            g.translate(x, y);
+            int mid, height, thick, i, j, up, down;
+            int size = Math.min(getIconWidth(),getIconHeight());
+            mid = (size / 2);
+            height = size / 2 + 1;
+            thick = Math.max(1, size / 7);
+            
+            i = size / 2 - height / 2 - 1;
+            
+            // Fill in the background of the expander icon.
+            g.setColor((Color) UIManager.get("Button.background"));
+            for (j = height - 1; j > 0; j--) {
+                g.drawLine(i, mid - j + 1, i, mid + j - 1);
+                i++;
+            }
+            
+            g.setColor((Color) UIManager.get("Button.foreground"));
+            i = size / 2 - height / 2 - 1;
+            down = thick - 1;
+            // Draw the base of the triangle.
+            for (up = 0; up < thick; up++) {
+                g.drawLine(i + up, 0 - down, i + up, size + down);
+                down--;
+            }
+            i++;
+            
+            // Paint sides of triangle.
+            for (j = height - 1; j > 0; j--) {
+                for (up = 0; up < thick; up++) {
+                    g.drawLine(i, mid - j + 1 - up, i, mid - j + 1 - up);
+                    g.drawLine(i, mid + j - 1 + up, i, mid + j - 1 + up);
+                }
+                i++;
+            }
+            
+            // Paint remainder of tip if necessary.
+            if (thick > 1) {
+                for (up = thick - 2; up >= 0; up--) {
+                    g.drawLine(i, mid - up, i, mid + up);
+                    i++;
+                }
+            }
+            
+            g.translate(-x, -y);
+        }
+    }
+
+    /**
+     * Temporary workaround for GTK L&F - they provide an icon which does not
+     * know its width or height until it has been painted.  So for it to work
+     * correctly, we have this silliness.
+     */
+    private static final class GTKExpandedIcon extends GTKIcon {
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            g.translate(x, y);
+            int mid, height, thick, i, j, up, down;
+            int size = Math.min(getIconWidth(),getIconHeight());
+            mid = (size / 2);
+            height = size / 2 + 1;
+            thick = Math.max(1, size / 7);
+ 
+            j = size / 2 - height / 2 - 1;
+            // Fill in the background of the expander icon.
+            g.setColor((Color) UIManager.get("Button.background"));
+            for (i = height - 1; i > 0; i--) {
+                g.drawLine(mid - i + 1, j, mid + i - 1, j);
+                j++;
+            }
+
+            g.setColor((Color) UIManager.get("Button.foreground"));
+            j = size / 2 - height / 2 - 1;
+            down = thick - 1;
+            // Draw the base of the triangle.
+            for (up = 0; up < thick; up++) {
+                g.drawLine(0 - down, j + up, size + down, j + up);
+                down--;
+            }
+            j++;
+
+            // Paint sides of triangle.
+            for (i = height - 1; i > 0; i--) {
+                for (up = 0; up < thick; up++ ) {
+                    g.drawLine(mid - i + 1 - up, j, mid - i + 1 - up, j);
+                    g.drawLine(mid + i - 1 + up, j, mid + i - 1 + up, j);
+                }
+                j++;
+            }
+
+            // Paint remainder of tip if necessary.
+            if (thick > 1) {
+                for (up = thick - 2; up >= 0; up--) {
+                    g.drawLine(mid - up, j, mid + up, j);
+                    j++;
+                }
+            }
+             
+            g.translate(-x, -y);
+        }
+    }
+    
 
 }

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.palette.ui;
 
+import java.awt.Component;
 import java.awt.dnd.Autoscroll;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -42,7 +43,6 @@ class CategoryButton extends JCheckBox implements Autoscroll {
 
     private static final Icon openedIcon = (Icon)UIManager.get("Tree.expandedIcon"); // NOI18N
     private static final Icon closedIcon = (Icon)UIManager.get("Tree.collapsedIcon"); // NOI18N
-    private static final Color GTK_BK_COLOR = new Color( 184,207,229 );
     private static final Color AQUA_BK_COLOR = new Color(225, 235, 240);
     
     static final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() );
@@ -52,6 +52,24 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     private Category category;
     
     private AutoscrollSupport support;
+    
+    // Workaround for JDK bug in GTK #6527149 - use Metal UI class
+    static {
+        if (isGTK) {
+            UIManager.put("MetalCheckBoxUI_4_GTK", "javax.swing.plaf.metal.MetalCheckBoxUI");
+        }
+    }
+
+    @Override
+    public String getUIClassID() {
+        String classID = super.getUIClassID();
+        if (isGTK) {
+            classID = "MetalCheckBoxUI_4_GTK";
+        }
+        return classID;
+    }
+
+    
 
     CategoryButton( CategoryDescriptor descriptor, Category category ) {
         this.descriptor = descriptor;
@@ -72,12 +90,6 @@ class CategoryButton extends JCheckBox implements Autoscroll {
 
         updateProperties();
         
-        /* perhaps set at least a border around category button if we can't affect background on GTK
-         if (isGTK) {
-            setBorderPainted(true);
-            setBorder(BorderFactory.createLineBorder(UIManager.getColor( "PropSheet.setBackground" ))); //NOI18N
-        }*/
-
         if( getBorder() instanceof CompoundBorder ) { // from BasicLookAndFeel
             Dimension pref = getPreferredSize();
             pref.height -= 3;
@@ -177,9 +189,7 @@ class CategoryButton extends JCheckBox implements Autoscroll {
                 return UIManager.getColor("Table.selectionBackground"); //NOI18N
             return UIManager.getColor( "PropSheet.selectedSetBackground" ); //NOI18N
         } else {
-            if( isGTK ) {
-                return GTK_BK_COLOR;
-            } else if( isAqua ) {
+            if( isAqua ) {
                 return AQUA_BK_COLOR;
             } else {
                 return UIManager.getColor( "PropSheet.setBackground" ); //NOI18N
@@ -196,7 +206,7 @@ class CategoryButton extends JCheckBox implements Autoscroll {
             return super.getForeground();
         }
     }
-
+    
     private class MoveFocusAction extends AbstractAction {
         private boolean moveDown;
         
