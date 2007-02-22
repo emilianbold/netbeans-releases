@@ -89,18 +89,6 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <class-path-extension>
-                <runtime-relative-path>ext/jgo/JGo5.1.jar</runtime-relative-path>
-                <binary-origin>external/JGo5.1.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jgo/JGoInstruments5.1.jar</runtime-relative-path>
-                <binary-origin>external/JGoInstruments5.1.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jgo/JGoLayout5.1.jar</runtime-relative-path>
-                <binary-origin>external/JGoLayout5.1.jar</binary-origin>
-            </class-path-extension>
             <public-packages>
                 <package>org.netbeans.modules.soa.mapper.basicmapper</package>
                 <package>org.netbeans.modules.soa.mapper.basicmapper.methoid</package>
@@ -121,6 +109,18 @@
                 <package>org.netbeans.modules.soa.mapper.common.util</package>
                 <package>org.netbeans.modules.soa.mapper.util</package>
             </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/jgo/JGo5.1.jar</runtime-relative-path>
+                <binary-origin>external/JGo5.1.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jgo/JGoInstruments5.1.jar</runtime-relative-path>
+                <binary-origin>external/JGoInstruments5.1.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jgo/JGoLayout5.1.jar</runtime-relative-path>
+                <binary-origin>external/JGoLayout5.1.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>
