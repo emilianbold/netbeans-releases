@@ -55,7 +55,6 @@ import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import javax.swing.*;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.wsitconf.am.J2eeProjectHelper;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
@@ -76,8 +75,6 @@ public class ServicePanel extends SectionInnerPanel {
     private Service service;
     private JaxWsModel jaxwsmodel;
 
-    private J2eeProjectHelper amHelper;
-            
     private String oldProfile;
     
     private boolean inSync = false;
@@ -366,14 +363,7 @@ public class ServicePanel extends SectionInnerPanel {
         
         // If there is no registered SecurityChecker, we check it ourselves.
         // Otherwise, delegate the checking to the SecurityChecker.
-        if (SecurityCheckerRegistry.getDefault().getSecurityCheckers().isEmpty()) {
-            if ((amHelper == null) && (jaxwsmodel != null)) {
-                amHelper = new J2eeProjectHelper(node, jaxwsmodel); 
-            }
-            if (amHelper != null) {
-                amSec = amHelper.isSecurityEnabled();
-            }
-        } else {
+        if (!SecurityCheckerRegistry.getDefault().getSecurityCheckers().isEmpty()) {
             amSec = SecurityCheckerRegistry.getDefault().isNonWsitSecurityEnabled(node, jaxwsmodel);
         }
         

@@ -53,11 +53,10 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.refactoring.api.Problem;
+//import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -227,24 +226,24 @@ public class Util {
         return false;
     }
 
-    public static void addProblemsToEnd(Problem[] where, Problem what) {
-        where[0] = addProblemsToEnd(where[0], what);
-    }
-    
-    public static Problem addProblemsToEnd(Problem where, Problem what) {
-        if (where == null) {
-            return what;
-        }
-        if (what != null) {
-            Problem tail = where;
-
-            while (tail.getNext() != null) {
-                tail = tail.getNext();
-            }
-            tail.setNext(what);
-        }
-        return where;
-    }
+//    public static void addProblemsToEnd(Problem[] where, Problem what) {
+//        where[0] = addProblemsToEnd(where[0], what);
+//    }
+//    
+//    public static Problem addProblemsToEnd(Problem where, Problem what) {
+//        if (where == null) {
+//            return what;
+//        }
+//        if (what != null) {
+//            Problem tail = where;
+//
+//            while (tail.getNext() != null) {
+//                tail = tail.getNext();
+//            }
+//            tail.setNext(what);
+//        }
+//        return where;
+//    }
 
     /** Finds all WS projects affected by the change of FileObject 'fo' */
     public static Collection/*WebServicesSupport*/ getRelevantWSModules(FileObject fo) {

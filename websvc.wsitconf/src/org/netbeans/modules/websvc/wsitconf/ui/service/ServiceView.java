@@ -20,7 +20,7 @@ package org.netbeans.modules.websvc.wsitconf.ui.service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingFaultNode;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationNode;
@@ -77,13 +77,13 @@ public class ServiceView extends SectionView {
         Node[] bindingNodes = new Node[bindings.size()];
         Children rootChildren = new Children.Array();
 
-        JavaClass jc = null;
-        if (s != null) {
-            String wsdlUrl = s.getWsdlUrl();
-            if (wsdlUrl == null) { // WS from Java
-                jc = (JavaClass)node.getLookup().lookup(JavaClass.class);
-            }
-        }
+//        JavaClass jc = null;
+//        if (s != null) {
+//            String wsdlUrl = s.getWsdlUrl();
+//            if (wsdlUrl == null) { // WS from Java
+//                jc = (JavaClass)node.getLookup().lookup(JavaClass.class);
+//            }
+//        }
         
         // if there's only one binding, make the dialog simpler
         if (bindingNodes.length > 1) {
@@ -93,9 +93,9 @@ public class ServiceView extends SectionView {
 
             for (Binding binding : bindings) {
                 
-                if (jc != null) {
-                    JMIUtils.refreshOperations(binding, jc);
-                }
+//                if (jc != null) {
+//                    JMIUtils.refreshOperations(binding, jc);
+//                }
 
                 // main node container for a specific binding
                 Children bindingChildren = new Children.Array();
@@ -157,9 +157,9 @@ public class ServiceView extends SectionView {
             rootChildren.add(bindingNodes);
         } else {
             Binding b = (Binding) bindings.toArray()[0];
-            if (jc != null) {
-                JMIUtils.refreshOperations(b, jc);
-            }
+//            if (jc != null) {
+//                JMIUtils.refreshOperations(b, jc);
+//            }
             Node root = new AbstractNode(rootChildren);
             setRoot(root);
 

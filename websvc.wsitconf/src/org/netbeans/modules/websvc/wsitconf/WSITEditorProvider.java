@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.websvc.wsitconf;
 
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
 import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider;
 import org.openide.nodes.Node;
@@ -36,13 +36,13 @@ public class WSITEditorProvider implements WSEditorProvider {
     }
 
     public WSEditor createWSEditor() {
-        JavaMetamodel.getManager().waitScanFinished();
-        try {
-            Thread.sleep(1000);
-        } catch (Exception e) {
-            
-        }
-
+//        JavaMetamodel.getManager().waitScanFinished();
+//        try {
+//            Thread.sleep(1000);
+//        } catch (Exception e) {
+//            
+//        }
+//
         return new WSITEditor();
     }
 

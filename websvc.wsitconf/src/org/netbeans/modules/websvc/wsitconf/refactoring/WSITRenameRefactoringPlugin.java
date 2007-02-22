@@ -19,12 +19,12 @@
 
 package org.netbeans.modules.websvc.wsitconf.refactoring;
 
-import javax.jmi.reflect.RefObject;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+//import javax.jmi.reflect.RefObject;
+//import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+//import org.netbeans.modules.refactoring.api.Problem;
+//import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+//import org.netbeans.modules.refactoring.api.RenameRefactoring;
+//import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.websvc.wsitconf.refactoring.WSITXmlRenameRefactoring;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.openide.ErrorManager;
@@ -33,123 +33,123 @@ import org.openide.ErrorManager;
  *
  * @author Martin Grebac
  */
-public class WSITRenameRefactoringPlugin implements RefactoringPlugin {
+public class WSITRenameRefactoringPlugin /*implements RefactoringPlugin*/ {
     
     /** This one is important creature - makes sure that cycles between plugins won't appear */
     private static ThreadLocal semafor = new ThreadLocal();
     
     private WSITXmlRenameRefactoring wsitXmlRenameRefactor = new WSITXmlRenameRefactoring();
     
-    private final RenameRefactoring renameRefactoring;
+//    private final RenameRefactoring renameRefactoring;
     
     private static ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.websvc.wsitconf.refactoring.rename");   // NOI18N
     
     /**
      * Creates a new instance of WSITRenameRefactoringPlugin
      */
-    public WSITRenameRefactoringPlugin(AbstractRefactoring refactoring) {
-        this.renameRefactoring = (RenameRefactoring) refactoring;
-    }
-    
-    /** Checks pre-conditions of the renameRefactoring and returns problems.
-     * @return Problems found or null (if no problems were identified)
-     */
-    public Problem preCheck() {
-        Problem problem = null;
-        if (semafor.get() == null) {
-            semafor.set(new Object());
-            
-            RefObject refO = (RefObject) renameRefactoring.getRefactoredObject();
-            err.log("refO: " + refO);
-            
-            Problem wsitXmlProblem = wsitXmlRenameRefactor.preCheck(refO);
-            problem = Util.addProblemsToEnd(problem, wsitXmlProblem);
-
-            semafor.set(null);
-        }
-        return problem;
-    }
-    
-    
-    public Problem fastCheckParameters() {
-        Problem problem = null;
-        if (semafor.get() == null) {
-            semafor.set(new Object());
-            
-            RefObject refO = (RefObject) renameRefactoring.getRefactoredObject();
-            err.log("refO: " + refO);
-            
-            String newName = renameRefactoring.getNewName();
-            err.log("newname: " + newName);
-            
-//            if (!Utility.isEjb30(refO)){
-//                Problem ejbJarProblem = getEjbJarRenameRefactor().fastCheckParameters(refO, newName);
-//                problem = Utility.addProblemsToEnd(problem, ejbJarProblem);
-//            }
+//    public WSITRenameRefactoringPlugin(AbstractRefactoring refactoring) {
+//        this.renameRefactoring = (RenameRefactoring) refactoring;
+//    }
+//    
+//    /** Checks pre-conditions of the renameRefactoring and returns problems.
+//     * @return Problems found or null (if no problems were identified)
+//     */
+//    public Problem preCheck() {
+//        Problem problem = null;
+//        if (semafor.get() == null) {
+//            semafor.set(new Object());
 //            
-//            Problem wsvcProblem = getWebservicesXmlRenameRefactor().fastCheckParameters(refO, newName);
-//            problem = Utility.addProblemsToEnd(problem, wsvcProblem);
-            
-            semafor.set(null);
-        }
-        return problem;
-    }
-    
-    /** Checks parameters of the renameRefactoring.
-     * @return Problems found or null (if no problems were identified)
-     */
-    public Problem checkParameters() {
-        Problem problem = null;
-        if (semafor.get() == null) {
-            semafor.set(new Object());
-            
-            RefObject refO = (RefObject) renameRefactoring.getRefactoredObject();
-            err.log("refO: " + refO);
-            
-            String newName = renameRefactoring.getNewName();
-            err.log("newname: " + newName);
-            
-//            if (!Utility.isEjb30(refO)){
-//                Problem ejbJarProblem = getEjbJarRenameRefactor().checkParameters(refO,  newName);
-//                problem = Utility.addProblemsToEnd(problem, ejbJarProblem);
-//            }
+//            RefObject refO = (RefObject) renameRefactoring.getRefactoredObject();
+//            err.log("refO: " + refO);
 //            
-//            Problem wsvcProblem = getWebservicesXmlRenameRefactor().checkParameters(refO,  newName);
-//            problem = Utility.addProblemsToEnd(problem, wsvcProblem);
+//            Problem wsitXmlProblem = wsitXmlRenameRefactor.preCheck(refO);
+//            problem = Util.addProblemsToEnd(problem, wsitXmlProblem);
+//
+//            semafor.set(null);
+//        }
+//        return problem;
+//    }
+//    
+//    
+//    public Problem fastCheckParameters() {
+//        Problem problem = null;
+//        if (semafor.get() == null) {
+//            semafor.set(new Object());
 //            
-            semafor.set(null);
-        }
-        return problem;
-    }
-    
-    /** Collects renameRefactoring elements for a given renameRefactoring.
-     * @param refactoringElements Collection of renameRefactoring elements - the implementation of this method
-     * should add renameRefactoring elements to this collections. It should make no assumptions about the collection
-     * content.
-     * @return Problems found or null (if no problems were identified)
-     */
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        Problem problem = null;
-        
-        if (semafor.get() == null) {
-            semafor.set(new Object());
-            
-            RefObject refO = (RefObject) renameRefactoring.getRefactoredObject();
-            err.log("refO: " + refO);
-            
-            String newName = renameRefactoring.getNewName();
-            err.log("newname: " + newName);
-            
-            Problem wsitXmlProblem = wsitXmlRenameRefactor.prepare(renameRefactoring, refO, newName, refactoringElements);
-            problem = Util.addProblemsToEnd(problem, wsitXmlProblem);
-            
-            semafor.set(null);
-        }
-        
-        err.log("Gonna return problem: " + problem);
-        return problem;
-    }
-    
-    public void cancelRequest() { }
-    
+//            RefObject refO = (RefObject) renameRefactoring.getRefactoredObject();
+//            err.log("refO: " + refO);
+//            
+//            String newName = renameRefactoring.getNewName();
+//            err.log("newname: " + newName);
+//            
+////            if (!Utility.isEjb30(refO)){
+////                Problem ejbJarProblem = getEjbJarRenameRefactor().fastCheckParameters(refO, newName);
+////                problem = Utility.addProblemsToEnd(problem, ejbJarProblem);
+////            }
+////            
+////            Problem wsvcProblem = getWebservicesXmlRenameRefactor().fastCheckParameters(refO, newName);
+////            problem = Utility.addProblemsToEnd(problem, wsvcProblem);
+//            
+//            semafor.set(null);
+//        }
+//        return problem;
+//    }
+//    
+//    /** Checks parameters of the renameRefactoring.
+//     * @return Problems found or null (if no problems were identified)
+//     */
+//    public Problem checkParameters() {
+//        Problem problem = null;
+//        if (semafor.get() == null) {
+//            semafor.set(new Object());
+//            
+//            RefObject refO = (RefObject) renameRefactoring.getRefactoredObject();
+//            err.log("refO: " + refO);
+//            
+//            String newName = renameRefactoring.getNewName();
+//            err.log("newname: " + newName);
+//            
+////            if (!Utility.isEjb30(refO)){
+////                Problem ejbJarProblem = getEjbJarRenameRefactor().checkParameters(refO,  newName);
+////                problem = Utility.addProblemsToEnd(problem, ejbJarProblem);
+////            }
+////            
+////            Problem wsvcProblem = getWebservicesXmlRenameRefactor().checkParameters(refO,  newName);
+////            problem = Utility.addProblemsToEnd(problem, wsvcProblem);
+////            
+//            semafor.set(null);
+//        }
+//        return problem;
+//    }
+//    
+//    /** Collects renameRefactoring elements for a given renameRefactoring.
+//     * @param refactoringElements Collection of renameRefactoring elements - the implementation of this method
+//     * should add renameRefactoring elements to this collections. It should make no assumptions about the collection
+//     * content.
+//     * @return Problems found or null (if no problems were identified)
+//     */
+//    public Problem prepare(RefactoringElementsBag refactoringElements) {
+//        Problem problem = null;
+//        
+//        if (semafor.get() == null) {
+//            semafor.set(new Object());
+//            
+//            RefObject refO = (RefObject) renameRefactoring.getRefactoredObject();
+//            err.log("refO: " + refO);
+//            
+//            String newName = renameRefactoring.getNewName();
+//            err.log("newname: " + newName);
+//            
+//            Problem wsitXmlProblem = wsitXmlRenameRefactor.prepare(renameRefactoring, refO, newName, refactoringElements);
+//            problem = Util.addProblemsToEnd(problem, wsitXmlProblem);
+//            
+//            semafor.set(null);
+//        }
+//        
+//        err.log("Gonna return problem: " + problem);
+//        return problem;
+//    }
+//    
+//    public void cancelRequest() { }
+//    
 }

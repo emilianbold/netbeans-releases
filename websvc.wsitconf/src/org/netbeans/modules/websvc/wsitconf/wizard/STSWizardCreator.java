@@ -29,22 +29,22 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Annotation;
-import org.netbeans.jmi.javamodel.AttributeValue;
-import org.netbeans.jmi.javamodel.ClassDefinition;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.jmi.javamodel.PrimitiveType;
-import org.netbeans.jmi.javamodel.PrimitiveTypeKind;
-import org.netbeans.jmi.javamodel.PrimitiveTypeKindEnum;
-import org.netbeans.jmi.javamodel.Type;
+//import org.netbeans.jmi.javamodel.Annotation;
+//import org.netbeans.jmi.javamodel.AttributeValue;
+//import org.netbeans.jmi.javamodel.ClassDefinition;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.jmi.javamodel.Parameter;
+//import org.netbeans.jmi.javamodel.PrimitiveType;
+//import org.netbeans.jmi.javamodel.PrimitiveTypeKind;
+//import org.netbeans.jmi.javamodel.PrimitiveTypeKindEnum;
+//import org.netbeans.jmi.javamodel.Type;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
@@ -195,62 +195,62 @@ public class STSWizardCreator {
         String serviceID = service.getName();
         
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        JavaClass javaClass = null;
-        JavaModel.getJavaRepository().beginTrans(true);
-        
-        try {
-
-            javaClass = JMIUtils.createClass(targetFolder, targetName);
-            //Initially, Provider<Source> will be implemented. The user can then change the Provider type if he/she wishes
-            JMIUtils.addInterface(javaClass, "javax.xml.ws.Provider<Source>"); //NOI18N 
-
-            FileObject fo = javaClass == null ? null : JavaModel.getFileObject(javaClass.getResource());
-            ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-            String serviceImplPath = classPath.getResourceName(fo, '.', false);
-            String portJavaName = port.getJavaName();
-            String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
-
-            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && isJavaEE5orHigher(project));
-            String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
-            
-            if (projectType == EJB_PROJECT_TYPE) {//EJB project
-                Annotation statelessAnnotation = JMIUtils.createAnnotation(javaClass, "javax.ejb.Stateless", Collections.EMPTY_LIST); //NOI18N
-                javaClass.getAnnotations().add(statelessAnnotation);
-            }
-            
-            //Initially, set mode to PAYLOAD. The user can then change if he/she wishes
-            AttributeValue serviceModeValue = JMIUtils.createAttributeValue(javaClass, "value", "javax.xml.ws.Service.Mode", "PAYLOAD"); //NOI18N
-            ArrayList attrList = new ArrayList();
-            attrList.add(serviceModeValue);
-            Annotation serviceModeAnnotation = JMIUtils.createAnnotation(javaClass, "javax.xml.ws.ServiceMode", attrList); //NOI18N
-            javaClass.getAnnotations().add(serviceModeAnnotation);
-            
-            AttributeValue wsdlLocationValue = JMIUtils.createAttributeValue(javaClass, "wsdlLocation", wsdlLocation );
-            AttributeValue serviceNameAttibuteValue = JMIUtils.createAttributeValue(javaClass, "serviceName", service.getName()); //NOI18N
-            AttributeValue targetNamespaceAttibuteValue = JMIUtils.createAttributeValue(javaClass, "targetNamespace", port.getNamespaceURI()); //NOI18N
-            AttributeValue portNameAttibuteValue = JMIUtils.createAttributeValue(javaClass, "portName", port.getName()); //NOI18N
-            attrList = new ArrayList();
-            attrList.add(wsdlLocationValue);
-            attrList.add(serviceNameAttibuteValue);
-            attrList.add(targetNamespaceAttibuteValue);
-            attrList.add(portNameAttibuteValue);
-            Annotation serviceProviderAnnotation = JMIUtils.createAnnotation(javaClass, "javax.xml.ws.WebServiceProvider", attrList); //NOI18N
-            javaClass.getAnnotations().add(serviceProviderAnnotation);
-            String returnType = "javax.xml.transform.Source";  //NOI18N
-            String operationName = "invoke";   //NOI18N
-            Method op = JMIUtils.createMethod(javaClass, operationName, Modifier.PUBLIC, returnType);
-            Parameter param = JMIUtils.createParameter(javaClass, "source", returnType);  //NOI18N
-            op.getParameters().add(param);
-            op.setBodyText("//TODO implement this method\nreturn null;");  //NOI18N
-            javaClass.getFeatures().add(op);
-        }finally{
-            JavaModel.getJavaRepository().endTrans();
-        }
-        
-        FileObject fo = JavaModel.getFileObject(javaClass.getResource());
-        //open in the editor
-        DataObject dobj = DataObject.find(fo);
-        openFileInEditor(dobj);
+//        JavaClass javaClass = null;
+//        JavaModel.getJavaRepository().beginTrans(true);
+//        
+//        try {
+//
+//            javaClass = JMIUtils.createClass(targetFolder, targetName);
+//            //Initially, Provider<Source> will be implemented. The user can then change the Provider type if he/she wishes
+//            JMIUtils.addInterface(javaClass, "javax.xml.ws.Provider<Source>"); //NOI18N 
+//
+//            FileObject fo = javaClass == null ? null : JavaModel.getFileObject(javaClass.getResource());
+//            ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+//            String serviceImplPath = classPath.getResourceName(fo, '.', false);
+//            String portJavaName = port.getJavaName();
+//            String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
+//
+//            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && isJavaEE5orHigher(project));
+//            String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
+//            
+//            if (projectType == EJB_PROJECT_TYPE) {//EJB project
+//                Annotation statelessAnnotation = JMIUtils.createAnnotation(javaClass, "javax.ejb.Stateless", Collections.EMPTY_LIST); //NOI18N
+//                javaClass.getAnnotations().add(statelessAnnotation);
+//            }
+//            
+//            //Initially, set mode to PAYLOAD. The user can then change if he/she wishes
+//            AttributeValue serviceModeValue = JMIUtils.createAttributeValue(javaClass, "value", "javax.xml.ws.Service.Mode", "PAYLOAD"); //NOI18N
+//            ArrayList attrList = new ArrayList();
+//            attrList.add(serviceModeValue);
+//            Annotation serviceModeAnnotation = JMIUtils.createAnnotation(javaClass, "javax.xml.ws.ServiceMode", attrList); //NOI18N
+//            javaClass.getAnnotations().add(serviceModeAnnotation);
+//            
+//            AttributeValue wsdlLocationValue = JMIUtils.createAttributeValue(javaClass, "wsdlLocation", wsdlLocation );
+//            AttributeValue serviceNameAttibuteValue = JMIUtils.createAttributeValue(javaClass, "serviceName", service.getName()); //NOI18N
+//            AttributeValue targetNamespaceAttibuteValue = JMIUtils.createAttributeValue(javaClass, "targetNamespace", port.getNamespaceURI()); //NOI18N
+//            AttributeValue portNameAttibuteValue = JMIUtils.createAttributeValue(javaClass, "portName", port.getName()); //NOI18N
+//            attrList = new ArrayList();
+//            attrList.add(wsdlLocationValue);
+//            attrList.add(serviceNameAttibuteValue);
+//            attrList.add(targetNamespaceAttibuteValue);
+//            attrList.add(portNameAttibuteValue);
+//            Annotation serviceProviderAnnotation = JMIUtils.createAnnotation(javaClass, "javax.xml.ws.WebServiceProvider", attrList); //NOI18N
+//            javaClass.getAnnotations().add(serviceProviderAnnotation);
+//            String returnType = "javax.xml.transform.Source";  //NOI18N
+//            String operationName = "invoke";   //NOI18N
+//            Method op = JMIUtils.createMethod(javaClass, operationName, Modifier.PUBLIC, returnType);
+//            Parameter param = JMIUtils.createParameter(javaClass, "source", returnType);  //NOI18N
+//            op.getParameters().add(param);
+//            op.setBodyText("//TODO implement this method\nreturn null;");  //NOI18N
+//            javaClass.getFeatures().add(op);
+//        }finally{
+//            JavaModel.getJavaRepository().endTrans();
+//        }
+//        
+//        FileObject fo = JavaModel.getFileObject(javaClass.getResource());
+//        //open in the editor
+//        DataObject dobj = DataObject.find(fo);
+//        openFileInEditor(dobj);
     }
 
     private static void openFileInEditor(DataObject dobj){
@@ -262,27 +262,27 @@ public class STSWizardCreator {
         }, 1000);
     }
     
-    private static String createBody(Type type) {
-        String initVal;
-        
-        if (type instanceof PrimitiveType) {
-            PrimitiveTypeKind primitiveType = ((PrimitiveType) type).getKind();
-            if (PrimitiveTypeKindEnum.BOOLEAN.equals(primitiveType)) {
-                initVal = "false"; // NOI18N
-            } else if (PrimitiveTypeKindEnum.CHAR.equals(primitiveType)) {
-                initVal = "'\\0'"; // NOI18N
-            } else if (PrimitiveTypeKindEnum.VOID.equals(primitiveType)) {
-                return "throw new UnsupportedOperationException(\"Not yet implemented\");"; // NOI18N
-            } else {
-                initVal = "0"; // NOI18N
-            }
-        } else if (type instanceof ClassDefinition) {
-            initVal = "null"; // NOI18N
-        } else {
-            throw new IllegalArgumentException("Type "+type.getClass()); // NOI18N
-        }
-        return "return ".concat(initVal).concat(";"); // NOI18N
-    }
+//    private static String createBody(Type type) {
+//        String initVal;
+//        
+//        if (type instanceof PrimitiveType) {
+//            PrimitiveTypeKind primitiveType = ((PrimitiveType) type).getKind();
+//            if (PrimitiveTypeKindEnum.BOOLEAN.equals(primitiveType)) {
+//                initVal = "false"; // NOI18N
+//            } else if (PrimitiveTypeKindEnum.CHAR.equals(primitiveType)) {
+//                initVal = "'\\0'"; // NOI18N
+//            } else if (PrimitiveTypeKindEnum.VOID.equals(primitiveType)) {
+//                return "throw new UnsupportedOperationException(\"Not yet implemented\");"; // NOI18N
+//            } else {
+//                initVal = "0"; // NOI18N
+//            }
+//        } else if (type instanceof ClassDefinition) {
+//            initVal = "null"; // NOI18N
+//        } else {
+//            throw new IllegalArgumentException("Type "+type.getClass()); // NOI18N
+//        }
+//        return "return ".concat(initVal).concat(";"); // NOI18N
+//    }
 
     /**
      * Is J2EE version of a given project JavaEE 5 or higher?

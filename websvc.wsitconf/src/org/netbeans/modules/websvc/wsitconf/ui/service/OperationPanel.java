@@ -36,7 +36,7 @@ import javax.swing.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.wsitconf.am.J2eeProjectHelper;
+//import org.netbeans.modules.websvc.wsitconf.am.J2eeProjectHelper;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
@@ -60,8 +60,6 @@ public class OperationPanel extends SectionInnerPanel {
     private Project project;
     private JaxWsModel jaxwsmodel;
     
-    private J2eeProjectHelper amHelper;
-
     public OperationPanel(SectionView view, Node node, Project p, BindingOperation operation, UndoManager undoManager, JaxWsModel jaxwsmodel) {
         super(view);
         this.model = operation.getModel();
@@ -208,14 +206,6 @@ public class OperationPanel extends SectionInnerPanel {
 
     private void enableDisable() {
     
-        boolean amSec = false;
-        if (amHelper == null) {
-            amHelper = new J2eeProjectHelper(node, jaxwsmodel); 
-        }
-        if (amHelper != null) {
-            amSec = amHelper.isSecurityEnabled();
-        }
-        
         boolean isTomcat = Util.isTomcat(project);
         boolean isWebProject = Util.isWebProject(project);
         

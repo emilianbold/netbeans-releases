@@ -20,13 +20,6 @@
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
 import java.util.List;
-import org.netbeans.jmi.javamodel.Annotation;
-import org.netbeans.jmi.javamodel.AttributeValue;
-import org.netbeans.jmi.javamodel.Feature;
-import org.netbeans.jmi.javamodel.InitialValue;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.VariableAccess;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.JMIUtils;
 import org.netbeans.modules.websvc.wsitmodelext.tx.ATAlwaysCapability;
@@ -76,13 +69,13 @@ public class TxModelHelper {
     }
 
     private static void setTxInAnnotation(BindingOperation bop, Node node, String txValue) {
-        Method m = JMIUtils.getMethod(node, bop.getName());
-        
-        VariableAccess va = getTxAnnotationVariable(m);
-        if (va != null) {
-            va.setName(txValue);
-        }
-        
+//        Method m = JMIUtils.getMethod(node, bop.getName());
+//        
+//        VariableAccess va = getTxAnnotationVariable(m);
+//        if (va != null) {
+//            va.setName(txValue);
+//        }
+//        
     }
     
     private static void setTxInConfig(BindingOperation bop, Node node, String txValue) {
@@ -159,48 +152,48 @@ public class TxModelHelper {
     }
 
     private static String getTxFromAnnotation(BindingOperation bop, Node node) {
-        JavaClass jc = JMIUtils.getJavaClassFromNode(node);
-        Method m = JMIUtils.getMethod(node, bop.getName());
-        
-        // first check if there's annotation on method
-        String value = getTxFromAnnotation(m);
-        if (value != null) {
-            return value;
-        }
-        
-        // then check the class; if set on class - applies to all methods
-        value = getTxFromAnnotation(jc);
-        if (value != null) {
-            return value;
-        }
+//        JavaClass jc = JMIUtils.getJavaClassFromNode(node);
+//        Method m = JMIUtils.getMethod(node, bop.getName());
+//        
+//        // first check if there's annotation on method
+//        String value = getTxFromAnnotation(m);
+//        if (value != null) {
+//            return value;
+//        }
+//        
+//        // then check the class; if set on class - applies to all methods
+//        value = getTxFromAnnotation(jc);
+//        if (value != null) {
+//            return value;
+//        }
 
         return ComboConstants.TX_NOTSUPPORTED;
     }
 
-    private static String getTxFromAnnotation(Feature f) {
-        VariableAccess va = getTxAnnotationVariable(f);
-        if (va != null) {
-            return getTxComboValue(va.getName());
-        }
-        return null;
-    }
+//    private static String getTxFromAnnotation(Feature f) {
+//        VariableAccess va = getTxAnnotationVariable(f);
+//        if (va != null) {
+//            return getTxComboValue(va.getName());
+//        }
+//        return null;
+//    }
 
-    private static VariableAccess getTxAnnotationVariable(Feature f) {
-        List<Annotation> annotations = f.getAnnotations();
-        for (Annotation a : annotations) {
-            String aName = a.getType().getName();
-            if ("javax.ejb.TransactionAttribute".equals(aName)) { //NOI18N
-                List<AttributeValue> attribs = a.getAttributeValues();
-                for (AttributeValue attr : attribs) {
-                    InitialValue iv = attr.getValue();
-                    if (iv instanceof VariableAccess) {
-                        return (VariableAccess) iv;
-                    }
-                }
-            }
-        }
-        return null;
-    }
+//    private static VariableAccess getTxAnnotationVariable(Feature f) {
+//        List<Annotation> annotations = f.getAnnotations();
+//        for (Annotation a : annotations) {
+//            String aName = a.getType().getName();
+//            if ("javax.ejb.TransactionAttribute".equals(aName)) { //NOI18N
+//                List<AttributeValue> attribs = a.getAttributeValues();
+//                for (AttributeValue attr : attribs) {
+//                    InitialValue iv = attr.getValue();
+//                    if (iv instanceof VariableAccess) {
+//                        return (VariableAccess) iv;
+//                    }
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
     private static String getTxComboValue(String annotationAttr) {
         if (annotationAttr != null) {

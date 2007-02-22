@@ -25,7 +25,7 @@ import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.websvc.wsitconf.util.JMIUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -65,8 +65,8 @@ public class ClassDialog {
         Set<String> selectedClasses = new HashSet<String>();
         Node[] nodes = sPanel.getSelectedNodes();
         for(int i = 0; i < nodes.length; i++){
-            JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[i]);
-            selectedClasses.add(jc.getName());
+//            JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[i]);
+//            selectedClasses.add(jc.getName());
         }
         return selectedClasses;
     }
@@ -103,19 +103,19 @@ public class ClassDialog {
                     Node[] selectedNodes = sPanel.getSelectedNodes();
                     for(int i = 0; i < selectedNodes.length; i++){
                         Node node = selectedNodes[i];
-                        JavaClass classElement = JMIUtils.getJavaClassFromNode(node);
-                        if(classElement == null){
-                            errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NotJavaClass_msg");    //NOI18N
-                            accepted = false;
-                            break;
-                        }
-                        
-                        if(!isWantedClass(classElement)) {
-                            errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NotWantedClass_msg",   //NOI18N
-                                    classElement.getName(), extendingClass);
-                            accepted = false;
-                            break;
-                        }
+//                        JavaClass classElement = JMIUtils.getJavaClassFromNode(node);
+//                        if(classElement == null){
+//                            errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NotJavaClass_msg");    //NOI18N
+//                            accepted = false;
+//                            break;
+//                        }
+//                        
+//                        if(!isWantedClass(classElement)) {
+//                            errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NotWantedClass_msg",   //NOI18N
+//                                    classElement.getName(), extendingClass);
+//                            accepted = false;
+//                            break;
+//                        }
                     }
                     if (!accepted) {
                         NotifyDescriptor.Message notifyDescr =
@@ -130,12 +130,12 @@ public class ClassDialog {
                 }
             }
         }
-        private boolean isWantedClass(JavaClass ce) {
-            if (ce != null) {
-                JavaClass wantedClass = JMIUtils.findClass(extendingClass);
-                return ce.isSubTypeOf(wantedClass);
-            }
-            return false;
-        }
+//        private boolean isWantedClass(JavaClass ce) {
+//            if (ce != null) {
+//                JavaClass wantedClass = JMIUtils.findClass(extendingClass);
+//                return ce.isSubTypeOf(wantedClass);
+//            }
+//            return false;
+//        }
     }
 }
