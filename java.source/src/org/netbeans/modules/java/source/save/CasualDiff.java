@@ -2258,7 +2258,8 @@ public class CasualDiff {
         if (newList.size() != n)
             return false;
         for (int i = 0; i < n; i++)
-            if (!treesMatch(oldList.get(i), newList.get(i)))
+            // cannot use treeMatch, see issue #96364x
+            if (oldList.get(i) != newList.get(i))
                 return false;
         return true;
     }
