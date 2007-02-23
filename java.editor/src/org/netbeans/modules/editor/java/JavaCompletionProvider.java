@@ -1328,7 +1328,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             break;
                         default:
                             el = controller.getTrees().getElement(expPath);
-                            if (type.getKind() == TypeKind.ERROR && el.getKind().isClass()) {
+                            if (type.getKind() == TypeKind.ERROR && el != null && el.getKind().isClass()) {
                                 el = controller.getElements().getPackageElement(((TypeElement)el).getQualifiedName());
                             }
                             if (el != null && el.getKind() == PACKAGE) {
