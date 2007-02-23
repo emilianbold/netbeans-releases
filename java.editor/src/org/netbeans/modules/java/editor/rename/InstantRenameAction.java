@@ -156,7 +156,7 @@ public class InstantRenameAction extends BaseAction {
             el = el.getEnclosingElement();
         }
         
-        if (org.netbeans.modules.java.editor.semantic.Utilities.isPrivateElement(el)) {
+        if (allowInstantRename(el)) {
             Set<Highlight> points = new HashSet<Highlight>(new FindLocalUsagesQuery().findUsages(el, info, info.getDocument()));
             
             if (el.getKind().isClass()) {
@@ -179,4 +179,22 @@ public class InstantRenameAction extends BaseAction {
         
         return null;
     }
+    
+    private static boolean allowInstantRename(Element e) {
+        if (org.netbeans.modules.java.editor.semantic.Utilities.isPrivateElement(e)) {
+            return true;
+        }
+        
+        //#92160: check for local classes:
+        if (e.getKind() == ElementKind.CLASS) {//only classes can be local
+            Element enclosing = e.getEnclosingElement();
+            
+            return LOCAL_CLASS_PARENTS.contains(enclosing.getKind());
+        }
+        
+        return false;
+    }
+    
+    private static final Set<ElementKind> LOCAL_CLASS_PARENTS = EnumSet.of(ElementKind.CONSTRUCTOR, ElementKind.INSTANCE_INIT, ElementKind.METHOD, ElementKind.STATIC_INIT);
+    
 }

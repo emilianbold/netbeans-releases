@@ -103,6 +103,42 @@ public class InstantRenameActionTest extends NbTestCase {
         assertFalse(wasResolved[0]);
     }
     
+    public void testLocalClassAreRenamable1() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Highlight> changePoints = performTest("package test; public class Test{public void run() {class PPP {PPP() {} PPP p = new PPP();}}}", 117 - 59, wasResolved);
+        
+        assertNotNull(changePoints);
+        assertTrue(wasResolved[0]);
+        validateChangePoints(changePoints, 116 - 59, 119 - 59, 121 - 59, 124 - 59, 130 - 59, 133 - 59, 142 - 59, 145 - 59);
+    }
+    
+    public void testLocalClassAreRenamable2() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Highlight> changePoints = performTest("package test; public class Test{public     Test() {class PPP {PPP() {} PPP p = new PPP();}}}", 117 - 59, wasResolved);
+        
+        assertNotNull(changePoints);
+        assertTrue(wasResolved[0]);
+        validateChangePoints(changePoints, 116 - 59, 119 - 59, 121 - 59, 124 - 59, 130 - 59, 133 - 59, 142 - 59, 145 - 59);
+    }
+    
+    public void testLocalClassAreRenamable3() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Highlight> changePoints = performTest("package test; public class Test{                  {class PPP {PPP() {} PPP p = new PPP();}}}", 117 - 59, wasResolved);
+        
+        assertNotNull(changePoints);
+        assertTrue(wasResolved[0]);
+        validateChangePoints(changePoints, 116 - 59, 119 - 59, 121 - 59, 124 - 59, 130 - 59, 133 - 59, 142 - 59, 145 - 59);
+    }
+    
+    public void testLocalClassAreRenamable4() throws Exception {
+        boolean[] wasResolved = new boolean[1];
+        Collection<Highlight> changePoints = performTest("package test; public class Test{           static {class PPP {PPP() {} PPP p = new PPP();}}}", 117 - 59, wasResolved);
+        
+        assertNotNull(changePoints);
+        assertTrue(wasResolved[0]);
+        validateChangePoints(changePoints, 116 - 59, 119 - 59, 121 - 59, 124 - 59, 130 - 59, 133 - 59, 142 - 59, 145 - 59);
+    }
+    
     private void validateChangePoints(Collection<Highlight> changePoints, int... origs) {
         Set<Pair> awaited = new HashSet<Pair>();
         
