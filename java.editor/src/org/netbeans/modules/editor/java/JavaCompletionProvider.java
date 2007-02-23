@@ -1271,6 +1271,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         baseType = controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")); //NOI18N
                     } else if (afterLt) {
                         kinds = EnumSet.of(METHOD);
+                    } else if (parent.getKind() == Tree.Kind.ENHANCED_FOR_LOOP && ((EnhancedForLoopTree)parent).getExpression() == fa) {
+                        env.insideForEachExpressiion();
+                        kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE, FIELD, METHOD, ENUM_CONSTANT);
                     } else {
                         kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE, FIELD, METHOD, ENUM_CONSTANT);
                     }
@@ -1523,13 +1526,17 @@ public class JavaCompletionProvider implements CompletionProvider {
             CompilationUnitTree root = env.getRoot();
             CompilationController controller = env.getController();
             if (sourcePositions.getStartPosition(root, efl.getExpression()) >= offset) {
-                if (":".equals(controller.getText().substring((int)sourcePositions.getEndPosition(root, efl.getVariable()), offset).trim())) //NOI18N
+                if (":".equals(controller.getText().substring((int)sourcePositions.getEndPosition(root, efl.getVariable()), offset).trim())) { //NOI18N
+                    env.insideForEachExpressiion();
                     localResult(env);
+                }
                 return;
             }
-            localResult(env);
             if (controller.getText().substring((int)sourcePositions.getEndPosition(root, efl.getExpression()), offset).trim().endsWith(")")) //NOI18N
-                addKeywordsForStatement(env);            
+                addKeywordsForStatement(env);
+            else
+                env.insideForEachExpressiion();
+            localResult(env);
         }
         
         private void insideSwitch(Env env) throws IOException {
@@ -2170,12 +2177,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (withinScope(env, element))
                             continue;
                         final boolean isStatic = element.getKind().isClass() || element.getKind().isInterface();
+                        final Set<? extends TypeMirror> finalSmartTypes = smartTypes;
                         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                             public boolean accept(Element e, TypeMirror t) {
                                 return (!isStatic || e.getModifiers().contains(STATIC)) &&
                                         Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
                                         tu.isAccessible(scope, e, t) &&
-                                        (e.getKind().isField() && types.isAssignable(((VariableElement)e).asType(), type) || e.getKind() == METHOD && types.isAssignable(((ExecutableElement)e).getReturnType(), type));
+                                        (e.getKind().isField() && isOfSmartType(env, ((VariableElement)e).asType(), finalSmartTypes) || e.getKind() == METHOD && isOfSmartType(env, ((ExecutableElement)e).getReturnType(), finalSmartTypes));
                             }
                         };
                         boolean csm = false;
@@ -3107,6 +3115,23 @@ public class JavaCompletionProvider implements CompletionProvider {
         private boolean isOfSmartType(Env env, TypeMirror type, Set<? extends TypeMirror> smartTypes) {
             if (smartTypes == null || smartTypes.isEmpty())
                 return true;
+            if (env.isInsideForEachExpressiion()) {
+                if (type.getKind() == TypeKind.ARRAY) {
+                    type = ((ArrayType)type).getComponentType();
+                } else if (type.getKind() == TypeKind.DECLARED) {
+                    Elements elements = env.getController().getElements();
+                    Types types = env.getController().getTypes();
+                    DeclaredType iterable = types.getDeclaredType(elements.getTypeElement("java.lang.Iterable")); //NOI18N
+                    if (types.isSubtype(type, iterable)) {
+                        Iterator<? extends TypeMirror> it = ((DeclaredType)type).getTypeArguments().iterator();
+                        type = it.hasNext() ? it.next() : elements.getTypeElement("java.lang.Object").asType(); //NOI18N
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
             for (TypeMirror smartType : smartTypes) {
                 if (SourceUtils.checkTypesAssignable(env.getController(), type, smartType))
                     return true;
@@ -3268,25 +3293,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (!":".equals(text))
                                 return null;
                         }
-                        Elements elements = controller.getElements();
-                        TypeElement iter = elements.getTypeElement("java.lang.Iterable"); //NOI18N
                         TypeMirror var = efl.getVariable() != null ? controller.getTrees().getTypeMirror(new TreePath(path, efl.getVariable())) : null;
-                        ret = new HashSet<TypeMirror>();
-                        Types types = controller.getTypes();
-                        if (var != null) {
-                            ret.add(types.getDeclaredType(iter, types.getWildcardType(var, null)));
-                            ret.add(types.getArrayType(var));
-                        } else {
-                            ret.add(types.getDeclaredType(iter));
-                            ret.add(types.getArrayType(elements.getTypeElement("java.lang.Object").asType())); //NOI18N
-                        }
-                        return ret;
+                        return var != null ? Collections.singleton(var) : null;
                     case SWITCH:
                         SwitchTree sw = (SwitchTree)tree;
                         if (sw.getExpression() != lastTree)
                             return null;
                         ret = new HashSet<TypeMirror>();
-                        types = controller.getTypes();
+                        Types types = controller.getTypes();
                         ret.add(controller.getTypes().getPrimitiveType(TypeKind.INT));
                         ret.add(types.getDeclaredType(controller.getElements().getTypeElement("java.lang.Enum")));
                         return ret;
@@ -3800,6 +3814,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             private SourcePositions sourcePositions;
             private Scope scope;
             private Collection<? extends Element> refs = null;
+            private boolean insideForEachExpressiion = false;
             
             private Env(int offset, String prefix, CompilationController controller, TreePath path, SourcePositions sourcePositions, Scope scope) {
                 this.offset = offset;
@@ -3846,6 +3861,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (refs == null)
                     refs = Utilities.getForwardReferences(path, offset, sourcePositions, controller.getTrees());
                 return refs;
+            }
+        
+            public void insideForEachExpressiion() {
+                this.insideForEachExpressiion = true;
+            }
+
+            public boolean isInsideForEachExpressiion() {
+                return insideForEachExpressiion;
             }
         }
     }
