@@ -157,12 +157,11 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         getDebugger ().getOperator ().register (r, this);
        
         // PATCH #48174
-        if (r instanceof com.sun.jdi.request.ClassPrepareRequest)
+        // if this is breakpoint with SUSPEND_NONE we stop EVENT_THREAD to print output line
+        if (getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_ALL)
+            r.setSuspendPolicy (JPDABreakpoint.SUSPEND_ALL);
+        else
             r.setSuspendPolicy (JPDABreakpoint.SUSPEND_EVENT_THREAD);
-        else // if this is breakpoint with SUSPEND_NONE we stop EVENT_THREAD to print output line
-            if (getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_ALL)
-                r.setSuspendPolicy (JPDABreakpoint.SUSPEND_ALL);
-            else r.setSuspendPolicy (JPDABreakpoint.SUSPEND_EVENT_THREAD);
         r.enable ();
     }
 
