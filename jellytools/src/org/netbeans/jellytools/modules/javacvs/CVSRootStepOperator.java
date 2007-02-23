@@ -20,6 +20,7 @@ package org.netbeans.jellytools.modules.javacvs;
 
 import javax.swing.JTextField;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -255,12 +256,12 @@ public class CVSRootStepOperator extends WizardOperator {
         txtPassword().typeText(text);
     }
 
-    /** clicks on "Proxy Configuration..." JButton and returns ProxyConfigurationOperator.
-     * @return instance of ProxyConfigurationOperator
+    /** clicks on "Proxy Configuration..." JButton and returns OptionsOperator.
+     * @return instance of OptionsOperator
      */
-    public ProxyConfigurationOperator proxyConfiguration() {
+    public OptionsOperator proxyConfiguration() {
         btProxyConfiguration().pushNoBlock();
-        return new ProxyConfigurationOperator();
+        return new OptionsOperator();
     }
 
     //************* for ext CVS root ***************************
