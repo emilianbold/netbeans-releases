@@ -1977,8 +1977,11 @@ public class WebForm implements Designer {
         return htmlDomProvider.getDropType(origDroppee, droppeeElement, t, linkOnly);
     }
 
-    int getDropTypeForClassNames(DesignBean origDroppee, Element droppeeElement, String[] classNames, DesignBean[] beans, boolean linkOnly) {
-        return htmlDomProvider.getDropTypeForClassNames(origDroppee, droppeeElement, classNames, beans, linkOnly);
+//    int getDropTypeForClassNames(DesignBean origDroppee, Element droppeeElement, String[] classNames, DesignBean[] beans, boolean linkOnly) {
+//        return htmlDomProvider.getDropTypeForClassNames(origDroppee, droppeeElement, classNames, beans, linkOnly);
+//    }
+    int getDropTypeForComponent(DesignBean origDroppee, Element droppeeElement, Element componentRootElement, boolean linkOnly) {
+        return htmlDomProvider.getDropTypeForComponent(origDroppee, droppeeElement, componentRootElement, linkOnly);
     }
 
     Element getComponentRootElementEquivalentTo(Element oldComponentRootElement) {

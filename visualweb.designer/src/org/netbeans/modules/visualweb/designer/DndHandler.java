@@ -3361,8 +3361,9 @@ public class DndHandler /*extends TransferHandler*/ {
         lastMessage = null;
     }
 
-    /** Get rid of this method from designer. */
-    public int getDropTypeForClassNamesEx(Point p, String[] classNames, DesignBean[] beans, boolean linkOnly) {
+//    /** Get rid of this method from designer. */
+//    public int getDropTypeForClassNamesEx(Point p, String[] classNames, DesignBean[] beans, boolean linkOnly) {
+    public int getDropTypeForComponent(Point p, Element componentRootElement, boolean linkOnly) {
         if(p == null) {
             throw(new IllegalArgumentException("Null drop point."));
         }
@@ -3371,7 +3372,8 @@ public class DndHandler /*extends TransferHandler*/ {
         CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), p.x, p.y);
         DesignBean origDroppee = getDroppee(box);
         Element droppeeElement = box == null ? null : box.getElement();
-        return webform.getDropTypeForClassNames(origDroppee, droppeeElement, classNames, beans, linkOnly);
+//        return webform.getDropTypeForClassNames(origDroppee, droppeeElement, classNames, beans, linkOnly);
+        return webform.getDropTypeForComponent(origDroppee, droppeeElement, componentRootElement, linkOnly);
     }
     
 //    /**

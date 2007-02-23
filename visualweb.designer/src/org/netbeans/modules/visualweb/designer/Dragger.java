@@ -250,10 +250,13 @@ public class Dragger extends Interaction implements KeyListener {
                         }
                     }
 
-                    int dropType =
-                        handler.getDropTypeForClassNamesEx(p,
-                            new String[] { candidate.getInstance().getClass().getName() },
-                            new DesignBean[] { candidate }, true);
+//                    int dropType =
+//                        handler.getDropTypeForClassNamesEx(p,
+//                            new String[] { candidate.getInstance().getClass().getName() },
+//                            new DesignBean[] { candidate }, true);
+                    int dropType = handler.getDropTypeForComponent(p,
+                            WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)candidate),
+                            true);
 
                     if (dropType == DndHandler.DROP_LINKED) {
 //                        CssBox box = webform.getMapper().findBox(p.x, p.y);
@@ -277,10 +280,14 @@ public class Dragger extends Interaction implements KeyListener {
                         candidate = getLinkParticipant(p.x, p.y);
 
                         if (candidate != null) {
+//                            dropType =
+//                                handler.getDropTypeForClassNamesEx(new Point(startX, startY),
+//                                    new String[] { candidate.getInstance().getClass().getName() },
+//                                    new DesignBean[] { candidate }, true);
                             dropType =
-                                handler.getDropTypeForClassNamesEx(new Point(startX, startY),
-                                    new String[] { candidate.getInstance().getClass().getName() },
-                                    new DesignBean[] { candidate }, true);
+                                handler.getDropTypeForComponent(new Point(startX, startY),
+                                    WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)candidate),
+                                    true);
                         }
 
                         if (dropType == DndHandler.DROP_LINKED) {
@@ -968,16 +975,20 @@ public class Dragger extends Interaction implements KeyListener {
                 DesignBean candidate = getLinkParticipant(startX, startY);
 
                 if ((candidate == null) ||
-                        (webform.getPane().getDndHandler().getDropTypeForClassNamesEx(new Point(px, py),
-                            new String[] { candidate.getInstance().getClass().getName() },
-                            new DesignBean[] { candidate }, true) != DndHandler.DROP_LINKED)) {
+//                        (webform.getPane().getDndHandler().getDropTypeForClassNamesEx(new Point(px, py),
+//                            new String[] { candidate.getInstance().getClass().getName() },
+//                            new DesignBean[] { candidate }, true) != DndHandler.DROP_LINKED)) {
+                        (webform.getPane().getDndHandler().getDropTypeForComponent(new Point(px, py),
+                            WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)candidate), true) != DndHandler.DROP_LINKED)) {
                     // Try reverse link
                     candidate = getLinkParticipant(px, py);
 
                     if ((candidate == null) ||
-                            (webform.getPane().getDndHandler().getDropTypeForClassNamesEx(new Point(startX, startY),
-                                new String[] { candidate.getInstance().getClass().getName() },
-                                new DesignBean[] { candidate }, true) != DndHandler.DROP_LINKED)) {
+//                            (webform.getPane().getDndHandler().getDropTypeForClassNamesEx(new Point(startX, startY),
+//                                new String[] { candidate.getInstance().getClass().getName() },
+//                                new DesignBean[] { candidate }, true) != DndHandler.DROP_LINKED)) {
+                            (webform.getPane().getDndHandler().getDropTypeForComponent(new Point(startX, startY),
+                                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)candidate), true) != DndHandler.DROP_LINKED)) {
                         webform.getPane().getDndHandler().clearDropMatch();
                         pane.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     } else {
