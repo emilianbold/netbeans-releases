@@ -52,7 +52,9 @@ public interface RefactoringUI {
      * name. This panel can use setPreviewEnabled method of the passed
      * ParametersPanel to enable/disable Preview button of the refactoring
      * parameters dialog.
+     * this method might return null if hasParameters return false.
      * @param parent ParametersPanel that the returned panel will be displayed in.
+     * @see #hasParameters
      * @return Refactoring-specific parameters panel.
      */
     CustomRefactoringPanel getPanel(ChangeListener parent);
@@ -74,6 +76,7 @@ public interface RefactoringUI {
     
     /**
      * true, if refactoring has parameters
+     * false otherwise. In this case {@link #getPanel} method can return null
      * @return false if this UI does not require any parameters. True otherwise.
      */
     boolean hasParameters();

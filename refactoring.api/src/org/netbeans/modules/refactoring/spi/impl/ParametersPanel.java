@@ -108,7 +108,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         innerPanel.setBorder(null);
         label.setText(" ");//NOI18N
         this.customComponent = rui.getPanel(this);
-        this.customPanel = (JPanel) this.customComponent.getComponent();
+        if (this.customComponent!=null) {
+            this.customPanel = (JPanel) this.customComponent.getComponent();
+        } else {
+            customPanel = null;
+        }
         errorPanel = new ErrorPanel(rui);
         calculatePrefferedSize();
         setButtonsEnabled(false);
