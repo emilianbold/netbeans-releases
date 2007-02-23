@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,6 +56,7 @@ import java.text.DateFormat;
 class RevisionNode extends AbstractNode {
     
     static final String COLUMN_NAME_NAME        = "name"; // NOI18N
+    static final String COLUMN_NAME_LOCATION    = "location"; // NOI18N
     static final String COLUMN_NAME_DATE        = "date"; // NOI18N
     static final String COLUMN_NAME_USERNAME    = "username"; // NOI18N
     static final String COLUMN_NAME_TAGS        = "tags"; // NOI18N
@@ -140,6 +141,7 @@ class RevisionNode extends AbstractNode {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet();
         
+        ps.put(new LocationProperty());
         ps.put(new DateProperty());
         ps.put(new UsernameProperty());
         ps.put(new TagsProperty());
@@ -226,6 +228,21 @@ class RevisionNode extends AbstractNode {
                 return new RevisionPropertyEditor((String) getValue());
             } catch (Exception e) {
                 return super.getPropertyEditor();
+            }
+        }
+    }
+    
+    private class LocationProperty extends CommitNodeProperty {
+
+        public LocationProperty() {
+            super(COLUMN_NAME_LOCATION, String.class, COLUMN_NAME_LOCATION, COLUMN_NAME_LOCATION);
+        }
+
+        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+            if (container != null) {
+                return path;
+            } else {
+                return ""; // NOI18N
             }
         }
     }

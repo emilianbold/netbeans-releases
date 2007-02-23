@@ -124,17 +124,18 @@ class DiffTreeTable extends TreeTableView implements MouseListener, MouseMotionL
         ResourceBundle loc = NbBundle.getBundle(DiffTreeTable.class);
         Node.Property [] columns;
         if (CvsModuleConfig.getDefault().getPreferences().getBoolean(CvsModuleConfig.PROP_SEARCHHISTORY_FETCHTAGS, true)) {
-            columns = new Node.Property[5];
-            columns[3] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_TAGS, List.class, loc.getString("LBL_DiffTree_Column_Tags"), loc.getString("LBL_DiffTree_Column_Tags_Desc"));
-            columns[4] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_MESSAGE, String.class, loc.getString("LBL_DiffTree_Column_Message"), loc.getString("LBL_DiffTree_Column_Message_Desc"));
+            columns = new Node.Property[6];
+            columns[4] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_TAGS, List.class, loc.getString("LBL_DiffTree_Column_Tags"), loc.getString("LBL_DiffTree_Column_Tags_Desc"));
+            columns[5] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_MESSAGE, String.class, loc.getString("LBL_DiffTree_Column_Message"), loc.getString("LBL_DiffTree_Column_Message_Desc"));
         } else {
-            columns = new Node.Property[4];
-            columns[3] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_MESSAGE, String.class, loc.getString("LBL_DiffTree_Column_Message"), loc.getString("LBL_DiffTree_Column_Message_Desc"));
+            columns = new Node.Property[5];
+            columns[4] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_MESSAGE, String.class, loc.getString("LBL_DiffTree_Column_Message"), loc.getString("LBL_DiffTree_Column_Message_Desc"));
         }
         columns[0] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_NAME, String.class, "", "");  // NOI18N
         columns[0].setValue("TreeColumnTTV", Boolean.TRUE); // NOI18N
-        columns[1] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_DATE, String.class, loc.getString("LBL_DiffTree_Column_Time"), loc.getString("LBL_DiffTree_Column_Time_Desc"));
-        columns[2] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_USERNAME, String.class, loc.getString("LBL_DiffTree_Column_Username"), loc.getString("LBL_DiffTree_Column_Username_Desc"));
+        columns[1] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_LOCATION, String.class, loc.getString("LBL_DiffTree_Column_Location"), loc.getString("LBL_DiffTree_Column_Location_Desc"));
+        columns[2] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_DATE, String.class, loc.getString("LBL_DiffTree_Column_Time"), loc.getString("LBL_DiffTree_Column_Time_Desc"));
+        columns[3] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_USERNAME, String.class, loc.getString("LBL_DiffTree_Column_Username"), loc.getString("LBL_DiffTree_Column_Username_Desc"));
         setProperties(columns);
     }
     
@@ -143,16 +144,20 @@ class DiffTreeTable extends TreeTableView implements MouseListener, MouseMotionL
             public void run() {
                 int width = getWidth();
                 if (CvsModuleConfig.getDefault().getPreferences().getBoolean(CvsModuleConfig.PROP_SEARCHHISTORY_FETCHTAGS, true)) {
-                    treeTable.getColumnModel().getColumn(0).setPreferredWidth(width * 20 / 100);
+                    if (treeTable.getColumnModel().getColumnCount() != 6) return;
+                    treeTable.getColumnModel().getColumn(0).setPreferredWidth(width * 15 / 100);
                     treeTable.getColumnModel().getColumn(1).setPreferredWidth(width * 15 / 100);
                     treeTable.getColumnModel().getColumn(2).setPreferredWidth(width * 10 / 100);
                     treeTable.getColumnModel().getColumn(3).setPreferredWidth(width * 10 / 100);
-                    treeTable.getColumnModel().getColumn(4).setPreferredWidth(width * 45 / 100);
+                    treeTable.getColumnModel().getColumn(4).setPreferredWidth(width * 10 / 100);
+                    treeTable.getColumnModel().getColumn(5).setPreferredWidth(width * 40 / 100);
                 } else {
-                    treeTable.getColumnModel().getColumn(0).setPreferredWidth(width * 25 / 100);
-                    treeTable.getColumnModel().getColumn(1).setPreferredWidth(width * 15 / 100);
+                    if (treeTable.getColumnModel().getColumnCount() != 5) return;
+                    treeTable.getColumnModel().getColumn(0).setPreferredWidth(width * 20 / 100);
+                    treeTable.getColumnModel().getColumn(1).setPreferredWidth(width * 20 / 100);
                     treeTable.getColumnModel().getColumn(2).setPreferredWidth(width * 10 / 100);
-                    treeTable.getColumnModel().getColumn(3).setPreferredWidth(width * 50 / 100);
+                    treeTable.getColumnModel().getColumn(3).setPreferredWidth(width * 10 / 100);
+                    treeTable.getColumnModel().getColumn(4).setPreferredWidth(width * 40 / 100);
                 }
             }
         });
