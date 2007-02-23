@@ -2995,9 +2995,9 @@ public class InteractionManager {
 //        public DesignContext getDesignContext() {
 //            return webForm.getModel().getLiveUnit();
 //        }
-        public DesignBean[] getBeansOfType(Class clazz) {
-            return webForm.getBeansOfType(clazz);
-        }
+//        public DesignBean[] getBeansOfType(Class clazz) {
+//            return webForm.getBeansOfType(clazz);
+//        }
 
 //        public Project getProject() {
 //            return webForm.getProject();

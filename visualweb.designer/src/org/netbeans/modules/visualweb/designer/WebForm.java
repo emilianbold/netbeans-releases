@@ -1936,9 +1936,9 @@ public class WebForm implements Designer {
         return htmlDomProvider.isModelBusted();
     }
 
-    DesignBean[] getBeansOfType(Class clazz) {
-        return htmlDomProvider.getBeansOfType(clazz);
-    }
+//    DesignBean[] getBeansOfType(Class clazz) {
+//        return htmlDomProvider.getBeansOfType(clazz);
+//    }
 
 //    Project getProject() {
 //        return htmlDomProvider.getProject();
