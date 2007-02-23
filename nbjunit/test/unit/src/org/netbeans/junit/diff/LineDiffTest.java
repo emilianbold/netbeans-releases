@@ -57,7 +57,9 @@ public class LineDiffTest extends NbTestCase {
         BufferedReader br = new BufferedReader(new FileReader(f));
         char[] buffer = new char[1024];
         int read = br.read(buffer);
-        return new String(buffer, 0, read);
+        String t = new String(buffer, 0, read);
+        String ls = System.getProperty("line.separator");
+        return t.replace(ls, "\n");
     }
     
     public void testSimple() throws Exception {
