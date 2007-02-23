@@ -30,6 +30,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
@@ -157,8 +158,6 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
             loadTemplate(true);
         }
 
-        recentLink.setText("<html><a href=\"\">Recent&nbsp;Messages");
-        templateLink.setText("<html><a href=\"\">Load&nbsp;Template");
         recentLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         templateLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         recentLink.addMouseListener(new MouseAdapter() {
@@ -204,7 +203,14 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
                 StringWriter sw = new StringWriter();
                 try {
                     Utils.copyStreamsCloseAll(sw, new FileReader(templateFile));
-                    taMessage.setText(sw.toString());
+                    String message = sw.toString();
+                    if (message.trim().length() == 0) {
+                        NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(CommitSettings.class, "CTL_LoadTemplate_Empty"),
+                                                                   NbBundle.getMessage(CommitSettings.class, "CTL_LoadTemplate_Title"),
+                                                                   NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE, null, NotifyDescriptor.NO_OPTION);
+                        if (DialogDisplayer.getDefault().notify(nd) != NotifyDescriptor.YES_OPTION) return;
+                    }
+                    taMessage.setText(message);
                 } catch (IOException e) {
                     if (!quiet) ErrorManager.getDefault().notify(e);
                 }
@@ -212,13 +218,15 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
             }
         }
         if (!quiet) {
-            NotifyDescriptor nd = new NotifyDescriptor("There is no CVS/Template file for files being committed.", "Load Template", NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, null, null);
+            NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(CommitSettings.class, "CTL_LoadTemplate_NoTemplate"), 
+                                                       NbBundle.getMessage(CommitSettings.class, "CTL_LoadTemplate_Title"), NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, null, null);
             DialogDisplayer.getDefault().notify(nd);
         }
     }
 
     private void onBrowseRecentMessages() {
-        String message = StringSelector.select("Select A Commit Message", "Recent Commit Messages:", 
+        String message = StringSelector.select(NbBundle.getMessage(CommitSettings.class, "CTL_RecentMessages_Prompt"), 
+                                               NbBundle.getMessage(CommitSettings.class, "CTL_RecentMessages_Title"), 
             Utils.getStringList(CvsModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {
             taMessage.replaceSelection(message);
@@ -265,7 +273,8 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         add(jLabel2, gridBagConstraints);
 
         recentLink.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        recentLink.setText("Recent Messages");
+        recentLink.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/recent_messages.png")));
+        recentLink.setToolTipText(org.openide.util.NbBundle.getMessage(CommitSettings.class, "CTL_CommitForm_RecentMessages")); // NOI18N
         recentLink.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 2, 8));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -274,7 +283,8 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         add(recentLink, gridBagConstraints);
 
         templateLink.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        templateLink.setText("Load Template");
+        templateLink.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/load_template.png")));
+        templateLink.setToolTipText(org.openide.util.NbBundle.getMessage(CommitSettings.class, "TT_CommitForm_LoadTemplate")); // NOI18N
         templateLink.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 2, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
