@@ -34,6 +34,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Coloring;
 import org.netbeans.lib.editor.codetemplates.SyncDocumentRegion;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
@@ -132,6 +133,13 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	if (inSync)
 	    return ;
 	
+        //#89997: do not sync the regions for the "remove" part of replace selection,
+        //as the consequent insert may use incorrect offset, and the regions will be synced
+        //after the insert anyway.
+        if (doc.getProperty(BaseKit.DOC_REPLACE_SELECTION_PROPERTY) != null) {
+            return ;
+        }
+        
 	inSync = true;
 	region.sync(0);
 	inSync = false;
