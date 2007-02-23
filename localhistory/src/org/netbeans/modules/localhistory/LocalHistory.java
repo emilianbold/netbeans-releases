@@ -94,15 +94,15 @@ public class LocalHistory {
         return file;    
     }
     
-    boolean isManaged(File file) {        
+    boolean isManaged(File file) {
         if(file.isDirectory()) {
-            return true; // XXX is there something more we could do for folders?
+            return true; // XXX is there something more we could do for folders? 
         }
         return isEditable(file) && file.length() <= LocalHistorySettings.getMaxFileSize();
     }
     
     private boolean isEditable(File file) {
-        
+        // XXX if nothing else, this should not be handled synchronously to the FS event.
         FileObject fo = FileUtil.toFileObject(file);
         if(fo == null) {
             return false;
@@ -116,6 +116,6 @@ public class LocalHistory {
         if(data == null) {
             return false;
         }        
-        return data.getCookie(EditCookie.class) != null;       
+        return data.getCookie(EditCookie.class) != null;   
     }
 }
