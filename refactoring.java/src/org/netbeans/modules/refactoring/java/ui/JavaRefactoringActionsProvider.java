@@ -93,5 +93,96 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         return false;
     }
     
+    @Override
+    public void doPushDown(final Lookup lookup) {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        final Dictionary dictionary = lookup.lookup(Dictionary.class);
+        if (RefactoringActionsProvider.isFromEditor(ec)) {
+            new RefactoringActionsProvider.TextComponentRunnable(ec) {
+                @Override
+                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
+                    Element selected = selectedElement.resolveElement(info);
+                    return new PushDownRefactoringUI(new TreePathHandle[]{selectedElement}, info);
+                }
+            }.run();
+        } else {
+            new NodeToFileObject(lookup.lookupAll(Node.class)) {
+                @Override
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
+                    throw new UnsupportedOperationException("Not supported yet!");
+                    //return new ExtractInterfaceRefactoringUI(selectedElements[0],(CompilationInfo) null);
+                }
+            }.run();
+        }
+    }
+
+    @Override
+    public boolean canPushDown(Lookup lookup) {
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if (nodes.size() != 1) {
+            return false;
+        }
+        Node n = nodes.iterator().next();
+        DataObject dob = n.getCookie(DataObject.class);
+        if (dob==null) {
+            return false;
+        }
+        FileObject fo = dob.getPrimaryFile();
+        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+            return true;
+        }
+        if ((dob instanceof DataFolder) && 
+                RetoucheUtils.isFileInOpenProject(fo) && 
+                RetoucheUtils.isOnSourceClasspath(fo) &&
+                !RetoucheUtils.isClasspathRoot(fo))
+            return true;
+        return false;
+    }
+    
+    @Override
+    public void doPullUp(final Lookup lookup) {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        final Dictionary dictionary = lookup.lookup(Dictionary.class);
+        if (RefactoringActionsProvider.isFromEditor(ec)) {
+            new RefactoringActionsProvider.TextComponentRunnable(ec) {
+                @Override
+                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
+                    Element selected = selectedElement.resolveElement(info);
+                    return new PullUpRefactoringUI(new TreePathHandle[]{selectedElement}, info);
+                }
+            }.run();
+        } else {
+            new NodeToFileObject(lookup.lookupAll(Node.class)) {
+                @Override
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements) {
+                    throw new UnsupportedOperationException("Not supported yet!");
+                    //return new ExtractInterfaceRefactoringUI(selectedElements[0],(CompilationInfo) null);
+                }
+            }.run();
+        }
+    }
+
+    @Override
+    public boolean canPullUp(Lookup lookup) {
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if (nodes.size() != 1) {
+            return false;
+        }
+        Node n = nodes.iterator().next();
+        DataObject dob = n.getCookie(DataObject.class);
+        if (dob==null) {
+            return false;
+        }
+        FileObject fo = dob.getPrimaryFile();
+        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+            return true;
+        }
+        if ((dob instanceof DataFolder) && 
+                RetoucheUtils.isFileInOpenProject(fo) && 
+                RetoucheUtils.isOnSourceClasspath(fo) &&
+                !RetoucheUtils.isClasspathRoot(fo))
+            return true;
+        return false;
+    }    
 
 }

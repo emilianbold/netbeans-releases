@@ -24,6 +24,8 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
+import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
+import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.spi.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -65,6 +67,10 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
             return new CopyClassRefactoringPlugin((SingleCopyRefactoring) refactoring);
         } else if (refactoring instanceof ExtractInterfaceRefactoring) {
             return new ExtractInterfaceRefactoringPlugin((ExtractInterfaceRefactoring) refactoring);
+        } else if (refactoring instanceof PullUpRefactoring) {
+            return new PullUpRefactoringPlugin((PullUpRefactoring)refactoring);
+        } else if (refactoring instanceof PushDownRefactoring) {
+            return new PushDownRefactoringPlugin((PushDownRefactoring) refactoring);
         }
         return null;
     }
