@@ -810,6 +810,10 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 public Object run() {
                     EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
+                    
+                    // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
+                    WSUtils.setJaxWsEndorsedDirProperty(ep);
+                    
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                     try {
                         ProjectManager.getDefault().saveProject(EjbJarProject.this);

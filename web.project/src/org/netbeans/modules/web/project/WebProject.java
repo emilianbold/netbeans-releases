@@ -645,6 +645,9 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
                     ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
                     
+                    // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
+                    WSUtils.setJaxWsEndorsedDirProperty(ep);
+                    
                     EditableProperties props = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                     if (props.getProperty(WebProjectProperties.WAR_PACKAGE) == null)
                         props.setProperty(WebProjectProperties.WAR_PACKAGE, "true"); //NOI18N

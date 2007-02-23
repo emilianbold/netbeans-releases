@@ -629,6 +629,10 @@ public final class AppClientProject implements Project, AntProjectListener, File
                     EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
                     ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
+                    
+                    // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
+                    WSUtils.setJaxWsEndorsedDirProperty(ep);
+                    
                     updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                     try {
                         ProjectManager.getDefault().saveProject(AppClientProject.this);

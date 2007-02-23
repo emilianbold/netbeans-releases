@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +40,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.netbeans.modules.xml.retriever.RetrieverImpl;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -58,6 +60,7 @@ import org.openide.util.NbBundle;
  */
 public class WSUtils {
 
+    private static final String ENDORSED_DIR_PROPERTY="jaxws.endorsed.dir"; //NOI18N
     /** downloads XML resources from source URI to target folder
      * (USAGE : this method can download a wsdl file and all wsdl/XML schemas,
      * that are recursively imported by this wsdl)
@@ -296,4 +299,33 @@ public class WSUtils {
         return projectDir.getFileObject(GeneratedFilesHelper.JAX_WS_XML_PATH);
     }
     
+    /** Set jaxws.endorsed.dir property for wsimport, wsgen tasks
+     *  to specify jvmarg value : -Djava.endorsed.dirs=${jaxws.endorsed.dir}"
+     */
+    public static void setJaxWsEndorsedDirProperty(EditableProperties ep) {
+        String oldJaxWsEndorsedDirs = ep.getProperty(ENDORSED_DIR_PROPERTY);
+        String javaVersion = System.getProperty("java.specification.version"); //NOI18N
+        if ("1.6".equals(javaVersion)) { //NOI18N
+            String jaxWsEndorsedDirs = getJaxWsApiDir();
+            if (jaxWsEndorsedDirs!=null && !jaxWsEndorsedDirs.equals(oldJaxWsEndorsedDirs))
+            ep.setProperty(ENDORSED_DIR_PROPERTY, jaxWsEndorsedDirs);
+        } else {
+            if (oldJaxWsEndorsedDirs!=null) {
+                ep.remove(ENDORSED_DIR_PROPERTY);
+            }
+        }
+    }
+    
+    private static String getJaxWsApiDir() {
+        URL wsFeatureUrl = WSUtils.class.getClassLoader().getResource("javax/xml/ws/WebServiceFeature.class");
+        if (wsFeatureUrl!=null) {
+            String prefix = "jar:file:"; //NOI18N
+            String postfix = "/jaxws-api.jar!/javax/xml/ws/WebServiceFeature.class"; //NOI18N
+            String jaxWsUrl = wsFeatureUrl.toExternalForm();
+            if (jaxWsUrl.startsWith(prefix) && jaxWsUrl.endsWith(postfix));
+            int endPosition = jaxWsUrl.indexOf(postfix);
+            return jaxWsUrl.substring(9,endPosition);
+        }
+        return null;
+    }
 }

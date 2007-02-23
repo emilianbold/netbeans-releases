@@ -255,6 +255,9 @@ is divided into following sections:
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
+                            <xsl:if test="$jaxws/*/*/*/jaxws:wsdl-url">
+                                <compilerarg line="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
+                            </xsl:if>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <customize/>
                         </javac>
@@ -529,6 +532,7 @@ is divided into following sections:
                 <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">
                     <xsl:if test="jaxws:package-name/@forceReplace">
                         <wsimport
+                            fork="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
                             package="{$package_name}"
@@ -546,10 +550,12 @@ is divided into following sections:
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
+                            <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                         </wsimport>
                     </xsl:if>
                     <xsl:if test="not(jaxws:package-name/@forceReplace)">
                         <wsimport
+                            fork="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
                             destdir="${{build.generated.dir}}/wsimport/binaries"
@@ -566,6 +572,7 @@ is divided into following sections:
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
+                            <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                         </wsimport>
                     </xsl:if>
                     <copy todir="${{classes.dir}}">
@@ -592,6 +599,7 @@ is divided into following sections:
                     <target name="wsimport-service-{$wsname}" depends="wsimport-init,wsimport-service-check-{$wsname}" unless="wsimport-service-{$wsname}.notRequired">
                         <xsl:if test="jaxws:package-name/@forceReplace">
                             <wsimport
+                                fork="true"
                                 sourcedestdir="${{build.generated.dir}}/wsimport/service"
                                 extension="true"
                                 verbose="true"
@@ -609,10 +617,12 @@ is divided into following sections:
                                         </xsl:attribute>
                                     </binding>
                                 </xsl:if>
+                                <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                             </wsimport>
                         </xsl:if>
                         <xsl:if test="not(jaxws:package-name/@forceReplace)">
                             <wsimport
+                                fork="true"
                                 sourcedestdir="${{build.generated.dir}}/wsimport/service"
                                 extension="true"
                                 verbose="true"
@@ -629,6 +639,7 @@ is divided into following sections:
                                         </xsl:attribute>
                                     </binding>
                                 </xsl:if>
+                                <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                             </wsimport>                           
                         </xsl:if>
                     </target>

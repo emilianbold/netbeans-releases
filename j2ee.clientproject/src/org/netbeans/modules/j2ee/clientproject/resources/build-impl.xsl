@@ -286,6 +286,9 @@ Microsystems, Inc. All Rights Reserved.
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
+                            <xsl:if test="$jaxws/*/*/*/jaxws:wsdl-url">
+                                <compilerarg line="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
+                            </xsl:if>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <customize/>
                         </javac>
@@ -604,6 +607,7 @@ Microsystems, Inc. All Rights Reserved.
                 <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">
                     <xsl:if test="jaxws:package-name/@forceReplace">
                         <wsimport
+                            fork="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             package="{$package_name}"
                             destdir="${{build.generated.dir}}/wsimport/binaries"
@@ -620,10 +624,12 @@ Microsystems, Inc. All Rights Reserved.
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
+                            <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                         </wsimport>
                     </xsl:if>
                     <xsl:if test="not(jaxws:package-name/@forceReplace)">
                         <wsimport
+                            fork="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             destdir="${{build.generated.dir}}/wsimport/binaries"
                             wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
@@ -639,6 +645,7 @@ Microsystems, Inc. All Rights Reserved.
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
+                            <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                         </wsimport>
                     </xsl:if>
                     <copy todir="${{classes.dir}}">

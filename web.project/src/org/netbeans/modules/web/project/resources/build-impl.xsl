@@ -298,6 +298,12 @@ introduced by support for multiple source roots. -jglick
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
+                            <xsl:variable name="isJSR109">
+                                <xsl:value-of select="$jaxws/jaxws:jax-ws/jaxws:jsr109"/>
+                            </xsl:variable>
+                            <xsl:if test="($jaxws/*/*/*/jaxws:wsdl-url) or ($isJSR109 = 'false' and $jaxws/jaxws:jax-ws/jaxws:services/jaxws:service)">
+                                <compilerarg line="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
+                            </xsl:if>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <customize/>
                         </javac>
@@ -582,14 +588,16 @@ introduced by support for multiple source roots. -jglick
                             <xsl:variable name="seiclass" select="jaxws:implementation-class"/>
                             <target name="wsgen-{$wsname}-nonJSR109" depends="wsgen-init-nonJSR109">
                                 <wsgen
+                                    fork="true"
                                     sourcedestdir="${{build.generated.dir}}/wsgen/service"
                                     resourcedestdir="${{build.generated.dir}}/wsgen/service"
                                     destdir="${{build.classes.dir.real}}"
                                     keep="false"
                                     genwsdl="true"
                                     sei="{$seiclass}"
-                                >
+                                >   
                                     <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
+                                    <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                                 </wsgen>
                             </target>
                         </xsl:if>
@@ -658,6 +666,7 @@ introduced by support for multiple source roots. -jglick
                 <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">
                     <xsl:if test="jaxws:package-name/@forceReplace">
                         <wsimport
+                            fork="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
                             package="{$package_name}"
@@ -675,10 +684,12 @@ introduced by support for multiple source roots. -jglick
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
+                            <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                         </wsimport>
                     </xsl:if>
                     <xsl:if test="not(jaxws:package-name/@forceReplace)">
                         <wsimport
+                            fork="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
                             destdir="${{build.generated.dir}}/wsimport/binaries"
@@ -695,7 +706,8 @@ introduced by support for multiple source roots. -jglick
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
-                        </wsimport> 
+                            <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
+                        </wsimport>
                     </xsl:if> 
                     <copy todir="${{build.classes.dir.real}}">
                         <fileset dir="${{build.generated.dir}}/wsimport/binaries" includes="**/*.xml"/>
@@ -721,6 +733,7 @@ introduced by support for multiple source roots. -jglick
                     <target name="wsimport-service-{$wsname}" depends="wsimport-init,wsimport-service-check-{$wsname}" unless="wsimport-service-{$wsname}.notRequired">
                         <xsl:if test="jaxws:package-name/@forceReplace">
                             <wsimport
+                                fork="true"
                                 sourcedestdir="${{build.generated.dir}}/wsimport/service"
                                 extension="true"
                                 verbose="true"
@@ -738,10 +751,12 @@ introduced by support for multiple source roots. -jglick
                                         </xsl:attribute>
                                     </binding>
                                 </xsl:if>
+                                <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                             </wsimport>
                         </xsl:if>
                         <xsl:if test="not(jaxws:package-name/@forceReplace)">
                             <wsimport
+                                fork="true"
                                 sourcedestdir="${{build.generated.dir}}/wsimport/service"
                                 extension="true"
                                 verbose="true"
@@ -758,6 +773,7 @@ introduced by support for multiple source roots. -jglick
                                         </xsl:attribute>
                                     </binding>
                                 </xsl:if>
+                                <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                             </wsimport>
                         </xsl:if>    
                     </target>
