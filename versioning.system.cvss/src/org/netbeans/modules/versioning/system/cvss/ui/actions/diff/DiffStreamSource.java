@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,17 +24,18 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.modules.versioning.system.cvss.VersionsCache;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.diff.EncodedReaderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import java.io.*;
-import org.openide.util.*;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.DataObject;
-import org.openide.cookies.EditorCookie;
+import java.util.*;
 
-import javax.swing.text.Document;
+import org.openide.util.*;
+import org.openide.util.lookup.Lookups;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * Stream source for diffing CVS managed files.
@@ -46,9 +47,8 @@ public class DiffStreamSource extends StreamSource {
     private final File      baseFile;
     private final String    revision;
     private final String    title;
-    private String          mimeType;
+    private String          mimeType = "text/plain";    // reasonable default
 
-    private IOException     failure;
     /**
      * Null is a valid value if base file does not exist in this revision. 
      */ 
@@ -79,11 +79,11 @@ public class DiffStreamSource extends StreamSource {
         return title;
     }
 
-    public void setGroup(ExecutorGroup group) {
+    public synchronized void setGroup(ExecutorGroup group) {
         this.group = group;
     }
 
-    public String getMIMEType() {
+    public synchronized String getMIMEType() {
         try {
             init(null);
         } catch (IOException e) {
@@ -92,27 +92,14 @@ public class DiffStreamSource extends StreamSource {
         return mimeType;
     }
 
-    public Reader createReader() throws IOException {
+    public synchronized Reader createReader() throws IOException {
         init(group);
         if (revision == null || remoteFile == null) return null;
         if (binary) {
             return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "BK5001", getTitle()));
         } else {
             FileObject remoteFo = FileUtil.toFileObject(remoteFile);
-            FileObject bfo = FileUtil.toFileObject(baseFile);
-            if (bfo != null) {
-                return EncodedReaderFactory.getDefault().getReader(remoteFo, null, bfo);
-            } else {
-                // locally deleted file, use a nasty workaround
-                File tempFile = new File(remoteFile.getParentFile(), remoteFile.getName().substring(0, remoteFile.getName().indexOf('#')));
-                if (tempFile.exists()) tempFile.delete();
-
-                bfo = FileUtil.copyFile(remoteFo, remoteFo.getParent(), tempFile.getName(), "");
-                
-                Reader r = EncodedReaderFactory.getDefault().getReader(remoteFo, null, bfo);
-                tempFile.delete();
-                return r;
-            }
+            return EncodedReaderFactory.getDefault().getReader(remoteFo, null);
         }
     }
 
@@ -124,26 +111,35 @@ public class DiffStreamSource extends StreamSource {
         return VersionsCache.REVISION_CURRENT.equals(revision);
     }
 
-    public Document createDocument() {
+    public synchronized Lookup getLookup() {
         try {
             init(null);
         } catch (IOException e) {
-            return null;
+            return Lookups.fixed();
         }
-        if (!VersionsCache.REVISION_CURRENT.equals(revision) || remoteFile == null) return null;
+        if (remoteFile == null) return Lookups.fixed();
         FileObject remoteFo = FileUtil.toFileObject(remoteFile);
-        if (remoteFo == null) return null;
+        if (remoteFo == null) return Lookups.fixed();
 
-        try {
-            DataObject dao = DataObject.find(remoteFo);
-            EditorCookie ec = dao.getCookie(EditorCookie.class);
-            if (ec == null) return null;
-            return ec.openDocument();
-        } catch (DataObjectNotFoundException e) {
-            return null;
-        } catch (IOException e) {
-            return null;
+        return Lookups.fixed(remoteFo);
+    }
+    
+    private static Set<File> getAllDataObjectFiles(File file) {
+        Set<File> filesToCheckout = new HashSet<File>(2);
+        filesToCheckout.add(file);
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo != null) {
+            try {
+                DataObject dao = DataObject.find(fo);
+                Set<FileObject> fileObjects = dao.files();
+                for (FileObject fileObject : fileObjects) {
+                    filesToCheckout.add(FileUtil.toFile(fileObject));
+                }
+            } catch (DataObjectNotFoundException e) {
+                // no dataobject, never mind
+            }
         }
+        return filesToCheckout;
     }
     
     /**
@@ -158,13 +154,26 @@ public class DiffStreamSource extends StreamSource {
         if (revision == null) return;
         binary = !CvsVersioningSystem.getInstance().isText(baseFile);
         try {
-            remoteFile = VersionsCache.getInstance().getRemoteFile(baseFile, revision, group);
+            File tempFolder = Utils.getTempFolder();
+            // To correctly get content of the base file, we need to checkout all files that belong to the same
+            // DataObject. One example is Form files: data loader removes //GEN:BEGIN comments from the java file but ONLY
+            // if it also finds associate .form file in the same directory
+            Set<File> allFiles = getAllDataObjectFiles(baseFile);
+            for (File file : allFiles) {
+                boolean isBase = file.equals(baseFile); 
+                File rf = VersionsCache.getInstance().getRemoteFile(file, isBase ? revision : VersionsCache.REVISION_BASE, group);
+                File newRemoteFile = new File(tempFolder, file.getName());
+                Utils.copyStreamsCloseAll(new FileOutputStream(newRemoteFile), new FileInputStream(rf));
+                newRemoteFile.deleteOnExit();
+                if (isBase) {
+                    remoteFile = newRemoteFile;
+                }
+            }
             if (!baseFile.exists() && remoteFile != null && remoteFile.exists()) {
                 binary = !CvsVersioningSystem.getInstance().isText(remoteFile);
             }
-            failure = null;
         } catch (Exception e) {
-            failure = new IOException("Cannot initialize stream source"); // NOI18N
+            IOException failure = new IOException("Cannot initialize stream source"); // NOI18N
             failure.initCause(e);
             throw failure;
         }
