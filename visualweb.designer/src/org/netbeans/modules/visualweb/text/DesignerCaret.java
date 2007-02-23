@@ -903,7 +903,14 @@ public class DesignerCaret extends Rectangle implements FocusListener, MouseList
         // notify listeners at the caret moved
         //this.dot = dot;
         //NPE: Why can range be null sometimes
-        range.setDot(dot.getNode(), dot.getOffset(), dot.getBias());
+        // XXX #94270 I would like that know too. For now just hacking the issue.
+//        range.setDot(dot.getNode(), dot.getOffset(), dot.getBias());
+        if (range == null) {
+            // XXX Log the problem?
+            range = new Range(component.getDocument().getWebForm(), dot.getNode(), dot.getOffset(), dot.getNode(), dot.getOffset());
+        } else {
+            range.setDot(dot.getNode(), dot.getOffset(), dot.getBias());
+        }
 
         updateSystemSelection();
 
