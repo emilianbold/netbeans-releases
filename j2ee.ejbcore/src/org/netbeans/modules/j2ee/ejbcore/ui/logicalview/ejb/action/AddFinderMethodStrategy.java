@@ -19,19 +19,20 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
+import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.ejbcore.action.FinderMethodGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -86,18 +87,26 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
                 );
     }
 
-    protected TypeMirror remoteReturnType(WorkingCopy workingCopy, EjbMethodController ejbMethodController, TypeMirror typeMirror, boolean isOneReturn) {
-        String fullName = isOneReturn? ejbMethodController.getRemote() : Collection.class.getName();
-        return workingCopy.getElements().getTypeElement(fullName).asType();
-    }
-
-    protected TypeMirror localReturnType(WorkingCopy workingCopy, EjbMethodController ejbMethodController, TypeMirror typeMirror, boolean isOneReturn) {
-        String fullName = isOneReturn?ejbMethodController.getLocal():Collection.class.getName();
-        return workingCopy.getElements().getTypeElement(fullName).asType();
-    }
-    
     public MethodType.Kind getPrototypeMethodKind() {
         return MethodType.Kind.FINDER;
     }
     
+    protected void generateMethod(EntityAndSession entityAndSession, MethodModel method, boolean isOneReturn, boolean publishToLocal,
+                                  boolean publishToRemote, String ejbql, FileObject ejbClassFO, String className) throws IOException {
+        FinderMethodGenerator generator = FinderMethodGenerator.create((Entity) entityAndSession, ejbClassFO, getDDFile(ejbClassFO));
+        generator.generate(method, publishToLocal, publishToRemote, isOneReturn, ejbql);
+    }
+
+    public boolean supportsEjb(FileObject fileObject, String className) {
+        try {
+            EntityAndSession ejb = getEntityAndSession(fileObject, className);
+            if (ejb instanceof Entity) {
+                return true;
+            }
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        return false;
+    }
+
 }

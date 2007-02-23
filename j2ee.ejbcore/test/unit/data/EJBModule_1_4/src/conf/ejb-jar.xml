@@ -32,9 +32,14 @@
             <local-home>cmplr.CmpLRLocalHome</local-home>
             <local>cmplr.CmpLRLocal</local>
             <ejb-class>cmplr.CmpLRBean</ejb-class>
-            <persistence-type>Bean</persistence-type>
+            <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Long</prim-key-class>
             <reentrant>false</reentrant>
+            <abstract-schema-name>CmpLR</abstract-schema-name>
+            <cmp-field>
+                <field-name>key</field-name>
+            </cmp-field>
+            <primkey-field>key</primkey-field>
         </entity>
         </enterprise-beans>
     <assembly-descriptor>

@@ -18,14 +18,15 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
-import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -35,6 +36,7 @@ import org.openide.util.actions.Presenter;
 
 /**
  * Action that can always be invoked and work procedurally.
+ * 
  * @author Chris Webster
  * @author Martin Adamek
  */
@@ -64,12 +66,14 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
             return false;
         }
         FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
-        MethodType.Kind prototypeMethodType = strategy.getPrototypeMethodKind();
         try {
-            String className = _RetoucheUtil.getMainClassName(fileObject);
-            if (className != null) {
-                EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
-                return (ejbMethodController != null) && ejbMethodController.supportsMethodType(prototypeMethodType);
+            if (fileObject != null) {
+                ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(activatedNodes[0]);
+                if (elementHandle != null) {
+                    if (strategy.supportsEjb(fileObject, elementHandle.getQualifiedName())) {
+                        return true;
+                    }
+                }
             }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
@@ -87,9 +91,13 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
         }
         FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
         try {
-            String className = _RetoucheUtil.getMainClassName(fileObject);
-            if (className != null) {
-                strategy.addMethod(fileObject, className);
+            if (fileObject != null) {
+                ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(activatedNodes[0]);
+                if (elementHandle != null) {
+                    if (strategy.supportsEjb(fileObject, elementHandle.getQualifiedName())) {
+                        strategy.addMethod(fileObject, elementHandle.getQualifiedName());
+                    }
+                }
             }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);

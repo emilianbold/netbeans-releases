@@ -20,12 +20,13 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import java.io.IOException;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
+import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.openide.ErrorManager;
@@ -36,7 +37,9 @@ import org.openide.util.Utilities;
 
 /**
  * Strategy for visual support for adding various methods into an EJB.
+ * 
  * @author Pavel Buzek
+ * @author Martin Adamek
  */
 public abstract class AbstractAddMethodStrategy {
     
@@ -51,18 +54,15 @@ public abstract class AbstractAddMethodStrategy {
     /** Describes method type handled by this action. */
     public abstract MethodType.Kind getPrototypeMethodKind();
     
+    protected abstract MethodCustomizer createDialog(FileObject fileObject, MethodModel methodModel) throws IOException;
+
+    protected abstract void generateMethod(EntityAndSession entityAndSession, MethodModel method, boolean isOneReturn, 
+            boolean publishToLocal, boolean publishToRemote,  String ejbql, FileObject ejbClassFO, String className) throws IOException;
+    
+    public abstract boolean supportsEjb(FileObject fileObject, String className);
+
     public String getTitle() {
         return name;
-    }
-    
-    protected abstract MethodCustomizer createDialog(FileObject fileObject, MethodModel methodModel) throws IOException;
-    
-    protected String localReturnType(EjbMethodController ejbMethodController, String fqn, boolean isOneReturn) {
-        return fqn;
-    }
-    
-    protected String remoteReturnType(EjbMethodController ejbMethodController, String fqn, boolean isOneReturn) {
-        return fqn;
     }
     
     public void addMethod(FileObject fileObject, String className) throws IOException {
@@ -78,60 +78,16 @@ public abstract class AbstractAddMethodStrategy {
                 boolean publishToLocal = methodCustomizer.publishToLocal();
                 boolean publishToRemote = methodCustomizer.publishToRemote();
                 String ejbql = methodCustomizer.getEjbQL();
-                okButtonPressed(method, isOneReturn, publishToLocal, publishToRemote, ejbql, fileObject, className);
+                EntityAndSession entityAndSession = getEntityAndSession(fileObject, className);
+                generateMethod(entityAndSession, method, isOneReturn, publishToLocal, publishToRemote, ejbql, fileObject, className);
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
             }
         }
     }
     
-    protected void okButtonPressed(MethodModel method, boolean isOneReturn, boolean publishToLocal, boolean publishToRemote, 
-            String ejbql, FileObject ejbClassFO, String className) throws IOException {
-        ProgressHandle handle = ProgressHandleFactory.createHandle("Adding method");
-        try {
-            handle.start(100);
-            boolean isComponent = getPrototypeMethodKind() == MethodType.Kind.BUSINESS;
-            
-            handle.progress(10);
-            EjbMethodController ejbMethodController = EjbMethodController.createFromClass(ejbClassFO, className);
-            MethodModel newMethod = method;
-            if (publishToLocal) {
-                String localReturn = localReturnType(ejbMethodController, newMethod.getReturnType(), isOneReturn);
-                newMethod = MethodModel.create(
-                    newMethod.getName(), 
-                    localReturn,
-                    newMethod.getBody(),
-                    newMethod.getParameters(),
-                    newMethod.getExceptions(),
-                    newMethod.getModifiers()
-                    );
-                newMethod = ejbMethodController.createAndAdd(newMethod, true, isComponent);
-            }
-            handle.progress(60);
-            if (publishToRemote) {
-                String remoteReturn = remoteReturnType(ejbMethodController, newMethod.getReturnType(), isOneReturn);
-                newMethod = MethodModel.create(
-                    newMethod.getName(), 
-                    remoteReturn,
-                    newMethod.getBody(),
-                    newMethod.getParameters(),
-                    newMethod.getExceptions(),
-                    newMethod.getModifiers()
-                    );
-                newMethod = ejbMethodController.createAndAdd(newMethod, false, isComponent);
-            }
-            handle.progress(80);
-            if (ejbql != null && ejbql.length() > 0) {
-                ejbMethodController.addEjbQl(newMethod, ejbql, getDDFile(ejbClassFO));
-            }
-            handle.progress(99);
-        } finally {
-            handle.finish();
-        }
-    }
-
     protected FileObject getDDFile(FileObject fileObject) {
-        return EjbJar.getEjbJar(fileObject).getDeploymentDescriptor();
+        return org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject).getDeploymentDescriptor();
     }
     
     protected static MethodsNode getMethodsNode() {
@@ -142,4 +98,24 @@ public abstract class AbstractAddMethodStrategy {
         return nodes[0].getLookup().lookup(MethodsNode.class);
     }
     
+    protected static EntityAndSession getEntityAndSession(FileObject fileObject, String className) throws IOException {
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
+        if (ejbModule != null) {
+            EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit());
+            if (ejbJar != null) {
+                EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
+                if (enterpriseBeans != null) {
+                    EntityAndSession entityAndSession= (EntityAndSession) enterpriseBeans.findBeanByName(
+                            EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className);
+                    if (entityAndSession == null) {
+                        entityAndSession = (EntityAndSession) enterpriseBeans.findBeanByName(
+                                EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className);
+                    }
+                    return entityAndSession;
+                }
+            }
+        }
+        return null;
+    }
+
 }

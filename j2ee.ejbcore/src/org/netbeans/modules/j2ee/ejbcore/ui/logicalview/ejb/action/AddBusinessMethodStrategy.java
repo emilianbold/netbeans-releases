@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
+import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import java.io.IOException;
 import java.util.Collections;
@@ -26,9 +27,13 @@ import javax.lang.model.element.Modifier;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.ejbcore.action.BusinessMethodGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -39,10 +44,10 @@ import org.openide.util.NbBundle;
 public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
     
     public AddBusinessMethodStrategy(String name) {
-        super (name);
+        super(name);
     }
-    public AddBusinessMethodStrategy () {
-        super (NbBundle.getMessage(AddBusinessMethodStrategy.class, "LBL_AddBusinessMethodAction"));
+    public AddBusinessMethodStrategy() {
+        super(NbBundle.getMessage(AddBusinessMethodStrategy.class, "LBL_AddBusinessMethodAction"));
     }
     
     protected MethodModel getPrototypeMethod() {
@@ -55,24 +60,42 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
                 Collections.<Modifier>emptySet()
                 );
     }
-
+    
     protected MethodCustomizer createDialog(FileObject fileObject, MethodModel methodModel) throws IOException {
         String className = _RetoucheUtil.getMainClassName(fileObject);
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
         MethodsNode methodsNode = getMethodsNode();
         return MethodCustomizerFactory.businessMethod(
                 getTitle(),
-                methodModel, 
-                ejbMethodController.hasRemote(), 
+                methodModel,
+                ejbMethodController.hasRemote(),
                 ejbMethodController.hasLocal(),
                 methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(),
                 methodsNode == null ? ejbMethodController.hasRemote() : !methodsNode.isLocal(),
                 Collections.<MethodModel>emptySet() //TODO: RETOUCHE collect all methods
                 );
     }
-
+    
     public MethodType.Kind getPrototypeMethodKind() {
         return MethodType.Kind.BUSINESS;
+    }
+    
+    protected void generateMethod(EntityAndSession entityAndSession, MethodModel method, boolean isOneReturn, 
+            boolean publishToLocal, boolean publishToRemote, String ejbql, FileObject ejbClassFO, String className) throws IOException {
+        BusinessMethodGenerator generator = BusinessMethodGenerator.create(entityAndSession, ejbClassFO);
+        generator.generate(method, publishToLocal, publishToRemote);
+    }
+    
+    public boolean supportsEjb(FileObject fileObject, String className) {
+        try {
+            EntityAndSession ejb = getEntityAndSession(fileObject, className);
+            if (ejb != null && (ejb instanceof Entity || ejb instanceof Session)) {
+                return true;
+            }
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        return false;
     }
 
 }

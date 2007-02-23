@@ -19,18 +19,21 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import java.io.IOException;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.modules.j2ee.ejbcore.action.CreateMethodGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -74,16 +77,28 @@ public class AddCreateMethodStrategy extends AbstractAddMethodStrategy {
                 );
     }
 
-    protected TypeMirror remoteReturnType(WorkingCopy workingCopy, EjbMethodController ejbMethodController, TypeMirror typeMirror, boolean isOneReturn) {
-        return workingCopy.getElements().getTypeElement(ejbMethodController.getRemote()).asType();
-    }
-
-    protected TypeMirror localReturnType(WorkingCopy workingCopy, EjbMethodController ejbMethodController, TypeMirror typeMirror, boolean isOneReturn) {
-        return workingCopy.getElements().getTypeElement(ejbMethodController.getLocal()).asType();
-    }
-    
     public MethodType.Kind getPrototypeMethodKind() {
         return MethodType.Kind.CREATE;
     }
     
+    protected void generateMethod(EntityAndSession entityAndSession, MethodModel method, boolean isOneReturn, boolean publishToLocal,
+                                  boolean publishToRemote, String ejbql, FileObject ejbClassFO, String className) throws IOException {
+        CreateMethodGenerator generator = CreateMethodGenerator.create(entityAndSession, ejbClassFO);
+        generator.generate(method, publishToLocal, publishToRemote);
+    }
+
+    public boolean supportsEjb(FileObject fileObject, String className) {
+        try {
+            EntityAndSession ejb = getEntityAndSession(fileObject, className);
+            if (ejb instanceof Entity) {
+                return true;
+            } else if (ejb instanceof Session) {
+                return Session.SESSION_TYPE_STATEFUL.equals(((Session) ejb).getSessionType());
+            }
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        return false;
+    }
+
 }

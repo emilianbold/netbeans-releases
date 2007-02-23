@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
+import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import java.io.IOException;
 import java.util.Collections;
@@ -98,5 +99,17 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
     
     public MethodType.Kind getPrototypeMethodKind() {
         return MethodType.Kind.SELECT;
+    }
+
+    protected void generateMethod(EntityAndSession entityAndSession,
+                                  MethodModel method, boolean isOneReturn,
+                                  boolean publishToLocal,
+                                  boolean publishToRemote, String ejbql,
+                                  FileObject ejbClassFO, String className) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean supportsEjb(FileObject fileObject, String className) {
+        return false;
     }
 }

@@ -134,7 +134,7 @@ public final class MethodModelSupport {
         }
         MethodTree result;
         String body = methodModel.getBody();
-        if (body == null || "".equals(body.trim())) {
+        if (body == null) {
             result = treeMaker.Method(
                     treeMaker.Modifiers(methodModel.getModifiers()),
                     methodModel.getName(),
