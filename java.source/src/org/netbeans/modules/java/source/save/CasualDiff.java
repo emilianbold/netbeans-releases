@@ -938,8 +938,11 @@ public class CasualDiff {
             copyTo(localPointer, elemtypeBounds[0]);
             localPointer = diffTree(oldT.elemtype, newT.elemtype, elemtypeBounds);
         }
-        //diffParameterList(oldT.dims, newT.dims, -1);
-        //diffList(oldT.elems, newT.elems, LineInsertionType.NONE, Query.NOPOS);
+//        diffParameterList(oldT.dims, newT.dims, endPos(oldT.dims));
+        if (oldT.elems != null && oldT.elems.head != null) {
+            copyTo(localPointer, getOldPos(oldT.elems.head));
+            localPointer = diffParameterList(oldT.elems, newT.elems, getOldPos(oldT.elems.head));
+        }
         copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
