@@ -30,7 +30,11 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import static java.util.Calendar.MILLISECOND;
 import java.util.Collection;
+import java.util.GregorianCalendar;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -807,9 +811,7 @@ final class JUnitOutputReader {
             File reportFile = new File(
                               report.resultsDir,
                               "TEST-" + report.suiteClassName + ".xml");//NOI18N
-            if (reportFile.exists()
-                    && reportFile.isFile() && reportFile.canRead()
-                    && (reportFile.lastModified() >= timeOfSessionStart)) {
+            if (reportFile.exists() && isValidReportFile(reportFile)) {
                 final long fileSize = reportFile.length();
                 if ((fileSize > 0l) && (fileSize <= MAX_REPORT_FILE_SIZE)) {
                     try {
@@ -852,6 +854,72 @@ final class JUnitOutputReader {
         trouble = null;
         report = null;
         testsuiteStatsKnown = false;
+    }
+    
+    /**
+     */
+    private boolean isValidReportFile(File reportFile) {
+        if (!reportFile.isFile() || !reportFile.canRead()) {
+            return false;
+        }
+        
+        long lastModified = reportFile.lastModified();
+        long timeDelta = lastModified - timeOfSessionStart;
+        
+        final Logger logger = Logger.getLogger("org.netbeans.modules.junit.outputreader.timestamps");//NOI18N
+        final Level logLevel = Level.FINER;
+        if (logger.isLoggable(logLevel)) {
+            logger.log(logLevel, "Report file: " + reportFile.getPath());//NOI18N
+            
+            final GregorianCalendar timeStamp = new GregorianCalendar();
+            
+            timeStamp.setTimeInMillis(timeOfSessionStart);
+            logger.log(logLevel, "Session start:    " + String.format("%1$tT.%2$03d", timeStamp, timeStamp.get(MILLISECOND)));//NOI18N
+            
+            timeStamp.setTimeInMillis(lastModified);
+            logger.log(logLevel, "Report timestamp: " + String.format("%1$tT.%2$03d", timeStamp, timeStamp.get(MILLISECOND)));//NOI18N
+        }
+        
+        if (timeDelta >= 0) {
+            return true;
+        }
+        
+        /*
+         * Normally we would return 'false' here, but:
+         * 
+         * We must take into account that modification timestamps of files
+         * usually do not hold milliseconds, just seconds.
+         * The worst case we must accept is that the session started
+         * on YYYY.MM.DD hh:mm:ss.999 and the file was saved exactly in the same
+         * millisecond but its time stamp is just YYYY.MM.DD hh:mm:ss, i.e
+         * 999 milliseconds earlier.
+         */
+        return -timeDelta <= timeOfSessionStart % 1000;
+        
+//        if (timeDelta < -999) {
+//            return false;
+//        }
+//        
+//        final GregorianCalendar sessStartCal = new GregorianCalendar();
+//        sessStartCal.setTimeInMillis(timeOfSessionStart);
+//        int sessStartMillis = sessStartCal.get(MILLISECOND);
+//        if (timeDelta < -sessStartMillis) {
+//            return false;
+//        }
+//        
+//        final GregorianCalendar fileModCal = new GregorianCalendar();
+//        fileModCal.setTimeInMillis(lastModified);
+//        if (fileModCal.get(MILLISECOND) != 0) {
+//            /* So the file's timestamp does hold milliseconds! */
+//            return false;
+//        }
+//        
+//        /*
+//         * Now we know that milliseconds are not part of file's timestamp.
+//         * Let's substract the milliseconds part and check whether the delta is
+//         * non-negative, now that we only check seconds:
+//         */
+//        return lastModified >= (timeOfSessionStart - sessStartMillis);
     }
     
 }
