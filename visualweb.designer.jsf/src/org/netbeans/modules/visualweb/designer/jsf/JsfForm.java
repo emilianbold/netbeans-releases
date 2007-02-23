@@ -881,10 +881,27 @@ class JsfForm {
 //        }
 //    }
 
-    private void fireDesignContextChanged(DesignContext designContext) {
+    // XXX Hack to skip firing events if the generation is the same. Old code moved from designer.
+    private long generationSeen = 0L;    
+    
+    private void designContextChanged(DesignContext designContext) {
+        long currentGeneration;
+        if (designContext instanceof LiveUnit) {
+            currentGeneration = ((LiveUnit)designContext).getContextGeneration();
+        } else {
+            currentGeneration = 0L;
+        }
+        
+        if (currentGeneration == generationSeen) {
+            // XXX Skip event firing.
+            return;
+        }
+        generationSeen = currentGeneration;
+        
         HtmlDomProvider.HtmlDomProviderListener[] listeners = getHtmlDomProviderListeners();
         for (HtmlDomProvider.HtmlDomProviderListener listener : listeners) {
-            listener.designContextChanged(designContext);
+//            listener.designContextChanged(designContext);
+            listener.designContextGenerationChanged();
         }
     }
 
@@ -1198,7 +1215,7 @@ class JsfForm {
         public void contextChanged(DesignContext designContext) {
             jsfForm.getDomSynchronizer().contextChanged(designContext);
 //            jsfForm.designer.contextChanged(designContext);
-            jsfForm.fireDesignContextChanged(designContext);
+            jsfForm.designContextChanged(designContext);
         }
         
         public void beanCreated(DesignBean designBean) {

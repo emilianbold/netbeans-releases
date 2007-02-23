@@ -1561,9 +1561,10 @@ public class WebForm implements Designer {
 //        }
 //    }
 
-    public void contextChanged(DesignContext designContext) {
+//    public void contextChanged(DesignContext designContext) {
+    private void designContextGenerationChanged() {
         if (view != null) {
-            view.contextChanged(designContext);
+            view.designContextGenerationChanged();
         }
     }
 
@@ -2055,8 +2056,8 @@ public class WebForm implements Designer {
 //            webForm.contextDeactivated(designContext);
 //        }
 
-        public void designContextChanged(DesignContext designContext) {
-            webForm.contextChanged(designContext);
+        public void designContextGenerationChanged() {
+            webForm.designContextGenerationChanged();
         }
 
 //        public void designBeanCreated(DesignBean designBean) {
