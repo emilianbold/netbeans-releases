@@ -159,7 +159,10 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
 
     public void afterCreate(File file) {             
         toBeCreated.remove(file);
-        wasJustCreated.add(file);                
+        if(file.isFile()) {
+            // no change events for folders seen yet
+            wasJustCreated.add(file);
+        }                        
         
         String key = file.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {                                
