@@ -225,7 +225,9 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
     public static final String VAL_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE = "VAL_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE";
     public static final String FIX_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE = "FIX_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE";
     
-    
+    public static final String VAL_MULTIPLE_TYPES_IN_DEFINITION = "VAL_MULTIPLE_TYPES_IN_DEFINITION";
+    public static final String FIX_MULTIPLE_TYPES_IN_DEFINITION = "FIX_MULTIPLE_TYPES_IN_DEFINITION";
+   
     public List<ResultItem> mResultItems;
     private Validation mValidation;
     private List<Model> mValidatedModels;
@@ -292,6 +294,16 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                     mMsg.getString(FIX_ERROR_WSDL_DEFINITIONS_NO_TARGETNAMESPACE));
             
         }
+        
+        List<Types> result = w.getChildren(Types.class);
+        if(result != null && result.size() > 1) {
+        	//multiple types are not valid
+        	 getValidateSupport().fireToDo(Validator.ResultType.ERROR, w, mMsg.getString(VAL_MULTIPLE_TYPES_IN_DEFINITION),
+                     mMsg.getString(FIX_MULTIPLE_TYPES_IN_DEFINITION));
+            
+        	
+        }
+        
         visitChildren(w);
     }
     

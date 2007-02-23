@@ -103,15 +103,17 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
            
                     for (WSDLSchema schema : schemas) {
                         Reader in = createInlineSchemaSource(text, prefixes, linePositions, schema);
-                        SAXSource source = new SAXSource(new InputSource(in));
-                        source.setSystemId(systemId);
-                        int start = schema.findPosition();
-                        int lineNumber = getLineNumber(start, linePositions); //where the schema starts in the wsdl document
-      
-                        //validate the source
-                        Handler handler = new InlineSchemaValidatorHandler(wsdlModel, lineNumber);
-                        validate(wsdlModel, source, handler, resolver);
-                        resultItems.addAll(handler.getResultItems());
+                        if(in != null) {
+	                        SAXSource source = new SAXSource(new InputSource(in));
+	                        source.setSystemId(systemId);
+	                        int start = schema.findPosition();
+	                        int lineNumber = getLineNumber(start, linePositions); //where the schema starts in the wsdl document
+	      
+	                        //validate the source
+	                        Handler handler = new InlineSchemaValidatorHandler(wsdlModel, lineNumber);
+	                        validate(wsdlModel, source, handler, resolver);
+	                        resultItems.addAll(handler.getResultItems());
+                        }
                     }
                     
                     
@@ -338,26 +340,27 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
                 WSDLSchema schema = findSchema(namespaceURI);
                 if(schema != null) {
                     Reader in = createInlineSchemaSource(mWsdlText, mWsdlPrefixes, mWsdlLinePositions, schema);
-                    
-                    //create LSInput object
-                    DOMImplementation domImpl = null;
-                    try {
-                        domImpl =  DocumentBuilderFactory.newInstance().newDocumentBuilder().getDOMImplementation();
-                    } catch (ParserConfigurationException ex) {
-                         Logger.getLogger(getClass().getName()).log(Level.SEVERE, "resolveResource", ex); //NOI18N
-                        return null;
-                    }
-                    
-                    DOMImplementationLS dols = (DOMImplementationLS) domImpl.getFeature("LS","3.0");
-                    lsi = dols.createLSInput();
                     if(in != null) {
-                        lsi.setCharacterStream(in);
-                    }
-                    
-                    if(mWsdlSystemId != null) {
-                        lsi.setSystemId(mWsdlSystemId);
-                    }
-                    return lsi;        
+	                    //create LSInput object
+	                    DOMImplementation domImpl = null;
+	                    try {
+	                        domImpl =  DocumentBuilderFactory.newInstance().newDocumentBuilder().getDOMImplementation();
+	                    } catch (ParserConfigurationException ex) {
+	                         Logger.getLogger(getClass().getName()).log(Level.SEVERE, "resolveResource", ex); //NOI18N
+	                        return null;
+	                    }
+	                    
+	                    DOMImplementationLS dols = (DOMImplementationLS) domImpl.getFeature("LS","3.0");
+	                    lsi = dols.createLSInput();
+	                    if(in != null) {
+	                        lsi.setCharacterStream(in);
+	                    }
+	                    
+	                    if(mWsdlSystemId != null) {
+	                        lsi.setSystemId(mWsdlSystemId);
+	                    }
+                    return lsi;  
+                	}
                 }
              }
              return null;                      

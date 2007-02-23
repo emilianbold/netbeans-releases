@@ -384,6 +384,17 @@ public class WSDLSemanticValidatorTest extends TestCase {
        
         validate(uri, expectedErrors);
     }
+   
+     
+    public void testEmptyInlineSchemaValid() throws Exception {
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/typesTests/inlineSchemaTests/emptyInlineSchema.wsdl";
+        URL url = getClass().getResource(fileName);
+        URI uri = url.toURI();
+        HashSet<String> expectedErrors = new HashSet<String>();
+       
+        validate(uri, expectedErrors);
+    }
+    
     
      public void testInlineCrossReferenceAttributeValid() throws Exception {
         String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/typesTests/inlineSchemaTests/MultipleInlineSchemaReferingAttributes.wsdl";
@@ -393,7 +404,20 @@ public class WSDLSemanticValidatorTest extends TestCase {
        
         validate(uri, expectedErrors);
     }
+    
+     public void testMultipleTypesInValid() throws Exception {
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/typesTests/typesMultiTypes_error.wsdl";
+        URL url = getClass().getResource(fileName);
+        URI uri = url.toURI();
+        HashSet<String> expectedErrors = new HashSet<String>();
+       expectedErrors.add(format(mMessages.getString("VAL_MULTIPLE_TYPES_IN_DEFINITION")));
+        
+        validate(uri, expectedErrors);
+     }
+      
      
+             
+    
     private ValidationResult validate(URI relativePath) throws Exception {
         WSDLModel model = TestCatalogModel.getDefault().getWSDLModel(relativePath);
         Validation validation = new Validation();
