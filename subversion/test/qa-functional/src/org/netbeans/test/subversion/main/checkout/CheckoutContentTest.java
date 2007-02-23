@@ -18,6 +18,7 @@ import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
@@ -115,7 +116,11 @@ public class CheckoutContentTest extends JellyTestCase {
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
+        
         ProjectSupport.waitScanFinished();
+        new QueueTool().waitEmpty(1000);
+        ProjectSupport.waitScanFinished();
+        
         Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
         
         TestKit.closeProject(PROJECT_NAME); 

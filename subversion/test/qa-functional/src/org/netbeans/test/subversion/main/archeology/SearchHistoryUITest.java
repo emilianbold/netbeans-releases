@@ -31,6 +31,7 @@ import org.netbeans.test.subversion.utils.TestKit;
 import org.netbeans.junit.ide.ProjectSupport;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.test.subversion.operators.RepositoryBrowserOperator;
@@ -119,6 +120,9 @@ public class SearchHistoryUITest extends JellyTestCase{
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
+        
+        ProjectSupport.waitScanFinished();
+        new QueueTool().waitEmpty(1000);
         ProjectSupport.waitScanFinished();
         
         oto = new OutputTabOperator("file:///tmp/repo");

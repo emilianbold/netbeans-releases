@@ -18,6 +18,7 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -112,6 +113,9 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
+        
+        ProjectSupport.waitScanFinished();
+        new QueueTool().waitEmpty(1000);
         ProjectSupport.waitScanFinished();
         
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
