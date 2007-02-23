@@ -20,12 +20,14 @@
 package org.netbeans.modules.palette;
 
 import java.awt.Image;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.beans.BeanInfo;
 import java.io.IOException;
+import java.util.ArrayList;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
@@ -165,7 +167,9 @@ public final class PaletteItemNode extends FilterNode {
         ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(drop);
         t.put(s);
 
-        return t;
+        //do not allow external DnD flavors otherwise some items may get interpreted
+        //as an external file dropped into the editor window
+        return new NoExternalDndTransferable( t );
     }
 
     public Transferable drag() throws IOException {
@@ -268,5 +272,55 @@ public final class PaletteItemNode extends FilterNode {
         DataNode dn = (DataNode) getOriginal();
         Object helpId = dn.getDataObject().getPrimaryFile().getAttribute("helpId"); //NOI18N
         return (helpId == null ? super.getHelpCtx() : new HelpCtx(helpId.toString()));
+    }
+    
+    /**
+     * Transferable wrapper that does not allow DataFlavors for external drag and drop
+     * (FileListFlavor and URI list flavors)
+     */
+    private static class NoExternalDndTransferable implements Transferable {
+        private Transferable t;
+        private DataFlavor uriListFlavor;
+        public NoExternalDndTransferable( Transferable t ) {
+            this.t = t;
+        }
+    
+        public DataFlavor[] getTransferDataFlavors() {
+            DataFlavor[] flavors = t.getTransferDataFlavors();
+            if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) 
+                || t.isDataFlavorSupported( getUriListFlavor() ) ) {
+                ArrayList<DataFlavor> tmp = new ArrayList<DataFlavor>( flavors.length );
+                for( int i=0; i<flavors.length; i++ ) {
+                    if( isDataFlavorSupported( flavors[i] ) )
+                        tmp.add( flavors[i] );
+                }
+                flavors = tmp.toArray( new DataFlavor[tmp.size()] );
+            }
+            return flavors;
+        }
+
+        public boolean isDataFlavorSupported( DataFlavor flavor ) {
+            if( DataFlavor.javaFileListFlavor.equals( flavor ) || getUriListFlavor().equals( flavor ) )
+                return false;
+            return t.isDataFlavorSupported(flavor);
+        }
+
+        public Object getTransferData( DataFlavor flavor ) throws UnsupportedFlavorException, IOException {
+            if( !isDataFlavorSupported(flavor) )
+                throw new UnsupportedFlavorException( flavor );
+            return t.getTransferData( flavor );
+        }
+        
+        private DataFlavor getUriListFlavor () {
+            if( null == uriListFlavor ) {
+                try {
+                    uriListFlavor = new DataFlavor("text/uri-list;class=java.lang.String");
+                } catch (ClassNotFoundException ex) {
+                    //cannot happen
+                    throw new AssertionError(ex);
+                }
+            }
+            return uriListFlavor;
+        }
     }
 }
