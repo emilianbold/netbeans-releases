@@ -71,6 +71,10 @@ final class JUnitOutputReader {
     /** */
     private static final int UPDATE_DELAY = 300;    //milliseconds
     
+    /** */
+    private static final String XML_FORMATTER_CLASS_NAME
+            = "org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter";//NOI18N
+    
     /**
      * number of test suites that are going to be executed
      *
@@ -392,23 +396,12 @@ final class JUnitOutputReader {
         File resultsDir = null;
         String dirName = null;
         
-        TaskStructure taskStruct = event.getTaskStructure();
-        if (taskStruct != null) {
-            final TaskStructure[] taskChildren = taskStruct.getChildren();
-            if (taskChildren.length != 0) {
-                for (int i = 0; i < taskChildren.length; i++) {
-                    TaskStructure taskChild = taskChildren[i];
-                    String taskChildName = taskChild.getName();
-                    if (taskChildName.equals("batchtest")               //NOI18N
-                            || taskChildName.equals("test")) {          //NOI18N
-                        String dirAttr =taskChild.getAttribute("todir");//NOI18N
-                        dirName = (dirAttr != null)
-                                  ? event.evaluate(dirAttr)
-                                  : ".";                                //NOI18N
-                            /* default is the current directory (Ant manual) */
-                        break;
-                    }
-                }
+        final String taskName = event.getTaskName();
+        if (taskName != null) {
+            if (taskName.equals("junit")) {                             //NOI18N
+                dirName = determineJunitTaskResultsDir(event);
+            } else if (taskName.equals("java")) {                       //NOI18N
+                dirName = determineJavaTaskResultsDir(event);
             }
         }
         
@@ -426,6 +419,83 @@ final class JUnitOutputReader {
         }
         
         return resultsDir;
+    }
+    
+    /**
+     */
+    private static String determineJunitTaskResultsDir(final AntEvent event) {
+        final TaskStructure taskStruct = event.getTaskStructure();
+        if (taskStruct == null) {
+            return null;
+        }
+        
+        String dirName = null;
+        boolean hasXmlFileOutput = false;
+        
+        for (TaskStructure taskChild : taskStruct.getChildren()) {
+            String taskChildName = taskChild.getName();
+            if (taskChildName.equals("batchtest")                       //NOI18N
+                    || taskChildName.equals("test")) {                  //NOI18N
+                String dirAttr = taskChild.getAttribute("todir");       //NOI18N
+                dirName = (dirAttr != null)
+                          ? event.evaluate(dirAttr)
+                          : ".";                                        //NOI18N
+                            /* default is the current directory (Ant manual) */
+                
+            } else if (taskChildName.equals("formatter")) {             //NOI18N
+                if (hasXmlFileOutput) {
+                    continue;
+                }
+                String typeAttr = taskChild.getAttribute("type");       //NOI18N
+                if ((typeAttr != null)
+                        && "xml".equals(event.evaluate(typeAttr))) {    //NOI18N
+                    String useFileAttr
+                            = taskChild.getAttribute("usefile");        //NOI18N
+                    if ((useFileAttr == null)
+                        || "true".equals(event.evaluate(useFileAttr))) {//NOI18N
+                        hasXmlFileOutput = true;
+                    }
+                }
+            }
+        }
+        
+        return hasXmlFileOutput ? dirName : null;
+    }
+    
+    /**
+     */
+    private static String determineJavaTaskResultsDir(final AntEvent event) {
+        final TaskStructure taskStruct = event.getTaskStructure();
+        if (taskStruct == null) {
+            return null;
+        }
+        
+        for (TaskStructure taskChild : taskStruct.getChildren()) {
+            String taskChildName = taskChild.getName();
+            if (taskChildName.equals("arg")) {                          //NOI18N
+                String valueAttr = taskChild.getAttribute("value");     //NOI18N
+                if (valueAttr != null) {
+                    valueAttr = event.evaluate(valueAttr);
+                    if (valueAttr.startsWith("formatter=")) {           //NOI18N
+                        String formatter = valueAttr.substring("formatter=".length());//NOI18N
+                        int commaIndex = formatter.indexOf(',');
+                        if ((commaIndex != -1)
+                                && formatter.substring(0, commaIndex).equals(XML_FORMATTER_CLASS_NAME)) {
+                            String fullReportFileName = formatter.substring(commaIndex + 1);
+                            int lastSlashIndex = fullReportFileName.lastIndexOf('/');
+                            String dirName = (lastSlashIndex != -1)
+                                              ? fullReportFileName.substring(0, lastSlashIndex)
+                                              : ".";                    //NOI18N
+                            if (dirName.length() != 0) {
+                                return dirName;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+            
+        return null;
     }
     
     /**
