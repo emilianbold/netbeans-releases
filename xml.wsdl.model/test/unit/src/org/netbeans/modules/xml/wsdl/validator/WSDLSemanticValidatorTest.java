@@ -376,6 +376,24 @@ public class WSDLSemanticValidatorTest extends TestCase {
         
     }
     
+    public void testSapInlineCrossReferenceValid() throws Exception {
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/typesTests/inlineSchemaTests/Z_Flight.wsdl";
+        URL url = getClass().getResource(fileName);
+        URI uri = url.toURI();
+        HashSet<String> expectedErrors = new HashSet<String>();
+       
+        validate(uri, expectedErrors);
+    }
+    
+     public void testInlineCrossReferenceAttributeValid() throws Exception {
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/typesTests/inlineSchemaTests/MultipleInlineSchemaReferingAttributes.wsdl";
+        URL url = getClass().getResource(fileName);
+        URI uri = url.toURI();
+        HashSet<String> expectedErrors = new HashSet<String>();
+       
+        validate(uri, expectedErrors);
+    }
+     
     private ValidationResult validate(URI relativePath) throws Exception {
         WSDLModel model = TestCatalogModel.getDefault().getWSDLModel(relativePath);
         Validation validation = new Validation();

@@ -897,7 +897,7 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                     }
                 }
                 
-                SchemaSemanticsVisitor v = new SchemaSemanticsVisitor(mValidator, mValidation, mValidatedModels);
+                SchemaSemanticsVisitor v = new SchemaSemanticsVisitor(ext.getModel(), mValidator, mValidation, mValidatedModels);
                 model.getSchema().accept(v);
                 
                 List<ResultItem> r =  v.getResultItems();
