@@ -2571,11 +2571,19 @@ public final class ModelViewMapper {
         return pageBox.findCssBox(x, y);
     }
 
+    /** XXX Get rid of it, replace with #findComponentRootElement. */
     public static MarkupDesignBean findMarkupDesignBean(PageBox pageBox, int x, int y) {
 //        CssBox box = findBox(x, y);
         CssBox box = findBox(pageBox, x, y);
 
         return findMarkupDesignBean(box);
+    }
+    
+    public static Element findComponentRootElement(PageBox pageBox, int x, int y) {
+//        CssBox box = findBox(x, y);
+        CssBox box = findBox(pageBox, x, y);
+
+        return findComponentRootElement(box);
     }
 
 //    public static Rectangle findShape(PageBox pageBox, DesignBean lbean) {
