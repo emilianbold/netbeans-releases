@@ -87,6 +87,17 @@ public class MockServices {
         }
         // Need to also reset global lookup since it caches the singleton and we need to change it.
         try {
+            Class mainLookup = Class.forName("org.netbeans.core.startup.MainLookup");
+            Method sClsLoaderChanged = mainLookup.getDeclaredMethod("systemClassLoaderChanged",ClassLoader.class);
+            sClsLoaderChanged.setAccessible(true);
+            sClsLoaderChanged.invoke(null,l);            
+        } catch (ClassNotFoundException x) {
+            // Fine, not using org.netbeans.core.startup isn't reachable.
+        } catch(Exception exc) {
+            logger().log(Level.WARNING, "MainLookup couldn't be notified about the context class loader change", exc);
+        }
+        
+        try {            
             Class lookup = Class.forName("org.openide.util.Lookup");
             Method defaultLookup = lookup.getDeclaredMethod("resetDefaultLookup");
             defaultLookup.setAccessible(true);
