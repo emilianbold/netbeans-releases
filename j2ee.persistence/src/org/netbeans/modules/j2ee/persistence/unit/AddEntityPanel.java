@@ -28,7 +28,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
-import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 
 /**
  * Panel for adding entities to persistence unit.

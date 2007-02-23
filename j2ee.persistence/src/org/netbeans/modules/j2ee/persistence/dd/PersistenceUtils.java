@@ -39,8 +39,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
-import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
-import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.EntityMappings;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceClassPathProvider;
@@ -276,7 +276,7 @@ public class PersistenceUtils {
         } catch (IOException e) {
             // should not occur, that is why we are catching here
             // but anyway...
-            return new EntityMappings();
+            return new org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.EntityMappings();
         }
     }
     

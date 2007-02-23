@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.j2ee.metadata.MetadataUnit;
-import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.EntityMappings;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 
 /**
  * Provider of model based on persistence_ORM.xsd schema.

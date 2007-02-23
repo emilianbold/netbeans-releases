@@ -50,7 +50,7 @@ import org.netbeans.modules.j2ee.persistence.util.AbstractTask;
 import org.netbeans.modules.j2ee.persistence.util.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.action.EntityManagerGenerator;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
-import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
