@@ -88,16 +88,16 @@ public class PrintIcon extends Task {
         try {
             
             SortedSet<IconInfo> firstSet = new TreeSet<IconInfo>();
-            for (String f : first.getDirectoryScanner().getIncludedFiles()) {
-                File baseDir = first.getDir();
+            for (String f : first.getDirectoryScanner(getProject()).getIncludedFiles()) {
+                File baseDir = first.getDir(getProject());
                 File file = new File(baseDir, f);
                 firstSet.add(new IconInfo(file.toURL(), getProject()));
             }
 
             SortedSet<IconInfo> sndSet = new TreeSet<IconInfo>();
             if (second != null) {
-                for (String f : second.getDirectoryScanner().getIncludedFiles()) {
-                    File baseDir = second.getDir();
+                for (String f : second.getDirectoryScanner(getProject()).getIncludedFiles()) {
+                    File baseDir = second.getDir(getProject());
                     File file = new File(baseDir, f);
                     sndSet.add(new IconInfo(file.toURL(), getProject()));
                 }
