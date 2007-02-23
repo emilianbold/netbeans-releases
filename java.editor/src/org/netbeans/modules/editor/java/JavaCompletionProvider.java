@@ -2105,7 +2105,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                     }
                 }
-            } else {
+            } else if (env.getPath().getLeaf().getKind() != Tree.Kind.CASE) {
                 if (Utilities.startsWith(FALSE_KEYWORD, prefix))
                     results.add(JavaCompletionItem.createKeywordItem(FALSE_KEYWORD, null, offset));
                 if (Utilities.startsWith(TRUE_KEYWORD, prefix))
