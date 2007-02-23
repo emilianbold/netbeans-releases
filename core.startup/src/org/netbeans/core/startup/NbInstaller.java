@@ -1,7 +1,7 @@
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
+ * compliance with the License.clas
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
@@ -736,7 +736,13 @@ final class NbInstaller extends ModuleInstaller {
         "com/sun/source/",
         "javax/annotation/",
         "javax/lang/model/",
-        "javax/tools/"
+        "javax/tools/",
+        // do not want JAX-WS 2.0 classes from JDK 6;
+        "javax/xml/bind/", // NOI18N
+        "javax/xml/ws/", // NOI18N
+        "javax/xml/stream/", // NOI18N
+        "javax/jws/", // NOI18N
+        "javax/xml/soap/" // NOI18N
     };
     
     private Set<String> findKosher(Module m) {
