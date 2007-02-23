@@ -251,13 +251,13 @@ public class BeanSupport
     // -----------------------------------------------------------------------------
     // Private methods
 
-    static Reference imageCache;
+    static Reference<Map<String,Object>> imageCache;
 
     private static synchronized Image getIconForDefault(Class klass) {
-        Map icons;
-        if ((imageCache == null) || ((icons = (Map) imageCache.get()) == null)) {
+        Map<String,Object> icons;
+        if ((imageCache == null) || ((icons = imageCache.get()) == null)) {
             icons = createImageCache();
-            imageCache = new SoftReference(icons);
+            imageCache = new SoftReference<Map<String,Object>>(icons);
         }
         
         String name = klass.getName();
@@ -277,8 +277,8 @@ public class BeanSupport
         }
     }
 
-    private static Map createImageCache() {
-        Map map = new HashMap();
+    private static Map<String, Object> createImageCache() {
+        Map<String, Object> map = new HashMap<String, Object>();
         
         map.put("java.awt.Label", "/org/netbeans/modules/form/beaninfo/awt/label.gif"); // NOI18N
         map.put("java.awt.Button", "/org/netbeans/modules/form/beaninfo/awt/button.gif"); // NOI18N
