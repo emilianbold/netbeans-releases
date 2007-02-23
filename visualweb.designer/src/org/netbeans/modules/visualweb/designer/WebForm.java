@@ -1818,8 +1818,11 @@ public class WebForm implements Designer {
     // XXX Temp after moved TopComponent impl out <<<
     // <<< Designer impl.
 
-    boolean canDropDesignBeansAtNode(DesignBean[] designBeans, Node node) {
-        return htmlDomProvider.canDropDesignBeansAtNode(designBeans, node);
+//    boolean canDropDesignBeansAtNode(DesignBean[] designBeans, Node node) {
+//        return htmlDomProvider.canDropDesignBeansAtNode(designBeans, node);
+//    }
+    boolean canDropComponentsAtNode(Element[] componentRootElements, Node node) {
+        return htmlDomProvider.canDropComponentsAtNode(componentRootElements, node);
     }
 
     boolean handleMouseClickForElement(Element element, int clickCount) {

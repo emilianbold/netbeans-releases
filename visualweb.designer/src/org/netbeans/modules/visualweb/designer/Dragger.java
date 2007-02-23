@@ -742,11 +742,24 @@ public class Dragger extends Interaction implements KeyListener {
 //        }
 //
 //        return true;
-        return webform.canDropDesignBeansAtNode(
-                beans == null
-                    ? new DesignBean[0]
-                    : (DesignBean[])beans.toArray(new DesignBean[beans.size()]),
-                curr);
+        
+//        return webform.canDropDesignBeansAtNode(
+//                beans == null
+//                    ? new DesignBean[0]
+//                    : (DesignBean[])beans.toArray(new DesignBean[beans.size()]),
+//                curr);
+        List<Element> componentRootElements = new ArrayList<Element>();
+        // XXX TEMP
+        List<MarkupDesignBean> designBeans = beans;
+        if (designBeans != null) {
+            for (MarkupDesignBean designBean : designBeans) {
+                Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(designBean);
+                if (componentRootElement != null) {
+                    componentRootElements.add(componentRootElement);
+                }
+            }
+        }
+        return webform.canDropComponentsAtNode(componentRootElements.toArray(new Element[componentRootElements.size()]), curr);
     }
 
     /** Determine whether the given box is inside one of the boxes we're dragging */
