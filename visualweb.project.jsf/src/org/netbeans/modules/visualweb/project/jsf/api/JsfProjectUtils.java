@@ -122,13 +122,10 @@ public class JsfProjectUtils {
      * @param fo FileObject to be checked
      */
     public static boolean isJsfProjectFile(FileObject fo) {
-        if (fo == null) {
-            return false;
-        }
-        WebModule wm = WebModule.getWebModule(fo);
-        return wm != null;
+        // XXX No project property "creator" for web project
+        return true;
 
-        /* XXX No project property "creator" for web project
+        /*
         while (fo != null) {
             if (fo.isFolder()) {
                 final FileObject propFile = fo.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
