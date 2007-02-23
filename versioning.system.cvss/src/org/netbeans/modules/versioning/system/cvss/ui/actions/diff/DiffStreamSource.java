@@ -154,19 +154,24 @@ public class DiffStreamSource extends StreamSource {
         if (revision == null) return;
         binary = !CvsVersioningSystem.getInstance().isText(baseFile);
         try {
-            File tempFolder = Utils.getTempFolder();
-            // To correctly get content of the base file, we need to checkout all files that belong to the same
-            // DataObject. One example is Form files: data loader removes //GEN:BEGIN comments from the java file but ONLY
-            // if it also finds associate .form file in the same directory
-            Set<File> allFiles = getAllDataObjectFiles(baseFile);
-            for (File file : allFiles) {
-                boolean isBase = file.equals(baseFile); 
-                File rf = VersionsCache.getInstance().getRemoteFile(file, isBase ? revision : VersionsCache.REVISION_BASE, group);
-                File newRemoteFile = new File(tempFolder, file.getName());
-                Utils.copyStreamsCloseAll(new FileOutputStream(newRemoteFile), new FileInputStream(rf));
-                newRemoteFile.deleteOnExit();
-                if (isBase) {
-                    remoteFile = newRemoteFile;
+            if (isEditable()) {
+                // we cannot move editable documents because that would break Document sharing
+                remoteFile = VersionsCache.getInstance().getRemoteFile(baseFile, revision, group);
+            } else {
+                File tempFolder = Utils.getTempFolder();
+                // To correctly get content of the base file, we need to checkout all files that belong to the same
+                // DataObject. One example is Form files: data loader removes //GEN:BEGIN comments from the java file but ONLY
+                // if it also finds associate .form file in the same directory
+                Set<File> allFiles = getAllDataObjectFiles(baseFile);
+                for (File file : allFiles) {
+                    boolean isBase = file.equals(baseFile); 
+                    File rf = VersionsCache.getInstance().getRemoteFile(file, isBase ? revision : VersionsCache.REVISION_BASE, group);
+                    File newRemoteFile = new File(tempFolder, file.getName());
+                    Utils.copyStreamsCloseAll(new FileOutputStream(newRemoteFile), new FileInputStream(rf));
+                    newRemoteFile.deleteOnExit();
+                    if (isBase) {
+                        remoteFile = newRemoteFile;
+                    }
                 }
             }
             if (!baseFile.exists() && remoteFile != null && remoteFile.exists()) {
