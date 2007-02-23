@@ -62,17 +62,16 @@ public class IdeWatchdogTest extends NbTestCase {
         File idePidFile = new File(xtestWorkdir, "ide.pid");
         LineNumberReader reader = new LineNumberReader(new FileReader(idePidFile));
         String line = reader.readLine();
-        if (line != null) {
-            long pid = Long.parseLong(line);
-            boolean result = NativeKill.dumpProcess(pid);
-            assertTrue("NativeKill.dumpProcess("+pid+") failed.", result);
-            // sleep a bit, so resources can be released
-            Thread.sleep(2000);
-            result = NativeKill.killProcess(pid);
-            // it return false because it kills its own JVM
-            assertFalse("NativeKill.killProcess("+pid+") failed.", result);
-        } else {
-            fail("Cannot read PID from file "+idePidFile);
-        }
+        assertNotNull("Cannot read PID from file "+idePidFile, line);
+        long pid = Long.parseLong(line);
+        boolean result = NativeKill.dumpProcess(pid);
+        assertTrue("NativeKill.dumpProcess("+pid+") failed.", result);
+        /* cannot test killProcess because it kills the test prematurely
+        // sleep a bit, so resources can be released
+        Thread.sleep(2000);
+        result = NativeKill.killProcess(pid);
+        // it return false because it kills its own JVM
+        assertFalse("NativeKill.killProcess("+pid+") failed.", result);
+         */
     }
 }
