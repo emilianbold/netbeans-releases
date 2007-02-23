@@ -2508,7 +2508,8 @@ public class DndHandler /*extends TransferHandler*/ {
      *    DesignBeans; otherwise returns DROP_LINKED. If showLinkTarget is set, recentDropTarget
      *    will be set to the most recent such eligible DesignBean.
      */
-    public int processLinks(Element origElement, Class[] classes, List beans,
+//    public int processLinks(Element origElement, Class[] classes, List beans,
+    public int processLinks(Element origElement, Class[] classes, Element componentRootElement,
         boolean selectFirst, // if there are multiple hits; if not ask user
         boolean handleLinks, // actually do linking
         boolean showLinkTarget) {
@@ -2856,7 +2857,9 @@ public class DndHandler /*extends TransferHandler*/ {
 //        }
 //
 //        return dropType;
-        return webform.processLinks(origElement, classes, beans, selectFirst, handleLinks, showLinkTarget);
+        
+//        return webform.processLinks(origElement, classes, beans, selectFirst, handleLinks, showLinkTarget);
+        return webform.processLinks(origElement, classes, componentRootElement, selectFirst, handleLinks, showLinkTarget);
     }
 
 //    /** Set the absolute position of the component. **/

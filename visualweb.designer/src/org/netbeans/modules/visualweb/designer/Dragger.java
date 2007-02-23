@@ -261,10 +261,16 @@ public class Dragger extends Interaction implements KeyListener {
                         Element element = box.getElement();
 
                         if (element != null) {
-                            ArrayList candidates = new ArrayList();
-                            candidates.add(candidate);
-                            handler.processLinks(element, null, candidates, true,
-                                true, false);
+//                            ArrayList candidates = new ArrayList();
+//                            candidates.add(candidate);
+                            if (candidate instanceof MarkupDesignBean) {
+                                Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)candidate);
+//                                handler.processLinks(element, null, candidates, true,
+//                                    true, false);
+                                if (componentRootElement != null) {
+                                    handler.processLinks(element, null, componentRootElement, true, true, false);
+                                }
+                            }
                         }
                     } else {
                         // Try reverse link
@@ -283,10 +289,16 @@ public class Dragger extends Interaction implements KeyListener {
                             Element element = box.getElement();
 
                             if (element != null) {
-                                ArrayList candidates = new ArrayList();
-                                candidates.add(candidate);
-                                handler.processLinks(element, null, candidates, true,
-                                    true, false);
+//                                ArrayList candidates = new ArrayList();
+//                                candidates.add(candidate);
+                                if (candidate instanceof MarkupDesignBean) {
+                                    Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)candidate);
+//                                    handler.processLinks(element, null, candidates, true,
+//                                        true, false);
+                                    if (componentRootElement != null) {
+                                        handler.processLinks(element, null, componentRootElement, true, true, false);
+                                    }
+                                }
                             }
                         }
                     }
