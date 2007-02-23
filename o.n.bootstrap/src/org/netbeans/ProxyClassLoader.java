@@ -467,7 +467,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
     private static void printDefaultPackageWarning(String name) {
         // #42201 - commons-logging lib tries to read its config from this file, ignore
         if (!"commons-logging.properties".equals(name)) { // NOI18N
-            LOGGER.log(Level.WARNING, "You are trying to access file: " + name + " from the default package. Please see http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#default_package", new IllegalStateException());
+            LOGGER.log(Level.INFO, null, new IllegalStateException("You are trying to access file: " + name + " from the default package. Please see http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#default_package"));
         }
     }
     
