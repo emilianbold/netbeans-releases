@@ -87,10 +87,18 @@ public final class _RetoucheUtil {
         return false;
     }
 
-    public static ElementHandle<TypeElement> getJavaClassFromNode(Node node) throws IOException {
-        ElementHandle elementHandle = node.getLookup().lookup(ElementHandle.class);
+    @SuppressWarnings("unchecked")
+    private static ElementHandle<TypeElement> getElementHandle(ElementHandle elementHandle) {
         if (elementHandle != null && ElementKind.CLASS == elementHandle.getKind()) {
             return (ElementHandle<TypeElement>) elementHandle;
+        }
+        return null;
+    }
+    
+    public static ElementHandle<TypeElement> getJavaClassFromNode(Node node) throws IOException {
+        ElementHandle<TypeElement> elementHandle = getElementHandle(node.getLookup().lookup(ElementHandle.class));
+        if (elementHandle != null) {
+            return elementHandle;
         }
         //TODO: RETOUCHE TypeElement from Node, this one just takes main TypeElement if ElementHandle is not found
         FileObject fileObject = node.getLookup().lookup(FileObject.class);
