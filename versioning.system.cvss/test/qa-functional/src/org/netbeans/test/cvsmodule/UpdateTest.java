@@ -24,12 +24,12 @@ import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.CommitOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
-import org.netbeans.jellytools.modules.javacvs.ProxyConfigurationOperator;
 import org.netbeans.jellytools.modules.javacvs.VersioningOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.Action;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
@@ -1625,9 +1625,6 @@ public class UpdateTest extends JellyTestCase {
         //JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
         crso.setCVSRoot(cvsRoot);
         //crso.setPassword("");
-        ProxyConfigurationOperator pco = crso.proxyConfiguration();
-        pco.noProxyDirectConnection();
-        pco.ok();
         crso.setPassword(passwd);
         crso.next();
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
@@ -1640,7 +1637,11 @@ public class UpdateTest extends JellyTestCase {
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
+        
         ProjectSupport.waitScanFinished();
+        new QueueTool().waitEmpty(1000);
+        ProjectSupport.waitScanFinished();
+        
         return work;
     }
     

@@ -27,13 +27,13 @@ import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.CommitOperator;
 import org.netbeans.jellytools.modules.javacvs.DiffOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
-import org.netbeans.jellytools.modules.javacvs.ProxyConfigurationOperator;
 import org.netbeans.jellytools.modules.javacvs.SearchHistoryOperator;
 import org.netbeans.jellytools.modules.javacvs.SwitchToBranchOperator;
 import org.netbeans.jellytools.modules.javacvs.VersioningOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -125,9 +125,6 @@ public class StandardWorkFlow extends JellyTestCase {
         //JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
         //crso.setPassword("");
-        ProxyConfigurationOperator pco = crso.proxyConfiguration();
-        pco.noProxyDirectConnection();
-        pco.ok();
         //crso.setPassword("test");
         
         //prepare stream for successful authentification and run PseudoCVSServer
@@ -186,7 +183,11 @@ public class StandardWorkFlow extends JellyTestCase {
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
+        
         ProjectSupport.waitScanFinished();
+        new QueueTool().waitEmpty(1000);
+        ProjectSupport.waitScanFinished();
+        
         //create new elements for testing
         TestKit.createNewElements(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");

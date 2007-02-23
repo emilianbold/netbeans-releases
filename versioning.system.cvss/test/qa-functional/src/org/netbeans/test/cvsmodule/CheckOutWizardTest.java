@@ -33,8 +33,8 @@ import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.EditCVSRootOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
-import org.netbeans.jellytools.modules.javacvs.ProxyConfigurationOperator;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -47,7 +47,6 @@ import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 /**
@@ -87,7 +86,6 @@ public class CheckOutWizardTest extends JellyTestCase {
         suite.addTest(new CheckOutWizardTest("testCheckoutWizardPserver"));
         suite.addTest(new CheckOutWizardTest("testCheckoutWizardExt"));
         suite.addTest(new CheckOutWizardTest("testRandomChange"));
-        suite.addTest(new CheckOutWizardTest("testProxy"));
         suite.addTest(new CheckOutWizardTest("testLocalUI"));
         suite.addTest(new CheckOutWizardTest("testForkUI"));
         suite.addTest(new CheckOutWizardTest("testPserverUI"));
@@ -320,29 +318,6 @@ public class CheckOutWizardTest extends JellyTestCase {
         cwo.cancel();
     }
     
-    /** Tests proxy customizer. */
-    public void testProxy() {
-        comOperator = new Operator.DefaultStringComparator(true, true);
-        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-        Operator.setDefaultStringComparator(comOperator);
-        CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
-        Operator.setDefaultStringComparator(oldOperator);
-        CVSRootStepOperator cvsRootOper = new CVSRootStepOperator();
-        cvsRootOper.setCVSRoot(":pserver:test@localhost:2401/cvs");
-        ProxyConfigurationOperator proxyOper = cvsRootOper.proxyConfiguration();
-        proxyOper.useSystemProxySettings();
-        proxyOper.noProxyDirectConnection();
-        proxyOper.hTTPProxy();
-        proxyOper.sOCKSProxy();
-        proxyOper.setProxyHost("host");// NOI18N
-        proxyOper.setPort("8080");
-        proxyOper.checkProxyServerRequiresLogin(true);
-        proxyOper.setName("name");// NOI18N
-        proxyOper.setPassword("password");// NOI18N
-        proxyOper.ok();
-        cwo.cancel();
-    }
-    
     public void testPserverUI() {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
@@ -549,10 +524,6 @@ public class CheckOutWizardTest extends JellyTestCase {
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:test@localhost:/cvs");
         
-        ProxyConfigurationOperator pco = crso.proxyConfiguration();
-        pco.noProxyDirectConnection();
-        pco.ok();
-        
         //prepare stream for successful authen//tification and run PseudoCVSServer
         InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "nonauthorized.in");
         if (in == null) {
@@ -594,9 +565,6 @@ public class CheckOutWizardTest extends JellyTestCase {
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         Operator.setDefaultStringComparator(oldOperator);
         final CVSRootStepOperator crso = new CVSRootStepOperator();
-        ProxyConfigurationOperator pco = crso.proxyConfiguration();
-        pco.noProxyDirectConnection();
-        pco.ok();
         //crso.setPassword("test");
         
         //prepare stream for successful authentification and run PseudoCVSServer
@@ -639,9 +607,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
         crso.setPassword("");
-        ProxyConfigurationOperator pco = crso.proxyConfiguration();
-        pco.noProxyDirectConnection();
-        pco.ok();
+        
         InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
         if (in == null) {
             System.err.println(getClass().getProtectionDomain().getCodeSource().getLocation().toExternalForm());
@@ -695,9 +661,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
         crso.setPassword("");
-        ProxyConfigurationOperator pco = crso.proxyConfiguration();
-        pco.noProxyDirectConnection();
-        pco.ok();
+       
         InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
         if (in == null) {
             System.err.println(getClass().getProtectionDomain().getCodeSource().getLocation().toExternalForm());
@@ -749,9 +713,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
         crso.setPassword("");
-        ProxyConfigurationOperator pco = crso.proxyConfiguration();
-        pco.noProxyDirectConnection();
-        pco.ok();
+        
         InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
         if (in == null) {
             System.err.println(getClass().getProtectionDomain().getCodeSource().getLocation().toExternalForm());
@@ -812,9 +774,6 @@ public class CheckOutWizardTest extends JellyTestCase {
         
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
         crso.setPassword("");
-        ProxyConfigurationOperator pco = crso.proxyConfiguration();
-        pco.noProxyDirectConnection();
-        pco.ok();
         InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
         if (in == null) {
             System.err.println(getClass().getProtectionDomain().getCodeSource().getLocation().toExternalForm());
@@ -884,9 +843,6 @@ public class CheckOutWizardTest extends JellyTestCase {
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
         crso.setPassword("");
-        ProxyConfigurationOperator pco = crso.proxyConfiguration();
-        pco.noProxyDirectConnection();
-        pco.ok();
         //crso.setPassword("test");
         
         //prepare stream for successful authentification and run PseudoCVSServer
@@ -971,9 +927,6 @@ public class CheckOutWizardTest extends JellyTestCase {
         
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
         //crso.setPassword("");
-        ProxyConfigurationOperator pco = crso.proxyConfiguration();
-        pco.noProxyDirectConnection();
-        pco.ok();
         //crso.setPassword("test");
         
         //prepare stream for successful authentification and run PseudoCVSServer
@@ -1034,7 +987,11 @@ public class CheckOutWizardTest extends JellyTestCase {
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
+        
         ProjectSupport.waitScanFinished();
+        new QueueTool().waitEmpty(1000);
+        ProjectSupport.waitScanFinished();
+        
         TestKit.closeProject(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }

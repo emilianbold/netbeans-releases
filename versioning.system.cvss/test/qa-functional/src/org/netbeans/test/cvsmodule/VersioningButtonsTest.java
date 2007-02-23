@@ -38,11 +38,11 @@ import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
-import org.netbeans.jellytools.modules.javacvs.ProxyConfigurationOperator;
 import org.netbeans.jellytools.modules.javacvs.VersioningOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
@@ -98,9 +98,6 @@ public class VersioningButtonsTest extends JellyTestCase {
         Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
-        ProxyConfigurationOperator pco = crso.proxyConfiguration();
-        pco.noProxyDirectConnection();
-        pco.ok();
         //prepare stream for successful authentification and run PseudoCVSServer
         InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
         PseudoCvsServer cvss = new PseudoCvsServer(in);
@@ -145,7 +142,11 @@ public class VersioningButtonsTest extends JellyTestCase {
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
+        
         ProjectSupport.waitScanFinished();
+        new QueueTool().waitEmpty(1000);
+        ProjectSupport.waitScanFinished();
+        
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
     

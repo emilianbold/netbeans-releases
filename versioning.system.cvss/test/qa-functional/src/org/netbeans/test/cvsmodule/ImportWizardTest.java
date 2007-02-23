@@ -32,7 +32,6 @@ import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.EditCVSRootOperator;
 import org.netbeans.jellytools.modules.javacvs.FolderToImportStepOperator;
 import org.netbeans.jellytools.modules.javacvs.ImportWizardOperator;
-import org.netbeans.jellytools.modules.javacvs.ProxyConfigurationOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -290,9 +289,6 @@ public class ImportWizardTest extends JellyTestCase {
         Operator.setDefaultStringComparator(oldOperator);
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:test@localhost:/cvs");
-        ProxyConfigurationOperator pco = crso.proxyConfiguration();
-        pco.noProxyDirectConnection();
-        pco.ok();
         //crso.setPassword("test");
         
         //prepare stream for successful authentification and run PseudoCVSServer
@@ -483,9 +479,6 @@ public class ImportWizardTest extends JellyTestCase {
         Operator.setDefaultStringComparator(oldOperator);
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:test@localhost:/cvs");
-        ProxyConfigurationOperator pco = crso.proxyConfiguration();
-        pco.noProxyDirectConnection();
-        pco.ok();
         //crso.setPassword("test");
         
         //prepare stream for successful authentification and run PseudoCVSServer
@@ -552,9 +545,6 @@ public class ImportWizardTest extends JellyTestCase {
         CVSRootStepOperator crso = new CVSRootStepOperator();
         JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
         crso.setCVSRoot(":pserver:test@localhost:/cvs");
-        ProxyConfigurationOperator pco = crso.proxyConfiguration();
-        pco.noProxyDirectConnection();
-        pco.ok();
         //crso.setPassword("test");
         
         //prepare stream for successful authentification and run PseudoCVSServer
