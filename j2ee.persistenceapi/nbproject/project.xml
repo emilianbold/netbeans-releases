@@ -51,6 +51,7 @@
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.j2ee.persistence.api</package>
+                <package>org.netbeans.modules.j2ee.persistence.api.metadata.orm</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.support</package>
             </friend-packages>
