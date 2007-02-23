@@ -36,12 +36,12 @@ import com.sun.org.apache.bcel.internal.classfile.LineNumberTable;
 import com.sun.org.apache.bcel.internal.classfile.LocalVariableTable;
 import com.sun.org.apache.bcel.internal.classfile.Method;
 import com.sun.org.apache.bcel.internal.generic.Type;
-import java.beans.BeanDescriptor;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.*;
-import org.netbeans.core.startup.ModuleSystem;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.modules.ModuleInfo;
 
 /**
  *
@@ -49,6 +49,8 @@ import org.openide.modules.ModuleInfo;
  */
 public class BytecodeTest extends NbTestCase {
     
+    private Logger LOG;
+
     public BytecodeTest(String testName) {
         super(testName);
     }
@@ -59,6 +61,17 @@ public class BytecodeTest extends NbTestCase {
         return suite;
     }
     
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
+    }
+
+    protected void setUp() throws Exception {
+        LOG = Logger.getLogger("TEST-" + getName());
+        
+        super.setUp();
+    }
+
     /** Verification that classfiles built in production build do not contain 
      * variable information to reduce their size and improve performance.
      * Line table and source info are OK.
@@ -111,7 +124,7 @@ public class BytecodeTest extends NbTestCase {
             while (entries.hasMoreElements()) {
                 entry = entries.nextElement();
                 if (entry.getName().endsWith(".class")) {
-                    System.out.println("testing entry "+entry);
+                    LOG.log(Level.FINE, "testing entry {0}", entry);
                     clz = new ClassParser(jar.getInputStream(entry), entry.getName()).parse();
                     assertNotNull("classfile of "+entry.toString()+" parsed");
                     
@@ -136,7 +149,7 @@ public class BytecodeTest extends NbTestCase {
         //                    assertTrue (entry.toString()+" should have line number table", v.foundLineNumberTable());
     }
     
-    private static class Violation {
+    private static class Violation implements Comparable<Violation> {
         String entry;
         String jarFile;
         String comment;
@@ -144,6 +157,11 @@ public class BytecodeTest extends NbTestCase {
             this.entry = entry;
             this.jarFile = jarFile;
             this.comment = comment;
+        }
+    
+        public int compareTo(Violation v2) {
+            String second = v2.entry + v2.jarFile;
+            return (entry +jarFile).compareTo(second);
         }
     }
 
@@ -246,7 +264,7 @@ public class BytecodeTest extends NbTestCase {
     public void testBeanInfos() throws Exception {
         JavaClass clz;
         
-        Set<Violation> violations = new HashSet<Violation>();
+        Set<Violation> violations = new TreeSet<Violation>();
         for (File f: org.netbeans.core.startup.Main.getModuleSystem().getModuleJars()) {
             if (!f.getName().endsWith(".jar"))
                 continue;
@@ -257,7 +275,7 @@ public class BytecodeTest extends NbTestCase {
             while (entries.hasMoreElements()) {
                 entry = entries.nextElement();
                 if (entry.getName().endsWith("BeanInfo.class")) {
-                    System.out.println("testing entry "+entry);
+                    LOG.log(Level.FINE, "testing entry {0}", entry);
                     clz = new ClassParser(jar.getInputStream(entry), entry.getName()).parse();
                     assertNotNull("classfile of "+entry.toString()+" parsed");
                     
@@ -288,18 +306,58 @@ public class BytecodeTest extends NbTestCase {
         
         // TODO need to exclude some usages that are justified
         
-        Set<Violation> violations = new HashSet<Violation>();
+        Set<Violation> violations = new TreeSet<Violation>();
         for (File f: org.netbeans.core.startup.Main.getModuleSystem().getModuleJars()) {
             if (!f.getName().endsWith(".jar"))
                 continue;
             
+            if (f.getName().endsWith("servlet-2.2.jar") 
+                    || f.getName().endsWith("servlet2.5-jsp2.1-api.jar")
+                    || f.getName().endsWith("javac-impl.jar")
+                    || f.getName().endsWith("jaxb-impl.jar")
+                    || f.getName().endsWith("jaxb-xjc.jar")
+                    || f.getName().endsWith("saaj-impl.jar")
+                    || f.getName().endsWith("jh-2.0_04.jar")
+                    || f.getName().endsWith("svnClientAdapter.jar")
+                    || f.getName().endsWith("persistence-tool-support.jar")    // issue #96439
+                    || f.getName().endsWith("org-netbeans-modules-xml-wsdl-model.jar")    // issue #96456
+                    || f.getName().endsWith("org-netbeans-modules-websvc-core.jar")    // issue #96453
+                    || f.getName().endsWith("org-netbeans-modules-websvc-jaxrpc.jar")
+                    || f.getName().endsWith("org-netbeans-modules-j2ee-sun-appsrv.jar")    // issue #96439
+                    || f.getName().endsWith("org-netbeans-modules-j2ee-sun-appsrv81.jar")
+                    || f.getName().endsWith("org-netbeans-modules-j2ee-ejbjarproject.jar")    // issue #96423
+                    || f.getName().endsWith("org-netbeans-modules-j2ee-earproject.jar")
+                    || f.getName().endsWith("org-netbeans-modules-j2ee-clientproject.jar")
+                    || f.getName().endsWith("org-netbeans-modules-j2ee-blueprints.jar")
+                    || f.getName().endsWith("org-netbeans-modules-j2ee-archive.jar")
+                    || f.getName().endsWith("org-netbeans-modules-j2ee-ddloaders.jar")
+                    || f.getName().endsWith("org-netbeans-modules-j2ee-dd.jar")
+                    || f.getName().endsWith("org-netbeans-modules-j2ee-api-ejbmodule.jar")
+                    || f.getName().endsWith("org-netbeans-modules-web-project.jar")    // issue #96427
+                    || f.getName().endsWith("org-netbeans-modules-web-core-syntax.jar")
+                    || f.getName().endsWith("org-netbeans-modules-java-source.jar") // issue #96461
+                    || f.getName().endsWith("org-netbeans-modules-java-project.jar")
+                    || f.getName().endsWith("org-netbeans-modules-java-j2seproject.jar")
+                    || f.getName().endsWith("org-netbeans-modules-java-platform.jar")
+                    || f.getName().endsWith("org-netbeans-modules-j2ee-sun-ddui.jar")) {    // issue #96422
+                continue;
+            }
             JarFile jar = new JarFile(f);
             Enumeration<JarEntry> entries = jar.entries();
             JarEntry entry;
             while (entries.hasMoreElements()) {
                 entry = entries.nextElement();
                 if (entry.getName().endsWith(".class")) {
-                    System.out.println("testing entry "+entry);
+                    if ("org/openide/explorer/view/VisualizerNode.class".equals(entry.getName()) // default node icon si OK
+                            || "org/openide/awt/JInlineMenu.class".equals(entry.getName()) // empty icon si OK
+                            || "org/openide/awt/DynaMenuModel.class".equals(entry.getName()) // empty icon si OK
+                            || "org/openide/explorer/propertysheet/PropertySheet.class".equals(entry.getName())) { // deprecated kept for compat
+                        continue;
+                    } else if (entry.getName().startsWith("org/netbeans/modules/editor/java/JavaCompletionItem")) { // #96442
+                        continue;
+                    }
+
+                    LOG.log(Level.FINE, "testing entry {0}", entry);
                     clz = new ClassParser(jar.getInputStream(entry), entry.getName()).parse();
                     assertNotNull("classfile of "+entry.toString()+" parsed");
                     
