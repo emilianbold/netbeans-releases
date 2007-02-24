@@ -139,14 +139,17 @@ public class SvnProperties implements ActionListener, DocumentListener {
     protected void initPropertyNameCbx() {
         List<String> lstName = new ArrayList<String>(8);
         if (panel.comboName.isEditable()) {
-            lstName.add("svn:executable");
-            lstName.add("svn:mime-type");
-            lstName.add("svn:ignore");
-            lstName.add("svn:keywords");
-            lstName.add("svn:eol-style");
-            lstName.add("svn:externals");
-            //lstName.add("svn:special");
-            lstName.add("svn:needs-lock");
+            if (root.isDirectory()) {
+                lstName.add("svn:ignore");
+                lstName.add("svn:externals");
+            } else {
+                lstName.add("svn:eol-style");
+                lstName.add("svn:executable");
+                lstName.add("svn:keywords");
+                lstName.add("svn:needs-lock");
+                lstName.add("svn:mime-type");
+            }   
+            
         }
         ComboBoxModel comboModel = new DefaultComboBoxModel(new Vector(lstName));
         panel.comboName.setModel(comboModel);
