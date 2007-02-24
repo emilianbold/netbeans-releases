@@ -1,0 +1,14 @@
+Class Declaration
+ Modifiers
+ { VolatileAttributeTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+    { volatile, Modifier }
+   Type
+    { int, Primitive Type }
+   { a, Name }
+  { }, Class Body End }

@@ -1,0 +1,25 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Interfaces: Java-Code Reverse Engineering (UML Modeling)</title>
+</head>
+<body>
+<h2>Interfaces: Java-Code Reverse Engineering</h2>
+<p>Interfaces in the Java language provide some of the features of multiple inheritance without the drawbacks of full multiple inheritance. A class extends only a single superclass, but it can implement one or more interfaces. Interfaces themselves can extend other interfaces. </p>
+<p>An interface is not a definition of a class, but a definition of a set of methods that one or more classes will implement. An important issue of interfaces is that they declare only methods and constants. Variables cannot be defined in interfaces.</p>
+<p>The syntax of an interface is a subset of the syntax for a class. </p>
+<p>During reverse engineering: </p>
+<ul>
+<li>Each interface declaration generates a class component.</li>
+<li>Interfaces that inherit from other interfaces are linked to their super-interface's component using a generalization link.</li>
+<li>A class's implementation of an interface results in a generalization link between the class's component and the interface's component.</li>
+</ul>
+<hr>
+<a href="../credits.html">Legal Notices</a></small>
+</body>
+</html>

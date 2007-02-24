@@ -1,0 +1,9 @@
+Class Declaration
+ Modifiers
+  { public, Modifier }
+ { PublicClassTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  { }, Class Body End }

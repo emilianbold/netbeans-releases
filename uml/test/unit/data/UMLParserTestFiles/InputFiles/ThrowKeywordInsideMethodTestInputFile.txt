@@ -1,0 +1,27 @@
+Class Declaration
+ Modifiers
+ { ThrowKeywordInsideMethodTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+   Type
+    { void, Primitive Type }
+   { method, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    RaisedException
+     { throw, Keyword }
+     Exception
+      Object Creation
+       { new, Operator }
+       Identifier
+        { ArithmeticException, Identifier }
+       { (, Argument Start }
+       Expression List
+       { ), Argument End }
+    { }, Method Body End }
+  { }, Class Body End }

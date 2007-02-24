@@ -1,0 +1,7 @@
+Interface Declaration
+ Modifiers
+  { public, Modifier }
+ { PublicInterfaceTestFile, Name }
+ Generalization
+ { {, Class Body Start }
+ { }, Class Body End }

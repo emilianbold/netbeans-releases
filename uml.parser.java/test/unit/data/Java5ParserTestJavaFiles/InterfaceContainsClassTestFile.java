@@ -1,0 +1,4 @@
+interface InterfaceContainsClassTestFile{
+ class innerClass{
+}
+}

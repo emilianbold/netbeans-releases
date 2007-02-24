@@ -1,0 +1,15 @@
+Class Declaration
+ Modifiers
+ { PrivateNestedInterfaceTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Interface Declaration
+   Modifiers
+    { private, Modifier }
+   { PrivateNestedInterface, Name }
+   Generalization
+   { {, Class Body Start }
+   { }, Class Body End }
+  { }, Class Body End }

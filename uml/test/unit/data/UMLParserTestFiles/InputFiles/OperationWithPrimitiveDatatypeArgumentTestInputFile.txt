@@ -1,0 +1,23 @@
+Class Declaration
+ Modifiers
+ { OperationWithPrimitiveDatatypeArgumentTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+    { public, Modifier }
+   Type
+    { void, Primitive Type }
+   { op1, Name }
+   Parameters
+    Parameter
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { a, Name }
+   Method Body
+    { {, Method Body Start }
+    { }, Method Body End }
+  { }, Class Body End }

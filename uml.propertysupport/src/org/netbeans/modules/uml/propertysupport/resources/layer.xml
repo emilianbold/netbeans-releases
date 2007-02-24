@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+ <!--
+    <folder name="Actions">
+        <folder name="Build">
+            <file name="com-sun-tools-ide-uml-propertysupport-customizers-TestUseCaseSteps.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.customizers.TestUseCaseSteps"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Tools">
+            <attr name="Separator3.instance/com-sun-tools-ide-uml-propertysupport-customizers-TestUseCaseSteps.shadow" boolvalue="true"/>
+            <file name="com-sun-tools-ide-uml-propertysupport-customizers-TestUseCaseSteps.shadow">
+                <attr name="originalFile" stringvalue="Actions/Build/com-sun-tools-ide-uml-propertysupport-customizers-TestUseCaseSteps.instance"/>
+            </file>
+            <attr name="com-sun-tools-ide-uml-propertysupport-customizers-TestUseCaseSteps.shadow/org-netbeans-modules-autoupdate-catalog-ModuleCatalogAction.instance" boolvalue="true"/>
+        </folder>
+    </folder>
+    -->
+    <folder name="UI">
+        <folder name="Services">
+            <file name="org-netbeans-modules-uml-propertysupport-nodes-PreferenceNode.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.propertysupport.nodes.PreferenceNode.factory"/>
+            </file>
+        </folder> 
+    </folder>
+ 
+    <folder name="OptionsDialog">
+        <file name="UMLOptionsPanel.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.UMLOptionsPanel"/>
+        </file>
+        <attr boolvalue="true" name="UMLOptionsPanel.instance/Advanced.instance"/>
+    </folder>
+    
+</filesystem>

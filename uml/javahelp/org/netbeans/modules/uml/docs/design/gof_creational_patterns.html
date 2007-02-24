@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>GoF Creational Patterns (UML Modeling)</title>
+</head>
+<body>
+<h2>GoF Creational Patterns</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>GoF (Gang of Four) creational patterns abstract the instantiation process. These patterns help make a system independent of the objects that it creates. There are two types of creational patterns: class creational patterns and object creational patterns. Class creational patterns use inheritance to vary the class that is instantiated. Object creational patterns delegate instantiation. </p>
+<p>The table below describes each of the GoF creational patterns: </p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr valign="top">
+<th scope="col" align="left">Pattern Name</th>
+<th scope="col" align="left">Design Problem Handled</th>
+<th scope="col" align="left">Role</th>
+<th scope="col" align="left">Description</th>
+</tr>
+<tr valign="top">
+<td rowspan="5">Abstract Factory</td>
+<td rowspan="5">Defines an interface used to create objects in a generic manner, without having to specify concrete classes.</td>
+<td>AbstractFactory</td>
+<td>Defines a public interface used to create abstract product objects</td>
+</tr>
+<tr valign="top">
+<td>ConcreteFactory</td>
+<td>Defines the operations to create concrete product objects</td>
+</tr>
+<tr valign="top">
+<td>Abstract Product</td>
+<td>Defines a public interface for a type of product.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteProduct</td>
+<td>Declares a product object that will be instantiated by its related concrete factory. Defines the AbstractProduct interface.</td>
+</tr>
+<tr valign="top">
+<td>Client</td>
+<td>Manipulates the AbstractFactory and AbstractProduct objects.</td>
+</tr>
+<tr valign="top">
+<td rowspan="4">Builder</td>
+<td rowspan="4">The construction of a complex object is separated from its representation so that the same construction process can create different representations.</td>
+<td>Builder</td>
+<td>Defines the required operations for creating various parts of a Product object.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteBuilder</td>
+<td>Implements the operations declared in the Builder interface</td>
+</tr>
+<tr valign="top">
+<td>Director</td>
+<td>Builds a specific product via the interface exposed by the Builder object.</td>
+</tr>
+<tr valign="top">
+<td>Product</td>
+<td>The concrete type the Builder object creates.</td>
+</tr>
+<tr valign="top">
+<td rowspan="4">Factory Method </td>
+<td rowspan="4">Provide an interface for creating an object. Subclasses implementing the base Factory interface can decide what concrete object to create at runtime</td>
+<td>Product</td>
+<td>Defines the public interface that allows clients to create objects through.</td>
+</tr>
+<tr valign="top">
+<td>Concrete Product</td>
+<td>Implements the operations declared in the Product interface.</td>
+</tr>
+<tr valign="top">
+<td>Creator</td>
+<td>Defines the operations used to create objects that implement the Product interface.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteCreator</td>
+<td>Implements the operations declared in the Creator interface </td>
+</tr>
+<tr valign="top">
+<td rowspan="3">Prototype</td>
+<td rowspan="3">Provides an interface from which a client can have a particular object handle the specific details of cloning that same object, resulting in an exact duplicate.</td>
+<td>Prototype</td>
+<td>Provides a consistent method that can be used to clone the current object.</td>
+</tr>
+<tr valign="top">
+<td>ConcretePrototype</td>
+<td>Implements the operations declared in the Prototype interface.</td>
+</tr>
+<tr valign="top">
+<td>Client</td>
+<td>Manipulates the Prototype objects</td>
+</tr>
+<tr valign="top">
+<td>Singleton</td>
+<td>Guarantees that only one instance of a particular class type is ever instantiated, while at the same time providing global access for all interested clients to that instance.</td>
+<td>Singleton</td>
+<td>Defines a set of operations that allows clients access to a single instance of this type. </td>
+</tr>
+</table>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="gof_behavioral_patterns.html">GoF Behavioral Patterns</a></dd>
+<dd><a href="gof_structural_patterns.html">GoF Structural Patterns</a></dd>
+</dl>
+<hr>
+<a href="../credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Creating Packages (UML Modeling)</title>
+</head>
+<body>
+<h2>Creating Packages</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>You can create a new UML Modeling package in a project <a href="#workspace_tab">from the Projects window</a> or <a href="#diagram_window">from the Diagram editor</a>. </p>
+<p>While creating a package, if you want, you can also create a scoped diagram within the package. A package used in this way can help you organize your diagrams and other modeling elements visibly within the Projects window. Any type of UML diagram can be scoped to a package. Packages can be used at different levels: A diagram can contain a package, and a package can contained a scoped diagram. </p>
+<p><b><a name="workspace_tab"></a>To create a new package from the Projects window:</b></p>
+<ol>
+<li>In the Projects window, select and expand a project node to display its Model node.</li>
+<li>Right-click the Model node and choose Add &gt; Package.<br>
+The IDE opens the New - Create Package wizard.</li>
+<li>In the Name field, type a name for the new package.</li>
+<li>In the Namespace field, the default setting is the name of the project. You can choose any other namespace in the drop-down list for your new package's location.
+<p>If you do not want to create a scoped diagram, click OK now to finish creating the package.</p>
+<p><b>To continue and create a scoped diagram within the new package:</b></p>
+</li>
+<li>Select the Create Scoped Diagram checkbox.<br>
+The IDE enables the Diagram Name and Diagram Type fields. </li>
+<li>Name the new scoped diagram. </li>
+<li>Select the type of diagram.</li>
+<li>Click OK.<br>
+The IDE adds the new package to the Projects window under the Model node. If you created a scoped diagram for the package, the IDE now creates the diagram as well. Expand the new package node in the Projects window to display the new scoped diagram.
+<ul class="note">
+<li>When you go to the Diagram editor and open a package containing child objects (elements), nested links are automatically drawn between the package and its child objects.</li>
+</ul>
+</li>
+</ol>
+<p><b><a name="diagram_window"></a>To create a new package from the Diagram editor:</b></p>
+<ol>
+<li>In the Diagram editor, display the diagram to which you want to add a package. <br>
+The appropriate Modeling Palette window is displayed.</li>
+<li>In the Modeling Palette, click the Package icon <img src="../images/resources/toolbar_images/DTPackage.png" alt="Package icon">.</li>
+<li>In the Diagram editor background, click where you want the package element.<br>
+The IDE places a new package there.</li>
+<li>Click background locations in the Diagram editor until you have placed all the new packages you want.<br>
+The IDE places a new package wherever you click.</li>
+<li>To stop replicating package elements and return the cursor to pointer mode, right-click.</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="workingwith.html">Working With Packages</a></dd>
+</dl>
+<hr>
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

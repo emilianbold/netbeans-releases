@@ -1,0 +1,20 @@
+Class Declaration
+ Modifiers
+ { AssignValueWithinBlockTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+   Type
+    { int, Primitive Type }
+   { i, Name }
+  { {, Body Start }
+  Assignment Expression
+   { =, Operator }
+   Identifier
+    { i, Identifier }
+   { 10, Integer Constant }
+  { }, Body End }
+  { }, Class Body End }

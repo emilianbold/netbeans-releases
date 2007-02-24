@@ -1,0 +1,215 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>GoF Behavioral Patterns (UML Modeling)</title>
+</head>
+<body>
+<h2>GoF Behavioral Patterns</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>GoF (Gang of Four) behavioral patterns are concerned with the algorithms of objects and the assignment of responsibilities among objects. These patterns also address communication between these objects and represent the interconnection between the objects themselves. This interconnection can include inheritance and the performance of tasks. </p>
+<p>The table below describes each of the GoF behavioral patterns:</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr valign="top">
+<th scope="col" align="left">Pattern Name</th>
+<th scope="col" align="left">Design Problem Handled</th>
+<th scope="col" align="left">Role</th>
+<th scope="col" align="left">Description</th>
+</tr>
+<tr valign="top">
+<td rowspan="3">Chain of Responsibility</td>
+<td rowspan="3">By giving more than one object a chance to handle a request, you can avoid coupling the sender of that request to its receiver. The receiving objects are chained and the request is passed along that chain until an object handles it.</td>
+<td>Handler</td>
+<td>Defines an abstract interface used for specific requests</td>
+</tr>
+<tr valign="top">
+<td>ConcreteHandler</td>
+<td>Implements the operations declared in the Handler interface</td>
+</tr>
+<tr valign="top">
+<td>Client</td>
+<td>Initiates communication via a Concrete Handle </td>
+</tr>
+<tr valign="top">
+<td rowspan="5">Command Pattern</td>
+<td rowspan="5">You can parameterize clients with different requests by encapsulating a request as an object. You can also queue or log requests, and support undoable operations. </td>
+<td>Command</td>
+<td>Defines an abstract interface for operation execution.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteCommand</td>
+<td>Implements the operations declared in the Command interface.</td>
+</tr>
+<tr valign="top">
+<td>Client</td>
+<td>Creates a ConcreteCommand object</td>
+</tr>
+<tr valign="top">
+<td>Invoker</td>
+<td>Executes the interface defined on the Command derived object</td>
+</tr>
+<tr valign="top">
+<td>Receive</td>
+<td>Performs the concrete implementation for the requested operation</td>
+</tr>
+<tr valign="top">
+<td rowspan="3">Interpreter</td>
+<td rowspan="3">Defines a representation for a given language's grammar. An interpreter uses the representation to interpret sentences in the language. </td>
+<td>AbstractExpression</td>
+<td>Defines an abstract interpret operation that must be implemented by all nodes in the abstract syntax tree</td>
+</tr>
+<tr valign="top">
+<td>TerminalExpression</td>
+<td>Provides a concrete implementation of the interpret operation specifically associated with terminal symbols in the grammar.</td>
+</tr>
+<tr valign="top">
+<td>NonterminalExpression</td>
+<td>Provides a concrete implementation of the interpret operation specifically associated with nonterminal symbols in the grammar</td>
+</tr>
+<tr valign="top">
+<td rowspan="4">Iterator</td>
+<td rowspan="4">Provides a uniform mechanism for navigating disparate Elements in a collection without exposing specific implementation details of the Element being navigated.</td>
+<td>Iterator</td>
+<td>Defines an abstract interface used to navigate Elements.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteIterator</td>
+<td>Implements the operations declared in the Iterator interface</td>
+</tr>
+<tr valign="top">
+<td>Aggregate</td>
+<td>Defines an abstract interface used to create a ConcreteIterator object.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteAggregate</td>
+<td>Implements the operations declared in the Aggregate interface.</td>
+</tr>
+<tr valign="top">
+<td rowspan="4">Mediator</td>
+<td rowspan="4">Provides a uniform mechanism for navigating disparate Elements in a collection without exposing specific implementation details of the Element being navigated.</td>
+<td>Iterator</td>
+<td>Defines an abstract interface used to navigate Elements.</td>
+</tr>
+<tr valign="top">
+<td>Concrete Iterator</td>
+<td>Implements the operations declared in the Iterator interface</td>
+</tr>
+<tr valign="top">
+<td>Aggregate</td>
+<td>Defines an abstract interface used to create a ConcreteIterator object</td>
+</tr>
+<tr valign="top">
+<td>Concrete Aggregate</td>
+<td>Implements the operations declared in the Aggregate interface</td>
+</tr>
+<tr valign="top">
+<td rowspan="3">Memento</td>
+<td rowspan="3">An object's internal state can be captured and externalized so that the object can be restored to this state later. This is done without violating encapsulation. </td>
+<td>Memento</td>
+<td>An object that manages the state of the Originator at a given point in time.</td>
+</tr>
+<tr valign="top">
+<td>Originator</td>
+<td>Creates a Memento object providing it the necessary state information in the current context.</td>
+</tr>
+<tr valign="top">
+<td>Caretaker</td>
+<td>Aggregates Memento objects.</td>
+</tr>
+<tr valign="top">
+<td rowspan="4">Observer</td>
+<td rowspan="4">A one-to-many dependency is defined between objects. When one object changes state, all its dependents are automatically notified and updated. </td>
+<td>Subject</td>
+<td>Defines an abstract interface used to attach various Observers to this Subject.</td>
+</tr>
+<tr valign="top">
+<td>Observer</td>
+<td>Defines an abstract interface used when a Subject the Observer is observing is updating.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteSubject</td>
+<td>Implements the operations declared in the Subject interface.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteObserver</td>
+<td>Implements the operations declared in the Observer interface.</td>
+</tr>
+<tr valign="top">
+<td rowspan="3">State</td>
+<td rowspan="3">Provides a mechanism that allows an object to alter its behavior when internal state changes occur.</td>
+<td>Context</td>
+<td>Defines the interface used by clients to gain access to the Context's state.</td>
+</tr>
+<tr valign="top">
+<td>State</td>
+<td>Defines an abstract interface that must be implemented by ConcreteState. The interface is domain specific </td>
+</tr>
+<tr valign="top">
+<td>ConcreteState</td>
+<td>Implements the operations declared in the State interface</td>
+</tr>
+<tr valign="top">
+<td rowspan="3">Strategy</td>
+<td rowspan="3">A family of algorithms is defined, each one is encapsulated, and each one can be interchangeable. The algorithm can vary independently from clients that use it. </td>
+<td>Strategy</td>
+<td>Defines an abstract interface implemented by ConcreteStrategy objects</td>
+</tr>
+<tr valign="top">
+<td>ConcreteStrategy</td>
+<td>Implements the operations declared in the Strategy interface.</td>
+</tr>
+<tr valign="top">
+<td>Context</td>
+<td>Aggregates objects that implement the Strategy interface</td>
+</tr>
+<tr valign="top">
+<td rowspan="2">TemplateMethod</td>
+<td rowspan="2">The skeleton of an algorithm is defined in an operation, and some steps are deferred to subclasses. Without changing the algorithm's structure, subclasses can redefine certain steps of an algorithm. </td>
+<td>AbstractClass</td>
+<td>Defines the various operations that can be overridden by the ConcreteClass.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteClass</td>
+<td>Implements the specific operations defined in AbstractClass.</td>
+</tr>
+<tr valign="top">
+<td rowspan="5">Visitor</td>
+<td rowspan="5">Visitor represents an operation that is to be performed on the Elements of an object structure. You can define a new operation without changing the classes of the Elements on which it operates.</td>
+<td>Visitor</td>
+<td>Provides operations specific to concrete Elements that allow this visitor object to visit them.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteVisitor</td>
+<td>Implements the operations declared in the Visitor interface.</td>
+</tr>
+<tr valign="top">
+<td>Element</td>
+<td>Declares an Accept operation that allows Visitor objects to process the current Element.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteElement</td>
+<td>Implements the operations declared in the Element interface.</td>
+</tr>
+<tr valign="top">
+<td>ObjectStructure</td>
+<td>Manages the collaboration between ConcreteVisitor and ConcreteElement objects.</td>
+</tr>
+</table>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="gof_creational_patterns.html">GoF Creational Patterns</a></dd>
+<dd><a href="gof_structural_patterns.html">GoF Structural Patterns</a></dd>
+</dl>
+<hr>
+<a href="../credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

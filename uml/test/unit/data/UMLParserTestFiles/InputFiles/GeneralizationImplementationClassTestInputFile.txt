@@ -1,0 +1,12 @@
+Class Declaration
+ Modifiers
+ { GeneralizationImplementationClassTestFile, Name }
+ Generalization
+  Identifier
+   { ExtentTest, Identifier }
+ Realization
+  Identifier
+   { ImplementTest, Identifier }
+ Body
+  { {, Class Body Start }
+  { }, Class Body End }

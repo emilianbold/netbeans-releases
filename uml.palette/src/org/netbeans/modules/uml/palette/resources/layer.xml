@@ -1,0 +1,1783 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="UML">
+
+        <folder name="PaletteDefinition">
+            <file name="PaletteItemDefinition.xml">
+                <attr name="originalFile" urlvalue="nbresloc:resources/PaletteItemDefinition.xml"/>
+            </file>
+        </folder>
+
+
+        <folder name="Components">     
+            <!--  Class Diagram -->
+            <file name="CDClassPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>  
+                <attr name="element_id" stringvalue="1"/>               
+            </file>
+            <file name="CDInterfacePaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="2"/>
+            </file>                  
+            <file name="CDPackagePaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="3"/>
+            </file>             
+            <file name="CDCollabLifeLinePaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="4"/>
+            </file>   
+            <file name="CDBoundaryClassPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="5"/>
+            </file> 
+            <file name="CDControlClassPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="6"/>
+            </file>      
+            <file name="CDEntityClassPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="7"/>
+            </file>            
+            <file name="CDEnumerationPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="8"/>
+            </file> 
+            <file name="CDNodePaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="9"/>
+            </file>            
+            <file name="CDDataTypePaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="10"/>
+            </file> 
+            <file name="CDArtifactPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="11"/>
+            </file>  
+            <file name="CDAliasedTypePaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="12"/>
+            </file> 
+            <file name="CDUtilityClassPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="13"/>
+            </file>             
+            <file name="CDActorPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="14"/>
+            </file>              
+            
+                        
+            <file name="CDGeneralizationPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="15"/>
+            </file>            
+            <file name="CDDependencyPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="16"/>
+            </file>                         
+            <file name="CDRealizationPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="17"/>
+            </file>  
+            <file name="CDUsagePaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="18"/>
+            </file>  
+            <file name="CDPermissionPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="19"/>
+            </file>  
+            <file name="CDAbstractionPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="20"/>
+            </file>  
+            <file name="CDImplemenationPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="21"/>
+            </file>  
+            <file name="CDNestedLinkPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="22"/>
+            </file>                                                                          
+            
+            
+            <file name="CDTemplateClassPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="23"/>
+            </file>  
+            <file name="CDDerivationClassifierPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="24"/>
+            </file>  
+            <file name="CDDerivationEdgePaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="25"/>
+            </file>  
+            <file name="CDAssociationPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="26"/>
+            </file>  
+            <file name="CDCompositionPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="27"/>
+            </file>  
+            <file name="CDNavigableCompositionPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="28"/>
+            </file>  
+            <file name="CDAggregationPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="29"/>
+            </file>  
+            <file name="CDNavigableAggregationPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="30"/>
+            </file>  
+            <file name="CDNavigableAssociationPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="31"/>
+            </file>  
+            <file name="CDAssociationClassPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="32"/>
+            </file>
+                  
+            
+            <file name="CDDesignPatternPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="33"/>
+            </file>  
+            <file name="CDRolePaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="34"/>
+            </file>
+            <file name="CDInterfaceRolePaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="35"/>
+            </file>  
+            <file name="CDActorRolePaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="36"/>
+            </file>
+            <file name="CDClassRolePaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="37"/>
+            </file>  
+            <file name="CDUseCaseRolePaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="38"/>
+            </file>
+            <file name="CDRoleBindingPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="39"/>
+            </file>  
+            <file name="CDLinkCommentPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="40"/>
+            </file>
+            <file name="CDCommentPaletteElement.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="41"/>
+            </file>  
+                  
+            <!-- Activity Diagram -->
+            <file name="ADInvocationNodePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="101"/>
+            </file>
+            <file name="ADActivityEdgePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="102"/>
+            </file>  
+            <file name="ADDecisionNodePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="103"/>
+            </file>
+            <file name="ADForkNodePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="104"/>
+            </file>              
+            <file name="ADHorizontalForkNodePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="105"/>
+            </file>
+            <file name="ADComplexActivityPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="106"/>
+            </file>  
+            <file name="ADInitialNodePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="107"/>
+            </file>
+            <file name="ADActivityFinalNodePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="108"/>
+            </file>  
+            <file name="ADFlowFinalNodePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="109"/>
+            </file>
+            <file name="ADParameterUsagePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="110"/>
+            </file>  
+            <file name="ADDataStorePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="111"/>
+            </file>
+            <file name="ADSignalNodePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="112"/>
+            </file>                                                                
+            <file name="ADPartitionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="113"/>
+            </file>
+            <file name="ADDependencyPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="114"/>
+            </file>  
+            <file name="ADRealizePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="115"/>
+            </file>
+            <file name="ADUsagePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="116"/>
+            </file>     
+            <file name="ADPermissionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="117"/>
+            </file>
+            <file name="ADAbstractionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="118"/>
+            </file>   
+            <file name="ADLinkCommentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="120"/>
+            </file>
+            <file name="ADCommentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="119"/>
+            </file>                                    
+            <!-- Activity Diagram -->     
+            
+            <!-- Collaboration Diagram -->
+            <file name="CLBDCollaborationLifeLinePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="601"/>
+            </file>
+            <file name="CLBDActorPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="602"/>
+            </file>  
+            <file name="CLBDConnectorPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="603"/>
+            </file>
+            <file name="CLBDDependencyPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="604"/>
+            </file>  
+            <file name="CLBDRealizePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="605"/>
+            </file>
+            <file name="CLBDUsagePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="606"/>
+            </file>                                      
+            <file name="CLBDPermissionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="607"/>
+            </file>
+            <file name="CLBDAbstractionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="608"/>
+            </file>  
+            <file name="CLBDLinkCommentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="609"/>
+            </file>
+            <file name="CLBDCommentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="610"/>
+            </file>                                      
+            <!-- Collaboration Diagram -->
+                                                
+            <!-- Component Diagram -->
+            <file name="CMPDComponentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="501"/>
+            </file>
+            <file name="CMPDClassPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="502"/>
+            </file>  
+            <file name="CMPDInterfacePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="503"/>
+            </file>
+            <file name="CMPDPackagePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="504"/>
+            </file>   
+            <!-- 505 is below, this list is not ordered-->            
+            <file name="CMPDBoundaryPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="506"/>
+            </file>
+            <file name="CMPDControlPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="507"/>
+            </file>  
+            <file name="CMPDEntityPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="508"/>
+            </file>
+            <file name="CMPDEnumerationPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="509"/>
+            </file>   
+            <file name="CMPDNodePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="510"/>
+            </file>
+            <file name="CMPDDatatypePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="511"/>
+            </file>  
+            <file name="CMPDArtifactPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="512"/>
+            </file>
+            <file name="CMPDAliasedTypePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="544"/>
+            </file> 
+            <file name="CMPDUtilityPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="513"/>
+            </file>
+            <file name="CMPDActorPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="514"/>
+            </file>  
+            <file name="CMPDDeploymentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="505"/>
+            </file>
+            <file name="CMPDGeneralizationPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="515"/>
+            </file>   
+            <file name="CMPDDependencyPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="516"/>
+            </file>
+            <file name="CMPDRealizePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="517"/>
+            </file>  
+            <file name="CMPDUsagePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="518"/>
+            </file>
+            <file name="CMPDPermissionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="519"/>
+            </file>   
+            <file name="CMPDAbstractionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="520"/>
+            </file>
+            <file name="CMPDImplemenationPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="521"/>
+            </file>  
+            <file name="CMPDNestedLinkPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="522"/>
+            </file>
+            <file name="CMPDTemplatePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="523"/>
+            </file>   
+            <file name="CMPDDerivationClassifierPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="524"/>
+            </file>
+            <file name="CMPDDerivationEdgePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="525"/>
+            </file>  
+            <file name="CMPDDelegatePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="540"/>
+            </file>
+            <file name="CMPDAssemblyConnectorPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="541"/>
+            </file>   
+            <file name="CMPDAssociationPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="526"/>
+            </file>
+            <file name="CMPDCompositionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="527"/>
+            </file>  
+            <file name="CMPDNavigableCompositionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="528"/>
+            </file>
+            <file name="CMPDAggregationPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="529"/>
+            </file>   
+            <file name="CMPDNavigableAggregationPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="530"/>
+            </file>
+            <file name="CMPDNavigableAssociation.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="531"/>
+            </file>  
+            <file name="CMPDAssociationClassPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="532"/>
+            </file>
+            <file name="CMPDDesignPatternPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="533"/>
+            </file>   
+            <file name="CMPDRolePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="534"/>
+            </file>
+            <file name="CMPDInterfaceRolePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="535"/>
+            </file>  
+            <file name="CMPDActorRolePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="536"/>
+            </file>
+            <file name="CMPDClassRolePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="537"/>
+            </file>   
+            <file name="CMPDUseCaseRolePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="538"/>
+            </file>
+            <file name="CMPDRoleBindingPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="539"/>
+            </file>  
+            <file name="CMPDLinkCommentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="543"/>
+            </file>
+            <file name="CMPDCommentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="542"/>
+            </file>            
+            <!-- Component Diagram -->
+            
+            <!-- Deployment Diagram -->
+            <file name="DDComponentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="701"/>
+            </file>
+            <file name="DDInterfacePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="702"/>
+            </file>  
+            <file name="DDPackagePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="703"/>
+            </file>
+            <file name="DDArtifactPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="704"/>
+            </file>              
+            <file name="DDNodePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="705"/>
+            </file>
+            <file name="DDDeploymentSpecPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="706"/>
+            </file>  
+            <file name="DDGeneralizationPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="707"/>
+            </file>
+            <file name="DDImplementationPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="713"/>
+            </file>  
+            <file name="DDDependencyPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="708"/>
+            </file>
+            <file name="DDRealizePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="709"/>
+            </file>  
+            <file name="DDUsagePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="710"/>
+            </file>
+            <file name="DDPermissionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="711"/>
+            </file>  
+            <file name="DDAbstractionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="712"/>
+            </file>
+            <file name="DDAssociationPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="714"/>
+            </file>  
+            <file name="DDLinkCommentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="716"/>
+            </file>
+            <file name="DDCommentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="715"/>
+            </file>                                      
+            <!-- Deployment Diagram -->
+            
+            <!-- Sequence Diagram -->
+            <file name="SDClassPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="401"/>
+            </file>
+            <file name="SDActorPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="402"/>
+            </file> 
+            <file name="SDSynchronousMessage.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="403"/>
+            </file>
+            <file name="SDAsynchronousMessagePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="404"/>
+            </file> 
+            <file name="SDCreateMessagePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="405"/>
+            </file>
+            <file name="SDMesssageToSelfPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="406"/>
+            </file> 
+            <file name="SDDestroyLifelinePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="407"/>
+            </file>
+            <file name="SDCombinedFragmentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="408"/>
+            </file> 
+            <file name="SDLinkCommentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="410"/>
+            </file>
+            <file name="SDCommentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="409"/>
+            </file>                                                             
+            <!-- Sequence Diagram -->
+            
+            <!-- State Diagram -->
+            <file name="STDSimpleStatePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="801"/>
+            </file>
+            <file name="STDStateTransitionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="802"/>
+            </file> 
+            <file name="STDPseudoInitialPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="803"/>
+            </file>
+            <file name="STDFinalStatePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="804"/>
+            </file> 
+            <file name="STDFinalStateAbortedPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="805"/>
+            </file>
+            <file name="STDPseudoStateJoinPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="806"/>
+            </file> 
+            <file name="STDPsuedoStateJoinHorizontalPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="807"/>
+            </file>
+            <file name="STDCompositeStatePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="808"/>
+            </file> 
+            <file name="STDPseudoStateChoicePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="809"/>
+            </file>
+            <file name="STDPsuedoShallowHistoryPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="810"/>
+            </file> 
+            <file name="STDPseudoDeepHistoryPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="811"/>
+            </file>
+            <file name="STDPseudoEntryPointPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="812"/>
+            </file>                                                                         
+            <file name="STDPseudoJunctionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="813"/>
+            </file> 
+            <file name="STDSubMachinePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="814"/>
+            </file>                         
+            <file name="STDDependencyPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="815"/>
+            </file> 
+            <file name="STDRealizePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="816"/>
+            </file> 
+            <file name="STDUsagePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="817"/>
+            </file> 
+            <file name="STDPermissionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="818"/>
+            </file> 
+            <file name="STDAbstractionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="819"/>
+            </file> 
+            <file name="STDLinkCommentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="822"/>
+            </file> 
+            <file name="STDCommentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="821"/>
+            </file>                                        
+            <!-- State Diagram -->            
+            
+            <!-- Use Case Diagram -->
+            <file name="UCDUseCasePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="301"/>
+            </file> 
+            <file name="UCDPackagePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="302"/>
+            </file>             
+            <file name="UCDActorPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="303"/>
+            </file> 
+            <file name="UCDIncludePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="304"/>
+            </file> 
+            <file name="UCDExtendPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="305"/>
+            </file> 
+            <file name="UCDGeneralizePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="306"/>
+            </file> 
+            <file name="UCDDependencyPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="307"/>
+            </file> 
+            <file name="UCDRealizePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="308"/>
+            </file> 
+            <file name="UCDUsagePE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="309"/>
+            </file> 
+            <file name="UCDPermissionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="310"/>
+            </file> 
+            <file name="UCDAbstractionPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="311"/>
+            </file> 
+            <file name="UCDAssociationPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="312"/>
+            </file> 
+            <file name="UCDLinkCommentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="314"/>
+            </file> 
+            <file name="UCDCommentPE.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.palette.PaletteConfiguration"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.palette.PaletteConfiguration.getPaletteElement"/>
+                <attr name="element_id" stringvalue="313"/>
+            </file>                                                                         
+            <!-- Use Case Diagram -->
+        </folder>
+        
+        
+        <folder name="Palette">        
+            <folder name="ActivityDiagram">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                <folder name="Basic">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="ADInvocationNodePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADInvocationNodePE.instance"/>
+                    </file>   
+                    <attr name="ADInvocationNodePE.shadow/ADActivityEdgePE.shadow" boolvalue="true"/>
+                    <file name="ADActivityEdgePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADActivityEdgePE.instance"/>
+                    </file>            
+                    <attr name="ADActivityEdgePE.shadow/ADComplexActivityPE.shadow" boolvalue="true"/>
+                    <file name="ADComplexActivityPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADComplexActivityPE.instance"/>
+                    </file>    
+                    <attr name="ADComplexActivityPE.shadow/ADInitialNodePE.shadow" boolvalue="true"/>
+                    <file name="ADInitialNodePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADInitialNodePE.instance"/>
+                    </file> 
+                    <attr name="ADInitialNodePE.shadow/ADActivityFinalNodePE.shadow" boolvalue="true"/>
+                    <file name="ADActivityFinalNodePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADActivityFinalNodePE.instance"/>
+                    </file> 
+                    <attr name="ADActivityFinalNodePE.shadow/ADFlowFinalNodePE.shadow" boolvalue="true"/>
+                    <file name="ADFlowFinalNodePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADFlowFinalNodePE.instance"/>
+                    </file>                    
+                </folder>
+                <attr name="Basic/Control" boolvalue="true"/>   
+                <folder name="Control">        
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="ADDecisionNodePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADDecisionNodePE.instance"/>
+                    </file> 
+                    <attr name="ADDecisionNodePE.shadow/ADForkNodePE.shadow" boolvalue="true"/>
+                    <file name="ADForkNodePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADForkNodePE.instance"/>
+                    </file> 
+                    <attr name="ADForkNodePE.shadow/ADHorizontalForkNodePE.shadow" boolvalue="true"/>
+                    <file name="ADHorizontalForkNodePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADHorizontalForkNodePE.instance"/>
+                    </file>   
+                </folder>
+                <attr name="Control/Data" boolvalue="true"/>
+                <folder name="Data">    
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="ADParameterUsagePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADParameterUsagePE.instance"/>
+                    </file>            
+                    <attr name="ADParameterUsagePE.shadow/ADDataStorePE.shadow" boolvalue="true"/>
+                    <file name="ADDataStorePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADDataStorePE.instance"/>
+                    </file> 
+                    <attr name="ADDataStorePE.shadow/ADSignalNodePE.shadow" boolvalue="true"/>
+                    <file name="ADSignalNodePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADSignalNodePE.instance"/>
+                    </file> 
+                    <attr name="ADSignalNodePE.shadow/ADPartitionPE.shadow" boolvalue="true"/>
+                    <file name="ADPartitionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADPartitionPE.instance"/>
+                    </file> 
+                </folder> 
+                <attr name="Data/Dependencies" boolvalue="true"/>     
+                <folder name="Dependencies">    
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="ADDependencyPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADDependencyPE.instance"/>
+                    </file>            
+                    <attr name="ADDependencyPE.shadow/ADRealizePE.shadow" boolvalue="true"/>
+                    <file name="ADRealizePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADRealizePE.instance"/>
+                    </file> 
+                    <attr name="ADRealizePE.shadow/ADUsagePE.shadow" boolvalue="true"/>
+                    <file name="ADUsagePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADUsagePE.instance"/>
+                    </file> 
+                    <attr name="ADUsagePE.shadow/ADPermissionPE.shadow" boolvalue="true"/>
+                    <file name="ADPermissionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADPermissionPE.instance"/>
+                    </file>                                                                                                                       
+                    <attr name="ADPermissionPE.shadow/ADAbstractionPE.shadow" boolvalue="true"/>
+                    <file name="ADAbstractionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADAbstractionPE.instance"/>
+                    </file>
+                </folder>
+                <attr name="Dependencies/Comments" boolvalue="true"/>        
+                <folder name="Comments">    
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="ADCommentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADCommentPE.instance"/>
+                    </file>
+                    <attr name="ADCommentPE.shadow/ADLinkCommentPE.shadow" boolvalue="true"/>
+                    <file name="ADLinkCommentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/ADLinkCommentPE.instance"/>
+                    </file>                                     
+                </folder>
+            </folder>  
+                       
+ 
+            <folder name="ClassDiagram">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                <folder name="Basic">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>                    
+                    
+                    <file name="CDClassPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDClassPaletteElement.instance"/>                                               
+                    </file>
+                    <attr name="CDClassPaletteElement.shadow/CDInterfacePaletteElement.shadow" boolvalue="true"/>
+                    <file name="CDInterfacePaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDInterfacePaletteElement.instance"/>
+                    </file> 
+                    <attr name="CDInterfacePaletteElement.shadow/CDPackagePaletteElement.shadow" boolvalue="true"/>
+                    <file name="CDPackagePaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDPackagePaletteElement.instance"/>
+                    </file> 
+                    <attr name="CDPackagePaletteElement.shadow/CDCollabLifeLinePaletteElement.shadow" boolvalue="true"/>
+                    <file name="CDCollabLifeLinePaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDCollabLifeLinePaletteElement.instance"/>
+                    </file> 
+                    <attr name="CDCollabLifeLinePaletteElement.shadow/CDEnumerationPaletteElement.shadow" boolvalue="true"/>
+                    <file name="CDEnumerationPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDEnumerationPaletteElement.instance"/>
+                    </file>                                         
+                    <attr name="CDEnumerationPaletteElement.shadow/CDNodePaletteElement.shadow" boolvalue="true"/>                     
+                    <file name="CDNodePaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDNodePaletteElement.instance"/>
+                    </file> 
+                    <attr name="CDNodePaletteElement.shadow/CDDataTypePaletteElement.shadow" boolvalue="true"/>                     
+                    <file name="CDDataTypePaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDDataTypePaletteElement.instance"/>
+                    </file>                  
+                    <attr name="CDDataTypePaletteElement.shadow/CDArtifactPaletteElement.shadow" boolvalue="true"/>                     
+                    <file name="CDArtifactPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDArtifactPaletteElement.instance"/>
+                    </file> 
+                    <attr name="CDArtifactPaletteElement.shadow/CDAliasedTypePaletteElement.shadow" boolvalue="true"/>                     
+                    <file name="CDAliasedTypePaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDAliasedTypePaletteElement.instance"/>
+                    </file>                       
+                    <attr name="CDAliasedTypePaletteElement.shadow/CDUtilityClassPaletteElement.shadow" boolvalue="true"/>                     
+                    <file name="CDUtilityClassPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDUtilityClassPaletteElement.instance"/>
+                    </file>                                         
+                    <attr name="CDUtilityClassPaletteElement.shadow/CDActorPaletteElement.shadow" boolvalue="true"/>                     
+                    <file name="CDActorPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDActorPaletteElement.instance"/>
+                    </file>   
+                    <attr name="CDActorPaletteElement.shadow/CDGeneralizationPaletteElement.shadow" boolvalue="true"/>     
+                    <file name="CDGeneralizationPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDGeneralizationPaletteElement.instance"/>
+                    </file>   
+                    <attr name="CDGeneralizationPaletteElement.shadow/CDImplemenationPaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDImplemenationPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDImplemenationPaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDImplemenationPaletteElement.shadow/CDNestedLinkPaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDNestedLinkPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDNestedLinkPaletteElement.instance"/>
+                    </file>                                    
+                </folder>
+                <attr name="Basic/Robustness" boolvalue="true"/>                
+                <folder name="Robustness">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="CDBoundaryClassPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDBoundaryClassPaletteElement.instance"/>
+                    </file> 
+                    <attr name="CDBoundaryClassPaletteElement.shadow/CDControlClassPaletteElement.shadow" boolvalue="true"/>
+                    <file name="CDControlClassPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDControlClassPaletteElement.instance"/>
+                    </file>                     
+                    <attr name="CDControlClassPaletteElement.shadow/CDEntityClassPaletteElement.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="CDEntityClassPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDEntityClassPaletteElement.instance"/>
+                    </file>                    
+                </folder>
+                <attr name="Robustness/Dependencies" boolvalue="true"/>
+                <folder name="Dependencies">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="CDDependencyPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDDependencyPaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDDependencyPaletteElement.shadow/CDRealizationPaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDRealizationPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDRealizationPaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDRealizationPaletteElement.shadow/CDUsagePaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDUsagePaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDUsagePaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDUsagePaletteElement.shadow/CDPermissionPaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDPermissionPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDPermissionPaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDPermissionPaletteElement.shadow/CDAbstractionPaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDAbstractionPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDAbstractionPaletteElement.instance"/>
+                    </file>                    
+                </folder>                                
+                <attr name="Dependencies/Templates" boolvalue="true"/>                
+                <folder name="Templates">                
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="CDTemplateClassPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDTemplateClassPaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDTemplateClassPaletteElement.shadow/CDDerivationClassifierPaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDDerivationClassifierPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDDerivationClassifierPaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDDerivationClassifierPaletteElement.shadow/CDDerivationEdgePaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDDerivationEdgePaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDDerivationEdgePaletteElement.instance"/>
+                    </file>                 
+                </folder>
+                <attr name="Templates/Association" boolvalue="true"/>
+                <folder name="Association">                
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="CDAssociationPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDAssociationPaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDAssociationPaletteElement.shadow/CDCompositionPaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDCompositionPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDCompositionPaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDCompositionPaletteElement.shadow/CDNavigableCompositionPaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDNavigableCompositionPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDNavigableCompositionPaletteElement.instance"/>
+                    </file>      
+                    <attr name="CDNavigableCompositionPaletteElement.shadow/CDAggregationPaletteElement.shadow" boolvalue="true"/>      
+                    <file name="CDAggregationPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDAggregationPaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDAggregationPaletteElement.shadow/CDNavigableAggregationPaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDNavigableAggregationPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDNavigableAggregationPaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDNavigableAggregationPaletteElement.shadow/CDNavigableAssociationPaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDNavigableAssociationPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDNavigableAssociationPaletteElement.instance"/>
+                    </file>                           
+                    <attr name="CDNavigableAssociationPaletteElement.shadow/CDAssociationClassPaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDAssociationClassPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDAssociationClassPaletteElement.instance"/>
+                    </file>                     
+                </folder>                
+                <attr name="Association/DesignPattern" boolvalue="true"/>
+                <folder name="DesignPattern">                
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="CDDesignPatternPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDDesignPatternPaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDDesignPatternPaletteElement.shadow/CDRolePaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDRolePaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDRolePaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDRolePaletteElement.shadow/CDInterfaceRolePaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDInterfaceRolePaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDInterfaceRolePaletteElement.instance"/>
+                    </file>      
+                    <attr name="CDInterfaceRolePaletteElement.shadow/CDActorRolePaletteElement.shadow" boolvalue="true"/>      
+                    <file name="CDActorRolePaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDActorRolePaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDActorRolePaletteElement.shadow/CDClassRolePaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDClassRolePaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDClassRolePaletteElement.instance"/>
+                    </file>                    
+                    <attr name="CDClassRolePaletteElement.shadow/CDUseCaseRolePaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDUseCaseRolePaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDUseCaseRolePaletteElement.instance"/>
+                    </file>                           
+                    <attr name="CDUseCaseRolePaletteElement.shadow/CDRoleBindingPaletteElement.shadow" boolvalue="true"/>  
+                    <file name="CDRoleBindingPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDRoleBindingPaletteElement.instance"/>
+                    </file>                     
+                </folder>  
+                <attr name="DesignPattern/Comments" boolvalue="true"/>
+                <folder name="Comments">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="CDCommentPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDCommentPaletteElement.instance"/>
+                    </file>                     
+                    <attr name="CDCommentPaletteElement.shadow/CDLinkCommentPaletteElement.shadow" boolvalue="true"/>                      
+                    <file name="CDLinkCommentPaletteElement.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CDLinkCommentPaletteElement.instance"/>
+                    </file> 
+                </folder>                
+            </folder>
+            
+            
+            <folder name="CollaborationDiagram">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                <folder name="Basic">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>                                        
+                    <file name="CLBDCollaborationLifeLinePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CLBDCollaborationLifeLinePE.instance"/>                                               
+                    </file>
+                    <attr name="CLBDCollaborationLifeLinePE.shadow/CLBDActorPE.shadow" boolvalue="true"/>
+                    <file name="CLBDActorPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CLBDActorPE.instance"/>
+                    </file> 
+                    <attr name="CLBDActorPE.shadow/CLBDConnectorPE.shadow" boolvalue="true"/>
+                    <file name="CLBDConnectorPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CLBDConnectorPE.instance"/>
+                    </file>                     
+                </folder>
+                <attr name="Basic/Dependencies" boolvalue="true"/>
+                <folder name="Dependencies">    
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="CLBDDependencyPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CLBDDependencyPE.instance"/>
+                    </file> 
+                    <attr name="CLBDDependencyPE.shadow/CLBDRealizePE.shadow" boolvalue="true"/>
+                    <file name="CLBDRealizePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CLBDRealizePE.instance"/>
+                    </file> 
+                    <attr name="CLBDRealizePE.shadow/CLBDUsagePE.shadow" boolvalue="true"/>
+                    <file name="CLBDUsagePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CLBDUsagePE.instance"/>
+                    </file> 
+                    <attr name="CLBDUsagePE.shadow/CLBDPermissionPE.shadow" boolvalue="true"/>
+                    <file name="CLBDPermissionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CLBDPermissionPE.instance"/>
+                    </file>                     
+                    <attr name="CLBDPermissionPE.shadow/CLBDAbstractionPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="CLBDAbstractionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CLBDAbstractionPE.instance"/>
+                    </file> 
+                </folder>
+                <attr name="Dependencies/Comments" boolvalue="true"/>
+                <folder name="Comments">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="CLBDCommentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CLBDCommentPE.instance"/>
+                    </file>                     
+                    <attr name="CLBDCommentPE.shadow/CLBDLinkCommentPE.shadow" boolvalue="true"/> 
+                    <file name="CLBDLinkCommentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CLBDLinkCommentPE.instance"/>  
+                    </file>   
+                </folder>
+            </folder>
+            
+            
+            <folder name="ComponentDiagram">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                <folder name="Basic">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>                                        
+                    <file name="CMPDComponentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDComponentPE.instance"/>                                               
+                    </file>
+                    <attr name="CMPDComponentPE.shadow/CMPDClassPE.shadow" boolvalue="true"/>
+                    <file name="CMPDClassPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDClassPE.instance"/>
+                    </file> 
+                    <attr name="CMPDClassPE.shadow/CMPDInterfacePE.shadow" boolvalue="true"/>
+                    <file name="CMPDInterfacePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDInterfacePE.instance"/>
+                    </file> 
+                    <attr name="CMPDInterfacePE.shadow/CMPDPackagePE.shadow" boolvalue="true"/>
+                    <file name="CMPDPackagePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDPackagePE.instance"/>
+                    </file> 
+                    <attr name="CMPDPackagePE.shadow/CMPDArtifactPE.shadow" boolvalue="true"/>
+
+                    <!-- Praveen: Boundary, Entity, Control, Enumeration, node, datatype, aliased, utility, actor and deployment descriptor have been removed.
+                    Trey and I discussed this. -->
+                    <!-- <file name="CMPDBoundaryPE.shadow">
+                    <attr name="originalFile" stringvalue="UML/Components/CMPDBoundaryPE.instance"/>
+                    </file> 
+                    <attr name="CMPDBoundaryPE.shadow/CMPDControlPE.shadow" boolvalue="true"/>
+                    <file name="CMPDControlPE.shadow">
+                    <attr name="originalFile" stringvalue="UML/Components/CMPDControlPE.instance"/>
+                    </file> 
+                    <attr name="CMPDControlPE.shadow/CMPDEntityPE.shadow" boolvalue="true"/>
+                    <file name="CMPDEntityPE.shadow">
+                    <attr name="originalFile" stringvalue="UML/Components/CMPDEntityPE.instance"/>
+                    </file> 
+                    <attr name="CMPDEntityPE.shadow/CMPDEnumerationPE.shadow" boolvalue="true"/>
+                    <file name="CMPDEnumerationPE.shadow">
+                    <attr name="originalFile" stringvalue="UML/Components/CMPDEnumerationPE.instance"/>
+                    </file> 
+                    <attr name="CMPDEnumerationPE.shadow/CMPDNodePE.shadow" boolvalue="true"/>
+                    <file name="CMPDNodePE.shadow">
+                    <attr name="originalFile" stringvalue="UML/Components/CMPDNodePE.instance"/>
+                    </file> 
+                    <attr name="CMPDNodePE.shadow/CMPDDatatypePE.shadow" boolvalue="true"/>
+                    <file name="CMPDDatatypePE.shadow">
+                    <attr name="originalFile" stringvalue="UML/Components/CMPDDatatypePE.instance"/>
+                    </file> 
+                    <attr name="CMPDDatatypePE.shadow/CMPDArtifactPE.shadow" boolvalue="true"/>
+                    -->
+                    <file name="CMPDArtifactPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDArtifactPE.instance"/>
+                    </file> 
+                    <attr name="CMPDArtifactPE.shadow/CMPDGeneralizationPE.shadow" boolvalue="true"/>
+                    <!-- <file name="CMPDAliasedTypePE.shadow">
+                    <attr name="originalFile" stringvalue="UML/Components/CMPDAliasedTypePE.instance"/>
+                    </file> 
+                    <attr name="CMPDAliasedTypePE.shadow/CMPDUtilityPE.shadow" boolvalue="true"/>
+                    <file name="CMPDUtilityPE.shadow">
+                    <attr name="originalFile" stringvalue="UML/Components/CMPDUtilityPE.instance"/>
+                    </file> 
+                    <attr name="CMPDUtilityPE.shadow/CMPDActorPE.shadow" boolvalue="true"/>
+                    <file name="CMPDActorPE.shadow">
+                    <attr name="originalFile" stringvalue="UML/Components/CMPDActorPE.instance"/>
+                    </file> 
+                    <attr name="CMPDActorPE.shadow/CMPDDeploymentPE.shadow" boolvalue="true"/>
+                    <file name="CMPDDeploymentPE.shadow">
+                    <attr name="originalFile" stringvalue="UML/Components/CMPDDeploymentPE.instance"/>
+                    </file> 
+                    -->               
+                    <file name="CMPDGeneralizationPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDGeneralizationPE.instance"/>
+                    </file> 
+                    <attr name="CMPDGeneralizationPE.shadow/CMPDImplemenationPE.shadow" boolvalue="true"/>
+                    <file name="CMPDImplemenationPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDImplemenationPE.instance"/>
+                    </file>                     
+                    <attr name="CMPDImplemenationPE.shadow/CMPDNestedLinkPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="CMPDNestedLinkPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDNestedLinkPE.instance"/>
+                    </file>                     
+                    <attr name="CMPDNestedLinkPE.shadow/CMPDDelegatePE.shadow" boolvalue="true"/>
+                    <file name="CMPDDelegatePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDDelegatePE.instance"/>
+                    </file> 
+                    <attr name="CMPDDelegatePE.shadow/CMPDAssemblyConnectorPE.shadow" boolvalue="true"/>
+                    <file name="CMPDAssemblyConnectorPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDAssemblyConnectorPE.instance"/>
+                    </file>                                                                                                                                                      
+                </folder>
+                <attr name="Basic/Dependencies" boolvalue="true"/>
+                <folder name="Dependencies">    
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="CMPDDependencyPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDDependencyPE.instance"/>
+                    </file> 
+                    <attr name="CMPDDependencyPE.shadow/CMPDRealizePE.shadow" boolvalue="true"/>
+                    <file name="CMPDRealizePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDRealizePE.instance"/>
+                    </file> 
+                    <attr name="CMPDRealizePE.shadow/CMPDUsagePE.shadow" boolvalue="true"/>
+                    <file name="CMPDUsagePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDUsagePE.instance"/>
+                    </file>                     
+                    <attr name="CMPDUsagePE.shadow/CMPDPermissionPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="CMPDPermissionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDPermissionPE.instance"/>
+                    </file> 
+                    <attr name="CMPDPermissionPE.shadow/CMPDAbstractionPE.shadow" boolvalue="true"/>
+                    <file name="CMPDAbstractionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDAbstractionPE.instance"/>
+                    </file> 
+                </folder>
+                <attr name="Dependencies/Templates" boolvalue="true"/>
+                <folder name="Templates">    
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="CMPDTemplatePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDTemplatePE.instance"/>
+                    </file> 
+                    <attr name="CMPDTemplatePE.shadow/CMPDDerivationClassifierPE.shadow" boolvalue="true"/>
+                    <file name="CMPDDerivationClassifierPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDDerivationClassifierPE.instance"/>
+                    </file> 
+                    <attr name="CMPDDerivationClassifierPE.shadow/CMPDDerivationEdgePE.shadow" boolvalue="true"/>
+                    <file name="CMPDDerivationEdgePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDDerivationEdgePE.instance"/>
+                    </file>                
+                </folder>                
+                <attr name="Templates/Association" boolvalue="true"/>
+                <folder name="Association">    
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="CMPDAssociationPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDAssociationPE.instance"/>
+                    </file> 
+                    <attr name="CMPDAssociationPE.shadow/CMPDCompositionPE.shadow" boolvalue="true"/>
+                    <file name="CMPDCompositionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDCompositionPE.instance"/>
+                    </file> 
+                    <attr name="CMPDCompositionPE.shadow/CMPDNavigableCompositionPE.shadow" boolvalue="true"/>
+                    <file name="CMPDNavigableCompositionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDNavigableCompositionPE.instance"/>
+                    </file>    
+                    <attr name="CMPDNavigableCompositionPE.shadow/CMPDAggregationPE.shadow" boolvalue="true"/>
+                    <file name="CMPDAggregationPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDAggregationPE.instance"/>
+                    </file> 
+                    <attr name="CMPDAggregationPE.shadow/CMPDNavigableAggregationPE.shadow" boolvalue="true"/>
+                    <file name="CMPDNavigableAggregationPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDNavigableAggregationPE.instance"/>
+                    </file>         
+                    <attr name="CMPDNavigableAggregationPE.shadow/CMPDNavigableAssociation.shadow" boolvalue="true"/>
+                    <file name="CMPDNavigableAssociation.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDNavigableAssociation.instance"/>
+                    </file>                                                 
+                    <attr name="CMPDNavigableAssociation.shadow/CMPDAssociationClassPE.shadow" boolvalue="true"/>
+                    <file name="CMPDAssociationClassPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDAssociationClassPE.instance"/>
+                    </file>                      
+                </folder>    
+                <attr name="Association/DesignPattern" boolvalue="true"/>
+                <folder name="DesignPattern">    
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="CMPDDesignPatternPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDDesignPatternPE.instance"/>
+                    </file> 
+                    <attr name="CMPDDesignPatternPE.shadow/CMPDRolePE.shadow" boolvalue="true"/>
+                    <file name="CMPDRolePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDRolePE.instance"/>
+                    </file> 
+                    <attr name="CMPDRolePE.shadow/CMPDInterfaceRolePE.shadow" boolvalue="true"/>
+                    <file name="CMPDInterfaceRolePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDInterfaceRolePE.instance"/>
+                    </file>    
+                    <attr name="CMPDInterfaceRolePE.shadow/CMPDActorRolePE.shadow" boolvalue="true"/>
+                    <file name="CMPDActorRolePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDActorRolePE.instance"/>
+                    </file> 
+                    <attr name="CMPDActorRolePE.shadow/CMPDClassRolePE.shadow" boolvalue="true"/>
+                    <file name="CMPDClassRolePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDClassRolePE.instance"/>
+                    </file>         
+                    <attr name="CMPDClassRolePE.shadow/CMPDUseCaseRolePE.shadow" boolvalue="true"/>
+                    <file name="CMPDUseCaseRolePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDUseCaseRolePE.instance"/>
+                    </file>                                                 
+                    <attr name="CMPDUseCaseRolePE.shadow/CMPDRoleBindingPE.shadow" boolvalue="true"/>
+                    <file name="CMPDRoleBindingPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDRoleBindingPE.instance"/>
+                    </file>                      
+                </folder>          
+                <attr name="DesignPattern/Comments" boolvalue="true"/>
+                <folder name="Comments">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="CMPDCommentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDCommentPE.instance"/>
+                    </file>                       
+                    <attr name="CMPDCommentPE.shadow/CMPDLinkCommentPE.shadow" boolvalue="true"/>                     
+                    <file name="CMPDLinkCommentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/CMPDLinkCommentPE.instance"/>  
+                    </file>   
+                </folder>                                
+            </folder>
+            
+            
+            <folder name="DeploymentDiagram">
+                <folder name="Basic">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="DDComponentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDComponentPE.instance"/>  
+                    </file>   
+                    <attr name="DDComponentPE.shadow/DDInterfacePE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="DDInterfacePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDInterfacePE.instance"/>
+                    </file>                         
+                    <attr name="DDInterfacePE.shadow/DDPackagePE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="DDPackagePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDPackagePE.instance"/>
+                    </file> 
+                    <attr name="DDPackagePE.shadow/DDArtifactPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="DDArtifactPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDArtifactPE.instance"/>
+                    </file> 
+                    <attr name="DDArtifactPE.shadow/DDNodePE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="DDNodePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDNodePE.instance"/>
+                    </file> 
+                    <attr name="DDNodePE.shadow/DDDeploymentSpecPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="DDDeploymentSpecPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDDeploymentSpecPE.instance"/>
+                    </file>              
+                    <attr name="DDDeploymentSpecPE.shadow/DDGeneralizationPE.shadow" boolvalue="true"/>                    
+                    <file name="DDGeneralizationPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDGeneralizationPE.instance"/>  
+                    </file>   
+                    <attr name="DDGeneralizationPE.shadow/DDImplementationPE.shadow" boolvalue="true"/>                                                                                         
+                    <file name="DDImplementationPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDImplementationPE.instance"/>
+                    </file>                         
+                    <attr name="DDImplementationPE.shadow/DDAssociationPE.shadow" boolvalue="true"/>  
+                    <file name="DDAssociationPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDAssociationPE.instance"/>
+                    </file>                       
+                </folder>   
+                <attr name="Basic/Dependencies" boolvalue="true"/>
+                <folder name="Dependencies">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="DDDependencyPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDDependencyPE.instance"/>
+                    </file>  
+                    <attr name="DDDependencyPE.shadow/DDRealizePE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="DDRealizePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDRealizePE.instance"/>
+                    </file>  
+                    <attr name="DDRealizePE.shadow/DDUsagePE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="DDUsagePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDUsagePE.instance"/>
+                    </file>  
+                    <attr name="DDUsagePE.shadow/DDPermissionPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="DDPermissionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDPermissionPE.instance"/>
+                    </file>  
+                    <attr name="DDPermissionPE.shadow/DDAbstractionPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="DDAbstractionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDAbstractionPE.instance"/>
+                    </file>  
+                </folder>   
+                <attr name="Dependencies/Comments" boolvalue="true"/>
+                <folder name="Comments">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="DDCommentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDCommentPE.instance"/>
+                    </file>                     
+                    <attr name="DDCommentPE.shadow/DDLinkCommentPE.shadow" boolvalue="true"/>                    
+                    <file name="DDLinkCommentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/DDLinkCommentPE.instance"/>  
+                    </file>   
+                </folder>                                               
+            </folder>
+            
+            
+            <folder name="SequenceDiagram">
+                <folder name="Basic">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="SDClassPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/SDClassPE.instance"/>  
+                    </file>   
+                    <attr name="SDClassPE.shadow/SDActorPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="SDActorPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/SDActorPE.instance"/>
+                    </file>                         
+                    <attr name="SDActorPE.shadow/SDSynchronousMessage.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="SDSynchronousMessage.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/SDSynchronousMessage.instance"/>
+                    </file> 
+                    <attr name="SDSynchronousMessage.shadow/SDAsynchronousMessagePE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="SDAsynchronousMessagePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/SDAsynchronousMessagePE.instance"/>
+                    </file> 
+                    <attr name="SDAsynchronousMessagePE.shadow/SDCreateMessagePE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="SDCreateMessagePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/SDCreateMessagePE.instance"/>
+                    </file> 
+                    <attr name="SDCreateMessagePE.shadow/SDMesssageToSelfPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="SDMesssageToSelfPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/SDMesssageToSelfPE.instance"/>
+                    </file>                                                                                 
+                </folder>   
+                <attr name="Basic/Control" boolvalue="true"/>
+                <folder name="Control">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="SDDestroyLifelinePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/SDDestroyLifelinePE.instance"/>  
+                    </file>   
+                    <attr name="SDDestroyLifelinePE.shadow/SDCombinedFragmentPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="SDCombinedFragmentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/SDCombinedFragmentPE.instance"/>
+                    </file>                         
+                </folder>   
+                <attr name="Control/Comments" boolvalue="true"/>
+                <folder name="Comments">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="SDCommentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/SDCommentPE.instance"/>
+                    </file>                      
+                    <attr name="SDCommentPE.shadow/SDLinkCommentPE.shadow" boolvalue="true"/>                    
+                    <file name="SDLinkCommentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/SDLinkCommentPE.instance"/>  
+                    </file>   
+                </folder>                                                           
+            </folder>                                    
+
+            
+            <folder name="StateDiagram">
+                <folder name="Basic">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="STDSimpleStatePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDSimpleStatePE.instance"/>  
+                    </file>   
+                    <attr name="STDSimpleStatePE.shadow/STDStateTransitionPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="STDStateTransitionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDStateTransitionPE.instance"/>
+                    </file>                         
+                    <attr name="STDStateTransitionPE.shadow/STDPseudoInitialPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="STDPseudoInitialPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDPseudoInitialPE.instance"/>
+                    </file> 
+                    <attr name="STDPseudoInitialPE.shadow/STDFinalStatePE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="STDFinalStatePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDFinalStatePE.instance"/>
+                    </file> 
+                    <attr name="STDFinalStatePE.shadow/STDFinalStateAbortedPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="STDFinalStateAbortedPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDFinalStateAbortedPE.instance"/>
+                    </file> 
+                    <attr name="STDFinalStateAbortedPE.shadow/STDPseudoStateJoinPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="STDPseudoStateJoinPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDPseudoStateJoinPE.instance"/>
+                    </file> 
+                    <attr name="STDPseudoStateJoinPE.shadow/STDPsuedoStateJoinHorizontalPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="STDPsuedoStateJoinHorizontalPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDPsuedoStateJoinHorizontalPE.instance"/>
+                    </file> 
+                    <attr name="STDPsuedoStateJoinHorizontalPE.shadow/STDCompositeStatePE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="STDCompositeStatePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDCompositeStatePE.instance"/>
+                    </file> 
+                    <attr name="STDCompositeStatePE.shadow/STDPseudoStateChoicePE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="STDPseudoStateChoicePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDPseudoStateChoicePE.instance"/>
+                    </file> 
+                    <attr name="STDPseudoStateChoicePE.shadow/STDPsuedoShallowHistoryPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="STDPsuedoShallowHistoryPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDPsuedoShallowHistoryPE.instance"/>
+                    </file> 
+                    <attr name="STDPsuedoShallowHistoryPE.shadow/STDPseudoDeepHistoryPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="STDPseudoDeepHistoryPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDPseudoDeepHistoryPE.instance"/>
+                    </file> 
+                    <attr name="STDPseudoDeepHistoryPE.shadow/STDPseudoEntryPointPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="STDPseudoEntryPointPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDPseudoEntryPointPE.instance"/>
+                    </file> 
+                    <attr name="STDPseudoEntryPointPE.shadow/STDPseudoJunctionPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="STDPseudoJunctionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDPseudoJunctionPE.instance"/>
+                    </file> 
+                    <attr name="STDPseudoJunctionPE.shadow/STDSubMachinePE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="STDSubMachinePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDSubMachinePE.instance"/>
+                    </file>                                                                                                                                                                                                                                                 
+                </folder>   
+                <attr name="Basic/Dependencies" boolvalue="true"/>
+                <folder name="Dependencies">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="STDDependencyPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDDependencyPE.instance"/>  
+                    </file>   
+                    <attr name="STDDependencyPE.shadow/STDRealizePE.shadow" boolvalue="true"/>
+                    <file name="STDRealizePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDRealizePE.instance"/>
+                    </file>                         
+                    <attr name="STDRealizePE.shadow/STDUsagePE.shadow" boolvalue="true"/>
+                    <file name="STDUsagePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDUsagePE.instance"/>
+                    </file> 
+                    <attr name="STDUsagePE.shadow/STDPermissionPE.shadow" boolvalue="true"/>
+                    <file name="STDPermissionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDPermissionPE.instance"/>
+                    </file> 
+                    <attr name="STDPermissionPE.shadow/STDAbstractionPE.shadow" boolvalue="true"/>
+                    <file name="STDAbstractionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDAbstractionPE.instance"/>
+                    </file>                                                             
+                </folder>            
+                <attr name="Dependencies/Comments" boolvalue="true"/>
+                <folder name="Comments">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="STDCommentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDCommentPE.instance"/>
+                    </file>                      
+                    <attr name="STDCommentPE.shadow/STDLinkCommentPE.shadow" boolvalue="true"/>                    
+                    <file name="STDLinkCommentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/STDLinkCommentPE.instance"/>  
+                    </file>   
+                </folder> 
+            </folder>
+            
+            
+            <folder name="UsecaseDiagram">
+                <folder name="Basic">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="UCDUseCasePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/UCDUseCasePE.instance"/>  
+                    </file>   
+                    <attr name="UCDUseCasePE.shadow/UCDPackagePE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="UCDPackagePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/UCDPackagePE.instance"/>
+                    </file>                         
+                    <attr name="UCDPackagePE.shadow/UCDActorPE.shadow" boolvalue="true"/>                                                                                                    
+                    <file name="UCDActorPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/UCDActorPE.instance"/>
+                    </file> 
+                    <attr name="UCDActorPE.shadow/UCDIncludePE.shadow" boolvalue="true"/>
+                    <file name="UCDIncludePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/UCDIncludePE.instance"/>  
+                    </file>   
+                    <attr name="UCDIncludePE.shadow/UCDExtendPE.shadow" boolvalue="true"/>
+                    <file name="UCDExtendPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/UCDExtendPE.instance"/>
+                    </file>                         
+                    <attr name="UCDExtendPE.shadow/UCDGeneralizePE.shadow" boolvalue="true"/>
+                    <file name="UCDGeneralizePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/UCDGeneralizePE.instance"/>
+                    </file> 
+                    <attr name="UCDGeneralizePE.shadow/UCDAssociationPE.shadow" boolvalue="true"/>
+                    <file name="UCDAssociationPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/UCDAssociationPE.instance"/>
+                    </file>                      
+                </folder>   
+                <attr name="Basic/Dependencies" boolvalue="true"/>
+                <folder name="Dependencies">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="UCDDependencyPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/UCDDependencyPE.instance"/>
+                    </file> 
+                    <attr name="UCDDependencyPE.shadow/UCDRealizePE.shadow" boolvalue="true"/>
+                    <file name="UCDRealizePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/UCDRealizePE.instance"/>
+                    </file>                                                             
+                    <attr name="UCDRealizePE.shadow/UCDUsagePE.shadow" boolvalue="true"/>
+                    <file name="UCDUsagePE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/UCDUsagePE.instance"/>
+                    </file> 
+                    <attr name="UCDUsagePE.shadow/UCDPermissionPE.shadow" boolvalue="true"/>
+                    <file name="UCDPermissionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/UCDPermissionPE.instance"/>
+                    </file>  
+                    <attr name="UCDPermissionPE.shadow/UCDAbstractionPE.shadow" boolvalue="true"/>
+                    <file name="UCDAbstractionPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/UCDAbstractionPE.instance"/>
+                    </file> 
+                </folder>            
+                <attr name="Dependencies/Comments" boolvalue="true"/>
+                <folder name="Comments">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <file name="UCDCommentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/UCDCommentPE.instance"/>
+                    </file>                       
+                    <attr name="UCDCommentPE.shadow/UCDLinkCommentPE.shadow" boolvalue="true"/>                    
+                    <file name="UCDLinkCommentPE.shadow">
+                        <attr name="originalFile" stringvalue="UML/Components/UCDLinkCommentPE.instance"/>  
+                    </file> 
+                </folder>             
+            </folder>                                    
+        </folder>
+    </folder>  
+    
+</filesystem>

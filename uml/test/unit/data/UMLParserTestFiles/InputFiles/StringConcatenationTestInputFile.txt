@@ -1,0 +1,40 @@
+Class Declaration
+ Modifiers
+ { StringConcatenationTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+   Type
+    Identifier
+     { String, Identifier }
+   { str1, Name }
+   Initializer
+    { "Hello", String Constant }
+  Variable Definition
+   Modifiers
+   Type
+    Identifier
+     { String, Identifier }
+   { str2, Name }
+   Initializer
+    { "World", String Constant }
+  Variable Definition
+   Modifiers
+   Type
+    Identifier
+     { String, Identifier }
+   { str3, Name }
+   Initializer
+    Plus Expression
+     { +, Operator }
+     Plus Expression
+      { +, Operator }
+      Identifier
+       { str1, Identifier }
+      { " ", String Constant }
+     Identifier
+      { str2, Identifier }
+  { }, Class Body End }

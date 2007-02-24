@@ -1,0 +1,15 @@
+Class Declaration
+ Modifiers
+ { VariableDeclaredWithinBlockTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  { {, Body Start }
+  Variable Definition
+   Modifiers
+   Type
+    { int, Primitive Type }
+   { i, Name }
+  { }, Body End }
+  { }, Class Body End }

@@ -1,0 +1,1 @@
+<UML:Package xmlns:UML="omg.org/UML/1.4" language="Java" name="com"><TokenDescriptors><TDescriptor line="0" column="0" position="0" type="StartPosition" value="" length="0"/><TDescriptor line="0" column="0" position="0" type="Keyword" value="package" length="7"/><TDescriptor line="-1" column="0" position="0" type="Name" value="com" length="3"/></TokenDescriptors></UML:Package>

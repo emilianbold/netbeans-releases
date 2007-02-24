@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>org.netbeans.modules.uml.dom4jlib</code-name-base>
+            <suite-component/>
+            <module-dependencies/>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/relaxngDatatype.jar</runtime-relative-path>
+                <binary-origin>../external/relaxngDatatype.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/saxpath.jar</runtime-relative-path>
+                <binary-origin>../external/saxpath.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/Tidy.jar</runtime-relative-path>
+                <binary-origin>../external/Tidy.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/msv.jar</runtime-relative-path>
+                <binary-origin>../external/msv.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/jaxen.jar</runtime-relative-path>
+                <binary-origin>../external/jaxen.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/xsdlib.jar</runtime-relative-path>
+                <binary-origin>../external/xsdlib.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/PullParser2.jar</runtime-relative-path>
+                <binary-origin>../external/PullParser2.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/org-dom4j.jar</runtime-relative-path>
+                <binary-origin>../external/org-dom4j.jar</binary-origin>
+            </class-path-extension>
+            <friend-packages>
+                <friend>org.netbeans.modules.uml</friend>
+                <friend>org.netbeans.modules.uml.designpattern</friend>
+                <friend>org.netbeans.modules.uml.integration</friend>
+                <friend>org.netbeans.modules.uml.kit</friend>
+                <friend>org.netbeans.modules.uml.palette</friend>
+                <friend>org.netbeans.modules.uml.parser.java</friend>
+                <friend>org.netbeans.modules.uml.project</friend>
+                <friend>org.netbeans.modules.uml.reporting</friend>
+                <friend>org.netbeans.modules.uml.requirements</friend>
+                <friend>org.netbeans.modules.uml.requirements.doorsprovider</friend>
+                <friend>org.netbeans.modules.uml.requirements.xmlrequirements</friend>
+                <package>com.sun.msv.datatype</package>
+                <package>com.sun.msv.datatype.xsd</package>
+                <package>com.sun.msv.datatype.xsd.datetime</package>
+                <package>com.sun.msv.datatype.xsd.ngimpl</package>
+                <package>com.sun.msv.driver.textui</package>
+                <package>com.sun.msv.grammar</package>
+                <package>com.sun.msv.grammar.dtd</package>
+                <package>com.sun.msv.grammar.relax</package>
+                <package>com.sun.msv.grammar.relaxng</package>
+                <package>com.sun.msv.grammar.relaxng.datatype</package>
+                <package>com.sun.msv.grammar.trex</package>
+                <package>com.sun.msv.grammar.trex.typed</package>
+                <package>com.sun.msv.grammar.util</package>
+                <package>com.sun.msv.grammar.xmlschema</package>
+                <package>com.sun.msv.reader</package>
+                <package>com.sun.msv.reader.datatype</package>
+                <package>com.sun.msv.reader.datatype.xsd</package>
+                <package>com.sun.msv.reader.dtd</package>
+                <package>com.sun.msv.reader.relax</package>
+                <package>com.sun.msv.reader.relax.core</package>
+                <package>com.sun.msv.reader.relax.core.checker</package>
+                <package>com.sun.msv.reader.trex</package>
+                <package>com.sun.msv.reader.trex.classic</package>
+                <package>com.sun.msv.reader.trex.ng</package>
+                <package>com.sun.msv.reader.trex.ng.comp</package>
+                <package>com.sun.msv.reader.trex.typed</package>
+                <package>com.sun.msv.reader.util</package>
+                <package>com.sun.msv.reader.xmlschema</package>
+                <package>com.sun.msv.relaxns.grammar</package>
+                <package>com.sun.msv.relaxns.grammar.relax</package>
+                <package>com.sun.msv.relaxns.grammar.trex</package>
+                <package>com.sun.msv.relaxns.reader</package>
+                <package>com.sun.msv.relaxns.reader.relax</package>
+                <package>com.sun.msv.relaxns.reader.trex</package>
+                <package>com.sun.msv.relaxns.verifier</package>
+                <package>com.sun.msv.scanner.dtd</package>
+                <package>com.sun.msv.util</package>
+                <package>com.sun.msv.util.xml</package>
+                <package>com.sun.msv.verifier</package>
+                <package>com.sun.msv.verifier.identity</package>
+                <package>com.sun.msv.verifier.jarv</package>
+                <package>com.sun.msv.verifier.jaxp</package>
+                <package>com.sun.msv.verifier.psvi</package>
+                <package>com.sun.msv.verifier.regexp</package>
+                <package>com.sun.msv.verifier.regexp.xmlschema</package>
+                <package>com.sun.msv.verifier.util</package>
+                <package>com.sun.msv.writer</package>
+                <package>com.sun.msv.writer.relaxng</package>
+                <package>com.sun.xml.util</package>
+                <package>com.werken.saxpath</package>
+                <package>javax.xml.parsers</package>
+                <package>org.apache.xerces.utils.regex</package>
+                <package>org.dom4j</package>
+                <package>org.dom4j.bean</package>
+                <package>org.dom4j.datatype</package>
+                <package>org.dom4j.dom</package>
+                <package>org.dom4j.dtd</package>
+                <package>org.dom4j.io</package>
+                <package>org.dom4j.io.aelfred</package>
+                <package>org.dom4j.persistence</package>
+                <package>org.dom4j.persistence.nativ</package>
+                <package>org.dom4j.rule</package>
+                <package>org.dom4j.rule.pattern</package>
+                <package>org.dom4j.swing</package>
+                <package>org.dom4j.tree</package>
+                <package>org.dom4j.util</package>
+                <package>org.dom4j.xpath</package>
+                <package>org.dom4j.xpp</package>
+                <package>org.gjt.xpp</package>
+                <package>org.gjt.xpp.impl</package>
+                <package>org.gjt.xpp.impl.format</package>
+                <package>org.gjt.xpp.impl.node</package>
+                <package>org.gjt.xpp.impl.pullnode</package>
+                <package>org.gjt.xpp.impl.pullparser</package>
+                <package>org.gjt.xpp.impl.tag</package>
+                <package>org.gjt.xpp.impl.tokenizer</package>
+                <package>org.gjt.xpp.jaxp11</package>
+                <package>org.gjt.xpp.sax2</package>
+                <package>org.jaxen</package>
+                <package>org.jaxen.dom</package>
+                <package>org.jaxen.dom4j</package>
+                <package>org.jaxen.exml</package>
+                <package>org.jaxen.expr</package>
+                <package>org.jaxen.expr.iter</package>
+                <package>org.jaxen.function</package>
+                <package>org.jaxen.function.ext</package>
+                <package>org.jaxen.jdom</package>
+                <package>org.jaxen.pattern</package>
+                <package>org.jaxen.util</package>
+                <package>org.relaxng.datatype</package>
+                <package>org.relaxng.datatype.helpers</package>
+                <package>org.saxpath</package>
+                <package>org.saxpath.conformance</package>
+                <package>org.saxpath.helpers</package>
+                <package>org.w3c.dom</package>
+                <package>org.w3c.tidy</package>
+                <package>org.xml.sax</package>
+                <package>org.xml.sax.ext</package>
+                <package>org.xml.sax.helpers</package>
+            </friend-packages>
+        </data>
+    </configuration>
+</project>

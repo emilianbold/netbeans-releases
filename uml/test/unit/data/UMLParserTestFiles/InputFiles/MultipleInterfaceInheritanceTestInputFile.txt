@@ -1,0 +1,10 @@
+Interface Declaration
+ Modifiers
+ { MultipleInterfaceInheritanceTestFile, Name }
+ Generalization
+  Identifier
+   { Interface1, Identifier }
+  Identifier
+   { Interface2, Identifier }
+ { {, Class Body Start }
+ { }, Class Body End }

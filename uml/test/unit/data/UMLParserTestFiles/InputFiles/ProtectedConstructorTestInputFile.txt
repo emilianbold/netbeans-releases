@@ -1,0 +1,16 @@
+Class Declaration
+ Modifiers
+  { public, Modifier }
+ { ProtectedConstructorTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Constructor Definition
+   Modifiers
+    { protected, Modifier }
+   { ProtectedConstructorTestFile, Name }
+   Parameters
+   Constructor Body
+    { {, Method Body Start }
+  { }, Class Body End }

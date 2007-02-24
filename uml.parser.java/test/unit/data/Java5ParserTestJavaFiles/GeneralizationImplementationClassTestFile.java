@@ -1,0 +1,2 @@
+class GeneralizationImplementationClassTestFile extends ExtentTest implements ImplementTest{	
+}

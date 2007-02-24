@@ -1,0 +1,29 @@
+Class Declaration
+ Modifiers
+ { VariableInitializedWithinClassTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+   Type
+    { int, Primitive Type }
+   { i, Name }
+   Initializer
+    { 10, Integer Constant }
+  Variable Definition
+   Modifiers
+   Type
+    Identifier
+     { Object, Identifier }
+   { o, Name }
+   Initializer
+    Object Creation
+     { new, Operator }
+     Identifier
+      { Object, Identifier }
+     { (, Argument Start }
+     Expression List
+     { ), Argument End }
+  { }, Class Body End }

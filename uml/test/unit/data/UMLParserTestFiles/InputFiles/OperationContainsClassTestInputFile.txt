@@ -1,0 +1,26 @@
+Class Declaration
+ Modifiers
+ { OperationContainsClassTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+    { public, Modifier }
+   Type
+    { void, Primitive Type }
+   { Operation, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    Class Declaration
+     Modifiers
+     { innerClass, Name }
+     Generalization
+     Realization
+     Body
+      { {, Class Body Start }
+      { }, Class Body End }
+    { }, Method Body End }
+  { }, Class Body End }

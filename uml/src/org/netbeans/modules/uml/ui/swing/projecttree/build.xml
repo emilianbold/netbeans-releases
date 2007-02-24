@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="ProjectTree" default="all" basedir=".">
+	<property name="jsr14.home" value="${JSR14_HOME}"/> 
+	<property name="java.home" value="${JAVA_HOME}" />
+  	
+	<target name="all" depends="compile"/>
+	<target name="jarfiles" depends="compile">
+		<copy todir="build">
+			<fileset dir="." excludes="**/Cvs/*,**/*.java"/>
+		</copy>
+		<jar jarfile="../jars/JavaDescribe.jar" basedir="build" compress="true" manifest="src/MANIFEST.MF"/>
+	</target>
+	<target name="compile">
+	    <echo message="ant.home = ${ant.home}"/>
+	    <echo message="jsr14.home = ${jsr14.home}"/>
+	    <echo message="JAVA_HOME = ${JAVA_HOME}"/>
+        <echo message="java.home = ${java.home}"/>
+        
+	    <mkdir dir="build"/>
+	    
+		<javac srcdir="." destdir="build" deprecation="${build.compiler.deprecation}" debug="true"
+			source="1.5" compiler="com.madbean.Jsr14CompilerAdapter" memoryInitialSize="300m" memoryMaximumSize="750m">
+			<classpath>
+				<pathelement location="${ant.home}/lib/jsr14adapter-1.0.jar"/>
+				<pathelement location="${jsr14.home}/javac.jar"/>
+ 				<pathelement location="${jsr14.home}/collect.jar"/> 
+				<pathelement location="${JAVA_HOME}/lib/tools.jar"/>
+				<pathelement location="${JAVA_HOME}/jre/lib/rt.jar"/>
+				<pathelement location="${ECLIPSE_HOME}/plugins/org.junit_3.8.1/junit.jar"/>
+				<pathelement location="${ECLIPSE_HOME}/workspace/Dom4j" />
+				<pathelement location="${ECLIPSE_HOME}/workspace/JavaDescribe1" />
+				<pathelement location="${ECLIPSE_HOME}/workspace/Describe Integration\bin" />
+				<pathelement location="${ECLIPSE_HOME}/workspace/Dom4j" />
+				<pathelement location="${ECLIPSE_HOME}/workspace/JProjectTree" />
+			</classpath>
+		</javac>
+	</target>
+	<target name="cleancompile" depends="cleanclasses, compile"/>
+
+	<target name="cleanclasses">
+		<delete dir="build"/>
+	</target>
+
+	<target name="clean" depends="cleanclasses">
+		<delete file="../jars/DescribeJBuilder.jar"/>
+		<delete file="../jars/JBuilderSRC.zip"/>
+	</target>
+	<target name="zipsrc">
+		<zip zipfile="../jars/JBuilderSRC.zip" basedir="src"/>
+	</target>
+	<target name="docs">
+		<mkdir dir="docs"/>
+		<javadoc sourcepath="src" destdir="docs" packagenames="com/embarcadero/**"/>
+	</target>
+	<target name="cvsupdate">
+		<cvs command="update -C"/>
+	</target>
+</project>

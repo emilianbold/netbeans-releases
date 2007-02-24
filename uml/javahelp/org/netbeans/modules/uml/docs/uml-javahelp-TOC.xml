@@ -1,0 +1,280 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
+                     "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+
+<!--
+*     Copyright (c) 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+
+<toc version="2.0">
+	<tocitem text="UML Modeling">
+		<tocitem text="About UML Modeling" target="uml_modeling_introduction" />
+		<tocitem text="UML Modeling Basics" target="uml_modeling_basics">
+			<tocitem text="Design: UML Modeling Windows" target="uml_basics_design_windows">
+				<tocitem text="Diagram Editor" target="uml_basics_diagram_windows" />
+				<tocitem text="Modeling Palette" target="uml_basics_palette" />
+				<tocitem text="Properties Window" target="uml_basics_properties_window" />
+				<tocitem text="Documentation Window" target="uml_basics_documentation_window" />
+				<tocitem text="Source Editor" target="uml_basics_source_editor" />
+			</tocitem>
+			<tocitem text="Navigation: UML Modeling" target="uml_basics_navigation_windows">
+				<tocitem text="Projects Window" target="nbdocs_org_netbeans_modules_usersguide_project_csh_proj_project_window" />
+				<tocitem text="UML Design Center" target="uml_design_using_design_center" />
+				<tocitem text="Diagram Toolbar" target="uml_basics_toolbars" />
+				<tocitem text="Pop-Up Menus: Diagram Editor" target="uml_basics_contextual_menus_uml_diagram_editor" />
+				<tocitem text="Keyboard Shortcuts: UML Modeling" target="uml_basics_shortcuts_uml_keyboard">
+					<tocitem text="Keyboard Shortcuts: UML Diagram Editor" target="uml_basics_shortcuts_diagram_editor" />
+					<tocitem text="Keyboard Shortcuts: Working with UML Diagram Elements" target="uml_basics_shortcuts_diag_elements" />
+					<tocitem text="Keyboard Shortcuts: UML Modeling Palette" target="uml_basics_shortcuts_palette" />
+					<tocitem text="Keyboard Shortcuts: UML Documentation Window" target="uml_basics_shortcuts_doc_window" />
+					<tocitem text="Keyboard Shortcuts: UML Design Center" target="uml_basics_shortcuts_design_center" />
+				</tocitem>
+				<tocitem text="Diagram Editor Navigation" target="uml_basics_diagram_window_navigation" />
+			</tocitem>
+			<tocitem text="Configuration: UML Modeling" target="uml_prefs_configuring_uml_modeling">
+				<tocitem text="Setting UML Modeling Preferences" target="uml_prefs_using_preferences_editor" />
+				<tocitem text="UML Categories in the Options Window" target="uml_prefs_categories_in_preferences_editor" />
+				<tocitem text="Specifying Layout Properties" target="uml_editors_windows_specifying_layout_properties" />
+				<tocitem text="Specifying Display and Drawing Preferences" target="uml_editors_windows_specifying_display_drawing_preferences" />
+			</tocitem>
+		</tocitem>
+		<tocitem text="Understanding Projects and Diagrams" target="uml_basics_understanding_projects_diagrams">
+			<tocitem text="About Projects" target="uml_basics_about_projects" />
+			<tocitem text="About Packages" target="uml_basics_about_packages" />
+			<tocitem text="About Diagrams" target="uml_basics_about_diagrams" />
+			<tocitem text="Diagram Types" target="uml_basics_diagram_types">
+				<tocitem text="About Activity Diagrams" target="uml_basics_diagram_types_activity" />
+				<tocitem text="About Class Diagrams" target="uml_basics_diagram_types_class" />
+				<tocitem text="About Collaboration Diagrams" target="uml_basics_diagram_types_collaboration" />
+				<tocitem text="About Component Diagrams" target="uml_basics_diagram_types_component" />
+				<tocitem text="About Deployment Diagrams" target="uml_basics_diagram_types_deployment" />
+				<tocitem text="About Sequence Diagrams" target="uml_basics_diagram_types_sequence" />
+				<tocitem text="About State Diagrams" target="uml_basics_diagram_types_state" />
+				<tocitem text="About Use Case Diagrams" target="uml_basics_diagram_types_use_case" />
+			</tocitem>
+			<tocitem text="Diagram Elements" target="uml_basics_diagram_components">
+				<tocitem text="Activity Diagram Elements" target="uml_basics_diagram_components_activity" />
+				<tocitem text="Class Diagram Elements" target="uml_basics_diagram_components_class" />
+				<tocitem text="Collaboration Diagram Elements" target="uml_basics_diagram_components_collaboration" />
+				<tocitem text="Component Diagram Elements" target="uml_basics_diagram_components_component" />
+				<tocitem text="Deployment Diagram Elements" target="uml_basics_diagram_components_deployment" />
+				<tocitem text="Sequence Diagram Elements" target="uml_basics_diagram_components_sequence" />
+				<tocitem text="State Diagram Elements" target="uml_basics_diagram_components_state" />
+				<tocitem text="Use Case Diagram Elements" target="uml_basics_diagram_components_use_case" />
+			</tocitem>
+		</tocitem>
+		<tocitem text="Working With Editors and Windows" target="uml_editors_windows_ww_editors_windows">
+			<tocitem text="Properties Window" target="uml_basics_properties_window" />
+			<tocitem text="Source Editor" target="uml_basics_source_editor" />
+			<tocitem text="Using the Diagram Editor" target="uml_editors_windows_using_diagram_windows">
+				<tocitem text="Zooming in Diagrams" target="uml_editors_windows_zooming_in_diagrams" />
+				<tocitem text="Stacking Diagram Elements" target="uml_editors_windows_stacking_diagram_elements" />
+				<tocitem text="Modifying Diagram Layouts" target="uml_editors_windows_modifying_diagram_layouts" />
+				<tocitem text="Specifying Layout Properties" target="uml_editors_windows_specifying_layout_properties" />
+				<tocitem text="Specifying Display and Drawing Preferences" target="uml_editors_windows_specifying_display_drawing_preferences" />
+				<tocitem text="Navigating Within Diagrams" target="uml_editors_windows_navigating_within_diagrams">
+					<tocitem text="Using the Overview Window" target="uml_editors_windows_using_overview_window" />
+					<tocitem text="Navigating Between Instances and Classifiers" target="uml_editors_windows_navigating_between_instances_classifiers" />
+					<tocitem text="Navigating by Links in Diagrams" target="uml_editors_windows_navigating_by_links_in_diagrams" />
+					<tocitem text="Discovering and Navigating Links" target="uml_editors_windows_discovering_navigating_links" />
+					<tocitem text="Navigating a Diagram Element" target="uml_editors_windows_navigating_diagram_element" />
+				</tocitem>
+			</tocitem>
+		</tocitem>
+		<tocitem text="Working With Projects" target="uml_tasks_projects_workingwith">
+			<tocitem text="Creating Projects" target="uml_tasks_projects_creating_project" />
+			<tocitem text="Deleting Projects" target="uml_tasks_projects_deleting_project" />
+			<tocitem text="Filtering Element Types From the Projects Window" target="uml_editors_windows_filtering_element_types_from_projects_window" />
+		</tocitem>
+		<tocitem text="Working With Packages" target="uml_tasks_packages_workingwith">
+			<tocitem text="Creating Packages" target="uml_tasks_packages_creating" />
+			<tocitem text="Renaming Packages" target="uml_tasks_packages_renaming" />
+			<tocitem text="Deleting Packages" target="uml_tasks_packages_deleting" />
+			<tocitem text="Changing Package Element Display" target="uml_tasks_packages_changing_symbol_display" />
+		</tocitem>
+		<tocitem text="Working With Diagrams and Elements" target="uml_diagrams_ww_diagrams_elements">
+			<tocitem text="Creating Diagrams" target="uml_diagrams_creating_diagrams">
+				<tocitem text="Creating an Empty Diagram" target="uml_diagrams_creating_diagrams_empty" />
+				<tocitem text="Creating a Scoped Diagram" target="uml_diagrams_creating_diagrams_scoped" />
+				<tocitem text="Creating a Diagram From Selected Elements" target="uml_diagrams_creating_diagram_from_selected_elements" />
+				<tocitem text="Creating a Dependency Diagram for a Classifier" target="uml_diagrams_creating_diagram_dependency" />
+			</tocitem>
+			<tocitem text="Opening and Closing Diagrams" target="uml_diagrams_opening_closing" />
+			<tocitem text="Creating Diagram Elements" target="uml_diagrams_creating_diagram_elements" />
+			<tocitem text="Associating Elements" target="uml_diagrams_associating_elements" />
+			<tocitem text="Editing Diagram Elements" target="uml_diagrams_editing_diagram_elements">
+				<tocitem text="Renaming Diagram Elements" target="uml_diagrams_editing_diagram_elements_renaming" />
+				<tocitem text="Placing Modeling Elements" target="uml_diagrams_editing_diagram_elements_placing" />
+				<tocitem text="Cutting Elements" target="uml_diagrams_editing_diagram_elements_cutting" />
+				<tocitem text="Copying Elements" target="uml_diagrams_editing_diagram_elements_copying" />
+				<tocitem text="Pasting Elements" target="uml_diagrams_editing_diagram_elements_pasting" />
+				<tocitem text="Selecting All Elements" target="uml_diagrams_editing_diagram_elements_selecting_all" />
+				<tocitem text="Selecting All Similar Elements" target="uml_diagrams_editing_diagram_elements_selecting_all_similar" />
+				<tocitem text="Changing Diagram Element Size" target="uml_diagrams_editing_diagram_elements_changing_size" />
+				<tocitem text="Finding Diagram Elements in the Projects Window" target="uml_diagrams_editing_diagram_elements_finding" />
+				<tocitem text="Using the Redefine Dialog Box" target="uml_diagrams_editing_diagram_elements_using_redefine_db" />
+			</tocitem>
+			<tocitem text="Locking Diagram Elements" target="uml_diagrams_locking_diagram_elements" />
+			<tocitem text="Deleting Diagram Elements" target="uml_diagrams_deleting_diagram_elements" />
+			<tocitem text="Deleting Diagrams" target="uml_diagrams_deleting_diagrams" />
+			<tocitem text="Working With Activity Diagrams" target="uml_diagrams_activity_ww_diagram_elements">
+				<tocitem text="Working With Activity Groups" target="uml_diagrams_activity_ww_activity_groups">
+					<tocitem text="Selecting and Modifying an Activity Group Kind" target="uml_diagrams_activity_selecting_modifying_activity_group_kind" />
+					<tocitem text="Selecting and Modifying an Activity Group GroupKind" target="uml_diagrams_activity_selecting_modifying_activity_group_groupkind" />
+					<tocitem text="Adding or Modifying Activity Group Conditions" target="uml_diagrams_activity_adding_modifying_activity_group_conditions" />
+				</tocitem>
+				<tocitem text="Working With Partitions" target="uml_diagrams_activity_ww_partitions">
+					<tocitem text="Creating Partitions" target="uml_diagrams_activity_creating_partitions" />
+					<tocitem text="Adding and Modifying Partition Attributes" target="uml_diagrams_activity_adding_modifying_partition_attributes" />
+					<tocitem text="Adding Subpartitions" target="uml_diagrams_activity_adding_subpartitions" />
+					<tocitem text="Naming Subpartitions" target="uml_diagrams_activity_naming_subpartitions" />
+					<tocitem text="Deleting Subpartitions" target="uml_diagrams_activity_deleting_subpartitions" />
+				</tocitem>
+				<tocitem text="Working With Invocations and Common Elements" target="uml_diagrams_activity_ww_invocations_common_elements">
+					<tocitem text="Adding Invocations" target="uml_diagrams_activity_adding_invocations" />
+					<tocitem text="Connecting Nodes, Invocations, Decisions, and Final Flow Nodes Using Activity Edges" target="uml_diagrams_activity_connecting_using_activity_edges" />
+					<tocitem text="Selecting an Invocation Condition" target="uml_diagrams_activity_selecting_invocation_condition" />
+				</tocitem>
+				<tocitem text="Working With Interruptible Activity Groups and Object Nodes" target="uml_diagrams_activity_ww_interruptible_act_groups_object_nodes">
+					<tocitem text="Making an Interruptible Activity Group" target="uml_diagrams_activity_making_interruptible_activity_group" />
+					<tocitem text="Adding a Signal" target="uml_diagrams_activity_adding_signal" />
+					<tocitem text="Adding Guard Conditions to Activity Edges" target="uml_diagrams_activity_adding_guard_conditions" />
+				</tocitem>
+			</tocitem>
+			<tocitem text="Working With Class Diagrams" target="uml_diagrams_class_ww_diagram_elements">
+				<tocitem text="Transforming Diagram Elements" target="uml_diagrams_class_transforming_diagram_elements" />
+				<tocitem text="Working With Operations" target="uml_diagrams_class_ww_operations">
+					<tocitem text="Creating Operations" target="uml_diagrams_class_creating_operations" />
+					<tocitem text="Renaming Operations" target="uml_diagrams_class_renaming_operations" />
+					<tocitem text="Reordering and Moving Operations" target="uml_diagrams_class_reordering_moving_operations" />
+				</tocitem>
+				<tocitem text="Working With Attributes" target="uml_diagrams_class_ww_attributes">
+					<tocitem text="Hiding and Showing Attributes in a Class Diagram" target="uml_diagrams_class_hiding_showing_attributes" />
+					<tocitem text="Creating Attributes" target="uml_diagrams_class_creating_attributes" />
+					<tocitem text="Renaming Attributes" target="uml_diagrams_class_renaming_attributes" />
+					<tocitem text="Reordering and Moving Attributes" target="uml_diagrams_class_reordering_moving_attributes" />
+				</tocitem>
+				<tocitem text="Using the Compartment Customize Dialog Box" target="uml_diagrams_class_using_compartment_customize_db" />
+			</tocitem>
+			<tocitem text="Working With Collaboration Diagrams" target="uml_diagrams_collaboration_ww_diagram_elements">
+				<tocitem text="Changing the Type of Classifier to Add" target="uml_diagrams_collaboration_changing_classifier_type_to_add" />
+				<tocitem text="Adding a Classifier" target="uml_diagrams_collaboration_adding_classifier" />
+				<tocitem text="Connecting Lifelines" target="uml_diagrams_collaboration_connecting_lifelines" />
+				<tocitem text="Adding Operations" target="uml_diagrams_collaboration_adding_operations" />
+				<tocitem text="Naming Operations" target="uml_diagrams_collaboration_naming_operations" />
+				<tocitem text="Converting Between Sequence and Collaboration Diagrams" target="uml_diagrams_collaboration_converting_between_sequence_collaboration" />
+				<tocitem text="Working With Messages" target="uml_diagrams_collaboration_ww_messages" />
+			</tocitem>
+			<tocitem text="Working With Component Diagrams" target="uml_diagrams_component_ww_diagram_elements">
+				<tocitem text="Working With Component Elements and Dependencies" target="uml_diagrams_component_ww_components_dependencies">
+					<tocitem text="Adding Component Elements" target="uml_diagrams_component_adding_components" />
+					<tocitem text="Naming Component Elements" target="uml_diagrams_component_naming_components" />
+					<tocitem text="Connecting Dependencies" target="uml_diagrams_component_connecting_dependencies" />
+				</tocitem>
+				<tocitem text="Working With Ports and Interfaces" target="uml_diagrams_component_ww_ports_interfaces">
+					<tocitem text="Adding Interfaces to Component Elements" target="uml_diagrams_component_adding_interfaces_to_components" />
+					<tocitem text="Connecting an Interface to a Component Element" target="uml_diagrams_component_connecting_interface_to_component" />
+					<tocitem text="Naming Ports" target="uml_diagrams_component_naming_ports" />
+					<tocitem text="Resizing Ports" target="uml_diagrams_component_resizing_ports" />
+					<tocitem text="Modeling Connections With Assembly Connectors" target="uml_diagrams_component_modeling_connections" />
+				</tocitem>
+			</tocitem>
+			<tocitem text="Working With Deployment Diagrams" target="uml_diagrams_deployment_ww_diagram_elements">
+				<tocitem text="Working With Nodes and Associations" target="uml_diagrams_deployment_ww_nodes_associations">
+					<tocitem text="Adding Nodes" target="uml_diagrams_deployment_adding_nodes" />
+					<tocitem text="Naming Nodes" target="uml_diagrams_deployment_naming_nodes" />
+					<tocitem text="Connecting Nodes" target="uml_diagrams_deployment_connecting_nodes" />
+					<tocitem text="Nesting Components Inside Nodes" target="uml_diagrams_deployment_nesting_components_inside_nodes" />
+				</tocitem>
+				<tocitem text="Working With Artifacts and Deployment Specifications" target="uml_diagrams_deployment_ww_artifacts_specs">
+					<tocitem text="Adding Artifacts" target="uml_diagrams_deployment_adding_artifacts" />
+					<tocitem text="Adding Deployment Specifications" target="uml_diagrams_deployment_adding_specs" />
+				</tocitem>
+			</tocitem>
+			<tocitem text="Working With Sequence Diagrams" target="uml_diagrams_sequence_ww_diagram_elements">
+				<tocitem text="Working With Element Spacing Restrictions" target="uml_diagrams_sequence_ww_element_spacing_restrictions">
+					<tocitem text="Showing and Hiding Indicators" target="uml_diagrams_sequence_showing_hiding_indicators" />
+					<tocitem text="Specifying No Width Spacing Restrictions" target="uml_diagrams_sequence_specifying_nowidth_spacing" />
+					<tocitem text="Specifying the Retain Minimum Width Spacing Restriction" target="uml_diagrams_sequence_specifying_retainminwidth_spacing" />
+					<tocitem text="Specifying the Message Width Spacing Restriction" target="uml_diagrams_sequence_specifying_messagewidth_spacing" />
+				</tocitem>
+				<tocitem text="Working With Combined Fragments" target="uml_diagrams_sequence_ww_combined_fragments">
+					<tocitem text="Creating and Populating Combined Fragments" target="uml_diagrams_sequence_creating_populating_combined_fragments" />
+					<tocitem text="Working With Interaction Operand Boxes" target="uml_diagrams_sequence_ww_interaction_operand_boxes" />
+					<tocitem text="Creating an Interaction Occurrence to Nest Sequence Diagrams" target="uml_diagrams_sequence_creating_interaction_occ_to_nest_diagrams" />
+				</tocitem>
+			</tocitem>
+			<tocitem text="Working With State Diagrams" target="uml_diagrams_state_ww_diagram_elements">
+				<tocitem text="Adding Simple States" target="uml_diagrams_state_adding_simple_states" />
+				<tocitem text="Connecting Simple States" target="uml_diagrams_state_connecting_simple_states" />
+			</tocitem>
+			<tocitem text="Working With Use Case Diagrams" target="uml_diagrams_use_case_ww_diagram_elements">
+				<tocitem text="Working With Actors and Use Cases" target="uml_diagrams_use_case_ww_actors_use_cases" />
+				<tocitem text="Working With Dependencies and Extension Points" target="uml_diagrams_use_case_ww_dependencies_extension_points" />
+				<tocitem text="Working With Use Case Sub Details" target="uml_diagrams_use_case_ww_use_case_sub_details" />
+			</tocitem>
+			<tocitem text="Generating Code" target="uml_diagrams_generating_code">
+				<tocitem text="Setting General Code Engineering Preferences" target="uml_round_trip_eng_setting_general_prefs" />
+				<tocitem text="Setting Element Code Engineering Preferences" target="uml_round_trip_eng_setting_element_prefs" />
+				<tocitem text="Setting Java Code Engineering Preferences" target="uml_round_trip_eng_setting_java_prefs" />
+			</tocitem>
+			<tocitem text="Labeling Class Diagram Associations" target="uml_diagrams_labeling_class_diagram_elements">
+				<tocitem text="Working With Association Names" target="uml_diagrams_labeling_class_diagram_elements_ww_association_names" />
+				<tocitem text="Working With Association End Names" target="uml_diagrams_labeling_class_diagram_elements_ww_association_end_names" />
+				<tocitem text="Working With Association Multiplicity" target="uml_diagrams_labeling_class_diagram_elements_ww_association_multiplicity">
+					<tocitem text="Showing and Hiding Association Multiplicity Values" target="uml_diagrams_labeling_class_diagram_elements_showing_hiding_values" />
+					<tocitem text="Assigning a Preset Multiplicity Value to an Association" target="uml_diagrams_labeling_class_diagram_elements_assigning_preset_values" />
+					<tocitem text="Assigning a User-Defined Multiplicity Value to an Association" target="uml_diagrams_labeling_class_diagram_elements_assigning_userdef_values" />
+				</tocitem>
+			</tocitem>
+		</tocitem>
+		<tocitem text="UML Modeling Features" target="uml_modeling_features">
+			<tocitem text="Design Patterns">
+				<tocitem text="About Design Patterns" target="uml_design_about_design_patterns" />
+				<tocitem text="UML Design Center" target="uml_design_using_design_center" />
+				<tocitem text="Creating User-Defined Projects" target="uml_design_creating_user_defined_projects" />
+				<tocitem text="Inserting and Removing Projects" target="uml_design_inserting_removing_projects" />
+				<tocitem text="Standard Pattern Projects" target="uml_design_standard_pattern_projects">
+					<tocitem text="EJB Design Patterns" target="uml_design_ejb_design_patterns" />
+					<tocitem text="GoF Design Patterns" target="uml_design_gof_design_patterns">
+						<tocitem text="GoF Behavioral Patterns" target="uml_design_gof_behavioral_patterns" />
+						<tocitem text="GoF Creational Patterns" target="uml_design_gof_creational_patterns" />
+						<tocitem text="GoF Structural Patterns" target="uml_design_gof_structural_patterns" />
+					</tocitem>
+				</tocitem>
+				<tocitem text="Creating User-Defined Patterns" target="uml_design_creating_user_defined_patterns">
+					<tocitem text="Creating a Diagram for a User-Defined Pattern" target="uml_design_creating_diagram_for_user_defined_pattern" />
+					<tocitem text="Building a User-Defined Pattern" target="uml_design_building_user_defined_patterns" />
+					<tocitem text="Allowing the Creation of Multiple Participants" target="uml_design_allowing_multiple_participants" />
+				</tocitem>
+				<tocitem text="Promoting Patterns to the UML Design Center" target="uml_design_promoting_patterns_to_design_center" />
+				<tocitem text="Sharing Patterns" target="uml_design_sharing_patterns" />
+				<tocitem text="Applying Patterns" target="uml_design_applying_patterns" />
+			</tocitem>
+			<tocitem text="Requirements Support">
+				<tocitem text="About Requirements Support" target="uml_reqs_support_about_reqs_support" />
+				<tocitem text="Using an XML File" target="uml_reqs_support_using_xml_files" />
+				<tocitem text="Integrating Support for the DOORS Tool" target="uml_reqs_support_integrating_doors_tool" />
+				<tocitem text="Associating a DOORS Requirements Project to UML Modeling Elements" target="uml_reqs_support_associating_doors_project" />
+			</tocitem>
+			<tocitem text="Documenting Project Elements" target="uml_basics_documenting_objects" />
+			<tocitem text="Java-Code Reverse Engineering">
+				<tocitem text="About Java-Code Reverse Engineering" target="uml_reverse_eng_about_java_code_rev_eng" />
+				<tocitem text="Launching Reverse Engineering" target="uml_reverse_eng_launching_rev_eng" />
+				<tocitem text="Reverse Engineer Dialog Box" target="uml_reverse_eng_reverse_eng_dialog_box" />
+				<tocitem text="Classes" target="uml_reverse_eng_classes" />
+				<tocitem text="Reference Classes" target="uml_reverse_eng_reference_classes" />
+				<tocitem text="Packages" target="uml_reverse_eng_packages" />
+				<tocitem text="Interfaces" target="uml_reverse_eng_interfaces" />
+				<tocitem text="Exceptions/Access Control/Modifiers" target="uml_reverse_eng_exceptions_access_control_modifiers" />
+			</tocitem>
+			<tocitem text="UML Model Reports">
+				<tocitem text="Generating Model Reports" target="uml_web_reports_generating_model_reports" />
+				<tocitem text="Viewing Model Reports" target="uml_web_reports_viewing_reports" />
+			</tocitem>
+			
+		</tocitem>
+	</tocitem>
+</toc>

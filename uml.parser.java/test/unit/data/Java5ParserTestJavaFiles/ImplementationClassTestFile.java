@@ -1,0 +1,1 @@
+class ImplementationClassTestFile implements ImplementTestFile{}

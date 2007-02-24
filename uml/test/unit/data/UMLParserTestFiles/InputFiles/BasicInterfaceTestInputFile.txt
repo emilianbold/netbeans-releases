@@ -1,0 +1,6 @@
+Interface Declaration
+ Modifiers
+ { BasicInterfaceTestFile, Name }
+ Generalization
+ { {, Class Body Start }
+ { }, Class Body End }

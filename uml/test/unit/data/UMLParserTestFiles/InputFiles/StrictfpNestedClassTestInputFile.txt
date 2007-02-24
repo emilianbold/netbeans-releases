@@ -1,0 +1,17 @@
+Class Declaration
+ Modifiers
+ { StrictfpNestedClassTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Class Declaration
+   Modifiers
+    { strictfp, Modifier }
+   { StrictfpInnerClass, Name }
+   Generalization
+   Realization
+   Body
+    { {, Class Body Start }
+    { }, Class Body End }
+  { }, Class Body End }

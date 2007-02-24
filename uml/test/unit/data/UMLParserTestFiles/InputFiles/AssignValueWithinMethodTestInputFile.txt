@@ -1,0 +1,27 @@
+Class Declaration
+ Modifiers
+ { AssignValueWithinMethodTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+   Type
+    { int, Primitive Type }
+   { i, Name }
+  Method Definition
+   Modifiers
+   Type
+    { void, Primitive Type }
+   { method, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    Assignment Expression
+     { =, Operator }
+     Identifier
+      { i, Identifier }
+     { 10, Integer Constant }
+    { }, Method Body End }
+  { }, Class Body End }

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XMI xmlns:UML="omg.org/UML/1.4" xmi.version="2.0"> <XMI.header> <XMI.metamodel xmi.name="UML" xmi.version="1.4"/> <XMI.documentation> <XMI.exporter> Embarcadero's Describe </XMI.exporter> <XMI.exporterVersion> 6.0 </XMI.exporterVersion> </XMI.documentation> </XMI.header> <XMI.content> <UML:Project xmi.id="1" mode="Implementation" defaultLanguage="Java" projVersion="6.1.4.837" name="TestReIntegration">
+<UML:Element.ownedElement><UML:Class isAbstract="false" isLeaf="false" visibility="package" name="StaticAttributeTestFile" xmi.id="2" owner="1"><UML:Element.ownedElement><UML:Attribute visibility="package" isLeaf="false" ownerScope="instance" isStatic="true" type="4" name="a" xmi.id="3" owner="2"/></UML:Element.ownedElement></UML:Class>
+<UML:DataType xmi.id="4" name="int" owner="1"/></UML:Element.ownedElement></UML:Project></XMI.content> </XMI>

@@ -1,0 +1,21 @@
+Class Declaration
+ Modifiers
+ { OperationWithPrimitiveDatatypeReturnKeywordTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+    { public, Modifier }
+   Type
+    { int, Primitive Type }
+   { op1, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    Return
+     { return, Keyword }
+     { 0, Integer Constant }
+    { }, Method Body End }
+  { }, Class Body End }

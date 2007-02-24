@@ -1,0 +1,37 @@
+Class Declaration
+ Modifiers
+ { EnhancedForLoopTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+   Type
+    { void, Primitive Type }
+   { method, Name }
+   Parameters
+    Parameter
+     Modifiers
+     Type
+      Array Declarator
+       { [, Array Start }
+       { int, Primitive Type }
+       { ], Array End }
+     { a, Name }
+   Method Body
+    { {, Method Body Start }
+    Loop
+     { for, Keyword }
+     Loop Initializer
+      Variable Definition
+       Modifiers
+       Type
+        { int, Primitive Type }
+       { i, Name }
+     Test Condition
+      Identifier
+       { a, Identifier }
+     Body
+    { }, Method Body End }
+  { }, Class Body End }

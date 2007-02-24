@@ -1,0 +1,18 @@
+Class Declaration
+ Modifiers
+ { SynchronizedMethodTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+    { synchronized, Modifier }
+   Type
+    { void, Primitive Type }
+   { method, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    { }, Method Body End }
+  { }, Class Body End }

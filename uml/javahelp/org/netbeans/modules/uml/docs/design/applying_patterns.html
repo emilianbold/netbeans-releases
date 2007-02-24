@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Applying Patterns (UML Modeling)</title>
+</head>
+<body>
+<h2>Applying Patterns</h2>
+<p>After creating the roles associated with the user-defined pattern, you are now ready to apply the pattern. Applying a pattern involves either selecting existing elements in your project to apply the properties and relationships to, or creating new elements with the properties and relationships specified in the pattern. </p>
+<p>Patterns can be applied from the Projects window or the UML Design Center window. A pattern in the Projects window can be applied only to that project. A pattern in the UML Design Center can be applied to any project. See <a href="using_design_center.html">Using the Design Center</a> for more information. </p>
+<p><b>To apply a pattern:</b></p>
+<ol>
+<li>Select the pattern.<br>
+You can select the pattern from the Projects window, the UML Design Center window, or a diagram in which the pattern exists.</li>
+<li>Right-click the pattern and choose Apply Design Pattern.<br>
+The Welcome pane of the Design Pattern Apply Wizard opens.</li>
+<li>Click Next to continue.<br>
+The Pattern Selection panel opens with the project containing the pattern and the pattern itself selected.</li>
+<li>Click Next to continue.<br>
+The Target Scope panel opens with the target project.</li>
+<li>(Optional) Select a package from the Namespace list.<br>
+If you are creating new elements in your project, the elements are created in the selected package.</li>
+<li>Click Next to continue. <br>
+The Choosing Participants panel opens. This is the panel where you specify the elements that are to receive the properties and relationships of the roles in the pattern.</li>
+<li>To add elements, do the following:
+<ol type="a">
+<li>On the Choosing Participants panel, right-click the row containing the participant with multiplicity and choose Create.<br>
+An additional row is added to the grid for the extra participant.</li>
+<li>Continue adding participants as allowed.</li>
+<li>Select the Participant row and type a name for both of the elements.</li>
+</ol></li>
+<li>To create new elements for the roles, select a row in the Participant column and type a name for each of the new elements. To apply the pattern to existing elements, select the elements from the drop-down lists in the Participant column.
+<ul class="note">
+<li>If you select an existing element, you might be prompted to overwrite the element during the application of the pattern. This is dependent on the Overwrite Existing Participants preference. See <a href="../prefs/categories_in_preferences_editor.html">UML Categories in the Options Window</a> for details.</li>
+</ul></li>
+<li>When you have selected the participants, click Next to continue.</li>
+<li>To create a class diagram containing the elements to which the pattern has been applied, do the following:
+<ol type="a">
+<li>Select the Create class diagram checkbox.</li>
+<li>Specify a name for the diagram and click Next.</li>
+</ol></li>
+<li>Review your selections on the summary panel and click Finish to apply the pattern.<br>
+After the pattern has been applied, you may be prompted to generate code for the elements.
+<ul class="note">
+<li>The Generate Code after Applying Pattern preference controls whether or not you are prompted to generate code. See <a href="../prefs/categories_in_preferences_editor.html">UML Categories in the Options Window</a> for details. </li>
+</ul>
+If you choose to generate code for the participants, a progress bar is displayed. In this case, click Done when code generation is complete.<br>
+If you choose to create a class diagram, the diagram is displayed in the Diagram editor. </li>
+<li>Save the diagram and the project.</li>
+</ol>
+<hr>
+<a href="../credits.html">Legal Notices</a></small>
+</body>
+</html>

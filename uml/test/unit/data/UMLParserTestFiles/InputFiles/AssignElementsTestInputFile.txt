@@ -1,0 +1,50 @@
+Class Declaration
+ Modifiers
+ { AssignElementsTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+   Type
+    Array Declarator
+     { [, Array Start }
+     { int, Primitive Type }
+     { ], Array End }
+   { i, Name }
+   Initializer
+    Array Initializer
+     { {, Start Array Init }
+     { 1, Integer Constant }
+     { 2, Integer Constant }
+     { 3, Integer Constant }
+     { 4, Integer Constant }
+     { 5, Integer Constant }
+     { }, End Array Init }
+  Variable Definition
+   Modifiers
+   Type
+    Array Declarator
+     { [, Array Start }
+     Array Declarator
+      { [, Array Start }
+      { int, Primitive Type }
+      { ], Array End }
+     { ], Array End }
+   { j, Name }
+   Initializer
+    Array Initializer
+     { {, Start Array Init }
+     Array Initializer
+      { {, Start Array Init }
+      { 1, Integer Constant }
+      { 2, Integer Constant }
+      { }, End Array Init }
+     Array Initializer
+      { {, Start Array Init }
+      { 3, Integer Constant }
+      { 4, Integer Constant }
+      { }, End Array Init }
+     { }, End Array Init }
+  { }, Class Body End }

@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Exceptions/Access Control/Modifiers: Java-Code Reverse Engineering (UML Modeling)</title>
+</head>
+<body>
+<h2>Exceptions/Access Control/Modifiers: Java-Code Reverse Engineering</h2>
+<ul>
+<li><a href="#exceptions">Exceptions</a></li>
+<li><a href="#access_control">Access Control</a></li>
+<li><a href="#modifiers">Modifiers</a></li>
+</ul>
+<h3><a name="exceptions">Exceptions</a></h3>
+<p>A method can declare a list of exceptions it can throw, e.g.: </p>
+<pre>
+public static int c(int i) throws MyException, MyOtherException {... };
+</pre>
+<h3><a name="access_control">Access Control</a></h3>
+<p>The Java language supports the following levels of access control: </p>
+<ul>
+<li>package - members are accessible to all components within the same package.</li>
+<li>public - members are accessible to all components.</li>
+<li>private - members are accessible only within the class that defines it.</li>
+<li>protected - members are accessible to all components within the package in which it is defined and within subclasses.</li>
+</ul>
+<p>Java-Code Reverse Engineering fully supports all levels of Java access control for classes, attributes, and operations. </p>
+<h3><a name="modifiers">Modifiers</a></h3>
+<p>These Java modifiers can be used, variously, on class, method, and variable declarations.</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr valign="top">
+<th scope="col" align="left">Modifier</th>
+<th scope="col" align="left">Description</th>
+</tr>
+<tr valign="top">
+<td>final</td>
+<td>The final keyword is a modifier that can be applied to classes, methods, and variables. It has a similar, but not identical meaning in each case. A final class can never be subclassed. A final method can never be overridden. A final variable can never have its value set.<br>
+Modifiers:<br>
+operation: constant set to true<br>
+attribute: constant set to true<br>
+Access Permission is &quot;read-only&quot;<br>
+Example: <tt>public final void writeDouble(double v) throws IOException {};</tt></td>
+</tr>
+<tr valign="top">
+<td>native</td>
+<td>The native keyword is a modifier that can be applied to method declarations. It indicates that the method is implemented elsewhere in C, or in some other platform-dependent fashion.<br>
+Modifiers:<br>
+native is not capture<br>
+will set &quot;native&quot; to true<br>
+Example: <tt>private native void socketCreate(Boolean isServer);</tt></td>
+</tr>
+<tr valign="top">
+<td>synchronized</td>
+<td>The synchronized keyword can be used as a modifier for class or instance methods. It indicates that the method modifies the internal state of the class or the internal state of an instance of the class in a way that is not thread-safe.<br>
+Modifier:<br>
+Sets synchronized to trueprivate synchronized native String initializeLinkerInternal();</td>
+</tr>
+<tr valign="top">
+<td>transient</td>
+<td>The transient keyword is a modifier that can be applied to instance fields in a class. It indicates a field that is not part of an object's persistent state and thus needs not be serialized with the object.<br>
+Modifier:<br>
+Sets transient to true.<br>
+Example: <tt>transient private int pData;</tt></td>
+</tr>
+<tr valign="top">
+<td>volatile</td>
+<td>The volatile keyword is a modifier that can be applied to fields. It specifies that the field is used by synchronized threads and that the compiler should not attempt to perform optimizations with it.<br>
+Modifier:<br>
+Sets volatile to true.<br>
+Example: <tt>volatile private int pData;</tt></td>
+</tr>
+</table>
+<hr>
+<a href="../credits.html">Legal Notices</a></small>
+</body>
+</html>

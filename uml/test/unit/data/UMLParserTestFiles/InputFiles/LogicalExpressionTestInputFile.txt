@@ -1,0 +1,117 @@
+Class Declaration
+ Modifiers
+ { LogicalExpressionTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+   Type
+    { void, Primitive Type }
+   { method, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    Variable Definition
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { i, Name }
+    Variable Definition
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { j, Name }
+    Variable Definition
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { k, Name }
+    Assignment Expression
+     { =, Operator }
+     Identifier
+      { i, Identifier }
+     { 5, Integer Constant }
+    Assignment Expression
+     { =, Operator }
+     Identifier
+      { j, Identifier }
+     { 10, Integer Constant }
+    Assignment Expression
+     { =, Operator }
+     Identifier
+      { k, Identifier }
+     { 15, Integer Constant }
+    Variable Definition
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { m, Name }
+     Initializer
+      BinaryAND Expression
+       { &, Operator }
+       Identifier
+        { i, Identifier }
+       Identifier
+        { j, Identifier }
+    Variable Definition
+     Modifiers
+     Type
+      { boolean, Primitive Type }
+     { n, Name }
+     Initializer
+      LogicalAND Expression
+       { &&, Operator }
+       { (, Precedence Start }
+       GT Relational Expression
+        { >, Operator }
+        Identifier
+         { i, Identifier }
+        Identifier
+         { j, Identifier }
+       { ), Precedence End }
+       { (, Precedence Start }
+       GT Relational Expression
+        { >, Operator }
+        Identifier
+         { j, Identifier }
+        Identifier
+         { k, Identifier }
+       { ), Precedence End }
+    Variable Definition
+     Modifiers
+     Type
+      { boolean, Primitive Type }
+     { x, Name }
+     Initializer
+      LogicalOR Expression
+       { ||, Operator }
+       { (, Precedence Start }
+       LT Relational Expression
+        { <, Operator }
+        Identifier
+         { i, Identifier }
+        Identifier
+         { j, Identifier }
+       { ), Precedence End }
+       { (, Precedence Start }
+       LT Relational Expression
+        { <, Operator }
+        Identifier
+         { j, Identifier }
+        Identifier
+         { k, Identifier }
+       { ), Precedence End }
+    Variable Definition
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { l, Name }
+     Initializer
+      Binary Not Unary Expression
+       { ~, Operator }
+       Identifier
+        { i, Identifier }
+    { }, Method Body End }
+  { }, Class Body End }

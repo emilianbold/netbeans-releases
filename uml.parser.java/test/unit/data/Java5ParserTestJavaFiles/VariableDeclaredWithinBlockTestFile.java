@@ -1,0 +1,6 @@
+
+class VariableDeclaredWithinBlockTestFile {
+{
+int i;
+}
+}

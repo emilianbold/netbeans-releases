@@ -1,0 +1,67 @@
+Class Declaration
+ Modifiers
+ { SwitchCaseTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+   Type
+    { void, Primitive Type }
+   { test, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    Variable Definition
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { month, Name }
+     Initializer
+      { 8, Integer Constant }
+    Option Conditional
+     { switch, Keyword }
+     Test Condition
+      Identifier
+       { month, Identifier }
+     Option Group
+      { case, Keyword }
+      Test Condition
+       { 1, Integer Constant }
+      Body
+       Method Call
+        Identifier
+         { ., Scope Operator }
+         Identifier
+          { ., Scope Operator }
+          Identifier
+           { System, Identifier }
+          { out, Identifier }
+         { println, Identifier }
+        { (, Argument Start }
+        Expression List
+         { "1", String Constant }
+        { ), Argument End }
+       Break
+     Option Group
+      { default, Keyword }
+      Default Option
+      Body
+       Method Call
+        Identifier
+         { ., Scope Operator }
+         Identifier
+          { ., Scope Operator }
+          Identifier
+           { System, Identifier }
+          { out, Identifier }
+         { println, Identifier }
+        { (, Argument Start }
+        Expression List
+         Identifier
+          { month, Identifier }
+        { ), Argument End }
+       Break
+    { }, Method Body End }
+  { }, Class Body End }

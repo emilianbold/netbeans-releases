@@ -1,0 +1,68 @@
+Class Declaration
+ Modifiers
+ { WhileContinueBreakTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+    { public, Modifier }
+   Type
+    { void, Primitive Type }
+   { test, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    Variable Definition
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { x, Name }
+     Initializer
+      { 3, Integer Constant }
+    Loop
+     { while, Keyword }
+     Test Condition
+      { true, Boolean }
+     Body
+      { {, Body Start }
+      Assignment Expression
+       { =, Operator }
+       Identifier
+        { x, Identifier }
+       Plus Expression
+        { +, Operator }
+        Identifier
+         { x, Identifier }
+        { 1, Integer Constant }
+      Conditional
+       { if, Keyword }
+       Test Condition
+        LogicalAND Expression
+         { &&, Operator }
+         GE Relational Expression
+          { >=, Operator }
+          Identifier
+           { x, Identifier }
+          { 100, Integer Constant }
+         LE Relational Expression
+          { <=, Operator }
+          Identifier
+           { x, Identifier }
+          { 150, Integer Constant }
+       Body
+        Continue
+      Conditional
+       { if, Keyword }
+       Test Condition
+        Equality Expression
+         { ==, Operator }
+         Identifier
+          { x, Identifier }
+         { 200, Integer Constant }
+       Body
+        Break
+      { }, Body End }
+    { }, Method Body End }
+  { }, Class Body End }

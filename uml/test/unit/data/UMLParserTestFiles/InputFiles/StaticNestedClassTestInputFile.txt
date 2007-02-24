@@ -1,0 +1,17 @@
+Class Declaration
+ Modifiers
+ { StaticNestedClassTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Class Declaration
+   Modifiers
+    { static, Modifier }
+   { StaticInnerClass, Name }
+   Generalization
+   Realization
+   Body
+    { {, Class Body Start }
+    { }, Class Body End }
+  { }, Class Body End }

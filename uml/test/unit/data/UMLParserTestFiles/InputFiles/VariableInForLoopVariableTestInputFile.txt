@@ -1,0 +1,54 @@
+Class Declaration
+ Modifiers
+ { VariableInForLoopVariableTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+   Type
+    { void, Primitive Type }
+   { method, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    Variable Definition
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { j, Name }
+     Initializer
+      { 0, Integer Constant }
+    Loop
+     { for, Keyword }
+     Loop Initializer
+      Variable Definition
+       Modifiers
+       Type
+        { int, Primitive Type }
+       { i, Name }
+     Test Condition
+      { ;, Conditional Separator }
+      LT Relational Expression
+       { <, Operator }
+       Identifier
+        { j, Identifier }
+       { 10, Integer Constant }
+     Loop PostProcess
+      { ;, PostProcessor Separator }
+      Expression List
+       Increment Post Unary Expression
+        { ++, Operator }
+        Identifier
+         { j, Identifier }
+     Body
+      { {, Body Start }
+      Assignment Expression
+       { =, Operator }
+       Identifier
+        { i, Identifier }
+       { 10, Integer Constant }
+      { }, Body End }
+    { }, Method Body End }
+  { }, Class Body End }

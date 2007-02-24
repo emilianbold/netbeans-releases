@@ -1,0 +1,19 @@
+Class Declaration
+ Modifiers
+ { VariableDeclaredWithinClassTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+   Type
+    { int, Primitive Type }
+   { i, Name }
+  Variable Definition
+   Modifiers
+   Type
+    Identifier
+     { Object, Identifier }
+   { o, Name }
+  { }, Class Body End }

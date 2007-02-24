@@ -1,0 +1,9 @@
+Class Declaration
+ Modifiers
+  { strictfp, Modifier }
+ { StrictfpClassTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  { }, Class Body End }

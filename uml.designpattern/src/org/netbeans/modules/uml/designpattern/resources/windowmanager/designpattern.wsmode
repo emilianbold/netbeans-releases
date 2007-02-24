@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mode version="2.0">
+    <module name="org.netbeans.modules.uml.designpattern" spec="1.0"/>
+    <name unique="designpattern" />
+    <kind type="view" />
+    <state type="joined" />
+    <constraints>
+        <path orientation="vertical" number="20" weight="0.7" />
+        <path orientation="horizontal" number="60" weight="0.2" />
+        <path orientation="vertical" number="60" weight="0.5" />       
+    </constraints>
+    <bounds x="19200" y="250" width="240" height="117" />
+    <active-tc id="designpattern" />
+    <empty-behavior permanent="true" />
+</mode>

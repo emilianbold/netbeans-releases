@@ -1,0 +1,17 @@
+Class Declaration
+ Modifiers
+ { NestedFinalClassTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Class Declaration
+   Modifiers
+    { final, Modifier }
+   { FinalInnerClass, Name }
+   Generalization
+   Realization
+   Body
+    { {, Class Body Start }
+    { }, Class Body End }
+  { }, Class Body End }

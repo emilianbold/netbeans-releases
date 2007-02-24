@@ -1,0 +1,22 @@
+Class Declaration
+ Modifiers
+ { OperationWithThrowsClauseTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+    { public, Modifier }
+   Type
+    { void, Primitive Type }
+   { op1, Name }
+   Parameters
+   Throws Declaration
+    { throws, Keyword }
+    Identifier
+     { Exception, Identifier }
+   Method Body
+    { {, Method Body Start }
+    { }, Method Body End }
+  { }, Class Body End }

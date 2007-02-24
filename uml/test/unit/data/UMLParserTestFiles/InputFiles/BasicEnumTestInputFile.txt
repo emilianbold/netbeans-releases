@@ -1,0 +1,5 @@
+Enumeration Declaration
+ Modifiers
+ { BasicEnumTestFile, Name }
+ Realization
+ Body

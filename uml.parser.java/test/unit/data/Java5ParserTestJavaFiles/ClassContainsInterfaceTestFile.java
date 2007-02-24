@@ -1,0 +1,3 @@
+class ClassContainsInterfaceTestFile{
+	interface InterFace{}
+}

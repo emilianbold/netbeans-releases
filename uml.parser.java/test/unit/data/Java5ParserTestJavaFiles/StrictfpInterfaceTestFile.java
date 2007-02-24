@@ -1,0 +1,1 @@
+strictfp interface StrictfpInterfaceTestFile {}

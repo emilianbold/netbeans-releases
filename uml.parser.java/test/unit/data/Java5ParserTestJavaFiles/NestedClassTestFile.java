@@ -1,0 +1,4 @@
+class NestedClassTestFile{
+	class InnerClass{		
+	}
+}

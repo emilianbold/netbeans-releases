@@ -1,0 +1,10 @@
+Dependency
+ { import, Keyword }
+ Identifier
+  { ., Scope Operator }
+  Identifier
+   { ., Scope Operator }
+   Identifier
+    { java, Identifier }
+   { util, Identifier }
+  { *, OnDemand Operator }

@@ -1,0 +1,27 @@
+Class Declaration
+ Modifiers
+ { ArrayDeclarationTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+   Type
+    Array Declarator
+     { [, Array Start }
+     { int, Primitive Type }
+     { ], Array End }
+   { i, Name }
+  Variable Definition
+   Modifiers
+   Type
+    Array Declarator
+     { [, Array Start }
+     Array Declarator
+      { [, Array Start }
+      { int, Primitive Type }
+      { ], Array End }
+     { ], Array End }
+   { j, Name }
+  { }, Class Body End }

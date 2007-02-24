@@ -1,0 +1,16 @@
+Class Declaration
+ Modifiers
+ { FinalVariableDirectInitializationTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+    { final, Modifier }
+   Type
+    { int, Primitive Type }
+   { i, Name }
+   Initializer
+    { 0, Integer Constant }
+  { }, Class Body End }

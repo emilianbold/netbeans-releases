@@ -1,0 +1,16 @@
+Class Declaration
+ Modifiers
+  { abstract, Modifier }
+ { AbstractMethodTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+    { abstract, Modifier }
+   Type
+    { void, Primitive Type }
+   { method, Name }
+   Parameters
+  { }, Class Body End }

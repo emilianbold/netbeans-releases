@@ -1,0 +1,15 @@
+Class Declaration
+ Modifiers
+ { StrictfpNestedInterfaceTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Interface Declaration
+   Modifiers
+    { strictfp, Modifier }
+   { StrictfpNestedInterface, Name }
+   Generalization
+   { {, Class Body Start }
+   { }, Class Body End }
+  { }, Class Body End }

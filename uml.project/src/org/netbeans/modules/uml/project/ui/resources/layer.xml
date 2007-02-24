@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!--
+    Document   : layer.xml.xml
+    Created on : February 15, 2004, 8:38 AM
+    Author     : TreyS
+    Description:
+        Purpose of the document follows.
+-->
+<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
+<filesystem>
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="UML">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/emptyProject.html"/>
+                <!-- Add templates for the UML project -->
+                <!-- Platform Independent Model Wizard -->
+                <file name="emptyUMLAnalysis.xml">
+                    <attr boolvalue="true" name="template"/>                    
+                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/umlProject.gif"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/emptyAnalysisProject.html"/>
+                </file>   
+                
+                <!-- Java-Platform Model Wizard -->
+                <file name="emptyUMLJava.xml">
+                    <attr boolvalue="true" name="template"/>                    
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator.umlJava"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/umlProject.gif"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/emptyJavaProject.html"/>
+                </file>
+                
+                <!-- Reverse Engineer Java Project Wizard -->
+                <file name="reverseEngineerUML.xml">
+                    <attr boolvalue="true" name="template"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator.reverseEngineer"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/umlProject.gif"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/revEngProject.html"/>
+                </file>  
+                
+                <!-- Rose Import Project Wizard    
+                <file name="roseImport.xml">
+                    <attr boolvalue="true" name="template"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator.roseImport"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/umlProject.gif"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/roseImportProject.html"/>
+                </file> --> 
+                
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Services">
+        <file name="org-netbeans-modules-uml-project-ui-UMLProject.settings" url="umlProject.settings"/>
+    </folder>
+    
+    <folder name="NodeFactories">
+        <folder name="java">
+            <folder name="explorer">
+                <attr name="org-netbeans-modules-beans-PatternsExplorerFactory.instance/org-netbeans-modules-uml-project-ui-java-UMLJavaExplorerFactory.instance" boolvalue="true"/>  
+                <file name="org-netbeans-modules-uml-project-ui-java-UMLJavaExplorerFactory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.project.ui.java.UMLJavaExplorerFactory.setWritable"/>
+                </file>    
+            </folder>
+        </folder>
+    </folder>
+    
+    <!--
+    <folder name="Actions">
+        <folder name="UMLProject">
+            <folder name="Keyboard">
+                <folder name="AddToDiagram">
+                    <file name="org-netbeans-modules-uml-project-ui-nodes-actions-AddToDiagramAction.instance" />
+                </folder>
+            </folder>
+        </folder>
+        <folder name="Window">
+            <folder name="UMLDiagram">
+                <file name="com-sun-uml-netbeans-umlproject-actions-DocumentationAction.instance"/>
+                <file name="com-sun-uml-netbeans-umlproject-actions-PropertiesAction.instance"/>
+                <file name="com-sun-uml-netbeans-umlproject-actions-UMLPaletteAction.instance"/>
+            </folder>
+        </folder>
+    </folder>
+    -->
+    
+    <!--
+    <folder name="Shortcuts">
+        <file name="D-ENTER.shadow">
+            <attr name="originalFile" stringvalue="Actions/UMLProject/Keyboard/AddToDiagram/org-netbeans-modules-uml-project-ui-nodes-actions-AddToDiagramAction.instance"/>
+        </file>
+    </folder>
+    -->
+    
+    <!--    
+    <folder name="Menu">
+        <folder name="Window">
+            <attr name="oldRootsEnd.txt/Form" boolvalue="true" />
+            <folder name="UMLDiagram">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
+                <file name="DocumentationAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/UMLDiagram/com-sun-uml-netbeans-umlproject-actions-DocumentationAction.instance"/>
+                </file>
+                <attr name="DocumentationAction.shadow/PropertiesAction.shadow" boolvalue="true" />
+                <file name="PropertiesAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/UMLDiagram/com-sun-uml-netbeans-umlproject-actions-PropertiesAction.instance"/>
+                </file>
+                <attr name="DocumentationAction.shadow/UMLPaletteAction.shadow" boolvalue="true" />
+                <file name="UMLPaletteAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/UMLDiagram/com-sun-uml-netbeans-umlproject-actions-UMLPaletteAction.instance"/>
+                </file>
+            </folder>
+            <attr name="Form/Debugger" boolvalue="true" />
+        </folder>
+    </folder>
+    --> 
+
+    <!--
+    <folder name="Windows2">
+        <folder name="Modes">
+            <file name="UMLDocumentation.wsmode" url="windowmanager/UMLDocumentation.wsmode"/>
+            <file name="UMLPalette.wsmode" url="windowmanager/UMLPalette.wsmode"/>
+            <folder name="UMLDocumentation">
+                <file name="UMLDocumentation.wstcref" url="windowmanager/UMLDocumentation/UMLDocumentation.wstcref"/> 
+            </folder>       
+            <folder name="UMLPalette">
+                <file name="UMLPalette.wstcref" url="windowmanager/UMLPalette/UMLPalette.wstcref"/> 
+            </folder>       
+        </folder>
+        
+        <folder name="Components">          
+            <file name="UMLDocumentation.settings" url="components/UMLDocumentation.settings"/>           
+            <file name="UMLPalette.settings" url="components/UMLPalette.settings"/>           
+        </folder>
+        
+        <folder name="Groups">
+            <file name="uml-diagram.wsgrp" url="groups/uml-diagram.wsgrp"/> 
+            <folder name="uml-diagram">
+                <file name="UMLDocumentation.wstcgrp" url="groups/uml-diagram/UMLDocumentation.wstcgrp"/>
+                <file name="UMLPalette.wstcgrp" url="groups/uml-diagram/UMLPalette.wstcgrp"/>
+            </folder>
+        </folder>
+    </folder>
+    -->
+</filesystem>

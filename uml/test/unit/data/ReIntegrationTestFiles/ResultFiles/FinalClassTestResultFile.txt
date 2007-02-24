@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XMI xmlns:UML="omg.org/UML/1.4" xmi.version="2.0"> <XMI.header> <XMI.metamodel xmi.name="UML" xmi.version="1.4"/> <XMI.documentation> <XMI.exporter> Embarcadero's Describe </XMI.exporter> <XMI.exporterVersion> 6.0 </XMI.exporterVersion> </XMI.documentation> </XMI.header> <XMI.content> <UML:Project xmi.id="1" mode="Implementation" defaultLanguage="Java" projVersion="6.1.4.837" name="TestReIntegration">
+<UML:Element.ownedElement><UML:Class isAbstract="false" isLeaf="true" visibility="package" isFinal="true" name="FinalClassTestFile" xmi.id="2" owner="1"></UML:Class></UML:Element.ownedElement></UML:Project></XMI.content> </XMI>

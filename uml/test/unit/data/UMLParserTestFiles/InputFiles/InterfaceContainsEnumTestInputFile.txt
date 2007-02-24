@@ -1,0 +1,11 @@
+Interface Declaration
+ Modifiers
+ { InterfaceContainsEnumTestFile, Name }
+ Generalization
+ { {, Class Body Start }
+ Enumeration Declaration
+  Modifiers
+  { Enum1, Name }
+  Realization
+  Body
+ { }, Class Body End }

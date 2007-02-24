@@ -1,0 +1,28 @@
+Identifier
+ { ., Scope Operator }
+ Identifier
+  { ., Scope Operator }
+  Identifier
+   { ., Scope Operator }
+   Identifier
+    { java, Identifier }
+   { lang, Identifier }
+  { Math, Identifier }
+ { *, OnDemand Operator }
+Class Declaration
+ Modifiers
+  { public, Modifier }
+ { StaticImportTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+   Type
+    { double, Primitive Type }
+   { piValue, Name }
+   Initializer
+    Identifier
+     { PI, Identifier }
+  { }, Class Body End }

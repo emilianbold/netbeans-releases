@@ -1,0 +1,20 @@
+Class Declaration
+ Modifiers
+ { ConstructorPrimitiveTypeArgumentTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Constructor Definition
+   Modifiers
+    { public, Modifier }
+   { ConstructorPrimitiveTypeArgumentTestFile, Name }
+   Parameters
+    Parameter
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { a, Name }
+   Constructor Body
+    { {, Method Body Start }
+  { }, Class Body End }

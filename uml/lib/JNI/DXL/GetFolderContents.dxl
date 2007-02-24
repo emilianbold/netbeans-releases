@@ -1,0 +1,887 @@
+void GetFolderContents(Item i)
+{
+	string str = (name i)
+	if ( module ( str ) ) {
+		print "MODULE : " (name i) "\n"
+		Module newmod = read( str, false )
+					
+		Object o
+		for o in newmod do {
+			print "-v-" (identifier o)", " (number o ) (o."Object Heading") "\n"
+		}
+			
+	}
+	else
+	{
+		if ( folder ( str ) ) {
+			print "FOLDER : " (name i) "\n"
+			
+			Folder f = (folder str)
+			current = f
+			Item j
+			
+			for j in f do {
+				GetFolderContents(j)
+				
+				
+			}
+		}
+	}
+}
+
+string GetFolderContent(Item i, int intNestLevel)
+{
+	string strResult = ""
+	string strDelim = ""
+
+	if ( intNestLevel > 0 )
+	{
+		strDelim = "|"
+	}
+
+	intNestLevel += 1
+	
+	string str = (name i)
+	if ( module ( str ) ) {
+		strResult = strDelim "MODULE : " (name i) 
+		Module newmod = read( str, false )
+					
+		Object o
+		for o in newmod do {
+			strResult = strResult "|" "-v-" (identifier o)", " (number o )","(o."Object Heading") ""
+		}
+			
+	}
+	else
+	{
+		if ( folder ( str ) ) {
+			strResult = strDelim  "FOLDER : " (name i) 
+			
+			Folder f = (folder str)
+			current = f
+			Item j
+			
+			for j in f do {
+				string s = ""
+				s = GetFolderContent(j, intNestLevel)
+				strResult = strResult  s
+			}
+		}
+	}	
+
+	return strResult
+}
+
+string GetObjectAsXML(Object m, bool recurse, string strModule)
+{
+	string strResult = ""
+	
+   Object o
+   for o in m do {
+
+      // Special processing to exclude embedded XML for objects of type 'picture'
+      string strObjectText = o."Object Text"
+      if ( strObjectText == "<Picture>" ) {
+      
+         strObjectText = "Picture"
+      
+      } 
+
+      strResult = strResult "<Requirement type=\"Requirement\" id =\"" (identifier o) "\" name=\"" (o."Object Heading") "\" modname=\"" strModule "\" level=\"" (level o) "\" number=\"" (number o) "\"><Description>" strObjectText "</Description>"
+      string s = ""
+      if ( recurse  ) {
+         s = GetObjectAsXML(o, true, strModule)
+      }
+      strResult = strResult s "</Requirement>"
+   }
+
+   return strResult
+}
+
+// Recurse Project - Get all Projects, Folders, Modules
+string GetFolderContentAsXML(Item i)
+{
+	string strResult = ""
+	
+	string str = (name i)
+	
+   if ( module (str) ) {
+
+		strResult = "<Requirement type=\"Category\" id =\"" (name i) "\" name=\"" (name i) "\" level=\"\"  number=\"\"><Description>" (description i) "</Description>"
+      
+      Module newmod = read(str, false)
+					
+		Object o
+      for o in newmod do {
+
+         string s = ""
+
+         int intLevel = (level o)
+         if (intLevel == 1) {
+            
+            string strObjName = ""
+            string strObjShortText = ""
+            if ( (type newmod) != "Link" ) {
+               strObjName = o."Object Heading"                              
+               strObjShortText = o."Object Short Text"
+            }
+            else  {
+               strObjName = "LinkItem"                            
+               strObjShortText = "LinkText"
+            }
+
+            strResult = strResult "<Requirement type=\"Requirement\" id =\"" (identifier o) "\" name=\"" strObjName "\" level=\"" (level o) "\" number=\"" (number o) "\"><Description>" strObjShortText "</Description>"
+            
+            s = GetObjectAsXML(o, true, "")
+            strResult = strResult s "</Requirement>"  
+         }
+      }
+      strResult = strResult "</Requirement>"  
+ 	}
+	else
+	{
+		if ( folder (str) ) {
+			
+			Folder f = (folder str)
+			current = f
+			Item j
+			
+			for j in f do {
+				string s = GetFolderContentAsXML(j)
+				strResult = strResult  s
+			}
+		}
+	}	
+
+	return strResult
+}
+
+// Do not recurse modules and objects
+
+string GetModuleNamesXML(Item i)
+{
+	string strResult = ""
+	
+	string str = (name i)
+	
+   if ( module (str) ) {
+
+		strResult = "<Requirement type=\"Category\" id =\"" (name i) "\" name=\"" (name i) "\" level=\"\"  number=\"\"><Description>" (description i) "</Description>" "</Requirement>" 
+	      
+ 	}
+	else
+	{
+		if ( folder (str) ) {
+			
+			Folder f = (folder str)
+			current = f
+			Item j
+			
+			for j in f do {
+				string s = GetModuleNamesXML(j)
+				strResult = strResult  s
+			}
+		}
+	}	
+
+	return strResult
+}
+
+// Version 2 - Do not recurse modules and objects, Add ModName
+
+string GetModNamesXML(Item i, string strFolder)
+{
+	string strResult = ""
+	
+	string str = (name i)
+
+   if ( strFolder == "" )
+   {
+      strFolder = "/" (name current)
+   }
+	
+   if ( module (str) ) {
+
+		strResult = "<Requirement type=\"Category\" id =\"" (name i) "\" name=\"" (name i) "\" modname=\"" strFolder "\" level=\"\"  number=\"\"><Description>" (description i) "</Description>" "</Requirement>" 
+	      
+ 	}
+	else
+	{
+		if ( folder (str) ) {
+			
+			Folder f = (folder str)
+			current = f
+			Item j
+			
+			for j in f do {
+   
+            string strFolderName = strFolder "/" str 
+                     
+         	string s = GetModNamesXML(j, strFolderName )
+				strResult = strResult  s
+			}
+		}
+	}	
+
+	return strResult
+}
+
+// Version 3 - Do not Show Link modules and Describe-created Formal modules
+
+string GetModNamesXML3(Item i, string strFolder)
+{
+	string strResult = ""
+	
+	string str = (name i)
+
+   if ( strFolder == "" ) {
+      strFolder = "/" (name current)
+   }
+	
+   if ( module (str) ) {
+      Module m = read( str, false )	
+
+	   if ( (type m) != "Link" ) {
+			
+         string strView = getDefaultViewForModule(m)
+         if ( strView != "DescribeView" ) {
+            strResult = "<Requirement type=\"Category\" id =\"" (name i) "\" name=\"" (name i) "\" modname=\"" strFolder "\" level=\"\"  number=\"\"><Description>" (description i) "</Description>" "</Requirement>" 
+         }
+
+      }
+	      
+ 	}
+	else	{
+		if ( folder (str) ) {
+			
+			Folder f = (folder str)
+			current = f
+			Item j
+			
+			for j in f do {
+   
+            string strFolderName = strFolder "/" str 
+                     
+         	string s = GetModNamesXML3(j, strFolderName )
+				strResult = strResult  s
+			}
+		}
+	}	
+
+	return strResult
+}
+
+// Get Top Level Requirements from the current module
+
+string GetModuleXML(string strModule)
+{
+   Module m = read( strModule, false )
+
+	//string strResult = ""
+   string strResult = "<?xml version=\"1.0\" ?><RequirementsProject name=\"" (name current) "\">"
+
+	Object o
+   for o in m do {
+
+      int intLevel = (level o)
+      if (intLevel == 1) {
+            
+        strResult = strResult "<Requirement type=\"Requirement\" id =\"" (identifier o) "\" name=\"" (o."Object Heading") "\" modname=\"" strModule "\" level=\"" (level o) "\" number=\"" (number o) "\"><Description>" (o."Object Short Text") "</Description></Requirement>" 
+       
+      }
+
+ 	}
+  	strResult = strResult "</RequirementsProject>"
+
+   oleSetResult strResult
+	return strResult
+}
+
+// Get Top Level Requirements from the current module
+
+string GetModuleXML2(string strProject, string strModule)
+{
+   current = folder strProject
+   
+   Module m = read( strModule, false )
+
+   string strResult = "<?xml version=\"1.0\" ?><RequirementsProject name=\"" strProject "\">"
+
+	Object o
+   for o in m do {
+
+      int intLevel = (level o)
+      if (intLevel == 1) {
+           
+         // Special processing to exclude embedded XML for objects of type 'picture'
+         string strObjectText = o."Object Text"
+         if ( strObjectText == "<Picture>" ) {
+         
+            strObjectText = "Picture"
+         
+         }    
+         
+         strResult = strResult "<Requirement type=\"Requirement\" id =\"" (identifier o) "\" name=\"" (o."Object Heading") "\" modname=\"" strModule "\" level=\"" (level o) "\" number=\"" (number o) "\"><Description>" strObjectText "</Description></Requirement>" 
+       
+      }
+
+ 	}
+  	strResult = strResult "</RequirementsProject>"
+
+   // Uncomment the following line to Debug in a DOORS DXL utility windows  
+   // print strResult
+
+   oleSetResult strResult
+	return strResult
+}
+
+// Get Currency on Module, find object, get object's children
+
+string GetObjectChildrenByIDXML2(string strProject, string strModule, int objParent)
+{
+   current = folder strProject
+   
+   Module m = read( strModule, false )
+   
+   string strResult = "<?xml version=\"1.0\" ?><RequirementsProject name=\"" strProject "\">"
+   
+   Object o = object(objParent)
+    
+   if ( o != null )
+   {
+      strResult = strResult GetObjectAsXML(o, false, strModule) 
+   }
+ 
+  	strResult = strResult "</RequirementsProject>"
+
+   oleSetResult strResult
+   return strResult
+}
+
+// Get Currency on Module, find object
+
+string GetObjectByIDAsXML(string strProject, string strModule, string objSource)
+{
+   current = folder strProject
+   
+   string strResult = "<?xml version=\"1.0\" ?><RequirementsProject name=\"" strProject "\">"
+   
+   Module m = read( strModule, false )   
+   
+   if ( m != null )
+   {
+      Object o
+      for o in m do {
+	      
+         string dest = (identifier o)
+         if ( dest == objSource )  {
+            strResult = strResult "<Requirement type=\"Requirement\" id =\"" (identifier o) "\" name=\"" (o."Object Heading") "\" modname=\"" strModule "\" level=\"" (level o) "\" number=\"" (number o) "\"><Description>" (o."Object Text") "</Description></Requirement>"
+            break
+         }
+ 
+      }
+   }
+  	strResult = strResult "</RequirementsProject>"
+
+   oleSetResult strResult
+   return strResult
+}
+
+// Get Currency on Module, find object
+
+string GetObjectByIDAsXML2(string strProject, string strModule, int objSource)
+{
+   current = folder strProject
+   
+   string strResult = "<?xml version=\"1.0\" ?><RequirementsProject name=\"" strProject "\">"
+   
+   Module m = read( strModule, false )   
+   
+   if ( m != null )
+   {
+      Object o = object(objSource)
+      if ( o != null )
+      {
+         strResult = strResult "<Requirement type=\"Requirement\" id =\"" (identifier o) "\" name=\"" (o."Object Heading") "\" modname=\"" strModule "\" level=\"" (level o) "\" number=\"" (number o) "\"><Description>" (o."Object Text") "</Description></Requirement>"
+      }
+   }
+
+  	strResult = strResult "</RequirementsProject>"
+
+   oleSetResult strResult
+   return strResult
+}
+
+// Get Currency on Module, find object, get object's children
+
+string GetObjectChildrenXML(string strModule, string objParent)
+{
+   Module m = read( strModule, false )
+   
+   string strResult = "<?xml version=\"1.0\" ?><RequirementsProject name=\"" (name current) "\">"
+   
+   Object o
+   for o in m do {
+	   
+      string dest = 	(o."Object Heading")
+      if ( dest == objParent )  {
+        
+        strResult = strResult GetObjectAsXML(o, false, "") 
+      }
+ 
+   }
+  	strResult = strResult "</RequirementsProject>"
+
+   oleSetResult strResult
+   return strResult
+}
+
+// Get Currency on Module, find object, get object's children
+
+string GetObjectChildrenByIDXML(string strModule, string objParent)
+{
+   Module m = read( strModule, false )
+   
+   string strResult = "<?xml version=\"1.0\" ?><RequirementsProject name=\"" (name current) "\">"
+   
+   Object o
+   for o in m do {
+	   
+      string dest = 	(identifier o)
+      if (  dest == objParent )  {
+        
+        strResult = strResult GetObjectAsXML(o, false, strModule) 
+      }
+ 
+   }
+  	strResult = strResult "</RequirementsProject>"
+
+   oleSetResult strResult
+   return strResult
+}
+
+string CreateLinkModule(string strProject, string strModName)
+{
+   string strResult = "" 
+
+     current = project "/" strProject
+
+   Module m = read( strModName, false )
+   if ( m == null )
+   {
+	   m = create( strModName, strModName, manyToMany, false)
+   }
+   
+   oleSetResult strResult
+   return strResult
+}
+
+string CreateFormalModule(string strProject, string strModName)
+{
+   string strResult = "" 
+
+   current = project strProject
+
+   Module m = read( strModName, false )
+   if ( m == null )
+   {
+	   m = create( strModName, strModName, "", 1 , false)
+      current = m
+     	create object type "String" attribute "Describe ID"
+	   create object type "String" attribute "Describe Type"
+	   create object type "String" attribute "Describe View"
+      create object type "Boolean" attribute "Describe Deleted"
+   }
+   
+   oleSetResult strResult
+   return strResult
+}
+
+string CreateFormalModule2(string strProject, string strModName)
+{
+   string strResult = "" 
+
+   current = project "/" strProject
+   strModName = "Describe " strModName
+   
+   Module m
+   if ( ! module (strModName ) )
+   {
+	   m = create( strModName , strModName, "", 1, true)
+	   current = m
+	   create object type "String" attribute "Describe ID"
+	   create object type "String" attribute "Describe Type"
+	   create object type "String" attribute "Describe View"
+	   create object type "Boolean" attribute "Describe Deleted"
+
+	   current = m
+
+	   Column newC
+	   newC = insert (column 1)
+	   title(newC, "Describe Deleted")
+	   width(newC, 160)
+	   attribute(newC, "Describe Deleted")
+
+	   newC = insert (column 1)
+	   title(newC, "Describe Type")
+	   width(newC, 160)
+	   attribute(newC, "Describe Type")
+
+	   newC = insert (column 1)
+	   title(newC, "Describe View")
+	   width(newC, 160)
+	   attribute(newC, "Describe View")
+
+	   newC = insert (column 1)
+	   title(newC, "Describe ID")
+	   width(newC, 160)
+	   attribute(newC, "Describe ID")
+
+	   string strHeadCol = strModName
+	   newC = insert (column 1)
+	   title(newC, strHeadCol )
+	   width(newC, 160)
+	   main( newC )
+   
+	   delete(column 6)
+
+	   string strView = "DescribeView"
+	   save view(strView )
+	   setDefaultViewForModule(m,strView)
+      
+      save(m)
+      close(m)
+   }
+
+   oleSetResult strResult
+   return strResult
+}
+
+
+string InsertObject(string strProject, string strModName, strName, strID, strView, strType)
+{
+   string strResult = "" 
+
+   current = project "/" strProject
+   strModName = "Describe " strModName
+   
+   Module m = edit( strModName )
+ 
+   Object oCurr = last(m)
+   Object obj
+
+   if ( oCurr == null )
+   {
+	    obj = create (m)
+   }
+   else
+   {
+	    obj = create ( after oCurr)
+   }
+
+   obj."Object Heading" = strName
+   obj."Describe ID" = strID
+   obj."Describe View" = strView
+   obj."Describe Type" = strType
+   obj."Describe Deleted" = false
+
+//   Object o
+//   for o in m do {
+//	   print (identifier o) ", " (number o ) "\n"
+//	   print "   >>> " (o."Object Heading") ", "  (o."Object Short Text") ", " (o."Describe ID") ", " (o."Describe Type") ", " (o."Describe Deleted") "\n"
+//   }
+
+   save(m)
+   close(m)
+
+   oleSetResult strResult
+   return strResult
+}
+
+Object FindObject(string strProject, string strModule, string strObjName)
+{
+   current = folder strProject
+   
+   Module m = read( strModule, false )
+   
+   Object o
+   for o in m do {
+	   
+      string strName = "o.ObjectHeading"
+      if ( strName == strObjName )  {
+        
+        return o
+      }
+ 
+   }
+   return o
+}
+
+string LinkObject(string strProjectRoot, string strProject, string strModule, string strObjName, Object objDest)
+{
+   current = folder strProject
+   string strResult = "" 
+   
+   Module m = edit( strModule, false )
+   
+   Object o
+   for o in m do {
+	   
+      string strName = o."Object Heading"
+      print "LinkObject Module item : " strName "\n"
+      
+      if ( strName == strObjName )  {
+        
+        string strLinkHome = "/" strProjectRoot "/Describe Links"
+        o->strLinkHome->objDest
+        strResult = "Link Created"
+        print "LinkObject int status : " strResult "\n"
+      }
+ 
+   }
+   save(m) 
+   close(m)     
+
+   oleSetResult strResult
+   return strResult
+}
+
+string InsertAndLinkObject(string strProjectRoot, string strModName, strName, strID, strView, strType, string strLSProject, string strLSModName , string strLSObjName )
+{
+   string strResult = "" 
+   
+   current = project "/" strProjectRoot
+   strModName = "Describe " strModName
+   
+   Module m = edit( strModName, false )
+    
+   if(isShare(m))
+   {
+	   strResult = "SharedEditModeNotSupported\n"
+   }
+   else
+   {
+      Object oCurr = last(m)
+      Object obj
+
+      if ( oCurr == null )
+      {
+	       obj = create (m)
+      }
+      else
+      {
+	       obj = create ( after oCurr)
+      }
+
+      obj."Object Heading" = strName
+      obj."Describe ID" = strID
+      obj."Describe View" = strView
+      obj."Describe Type" = strType
+      obj."Describe Deleted" = false
+
+
+   // Add Link
+
+      current = folder strLSProject
+
+      Module m2 = edit( strLSModName, false )
+      if(isShare(m2))
+      {
+	      strResult = "SharedEditModeNotSupported\n"
+      }
+      else
+      {
+         Object o
+         for o in m2 do {
+	         
+            string strName = o."Object Heading"
+            // print "LinkObject Module item : " strName "\n"
+      
+            if ( strName == strLSObjName  )  {
+        
+              string strLinkHome = "/" strProjectRoot "/Describe Links"
+              o->strLinkHome->obj
+              strResult = "Link Created"
+            // print "LinkObject int status : " strResult "\n"
+            }
+ 
+         }
+         save(m) 
+         //close(m)
+         save(m2) 
+      }
+   }
+   oleSetResult strResult
+   return strResult
+}
+
+// Get Currency on Module, find object, get object's children
+
+string GetObjectSatisfiers(string strProject, string strModule, string objParent)
+{
+   string strSourceMod = strProject "/" strModule
+   Module m = read( strSourceMod, false )
+   
+   string strResult = "<?xml version=\"1.0\" ?><RequirementProxy source=\"" (name current) "\">"
+   
+   Object o
+   for o in m do {
+	   
+      string dest = (identifier o)
+      if ( dest == objParent )  {
+        
+         strResult = strResult "<Requirement id =\"" objParent "\" name=\"" o."Object Heading" "\"><Satisfiers>"  
+
+     	   Link l
+   	   for l in o->"*" do {
+
+
+		      ModName_ targetMod = target(l)
+		      read(fullName(targetMod), false)
+		      
+	         Object oT = target(l)
+		      if ( oT != null )
+	         {  
+	               strResult = strResult "<Satisfier name=\"" oT."Object Heading" "\" xmiid=\"" oT."Describe ID" "\" type=\"" oT."Describe Type" "\"></Satisfier>" 
+   	      }
+	               
+         }
+      
+         strResult = strResult "</Satisfiers></Requirement>"
+         break
+      }
+
+
+   }
+
+   strResult = strResult "</RequirementProxy>"  
+
+
+   oleSetResult strResult
+   return strResult
+}
+
+// Get Currency on Module, find object, get object's children
+
+string GetObjectSatisfiers2(string strProject, string strModule, int objParent)
+{
+   string strSourceMod = strProject "/" strModule
+   Module m = read( strSourceMod, false )
+   
+   string strResult = "<?xml version=\"1.0\" ?><RequirementProxy source=\"" (name current) "\">"
+   
+   Object o = object(objParent)
+
+   if ( o != null )
+   {
+      strResult = strResult "<Requirement id =\"" objParent "\" name=\"" o."Object Heading" "\"><Satisfiers>"  
+
+      Link l
+      for l in o->"*" do {
+
+		   ModName_ targetMod = target(l)
+		   read(fullName(targetMod), false)
+		   
+	      Object oT = target(l)
+		   if ( oT != null )
+	      {  
+	         strResult = strResult "<Satisfier name=\"" oT."Object Heading" "\" xmiid=\"" oT."Describe ID" "\" type=\"" oT."Describe Type" "\" project=\"" oT."Describe View" "\"></Satisfier>" 
+   	   }
+	            
+      }
+
+      strResult = strResult "</Satisfiers></Requirement>"
+   }
+
+   strResult = strResult "</RequirementProxy>"  
+
+
+   oleSetResult strResult
+   return strResult
+}
+
+
+// Get Currency on Module, find object, get object's children
+
+string DeleteObjectSatisfier(string strProject, string strModule, string objParent, string strSatisfierID )
+{
+   string strResult = ""
+   string strSourceMod = strProject "/" strModule
+
+   Module m = edit( strSourceMod, false )
+   
+   if(isShare(m))
+   {
+	   strResult = "SharedEditModeNotSupported\n"
+   }
+   else
+   {
+   
+      Object o
+      Object oT
+      for o in m do {
+	      
+         string dest = (identifier o)
+         if ( dest == objParent ) {
+
+
+               bool bFoundLink = false
+     	         Link l
+	            Link k
+
+   	         for l in o->"*" do {
+
+		            ModName_ targetMod = target(l)
+		            read(fullName(targetMod), false)
+		            
+	               oT = target(l)
+		         
+                  if ( oT != null ) {  
+                     string strID = oT."Describe ID"
+         
+                     if ( strID == strSatisfierID ) {
+                        bFoundLink = true
+			               k = l
+		                  break
+                     }
+   	            }
+	                     
+               }
+
+               if ( bFoundLink ) {
+                  
+                     if (isShare current)
+		               { 
+                        string mess = lock current Object
+			            		              
+                        if(!null mess)   
+	   	               {
+                           strResult = mess
+                        }
+                        else
+                        {
+                           delete(k) 
+                           strResult = "Deleted"  
+                           break
+                        }
+                     }
+                     else 
+                     {
+                           delete(k) 
+                           strResult = "Deleted"  
+                           break
+
+                     }
+               }
+         
+         
+         }
+
+      }
+   }
+   
+   oleSetResult strResult
+   return strResult
+}
+
+

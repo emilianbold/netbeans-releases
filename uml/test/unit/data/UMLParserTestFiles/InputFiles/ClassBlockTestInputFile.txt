@@ -1,0 +1,23 @@
+Class Declaration
+ Modifiers
+ { ClassBlockTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Static Initializer
+   { {, Body Start }
+   Variable Definition
+    Modifiers
+    Type
+     { int, Primitive Type }
+    { i, Name }
+   { }, Body End }
+  { {, Body Start }
+  Variable Definition
+   Modifiers
+   Type
+    { int, Primitive Type }
+   { j, Name }
+  { }, Body End }
+  { }, Class Body End }

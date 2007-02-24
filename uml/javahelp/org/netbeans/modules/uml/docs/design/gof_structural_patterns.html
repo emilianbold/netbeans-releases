@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>GoF Structural Patterns (UML Modeling)</title>
+</head>
+<body>
+<h2>GoF Structural Patterns</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>GoF (Gang of Four) structural patterns deal with the way in which classes and objects form larger structures. Structural class patterns use inheritance to compose interfaces or implementations. For example, multiple inheritance dictates that a single class might be a mixture of more than one parent class. Multiple inheritance makes it easier for independently developed class libraries to work together. </p>
+<p>The table below describes each of the GoF structural patterns:</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr valign="top">
+<th scope="col" align="left">Pattern Name</th>
+<th scope="col" align="left">Design Problem Handled</th>
+<th scope="col" align="left">Role</th>
+<th scope="col" align="left">Description</th>
+</tr>
+<tr valign="top">
+<td rowspan="4">Adapter</td>
+<td rowspan="4">Translate the interface of a class into an interface that clients expect. Adapter eliminates incompatible interfaces, allowing classes to work together that couldn't otherwise.</td>
+<td>Target</td>
+<td>Defines the set of operations used by the client to abstract a particular request.</td>
+</tr>
+<tr valign="top">
+<td>Client</td>
+<td>Manipulates the Target object.</td>
+</tr>
+<tr valign="top">
+<td>Adaptee</td>
+<td>Provides a specific adaptation that can be used for a particular request.</td>
+</tr>
+<tr valign="top">
+<td>Adapter</td>
+<td>Provides the glue between a specific target request and a specific Adaptee, which actually handles the request. </td>
+</tr>
+<tr valign="top">
+<td rowspan="4">Bridge </td>
+<td rowspan="4">Provides an abstract mechanism that allows specific implementations of a particular behavior to vary. </td>
+<td>Abstraction</td>
+<td>Defines the abstract interface to be implemented by the RefinedAbstraction.</td>
+</tr>
+<tr valign="top">
+<td>RefinedAbstraction</td>
+<td>Implements the operations declared in the Abstraction interface.</td>
+</tr>
+<tr valign="top">
+<td>Implementor</td>
+<td>Defines the abstract interface implemented by the ConcreteImplementor. Abstraction uses the Implementor.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteImplementor</td>
+<td>Implements the operations declared in the Implementor interface.</td>
+</tr>
+<tr valign="top">
+<td rowspan="4">Composite</td>
+<td rowspan="4">Composite allows clients to manipulate objects that can contain other objects in a uniform manner.</td>
+<td>Component</td>
+<td>Defines the fundamental interface that all objects must implement to participate in the composition.</td>
+</tr>
+<tr valign="top">
+<td>Leaf</td>
+<td>An object that contains no other objects in relation to the composition.</td>
+</tr>
+<tr valign="top">
+<td>Composite</td>
+<td>An object that contains other objects that conform to the Component interface.</td>
+</tr>
+<tr valign="top">
+<td>Client</td>
+<td>Manipulates the Component object.</td>
+</tr>
+<tr valign="top">
+<td rowspan="4">Decorator</td>
+<td rowspan="4">Dynamically append additional responsibilities to an object. Decorators extend functionality by providing a flexible alternative to subclassing.</td>
+<td>Component</td>
+<td>Defines the abstract interface that must be implemented by any object that wishes to be dynamically decorated.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteComponent</td>
+<td>Implements the operations declared in the Component interface.</td>
+</tr>
+<tr valign="top">
+<td>Decorator</td>
+<td>The abstract interface implemented by ConcreteDecorators.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteDecorator</td>
+<td>Implements the operations declared in the Decorator interface.</td>
+</tr>
+<tr valign="top">
+<td rowspan="2">Facade</td>
+<td rowspan="2">Provides a higher level entry point into a potentially complex sub system, thereby making that subsystem more manageable for the client. </td>
+<td>Facade</td>
+<td>The object responsible for request delegation.</td>
+</tr>
+<tr valign="top">
+<td>Subsystem</td>
+<td>Implements the specific requests as delegated by the Facade object. </td>
+</tr>
+<tr valign="top">
+<td rowspan="5">Flyweight</td>
+<td rowspan="5">Sharing is used to efficiently support large numbers of fine-grained objects.</td>
+<td>Flyweight</td>
+<td>Defines an abstract interface used by clients to manipulate state that cannot be shared between ConcreteFlyweights.</td>
+</tr>
+<tr valign="top">
+<td>ConcreteFlyweight</td>
+<td>Implements the Flyweight interface as well as providing a storage location for state that can be shared.</td>
+</tr>
+<tr valign="top">
+<td>UnsharedConcreteFlyweight</td>
+<td>Implements the Flyweight interface as well as providing a storage location for state that cannot be shared.</td>
+</tr>
+<tr valign="top">
+<td>FlyweightFactory</td>
+<td>Provides operations for creating ConcreteFlyweight objects.</td>
+</tr>
+<tr valign="top">
+<td>Client</td>
+<td>Manipulates the various Flyweight objects. </td>
+</tr>
+<tr valign="top">
+<td rowspan="2">Proxy</td>
+<td rowspan="2">A proxy or placeholder is provided for another object which controls access to it</td>
+<td>Proxy</td>
+<td>Implements the interface defined by Subject which in turn passes all requests through that interface to the RealSubject.</td>
+</tr>
+<tr valign="top">
+<td>Subject</td>
+<td>Defines the set of operations that RealSubject and Proxy must implement. </td>
+</tr>
+</table>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="gof_design_patterns.html">GoF Design Patterns</a></dd>
+<dd><a href="gof_behavioral_patterns.html">GoF Behavioral Patterns</a></dd>
+<dd><a href="gof_creational_patterns.html">GoF Creational Patterns</a></dd>
+</dl>
+<hr>
+<a href="../credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

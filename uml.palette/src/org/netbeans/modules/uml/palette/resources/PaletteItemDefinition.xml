@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+
+<PaletteDefinitions>
+  <Palette name="Class Elements">
+    <Button paletteid="1" name="Class" id="ID_VIEWNODE_UML_CLASS" tooltip_key="HINT_Class" icon16="toolbar_images/Class.png" icon32="toolbar_images/Class_32.png"></Button>
+    <Button paletteid="2" name="Interface" id="ID_VIEWNODE_UML_INTERFACE" tooltip_key="HINT_Interface" icon16="toolbar_images/Interface.png" icon32="toolbar_images/Interface_32.png"></Button>
+    <Button paletteid="3" name="Package" id="ID_VIEWNODE_UML_PACKAGE" tooltip_key="HINT_Package" icon16="toolbar_images/DTPackage.png" icon32="toolbar_images/DTPackage_32.png"></Button>
+    <Button paletteid="4" name="Collaboration Lifeline" id="ID_VIEWNODE_UML_COLLABORATIONLIFELINE" tooltip_key="HINT_Collaboration_Lifeline" icon16="toolbar_images/CollaborationLifeline.png" icon32="toolbar_images/CollaborationLifeline_32.png"></Button>
+    <Button paletteid="5" name="Boundary Class" id="ID_VIEWNODE_UML_CLASS_BOUNDARY" tooltip_key="HINT_Boundary_Class" icon16="toolbar_images/BoundryClass.png" icon32="toolbar_images/BoundryClass_32.png"></Button>
+    <Button paletteid="6" name="Control Class" id="ID_VIEWNODE_UML_CLASS_CONTROL" tooltip_key="HINT_Control_Class" icon16="toolbar_images/ControlClass.png" icon32="toolbar_images/ControlClass_32.png"></Button>
+    <Button paletteid="7" name="Entity Class" id="ID_VIEWNODE_UML_CLASS_ENTITY" tooltip_key="HINT_Entity_Class" icon16="toolbar_images/EntityClass.png" icon32="toolbar_images/EntityClass_32.png"></Button>
+    <Button paletteid="8" name="Enumeration" id="ID_VIEWNODE_UML_ENUMERATION" tooltip_key="HINT_Enumeration" icon16="toolbar_images/Enumeration.png" icon32="toolbar_images/Enumeration_32.png"></Button>
+    <Button paletteid="9" name="Node" id="ID_VIEWNODE_UML_NODE" tooltip_key="HINT_Node" icon16="toolbar_images/Node.png" icon32="toolbar_images/Node_32.png"></Button>
+    <Button paletteid="10" name="Datatype" id="ID_VIEWNODE_UML_DATATYPE" tooltip_key="HINT_Datatype" icon16="toolbar_images/Datatype.png" icon32="toolbar_images/Datatype_32.png"></Button>
+    <Button paletteid="11" name="Artifact" id="ID_VIEWNODE_UML_ARTIFACT" tooltip_key="HINT_Artifact" icon16="toolbar_images/Artifact.png" icon32="toolbar_images/Artifact_32.png"></Button>
+    <Button paletteid="12" name="Aliased" id="ID_VIEWNODE_UML_ALIASEDTYPE" tooltip_key="HINT_Aliased_Type" icon16="toolbar_images/aliasedtype.png" icon32="toolbar_images/aliasedtype_32.png"></Button>
+    <Button paletteid="13" name="Utility Class" id="ID_VIEWNODE_UML_UTILITYCLASS" tooltip_key="HINT_Utility_Class" icon16="toolbar_images/UtilityClass.png" icon32="toolbar_images/UtilityClass_32.png"></Button>
+    <Button paletteid="14" name="Actor" id="ID_VIEWNODE_UML_ACTOR" tooltip_key="HINT_Actor" icon16="toolbar_images/actor.png" icon32="toolbar_images/actor_32.png"></Button>
+    <Button paletteid="15" name="Generalization" id="ID_VIEWNODE_UML_GENERALIZATION" tooltip_key="HINT_Generalization" icon16="toolbar_images/GeneraLink.png" icon32="toolbar_images/GeneraLink_32.png"></Button>
+    <Button paletteid="16" name="Dependency" id="ID_VIEWNODE_UML_DEPENDENCY" tooltip_key="HINT_Dependency" icon16="toolbar_images/Dependency.png" icon32="toolbar_images/Dependency_32.png"></Button>
+    <Button paletteid="17" name="Realize" id="ID_VIEWNODE_UML_REALIZATION" tooltip_key="HINT_Realize" icon16="toolbar_images/Realize.png" icon32="toolbar_images/Realize_32.png"></Button>
+    <Button paletteid="18" name="Usage" id="ID_VIEWNODE_UML_USAGE" tooltip_key="HINT_Usage" icon16="toolbar_images/Usage.png" icon32="toolbar_images/Usage_32.png"></Button>
+    <Button paletteid="19" name="Permission" id="ID_VIEWNODE_UML_PERMISSION" tooltip_key="HINT_Permission" icon16="toolbar_images/Permission.png" icon32="toolbar_images/Permission_32.png"></Button>
+    <Button paletteid="20" name="Abstraction" id="ID_VIEWNODE_UML_ABSTRACTION" tooltip_key="HINT_Abstraction" icon16="toolbar_images/Abstraction.png" icon32="toolbar_images/Abstraction_32.png"></Button>
+    <Button paletteid="21" name="Implementation" id="ID_VIEWNODE_UML_IMPLEMENTATION" tooltip_key="HINT_Implementation" icon16="toolbar_images/Implementation.png" icon32="toolbar_images/Implementation_32.png"></Button>
+    <Button paletteid="22" name="Nested Link" id="ID_VIEWNODE_UML_NESTEDLINK" tooltip_key="HINT_Nested_Link" icon16="toolbar_images/NestedLink.png" icon32="toolbar_images/NestedLink_32.png"></Button>
+    <Button paletteid="23" name="Template Class" id="ID_VIEWNODE_UML_TEMPLATECLASS" tooltip_key="HINT_Template_Class" icon16="toolbar_images/TemplateClass.png" icon32="toolbar_images/TemplateClass_32.png"></Button>
+    <Button paletteid="24" name="Derivation Classifier" id="ID_VIEWNODE_UML_DERIVATIONCLASSIFIER" tooltip_key="HINT_Derivation_Classifier" icon16="toolbar_images/DerivationClassifier.png" icon32="toolbar_images/DerivationClassifier_32.png"></Button>
+    <Button paletteid="25" name="Derivation Edge" id="ID_VIEWNODE_UML_DERIVATIONEDGE" tooltip_key="HINT_Derivation_Edge" icon16="toolbar_images/DerivationEdge.png" icon32="toolbar_images/DerivationEdge_32.png"></Button>
+    <Button paletteid="26" name="Association" id="ID_VIEWNODE_UML_ASSOCIATION_NN_NN" tooltip_key="HINT_Association" icon16="toolbar_images/Association.png" icon32="toolbar_images/Association_32.png"></Button>
+    <Button paletteid="27" name="Composition" id="ID_VIEWNODE_UML_AGGREGATION_CO_NN" tooltip_key="HINT_Composition" icon16="toolbar_images/Composition.png" icon32="toolbar_images/Composition_32.png"></Button>
+    <Button paletteid="28" name="Navigable Composition" id="ID_VIEWNODE_UML_AGGREGATION_CO_NA" tooltip_key="HINT_Navigable_Composition" icon16="toolbar_images/NavigableComposition.png" icon32="toolbar_images/NavigableComposition_32.png"></Button>
+    <Button paletteid="29" name="Aggregation" id="ID_VIEWNODE_UML_AGGREGATION_AG_NN" tooltip_key="HINT_Aggregation" icon16="toolbar_images/Aggregation.png" icon32="toolbar_images/Aggregation_32.png"></Button>
+    <Button paletteid="30" name="Navigable Aggregation" id="ID_VIEWNODE_UML_AGGREGATION_AG_NA" tooltip_key="HINT_Navigable_Aggregation" icon16="toolbar_images/NavigableAggregation.png" icon32="toolbar_images/NavigableAggregation_32.png"></Button>
+    <Button paletteid="31" name="Navigable Association" id="ID_VIEWNODE_UML_ASSOCIATION_NN_NA" tooltip_key="HINT_Navigable_Association" icon16="toolbar_images/DirectionAssoc.png" icon32="toolbar_images/DirectionAssoc_32.png"></Button>
+    <Button paletteid="32" name="Association Class" id="ID_VIEWNODE_UML_ASSOCIATIONCLASS" tooltip_key="HINT_Association_Class" icon16="toolbar_images/ClassAssociation.png" icon32="toolbar_images/ClassAssociation_32.png"></Button>
+    <Button paletteid="33" name="Design Pattern" id="ID_VIEWNODE_UML_COLLABORATION" tooltip_key="HINT_Design_Pattern" icon16="toolbar_images/DesignPattern.png" icon32="toolbar_images/DesignPattern_32.png"></Button>
+    <Button paletteid="34" name="Role" id="ID_VIEWNODE_UML_PARTFACADE_CLASS" tooltip_key="HINT_Role" icon16="toolbar_images/ClassifierRole.png" icon32="toolbar_images/ClassifierRole_32.png"></Button>
+    <Button paletteid="35" name="Interface Role" id="ID_VIEWNODE_UML_PARTFACADE_INTERFACE" tooltip_key="HINT_Interface_Role" icon16="toolbar_images/PartFacadeInterface.png" icon32="toolbar_images/PartFacadeInterface_32.png"></Button>
+    <Button paletteid="36" name="Actor Role" id="ID_VIEWNODE_UML_PARTFACADE_ACTOR" tooltip_key="HINT_Actor_Role" icon16="toolbar_images/PartFacadeActor.png" icon32="toolbar_images/PartFacadeActor_32.png"></Button>
+    <Button paletteid="37" name="Class Role" id="ID_VIEWNODE_UML_PARTFACADE_CLASS" tooltip_key="HINT_Class_Role" icon16="toolbar_images/PartFacadeClass.png" icon32="toolbar_images/PartFacadeClass_32.png"></Button>
+    <Button paletteid="38" name="Use Case Role" id="ID_VIEWNODE_UML_PARTFACADE_USECASE" tooltip_key="HINT_Use_Case_Role" icon16="toolbar_images/PartFacadeUseCase.png" icon32="toolbar_images/PartFacadeUseCase_32.png"></Button>
+    <Button paletteid="39" name="Role Binding" id="ID_VIEWNODE_UML_PARTFACADELINK" tooltip_key="HINT_Role_Binding" icon16="toolbar_images/PartFacadeLink.png" icon32="toolbar_images/PartFacadeLink_32.png"></Button>
+    <Button paletteid="41" name="Comment" id="ID_VIEWNODE_UML_COMMENT" tooltip_key="HINT_Comment" icon16="toolbar_images/Notepad.png" icon32="toolbar_images/Notepad_32.png"></Button>
+    <Button paletteid="40" name="Link Comment" id="ID_VIEWNODE_UML_COMMENTLINK" tooltip_key="HINT_Link_Comment" icon16="toolbar_images/NoteLink.png" icon32="toolbar_images/NoteLink_32.png"></Button>
+  </Palette>
+  <Palette name="Use Case Diagram">
+    <Button paletteid="301" name="Use Case" id="ID_VIEWNODE_UML_USECASE" tooltip_key="HINT_Use_Case" icon16="toolbar_images/UseCase.png" icon32="toolbar_images/UseCase_32.png"></Button>
+    <Button paletteid="302" name="Package" id="ID_VIEWNODE_UML_PACKAGE" tooltip_key="HINT_Package" icon16="toolbar_images/DTPackage.png" icon32="toolbar_images/DTPackage_32.png"></Button>
+    <Button paletteid="303" name="Actor" id="ID_VIEWNODE_UML_ACTOR" tooltip_key="HINT_Actor" icon16="toolbar_images/actor.png" icon32="toolbar_images/actor_32.png"></Button>
+    <Button paletteid="304" name="Include" id="ID_VIEWNODE_UML_INCLUDE" tooltip_key="HINT_Include" icon16="toolbar_images/Include.png" icon32="toolbar_images/Include_32.png"></Button>
+    <Button paletteid="305" name="Extend" id="ID_VIEWNODE_UML_EXTEND" tooltip_key="HINT_Extend" icon16="toolbar_images/Extend.png" icon32="toolbar_images/Extend_32.png"></Button>
+    <Button paletteid="306" name="Generalization" id="ID_VIEWNODE_UML_GENERALIZATION" tooltip_key="HINT_Generalization" icon16="toolbar_images/GeneraLink.png" icon32="toolbar_images/GeneraLink_32.png"></Button>
+    <Button paletteid="307" name="Dependency" id="ID_VIEWNODE_UML_DEPENDENCY" tooltip_key="HINT_Dependency" icon16="toolbar_images/Dependency.png" icon32="toolbar_images/Dependency_32.png"></Button>
+    <Button paletteid="308" name="Realize" id="ID_VIEWNODE_UML_REALIZATION" tooltip_key="HINT_Realize" icon16="toolbar_images/Realize.png" icon32="toolbar_images/Realize_32.png"></Button>
+    <Button paletteid="309" name="Usage" id="ID_VIEWNODE_UML_USAGE" tooltip_key="HINT_Usage" icon16="toolbar_images/Usage.png" icon32="toolbar_images/Usage_32.png"></Button>
+    <Button paletteid="310" name="Permission" id="ID_VIEWNODE_UML_PERMISSION" tooltip_key="HINT_Permission" icon16="toolbar_images/Permission.png" icon32="toolbar_images/Permission_32.png"></Button>
+    <Button paletteid="311" name="Abstraction" id="ID_VIEWNODE_UML_ABSTRACTION" tooltip_key="HINT_Abstraction" icon16="toolbar_images/Abstraction.png" icon32="toolbar_images/Abstraction_32.png"></Button>
+    <Button paletteid="312" name="Association" id="ID_VIEWNODE_UML_ASSOCIATION_NN_NN" tooltip_key="HINT_Association" icon16="toolbar_images/Association.png" icon32="toolbar_images/Association_32.png"></Button>
+    <Button paletteid="313" name="Comment" id="ID_VIEWNODE_UML_COMMENT" tooltip_key="HINT_Comment" icon16="toolbar_images/Notepad.png" icon32="toolbar_images/Notepad_32.png"></Button>
+    <Button paletteid="314" name="Link Comment" id="ID_VIEWNODE_UML_COMMENTLINK" tooltip_key="HINT_Link_Comment" icon16="toolbar_images/NoteLink.png" icon32="toolbar_images/NoteLink_32.png"></Button>
+  </Palette>
+  <Palette name="Sequence Diagram">
+    <Button paletteid="401" name="Lifeline" id="ID_VIEWNODE_UML_CLASS" tooltip_key="HINT_Lifeline" icon16="toolbar_images/Object.png" icon32="toolbar_images/Object_32.png"></Button>
+    <Button paletteid="402" name="Actor" id="ID_VIEWNODE_UML_ACTOR" tooltip_key="HINT_Actor" icon16="toolbar_images/SeqActor.png" icon32="toolbar_images/SeqActor_32.png"></Button>
+    <Button paletteid="403" name="Synchronous Message" id="ID_VIEWNODE_UML_MESSAGE" tooltip_key="HINT_Synchronous_Message" icon16="toolbar_images/SynchronousMessage.png" icon32="toolbar_images/SynchronousMessage_32.png"></Button>
+    <Button paletteid="404" name="Asynchronous Message" id="ID_VIEWNODE_UML_MESSAGE_ASYNCHRONOUS" tooltip_key="HINT_Asynchronous_Message" icon16="toolbar_images/AsynchronousMessage.png" icon32="toolbar_images/AsynchronousMessage_32.png"></Button>
+    <Button paletteid="405" name="Create Message" id="ID_VIEWNODE_UML_MESSAGE_CREATE" tooltip_key="HINT_Create_Message" icon16="toolbar_images/Message.png" icon32="toolbar_images/Message_32.png"></Button>
+    <Button paletteid="406" name="Message To Self" id="ID_VIEWNODE_UML_MESSAGE_SELF" tooltip_key="HINT_Message_To_Self" icon16="toolbar_images/SelfMessage.png" icon32="toolbar_images/SelfMessage_32.png"></Button>
+    <Button paletteid="407" name="Destroy Lifeline" id="ID_VIEWNODE_UML_DESTROY_LIFELINE" tooltip_key="HINT_Destroy_Lifeline" icon16="toolbar_images/DestroyLifeline.png" icon32="toolbar_images/DestroyLifeline_32.png"></Button>
+    <Button paletteid="408" name="Combined Fragment" id="ID_VIEWNODE_UML_COMBINED_FRAGMENT" tooltip_key="HINT_Combined_Fragment" icon16="toolbar_images/CombinedFragment.png" icon32="toolbar_images/CombinedFragment_32.png"></Button>
+    <Button paletteid="409" name="Comment" id="ID_VIEWNODE_UML_COMMENT" tooltip_key="HINT_Comment" icon16="toolbar_images/Notepad.png" icon32="toolbar_images/Notepad_32.png"></Button>
+    <Button paletteid="410" name="Link Comment" id="ID_VIEWNODE_UML_COMMENTLINK" tooltip_key="HINT_Link_Comment" icon16="toolbar_images/NoteLink.png" icon32="toolbar_images/NoteLink_32.png"></Button>
+  </Palette>
+  <Palette name="Component Diagram">
+    <Button paletteid="501" name="Component" id="ID_VIEWNODE_UML_COMPONENT" tooltip_key="HINT_Component" icon16="toolbar_images/Component.png" icon32="toolbar_images/Component_32.png"></Button>
+    <Button paletteid="502" name="Class" id="ID_VIEWNODE_UML_CLASS" tooltip_key="HINT_Class" icon16="toolbar_images/Class.png" icon32="toolbar_images/Class_32.png"></Button>
+    <Button paletteid="503" name="Interface" id="ID_VIEWNODE_UML_INTERFACE" tooltip_key="HINT_Interface" icon16="toolbar_images/Interface.png" icon32="toolbar_images/Interface_32.png"></Button>
+    <Button paletteid="504" name="Package" id="ID_VIEWNODE_UML_PACKAGE" tooltip_key="HINT_Package" icon16="toolbar_images/DTPackage.png" icon32="toolbar_images/DTPackage_32.png"></Button>
+    <Button paletteid="505" name="Deployment Specification" id="ID_VIEWNODE_UML_DEPLOYMENTSPEC" tooltip_key="HINT_Deployment_Specification" icon16="toolbar_images/DeploymentSpec.png" icon32="toolbar_images/DeploymentSpec_32.png"></Button>
+    <Button paletteid="506" name="Boundary Class" id="ID_VIEWNODE_UML_CLASS_BOUNDARY" tooltip_key="HINT_Boundary_Class" icon16="toolbar_images/BoundryClass.png" icon32="toolbar_images/BoundryClass_32.png"></Button>
+    <Button paletteid="507" name="Control Class" id="ID_VIEWNODE_UML_CLASS_CONTROL" tooltip_key="HINT_Control_Class" icon16="toolbar_images/ControlClass.png" icon32="toolbar_images/ControlClass_32.png"></Button>
+    <Button paletteid="508" name="Entity Class" id="ID_VIEWNODE_UML_CLASS_ENTITY" tooltip_key="HINT_Entity_Class" icon16="toolbar_images/EntityClass.png" icon32="toolbar_images/EntityClass_32.png"></Button>
+    <Button paletteid="509" name="Enumeration" id="ID_VIEWNODE_UML_ENUMERATION" tooltip_key="HINT_Enumeration" icon16="toolbar_images/Enumeration.png" icon32="toolbar_images/Enumeration_32.png"></Button>
+    <Button paletteid="510" name="Node" id="ID_VIEWNODE_UML_NODE" tooltip_key="HINT_Node" icon16="toolbar_images/Node.png" icon32="toolbar_images/Node_32.png"></Button>
+    <Button paletteid="511" name="Datatype" id="ID_VIEWNODE_UML_DATATYPE" tooltip_key="HINT_Datatype" icon16="toolbar_images/Datatype.png" icon32="toolbar_images/Datatype_32.png"></Button>
+    <Button paletteid="512" name="Artifact" id="ID_VIEWNODE_UML_ARTIFACT" tooltip_key="HINT_Artifact" icon16="toolbar_images/Artifact.png" icon32="toolbar_images/Artifact_32.png"></Button>
+    <Button paletteid="544" name="Aliased" id="ID_VIEWNODE_UML_ALIASEDTYPE" tooltip_key="HINT_Aliased_Type" icon16="toolbar_images/aliasedtype.png" icon32="toolbar_images/aliasedtype_32.png"></Button>
+    <Button paletteid="513" name="Utility Class" id="ID_VIEWNODE_UML_UTILITYCLASS" tooltip_key="HINT_Utility_Class" icon16="toolbar_images/UtilityClass.png" icon32="toolbar_images/UtilityClass_32.png"></Button>
+    <Button paletteid="514" name="Actor" id="ID_VIEWNODE_UML_ACTOR" tooltip_key="HINT_Actor" icon16="toolbar_images/actor.png" icon32="toolbar_images/actor_32.png"></Button>
+    <Button paletteid="515" name="Generalization" id="ID_VIEWNODE_UML_GENERALIZATION" tooltip_key="HINT_Generalization" icon16="toolbar_images/GeneraLink.png" icon32="toolbar_images/GeneraLink_32.png"></Button>
+    <Button paletteid="516" name="Dependency" id="ID_VIEWNODE_UML_DEPENDENCY" tooltip_key="HINT_Dependency" icon16="toolbar_images/Dependency.png" icon32="toolbar_images/Dependency_32.png"></Button>
+    <Button paletteid="517" name="Realize" id="ID_VIEWNODE_UML_REALIZATION" tooltip_key="HINT_Realize" icon16="toolbar_images/Realize.png" icon32="toolbar_images/Realize_32.png"></Button>
+    <Button paletteid="518" name="Usage" id="ID_VIEWNODE_UML_USAGE" tooltip_key="HINT_Usage" icon16="toolbar_images/Usage.png" icon32="toolbar_images/Usage_32.png"></Button>
+    <Button paletteid="519" name="Permission" id="ID_VIEWNODE_UML_PERMISSION" tooltip_key="HINT_Permission" icon16="toolbar_images/Permission.png" icon32="toolbar_images/Permission_32.png"></Button>
+    <Button paletteid="520" name="Abstraction" id="ID_VIEWNODE_UML_ABSTRACTION" tooltip_key="HINT_Abstraction" icon16="toolbar_images/Abstraction.png" icon32="toolbar_images/Abstraction_32.png"></Button>
+    <Button paletteid="521" name="Implementation" id="ID_VIEWNODE_UML_IMPLEMENTATION" tooltip_key="HINT_Implementation" icon16="toolbar_images/Implementation.png" icon32="toolbar_images/Implementation_32.png"></Button>
+    <Button paletteid="522" name="Nested Link" id="ID_VIEWNODE_UML_NESTEDLINK" tooltip_key="HINT_Nested_Link" icon16="toolbar_images/NestedLink.png" icon32="toolbar_images/NestedLink_32.png"></Button>
+    <Button paletteid="523" name="Template Class" id="ID_VIEWNODE_UML_TEMPLATECLASS" tooltip_key="HINT_Template_Class" icon16="toolbar_images/TemplateClass.png" icon32="toolbar_images/TemplateClass_32.png"></Button>
+    <Button paletteid="524" name="Derivation Classifier" id="ID_VIEWNODE_UML_DERIVATIONCLASSIFIER" tooltip_key="HINT_Derivation_Classifier" icon16="toolbar_images/DerivationClassifier.png" icon32="toolbar_images/DerivationClassifier_32.png"></Button>
+    <Button paletteid="525" name="Derivation Edge" id="ID_VIEWNODE_UML_DERIVATIONEDGE" tooltip_key="HINT_Derivation_Edge" icon16="toolbar_images/DerivationEdge.png" icon32="toolbar_images/DerivationEdge_32.png"></Button>
+    <Button paletteid="526" name="Association" id="ID_VIEWNODE_UML_ASSOCIATION_NN_NN" tooltip_key="HINT_Association" icon16="toolbar_images/Association.png" icon32="toolbar_images/Association_32.png"></Button>
+    <Button paletteid="527" name="Composition" id="ID_VIEWNODE_UML_AGGREGATION_CO_NN" tooltip_key="HINT_Composition" icon16="toolbar_images/Composition.png" icon32="toolbar_images/Composition_32.png"></Button>
+    <Button paletteid="528" name="Navigable Composition" id="ID_VIEWNODE_UML_AGGREGATION_CO_NA" tooltip_key="HINT_Navigable_Composition" icon16="toolbar_images/NavigableComposition.png" icon32="toolbar_images/NavigableComposition_32.png"></Button>
+    <Button paletteid="529" name="Aggregation" id="ID_VIEWNODE_UML_AGGREGATION_AG_NN" tooltip_key="HINT_Aggregation" icon16="toolbar_images/Aggregation.png" icon32="toolbar_images/Aggregation_32.png"></Button>
+    <Button paletteid="530" name="Navigable Aggregation" id="ID_VIEWNODE_UML_AGGREGATION_AG_NA" tooltip_key="HINT_Navigable_Aggregation" icon16="toolbar_images/NavigableAggregation.png" icon32="toolbar_images/NavigableAggregation_32.png"></Button>
+    <Button paletteid="531" name="Navigable Association" id="ID_VIEWNODE_UML_ASSOCIATION_NN_NA" tooltip_key="HINT_Navigable_Association" icon16="toolbar_images/DirectionAssoc.png" icon32="toolbar_images/DirectionAssoc_32.png"></Button>
+    <Button paletteid="532" name="Association Class" id="ID_VIEWNODE_UML_ASSOCIATIONCLASS" tooltip_key="HINT_Association_Class" icon16="toolbar_images/ClassAssociation.png" icon32="toolbar_images/ClassAssociation_32.png"></Button>
+    <Button paletteid="533" name="Design Pattern" id="ID_VIEWNODE_UML_COLLABORATION" tooltip_key="HINT_Design_Pattern" icon16="toolbar_images/DesignPattern.png" icon32="toolbar_images/DesignPattern_32.png"></Button>
+    <Button paletteid="534" name="Role" id="ID_VIEWNODE_UML_PARTFACADE_CLASS" tooltip_key="HINT_Role" icon16="toolbar_images/ClassifierRole.png" icon32="toolbar_images/ClassifierRole_32.png"></Button>
+    <Button paletteid="535" name="Interface Role" id="ID_VIEWNODE_UML_PARTFACADE_INTERFACE" tooltip_key="HINT_Interface_Role" icon16="toolbar_images/PartFacadeInterface.png" icon32="toolbar_images/PartFacadeInterface_32.png"></Button>
+    <Button paletteid="536" name="Actor Role" id="ID_VIEWNODE_UML_PARTFACADE_ACTOR" tooltip_key="HINT_Actor_Role" icon16="toolbar_images/PartFacadeActor.png" icon32="toolbar_images/PartFacadeActor_32.png"></Button>
+    <Button paletteid="537" name="Class Role" id="ID_VIEWNODE_UML_PARTFACADE_CLASS" tooltip_key="HINT_Class_Role" icon16="toolbar_images/PartFacadeClass.png" icon32="toolbar_images/PartFacadeClass_32.png"></Button>
+    <Button paletteid="538" name="Use Case Role" id="ID_VIEWNODE_UML_PARTFACADE_USECASE" tooltip_key="HINT_Use_Case_Role" icon16="toolbar_images/PartFacadeUseCase.png" icon32="toolbar_images/PartFacadeUseCase_32.png"></Button>
+    <Button paletteid="539" name="Role Binding" id="ID_VIEWNODE_UML_PARTFACADELINK" tooltip_key="HINT_Role_Binding" icon16="toolbar_images/PartFacadeLink.png" icon32="toolbar_images/PartFacadeLink_32.png"></Button>
+    <Button paletteid="540" name="Delegate" id="ID_VIEWNODE_UML_DELEGATE" tooltip_key="HINT_Delegate" icon16="toolbar_images/Delegate.png" icon32="toolbar_images/Delegate_32.png"></Button>
+    <Button paletteid="541" name="Assembly Connector" id="ID_VIEWNODE_UML_ASSEMBLYCONNECTOR_INITIALEDGE" tooltip_key="HINT_Assembly_Connector" icon16="toolbar_images/AssemblyConnector.png" icon32="toolbar_images/AssemblyConnector_32.png"></Button>
+    <Button paletteid="542" name="Comment" id="ID_VIEWNODE_UML_COMMENT" tooltip_key="HINT_Comment" icon16="toolbar_images/Notepad.png" icon32="toolbar_images/Notepad_32.png"></Button>
+    <Button paletteid="543" name="Link Comment" id="ID_VIEWNODE_UML_COMMENTLINK" tooltip_key="HINT_Link_Comment" icon16="toolbar_images/NoteLink.png" icon32="toolbar_images/NoteLink_32.png"></Button>
+  </Palette>
+  <Palette name="Collaboration Diagram">
+    <Button paletteid="601" name="Lifeline" id="ID_VIEWNODE_UML_COLLABORATIONLIFELINE" tooltip_key="HINT_Lifeline" icon16="toolbar_images/CollaborationLifeline.png" icon32="toolbar_images/CollaborationLifeline_32.png"></Button>
+    <Button paletteid="602" name="Actor" id="ID_VIEWNODE_UML_ACTOR" tooltip_key="HINT_Actor" icon16="toolbar_images/actor.png" icon32="toolbar_images/actor_32.png"></Button>
+    <Button paletteid="603" name="Connector" id="ID_VIEWNODE_UML_CONNECTOR" tooltip_key="HINT_Connector" icon16="toolbar_images/Connector.png" icon32="toolbar_images/Connector_32.png"></Button>
+    <Button paletteid="604" name="Dependency" id="ID_VIEWNODE_UML_DEPENDENCY" tooltip_key="HINT_Dependency" icon16="toolbar_images/Dependency.png" icon32="toolbar_images/Dependency_32.png"></Button>
+    <Button paletteid="605" name="Realize" id="ID_VIEWNODE_UML_REALIZATION" tooltip_key="HINT_Realize" icon16="toolbar_images/Realize.png" icon32="toolbar_images/Realize_32.png"></Button>
+    <Button paletteid="606" name="Usage" id="ID_VIEWNODE_UML_USAGE" tooltip_key="HINT_Usage" icon16="toolbar_images/Usage.png" icon32="toolbar_images/Usage_32.png"></Button>
+    <Button paletteid="607" name="Permission" id="ID_VIEWNODE_UML_PERMISSION" tooltip_key="HINT_Permission" icon16="toolbar_images/Permission.png" icon32="toolbar_images/Permission_32.png"></Button>
+    <Button paletteid="608" name="Abstraction" id="ID_VIEWNODE_UML_ABSTRACTION" tooltip_key="HINT_Abstraction" icon16="toolbar_images/Abstraction.png" icon32="toolbar_images/Abstraction_32.png"></Button>
+    <Button paletteid="609" name="Comment" id="ID_VIEWNODE_UML_COMMENT" tooltip_key="HINT_Comment" icon16="toolbar_images/Notepad.png" icon32="toolbar_images/Notepad_32.png"></Button>
+    <Button paletteid="610" name="Link Comment" id="ID_VIEWNODE_UML_COMMENTLINK" tooltip_key="HINT_Link_Comment" icon16="toolbar_images/NoteLink.png" icon32="toolbar_images/NoteLink_32.png"></Button>
+  </Palette>
+  <Palette name="Activity Diagram">
+    <Button paletteid="101" name="Invocation" id="ID_VIEWNODE_UML_INVOCATIONNODE" tooltip_key="HINT_Invocation" icon16="toolbar_images/InvocationNode.png" icon32="toolbar_images/InvocationNode_32.png"></Button>
+    <Button paletteid="102" name="Activity Edge" id="ID_VIEWNODE_UML_ACTIVITYEDGE" tooltip_key="HINT_Activity_Edge" icon16="toolbar_images/ActivityEdge.png" icon32="toolbar_images/ActivityEdge_32.png"></Button>
+    <Button paletteid="103" name="Decision" id="ID_VIEWNODE_UML_DECISIONNODE" tooltip_key="HINT_Decision" icon16="toolbar_images/Decision.png" icon32="toolbar_images/Decision_32.png"></Button>
+    <Button paletteid="104" name="Vertical Fork" id="ID_VIEWNODE_UML_FORKNODE" tooltip_key="HINT_Vertical_Fork" icon16="toolbar_images/ForkNode.png" icon32="toolbar_images/ForkNode_32.png"></Button>
+    <Button paletteid="105" name="Horizontal Fork" id="ID_VIEWNODE_UML_HORIZONTAL_FORKNODE" tooltip_key="HINT_Horizontal_Fork" icon16="toolbar_images/HorizontalForkNode.png" icon32="toolbar_images/HorizontalForkNode_32.png"></Button>
+    <Button paletteid="106" name="Activity Group" id="ID_VIEWNODE_UML_COMPLEXACTIVITYGROUP" tooltip_key="HINT_Activity_Group" icon16="toolbar_images/ComplexActivityGroup.png" icon32="toolbar_images/ComplexActivityGroup_32.png"></Button>
+    <Button paletteid="107" name="Initial Node" id="ID_VIEWNODE_UML_INITIALNODE" tooltip_key="HINT_Initial_Node" icon16="toolbar_images/InitialNode.png" icon32="toolbar_images/InitialNode_32.png"></Button>
+    <Button paletteid="108" name="Activity Final Node" id="ID_VIEWNODE_UML_ACTIVITYFINALNODE" tooltip_key="HINT_Activity_Final_Node" icon16="toolbar_images/ActivityFinalNode.png" icon32="toolbar_images/ActivityFinalNode_32.png"></Button>
+    <Button paletteid="109" name="Flow Final" id="ID_VIEWNODE_UML_FLOWFINALNODE" tooltip_key="HINT_Flow_Final" icon16="toolbar_images/FlowFinalNode.png" icon32="toolbar_images/FlowFinalNode_32.png"></Button>
+    <Button paletteid="110" name="Parameter Usage" id="ID_VIEWNODE_UML_PARAMETERUSAGENODE" tooltip_key="HINT_Parameter_Usage" icon16="toolbar_images/ParameterUsageNode.png" icon32="toolbar_images/ParameterUsageNode_32.png"></Button>
+    <Button paletteid="111" name="Data Store" id="ID_VIEWNODE_UML_DATASTORENODE" tooltip_key="HINT_Data_Store" icon16="toolbar_images/DatastoreNode.png" icon32="toolbar_images/DatastoreNode_32.png"></Button>
+    <Button paletteid="112" name="Signal" id="ID_VIEWNODE_UML_SIGNALNODE" tooltip_key="HINT_Signal" icon16="toolbar_images/SignalNode.png" icon32="toolbar_images/SignalNode_32.png"></Button>
+    <Button paletteid="113" name="Partition" id="ID_VIEWNODE_UML_PARTITION" tooltip_key="HINT_Partition" icon16="toolbar_images/Partition.png" icon32="toolbar_images/Partition_32.png"></Button>
+    <Button paletteid="114" name="Dependency" id="ID_VIEWNODE_UML_DEPENDENCY" tooltip_key="HINT_Dependency" icon16="toolbar_images/Dependency.png" icon32="toolbar_images/Dependency_32.png"></Button>
+    <Button paletteid="115" name="Realize" id="ID_VIEWNODE_UML_REALIZATION" tooltip_key="HINT_Realize" icon16="toolbar_images/Realize.png" icon32="toolbar_images/Realize_32.png"></Button>
+    <Button paletteid="116" name="Usage" id="ID_VIEWNODE_UML_USAGE" tooltip_key="HINT_Usage" icon16="toolbar_images/Usage.png" icon32="toolbar_images/Usage_32.png"></Button>
+    <Button paletteid="117" name="Permission" id="ID_VIEWNODE_UML_PERMISSION" tooltip_key="HINT_Permission" icon16="toolbar_images/Permission.png" icon32="toolbar_images/Permission_32.png"></Button>
+    <Button paletteid="118" name="Abstraction" id="ID_VIEWNODE_UML_ABSTRACTION" tooltip_key="HINT_Abstraction" icon16="toolbar_images/Abstraction.png" icon32="toolbar_images/Abstraction_32.png"></Button>
+    <Button paletteid="119" name="Comment" id="ID_VIEWNODE_UML_COMMENT" tooltip_key="HINT_Comment" icon16="toolbar_images/Notepad.png" icon32="toolbar_images/Notepad_32.png"></Button>
+    <Button paletteid="120" name="Link Comment" id="ID_VIEWNODE_UML_COMMENTLINK" tooltip_key="HINT_Link_Comment" icon16="toolbar_images/NoteLink.png" icon32="toolbar_images/NoteLink_32.png"></Button>
+  </Palette>
+  <Palette name="Deployment Diagram">
+    <Button paletteid="701" name="Component" id="ID_VIEWNODE_UML_COMPONENT" tooltip_key="HINT_Component" icon16="toolbar_images/Component.png" icon32="toolbar_images/Component_32.png"></Button>
+    <Button paletteid="702" name="Interface" id="ID_VIEWNODE_UML_INTERFACE" tooltip_key="HINT_Interface" icon16="toolbar_images/Interface.png" icon32="toolbar_images/Interface_32.png"></Button>
+    <Button paletteid="703" name="Package" id="ID_VIEWNODE_UML_PACKAGE" tooltip_key="HINT_Package" icon16="toolbar_images/DTPackage.png" icon32="toolbar_images/DTPackage_32.png"></Button>
+    <Button paletteid="704" name="Artifact" id="ID_VIEWNODE_UML_ARTIFACT" tooltip_key="HINT_Artifact" icon16="toolbar_images/Artifact.png" icon32="toolbar_images/Artifact_32.png"></Button>
+    <Button paletteid="705" name="Node" id="ID_VIEWNODE_UML_NODE" tooltip_key="HINT_Node" icon16="toolbar_images/Node.png" icon32="toolbar_images/Node_32.png"></Button>
+    <Button paletteid="706" name="Deployment Specification" id="ID_VIEWNODE_UML_DEPLOYMENTSPEC" tooltip_key="HINT_Deployment_Specification" icon16="toolbar_images/DeploymentSpec.png" icon32="toolbar_images/DeploymentSpec_32.png"></Button>
+    <Button paletteid="707" name="Generalization" id="ID_VIEWNODE_UML_GENERALIZATION" tooltip_key="HINT_Generalization" icon16="toolbar_images/GeneraLink.png" icon32="toolbar_images/GeneraLink_32.png"></Button>
+    <Button paletteid="708" name="Dependency" id="ID_VIEWNODE_UML_DEPENDENCY" tooltip_key="HINT_Dependency" icon16="toolbar_images/Dependency.png" icon32="toolbar_images/Dependency_32.png"></Button>
+    <Button paletteid="709" name="Realize" id="ID_VIEWNODE_UML_REALIZATION" tooltip_key="HINT_Realize" icon16="toolbar_images/Realize.png" icon32="toolbar_images/Realize_32.png"></Button>
+    <Button paletteid="710" name="Usage" id="ID_VIEWNODE_UML_USAGE" tooltip_key="HINT_Usage" icon16="toolbar_images/Usage.png" icon32="toolbar_images/Usage_32.png"></Button>
+    <Button paletteid="711" name="Permission" id="ID_VIEWNODE_UML_PERMISSION" tooltip_key="HINT_Permission" icon16="toolbar_images/Permission.png" icon32="toolbar_images/Permission_32.png"></Button>
+    <Button paletteid="712" name="Abstraction" id="ID_VIEWNODE_UML_ABSTRACTION" tooltip_key="HINT_Abstraction" icon16="toolbar_images/Abstraction.png" icon32="toolbar_images/Abstraction_32.png"></Button>
+    <Button paletteid="713" name="Implementation" id="ID_VIEWNODE_UML_IMPLEMENTATION" tooltip_key="HINT_Implementation" icon16="toolbar_images/Implementation.png" icon32="toolbar_images/Implementation_32.png"></Button>
+    <Button paletteid="714" name="Association" id="ID_VIEWNODE_UML_ASSOCIATION_NN_NN" tooltip_key="HINT_Association" icon16="toolbar_images/Association.png" icon32="toolbar_images/Association_32.png"></Button>
+    <Button paletteid="715" name="Comment" id="ID_VIEWNODE_UML_COMMENT" tooltip_key="HINT_Comment" icon16="toolbar_images/Notepad.png" icon32="toolbar_images/Notepad_32.png"></Button>
+    <Button paletteid="716" name="Link Comment" id="ID_VIEWNODE_UML_COMMENTLINK" tooltip_key="HINT_Link_Comment" icon16="toolbar_images/NoteLink.png" icon32="toolbar_images/NoteLink_32.png"></Button>
+  </Palette>
+  <Palette name="State Diagram">
+    <Button paletteid="801" name="Simple State" id="ID_VIEWNODE_UML_SIMPLE_STATE" tooltip_key="HINT_Simple_State" icon16="toolbar_images/SimpleState.png" icon32="toolbar_images/SimpleState_32.png"></Button>
+    <Button paletteid="802" name="State Transition" id="ID_VIEWNODE_UML_STATE_TRANSITION" tooltip_key="HINT_State_Transition" icon16="toolbar_images/StateTransition.png" icon32="toolbar_images/StateTransition_32.png"></Button>
+    <Button paletteid="803" name="Initial State" id="ID_VIEWNODE_UML_PSEUDOSTATE_INITIAL" tooltip_key="HINT_Initial_State" icon16="toolbar_images/InitialState.png" icon32="toolbar_images/InitialState_32.png"></Button>
+    <Button paletteid="804" name="Final State" id="ID_VIEWNODE_UML_FINALSTATE" tooltip_key="HINT_Final_State" icon16="toolbar_images/FinalState.png" icon32="toolbar_images/FinalState_32.png"></Button>
+    <Button paletteid="805" name="Aborted Final State" id="ID_VIEWNODE_UML_FINALSTATE_ABORTED" tooltip_key="HINT_Aborted_Final_State" icon16="toolbar_images/abortedfinalstate.png" icon32="toolbar_images/abortedfinalstate_32.png"></Button>
+    <Button paletteid="806" name="Vertical Join/Merge" id="ID_VIEWNODE_UML_PSEUDOSTATE_JOIN" tooltip_key="HINT_Vertical_Join/Merge" icon16="toolbar_images/PseudostateJoin.png" icon32="toolbar_images/PseudostateJoin_32.png"></Button>
+    <Button paletteid="807" name="Horizontal Join/Merge" id="ID_VIEWNODE_UML_PSEUDOSTATE_JOIN_HORIZONTAL" tooltip_key="HINT_Horizontal_Join/Merge" icon16="toolbar_images/PseudostateJoinHorizontal.png" icon32="toolbar_images/PseudostateJoinHorizontal_32.png"></Button>
+    <Button paletteid="808" name="Composite State" id="ID_VIEWNODE_UML_COMPOSITE_STATE" tooltip_key="HINT_Composite_State" icon16="toolbar_images/CompositeState.png" icon32="toolbar_images/CompositeState_32.png"></Button>
+    <Button paletteid="809" name="Choice Pseudo State" id="ID_VIEWNODE_UML_PSEUDOSTATE_CHOICE" tooltip_key="HINT_Choice_Pseudo_State" icon16="toolbar_images/PseudostateChoice.png" icon32="toolbar_images/PseudostateChoice_32.png"></Button>
+    <Button paletteid="810" name="Shallow History State" id="ID_VIEWNODE_UML_PSEUDOSTATE_SHALLOWHISTORY" tooltip_key="HINT_Shallow_History_State" icon16="toolbar_images/PseudostateShallowHistory.png" icon32="toolbar_images/PseudostateShallowHistory_32.png"></Button>
+    <Button paletteid="811" name="Deep History State" id="ID_VIEWNODE_UML_PSEUDOSTATE_DEEPHISTORY" tooltip_key="HINT_Deep_History_State" icon16="toolbar_images/PseudostateDeepHistory.png" icon32="toolbar_images/PseudostateDeepHistory_32.png"></Button>
+    <Button paletteid="812" name="Entry Point State" id="ID_VIEWNODE_UML_PSEUDOSTATE_ENTRYPOINT" tooltip_key="HINT_Entry_Point_State" icon16="toolbar_images/PseudostateEntryPoint.png" icon32="toolbar_images/PseudostateEntryPoint_32.png"></Button>
+    <Button paletteid="813" name="Junction State" id="ID_VIEWNODE_UML_PSEUDOSTATE_JUNCTION" tooltip_key="HINT_Junction_State" icon16="toolbar_images/PseudostateJunction.png" icon32="toolbar_images/PseudostateJunction_32.png"></Button>
+    <Button paletteid="814" name="Submachine State" id="ID_VIEWNODE_UML_SUBMACHINE_STATE" tooltip_key="HINT_Submachine_State" icon16="toolbar_images/SubmachineState.png" icon32="toolbar_images/SubmachineState_32.png"></Button>
+    <Button paletteid="815" name="Dependency" id="ID_VIEWNODE_UML_DEPENDENCY" tooltip_key="HINT_Dependency" icon16="toolbar_images/Dependency.png" icon32="toolbar_images/Dependency_32.png"></Button>
+    <Button paletteid="816" name="Realize" id="ID_VIEWNODE_UML_REALIZATION" tooltip_key="HINT_Realize" icon16="toolbar_images/Realize.png" icon32="toolbar_images/Realize_32.png"></Button>
+    <Button paletteid="817" name="Usage" id="ID_VIEWNODE_UML_USAGE" tooltip_key="HINT_Usage" icon16="toolbar_images/Usage.png" icon32="toolbar_images/Usage_32.png"></Button>
+    <Button paletteid="818" name="Permission" id="ID_VIEWNODE_UML_PERMISSION" tooltip_key="HINT_Permission" icon16="toolbar_images/Permission.png" icon32="toolbar_images/Permission_32.png"></Button>
+    <Button paletteid="819" name="Abstraction" id="ID_VIEWNODE_UML_ABSTRACTION" tooltip_key="HINT_Abstraction" icon16="toolbar_images/Abstraction.png" icon32="toolbar_images/Abstraction_32.png"></Button>
+    <Button paletteid="820" name="Implementation" id="ID_VIEWNODE_UML_IMPLEMENTATION" tooltip_key="HINT_Implementation" icon16="toolbar_images/Implementation.png" icon32="toolbar_images/Implementation_32.png"></Button>
+    <Button paletteid="821" name="Comment" id="ID_VIEWNODE_UML_COMMENT" tooltip_key="HINT_Comment" icon16="toolbar_images/Notepad.png" icon32="toolbar_images/Notepad_32.png"></Button>
+    <Button paletteid="822" name="Link Comment" id="ID_VIEWNODE_UML_COMMENTLINK" tooltip_key="HINT_Link_Comment" icon16="toolbar_images/NoteLink.png" icon32="toolbar_images/NoteLink_32.png"></Button>
+  </Palette>
+</PaletteDefinitions>

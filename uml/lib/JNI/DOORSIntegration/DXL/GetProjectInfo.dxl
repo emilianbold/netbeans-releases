@@ -1,0 +1,132 @@
+#include "GetFolderContents.dxl"
+
+void GetProjectDetails()
+{
+	Project p 
+	for p in database do {    
+		print "Project : " (name p) "\n"
+	
+		Item i
+		for i in current do {
+         current = p
+			GetFolderContents( i )
+		
+		}
+	}
+}
+
+string GetProjectNames()
+{
+	string str = ""
+
+	Project p
+	for p in database do {
+		if ( str != "" )
+		{
+			str = str "|"  (name p) 
+		}
+		else
+		{
+			str = (name p) 
+		}
+		
+	}
+	oleSetResult str
+	
+	return str
+}
+
+string GetProjectDetail(Project p)
+{
+	string strResult = ""
+	
+	Item i
+
+	int intNestLevel = 0
+	for i in current do {
+      current = p
+		string s = ""
+		s = GetFolderContent(i, intNestLevel)
+		intNestLevel += 1
+		
+		if ( strResult != "" )
+		{
+			strResult = strResult  s
+		}
+		else
+		{
+			strResult = s
+		}
+	}
+	
+	oleSetResult strResult
+	return strResult
+}
+
+string GetProjectDetailAsXML(Project p)
+{
+	string strResult = ""
+	
+   strResult = "<?xml version=\"1.0\" ?><RequirementsProject name=\"" (name p) "\">"
+	Item i
+    
+	for i in current do {
+
+      current = p
+		string s = GetFolderContentAsXML(i)
+		
+		strResult = strResult  s
+	}
+
+	strResult = strResult "</RequirementsProject>"
+
+	oleSetResult strResult
+	return strResult
+}
+
+string GetProjectXML(Project p)
+{
+	string strResult = ""
+	
+   strResult = "<?xml version=\"1.0\" ?><RequirementsProject name=\"" (name p) "\">"
+	Item i
+    
+	for i in current do {
+
+      current = p
+      string s = GetModNamesXML(i, "")
+		strResult = strResult  s
+	}
+
+	strResult = strResult "</RequirementsProject>"
+
+	oleSetResult strResult
+	return strResult
+}
+
+string GetProjectXML2(string strProject)
+{
+   string strResult = ""
+   if ( (project) "/" strProject )
+   { 
+      current = project "/" strProject
+      strResult = "<?xml version=\"1.0\" ?><RequirementsProject name=\"" (name current) "\">"
+      Item i
+    
+      for i in current do 
+      {
+
+         string s = GetModNamesXML3(i, "")
+		   strResult = strResult  s
+	   }
+    	strResult = strResult "</RequirementsProject>"
+
+   }
+   else
+   {
+      strResult = "ProjectNotFound"
+   }
+
+	oleSetResult strResult
+	return strResult
+}

@@ -1,0 +1,7 @@
+Interface Declaration
+ Modifiers
+  { strictfp, Modifier }
+ { StrictfpInterfaceTestFile, Name }
+ Generalization
+ { {, Class Body Start }
+ { }, Class Body End }

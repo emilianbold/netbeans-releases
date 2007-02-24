@@ -1,0 +1,16 @@
+Class Declaration
+ Modifiers
+ { MultipleClassTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  { }, Class Body End }
+Class Declaration
+ Modifiers
+ { MultipleClassTestFile2, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  { }, Class Body End }

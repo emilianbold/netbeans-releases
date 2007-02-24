@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Generating Code (UML Modeling)</title>
+</head>
+<body>
+<h2>Generating Code</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The IDE's UML Modeling feature enables you to develop software incrementally, starting either from a new design or from an existing body of code. You can quickly generate source code for classes and interfaces using a pop-up menu in the Projects window or in the Diagram editor. </p>
+<p><b>To generate code:</b></p>
+<ol>
+<li>In the Projects window or in the Diagram editor, right-click the element or elements for which you want to generate code.
+  <ul class="note">
+<li>In the Projects window, this code generation function is supported for entire UML projects and for individual diagram elements. </li>
+</ul>
+</li>
+<li>From the pop-up menu, choose Generate Code.</li>
+<li>In the Generate Code dialog, specify the location of the folder in which to store the generated source files.<br>
+  The default location is displayed. Click Browse to select a different folder.</li>
+<li>Select the Backup Existing Source Files checkbox if you want to save the existing version of the source files that are about to be generated.<br>
+An existing source file will be saved to a similarly named file with a number appended to its file name. For example, a source file named <i>sample.java</i> will be saved to a file named <i>sample.java1. </i> On the next backup request, <i>sample.java</i> will be saved to <i>sample.java2</i>, and so on. The most recent backup file is the file with the highest sequential number at the end of its filename.</li>
+<li>Click OK.<br>
+  The Java Source code is generated for the selected element or elements. </li>
+<li>If the Authorize UML Project Save dialog appears, you have some unsaved changes in your UML modeling project. Click one of the following buttons to <br>
+    <ul>
+      <li><b>Yes. </b>Save the changes in the UML project before generating code.</li>
+      <li><b>No.</b> Do not save the changes before generating code.</li>
+      <li><b>Yes to All. </b>Always save the changes in the UML project before generating code during the current IDE session.</li>
+    </ul>
+    <br>
+  The IDE generates the source code for target elements .</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../round_trip_eng/setting_general_prefs.html">Setting General Code Engineering Preferences</a></dd>
+<dd><a href="../round_trip_eng/setting_element_prefs.html">Setting Element Code Engineering Preferences</a></dd>
+<dd><a href="../round_trip_eng/setting_java_prefs.html">Setting Java Code Engineering Preferences</a></dd>
+<!--
+<dd><a href="../round_trip_eng/about_roundtrip_engineering.html">About Bi-Directional Engineering</a></dd>
+<dd><a href="../prefs/categories_in_preferences_editor.html">UML Categories in the Options Window</a></dd>
+-->
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

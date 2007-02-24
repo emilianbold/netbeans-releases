@@ -1,0 +1,14 @@
+Class Declaration
+ Modifiers
+ { TransientAttributeTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+    { transient, Modifier }
+   Type
+    { int, Primitive Type }
+   { a, Name }
+  { }, Class Body End }

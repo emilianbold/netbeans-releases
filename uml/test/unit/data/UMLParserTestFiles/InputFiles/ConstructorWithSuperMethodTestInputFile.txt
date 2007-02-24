@@ -1,0 +1,17 @@
+Class Declaration
+ Modifiers
+ { ConstructorWithSuperMethodTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Constructor Definition
+   Modifiers
+    { public, Modifier }
+   { ConstructorWithSuperMethodTestFile, Name }
+   Parameters
+   Constructor Body
+    { {, Method Body Start }
+    Super Constructor Call
+     Expression List
+  { }, Class Body End }

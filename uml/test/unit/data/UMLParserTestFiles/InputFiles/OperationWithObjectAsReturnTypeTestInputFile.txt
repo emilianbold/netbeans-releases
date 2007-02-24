@@ -1,0 +1,37 @@
+Class Declaration
+ Modifiers
+ { OperationWithObjectAsReturnTypeTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+    { public, Modifier }
+   Type
+    Identifier
+     { Obj1, Identifier }
+   { op1, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    Variable Definition
+     Modifiers
+     Type
+      Identifier
+       { Obj1, Identifier }
+     { obj, Name }
+     Initializer
+      Object Creation
+       { new, Operator }
+       Identifier
+        { Obj1, Identifier }
+       { (, Argument Start }
+       Expression List
+       { ), Argument End }
+    Return
+     { return, Keyword }
+     Identifier
+      { obj, Identifier }
+    { }, Method Body End }
+  { }, Class Body End }

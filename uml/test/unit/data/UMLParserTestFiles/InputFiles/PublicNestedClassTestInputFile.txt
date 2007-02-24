@@ -1,0 +1,17 @@
+Class Declaration
+ Modifiers
+ { PublicNestedClassTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Class Declaration
+   Modifiers
+    { public, Modifier }
+   { PublicInnerClass, Name }
+   Generalization
+   Realization
+   Body
+    { {, Class Body Start }
+    { }, Class Body End }
+  { }, Class Body End }

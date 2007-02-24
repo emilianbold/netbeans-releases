@@ -1,0 +1,14 @@
+Interface Declaration
+ Modifiers
+ { InterfaceContainsClassTestFile, Name }
+ Generalization
+ { {, Class Body Start }
+ Class Declaration
+  Modifiers
+  { innerClass, Name }
+  Generalization
+  Realization
+  Body
+   { {, Class Body Start }
+   { }, Class Body End }
+ { }, Class Body End }

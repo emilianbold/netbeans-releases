@@ -1,0 +1,26 @@
+Class Declaration
+ Modifiers
+ { FinalVariableInitializationWithinMethodTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+    { final, Modifier }
+   Type
+    { int, Primitive Type }
+   { i, Name }
+  Constructor Definition
+   Modifiers
+    { public, Modifier }
+   { FinalVariableInitializationWithinMethodTestFile, Name }
+   Parameters
+   Constructor Body
+    { {, Method Body Start }
+    Assignment Expression
+     { =, Operator }
+     Identifier
+      { i, Identifier }
+     { 10, Integer Constant }
+  { }, Class Body End }

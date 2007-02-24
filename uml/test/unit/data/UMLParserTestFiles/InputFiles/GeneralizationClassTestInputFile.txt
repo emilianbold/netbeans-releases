@@ -1,0 +1,10 @@
+Class Declaration
+ Modifiers
+ { GeneralizationClassTestFile, Name }
+ Generalization
+  Identifier
+   { ExtentTestFile, Identifier }
+ Realization
+ Body
+  { {, Class Body Start }
+  { }, Class Body End }

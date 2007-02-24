@@ -1,0 +1,2 @@
+interface MultipleInterfaceInheritanceTestFile extends Interface1,Interface2{
+}

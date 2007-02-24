@@ -1,0 +1,98 @@
+Dependency
+ { import, Keyword }
+ Identifier
+  { ., Scope Operator }
+  Identifier
+   { ., Scope Operator }
+   Identifier
+    { java, Identifier }
+   { util, Identifier }
+  { ArrayList, Identifier }
+Class Declaration
+ Modifiers
+  { public, Modifier }
+ { GenericsArgumentAndReturntypeTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+   Type
+    Template Instantiation
+     Identifier
+      { ArrayList, Identifier }
+     Type
+      Identifier
+       { Integer, Identifier }
+   { arrayList, Name }
+   Initializer
+    Object Creation
+     { new, Operator }
+     Template Instantiation
+      Identifier
+       { ArrayList, Identifier }
+      Type
+       Identifier
+        { Integer, Identifier }
+     { (, Argument Start }
+     Expression List
+     { ), Argument End }
+  Method Definition
+   Modifiers
+    { public, Modifier }
+   Type
+    { void, Primitive Type }
+   { method, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    Variable Definition
+     Modifiers
+     Type
+      Template Instantiation
+       Identifier
+        { ArrayList, Identifier }
+       Type
+        Identifier
+         { Integer, Identifier }
+     { a1, Name }
+     Initializer
+      Method Call
+       Identifier
+        { addCollection, Identifier }
+       { (, Argument Start }
+       Expression List
+        Identifier
+         { arrayList, Identifier }
+       { ), Argument End }
+    { }, Method Body End }
+  Method Definition
+   Modifiers
+   Type
+    Template Instantiation
+     Identifier
+      { ArrayList, Identifier }
+     Type
+      Identifier
+       { Integer, Identifier }
+   { addCollection, Name }
+   Parameters
+    Parameter
+     Modifiers
+     Type
+      Template Instantiation
+       Identifier
+        { ArrayList, Identifier }
+       Type
+        Identifier
+         { Integer, Identifier }
+     { arrayList, Name }
+   Method Body
+    { {, Method Body Start }
+    Return
+     { return, Keyword }
+     Identifier
+      { arrayList, Identifier }
+    { }, Method Body End }
+  { }, Class Body End }

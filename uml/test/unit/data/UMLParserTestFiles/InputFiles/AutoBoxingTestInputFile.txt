@@ -1,0 +1,61 @@
+Dependency
+ { import, Keyword }
+ Identifier
+  { ., Scope Operator }
+  Identifier
+   { ., Scope Operator }
+   Identifier
+    { java, Identifier }
+   { util, Identifier }
+  { ArrayList, Identifier }
+Class Declaration
+ Modifiers
+  { public, Modifier }
+ { AutoBoxingTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+   Type
+    Template Instantiation
+     Identifier
+      { ArrayList, Identifier }
+     Type
+      Identifier
+       { Integer, Identifier }
+   { arrayList, Name }
+   Initializer
+    Object Creation
+     { new, Operator }
+     Template Instantiation
+      Identifier
+       { ArrayList, Identifier }
+      Type
+       Identifier
+        { Integer, Identifier }
+     { (, Argument Start }
+     Expression List
+     { ), Argument End }
+  Method Definition
+   Modifiers
+    { public, Modifier }
+   Type
+    { void, Primitive Type }
+   { method, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    Method Call
+     Identifier
+      { ., Scope Operator }
+      Identifier
+       { arrayList, Identifier }
+      { add, Identifier }
+     { (, Argument Start }
+     Expression List
+      { 2, Integer Constant }
+     { ), Argument End }
+    { }, Method Body End }
+  { }, Class Body End }

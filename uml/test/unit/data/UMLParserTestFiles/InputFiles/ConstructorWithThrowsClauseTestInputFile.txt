@@ -1,0 +1,19 @@
+Class Declaration
+ Modifiers
+ { ConstructorWithThrowsClauseTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Constructor Definition
+   Modifiers
+    { public, Modifier }
+   { ConstructorWithThrowsClauseTestFile, Name }
+   Parameters
+   Throws Declaration
+    { throws, Keyword }
+    Identifier
+     { Exception, Identifier }
+   Constructor Body
+    { {, Method Body Start }
+  { }, Class Body End }

@@ -1,0 +1,17 @@
+Class Declaration
+ Modifiers
+ { AbstractInnerClassTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Class Declaration
+   Modifiers
+    { abstract, Modifier }
+   { AbstractInnerClass, Name }
+   Generalization
+   Realization
+   Body
+    { {, Class Body Start }
+    { }, Class Body End }
+  { }, Class Body End }

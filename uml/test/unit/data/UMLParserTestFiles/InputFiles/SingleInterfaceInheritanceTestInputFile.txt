@@ -1,0 +1,8 @@
+Interface Declaration
+ Modifiers
+ { SingleInterfaceInheritanceTestFile, Name }
+ Generalization
+  Identifier
+   { Interface1, Identifier }
+ { {, Class Body Start }
+ { }, Class Body End }

@@ -1,0 +1,22 @@
+Interface Declaration
+ Modifiers
+ { InterfaceBodyTestFile, Name }
+ Generalization
+ { {, Class Body Start }
+ Variable Definition
+  Modifiers
+   { public, Modifier }
+   { static, Modifier }
+  Type
+   { int, Primitive Type }
+  { s, Name }
+  Initializer
+   { 0, Integer Constant }
+ Method Declaration
+  Modifiers
+   { public, Modifier }
+  Type
+   { void, Primitive Type }
+  { op1, Name }
+  Parameters
+ { }, Class Body End }

@@ -1,0 +1,15 @@
+Class Declaration
+ Modifiers
+ { StaticNestedInterfaceTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Interface Declaration
+   Modifiers
+    { static, Modifier }
+   { StaticNestedInterface, Name }
+   Generalization
+   { {, Class Body Start }
+   { }, Class Body End }
+  { }, Class Body End }

@@ -1,0 +1,40 @@
+Class Declaration
+ Modifiers
+ { IfElseTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+   Type
+    { void, Primitive Type }
+   { method, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    Variable Definition
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { i, Name }
+     Initializer
+      { 0, Integer Constant }
+    Conditional
+     { if, Keyword }
+     Test Condition
+      Equality Expression
+       { ==, Operator }
+       Identifier
+        { i, Identifier }
+       { 0, Integer Constant }
+     Body
+      { {, Body Start }
+      { }, Body End }
+      { else, Keyword }
+     Else Conditional
+      Body
+       { {, Body Start }
+       { }, Body End }
+    { }, Method Body End }
+  { }, Class Body End }

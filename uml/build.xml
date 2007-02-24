@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+  You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+  The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+  Microsystems, Inc. All Rights Reserved.
+-->
+<project name="org.netbeans.modules.uml" default="netbeans" basedir=".">
+    <import file="nbproject/build-impl.xml"/>
+
+    <!-- below hardcoded property values should be fixed -->
+    <property name="nb.modules.dir" value="modules"/>
+
+    <target name="dot-uml-zip" depends="init" >
+        <zip destfile="${basedir}/build/dotuml.zip">
+            <zipfileset  dir="../config" prefix=".uml/config"/>
+            <zipfileset  dir="../scripts" prefix=".uml/scripts"/>
+        </zip>
+    </target>
+
+    <target name="jar-prep" depends="init">
+        <mkdir dir="${cluster}/${module.jar.dir}"/>
+        <tstamp>
+            <format property="buildnumber" pattern="yyMMdd" timezone="UTC"/>
+        </tstamp>
+        <zip destfile="${build.classes.dir}/org/netbeans/modules/uml/dotuml.zip">
+            <zipfileset  dir="../config" prefix=".uml/config"/>
+            <zipfileset  dir="../scripts" prefix=".uml/scripts"/>
+        </zip>
+    </target>
+    
+    <target name="netbeans-extra">      
+        <antcall target="clean-javahelp-images"/>       
+        <antcall target="javahelp-images"/>                
+        <antcall target="unzip-doors"/>
+        <antcall target="copy-drawingLibrary-jar"/>
+
+        <!-- Add our cluster name in etc/netbeans.clusters -->
+        <echo file="../../nbbuild/netbeans/etc/netbeans.clusters" message="${cluster.dir.name}${line.separator}" append="true"/>
+    </target>
+
+    <target name="copy-drawingLibrary-jar">
+        <mkdir dir="${cluster}/modules/ext/drawingLibrary"/>
+        <copy todir="${cluster}/modules/ext/drawingLibrary">
+            <fileset dir="../external/">
+                <include name="drawingLibrary.jar"/>             
+            </fileset>
+        </copy>
+    </target>
+    
+    <property name="doors.integration.files" value="${basedir}/lib/DoorsIntegrationFiles.zip"/>
+
+    <!-- Following target creates platform specific zip files -->
+    <target name="unzip-doors" description="unzip doors for windows.">
+        <unzip src="${doors.integration.files}"
+            dest="${cluster}/modules" >
+        </unzip>
+        
+        <copy file="${basedir}/lib/JNI/DOORSIntegration/bin/configDoors.vbs" todir="${cluster}/modules/DoorsIntegrationFiles"/>
+    </target>
+    
+    <target name="javahelp-images" depends="clean-javahelp-images">
+        <echo message="[UML] copying UML images to javahelp resource directory"/>
+        
+        <property name="src.images.dir" value="${basedir}/src/org/netbeans/modules/uml/"/>
+        <property name="dest.images.dir" value="${basedir}/javahelp/org/netbeans/modules/uml/docs/images"/>
+
+        <mkdir dir="${dest.images.dir}/resources"/>
+
+        <!-- copy core images to javahelp resources dir -->
+        <copy todir="${dest.images.dir}/resources" overwrite="true">
+            <fileset dir="${src.images.dir}/resources" casesensitive="yes"/>
+        </copy>
+    
+        <!-- copy core toolbar images to javahelp toolbar_images dir -->
+        <mkdir dir="${dest.images.dir}/resources/toolbar_images"/>
+     
+        <copy todir="${dest.images.dir}/resources/toolbar_images" overwrite="true">
+            <fileset dir="${src.images.dir}/resources/toolbar_images" casesensitive="yes"/>
+        </copy>
+        
+        <!-- copy toolbar images from palette module to core javahelp toolbar_images dir -->
+        <property name="src.palette.images.dir" value="${basedir}/../modelingpalette/src/org/netbeans/modules/uml/palette/ui/images/toolbar_images"/>
+        <copy todir="${dest.images.dir}/resources/toolbar_images" overwrite="true">
+            <fileset dir="${src.palette.images.dir}" casesensitive="yes"/>
+        </copy>
+    </target>
+    
+    <target name="clean-javahelp-images">
+        <echo message="[UML] deleting UML images in javahelp resource directory"/>
+        
+        <!-- delete javahelp resource dir and fail quietly if the dir DNE -->
+        <delete includeEmptyDirs="true" quiet="true" failonerror="false">
+            <fileset dir="${basedir}/javahelp/org/netbeans/modules/uml/docs/images/resources"/>
+        </delete>
+    </target>
+</project>

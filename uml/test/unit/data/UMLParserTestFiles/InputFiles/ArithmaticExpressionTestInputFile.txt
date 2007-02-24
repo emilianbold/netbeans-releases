@@ -1,0 +1,88 @@
+Class Declaration
+ Modifiers
+ { ArithmaticExpressionTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+   Type
+    { void, Primitive Type }
+   { method, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    Variable Definition
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { i, Name }
+    Variable Definition
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { j, Name }
+    Variable Definition
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { k, Name }
+    Assignment Expression
+     { =, Operator }
+     Identifier
+      { i, Identifier }
+     Assignment Expression
+      { =, Operator }
+      Identifier
+       { j, Identifier }
+      Assignment Expression
+       { =, Operator }
+       Identifier
+        { k, Identifier }
+       { 2, Integer Constant }
+    Increment Post Unary Expression
+     { ++, Operator }
+     Identifier
+      { i, Identifier }
+    Increment Unary Expression
+     { ++, Operator }
+     Identifier
+      { k, Identifier }
+    Variable Definition
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { shortcutOp, Name }
+     Initializer
+      { 10, Integer Constant }
+    Plus Assignment Expression
+     { +=, Operator }
+     Identifier
+      { shortcutOp, Identifier }
+     Plus Expression
+      { +, Operator }
+      Plus Expression
+       { +, Operator }
+       Increment Post Unary Expression
+        { ++, Operator }
+        Identifier
+         { i, Identifier }
+       Identifier
+        { j, Identifier }
+      Identifier
+       { k, Identifier }
+    Variable Definition
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { Div, Name }
+     Initializer
+      Divide Expression
+       { /, Operator }
+       Identifier
+        { i, Identifier }
+       Identifier
+        { j, Identifier }
+    { }, Method Body End }
+  { }, Class Body End }

@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Install: org/netbeans/modules/uml/drawingarea/DrawingAreaModule.class
+OpenIDE-Module: org.netbeans.modules.uml.drawingarea/1
+OpenIDE-Module-Layer: org/netbeans/modules/uml/drawingarea/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/uml/drawingarea/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.1.13
+
+Name: org/netbeans/modules/uml/drawingarea/dataobject/DiagramXmlDataLoader.class
+OpenIDE-Module-Class: Loader
+

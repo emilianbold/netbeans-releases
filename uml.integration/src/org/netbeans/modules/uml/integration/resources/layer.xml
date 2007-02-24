@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="UML">
+            <folder name="Keyboard">
+                <folder name="AddToDiagram">
+                    <file name="org-netbeans-modules-uml-integration-netbeans-actions-AddToDiagramAction.instance" />
+                </folder>
+            </folder>
+            <file name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.netbeans.actions.ReverseEngineerAction"/>
+            </file>
+            <file name="org-netbeans-modules-uml-integration-ide-codegen-ExportCodeAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.netbeans.actions.ExportCodeAction"/>
+            </file>
+            <file name="org-netbeans-modules-uml-integration-ide-actions-CreateDiagramFromSelectedElementsAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.actions.CreateDiagramFromSelectedElementsAction"/>
+            </file>
+            <file name="org-netbeans-modules-uml-integration-ide-actions-ReverseEngineerAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.actions.ReverseEngineerAction"/>
+            </file>
+            <file name="org-netbeans-modules-uml-integration-ide-actions-NewDiagramAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.actions.NewDiagramAction"/>
+            </file>
+            <file name="org-netbeans-modules-uml-integration-ide-actions-DependencyDiagramAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.actions.DependencyDiagramAction"/>
+            </file>
+
+            <folder name="Search">
+                <file name="org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.actions.FindInModelAction"/>
+                </file>
+                <file name="org-netbeans-modules-uml-integration-ide-actions-ReplaceInModelAction.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.actions.ReplaceInModelAction"/>
+                </file>
+                <attr name="org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance/org-netbeans-modules-uml-integration-ide-actions-ReplaceInModelAction.instance" boolvalue="true"/>
+            </folder>  
+        </folder>
+
+        <folder name="Window">
+            <folder name="SelectDocumentNode">
+                <file name="org-netbeans-modules-uml-integration-ide-actions-SelectInModel.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.actions.SelectInModel"/>
+                </file>
+                <attr name="org-netbeans-modules-favorites-Select.instance/org-netbeans-modules-uml-integration-ide-actions-SelectInModel.instance" boolvalue="true"/>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Menu">
+        <folder name="Edit">
+            <attr name="org-netbeans-modules-search-project-ProjectsSearchAction.instance/sep-before-find-in-model.instance" boolvalue="true"/>
+            <file name="sep-before-find-in-model.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="sep-before-find-in-model.instance/org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance">
+                <attr name="originalFile" stringvalue="Actions/UML/Search/org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance/org-netbeans-modules-uml-integration-ide-actions-ReplaceInModelAction.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-uml-integration-ide-actions-ReplaceInModelAction.instance">
+                <attr name="originalFile" stringvalue="Actions/UML/Search/org-netbeans-modules-uml-integration-ide-actions-ReplaceInModelAction.instance"/>
+            </file>
+        </folder>   
+        
+        <folder name="GoTo">
+            <attr name="org-netbeans-modules-favorites-SelectInFavorites.shadow/org-netbeans-modules-uml-integration-ide-actions-SelectInModel.shadow" boolvalue="true"/>
+            <file name="org-netbeans-modules-uml-integration-ide-actions-SelectInModel.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-uml-integration-ide-actions-SelectInModel.instance"/>
+            </file>
+        </folder>
+    </folder>    
+    
+    <!-- Projects -->
+    <folder name="Projects">
+        <folder name="Actions">
+            <attr name="Separator3.instance/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow" boolvalue="true"/>
+            <file name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance/ToolsAction.instance" boolvalue="true"/>
+        </folder>
+    </folder>
+    
+    <!-- UMLProjects -->
+    <folder name="UMLProjects">
+        <folder name="Actions">
+            <attr name="org-netbeans-modules-project-ui-JavadocProject.shadow/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow" boolvalue="true"/>
+            <file name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow/SeparatorJavadoc.instance" boolvalue="true"/>
+<!--
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.codegen.GenCodeSwitchAction"/>
+            <file name="org-netbeans-modules-uml-integration-netbeans-actions-ExportCodeAction.instance"/>
+            <file name="org-netbeans-modules-uml-integration-ide-codegen-GenerateCodeAction.instance"/>
+-->
+        </folder>
+    </folder>
+
+    <!-- Editors -->
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="Popup">
+                    <attr name="SeparatorAfterFormat.instance/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow/org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance/org-netbeans-modules-project-ui-RunSingle.shadow" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <!-- context menu -->
+    <folder name="contextmenu">
+        <folder name="uml">
+	    <folder name="generate">
+                <file name="org-netbeans-modules-uml-integration-netbeans-actions-ExportCodeAction.instance"/>
+	    </folder>
+            <folder name="element">
+                <file name="org-netbeans-modules-uml-integration-netbeans-actions-ExportCodeAction.instance"/>
+                <file name="org-netbeans-modules-uml-integration-netbeans-actions-SourceNavigateAction.instance"/>
+                <file name="org-netbeans-modules-uml-integration-ide-actions-CreateDiagramFromSelectedElementsAction.instance"/>
+                <file name="org-netbeans-modules-uml-integration-ide-actions-DependencyDiagramAction.instance"/>
+            </folder>
+            <folder name="diagram">
+                <file name="org-netbeans-modules-uml-integration-netbeans-actions-ExportCodeAction.instance"/>
+                <file name="org-netbeans-modules-uml-integration-netbeans-actions-SourceNavigateAction.instance"/>
+                <file name="org-netbeans-modules-uml-integration-ide-actions-DependencyDiagramAction.instance"/>
+            </folder>
+        </folder>
+    </folder>
+    
+    <!-- Loaders -->
+    <folder name="Loaders">
+        <folder name="folder">
+            <folder name="any">
+                <folder name="Actions">
+                    <attr name="RefactoringAll.instance/org-netbeans-modules-uml-integration-netbeans-actions-separatorBefore.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-uml-integration-netbeans-actions-separatorBefore.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="org-netbeans-modules-uml-integration-netbeans-actions-separatorBefore.instance/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow/Separator3.instance" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="Actions">
+                    <attr name="Separator3.instance/org-netbeans-modules-uml-integration-netbeans-actions-UpdateModelAction.shadow" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-uml-integration-netbeans-actions-UpdateModelAction.shadow/org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance" boolvalue="true"/>
+                    <attr name="RefactoringSeparator-1.instance/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow/org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance/ToolsAction.instance" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+  
+    <folder name="Shortcuts">
+        <file name="DS-5.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-uml-integration-ide-actions-SelectInModel.instance"/>
+        </file>
+        <file name="D-ENTER.shadow">
+            <attr name="originalFile" stringvalue="Actions/UML/Keyboard/AddToDiagram/org-netbeans-modules-uml-integration-netbeans-actions-AddToDiagramAction.instance"/>
+        </file>
+    </folder>
+</filesystem>

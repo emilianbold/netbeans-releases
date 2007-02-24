@@ -1,0 +1,26 @@
+Class Declaration
+ Modifiers
+ { TryFinallyTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Method Definition
+   Modifiers
+    { public, Modifier }
+   Type
+    { void, Primitive Type }
+   { method, Name }
+   Parameters
+   Method Body
+    { {, Method Body Start }
+    Exception Processing
+     { try, Keyword }
+     Body
+      { {, Body Start }
+      { }, Body End }
+     Default Processing
+      { {, Body Start }
+      { }, Body End }
+    { }, Method Body End }
+  { }, Class Body End }

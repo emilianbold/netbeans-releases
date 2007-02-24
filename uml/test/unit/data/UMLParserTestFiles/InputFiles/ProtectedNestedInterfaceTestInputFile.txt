@@ -1,0 +1,15 @@
+Class Declaration
+ Modifiers
+ { ProtectedNestedInterfaceTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Interface Declaration
+   Modifiers
+    { protected, Modifier }
+   { ProtectedNestedInterface, Name }
+   Generalization
+   { {, Class Body Start }
+   { }, Class Body End }
+  { }, Class Body End }

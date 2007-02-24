@@ -1,0 +1,17 @@
+Class Declaration
+ Modifiers
+ { ProtectedNestedClassTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Class Declaration
+   Modifiers
+    { protected, Modifier }
+   { ProtectedInnerClass, Name }
+   Generalization
+   Realization
+   Body
+    { {, Class Body Start }
+    { }, Class Body End }
+  { }, Class Body End }

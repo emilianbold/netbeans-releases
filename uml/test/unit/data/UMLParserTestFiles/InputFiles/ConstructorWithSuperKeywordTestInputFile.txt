@@ -1,0 +1,23 @@
+Class Declaration
+ Modifiers
+ { ConstructorWithSuperKeywordTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Constructor Definition
+   Modifiers
+    { public, Modifier }
+   { ConstructorWithSuperKeywordTestFile, Name }
+   Parameters
+   Constructor Body
+    { {, Method Body Start }
+    Method Call
+     Identifier
+      { ., Scope Operator }
+      { super, Super Class Reference }
+      { toString, Identifier }
+     { (, Argument Start }
+     Expression List
+     { ), Argument End }
+  { }, Class Body End }

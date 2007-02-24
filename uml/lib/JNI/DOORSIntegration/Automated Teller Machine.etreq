@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<!-- edited with XML Spy v4.0 U (http://www.xmlspy.com) by test (Embarcadero Technologies, Inc.) -->
+<RequirementsProject name="Automated Teller Machine">
+	<Requirement type="Category" id="C.0" name="Business Specifications">
+		<Description>Business Specifications Section of Requirements</Description>
+		<Requirement type="Requirement" id="R1.0" name="ATM Alerts">
+			<Description>The ATM shall maintain alerts as to the operating status. </Description>
+		</Requirement>
+		<Requirement type="Requirement" id="R2.0" name="24x7">
+			<Description>The ATMs shall operate 24 hours a day, seven days a week. Routine maintenance must be done quickly without the need to shut down the ATM. In addition, there shall be 24x7 monitored security as a result of this process. And machines shall provide real-time NYSE updates.         </Description>
+		</Requirement>
+		<Requirement type="Requirement" id="R3.0" name="Verify Balance">
+			<Description>ATM's shall verify balances before dispensing cash. Before each withdrawal transaction the ATM will verify that the customer has sufficient collected funds available to cover the transaction.</Description>
+		</Requirement>
+		<Requirement type="Requirement" id="R4.0" name="Accessibility">
+			<Description>ATM's shall be accessible to elderly and handicapped customers. </Description>
+		</Requirement>
+		<Requirement type="Requirement" id="R5.0" name="Receipt">
+			<Description>ATM's shall print a receipt after each balance inquiry, withdrawal or deposit transaction. Otherwise, a message (see message table) appears on the ATM screen indicating that a paper receipt is not able to be printed. Each of the above transactions will be documented on paper and a printed copy of the paper receipt will be dispensed to the customer at the conclusion of each transaction. </Description>
+		</Requirement>
+		<Requirement type="Requirement" id="R6.0" name="Standalone Operation">
+			<Description>ATM's shall continue to operate when the data network is down. In the event that an ATM cannot communicate with the central data center, the ATM will continue to operate normally without any indication to the customer that the ATM is operating in a standalone mode.         </Description>
+		</Requirement>
+		<Requirement type="Requirement" id="R7.0" name="Foreign Cards">
+			<Description>The ATM's shall honor any ATM card from a bank.         </Description>
+		</Requirement>
+		<Requirement type="Requirement" id="R8.0" name="Capacity">
+			<Description>ATM's shall store enough to operate at least 3 days without replenishment. The amount of supplies will vary from location to location. From analysis of past history of ATM's, the maximum amount of cash needed will be $40,000 and the maximum amount of receipt paper needed will be 50 feet.       </Description>
+		</Requirement>
+		<Requirement type="Requirement" id="R9.0" name="Deposit Transaction">
+			<Description>ATM's shall allow deposit transactions. The ATM's will accept cash or checks, but no coins. The deposit information will be transmitted to the central data center immediately and actual items will be picked up later.         </Description>
+		</Requirement>
+		<Requirement type="Requirement" id="R10.0" name="Transfer Transactions">
+			<Description>ATM's shall allow transfer transactions. Customers will be able to transfer money between any two accounts of the following types: checking, savings, money market.         </Description>
+		</Requirement>
+		<Requirement type="Requirement" id="R11.0" name="Withdrawal Transactions">
+			<Description>ATM's shall allow withdrawal transactions. ATM's will allow customers to withdraw up to $300 cash in a single transaction.        </Description>
+		</Requirement>
+	</Requirement>
+	<Requirement type="Category" id="C.1" name="Hardware Specifications">
+		<Description>Business Specifications Section of Requirements</Description>
+		<Requirement type="Requirement" id="S1.0" name="ATM Machine">
+			<Description>There shall be an ATM capable of displaying 400 x 300 resolution and accepting debit cards. </Description>
+		</Requirement>
+		<Requirement type="Requirement" id="S2.0" name="Power Supply">
+			<Description>There shall be a power supply capable of supporting a 110 volt input and a 3 Amp load or 220 volts and a 5 Amp load.  </Description>
+		</Requirement>
+	</Requirement>
+	<Requirement type="Category" id="C.2" name="Software Specifications">
+		<Description>Business Specifications Section of Requirements
+		</Description>
+	<Requirement type="Requirement" id="T1.0" name="Service Mode">
+		<Description>The ATM software shall support a service mode which will cause the ATM to process a transaction while the service door is open, but delay dispensing cash and receipts until the service door is closed.
+         </Description>
+		<Requirement/>
+	</Requirement>
+	<Requirement type="Requirement" id="T2.0" name="Replenishment Prediction">
+		<Description>The ATM software shall calculate and maintain a value representing the number of minutes left before replenishment is needed quickly.        </Description>
+	</Requirement>
+	<Requirement type="Requirement" id="T3.0" name="Cash Depletion Rate">
+		<Description>The ATM software shall track the depletion rate of the cash.
+         </Description>
+		<Requirement/>
+	</Requirement>
+	<Requirement type="Requirement" id="T4.0" name="Paper Depletion Rate">
+		<Description>The ATM software shall track the depletion rate of the receipt paper.
+	     </Description>
+	</Requirement>
+	<Requirement type="Requirement" id="T5.0" name="Status Query">
+		<Description>The ATM software shall respond to a status query with the amount of cash and paper left in the storage holds.
+         </Description>
+		<Requirement/>
+	</Requirement>
+	<Requirement type="Requirement" id="T6.0" name="Alert Signal">
+		<Description>The ATM software shall automatically post an alert transaction to the central data center in the event that any door sensor reports an open conditino and a valid security code has not been entered.
+       </Description>
+	</Requirement>
+	<Requirement type="Requirement" id="T7.0" name="Tamper Signal">
+		<Description>The ATM software shall track the depletion rate of the cash.
+         </Description>
+		<Requirement/>
+	</Requirement>
+	<Requirement type="Requirement" id="T8.0" name="Automatic Fee">
+		<Description>The ATM software shall automatically debit the customer's account a predetermined amount after executing each transaction.	    
+		 </Description>
+	</Requirement>
+	<Requirement type="Requirement" id="T9.0" name="Fee Message">
+		<Description>The ATM software shall display a message indicating the amount of the fee to the customer before each transaction, allowing the customer to cancel the transaction before any fees are incurred.
+         </Description>
+		<Requirement/>
+	</Requirement>
+	<Requirement type="Requirement" id="T10.0" name="Receipt Printing">
+		<Description>The ATM software shall cause the ATM hardware to generate a paper receipt after each transaction. The receipt will contain the following: account number, transaction type, amount, fee amount, and account balance after the transaction.\
+	</Description>
+	</Requirement>
+	<Requirement type="Requirement" id="T11.0" name="Cash Dispensing">
+		<Description>The ATM software shall dispense cash after posting a withdrawal authorization transaction to the host and receiving a positive response.
+         </Description>
+		<Requirement/>
+	</Requirement>
+	<Requirement type="Requirement" id="T12.0" name="Negative Authorization">
+		<Description>The ATM software shall not dispense cash if the host responds negatively to a withdrawal authorization transaction.	    
+		 </Description>
+	</Requirement>
+	<Requirement type="Requirement" id="T13.0" name="Store and Forward Mode">
+		<Description>The ATM software shall be capable of operating in a store-and-forward mode which allows all transactions to be stored locally at the ATM to be forwarded to the host at a later time.
+         </Description>
+		<Requirement/>
+	</Requirement>
+	<Requirement type="Requirement" id="T14.0" name="Deposit to Account">
+		<Description>The ATM software shall allow the customer to perform a deposit transaction. The customer will be allowed tokey in an amount of the deposit which will be posted to the host.
+       </Description>
+	</Requirement>
+	<Requirement type="Requirement" id="T15.0" name="Withdrawal from Account">
+		<Description>The ATM software shall allow the customer to perform withdrawal transactions in amounts up to a predetermined limit and the software will cause the hardware to dispense the correct amount of cash and print a correct receipt.
+         </Description>
+		<Requirement/>
+	</Requirement>
+	<Requirement type="Requirement" id="T16.0" name="Account Balance">
+		<Description>The ATM software shall allow the customer or the teller to request the current balance of any account accessible by their bank.	     
+		</Description>
+	</Requirement>
+	</Requirement>
+</RequirementsProject>

@@ -1,0 +1,14 @@
+Enumeration Declaration
+ Modifiers
+ { EnumWithLiteralAndAttributeTestFile, Name }
+ Realization
+ Body
+  Enum Member
+   { a, Name }
+  Variable Definition
+   Modifiers
+   Type
+    { int, Primitive Type }
+   { i, Name }
+   Initializer
+    { 0, Integer Constant }

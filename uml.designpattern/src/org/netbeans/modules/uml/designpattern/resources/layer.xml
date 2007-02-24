@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+   <folder name="Actions">
+        <folder name="Modeling">
+            <file name="org-netbeans-modules-uml-designpattern-DesignCenterAction.instance"/>
+            <!--
+            <file name="org.netbeans.modules.uml.designpattern.ApplyPatternAction.instance"/>
+            <file name="org.netbeans.modules.uml.designpattern.PromotePatternAction.instance"/>
+            -->
+        </folder>
+    </folder>  
+    
+    <folder name="contextmenu">
+        <folder name="uml">
+            <folder name="element">
+               <file name="org.netbeans.modules.uml.designpattern.ApplyPatternAction.instance"/>
+               <file name="org.netbeans.modules.uml.designpattern.PromotePatternAction.instance"/>
+            </folder>
+            <folder name="diagram">
+               <file name="org.netbeans.modules.uml.designpattern.ApplyPatternAction.instance"/>
+               <file name="org.netbeans.modules.uml.designpattern.PromotePatternAction.instance"/>
+            </folder>
+            <folder name="designcenter">
+                <file name="org.netbeans.modules.uml.designpattern.ApplyPatternAction.instance"/>
+            </folder>
+            <folder name="designpatternformodel">
+				<file name="org.netbeans.modules.uml.designpattern.ApplyPatternAction.instance"/>
+            </folder>
+        </folder>
+    </folder>  
+   
+   <folder name="Menu">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.designpattern.Bundle"/>
+      <folder name="Window">
+         <folder name="UMLModeling">
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/uml/resources/uml.gif"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.designpattern.Bundle"/>
+            <file name="org-netbeans-modules-uml-designpattern-DesignCenterAction.instance"/>
+            <!--
+            <file name="DesignCenter.shadow">
+               <attr name="originalFile" stringvalue="Actions/Modeling/com-sun-tools-ide-modeling-designpattern-DesignCenterAction.instance"/>    		
+            </file>
+            -->
+         </folder>
+         <attr name="ProgressListAction.shadow/UMLModeling" boolvalue="true"/> 
+         <attr name="UMLModeling/Debug" boolvalue="true"/>
+      </folder>
+   </folder> 
+   
+   <folder name="Shortcuts">
+	<file name="DS-C.shadow">
+	    <attr name="originalFile" stringvalue="Actions/Modeling/org-netbeans-modules-uml-designpattern-DesignCenterAction.instance"/>
+	</file>
+   </folder>
+    
+   <folder name="UML">
+      <folder name="designcenter">
+         <file name="org.netbeans.modules.uml.designpattern.DesignPatternCatalog.instance">
+            <attr name="id" stringvalue="org.netbeans.modules.uml.ui.products.ad.addesigncentergui.designpatternaddin" />
+         </file>
+      </folder>
+   </folder>
+   
+   <!-- default workspaces, frames and their layout defined by core-->
+    <folder name="Windows2">
+        <folder name="Modes">
+            <file name="designpattern.wsmode" url="windowmanager/designpattern.wsmode" />
+            <folder name="designpattern">
+                <file name="designpattern.wstcref" url="windowmanager/designpattern/designpattern.wstcref" />
+            </folder>
+        </folder>
+
+        <folder name="Components">
+                <file name="designpattern.settings" url="components/designpattern.settings" />
+        </folder>
+
+      <folder name="Groups">         
+         <folder name="modeling-diagrams">
+            <file name="designpattern.wstcgrp" url="groups/modeling-diagrams/designpattern.wstcgrp"/>
+         </folder>
+      </folder>
+              
+      <!-- <folder name="Groups">
+         <file name="modeling-diagrams.wsgrp" url="groups/modeling-diagrams.wsgrp"/>
+         <folder name="modeling-diagrams">
+            <file name="documentation.wstcgrp" url="groups/modeling-diagrams/documentation.wstcgrp"/>
+         </folder>
+      </folder>
+      -->
+    </folder>
+</filesystem>

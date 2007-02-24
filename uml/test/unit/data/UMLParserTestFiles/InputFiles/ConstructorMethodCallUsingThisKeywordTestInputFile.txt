@@ -1,0 +1,49 @@
+Class Declaration
+ Modifiers
+ { ConstructorMethodCallUsingThisKeywordTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+   Type
+    { int, Primitive Type }
+   { i, Name }
+   Initializer
+    { 0, Integer Constant }
+  Constructor Definition
+   Modifiers
+    { public, Modifier }
+   { ConstructorMethodCallUsingThisKeywordTestFile, Name }
+   Parameters
+    Parameter
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { a, Name }
+   Constructor Body
+    { {, Method Body Start }
+  Constructor Definition
+   Modifiers
+    { public, Modifier }
+   { ConstructorMethodCallUsingThisKeywordTestFile, Name }
+   Parameters
+    Parameter
+     Modifiers
+     Type
+      { int, Primitive Type }
+     { a, Name }
+    Parameter
+     Modifiers
+     Type
+      Identifier
+       { String, Identifier }
+     { s, Name }
+   Constructor Body
+    { {, Method Body Start }
+    Constructor Call
+     Expression List
+      Identifier
+       { a, Identifier }
+  { }, Class Body End }

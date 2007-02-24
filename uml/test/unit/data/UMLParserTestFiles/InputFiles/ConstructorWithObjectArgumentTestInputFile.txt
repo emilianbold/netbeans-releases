@@ -1,0 +1,21 @@
+Class Declaration
+ Modifiers
+ { ConstructorWithObjectArgumentTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Constructor Definition
+   Modifiers
+    { public, Modifier }
+   { ConstructorWithObjectArgumentTestFile, Name }
+   Parameters
+    Parameter
+     Modifiers
+     Type
+      Identifier
+       { Object, Identifier }
+     { o, Name }
+   Constructor Body
+    { {, Method Body Start }
+  { }, Class Body End }

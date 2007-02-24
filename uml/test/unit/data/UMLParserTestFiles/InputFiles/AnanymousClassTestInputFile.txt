@@ -1,0 +1,30 @@
+Class Declaration
+ Modifiers
+ { AnanymousClassTestFile, Name }
+ Generalization
+ Realization
+ Body
+  { {, Class Body Start }
+  Variable Definition
+   Modifiers
+   Type
+    Identifier
+     { Object, Identifier }
+   { o, Name }
+   Initializer
+    Object Creation
+     { new, Operator }
+     Identifier
+      { Object, Identifier }
+     { (, Argument Start }
+     Expression List
+     { ), Argument End }
+     Body
+      { {, Class Body Start }
+      Variable Definition
+       Modifiers
+       Type
+        { int, Primitive Type }
+       { i, Name }
+      { }, Class Body End }
+  { }, Class Body End }
