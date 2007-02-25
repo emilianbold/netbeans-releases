@@ -1,1 +1,2 @@
 org.netbeans.modules.java.navigation.ClassMemberNavigatorJavaSourceFactory
+org.netbeans.modules.java.navigation.CaretListeningFactory
