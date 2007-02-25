@@ -432,6 +432,22 @@ public final class LogRecords {
                 String msg = Elem.MESSAGE.parse(values);
                 String key = Elem.KEY.parse(values);
                 String catalog = Elem.CATALOG.parse(values);
+                if ("<null>".equals(catalog)) { // NOI18N
+                    // XXX hotfix for e.g.
+                    //WARNING [org.netbeans.ProxyClassLoader]: You are trying to access file: <null>_en.properties from the default package. Please see ...
+                    //java.lang.IllegalStateException
+                    //	at org.netbeans.ProxyClassLoader.printDefaultPackageWarning(ProxyClassLoader.java:470)
+                    //	at org.netbeans.ProxyClassLoader.getResource(ProxyClassLoader.java:230)
+                    //	at java.lang.ClassLoader.getResourceAsStream(ClassLoader.java:1159)
+                    //	at java.util.ResourceBundle$1.run(ResourceBundle.java:1079)
+                    //	at java.security.AccessController.doPrivileged(Native Method)
+                    //	at java.util.ResourceBundle.loadBundle(ResourceBundle.java:1075)
+                    //	at java.util.ResourceBundle.findBundle(ResourceBundle.java:928)
+                    //	at java.util.ResourceBundle.getBundleImpl(ResourceBundle.java:762)
+                    //	at java.util.ResourceBundle.getBundle(ResourceBundle.java:549)
+                    //	at org.netbeans.lib.uihandler.LogRecords$Parser.endElement(LogRecords.java:444)
+                    catalog = null;
+                }
                 
                 LogRecord r = new LogRecord(parseLevel(lev), key != null && catalog != null ? key : msg);
                 r.setThreadID(Integer.parseInt(thread));
