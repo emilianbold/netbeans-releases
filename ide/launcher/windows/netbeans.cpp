@@ -36,7 +36,6 @@ static void parseArgs(int argc, char *argv[]);
 static int readClusterFile(const char* path);
 static int dirExists(const char* path);
 static void ErrorExit(LPTSTR lpszMessage, LPTSTR lpszFunction);
-static char *readEndorsedDirs(const char *progdir, char **clusterDirs, char *pOptions);
 
 static char userdir[MAX_PATH] = "c:\\nbuser";
 static char options[4098] = "";
@@ -135,16 +134,13 @@ int WINAPI
     }        
 
     strcat(nbexec, "\\lib\\nbexec.exe");
-    
-    char *pEndorsedDirs = readEndorsedDirs(topdir, defaultDirs, options);
 
-    sprintf(cmdline2, "\"%s\" %s -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense --branding nb --clusters \"%s\" --userdir \"%s\" %s \"%s\" %s",
+    sprintf(cmdline2, "\"%s\" %s -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense --branding nb --clusters \"%s\" --userdir \"%s\" %s %s",
             nbexec,
             jdkswitch,
             dirs,
             userdir,
             options,
-            pEndorsedDirs,
             cmdline);
 
     STARTUPINFO start;
@@ -548,31 +544,4 @@ void ErrorExit(LPTSTR lpszMessage, LPTSTR lpszFunction)
     LocalFree(lpDisplayBuf);
     ExitProcess( (dw != 0)? dw: 1); 
 }
-
-/* Looks for modules/ext/jaxws21/api directory in ideX cluster and if it 
- * exists returns string that will init java.endorsed.dirs property to this directory
- * If the directory does not exist or pOptions defines this property empty string 
- * is returned.
-*/
-char *readEndorsedDirs(const char *progdir, char **clusterDirs, char *pOptions) {
-    if (strstr(pOptions, "-J-Djava.endorsed.dirs=")) {
-        return "";
-    }
-    for (char **clusterName = clusterDirs; *clusterName != NULL; clusterName++) {
-        if (strstr(*clusterName, "ide")) {
-            char *endorsedParam = (char *) malloc(60+strlen(*clusterName)+strlen(progdir));
-            strcpy(endorsedParam, "-J-Djava.endorsed.dirs=");
-            strcat(endorsedParam, progdir);
-            strcat(endorsedParam, "\\");
-            strcat(endorsedParam, *clusterName);
-            strcat(endorsedParam, "\\modules\\ext\\jaxws21\\api");
-#ifdef DEBUG 
-    printf("Searching for : >%s<\n", endorsedParam+23);
-#endif
-            if (dirExists(endorsedParam+23)) {
-                return endorsedParam;
-            }
-        }
-    }
-    return "";
-}
+    
