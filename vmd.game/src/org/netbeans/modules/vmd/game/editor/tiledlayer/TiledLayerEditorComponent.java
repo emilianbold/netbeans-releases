@@ -750,7 +750,11 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 				}
 			}
 			
-			NewSimpleTiledLayerDialog dialog = new NewSimpleTiledLayerDialog(TiledLayerEditorComponent.this.tiledLayer.getImageResource(), grid);
+			NewSimpleTiledLayerDialog dialog = new NewSimpleTiledLayerDialog(TiledLayerEditorComponent.this.tiledLayer.getImageResource(), 
+					grid,
+					TiledLayerEditorComponent.this.tiledLayer.getTileWidth(),
+					TiledLayerEditorComponent.this.tiledLayer.getTileHeight()
+					);
 			DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Tiled Layer from selection");
 			dd.setButtonListener(dialog);
 			dd.setValid(false);
@@ -1047,7 +1051,10 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 					List<Tile> tiles = (List<Tile>) transferable.getTransferData(tileFlavor);
 					assert (tiles.size() > 0);
 					ImageResource imgRes = TiledLayerEditorComponent.this.tiledLayer.getImageResource();
-					Tile newTile = imgRes.getTile(tiles.get(0).getIndex());
+					Tile newTile = imgRes.getTile(tiles.get(0).getIndex(),
+							TiledLayerEditorComponent.this.tiledLayer.getTileWidth(),
+							TiledLayerEditorComponent.this.tiledLayer.getTileHeight()
+							);
 					Position cell = TiledLayerEditorComponent.this.getCellAtPoint(dropPoint);
 					if (TiledLayerEditorComponent.this.cellsSelected.contains(cell)) {
 						TiledLayerEditorComponent.this.tiledLayer.setTileAtPositions(newTile.getIndex(), TiledLayerEditorComponent.this.cellsSelected);

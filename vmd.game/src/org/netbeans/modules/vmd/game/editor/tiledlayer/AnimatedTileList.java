@@ -68,7 +68,7 @@ public class AnimatedTileList extends JList {
 		this.setModel(model);
 		this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		this.setCellRenderer(new AnimatedTileListCellRenderer());
-		this.setMinimumSize(new Dimension(this.imageResource.getCellWidth(), 20));
+		this.setMinimumSize(new Dimension(this.editorComponent.getTiledLayer().getTileWidth(), 20));
 		this.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
 				if (e.getValueIsAdjusting())
@@ -104,7 +104,7 @@ public class AnimatedTileList extends JList {
 	}
 	
 	private void init() {
-		List animatedTiles = this.imageResource.getAnimatedTiles();
+		List animatedTiles = this.imageResource.getAnimatedTiles(this.editorComponent.getTiledLayer().getTileWidth(), this.editorComponent.getTiledLayer().getTileHeight());
 		for (Iterator iter = animatedTiles.iterator(); iter.hasNext();) {
 			AnimatedTile tile = (AnimatedTile) iter.next();
 			tile.addSequenceContainerListener(this.model);
@@ -142,8 +142,11 @@ public class AnimatedTileList extends JList {
 				
 		//ImageResourceListener
 		public void animatedTileAdded(ImageResource source, AnimatedTile tile) {
-			this.addElement(tile);
-			tile.addSequenceContainerListener(this);
+			if (tile.getWidth() == AnimatedTileList.this.editorComponent.getTiledLayer().getTileWidth()
+					&& tile.getHeight() == AnimatedTileList.this.editorComponent.getTiledLayer().getTileHeight()) {
+				this.addElement(tile);
+				tile.addSequenceContainerListener(this);
+			}
 		}
 		public void animatedTileRemoved(ImageResource source, AnimatedTile tile) {
 			tile.removeSequenceContainerListener(this);

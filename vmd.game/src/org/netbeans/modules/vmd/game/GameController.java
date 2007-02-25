@@ -164,7 +164,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 								top.add(new JPanel(), BorderLayout.CENTER);
 								return top;
                             }
-                            public ImageResource getImageResource() {
+                            public ImageResourceInfo getImageResourceInfo() {
 								return null;
                             }
                             public JComponent getNavigator() {
@@ -336,9 +336,10 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		DesignComponent imgResDC = tiledLayerDC.readProperty(LayerCD.PROPERTY_IMAGE_RESOURCE).getComponent();
 		ImageResource imgRes = this.constructImageResource(imgResDC);
 		int[][]  grid = (int[][]) tiledLayerDC.readProperty(TiledLayerCD.PROPERTY_TILES).getPrimitiveValue();
+		int tileWidth = MidpTypes.getInteger(tiledLayerDC.readProperty(LayerCD.PROPERTY_TILE_WIDTH));
+		int tileHeight = MidpTypes.getInteger(tiledLayerDC.readProperty(LayerCD.PROPERTY_TILE_HEIGHT));
 		
-		tiledLayer = GlobalRepository.getInstance().createTiledLayer(name, imgRes, grid);
-//		List<PropertyValue> animTileDCs = tiledLayerDC.readProperty(TiledLayerCD.PROPERTY_ANIMATED_TILES).getArray();
+		tiledLayer = GlobalRepository.getInstance().createTiledLayer(name, imgRes, grid, tileWidth, tileHeight);
 		
 		return tiledLayer;
 	}
@@ -356,12 +357,14 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		
 		int frameMs = (Integer) sequenceDC.readProperty(SequenceCD.PROPERTY_FRAME_MS).getPrimitiveValue();
 		int[]  frames = (int[]) sequenceDC.readProperty(SequenceCD.PROPERTY_FRAMES).getPrimitiveValue();
+		int frameWidth = (Integer) sequenceDC.readProperty(SequenceCD.PROPERTY_FRAME_WIDTH).getPrimitiveValue();
+		int frameHeight = (Integer) sequenceDC.readProperty(SequenceCD.PROPERTY_FRAME_HEIGHT).getPrimitiveValue();
 		
-		sequence = imgRes.createSequence(name, frames.length);
+		sequence = imgRes.createSequence(name, frames.length, frameWidth, frameHeight);
 		sequence.setFrameMs(frameMs);
 
 		for (int i = 0; i < frames.length; i++) {
-			sequence.setFrame((StaticTile) imgRes.getTile(frames[i]), i);
+			sequence.setFrame((StaticTile) imgRes.getTile(frames[i], frameWidth, frameHeight), i);
 		}
 		return sequence;
 	}	
@@ -371,11 +374,9 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		FileObject fo;
 		URL imgResUrl;
 
-		final int tileHeight = (Integer) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_TILE_HEIGHT).getPrimitiveValue();
-		final int tileWidth = (Integer) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_TILE_WIDTH).getPrimitiveValue();
 		final String imgResPath = (String) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_IMAGE_PATH).getPrimitiveValue();
 		
-		imgRes = GlobalRepository.getInstance().getImageResource(imgResPath, tileWidth, tileHeight);
+		imgRes = GlobalRepository.getInstance().getImageResource(imgResPath);
 		if (imgRes != null) {
 			return imgRes;
 		}
@@ -390,8 +391,6 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			}
 			
 			final SelectImageForLayerDialog dialog = new SelectImageForLayerDialog(
-					tileHeight,
-					tileWidth,
 					"Multiple images found matching the relative path: " + imgResPath,
 					imagesMap.keySet()
 			);
@@ -420,16 +419,13 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			});
 		}
 		else if (imagesMap.isEmpty()) {
-			//image is no longer on the classpath - prompt the user to add the
-			//image to classpath
+			//image is no longer on the classpath - prompt the user to select a replacement image
 			fo = null;
 			System.out.println("Image " + imgResPath + " doesn't exist, select a replacement.");
 			
 			Map<FileObject, String> images = MidpProjectSupport.getImagesForProject(document, false);
 			
 			final SelectImageForLayerDialog dialog = new SelectImageForLayerDialog(
-					tileHeight,
-					tileWidth,
 					"Image " + imgResPath + " doesn't exist, select a replacement.",
 					images.keySet()
 			);
@@ -468,7 +464,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		} catch (FileStateInvalidException e) {
 			throw new RuntimeException(e);
 		}
-		imgRes = GlobalRepository.getInstance().getImageResource(imgResUrl, imgResPath, tileWidth, tileHeight);
+		imgRes = GlobalRepository.getInstance().getImageResource(imgResUrl, imgResPath);
 		return imgRes;
 	}
 	
@@ -509,7 +505,12 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	}
 	
 	
+	
+	
 	//These methods create design components from game model
+	
+	
+	
 	
 	public static DesignComponent createSceneDCFromScene(DesignDocument doc, Scene scene) {
 		DesignComponent dcScene = designIdMap.get(scene);
@@ -576,6 +577,8 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		dcLayer.writeProperty(LayerCD.PROPERTY_IMAGE_RESOURCE, PropertyValue.createComponentReference(dcImgRes));
 		PropertyValue propTiles = GameTypes.createTilesProperty(layer.getTiles());
 		dcLayer.writeProperty(TiledLayerCD.PROPERTY_TILES, propTiles);
+		dcLayer.writeProperty(LayerCD.PROPERTY_TILE_WIDTH, MidpTypes.createIntegerValue(layer.getTileWidth()));
+		dcLayer.writeProperty(LayerCD.PROPERTY_TILE_HEIGHT, MidpTypes.createIntegerValue(layer.getTileHeight()));
 	}
 	
 	public DesignComponent createAnimatedTileDCFromAnimatedTile(AnimatedTile tile) {
@@ -586,6 +589,8 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		dcAt = document.createComponent(AnimatedTileCD.TYPEID);
 		dcAt.writeProperty(AnimatedTileCD.PROPERTY_NAME, MidpTypes.createStringValue(tile.getName()));
 		dcAt.writeProperty(AnimatedTileCD.PROPERTY_INDEX, MidpTypes.createIntegerValue(tile.getIndex()));
+		dcAt.writeProperty(AnimatedTileCD.PROPERTY_WIDTH, MidpTypes.createIntegerValue(tile.getWidth()));
+		dcAt.writeProperty(AnimatedTileCD.PROPERTY_HEIGHT, MidpTypes.createIntegerValue(tile.getHeight()));
 		
 		DesignComponent dcImgRes = designIdMap.get(tile.getImageResource());
 		assert(dcImgRes != null);
@@ -619,6 +624,8 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		}
 		dcLayer = document.createComponent(SpriteCD.TYPEID);
 		dcLayer.writeProperty(LayerCD.PROPERTY_NAME, MidpTypes.createStringValue(layer.getName()));
+		dcLayer.writeProperty(LayerCD.PROPERTY_TILE_WIDTH, MidpTypes.createIntegerValue(layer.getTileWidth()));
+		dcLayer.writeProperty(LayerCD.PROPERTY_TILE_HEIGHT, MidpTypes.createIntegerValue(layer.getTileHeight()));
 		
 		DesignComponent dcImgRes = designIdMap.get(layer.getImageResource());
 		assert(dcImgRes != null);
@@ -651,12 +658,8 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			return dcImgRes;
 		}
 		dcImgRes = document.createComponent(ImageResourceCD.TYPEID);
-		dcImgRes.writeProperty(ImageResourceCD.PROPERTY_IMAGE_PATH, MidpTypes.createStringValue(imageResource.getRelativeResourcePath()));
-		dcImgRes.writeProperty(ImageResourceCD.PROPERTY_TILE_WIDTH, MidpTypes.createIntegerValue(imageResource.getCellWidth()));
-		dcImgRes.writeProperty(ImageResourceCD.PROPERTY_TILE_HEIGHT, MidpTypes.createIntegerValue(imageResource.getCellHeight()));
-		
+		dcImgRes.writeProperty(ImageResourceCD.PROPERTY_IMAGE_PATH, MidpTypes.createStringValue(imageResource.getRelativeResourcePath()));		
 		this.writeAnimatedTilesToImageResourceDC(dcImgRes, imageResource);
-		
 		return dcImgRes;
 	}
 	
@@ -684,9 +687,10 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		DesignComponent dcImg = designIdMap.get(sequence.getImageResource());
 		assert(dcImg != null);
 		dcSequence.writeProperty(SequenceCD.PROPERTY_IMAGE_RESOURCE, PropertyValue.createComponentReference(dcImg));
-		
 		dcSequence.writeProperty(SequenceCD.PROPERTY_FRAMES, GameTypes.createFramesProperty(sequence.getFramesAsArray()));
 		dcSequence.writeProperty(SequenceCD.PROPERTY_FRAME_MS, MidpTypes.createIntegerValue(sequence.getFrameMs()));
+		dcSequence.writeProperty(SequenceCD.PROPERTY_FRAME_WIDTH, MidpTypes.createIntegerValue(sequence.getFrameWidth()));
+		dcSequence.writeProperty(SequenceCD.PROPERTY_FRAME_HEIGHT, MidpTypes.createIntegerValue(sequence.getFrameHeight()));
 		
 		return dcSequence;
 	}

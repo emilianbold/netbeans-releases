@@ -27,11 +27,15 @@ public abstract class Tile implements Previewable, Comparable {
 	private ImageResource imageResource;
 
 	private int index;
+	private int width;
+	private int height;
 
 	//TODO : change the constructor to take (ImageResourceURL, width, height, index)
-	Tile(ImageResource imageResource, int index) {
+	Tile(ImageResource imageResource, int index, int width, int height) {
 		this.imageResource = imageResource;
 		this.index = index;
+		this.width = width;
+		this.height = height;
 	}
 
 	public int getIndex() {
@@ -43,11 +47,11 @@ public abstract class Tile implements Previewable, Comparable {
 	}
 
 	public int getHeight() {
-		return this.imageResource.getCellHeight();
+		return this.height;
 	}
 	
 	public int getWidth() {
-		return this.imageResource.getCellWidth();
+		return this.width;
 	}
 
 	public String toString() {

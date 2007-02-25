@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.game.model;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.game.integration.components.GameTypes;
 import org.netbeans.modules.vmd.game.integration.GameCodeSupport;
-
 import java.util.Arrays;
 import java.util.List;
 

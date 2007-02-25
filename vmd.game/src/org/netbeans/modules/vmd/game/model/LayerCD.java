@@ -33,6 +33,8 @@ public class LayerCD extends ComponentDescriptor {
 	
 	public static final String PROPERTY_NAME = "layercd.prop.name";
 	public static final String PROPERTY_IMAGE_RESOURCE = "layercd.prop.imageresource";
+	public static final String PROPERTY_TILE_WIDTH = "layercd.prop.tile.width"; // NOI18N
+	public static final String PROPERTY_TILE_HEIGHT = "layercd.prop.tile.height"; // NOI18N
 	
 	public TypeDescriptor getTypeDescriptor() {
 		return new TypeDescriptor(null, TYPEID, true, true);
@@ -47,6 +49,10 @@ public class LayerCD extends ComponentDescriptor {
 			new PropertyDescriptor(PROPERTY_NAME, MidpTypes.TYPEID_JAVA_LANG_STRING,
 				PropertyValue.createNull(), false, false, Versionable.FOREVER),
 			new PropertyDescriptor(PROPERTY_IMAGE_RESOURCE, ImageResourceCD.TYPEID,
+				PropertyValue.createNull(), false, false, Versionable.FOREVER),
+			new PropertyDescriptor(PROPERTY_TILE_WIDTH, MidpTypes.TYPEID_INT,
+				PropertyValue.createNull(), false, false, Versionable.FOREVER),
+			new PropertyDescriptor(PROPERTY_TILE_HEIGHT, MidpTypes.TYPEID_INT,
 				PropertyValue.createNull(), false, false, Versionable.FOREVER)
 			);
 	}

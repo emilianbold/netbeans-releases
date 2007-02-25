@@ -22,12 +22,34 @@ import javax.swing.JComponent;
 
 
 public interface Editable {
-	
+
 	public static final String ACTION_PROP_EDITOR_MANAGER = "ACTION_PROP_EDITOR_MANAGER";
-	
+
 	public JComponent getEditor();
 
-	public ImageResource getImageResource();
+	public ImageResourceInfo getImageResourceInfo();
 
 	public JComponent getNavigator();
+
+	public class ImageResourceInfo {
+		private ImageResource imgRes;
+		private int tileWidth;
+		private int tileHeight;
+
+		public ImageResourceInfo(ImageResource imgRes, int tileWidth, int tileHeight) {
+			this.imgRes = imgRes;
+			this.tileWidth = tileWidth;
+			this.tileHeight = tileHeight;
+		}
+		
+		public ImageResource getImageResource() {
+			return this.imgRes;
+		}		
+		public int getTileWidth() {
+			return this.tileWidth;
+		}
+		public int getTileHeight() {
+			return this.tileHeight;
+		}
+	}
 }

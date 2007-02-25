@@ -682,10 +682,9 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 			int insertIndex = afterFrameIndex;
 			while ((indexBefore += incr) != indexAfter) {
 				ImageResource imgRes = seq.getImageResource();
-				StaticTile tile = (StaticTile) imgRes.getTile(indexBefore);				
+				StaticTile tile = (StaticTile) imgRes.getTile(indexBefore, frameWidth, frameHeight);
 				seq.insertFrame(tile, insertIndex);
 				if (DEBUG) System.out.println("insert tile: " + tile.getIndex() + " at index " + insertIndex + " at Column " + SequenceEditingPanel.this.getColumnForFrame(insertIndex));
-				//SequenceEditingPanel.this.selectedFrameIndexes.add(new Integer(insertIndex));
 				SequenceEditingPanel.this.selection.setSelected(insertIndex, true);
 				insertIndex++;
 			}

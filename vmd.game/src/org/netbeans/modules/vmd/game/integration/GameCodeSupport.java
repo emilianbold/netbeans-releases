@@ -39,101 +39,101 @@ import java.util.List;
  * @author David Kaspar
  */
 public class GameCodeSupport {
-
-    public static Presenter createSequenceCodePresenter () {
-        return new CodeClassLevelPresenter.Adapter () {
-            protected void generateFieldSectionCode (MultiGuardedSection section) {
-                CodeWriter writer = section.getWriter ();
-                DesignComponent component = getComponent ();
-
-                String name = MidpTypes.getString (component.readProperty (SequenceCD.PROPERTY_NAME));
-                int frameMillis = MidpTypes.getInteger (component.readProperty (SequenceCD.PROPERTY_FRAME_MS));
+	
+	public static Presenter createSequenceCodePresenter() {
+		return new CodeClassLevelPresenter.Adapter() {
+			protected void generateFieldSectionCode(MultiGuardedSection section) {
+				CodeWriter writer = section.getWriter();
+				DesignComponent component = getComponent();
 				
-                writer.write ("public int " + name + "_delay = " + frameMillis + ";\n"); // NOI18N
-                writer.write ("public int[] " + name + " = {"); // NOI18N
-
-                int[] frames = GameTypes.getFrames (component.readProperty (SequenceCD.PROPERTY_FRAMES));
-                for (int i = 0; i < frames.length; i ++) {
-                    if (i > 0)
-                        writer.write (", "); // NOI18N
-                    writer.write (Integer.toString (frames[i]));
-                }
-
-                writer.write ("};\n"); // NOI18N
-            }
-        };
-    }
-
-    public static Presenter createImageResourceCodePresenter () {
-        return new CodeClassLevelPresenter.Adapter() {
-            protected void generateFieldSectionCode(MultiGuardedSection section) {
+				String name = MidpTypes.getString(component.readProperty(SequenceCD.PROPERTY_NAME));
+				int frameMillis = MidpTypes.getInteger(component.readProperty(SequenceCD.PROPERTY_FRAME_MS));
+				
+				writer.write("public int " + name + "_delay = " + frameMillis + ";\n"); // NOI18N
+				writer.write("public int[] " + name + " = {"); // NOI18N
+				
+				int[] frames = GameTypes.getFrames(component.readProperty(SequenceCD.PROPERTY_FRAMES));
+				for (int i = 0; i < frames.length; i ++) {
+					if (i > 0)
+						writer.write(", "); // NOI18N
+					writer.write(Integer.toString(frames[i]));
+				}
+				
+				writer.write("};\n"); // NOI18N
+			}
+		};
+	}
+	
+	public static Presenter createImageResourceCodePresenter() {
+		return new CodeClassLevelPresenter.Adapter() {
+			protected void generateFieldSectionCode(MultiGuardedSection section) {
 				CodeWriter writer = section.getWriter();
 				DesignComponent component = getComponent();
 				String name = getImageName(component);
-				writer.write ("private Image " + name + ";\n"); // NOI18N
+				writer.write("private Image " + name + ";\n"); // NOI18N
 			}
-            protected void generateClassBodyCode (StyledDocument document) {
-                DesignComponent component = getComponent ();
-                MultiGuardedSection section = MultiGuardedSection.create (document, component.getComponentID () + "-getter"); // NOI18N
-                String name = getImageName (component);
-                String path = MidpTypes.getString (component.readProperty (ImageResourceCD.PROPERTY_IMAGE_PATH));
-                section.getWriter ().write ("public Image get_" + name + "() throws java.io.IOException {\n"); // NOI18N
-                section.getWriter ().write ("if (" + name + " == null) {\n"); // NOI18N
-
-                section.getWriter ().commit ();
-                section.switchToEditable (getComponent ().getComponentID () + "-preInit"); // NOI18N
-                section.getWriter ().write (" // write pre-init user code here\n").commit (); // NOI18N
-                section.switchToGuarded ();
-
-                section.getWriter ().write (name + " = Image.createImage(\"" + path + "\");\n"); // NOI18N
+			protected void generateClassBodyCode(StyledDocument document) {
+				DesignComponent component = getComponent();
+				MultiGuardedSection section = MultiGuardedSection.create(document, component.getComponentID() + "-getter"); // NOI18N
+				String name = getImageName(component);
+				String path = MidpTypes.getString(component.readProperty(ImageResourceCD.PROPERTY_IMAGE_PATH));
+				section.getWriter().write("public Image get_" + name + "() throws java.io.IOException {\n"); // NOI18N
+				section.getWriter().write("if (" + name + " == null) {\n"); // NOI18N
+				
+				section.getWriter().commit();
+				section.switchToEditable(getComponent().getComponentID() + "-preInit"); // NOI18N
+				section.getWriter().write(" // write pre-init user code here\n").commit(); // NOI18N
+				section.switchToGuarded();
+				
+				section.getWriter().write(name + " = Image.createImage(\"" + path + "\");\n"); // NOI18N
 				
 				//XXX insert editable code here
-                
-				section.getWriter ().write ("}\n"); // NOI18N
-
-                section.getWriter ().commit ();
-                section.switchToEditable (getComponent ().getComponentID () + "-postInit"); // NOI18N
-                section.getWriter ().write (" // write post-init user code here\n").commit (); // NOI18N
-                section.switchToGuarded ();
-
-                section.getWriter ().write ("return this." + name + ";\n"); // NOI18N
-                section.getWriter ().write ("}\n"); // NOI18N
-                section.getWriter ().write ("\n"); // NOI18N
-
-                section.getWriter ().commit ();
-                section.close ();
-            }
-        };
+				
+				section.getWriter().write("}\n"); // NOI18N
+				
+				section.getWriter().commit();
+				section.switchToEditable(getComponent().getComponentID() + "-postInit"); // NOI18N
+				section.getWriter().write(" // write post-init user code here\n").commit(); // NOI18N
+				section.switchToGuarded();
+				
+				section.getWriter().write("return this." + name + ";\n"); // NOI18N
+				section.getWriter().write("}\n"); // NOI18N
+				section.getWriter().write("\n"); // NOI18N
+				
+				section.getWriter().commit();
+				section.close();
+			}
+		};
 	}
-
-    private static String getImageName (DesignComponent imageResource) {
+	
+	private static String getImageName(DesignComponent imageResource) {
 		String path = MidpTypes.getString(imageResource.readProperty(ImageResourceCD.PROPERTY_IMAGE_PATH));
 		int index = path.lastIndexOf("/"); // NOI18N
 		String name = path.substring(index + 1);
 		name = name.substring(0, name.lastIndexOf(".")); // NOI18N
 		return name;
-    }
-
-    public static Presenter createSceneCodePresenter () {
-        return new CodeClassLevelPresenter.Adapter() {
-            protected void generateClassBodyCode (StyledDocument document) {
-                DesignComponent component = getComponent ();
-                MultiGuardedSection section = MultiGuardedSection.create (document, component.getComponentID () + "-updateLayerManager");// NOI18N
-                String sceneName = MidpTypes.getString (component.readProperty (SceneCD.PROPERTY_NAME));
-
-                section.getWriter ().write ("public void updateLayerManagerFor" + sceneName + "(LayerManager lm) throws java.io.IOException {\n"); // NOI18N
-
-                section.getWriter ().commit ();
-                section.switchToEditable (getComponent ().getComponentID () + "-preUpdate"); // NOI18N
-                section.getWriter ().write (" // write pre-update user code here\n").commit (); // NOI18N
-                section.switchToGuarded ();
-
-                List<PropertyValue> tmp = component.readProperty (SceneCD.PROPERTY_SCENE_ITEMS).getArray ();
+	}
+	
+	public static Presenter createSceneCodePresenter() {
+		return new CodeClassLevelPresenter.Adapter() {
+			protected void generateClassBodyCode(StyledDocument document) {
+				DesignComponent component = getComponent();
+				MultiGuardedSection section = MultiGuardedSection.create(document, component.getComponentID() + "-updateLayerManager");// NOI18N
+				String sceneName = MidpTypes.getString(component.readProperty(SceneCD.PROPERTY_NAME));
+				
+				section.getWriter().write("public void updateLayerManagerFor" + sceneName + "(LayerManager lm) throws java.io.IOException {\n"); // NOI18N
+				
+				section.getWriter().commit();
+				section.switchToEditable(getComponent().getComponentID() + "-preUpdate"); // NOI18N
+				section.getWriter().write(" // write pre-update user code here\n").commit(); // NOI18N
+				section.switchToGuarded();
+				
+				List<PropertyValue> tmp = component.readProperty(SceneCD.PROPERTY_SCENE_ITEMS).getArray();
 				List<PropertyValue> sceneItems = new ArrayList<PropertyValue>();
 				sceneItems.addAll(tmp);
 				
 				Collections.sort(sceneItems, new Comparator<PropertyValue> () {
-                    public int compare(PropertyValue a, PropertyValue b) {
+					public int compare(PropertyValue a, PropertyValue b) {
 						DesignComponent aItem = a.getComponent();
 						int aZ = MidpTypes.getInteger(aItem.readProperty(SceneItemCD.PROPERTY_Z_ORDER));
 						
@@ -143,89 +143,89 @@ public class GameCodeSupport {
 						return new Integer(aZ).compareTo(bZ);
 					}
 				});
-                for (PropertyValue propertyValue : sceneItems) {
-                    DesignComponent sceneItem = propertyValue.getComponent ();
-
-                    DesignComponent layer = sceneItem.readProperty (SceneItemCD.PROPERTY_LAYER).getComponent ();
-                    String layerName = MidpTypes.getString (layer.readProperty (LayerCD.PROPERTY_NAME));
-                    Point position = GameTypes.getPoint (sceneItem.readProperty (SceneItemCD.PROPERTY_POSITION));
-                    boolean visible = MidpTypes.getBoolean (sceneItem.readProperty (SceneItemCD.PROPERTY_VISIBLE));
-
-                    section.getWriter ().write ("get_" + layerName + "().setPosition(" + position.x + ", " + position.y + ");\n"); // NOI18N
-                    section.getWriter ().write ("get_" + layerName + "().setVisible(" + visible + ");\n"); // NOI18N
-                    section.getWriter ().write ("lm.append(get_" + layerName + "());\n"); // NOI18N
-                }
-
-                section.getWriter ().commit ();
-                section.switchToEditable (getComponent ().getComponentID () + "-postUpdate"); // NOI18N
-                section.getWriter ().write (" // write post-update user code here\n").commit (); // NOI18N
-                section.switchToGuarded ();
-
-                section.getWriter ().write ("}\n"); // NOI18N
-                section.getWriter ().write ("\n"); // NOI18N
-
-                section.getWriter ().commit ();
-                section.close ();
-            }
-        };
-    }
-		
-    public static Presenter createSpriteCodePresenter () {
-        return new CodeClassLevelPresenter.Adapter () {
-
-            protected void generateFieldSectionCode (MultiGuardedSection section) {
-                DesignComponent component = getComponent ();
-                String layerName = MidpTypes.getString (component.readProperty (LayerCD.PROPERTY_NAME));
-                section.getWriter ().write ("private Sprite " + layerName + ";\n"); // NOI18N
-            }
-
-            protected void generateClassBodyCode (StyledDocument document) {
-                DesignComponent component = getComponent ();
-                MultiGuardedSection section = MultiGuardedSection.create (document, component.getComponentID () + "-getter");// NOI18N
-                String layerName = MidpTypes.getString (component.readProperty (LayerCD.PROPERTY_NAME));
+				for (PropertyValue propertyValue : sceneItems) {
+					DesignComponent sceneItem = propertyValue.getComponent();
+					
+					DesignComponent layer = sceneItem.readProperty(SceneItemCD.PROPERTY_LAYER).getComponent();
+					String layerName = MidpTypes.getString(layer.readProperty(LayerCD.PROPERTY_NAME));
+					Point position = GameTypes.getPoint(sceneItem.readProperty(SceneItemCD.PROPERTY_POSITION));
+					boolean visible = MidpTypes.getBoolean(sceneItem.readProperty(SceneItemCD.PROPERTY_VISIBLE));
+					
+					section.getWriter().write("get_" + layerName + "().setPosition(" + position.x + ", " + position.y + ");\n"); // NOI18N
+					section.getWriter().write("get_" + layerName + "().setVisible(" + visible + ");\n"); // NOI18N
+					section.getWriter().write("lm.append(get_" + layerName + "());\n"); // NOI18N
+				}
+				
+				section.getWriter().commit();
+				section.switchToEditable(getComponent().getComponentID() + "-postUpdate"); // NOI18N
+				section.getWriter().write(" // write post-update user code here\n").commit(); // NOI18N
+				section.switchToGuarded();
+				
+				section.getWriter().write("}\n"); // NOI18N
+				section.getWriter().write("\n"); // NOI18N
+				
+				section.getWriter().commit();
+				section.close();
+			}
+		};
+	}
+	
+	public static Presenter createSpriteCodePresenter() {
+		return new CodeClassLevelPresenter.Adapter() {
+			
+			protected void generateFieldSectionCode(MultiGuardedSection section) {
+				DesignComponent component = getComponent();
+				String layerName = MidpTypes.getString(component.readProperty(LayerCD.PROPERTY_NAME));
+				section.getWriter().write("private Sprite " + layerName + ";\n"); // NOI18N
+			}
+			
+			protected void generateClassBodyCode(StyledDocument document) {
+				DesignComponent component = getComponent();
+				MultiGuardedSection section = MultiGuardedSection.create(document, component.getComponentID() + "-getter");// NOI18N
+				String layerName = MidpTypes.getString(component.readProperty(LayerCD.PROPERTY_NAME));
 				
 				DesignComponent imageResource = component.readProperty(LayerCD.PROPERTY_IMAGE_RESOURCE).getComponent();
 				String imageName = getImageName(imageResource);
-				int tileWidth = MidpTypes.getInteger(imageResource.readProperty(ImageResourceCD.PROPERTY_TILE_WIDTH));
-				int tileHeight = MidpTypes.getInteger(imageResource.readProperty(ImageResourceCD.PROPERTY_TILE_HEIGHT));
+				int tileWidth = MidpTypes.getInteger(component.readProperty(LayerCD.PROPERTY_TILE_WIDTH));
+				int tileHeight = MidpTypes.getInteger(component.readProperty(LayerCD.PROPERTY_TILE_HEIGHT));
 				
 				DesignComponent defSeq = component.readProperty(SequenceContainerCDProperties.PROP_DEFAULT_SEQUENCE).getComponent();
-				String defSeqName = MidpTypes.getString (defSeq.readProperty (SequenceCD.PROPERTY_NAME));
+				String defSeqName = MidpTypes.getString(defSeq.readProperty(SequenceCD.PROPERTY_NAME));
 				
-                section.getWriter ().write ("public Sprite get_" + layerName + "() throws java.io.IOException {\n"); // NOI18N
-				section.getWriter ().write ("if (" + layerName + " == null) {\n"); // NOI18N
-
-                section.getWriter ().commit ();
-                section.switchToEditable (getComponent ().getComponentID () + "-preInit"); // NOI18N
-                section.getWriter ().write (" // write pre-init user code here\n").commit (); // NOI18N
-                section.switchToGuarded ();
-
-                section.getWriter ().write (layerName + " = new Sprite(get_" + imageName + "(), " + tileWidth + ", " + tileHeight + ");\n"); // NOI18N
-                section.getWriter ().write (layerName + ".setFrameSequence(" + defSeqName + ");\n"); // NOI18N
-
-                section.getWriter ().commit ();
-                section.switchToEditable (getComponent ().getComponentID () + "-postInit"); // NOI18N
-                section.getWriter ().write (" // write post-init user code here\n").commit (); // NOI18N
-                section.switchToGuarded ();
-
-                section.getWriter ().write ("}\n"); // NOI18N
+				section.getWriter().write("public Sprite get_" + layerName + "() throws java.io.IOException {\n"); // NOI18N
+				section.getWriter().write("if (" + layerName + " == null) {\n"); // NOI18N
 				
-				//XXX insert editable code here 
+				section.getWriter().commit();
+				section.switchToEditable(getComponent().getComponentID() + "-preInit"); // NOI18N
+				section.getWriter().write(" // write pre-init user code here\n").commit(); // NOI18N
+				section.switchToGuarded();
 				
-				section.getWriter ().write ("	return " + layerName + ";\n"); // NOI18N
-                section.getWriter ().write ("}\n"); // NOI18N
-                section.getWriter ().write ("\n"); // NOI18N
-
-                section.getWriter ().commit ();
-                section.close ();
-            }
-        };
-    }
-
+				section.getWriter().write(layerName + " = new Sprite(get_" + imageName + "(), " + tileWidth + ", " + tileHeight + ");\n"); // NOI18N
+				section.getWriter().write(layerName + ".setFrameSequence(" + defSeqName + ");\n"); // NOI18N
+				
+				section.getWriter().commit();
+				section.switchToEditable(getComponent().getComponentID() + "-postInit"); // NOI18N
+				section.getWriter().write(" // write post-init user code here\n").commit(); // NOI18N
+				section.switchToGuarded();
+				
+				section.getWriter().write("}\n"); // NOI18N
+				
+				//XXX insert editable code here
+				
+				section.getWriter().write("	return " + layerName + ";\n"); // NOI18N
+				section.getWriter().write("}\n"); // NOI18N
+				section.getWriter().write("\n"); // NOI18N
+				
+				section.getWriter().commit();
+				section.close();
+			}
+		};
+	}
+	
 	private static Set<Integer> getAnimatedTileIndexesFromTiledLayer(DesignComponent tiledLayer) {
 		assert (tiledLayer.getType().equals(TiledLayerCD.TYPEID));
 		Set<Integer> animSet = new HashSet<Integer>();
-		int[][] tiles = GameTypes.getTiles (tiledLayer.readProperty(TiledLayerCD.PROPERTY_TILES));
+		int[][] tiles = GameTypes.getTiles(tiledLayer.readProperty(TiledLayerCD.PROPERTY_TILES));
 		for (int i = 0; i < tiles.length; i++) {
 			for (int j = 0; j < tiles[i].length; j ++) {
 				int index = tiles[i][j];
@@ -253,44 +253,44 @@ public class GameCodeSupport {
 		return finalSet;
 	}
 	
-    public static Presenter createTiledLayerCodePresenter () {
-        return new CodeClassLevelPresenter.Adapter() {
-
-            protected void generateFieldSectionCode (MultiGuardedSection section) {
-                DesignComponent component = getComponent ();
-                
+	public static Presenter createTiledLayerCodePresenter() {
+		return new CodeClassLevelPresenter.Adapter() {
+			
+			protected void generateFieldSectionCode(MultiGuardedSection section) {
+				DesignComponent component = getComponent();
+				
 				//define the layer
-				String layerName = MidpTypes.getString (component.readProperty (LayerCD.PROPERTY_NAME));
-                section.getWriter().write("private TiledLayer " + layerName + ";\n"); // NOI18N
+				String layerName = MidpTypes.getString(component.readProperty(LayerCD.PROPERTY_NAME));
+				section.getWriter().write("private TiledLayer " + layerName + ";\n"); // NOI18N
 				
 				Set<DesignComponent> ats = getAnimatedTilesFromTiledLayer(component);
 				for (DesignComponent animtile : ats) {
 					String animTileName = MidpTypes.getString(animtile.readProperty(AnimatedTileCD.PROPERTY_NAME));
 					section.getWriter().write("public int " + animTileName + "_" + layerName + ";\n"); // NOI18N
 				}
-            }
-
-            protected void generateClassBodyCode (StyledDocument document) {
-                DesignComponent component = getComponent ();
-                MultiGuardedSection section = MultiGuardedSection.create (document, component.getComponentID () + "-getter");// NOI18N
-
-                String layerName = MidpTypes.getString (component.readProperty (LayerCD.PROPERTY_NAME));
-                int[][] tiles = GameTypes.getTiles (component.readProperty (TiledLayerCD.PROPERTY_TILES));
-
- 				DesignComponent imageResource = component.readProperty(LayerCD.PROPERTY_IMAGE_RESOURCE).getComponent();
+			}
+			
+			protected void generateClassBodyCode(StyledDocument document) {
+				DesignComponent component = getComponent();
+				MultiGuardedSection section = MultiGuardedSection.create(document, component.getComponentID() + "-getter");// NOI18N
+				
+				String layerName = MidpTypes.getString(component.readProperty(LayerCD.PROPERTY_NAME));
+				int[][] tiles = GameTypes.getTiles(component.readProperty(TiledLayerCD.PROPERTY_TILES));
+				
+				DesignComponent imageResource = component.readProperty(LayerCD.PROPERTY_IMAGE_RESOURCE).getComponent();
 				String imageName = getImageName(imageResource);
-				int tileWidth = MidpTypes.getInteger(imageResource.readProperty(ImageResourceCD.PROPERTY_TILE_WIDTH));
-				int tileHeight = MidpTypes.getInteger(imageResource.readProperty(ImageResourceCD.PROPERTY_TILE_HEIGHT));
-
-				section.getWriter ().write ("public TiledLayer get_" + layerName + "() throws java.io.IOException {\n"); // NOI18N
-                section.getWriter ().write ("if (" + layerName + " == null) {\n"); // NOI18N
-
-                section.getWriter ().commit ();
-                section.switchToEditable (getComponent ().getComponentID () + "-preInit"); // NOI18N
-                section.getWriter ().write (" // write pre-init user code here\n").commit (); // NOI18N
-                section.switchToGuarded ();
-
-                section.getWriter ().write (layerName + " = new TiledLayer(" // NOI18N
+				int tileWidth = MidpTypes.getInteger(component.readProperty(LayerCD.PROPERTY_TILE_WIDTH));
+				int tileHeight = MidpTypes.getInteger(component.readProperty(LayerCD.PROPERTY_TILE_HEIGHT));
+				
+				section.getWriter().write("public TiledLayer get_" + layerName + "() throws java.io.IOException {\n"); // NOI18N
+				section.getWriter().write("if (" + layerName + " == null) {\n"); // NOI18N
+				
+				section.getWriter().commit();
+				section.switchToEditable(getComponent().getComponentID() + "-preInit"); // NOI18N
+				section.getWriter().write(" // write pre-init user code here\n").commit(); // NOI18N
+				section.switchToGuarded();
+				
+				section.getWriter().write(layerName + " = new TiledLayer(" // NOI18N
 						+ tiles[0].length + ", " + tiles.length + ", get_" // NOI18N
 						+ imageName + "(), " + tileWidth + ", " + tileHeight + ");\n"); // NOI18N
 				
@@ -299,8 +299,8 @@ public class GameCodeSupport {
 				for (DesignComponent animtile : ats) {
 					String animTileName = MidpTypes.getString(animtile.readProperty(AnimatedTileCD.PROPERTY_NAME));
 					DesignComponent defSeq = animtile.readProperty(SequenceContainerCDProperties.PROP_DEFAULT_SEQUENCE).getComponent();
-
-	                String seqName = MidpTypes.getString(defSeq.readProperty (SequenceCD.PROPERTY_NAME));
+					
+					String seqName = MidpTypes.getString(defSeq.readProperty(SequenceCD.PROPERTY_NAME));
 					section.getWriter().write(animTileName + "_"  + layerName + " = " + layerName + ".createAnimatedTile(" + seqName + "[0]);\n"); // NOI18N
 				}
 				Map<Integer, String> indexNames = new HashMap<Integer, String>();
@@ -309,55 +309,54 @@ public class GameCodeSupport {
 				}
 				
 				//write tile matrix
-                section.getWriter ().write ("int[][] tiles = {\n"); // NOI18N
-                for (int rowIndex = 0; rowIndex < tiles.length; rowIndex ++) {
-                    section.getWriter ().write ("{ "); // NOI18N
-                    int[] row = tiles[rowIndex];
-                    for (int columnIndex = 0; columnIndex < row.length; columnIndex ++) {
-                        if (columnIndex > 0)
-                            section.getWriter ().write (", "); // NOI18N
-                        //check for animTile
+				section.getWriter().write("int[][] tiles = {\n"); // NOI18N
+				for (int rowIndex = 0; rowIndex < tiles.length; rowIndex ++) {
+					section.getWriter().write("{ "); // NOI18N
+					int[] row = tiles[rowIndex];
+					for (int columnIndex = 0; columnIndex < row.length; columnIndex ++) {
+						if (columnIndex > 0)
+							section.getWriter().write(", "); // NOI18N
+						//check for animTile
 						int tileIndex = row[columnIndex];
 						if (tileIndex >= 0) {
-	                        section.getWriter ().write (Integer.toString (row[columnIndex]));
-						}
-						else {
+							section.getWriter().write(Integer.toString(row[columnIndex]));
+						} else {
 							String atName = indexNames.get(tileIndex);
-							section.getWriter ().write (atName + "_" + layerName); // NOI18N
+							section.getWriter().write(atName + "_" + layerName); // NOI18N
 						}
-                    }
-                    if (rowIndex < tiles.length - 1)
-                        section.getWriter ().write (" },\n"); // NOI18N
-                    else
-                        section.getWriter ().write (" }\n"); // NOI18N
-                }
-				section.getWriter ().write ("};\n"); // NOI18N
-
-                section.getWriter ().commit ();
-                section.switchToEditable (getComponent ().getComponentID () + "-midInit"); // NOI18N
-                section.getWriter ().write (" // write mid-init user code here\n").commit (); // NOI18N
-                section.switchToGuarded ();
-
-                section.getWriter ().write ("for (int row = 0; row < " + tiles.length + "; row++) {\n"); // NOI18N
-                section.getWriter ().write ("for (int col = 0; col < " + tiles[0].length + "; col++) {\n"); // NOI18N
-                section.getWriter ().write (layerName + ".setCell(col, row, tiles[row][col]);\n"); // NOI18N
-                section.getWriter ().write ("}\n"); // NOI18N
-                section.getWriter ().write ("}\n"); // NOI18N
-                section.getWriter ().write ("}\n"); // NOI18N
-
-                section.getWriter ().commit ();
-                section.switchToEditable (getComponent ().getComponentID () + "-postInit"); // NOI18N
-                section.getWriter ().write (" // write post-init user code here\n").commit (); // NOI18N
-                section.switchToGuarded ();
-
-                section.getWriter ().write ("	return " + layerName + ";\n"); // NOI18N
-                section.getWriter ().write ("}\n"); // NOI18N
-                section.getWriter ().write ("\n"); // NOI18N
-
-                section.getWriter ().commit ();
-                section.close ();
-            }
-        };
-    }
-
+					}
+					if (rowIndex < tiles.length - 1)
+						section.getWriter().write(" },\n"); // NOI18N
+					else
+						section.getWriter().write(" }\n"); // NOI18N
+				}
+				section.getWriter().write("};\n"); // NOI18N
+				
+				section.getWriter().commit();
+				section.switchToEditable(getComponent().getComponentID() + "-midInit"); // NOI18N
+				section.getWriter().write(" // write mid-init user code here\n").commit(); // NOI18N
+				section.switchToGuarded();
+				
+				section.getWriter().write("for (int row = 0; row < " + tiles.length + "; row++) {\n"); // NOI18N
+				section.getWriter().write("for (int col = 0; col < " + tiles[0].length + "; col++) {\n"); // NOI18N
+				section.getWriter().write(layerName + ".setCell(col, row, tiles[row][col]);\n"); // NOI18N
+				section.getWriter().write("}\n"); // NOI18N
+				section.getWriter().write("}\n"); // NOI18N
+				section.getWriter().write("}\n"); // NOI18N
+				
+				section.getWriter().commit();
+				section.switchToEditable(getComponent().getComponentID() + "-postInit"); // NOI18N
+				section.getWriter().write(" // write post-init user code here\n").commit(); // NOI18N
+				section.switchToGuarded();
+				
+				section.getWriter().write("	return " + layerName + ";\n"); // NOI18N
+				section.getWriter().write("}\n"); // NOI18N
+				section.getWriter().write("\n"); // NOI18N
+				
+				section.getWriter().commit();
+				section.close();
+			}
+		};
+	}
+	
 }

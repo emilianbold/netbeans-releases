@@ -32,10 +32,14 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 public class NewAnimatedTileDialog extends AbstractNameValidationDialog {
 	
 	private ImageResource imageResource;
+	private int tileWidth;
+	private int tileHeight;
 	
 	/** Creates a new instance of NewAnimatedTileDialog */
-	public NewAnimatedTileDialog(ImageResource imgRes) {
+	public NewAnimatedTileDialog(ImageResource imgRes, int tileWidth, int tileHeight) {
 		this.imageResource = imgRes;
+		this.tileWidth = tileWidth;
+		this.tileHeight = tileHeight;
 	}
 
 	protected String getInitialStateDescriptionText() {
@@ -65,7 +69,7 @@ public class NewAnimatedTileDialog extends AbstractNameValidationDialog {
 	}
 	
 	protected void handleOKButton() {
-		AnimatedTile tile = this.imageResource.createAnimatedTile(this.fieldName.getText(), Tile.EMPTY_TILE_INDEX);
+		AnimatedTile tile = this.imageResource.createAnimatedTile(this.fieldName.getText(), Tile.EMPTY_TILE_INDEX, this.tileWidth, this.tileHeight);
 		MainView.getInstance().requestEditing(tile);
 	}
 

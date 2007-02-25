@@ -35,7 +35,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 
-public abstract class Layer implements Previewable, Editable, Transferable, CodeGenerator {
+public abstract class Layer implements Previewable, Editable, Transferable {
 	
 	public static final String ACTION_PROP_SCENE = "layer.action.prop.scene";
 	
@@ -45,10 +45,14 @@ public abstract class Layer implements Previewable, Editable, Transferable, Code
 	
 	private String name;
 	private ImageResource imageResource;
+	private int cellWidth;
+	private int cellHeight;
 	
-	protected Layer(String name, ImageResource imageResource) {
+	protected Layer(String name, ImageResource imageResource, int cellWidth, int cellHeight) {
 		this.name = name;
 		this.imageResource = imageResource;
+		this.cellWidth = cellWidth;
+		this.cellHeight = cellHeight;
 	}
 		
 	public String getName() {
@@ -62,6 +66,10 @@ public abstract class Layer implements Previewable, Editable, Transferable, Code
 		String oldName = this.name;
 		this.name = name;
 		this.propertyChangeSupport.firePropertyChange(PROPERTY_LAYER_NAME, oldName, name);
+	}
+	
+	public ImageResourceInfo getImageResourceInfo() {
+		return new ImageResourceInfo(this.imageResource, this.cellWidth, this.cellHeight);
 	}
 	
 	public ImageResource getImageResource() {
@@ -110,11 +118,11 @@ public abstract class Layer implements Previewable, Editable, Transferable, Code
 	}
 	
 	public int getTileHeight() {
-		return this.imageResource.getCellHeight();
+		return this.cellHeight;
 	}
 
 	public int getTileWidth() {
-		return this.imageResource.getCellWidth();
+		return this.cellWidth;
 	}
 
 	public abstract String getDisplayableTypeName();

@@ -23,7 +23,6 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -41,7 +40,7 @@ import org.netbeans.modules.vmd.game.preview.SequencePreviewPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
-public class Sequence implements Previewable, Editable, CodeGenerator {
+public class Sequence implements Previewable, Editable {
 
 	public static final boolean DEBUG = false;
 
@@ -68,19 +67,19 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 	private int frameMs;
 	private ArrayList<StaticTile> frames;
 	
-    Sequence(String name, ImageResource imageResource) {
-		this(name, imageResource, 1);
+    Sequence(String name, ImageResource imageResource, int frameWidth, int frameHeight) {
+		this(name, imageResource, 1, frameWidth, frameHeight);
     }
 	
-	Sequence(String name, ImageResource imageResource, int numberFrames) {
+	Sequence(String name, ImageResource imageResource, int numberFrames, int frameWidth, int frameHeight) {
 		this.name = name;
 		this.imageResource = imageResource;
-		this.frameWidth = imageResource.getCellWidth();
-		this.frameHeight = imageResource.getCellHeight();
+		this.frameWidth = frameWidth;
+		this.frameHeight = frameHeight;
 		
 		this.frames = new ArrayList();
 		for (int i = 0; i < numberFrames; i++) {
-			this.frames.add((StaticTile) imageResource.getTile(0));
+			this.frames.add((StaticTile) imageResource.getTile(0, this.frameWidth, this.frameHeight));
 		}
 		this.frameMs = DEFAULT_SHOWTIME_MS;
 	}
@@ -107,7 +106,7 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 	
 	public void addFrame(StaticTile frame) {
 		if (frame == null)
-			frame = (StaticTile) imageResource.getTile(0);
+			frame = (StaticTile) imageResource.getTile(0, this.frameWidth, this.frameHeight);
 		this.frames.add(frame);
 		int index = this.frames.indexOf(frame);
 		this.fireFrameAdded(frame, index);
@@ -115,7 +114,7 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 	
 	public void insertFrame(StaticTile frame, int index) {
 		if (frame == null)
-			frame = (StaticTile) imageResource.getTile(0);
+			frame = (StaticTile) imageResource.getTile(0, this.frameWidth, this.frameHeight);
 		this.frames.add(index, frame);
 		this.fireFrameAdded(frame, index);
 	}
@@ -144,7 +143,7 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 
 	public void setFrame(StaticTile frame, int index) {
 		if (frame == null) {
-			frame = (StaticTile) imageResource.getTile(0);
+			frame = (StaticTile) imageResource.getTile(0, this.frameWidth, this.frameHeight);
 		}
 		this.frames.ensureCapacity(index + 1);
 		this.frames.set(index, frame);
@@ -221,8 +220,13 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 		return this.editor == null ? this.editor = new SequenceEditingPanel(this) : this.editor;
 	}
 	
+	
 	public ImageResource getImageResource() {
 		return this.imageResource;
+	}
+	
+	public ImageResourceInfo getImageResourceInfo() {
+		return new ImageResourceInfo(this.imageResource, this.frameWidth, this.frameHeight);
 	}
 
 	public JComponent getNavigator() {
@@ -255,11 +259,11 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 	}
 
     public int getWidth() {
-		return this.imageResource.getCellWidth();
+		return this.frameWidth;
     }
 
     public int getHeight() {
-		return this.imageResource.getCellHeight();
+		return this.frameHeight;
     }
 	
 	public JComponent getPreview() {
@@ -312,18 +316,6 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 	
     public Collection getCodeGenerators() {
 		return new HashSet();
-    }
-
-    public void generateCode(PrintStream ps) {
-		ps.println("public int sequence_" + this.getName() + "_" + this.getImageResource().getNameNoExt() + "_delay = " + this.frameMs + ";");
-		ps.print("public int[] sequence_" + this.getName() + "_" + this.getImageResource().getNameNoExt() + " = {");
-		
-		for (int i = 0; i < this.getFrameCount(); i++) {
-			ps.print(this.getFrame(i).getIndex());
-			if (i < this.getFrameCount() -1)
-				ps.print(", ");
-		}
-		ps.println("};");
     }
 
 }

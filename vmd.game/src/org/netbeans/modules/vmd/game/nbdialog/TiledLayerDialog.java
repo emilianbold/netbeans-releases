@@ -605,13 +605,13 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 		assert (imageURL != null);
 		assert (relativeResourcePath != null);
 		
-		ImageResource imgRes = GlobalRepository.getInstance().getImageResource(imageURL, relativeResourcePath, tileWidth, tileHeight);
+		ImageResource imgRes = GlobalRepository.getInstance().getImageResource(imageURL, relativeResourcePath);
 		
 		if (this.scene != null) {
-			this.scene.createTiledLayer(name, imgRes, (Integer) this.spinnerRows.getValue(), (Integer) this.spinnerCols.getValue());
+			this.scene.createTiledLayer(name, imgRes, (Integer) this.spinnerRows.getValue(), (Integer) this.spinnerCols.getValue(), tileWidth, tileHeight);
 		}
 		else {
-			GlobalRepository.getInstance().createTiledLayer(name, imgRes, (Integer) this.spinnerRows.getValue(), (Integer) this.spinnerCols.getValue());
+			GlobalRepository.getInstance().createTiledLayer(name, imgRes, (Integer) this.spinnerRows.getValue(), (Integer) this.spinnerCols.getValue(), tileWidth, tileHeight);
 		}
 	}
 	

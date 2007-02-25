@@ -18,22 +18,22 @@
  */
 package org.netbeans.modules.vmd.game.model;
 
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.PrintStream;
 import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.event.EventListenerList;
 
-public class ImageResource implements CodeGenerator {
+public class ImageResource {
 	
 	public static final boolean DEBUG = false;
 	
@@ -41,25 +41,18 @@ public class ImageResource implements CodeGenerator {
 	
 	private URL imageURL;
 	private String relativeResourcePath;
-	private int cellWidth;
-	private int cellHeight;
 	
-	private StaticTile[][] staticTileGrid;
-	
-	
+	private Map<Dimension, StaticTile> emptyTiles = new HashMap<Dimension, StaticTile>();
+	private Map<Dimension, StaticTile[][]> staticTileGrids = new HashMap<Dimension, StaticTile[][]>();
 	private Map<Integer, AnimatedTile> animatedTiles = new HashMap<Integer, AnimatedTile>();
 	private int animatedTileIndexKey = -1;
 	
 	private List<Sequence> sequences = new ArrayList();
-	
-	private StaticTile emptyTile;
 
 	private static HashMap imgSoftReferences = new HashMap();	
 	
 	private static BufferedImage softenImage(URL imageURL) {
 		BufferedImage img = null;
-		//if (DEBUG) System.out.println("URL : " + imageURL);
-		//if (DEBUG) System.out.println("imgSoftReferences: "  + imgSoftReferences);
 		SoftReference softie = (SoftReference) imgSoftReferences.get(imageURL);
 		if (softie != null)
 			img = (BufferedImage) (softie).get();
@@ -74,16 +67,9 @@ public class ImageResource implements CodeGenerator {
 	/**
 	 * Only called from GlobalRepository.getImageResource()
 	 */
-	ImageResource(URL imageURL, String relativeResourcePath, int cellWidth, int cellHeight) {
+	ImageResource(URL imageURL, String relativeResourcePath) {
 		this.imageURL = imageURL;
 		this.relativeResourcePath = relativeResourcePath;
-		this.cellWidth = cellWidth;
-		this.cellHeight = cellHeight;
-		this.emptyTile = createEmptyTile(cellWidth, cellHeight);
-		BufferedImage img = this.softenImage(imageURL);
-		int rows = img.getHeight(null) / cellHeight;
-		int cols = img.getWidth(null) / cellWidth;
-		this.initStaticTileGrid(rows, cols);
 	}
 	
 	public void addImageResourceListener(ImageResourceListener l) {
@@ -93,11 +79,11 @@ public class ImageResource implements CodeGenerator {
 		this.listenerList.remove(ImageResourceListener.class, l);
 	}
 	
-	public Sequence createSequence(String name, int numberFrames) {
+	public Sequence createSequence(String name, int numberFrames, int frameWidth, int frameHeight) {
 		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Sequence cannot be created because component name '" + name + "' already exists.");
 		}
-		Sequence sequence = new Sequence(name, this, numberFrames);
+		Sequence sequence = new Sequence(name, this, numberFrames, frameWidth, frameHeight);
 		this.sequences.add(sequence);
 		this.fireSequenceAdded(sequence);
 		return sequence;
@@ -130,8 +116,6 @@ public class ImageResource implements CodeGenerator {
 		}
 	}
 	
-	
-	
 	public void removeSequence(Sequence sequence) {
 		this.sequences.remove(sequence);
 		this.fireSequenceRemoved(sequence);
@@ -151,7 +135,7 @@ public class ImageResource implements CodeGenerator {
 	}
 	
 	
-	public AnimatedTile createAnimatedTile(int index, String name, int firstStaticTileIndex) {
+	public AnimatedTile createAnimatedTile(int index, String name, int firstStaticTileIndex, int tileWidth, int tileHeight) {
 		assert (index < 0);
 		assert (this.animatedTiles.get(index) == null);
 		
@@ -162,21 +146,21 @@ public class ImageResource implements CodeGenerator {
 		if (this.animatedTileIndexKey >= index) {
 			this.animatedTileIndexKey = index -1;
 		}
-		AnimatedTile animatedTile = new AnimatedTile(name, this, index);
+		AnimatedTile animatedTile = new AnimatedTile(name, this, index, tileWidth, tileHeight);
 		Sequence seq = animatedTile.getDefaultSequence();
-		seq.setFrame(new StaticTile(this, firstStaticTileIndex), 0);
+		seq.setFrame(new StaticTile(this, firstStaticTileIndex, tileWidth, tileHeight), 0);
 		this.animatedTiles.put(index, animatedTile);
 		this.fireAnimatedTileAdded(animatedTile);
 		return animatedTile;		
 	}
 	
-	public AnimatedTile createAnimatedTile(String name, int firstStaticTileIndex) {
+	public AnimatedTile createAnimatedTile(String name, int firstStaticTileIndex, int tileWidth, int tileHeight) {
 		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists.");
 		}
 		
 		int index = this.animatedTileIndexKey--;
-		return this.createAnimatedTile(index, name, firstStaticTileIndex);
+		return this.createAnimatedTile(index, name, firstStaticTileIndex, tileWidth, tileHeight);
 	}
 	
 	public AnimatedTile createAnimatedTile(int index, String name, Sequence sequence) {
@@ -190,7 +174,7 @@ public class ImageResource implements CodeGenerator {
 		if (this.animatedTileIndexKey >= index) {
 			this.animatedTileIndexKey = index -1;
 		}
-		AnimatedTile animatedTile = new AnimatedTile(name, this, index, sequence);
+		AnimatedTile animatedTile = new AnimatedTile(name, this, index, sequence, sequence.getFrameWidth(), sequence.getFrameHeight());
 		this.animatedTiles.put(index, animatedTile);
 		this.fireAnimatedTileAdded(animatedTile);		
 		return animatedTile;		
@@ -200,7 +184,6 @@ public class ImageResource implements CodeGenerator {
 		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists.");
 		}
-		
 		int index = this.animatedTileIndexKey--;
 		return this.createAnimatedTile(index, name, sequence);
 	}	
@@ -239,32 +222,48 @@ public class ImageResource implements CodeGenerator {
 		return null;
 	}
 	
-	private StaticTile createEmptyTile(int cellWidth, int cellHeight) {
-		StaticTile emptyTile = new StaticTile(this, Tile.EMPTY_TILE_INDEX);
+	private StaticTile getEmptyTile(int cellWidth, int cellHeight) {
+		StaticTile emptyTile = this.emptyTiles.get(getGridKey(cellWidth, cellHeight));
+		if (emptyTile == null) {
+			emptyTile = new StaticTile(this, Tile.EMPTY_TILE_INDEX, cellWidth, cellHeight);
+			this.emptyTiles.put(getGridKey(cellWidth, cellHeight), emptyTile);
+		}
 		return emptyTile;
 	}
 	
 	
-	private StaticTile[][] getStaticTileGrid() {
-		return staticTileGrid;
+	private StaticTile[][] getStaticTileGrid(int tileWidth, int tileHeight) {		
+		StaticTile[][] grid = this.staticTileGrids.get(getGridKey(tileWidth, tileHeight));
+		if (grid == null) {
+			grid = this.initStaticTileGrid(tileWidth, tileHeight);
+		}
+		return grid;
 	}
 	
-	public int getStaticTileCount() {
-		return this.getRowCount() * this.getColumnCount();
+	public Set<Dimension> getTileResolutions() {
+		return Collections.unmodifiableSet(this.staticTileGrids.keySet());
 	}
 	
-	public int getStaticTileIndex(int cellRow, int cellColumn) {
-		return this.getStaticTileAt(cellRow, cellColumn).getIndex();
+	private static Dimension getGridKey(int tileWidth, int tileHeight) {
+		return new Dimension(tileWidth, tileHeight);
 	}
 	
-	public Tile getTile(int index) {
+	public int getStaticTileCount(int tileWidth, int tileHeight) {
+		return this.getRowCount(tileWidth, tileHeight) * this.getColumnCount(tileWidth, tileHeight);
+	}
+	
+	public int getStaticTileIndex(int cellRow, int cellColumn, int tileWidth, int tileHeight) {
+		return this.getStaticTileAt(cellRow, cellColumn, tileWidth, tileHeight).getIndex();
+	}
+	
+	public Tile getTile(int index, int tileWidth, int tileHeight) {
 		//zero is empty tile
 		if (index == Tile.EMPTY_TILE_INDEX)
-			return this.emptyTile;
+			return this.getEmptyTile(tileWidth, tileHeight);
 		//bigger than zero is a static tile
 		if (index > Tile.EMPTY_TILE_INDEX) {
-			int[] coordinates = this.translateIndex(index);
-			return this.getStaticTileGrid()[coordinates[0]][coordinates[1]];
+			int[] coordinates = this.translateIndex(index, tileWidth, tileHeight);
+			return this.getStaticTileGrid(tileWidth, tileHeight)[coordinates[0]][coordinates[1]];
 		}
 		//smaller than zero is an animated tile
 		else {
@@ -275,76 +274,87 @@ public class ImageResource implements CodeGenerator {
 	public List<AnimatedTile> getAnimatedTiles() {
 		List<AnimatedTile> list = new ArrayList<AnimatedTile>(this.animatedTiles.values());
 		Collections.sort(list);
-		return Collections.unmodifiableList(list);
+		return list;
 	}
 	
-	public String getRelativeResourcePath() {
-		return this.relativeResourcePath;
+	public List<AnimatedTile> getAnimatedTiles(int width, int height) {
+		List<AnimatedTile> list = new ArrayList<AnimatedTile>();
+		for (AnimatedTile at : this.animatedTiles.values()) {
+			if (at.getWidth() == width && at.getHeight() == height) {
+				list.add(at);
+			}
+		}
+		return list;
 	}
 	
-	public int getCellHeight() {
-		return this.cellHeight;
-	}
-	
-	public int getCellWidth() {
-		return this.cellWidth;
-	}
-	
-	public StaticTile getStaticTileAt(int row, int col) {
-		return this.getStaticTileGrid()[row][col];
+	public StaticTile getStaticTileAt(int row, int col, int tileWidth, int tileHeight) {
+		StaticTile[][] grid = this.getStaticTileGrid(tileWidth, tileHeight);
+		return grid[row][col];
 	}
 	
 	/**
 	 * Returns int[row, col].
 	 */
-	private int[] translateIndex(int index) {
+	private int[] translateIndex(int index, int tileWidth, int tileHeight) {
+		StaticTile[][] grid = this.getStaticTileGrid(tileWidth, tileHeight);
 		int[] coordinates = new int[2];
-		coordinates[0] = (index -1) / this.getStaticTileGrid()[0].length;
-		coordinates[1] = (index -1) % this.getStaticTileGrid()[0].length;
+		coordinates[0] = (index -1) / grid[0].length;
+		coordinates[1] = (index -1) % grid[0].length;
 		return coordinates;
 	}
 	
-	public int getRowCount() {
-		return this.getStaticTileGrid().length;
+	public int getRowCount(int tileWidth, int tileHeight) {
+		StaticTile[][] grid = this.getStaticTileGrid(tileWidth, tileHeight);
+		return grid.length;
 	}
 	
-	public int getColumnCount() {
-		return this.getStaticTileGrid()[0].length;
+	public int getColumnCount(int tileWidth, int tileHeight) {
+		StaticTile[][] grid = this.getStaticTileGrid(tileWidth, tileHeight);
+		return grid[0].length;
 	}
 	
-	
-	private void initStaticTileGrid(int rows, int cols) {
-		this.staticTileGrid = new StaticTile[rows][cols];
+	private StaticTile[][] initStaticTileGrid(int tileWidth, int tileHeight) {
+		BufferedImage img = this.softenImage(this.imageURL);
+		int rows = img.getHeight(null) / tileHeight;
+		int cols = img.getWidth(null) / tileWidth;
+		
+		StaticTile[][] staticTileGrid = new StaticTile[rows][cols];
 		int index = 1;
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
-				StaticTile staticTile = new StaticTile(this, index++);
+				StaticTile staticTile = new StaticTile(this, index++, tileWidth, tileHeight);
 				staticTileGrid[i][j] = staticTile;
 			}
 		}
+		this.staticTileGrids.put(getGridKey(tileWidth, tileHeight), staticTileGrid);
+		return staticTileGrid;
 	}
 	
-	void paint(int index, Graphics2D g, int x, int y) {
+	void paint(int index, Graphics2D g, int x, int y, int tileWidth, int tileHeight) {
 		if (index == Tile.EMPTY_TILE_INDEX)
 			return;
 		//static tile
 		if (index > Tile.EMPTY_TILE_INDEX) {
 			BufferedImage img = this.softenImage(this.imageURL);
-			int[] coordinates = this.translateIndex(index);
-			int resX = coordinates[1] * this.cellWidth;
-			int resY = coordinates[0] * this.cellHeight;
+			int[] coordinates = this.translateIndex(index, tileWidth, tileHeight);
+			int resX = coordinates[1] * tileWidth;
+			int resY = coordinates[0] * tileHeight;
 			
-			g.drawImage(img, x, y, x + this.cellWidth, y + this.cellHeight, resX, resY, resX + this.cellWidth, resY + this.cellHeight, null);
+			g.drawImage(img, x, y, x + tileWidth, y + tileHeight, resX, resY, resX + tileWidth, resY + tileHeight, null);
 		}
 		//animated tile
 		else {
-			AnimatedTile a = (AnimatedTile) this.getTile(index);
+			AnimatedTile a = (AnimatedTile) this.getTile(index, tileWidth, tileHeight);
 			a.paint(g, x, y);
 		}
 	}
 		
+	public String getRelativeResourcePath() {
+		return this.relativeResourcePath;
+	}
+	
 	public String toString() {
-		return "ImageResource: " + this.imageURL + " " + this.cellWidth + "x" + this.cellHeight;
+		return "ImageResource: " + this.imageURL;
 	}
 	
 	public URL getURL() {
@@ -362,23 +372,6 @@ public class ImageResource implements CodeGenerator {
 		String name = this.getName();
 		name = name.substring(0, name.lastIndexOf("."));
 		return name;
-	}
-	
-	public Collection getCodeGenerators() {
-		HashSet gens = new HashSet();
-		//AnimatedTiles are added for each TiledLayer - not from here
-		//WRONG TO DO HERE: gens.add(this.getAnimatedTiles());
-		gens.addAll(this.sequences);
-		return gens;
-	}
-	
-	public void generateCode(PrintStream ps) {
-		ps.println("private Image image_" + this.getNameNoExt() + ";");
-		ps.println("public Image getImage_" + this.getNameNoExt() + "() throws IOException {");
-		ps.println("    if (this.image_" + this.getNameNoExt() + " == null)");
-		ps.println("		this.image_" + this.getNameNoExt() +" = Image.createImage(\"/" + this.getName() + "\");");
-		ps.println("	return this.image_" + this.getNameNoExt() + ";");
-		ps.println("}");
 	}
 	
 }

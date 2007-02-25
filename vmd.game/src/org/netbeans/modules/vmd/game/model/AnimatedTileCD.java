@@ -30,6 +30,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.Versionable;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 /**
@@ -41,38 +42,44 @@ public class AnimatedTileCD extends ComponentDescriptor {
 	public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.game.model.AnimatedTile"); // NOI18N
 	
 	
-	public static final String PROPERTY_NAME = "animatedtilecd.prop.name";
+	public static final String PROPERTY_NAME = "animatedtilecd.prop.name"; // NOI18N
 	public static final String PROP_IMAGE_RESOURCE = "animatedtilecd.prop.imageresource"; // NOI18N
 	public static final String PROPERTY_INDEX = "animatedtilecd.prop.index"; // NOI18N
+	public static final String PROPERTY_WIDTH = "animatedtilecd.prop.width"; // NOI18N
+	public static final String PROPERTY_HEIGHT = "animatedtilecd.prop.height"; // NOI18N
 	
 	
 	public TypeDescriptor getTypeDescriptor() {
 		return new TypeDescriptor(null, TYPEID, true, false);
 	}
-
+	
 	public VersionDescriptor getVersionDescriptor() {
 		return null;
 	}
-
+	
 	public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
 		
 		List<PropertyDescriptor> propertyDescriptors = new ArrayList<PropertyDescriptor>();
-
+		
 		propertyDescriptors.addAll(SequenceContainerCDProperties.getDeclaredPropertyDescriptors());
 		
-		propertyDescriptors.add(new PropertyDescriptor(PROPERTY_INDEX, MidpTypes.TYPEID_INT, 
+		propertyDescriptors.add(new PropertyDescriptor(PROPERTY_INDEX, MidpTypes.TYPEID_INT,
 				PropertyValue.createNull(), false, false, null));
-		propertyDescriptors.add(new PropertyDescriptor(PROPERTY_NAME, MidpTypes.TYPEID_JAVA_LANG_STRING, 
+		propertyDescriptors.add(new PropertyDescriptor(PROPERTY_NAME, MidpTypes.TYPEID_JAVA_LANG_STRING,
 				PropertyValue.createNull(), false, false, null));
-		propertyDescriptors.add(new PropertyDescriptor(PROP_IMAGE_RESOURCE, ImageResourceCD.TYPEID, 
+		propertyDescriptors.add(new PropertyDescriptor(PROP_IMAGE_RESOURCE, ImageResourceCD.TYPEID,
 				PropertyValue.createNull(), false, false, null));
+		propertyDescriptors.add(new PropertyDescriptor(PROPERTY_WIDTH, MidpTypes.TYPEID_INT,
+				PropertyValue.createNull(), false, false, Versionable.FOREVER));
+		propertyDescriptors.add(new PropertyDescriptor(PROPERTY_HEIGHT, MidpTypes.TYPEID_INT,
+				PropertyValue.createNull(), false, false, Versionable.FOREVER));
 		
 		return Collections.unmodifiableList(propertyDescriptors);
 	}
-
+	
 	protected List<? extends Presenter> createPresenters() {
-		return Arrays.asList (
-        );
+		return Arrays.asList(
+				);
 	}
 	
 }

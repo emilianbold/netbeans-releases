@@ -87,18 +87,18 @@ public class GlobalRepository implements PropertyChangeListener {
 	/**
 	 * May return null if the image resource hasn't yet been created.
 	 */
-	public ImageResource getImageResource(String relativeResourcePath, int cellWidth, int cellHeight) {
-		return imgResourceMap.get(relativeResourcePath + "_" + cellWidth + "_" + cellHeight);
+	public ImageResource getImageResource(String relativeResourcePath) {
+		return imgResourceMap.get(relativeResourcePath);
 	}
 	
 	/**
 	 * Returns ImageResource instance.
 	 */
-	public ImageResource getImageResource(URL imageURL, String relativeResourcePath, int cellWidth, int cellHeight) {
-		ImageResource imgResource = imgResourceMap.get(relativeResourcePath + "_" + cellWidth + "_" + cellHeight);
+	public ImageResource getImageResource(URL imageURL, String relativeResourcePath) {
+		ImageResource imgResource = imgResourceMap.get(relativeResourcePath);
 		if (imgResource == null) {
-			imgResource = new ImageResource(imageURL, relativeResourcePath, cellWidth, cellHeight);
-			imgResourceMap.put(relativeResourcePath + "_" + cellWidth + "_" + cellHeight, imgResource);
+			imgResource = new ImageResource(imageURL, relativeResourcePath);
+			imgResourceMap.put(relativeResourcePath, imgResource);
 			this.fireImageResourceAdded(imgResource);
 			
 			if (DEBUG) {
@@ -108,7 +108,6 @@ public class GlobalRepository implements PropertyChangeListener {
 					System.out.println("\t" + url);
 				}
 			}//end DEBUG
-			
 		}
 		return imgResource;
 	}
@@ -310,20 +309,20 @@ public class GlobalRepository implements PropertyChangeListener {
 		return scene;
 	}
 	
-	public TiledLayer createTiledLayer(String name, ImageResource imageResource, int rows, int columns) {
+	public TiledLayer createTiledLayer(String name, ImageResource imageResource, int rows, int columns, int tileWidth, int tileHeight) {
 		if (!this.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Scene cannot be created because component name '" + name + "' already exists.");
 		}
-		TiledLayer layer = new TiledLayer(name, imageResource, rows, columns);
+		TiledLayer layer = new TiledLayer(name, imageResource, rows, columns, tileWidth, tileHeight);
 		this.addTiledLayer(layer);
 		return layer;
 	}
 
-	public TiledLayer createTiledLayer(String name, ImageResource imageResource, int[][] grid) {
+	public TiledLayer createTiledLayer(String name, ImageResource imageResource, int[][] grid, int tileWidth, int tileHeight) {
 		if (!this.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("TiledLayer cannot be created because component name '" + name + "' already exists.");
 		}		
-		TiledLayer layer = new TiledLayer(name, imageResource, grid);
+		TiledLayer layer = new TiledLayer(name, imageResource, grid, tileWidth, tileHeight);
 		this.addTiledLayer(layer);
 		return layer;
 	}
@@ -337,12 +336,12 @@ public class GlobalRepository implements PropertyChangeListener {
 		return layer;
 	}
 	
-	public Sprite createSprite(String name, ImageResource imageResource, int numberFrames) {
+	public Sprite createSprite(String name, ImageResource imageResource, int numberFrames, int frameWidth, int frameHeight) {
 		assert (numberFrames >= 1);
 		if (!this.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Sprite cannot be created because component name '" + name + "' already exists.");
 		}
-		Sprite sprite = new Sprite(name, imageResource, numberFrames);
+		Sprite sprite = new Sprite(name, imageResource, numberFrames, frameWidth, frameHeight);
 		this.addSprite(sprite);
 		return sprite;
 	}

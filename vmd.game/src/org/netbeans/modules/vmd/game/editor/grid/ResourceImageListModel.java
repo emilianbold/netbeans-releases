@@ -29,18 +29,22 @@ import org.netbeans.modules.vmd.game.model.ImageResource;
 public class ResourceImageListModel extends AbstractListModel {
 	
 	private ImageResource imgResource;
+	private int tileWidth;
+	private int tileHeight;
 
-	public void update(ImageResource imgResource) {
+	public void update(ImageResource imgResource, int tileWidth, int tileHeight) {
 		this.imgResource = imgResource;
+		this.tileWidth = tileWidth;
+		this.tileHeight = tileHeight;
 		this.fireContentsChanged(this, 0, this.getSize() -1);
 	}
 	
     public int getSize() {
-		return this.imgResource.getStaticTileCount() + 1;
+		return this.imgResource.getStaticTileCount(this.tileWidth, this.tileHeight) + 1;
     }
 
     public Object getElementAt(int index) {
-		return this.imgResource.getTile(index);
+		return this.imgResource.getTile(index, this.tileWidth, this.tileHeight);
     }
 	
 }

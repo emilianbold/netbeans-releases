@@ -30,11 +30,15 @@ public class NewSimpleTiledLayerDialog extends AbstractNameValidationDialog {
 	
 	private ImageResource imgRes;
 	private int[][] grid;
+	private int tileWidth;
+	private int tileHeight;
 	
 	/** Creates a new instance of DuplicateTiledLayerDialog */
-	public NewSimpleTiledLayerDialog(ImageResource imgRes, int[][] grid) {
+	public NewSimpleTiledLayerDialog(ImageResource imgRes, int[][] grid, int tileWidth, int tileHeight) {
 		this.imgRes = imgRes;
 		this.grid = grid;
+		this.tileWidth = tileWidth;
+		this.tileHeight = tileHeight;
 	}
 
 	protected String getInitialStateDescriptionText() {
@@ -63,7 +67,7 @@ public class NewSimpleTiledLayerDialog extends AbstractNameValidationDialog {
 	}
 
 	protected void handleOKButton() {
-		GlobalRepository.getInstance().createTiledLayer(this.fieldName.getText(), this.imgRes, this.grid);
+		GlobalRepository.getInstance().createTiledLayer(this.fieldName.getText(), this.imgRes, this.grid, tileWidth, tileHeight);
 	}
 	
 }

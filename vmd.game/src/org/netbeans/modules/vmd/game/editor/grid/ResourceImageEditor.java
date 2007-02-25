@@ -20,6 +20,7 @@
 package org.netbeans.modules.vmd.game.editor.grid;
 
 import javax.swing.JScrollPane;
+import org.netbeans.modules.vmd.game.model.Editable.ImageResourceInfo;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 
 /**
@@ -42,11 +43,15 @@ public class ResourceImageEditor extends javax.swing.JPanel {
 		this.panelResourceList.add(new JScrollPane(this.resourceComponent));
 	}
 	
-	public void setImageResource(ImageResource imageResource) {
+	public void setImageResourceInfo(ImageResourceInfo imageResourceInfo) {
+		ImageResource imageResource = imageResourceInfo.getImageResource();
+		int tileWidth = imageResourceInfo.getTileWidth();
+		int tileHeight = imageResourceInfo.getTileHeight();
+		
 		this.textFieldImage.setText(imageResource.getRelativeResourcePath());
-		this.textFieldNumTiles.setText(Integer.toString(imageResource.getStaticTileCount()));
-		this.textFieldSize.setText(imageResource.getCellWidth()  + "x" + imageResource.getCellHeight());
-		this.resourceComponent.setImageResource(imageResource);
+		this.textFieldNumTiles.setText(Integer.toString(imageResource.getStaticTileCount(tileWidth, tileHeight)));
+		this.textFieldSize.setText(tileWidth  + "x" + tileHeight);
+		this.resourceComponent.setImageResource(imageResource, tileWidth, tileHeight);
 	}
 
 	/** This method is called from within the constructor to

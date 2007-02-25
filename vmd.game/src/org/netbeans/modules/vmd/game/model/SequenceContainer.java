@@ -73,7 +73,7 @@ public interface SequenceContainer extends Editable {
 	 * by calling ImageResource.addSequence(Sequence)
 	 *
 	 */
-	public Sequence createSequence(String name, int numberFrames);
+	public Sequence createSequence(String name, int numberFrames, int frameWidth, int frameHeight);
 	
 	public Sequence getDefaultSequence();
 	
@@ -112,12 +112,17 @@ public interface SequenceContainer extends Editable {
 		private ImageResource imageResource;
 		private SequenceContainerEditor editor;
 		
-		public SequenceContainerImpl(SequenceContainer aggregator, EventListenerList ll, PropertyChangeSupport pcs, ImageResource imageResource) {
+		private int frameWidth;
+		private int frameHeight;
+		
+		public SequenceContainerImpl(SequenceContainer aggregator, EventListenerList ll, PropertyChangeSupport pcs, ImageResource imageResource, int frameWidth, int frameHeight) {
 			this.aggregator = aggregator;
 			this.listenerList = (ll == null ? new EventListenerList(): ll);
 			this.propertyChangeSupport = (pcs == null ? new PropertyChangeSupport(aggregator) : pcs);
 			this.sequences = new ArrayList();
 			this.imageResource = imageResource;
+			this.frameWidth = frameWidth;
+			this.frameHeight = frameHeight;
 		}
 		
 		public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -164,8 +169,8 @@ public interface SequenceContainer extends Editable {
 		}
 		
 		//------SequenceContainer-------
-		public Sequence createSequence(String name, int numberFrames) {
-			Sequence sequence = this.imageResource.createSequence(name, numberFrames);
+		public Sequence createSequence(String name, int numberFrames, int frameWidth, int frameHeight) {
+			Sequence sequence = this.imageResource.createSequence(name, numberFrames, frameWidth, frameHeight);
 			this.append(sequence);
 			return sequence;
 		}
@@ -295,8 +300,8 @@ public interface SequenceContainer extends Editable {
 			return this.editor == null ? this.editor = new SequenceContainerEditor(this) : this.editor;
 		}
 		
-		public ImageResource getImageResource() {
-			return this.imageResource;
+		public ImageResourceInfo getImageResourceInfo() {
+			return new ImageResourceInfo(this.imageResource, this.frameWidth, this.frameHeight);
 		}
 		
 		public JComponent getNavigator() {
@@ -337,7 +342,7 @@ public interface SequenceContainer extends Editable {
 			}
 			
 			public void actionPerformed(ActionEvent e) {
-				NewSequenceDialog dialog = new NewSequenceDialog(SequenceContainerImpl.this);
+				NewSequenceDialog dialog = new NewSequenceDialog(SequenceContainerImpl.this, SequenceContainerImpl.this.frameWidth, SequenceContainerImpl.this.frameHeight);
 				DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Sequence");
 				dd.setButtonListener(dialog);
 				dd.setValid(false);

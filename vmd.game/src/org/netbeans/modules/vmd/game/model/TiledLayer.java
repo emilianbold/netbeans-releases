@@ -22,9 +22,7 @@ import java.awt.Dialog;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -48,18 +46,18 @@ public class TiledLayer extends Layer {
 	private JComponent editor;
 	private int[][] grid;
 	
-	TiledLayer(String name, ImageResource imageResource, int rows, int columns) {
-		super(name, imageResource);
+	TiledLayer(String name, ImageResource imageResource, int rows, int columns, int tileWidth, int tileHeight) {
+		super(name, imageResource, tileWidth, tileHeight);
 		this.grid = new int[rows][columns];
 	}
 	
-	TiledLayer(String name, ImageResource imageResource, int[][] grid) {
-		super(name, imageResource);
+	TiledLayer(String name, ImageResource imageResource, int[][] grid, int tileWidth, int tileHeight) {
+		super(name, imageResource, tileWidth, tileHeight);
 		this.grid = grid;
 	}
 	
 	TiledLayer(String name, TiledLayer tiledLayer) {
-		super(name, tiledLayer.getImageResource());
+		super(name, tiledLayer.getImageResource(), tiledLayer.getTileWidth(), tiledLayer.getTileHeight());
 		this.grid = new int[tiledLayer.grid.length][];
 		for (int i = 0; i < this.grid.length; i++) {
 			int[] copyRow = new int[tiledLayer.grid[i].length];
@@ -105,10 +103,10 @@ public class TiledLayer extends Layer {
 	
 	public Tile getTileAt(int rowIndex, int columnIndex) {
 		if (rowIndex < 0 || rowIndex >= this.getRowCount() || columnIndex < 0 || columnIndex >= this.getColumnCount())
-			return this.getImageResource().getTile(Tile.EMPTY_TILE_INDEX);
+			return this.getImageResource().getTile(Tile.EMPTY_TILE_INDEX, this.getTileWidth(), this.getTileHeight());
 		Tile tile = null;
 		int tileIndex = this.grid[rowIndex][columnIndex];
-		tile = this.getImageResource().getTile(tileIndex);
+		tile = this.getImageResource().getTile(tileIndex, this.getTileWidth(), this.getTileHeight());
 		return tile;
 	}
 	
@@ -139,7 +137,7 @@ public class TiledLayer extends Layer {
 		HashSet set = new HashSet();
 		for (int i = 0; i < this.grid.length; i++ ) {
 			for (int j = 0; j < this.grid[i].length; j++) {
-				Tile tile = this.getImageResource().getTile(this.grid[i][j]);
+				Tile tile = this.getImageResource().getTile(this.grid[i][j], this.getTileWidth(), this.getTileHeight());
 				if (tile instanceof AnimatedTile) {
 					set.add(tile);
 				}
@@ -415,84 +413,6 @@ public class TiledLayer extends Layer {
 		return new TiledLayerPreview(this);
 	}
 
-	//---------------CodeGenerator---------
-    public Collection getCodeGenerators() {
-		//this.getImageResource().getAnimatedTiles();
-		HashSet gens = new HashSet();
-		gens.add(this.getImageResource());
-		gens.addAll(this.getImageResource().getCodeGenerators());
-		return gens;
-    }
-
-    public void generateCode(PrintStream ps) {
-		ps.println("private TiledLayer tiledLayer_" + this.getName() + ";");
-
-		//make all animated tiles accessible
-		Set animTiles = this.getAnimatedTiles();
-		for (Iterator it = animTiles.iterator(); it.hasNext();) {
-			AnimatedTile animTile = (AnimatedTile) it.next();
-			ps.println("private int animTile_" + animTile.getName() + "_" + this.getName() + ";");
-		}
-		
-		ps.println("public TiledLayer getLayer_" + this.getName() + "() throws IOException {");
-                
-		ps.println("    if (this.tiledLayer_" + this.getName() + " != null)\n\t\treturn this.tiledLayer_" + this.getName() + ";");
-		
-		//new TiledLayer instance
-		ps.println("	TiledLayer tl = new TiledLayer(" + this.getColumnCount() + ", " + this.getRowCount() + ", this.getImage_" + 
-						this.getImageResource().getNameNoExt() + "(), " + this.getTileWidth() + ", " + this.getTileHeight() + ");");
-		
-		//initialize all animated tiles
-		for (Iterator it = animTiles.iterator(); it.hasNext();) {
-			AnimatedTile animTile = (AnimatedTile) it.next();
-			ps.println("	this.animTile_" + animTile.getName() + "_" + this.getName() + " = tl.createAnimatedTile(" + animTile.getDefaultSequence().getFrame(0).getIndex() + ");");
-		}
-
-		//initialize the 2D tile index array
-		ps.println("	int[][] tiles = {");
-		for (int r = 0; r < this.getRowCount(); r++) {
-			ps.print("		{");
-			for (int c = 0; c < this.getColumnCount(); c++) {
-				Tile tile = this.getTileAt(r, c);
-				if (tile instanceof AnimatedTile) {
-					AnimatedTile animTile = (AnimatedTile) tile;
-					ps.print("this.animTile_" + animTile.getName() + "_" + this.getName());
-				}
-				else {
-					ps.print(tile.getIndex());
-				}
-				if (c < this.getColumnCount() -1) {
-					ps.print(", ");
-				}
-			}
-			ps.print("}");
-			if (r < this.getRowCount() -1) {
-				ps.print(", ");
-			}
-			ps.println();
-		}
-		ps.println("	};");
-		ps.println("	for (int row = 0; row < tiles.length; row++) {");
-		ps.println("		for (int col = 0; col < tiles[0].length; col++) {");
-		ps.println("			tl.setCell(col, row, tiles[row][col]);");
-		ps.println("		}");
-		ps.println("	}");
-		ps.println("	return this.tiledLayer_" + this.getName() + " = tl;");
-		ps.println("}");
-		//ps.println();
-		for (Iterator it = animTiles.iterator(); it.hasNext();) {
-			AnimatedTile animTile = (AnimatedTile) it.next();
-			ps.println("public int getAnimTile_" + animTile.getName() + "_" + this.getName() + "() throws IOException {");
-			ps.println("	if (this.animTile_" + animTile.getName() + "_" + this.getName() + " == 0) {");
-			ps.println("		this.getLayer_" + this.getName() + "();");
-			ps.println("	}");
-			ps.println("	return this.animTile_" + animTile.getName() + "_" + this.getName() + ";");
-			ps.println("}");			
-		}
-		
-    }
-
-	@Override
 	public void paint(Graphics2D g) {
 
 		//only paint the tiles inside the clip
@@ -507,7 +427,7 @@ public class TiledLayer extends Layer {
 		
 		for (int r = minRow; r < this.getRowCount() && r < maxRow; r++) {
 			for (int c = minCol; c < this.getColumnCount() && c < maxCol; c++) {
-				this.getImageResource().paint(this.grid[r][c], g, c*tileWidth, r*tileHeight);
+				this.getImageResource().paint(this.grid[r][c], g, c*tileWidth, r*tileHeight,tileWidth, tileHeight);
 			}
 		}
 	}

@@ -26,13 +26,10 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -47,7 +44,7 @@ import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
-public class Scene implements GlobalRepositoryListener, PropertyChangeListener, Previewable, Editable, CodeGenerator {
+public class Scene implements GlobalRepositoryListener, PropertyChangeListener, Previewable, Editable {
 
 	public static final boolean DEBUG = false;
 	
@@ -144,14 +141,14 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		}
 	}
 	
-	public TiledLayer createTiledLayer(String name, ImageResource imageResource, int rows, int columns) {
-		TiledLayer layer = GlobalRepository.getInstance().createTiledLayer(name, imageResource, rows, columns);
+	public TiledLayer createTiledLayer(String name, ImageResource imageResource, int rows, int columns, int tileWidth, int tileHeight) {
+		TiledLayer layer = GlobalRepository.getInstance().createTiledLayer(name, imageResource, rows, columns, tileWidth, tileHeight);
 		this.append(layer);
 		return layer;
 	}
 
-	public Sprite createSprite(String name, ImageResource imageResource, int numberFrames) {
-		Sprite sprite = GlobalRepository.getInstance().createSprite(name, imageResource, numberFrames);
+	public Sprite createSprite(String name, ImageResource imageResource, int numberFrames, int frameWidth, int frameHeight) {
+		Sprite sprite = GlobalRepository.getInstance().createSprite(name, imageResource, numberFrames, frameWidth, frameHeight);
 		this.append(sprite);
 		return sprite;
 	}
@@ -449,7 +446,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		return this.editor.getJComponent();
 	}
 
-	public ImageResource getImageResource() {
+	public ImageResourceInfo getImageResourceInfo() {
 		return null;
 	}
 
@@ -590,31 +587,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
     public int getHeight() {
 		return 0;
     }
-
 	
-    public Collection getCodeGenerators() {
-		HashSet codeGenerators = new HashSet();
-		for (Iterator it = this.getLayers().iterator(); it.hasNext();) {
-			Layer layer = (Layer) it.next();
-			codeGenerators.add(layer);
-			codeGenerators.addAll(layer.getCodeGenerators());
-		}
-		return codeGenerators;
-    }
-
-    public void generateCode(PrintStream ps) {
-        ps.println("public void updateLayerManager(LayerManager lm) throws IOException {");
-		
-		for (Iterator it = this.getLayers().iterator(); it.hasNext();) {
-			Layer layer = (Layer) it.next();
-			LayerInfo info = (LayerInfo) getLayerInfo(layer);
-			ps.println("	this.getLayer_" + layer.getName() + "().setPosition(" + info.getPosition().x + ", " + info.getPosition().y + ");");
-			ps.println("	this.getLayer_" + layer.getName() + "().setVisible(" + (info.isVisible() ? "true" : "false") + ");");			
-			ps.println("	lm.append(this.getLayer_" + layer.getName() + "());");
-		}
-        ps.println("}");
-    }
-
 	public JComponent getNavigator() {
 		if (this.navigator == null)
 			return this.navigator = new SceneLayerNavigator(this);

@@ -48,19 +48,19 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 	private SequenceContainerEditor editor;
 	private String name;
 	
-	AnimatedTile(String name, ImageResource imageResource, int index, Sequence sequence) {
-		super(imageResource, index);
-		this.sequenceContainer = new SequenceContainerImpl(this, null, this.propertyChangeSupport, imageResource);
+	AnimatedTile(String name, ImageResource imageResource, int index, Sequence sequence, int width, int height) {
+		super(imageResource, index, width, height);
+		this.sequenceContainer = new SequenceContainerImpl(this, null, this.propertyChangeSupport, imageResource, width, height);
 		this.name = name;
 		this.setDefaultSequence(sequence);
 	}
 	
-	AnimatedTile(String name, ImageResource imageResource, int index) {
-		super(imageResource, index);
-		this.sequenceContainer = new SequenceContainerImpl(this, null, this.propertyChangeSupport, imageResource);
+	AnimatedTile(String name, ImageResource imageResource, int index, int width, int height) {
+		super(imageResource, index, width, height);
+		this.sequenceContainer = new SequenceContainerImpl(this, null, this.propertyChangeSupport, imageResource, width, height);
 		this.name = name;
 		String seqName = this.getNextSequenceName(this.name + "seq");
-		Sequence sequence = this.createSequence(seqName, 1);
+		Sequence sequence = this.createSequence(seqName, 1, width, height);
 		this.setDefaultSequence(sequence);
 	}
 
@@ -94,8 +94,8 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 		return this.name;
 	}
 
-	public Sequence createSequence(String name, int numberFrames) {
-		return this.sequenceContainer.createSequence(name, numberFrames);
+	public Sequence createSequence(String name, int numberFrames, int frameWidth, int frameHeight) {
+		return this.sequenceContainer.createSequence(name, numberFrames, frameWidth, frameHeight);
 	}
 	
 	public Sequence createSequence(String name, Sequence s) {
@@ -154,6 +154,10 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 		return this.editor == null ? this.editor = new SequenceContainerEditor(this) : this.editor;
 	}
 
+    public ImageResourceInfo getImageResourceInfo() {
+    	return new ImageResourceInfo(this.getImageResource(), this.getWidth(), this.getHeight());
+    }
+	
 	public List getActions() {
 		ArrayList actions = new ArrayList();
 		actions.add(new RenameAction());
@@ -166,7 +170,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 			this.putValue(NAME, "Add sequence");
 		}
 		public void actionPerformed(ActionEvent e) {
-			NewSequenceDialog dialog = new NewSequenceDialog(AnimatedTile.this);
+			NewSequenceDialog dialog = new NewSequenceDialog(AnimatedTile.this, getWidth(), getHeight());
 			DialogDescriptor dd = new DialogDescriptor(dialog, "Add Sequence");
 			dd.setButtonListener(dialog);
 			dd.setValid(false);

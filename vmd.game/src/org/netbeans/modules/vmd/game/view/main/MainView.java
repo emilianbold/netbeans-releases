@@ -25,6 +25,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.Frame;
 import javax.swing.event.EventListenerList;
+import org.netbeans.modules.vmd.game.model.Editable.ImageResourceInfo;
 
 public class MainView implements GlobalRepositoryListener, EditorManager {
 
@@ -148,13 +149,13 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 		if (this.currentEditable == editable)
 			return;
 		this.currentEditable = editable;
-		ImageResource resource = this.currentEditable.getImageResource();
+		ImageResourceInfo resource = this.currentEditable.getImageResourceInfo();
 		JComponent editor = this.currentEditable.getEditor();
 
 		this.mainEditorPanel.removeAll();
 		
 		if (resource != null) {
-			this.resourceImageView.setImageResource(resource);
+			this.resourceImageView.setImageResourceInfo(resource);
 			this.editorSplit.setTopComponent(editor);
 			this.editorSplit.setBottomComponent(this.resourceImageView);
 			this.editorSplit.setOneTouchExpandable(true);

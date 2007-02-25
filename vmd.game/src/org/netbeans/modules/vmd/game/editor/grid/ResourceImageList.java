@@ -72,8 +72,8 @@ class ResourceImageList extends JList {
 		DragGestureRecognizer dgr = dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY, new DGL());
 	}
 	
-	public void setImageResource(ImageResource imageResource) {
-		((ResourceImageListModel) this.getModel()).update(imageResource);
+	public void setImageResource(ImageResource imageResource, int tileWidth, int tileHeight) {
+		((ResourceImageListModel) this.getModel()).update(imageResource, tileWidth, tileHeight);
 	}
 	
 	private class DGL extends DragSourceAdapter implements DragGestureListener {

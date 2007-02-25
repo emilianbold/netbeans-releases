@@ -577,13 +577,13 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		assert (imageURL != null);
 		assert (relativeResourcePath != null);
 		
-		ImageResource imgRes = GlobalRepository.getInstance().getImageResource(imageURL, relativeResourcePath, tileWidth, tileHeight);
+		ImageResource imgRes = GlobalRepository.getInstance().getImageResource(imageURL, relativeResourcePath);
 		
 		if (this.scene != null) {
-			this.scene.createSprite(name, imgRes, (Integer) this.spinnerFrames.getValue());
+			this.scene.createSprite(name, imgRes, (Integer) this.spinnerFrames.getValue(), tileWidth, tileHeight);
 		}
 		else {
-			GlobalRepository.getInstance().createSprite(name, imgRes, (Integer) this.spinnerFrames.getValue());
+			GlobalRepository.getInstance().createSprite(name, imgRes, (Integer) this.spinnerFrames.getValue(), tileWidth, tileHeight);
 		}
 	}
 

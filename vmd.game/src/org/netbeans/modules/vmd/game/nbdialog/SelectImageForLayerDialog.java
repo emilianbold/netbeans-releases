@@ -51,8 +51,6 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
 	private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif"));
 	
 	private String path;
-	private int tileHeight;
-	private int tileWidth;
 	private Collection<FileObject> images;
 	private DialogDescriptor dd;
 	private PartialImageGridPreview imagePreview = new PartialImageGridPreview();
@@ -60,9 +58,7 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
 	private FileObject imgFile;
 	
 		
-	public SelectImageForLayerDialog(int tileHeight, int tileWidth, String path, Collection<FileObject> images) {
-		this.tileHeight = tileHeight;
-		this.tileWidth = tileWidth;
+	public SelectImageForLayerDialog(String path, Collection<FileObject> images) {
 		this.path = path;
 		this.images = images;
 		initComponents();
@@ -272,20 +268,10 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
 		private void handleImageSelectionChange() {
 			loadImagePreview();
 			Image img = SelectImageForLayerDialog.this.imagePreview.getImage();
-			int w = img.getWidth(null);
-			int h = img.getHeight(null);
-			if (!PartialImageGridPreview.getEvenDivisors(w).contains(tileWidth)
-					|| !PartialImageGridPreview.getEvenDivisors(h).contains(tileHeight)) {
-				labelError.setText("Image cannot be divided into tiles " + tileWidth + "px wide" +
-						" and " + tileHeight + "px high.");
-				setOKButtonEnabled(false);
-			}
-			else {
-				FileObject entry = (FileObject) listImageFileName.getSelectedValue();
-				imgFile = entry;
-				labelError.setText(null);
-				setOKButtonEnabled(true);
-			}
+			FileObject entry = (FileObject) listImageFileName.getSelectedValue();
+			imgFile = entry;
+			labelError.setText(null);
+			setOKButtonEnabled(true);
 		}
 	}
 	

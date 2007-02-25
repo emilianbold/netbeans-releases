@@ -26,9 +26,13 @@ public class NewSequenceDialog extends AbstractNameValidationDialog  {
 
 	private SequenceContainer sequenceContainer;
 	private Sequence sequence;
+	private int frameWidth;
+	private int frameHeight;
 
-	public NewSequenceDialog(SequenceContainer sequenceContainer) {
+	public NewSequenceDialog(SequenceContainer sequenceContainer, int frameWidth, int frameHeight) {
 		this(sequenceContainer, null);
+		this.frameWidth = frameWidth;
+		this.frameHeight = frameHeight;
 	}
 	
 	public NewSequenceDialog(SequenceContainer sequenceContainer, Sequence toCopy) {
@@ -63,7 +67,7 @@ public class NewSequenceDialog extends AbstractNameValidationDialog  {
 	
 	protected void handleOKButton() {
 		if (this.sequence == null) {
-			this.sequenceContainer.createSequence(this.fieldName.getText(), Sequence.DEFAULT_FRAMES);
+			this.sequenceContainer.createSequence(this.fieldName.getText(), Sequence.DEFAULT_FRAMES, this.frameWidth, this.frameHeight);
 		}
 		else {
 			this.sequenceContainer.createSequence(this.fieldName.getText(), this.sequence);

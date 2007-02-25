@@ -25,10 +25,12 @@ public class SequenceCD extends ComponentDescriptor {
 	
 	public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.game.model.Sequence"); // NOI18N
 	
-	public static final String PROPERTY_IMAGE_RESOURCE = "sequncecd.prop.imageresource";
-	public static final String PROPERTY_NAME = "sequncecd.prop.name";
-	public static final String PROPERTY_FRAME_MS = "sequncecd.prop.framems";
-	public static final String PROPERTY_FRAMES = "sequncecd.prop.frames";
+	public static final String PROPERTY_IMAGE_RESOURCE = "sequncecd.prop.imageresource"; // NOI18N
+	public static final String PROPERTY_NAME = "sequncecd.prop.name"; // NOI18N
+	public static final String PROPERTY_FRAME_MS = "sequncecd.prop.framems"; // NOI18N
+	public static final String PROPERTY_FRAMES = "sequncecd.prop.frames"; // NOI18N
+	public static final String PROPERTY_FRAME_WIDTH = "sequncecd.prop.frame.width"; // NOI18N
+	public static final String PROPERTY_FRAME_HEIGHT = "sequncecd.prop.frame.height"; // NOI18N
 	
 	
 	public TypeDescriptor getTypeDescriptor() {
@@ -44,6 +46,10 @@ public class SequenceCD extends ComponentDescriptor {
 			new PropertyDescriptor(PROPERTY_FRAME_MS, MidpTypes.TYPEID_INT,
 				PropertyValue.createNull(), false, false, Versionable.FOREVER),
 			new PropertyDescriptor(PROPERTY_FRAMES, GameTypes.TYPEID_SEQUENCE_FRAMES,
+				PropertyValue.createNull(), false, false, Versionable.FOREVER),
+			new PropertyDescriptor(PROPERTY_FRAME_WIDTH, MidpTypes.TYPEID_INT,
+				PropertyValue.createNull(), false, false, Versionable.FOREVER),
+			new PropertyDescriptor(PROPERTY_FRAME_HEIGHT, MidpTypes.TYPEID_INT,
 				PropertyValue.createNull(), false, false, Versionable.FOREVER)
 		);
 	}

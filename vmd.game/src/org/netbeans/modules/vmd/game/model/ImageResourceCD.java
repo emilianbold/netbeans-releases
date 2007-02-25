@@ -31,8 +31,6 @@ public class ImageResourceCD extends ComponentDescriptor {
 	public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.game.model.ImageResource"); // NOI18N
 	
 	public static final String PROPERTY_IMAGE_PATH = "imageresourcecd.prop.imagepath"; // NOI18N
-	public static final String PROPERTY_TILE_WIDTH = "imageresourcecd.prop.tilewidth"; // NOI18N
-	public static final String PROPERTY_TILE_HEIGHT = "imageresourcecd.prop.tileheight"; // NOI18N
 	
 
 	public TypeDescriptor getTypeDescriptor() {
@@ -46,10 +44,6 @@ public class ImageResourceCD extends ComponentDescriptor {
 	public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
 		return Arrays.asList(
 			new PropertyDescriptor(PROPERTY_IMAGE_PATH, MidpTypes.TYPEID_JAVA_LANG_STRING, 
-				PropertyValue.createNull(), false, false, Versionable.FOREVER), 
-			new PropertyDescriptor(PROPERTY_TILE_WIDTH, MidpTypes.TYPEID_INT, 
-				PropertyValue.createNull(), false, false, Versionable.FOREVER), 
-			new PropertyDescriptor(PROPERTY_TILE_HEIGHT, MidpTypes.TYPEID_INT, 
 				PropertyValue.createNull(), false, false, Versionable.FOREVER)
 		);
 	}

@@ -47,17 +47,17 @@ public class Sprite extends Layer implements SequenceContainer {
 	/**
 	 * Creates a new animated Sprite using frames contained in the provided Image.
 	 */
-	Sprite(String name, ImageResource imageResource, int numberFrames) {
-		super(name, imageResource);
-		this.sequenceContainer = new SequenceContainerImpl(this, null, super.propertyChangeSupport, imageResource);
+	Sprite(String name, ImageResource imageResource, int numberFrames, int frameWidth, int frameHeight) {
+		super(name, imageResource, frameWidth, frameHeight);
+		this.sequenceContainer = new SequenceContainerImpl(this, null, super.propertyChangeSupport, imageResource, frameWidth, frameHeight);
 		String seqName = this.getNextSequenceName(name + "seq");
-		Sequence defaultSequence = this.createSequence(seqName, numberFrames);
+		Sequence defaultSequence = this.createSequence(seqName, numberFrames, frameWidth, frameHeight);
 		this.setDefaultSequence(defaultSequence);
 	}
     
 	Sprite(String name, ImageResource imageResource, Sequence defaultSequence) {
-		super(name, imageResource);
-		this.sequenceContainer = new SequenceContainerImpl(this, null, super.propertyChangeSupport, imageResource);
+		super(name, imageResource, defaultSequence.getFrameWidth(), defaultSequence.getFrameHeight());
+		this.sequenceContainer = new SequenceContainerImpl(this, null, super.propertyChangeSupport, imageResource, defaultSequence.getFrameWidth(), defaultSequence.getFrameHeight());
 		this.setDefaultSequence(defaultSequence);
 	}
 	
@@ -75,8 +75,8 @@ public class Sprite extends Layer implements SequenceContainer {
 
 	//------SequenceContainer-------
 	
-	public Sequence createSequence(String name, int numberFrames) {
-		return this.sequenceContainer.createSequence(name, numberFrames);
+	public Sequence createSequence(String name, int numberFrames, int frameWidth, int frameHeight) {
+		return this.sequenceContainer.createSequence(name, numberFrames, frameWidth, frameHeight);
 	}
 	
 	public Sequence createSequence(String name, Sequence s) {
@@ -142,11 +142,11 @@ public class Sprite extends Layer implements SequenceContainer {
 	}
 
 	public int getHeight() {
-		return this.getDefaultSequence().getFrameHeight();
+		return super.getTileHeight();
 	}
 
 	public int getWidth() {
-		return this.getDefaultSequence().getFrameWidth();
+		return super.getTileWidth();
 	}
 
 	public List getActions() {
@@ -163,7 +163,7 @@ public class Sprite extends Layer implements SequenceContainer {
 			this.putValue(NAME, "Add sequence");
 		}
 		public void actionPerformed(ActionEvent e) {
-			NewSequenceDialog dialog = new NewSequenceDialog(Sprite.this);
+			NewSequenceDialog dialog = new NewSequenceDialog(Sprite.this, Sprite.this.getTileWidth(), Sprite.this.getTileHeight());
 			DialogDescriptor dd = new DialogDescriptor(dialog, "Add Sequence");
 			dd.setButtonListener(dialog);
 			dd.setValid(false);
@@ -200,29 +200,6 @@ public class Sprite extends Layer implements SequenceContainer {
 		this.getDefaultSequence().getFrame(0).paint(g, x, y);
     }
 
-	//---------------CodeGenerator---------
-    public Collection getCodeGenerators() {
-		HashSet gens = new HashSet();
-		gens.add(this.getImageResource());
-		for (Iterator it = this.getSequences().iterator(); it.hasNext();) {
-			Sequence sequence = (Sequence) it.next();
-			gens.add(sequence);
-		}
-		return gens;
-    }
-
-    public void generateCode(PrintStream ps) {
-		ps.println("private Sprite sprite_" + this.getName() + ";");
-		ps.println("public Sprite getLayer_" + this.getName() +"() throws IOException {");
-		ps.println("	if (this.sprite_" + this.getName() + " == null) {");
-		ps.println("		this.sprite_" + this.getName() + " = new Sprite(this.getImage_" + this.getImageResource().getNameNoExt() + "(), " + this.getTileWidth() + ", " + this.getTileHeight() + ");");
-		ps.println("		this.sprite_" + this.getName() + ".setFrameSequence(this.sequence_" + this.getDefaultSequence().getName() + "_" + this.getImageResource().getNameNoExt() + ");");
-		ps.println("	}");
-		ps.println("	return this.sprite_" + this.getName() + ";");
-		ps.println("}");
-    }
-
-	@Override
 	public void paint(Graphics2D g) {
 		this.getDefaultSequence().getFrame(0).paint(g, 0, 0);
 	}
