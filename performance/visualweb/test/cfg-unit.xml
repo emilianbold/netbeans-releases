@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+
+<mconfig name="Performance unit tests config">
+
+
+    <testbag testattribs="all or startup" prio="1" executor="execute_startup" name="IDE startup time">
+	<testset dir="unit/src">
+	    <patternset>
+		<include name="startup/MeasureIDEStartupTime.class/testStartIDE"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="all or startup or complex_startup" prio="10" executor="prepare_ide" name="Prepare IDE for complex startup time measurement">
+	<testset dir="unit/src">
+	    <patternset>
+		<include name="prepare/PrepareIDEForComplexMeasurements.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <testbag testattribs="all or startup or complex_startup" prio="11" executor="execute_complex_startup" name="IDE complex startup time">
+	<testset dir="unit/src">
+	    <patternset>
+		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFiles"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="all or startup or complex_startup or complex_startup_web_project" prio="30" executor="prepare_ide_web_project" name="Prepare IDE for complex startup time measurement - Web Pack project">
+	<testset dir="unit/src">
+	    <patternset>
+		<include name="prepare/PrepareIDEForWebPackComplexMeasurements.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="all or startup or complex_startup or complex_startup_web_project" prio="31" executor="execute_complex_startup_web_project" name="IDE complex startup time - Web Pack project">
+	<testset dir="unit/src">
+	    <patternset>
+		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFilesWebProject"/>
+	    </patternset>                                          
+	</testset>
+    </testbag>
+
+    
+    <testbag testattribs="all or warmup" prio="40" executor="execute_warmup" name="Warm Up">
+	<testset dir="unit/src">
+	    <patternset>
+		<include name="startup/MeasureWarmUp.class/testWarmUp"/>		
+	    </patternset>
+	</testset>
+    </testbag>
+
+<!-- Executors for Startup and Warmup testing -->
+    
+    <executor name="prepare_ide" antfile="build-unit.xml" target="prepare_ide_for_complex_measurements"/>
+    
+    <executor name="execute_startup" antfile="build-unit.xml" target="runcodetest_measure_startup"/>
+    <executor name="execute_complex_startup" antfile="build-unit.xml" target="runcodetest_measure_complex_startup"/>
+    
+    <executor name="execute_warmup" antfile="build-unit.xml" target="runcodetest_measure_warmup"/>
+    
+    <executor name="prepare_ide_web_project" antfile="build-unit.xml" target="prepare_ide_for_complex_measurements_web_project"/>
+    <executor name="execute_complex_startup_web_project" antfile="build-unit.xml" target="runcodetest_measure_complex_startup_web_project"/>
+    
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
+    
+</mconfig>
