@@ -2557,7 +2557,7 @@ widthcheck:  {
     }
 
     /** This method merges two images into the new one. The second image is drawn
-     * over the first one with its top-left corner at x, y. Images mustn't be of the same size.
+     * over the first one with its top-left corner at x, y. Images need not be of the same size.
      * New image will have a size of max(second image size + top-left corner, first image size).
      * Method is used mostly when second image contains transparent pixels (e.g. for badging).
      * If both images are <code>null</code>, it makes default transparent 16x16 image.
