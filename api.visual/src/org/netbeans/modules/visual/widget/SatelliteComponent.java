@@ -23,14 +23,12 @@ import org.netbeans.api.visual.widget.Scene;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 
 /**
  * @author David Kaspar
  */
-public final class SatelliteComponent extends JComponent implements MouseListener, MouseMotionListener, Scene.SceneListener {
+public final class SatelliteComponent extends JComponent implements MouseListener, MouseMotionListener, Scene.SceneListener, ComponentListener {
 
     private Scene scene;
 
@@ -45,10 +43,15 @@ public final class SatelliteComponent extends JComponent implements MouseListene
     public void addNotify () {
         super.addNotify ();
         scene.addSceneListener (this);
+        JComponent viewComponent = scene.getView ();
+        if (viewComponent == null)
+            viewComponent = scene.createView ();
+        viewComponent.addComponentListener (this);
         repaint ();
     }
 
     public void removeNotify () {
+        scene.getView ().removeComponentListener (this);
         scene.removeSceneListener (this);
         super.removeNotify ();
     }
@@ -143,6 +146,7 @@ public final class SatelliteComponent extends JComponent implements MouseListene
         visibleRect.x = cx - visibleRect.width / 2;
         visibleRect.y = cy - visibleRect.height / 2;
         component.scrollRectToVisible (visibleRect);
+
     }
 
     public void sceneRepaint () {
@@ -153,5 +157,19 @@ public final class SatelliteComponent extends JComponent implements MouseListene
     }
 
     public void sceneValidated () {
+    }
+
+    public void componentResized (ComponentEvent e) {
+        repaint ();
+    }
+
+    public void componentMoved (ComponentEvent e) {
+        repaint ();
+    }
+
+    public void componentShown (ComponentEvent e) {
+    }
+
+    public void componentHidden (ComponentEvent e) {
     }
 }
