@@ -291,6 +291,7 @@ RegularExpression = <js_regularExpression>;
 
 AST {
     removeSimple:"!FunctionBody";
+    process:org.netbeans.modules.languages.javascript.Semantic.process;
 }
 
 ########### colors #############################################################
@@ -437,6 +438,13 @@ ACTION:run_script {
     name:"Run";
     performer:org.netbeans.modules.languages.javascript.JavaScript.performRun;
     enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledRun;
+    explorer:"false";
+}
+
+ACTION:goto_declaration {
+    name:"Go To Declaration";
+    performer:org.netbeans.modules.languages.javascript.JavaScript.performGoToDeclaration;
+    enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledGoToDeclaration;
     explorer:"false";
 }
 

@@ -24,8 +24,6 @@ import java.util.ListIterator;
 import java.util.ListIterator;
 import java.util.Set;
 import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.DatabaseManager;
 import org.netbeans.api.languages.LibrarySupport;
@@ -70,6 +68,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledDocument;
+import org.openide.cookies.LineCookie;
 
 
 /**
@@ -522,6 +521,44 @@ public class JavaScript {
         }
     }
     
+    public static void performGoToDeclaration (ASTNode node, JTextComponent comp) {
+        NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
+        int position = comp.getCaretPosition();
+        ASTPath path = node.findPath(position);
+        ASTItem item = path.getLeaf();
+        if (!(item instanceof ASTToken)) {
+            return;
+        }
+        DatabaseManager manager = DatabaseManager.getDefault();
+        Semantic.Info info = Semantic.getInfo(doc);
+        Semantic.Declaration decl = info.getItem(item);
+        if (info == null || decl == null) {
+            return;
+        }
+        int offset = decl.getItem().getOffset();
+        DataObject dobj = NbEditorUtilities.getDataObject (doc);
+        LineCookie lc = (LineCookie)dobj.getCookie(LineCookie.class);
+        Line.Set lineSet = lc.getLineSet();
+        Line line = lineSet.getCurrent(NbDocument.findLineNumber(doc, offset));
+        int column = NbDocument.findLineColumn (doc, offset);
+        line.show (Line.SHOW_GOTO, column);
+    }
+     
+    public static boolean enabledGoToDeclaration (ASTNode node, JTextComponent comp) {
+        NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
+        int position = comp.getCaretPosition();
+        ASTPath path = node.findPath(position);
+        ASTItem item = path.getLeaf();
+        if (!(item instanceof ASTToken)) {
+            return false;
+        }
+        DatabaseManager manager = DatabaseManager.getDefault();
+        Semantic.Info info = Semantic.getInfo(doc);
+        return info != null && info.getItem(item) != null;
+    }
+    
+    // ..........................................................................
+    
     public static boolean isFunctionParameter (Cookie cookie) {
         if (!(cookie instanceof SyntaxCookie)) {
             return false;
@@ -560,12 +597,15 @@ public class JavaScript {
     }
     
     public static boolean isLocalVariable(Cookie cookie) {
-        try {
         if (!(cookie instanceof SyntaxCookie)) {
             return false;
         }
         SyntaxCookie scookie = (SyntaxCookie)cookie;
         ASTPath path = scookie.getASTPath();
+        return isLocalVariable(path);
+    }
+    
+    public static boolean isLocalVariable(ASTPath path) {
         int size = path.size();
         if (size < 2) return false;
         if (!(path.get (size - 2) instanceof ASTNode)) return false;
@@ -605,9 +645,6 @@ public class JavaScript {
             } // if
             lastElem = obj;
         } // while
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         return false;
     }
     
