@@ -329,10 +329,15 @@ public class TargetsPanel extends javax.swing.JPanel {
 
         @Override
         public boolean isCellEditable(int row, int column) {
-            if (column == 0) return false;
             Vector rowVector = getTargetsModel().get(row);
-            if (rowVector.get(TargetElement.DATA) instanceof MessageElement) {
+            if (column == 0) { // heading - allow editing only of xpath values
+                return (rowVector.get(TargetElement.DATA) instanceof MessageElement);
+            }
+            if ((column == 1) || (column ==2)) {
                 return true;
+            }
+            if (column == 3) {
+                return (rowVector.get(TargetElement.DATA) instanceof MessageElement);
             }
             return false;
         }

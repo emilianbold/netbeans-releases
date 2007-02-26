@@ -16,10 +16,11 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.websvc.wsitconf.ui.client;
 
 import javax.swing.JCheckBox;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.TransportModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
@@ -40,13 +41,15 @@ public class TransportPanelClient extends SectionInnerPanel {
     private Node node;
     private Binding binding;
     private boolean inSync = false;
+    private JaxWsModel jaxwsmodel;
    
-    public TransportPanelClient(SectionView view, Node node, Binding binding, WSDLModel serviceModel) {
+    public TransportPanelClient(SectionView view, Node node, Binding binding, WSDLModel serviceModel, JaxWsModel jaxWsModel) {
         super(view);
         this.clientModel = binding.getModel();
         this.serviceModel = serviceModel;
         this.node = node;
         this.binding = binding;
+        this.jaxwsmodel = jaxWsModel;
         
         initComponents();
 
@@ -80,10 +83,15 @@ public class TransportPanelClient extends SectionInnerPanel {
             if (source.equals(optimalTransportChBox)) {
                 TransportModelHelper.setAutoTransport(binding, optimalTransportChBox.isSelected());
             }
+            enableDisable();
         }
     }
 
     private void enableDisable() {
+        boolean amSec = SecurityCheckerRegistry.getDefault().isNonWsitSecurityEnabled(node, jaxwsmodel);
+
+        optimalEncChBox.setEnabled(!amSec);
+        optimalTransportChBox.setEnabled(!amSec);
     }
     
     private void setChBox(JCheckBox chBox, Boolean enable) {
@@ -124,6 +132,21 @@ public class TransportPanelClient extends SectionInnerPanel {
         optimalEncChBox = new javax.swing.JCheckBox();
         optimalTransportChBox = new javax.swing.JCheckBox();
 
+        addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                formFocusGained(evt);
+            }
+        });
+        addAncestorListener(new javax.swing.event.AncestorListener() {
+            public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
+            }
+            public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
+                formAncestorAdded(evt);
+            }
+            public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
+            }
+        });
+
         org.openide.awt.Mnemonics.setLocalizedText(optimalEncChBox, org.openide.util.NbBundle.getMessage(TransportPanelClient.class, "LBL_Transport_OptimalEncoding")); // NOI18N
         optimalEncChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         optimalEncChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -153,6 +176,14 @@ public class TransportPanelClient extends SectionInnerPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
+    enableDisable();
+}//GEN-LAST:event_formFocusGained
+
+private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_formAncestorAdded
+    enableDisable();
+}//GEN-LAST:event_formAncestorAdded
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

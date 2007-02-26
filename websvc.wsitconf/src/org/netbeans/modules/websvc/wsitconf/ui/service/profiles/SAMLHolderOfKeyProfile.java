@@ -22,9 +22,11 @@ package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 import java.awt.Dialog;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
+import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -67,13 +69,6 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile {
      */ 
     public void profileDeselected(WSDLComponent component) {
         //do nothing
-    }
-
-    /**
-     * Should return true if the profile is supported for specific component in the wsdl
-     */
-    public boolean isProfileSupported(WSDLComponent component) {
-        return true;
     }
 
     /**

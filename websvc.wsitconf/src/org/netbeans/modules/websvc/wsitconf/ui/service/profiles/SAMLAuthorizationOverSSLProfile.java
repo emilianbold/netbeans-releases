@@ -65,13 +65,6 @@ public class SAMLAuthorizationOverSSLProfile extends SecurityProfile {
     }
 
     /**
-     * Should return true if the profile is supported for specific component in the wsdl
-     */
-    public boolean isProfileSupported(WSDLComponent component) {
-        return true;
-    }
-
-    /**
      * Should return true if the profile is set on component, false otherwise
      */
     public boolean isCurrentProfile(WSDLComponent component) {

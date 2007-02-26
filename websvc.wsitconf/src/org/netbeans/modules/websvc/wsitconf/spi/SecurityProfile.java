@@ -20,6 +20,7 @@
 package org.netbeans.modules.websvc.wsitconf.spi;
 
 import javax.swing.undo.UndoManager;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 
 /**
@@ -61,7 +62,7 @@ public abstract class SecurityProfile {
     /**
      * Should return true if the profile is supported for specific component in the wsdl
      */
-    public boolean isProfileSupported(WSDLComponent component) {
+    public boolean isProfileSupported(Project p, WSDLComponent component) {
         return true;
     }
 

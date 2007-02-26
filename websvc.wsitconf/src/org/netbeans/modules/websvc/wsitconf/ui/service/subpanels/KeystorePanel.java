@@ -31,9 +31,12 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-
 import javax.swing.*;
 import java.io.File;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 /**
  *
@@ -41,20 +44,27 @@ import java.io.File;
  */
 public class KeystorePanel extends JPanel {
 
-    private static final String PKCS12 = "PKCS12";
-    private static final String JKS = "JKS";
+    private static final String PKCS12 = "PKCS12";      //NOI18N
+    private static final String JKS = "JKS";            //NOI18N
 
+    private static final String DEFAULT_PASSWORD="changeit";    //NOI18N
+    
     private WSDLModel model;
     private WSDLComponent comp;
 
+    private boolean jsr109 = false;
+    private Project project = null;
+    
     private String keystoreType = JKS;
     
     private boolean inSync = false;
     
-    public KeystorePanel(WSDLComponent comp) {
+    public KeystorePanel(WSDLComponent comp, Project p, boolean jsr109) {
         super();
         this.model = comp.getModel();
         this.comp = comp;
+        this.jsr109 = jsr109;
+        this.project = p;
         
         initComponents();
 
@@ -78,10 +88,6 @@ public class KeystorePanel extends JPanel {
         this.keyAliasCombo.setSelectedItem(alias);
     }
 
-    private char[] getCharKeyPassword() {
-        return keyPasswordField.getPassword();
-    }
-    
     private String getKeyPassword() {
         return String.valueOf(this.keyPasswordField.getPassword());
     }
@@ -128,10 +134,12 @@ public class KeystorePanel extends JPanel {
     
     public void sync() {
         inSync = true;
-        
+
         String keystoreLocation = ProprietarySecurityPolicyModelHelper.getStoreLocation(comp, false);
         if (keystoreLocation != null) {
             setKeystorePath(keystoreLocation);
+        } else if (jsr109) {
+            setKeystorePath(getServerStoreLocation());
         }
 
         String keystoreType = ProprietarySecurityPolicyModelHelper.getStoreType(comp, false);
@@ -143,6 +151,8 @@ public class KeystorePanel extends JPanel {
         if (keyStorePassword != null) {
             setKeystorePassword(keyStorePassword);
             reloadAliases();
+        } else if (jsr109) {
+            setKeystorePassword(DEFAULT_PASSWORD);
         }
 
         String keyStoreAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(comp, false);
@@ -152,10 +162,34 @@ public class KeystorePanel extends JPanel {
         if (keyPassword != null) {
             setKeyPassword(keyPassword);
         }
+        
+        enableDisable();
 
         inSync = false;
     }
 
+    private void enableDisable() {        
+        //these depend on jsr109 state
+        keystoreLocationButton.setEnabled(!jsr109);
+        keystoreLocationLabel.setEnabled(!jsr109);
+        keystoreLocationTextField.setEnabled(!jsr109);
+    }
+    
+    private String getServerStoreLocation() {
+        String keystoreLocation = null;
+        J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        if (mp != null) {
+            String sID = mp.getServerInstanceID();
+            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(sID);
+            File[] keyLocs = null;
+            keyLocs = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_KEYSTORE);
+            if ((keyLocs != null) && (keyLocs.length > 0)) {
+                keystoreLocation = keyLocs[0].getAbsolutePath();
+            }
+        }
+        return keystoreLocation;
+    }
+    
     public void storeState() {
         String keystoreAlias = getKeystoreAlias();
         if ((keystoreAlias == null) || (keystoreAlias.length() == 0)) {
@@ -169,14 +203,21 @@ public class KeystorePanel extends JPanel {
         } else {
             ProprietarySecurityPolicyModelHelper.setKeyPassword(comp, keyPasswd, false);
         }
+
         String keyStorePasswd = getKeystorePassword();
         if ((keyStorePasswd == null) || (keyStorePasswd.length() == 0)) {
+            ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, false, false);
+        } else if (jsr109 && DEFAULT_PASSWORD.equals(keyStorePasswd)) {
             ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, false, false);
         } else {
             ProprietarySecurityPolicyModelHelper.setStorePassword(comp, keyStorePasswd, false, false);
         }
+        
         ProprietarySecurityPolicyModelHelper.setStoreType(comp, keystoreType, false, false);
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getKeystorePath(), false, false);
+        
+        if (!jsr109) {
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getKeystorePath(), false, false);
+        }
     }
     
     /** This method is called from within the constructor to

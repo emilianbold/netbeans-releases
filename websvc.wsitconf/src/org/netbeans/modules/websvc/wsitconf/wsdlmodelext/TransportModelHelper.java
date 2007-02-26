@@ -41,7 +41,6 @@ import org.netbeans.modules.websvc.wsitmodelext.transport.OptimizedFastInfosetSe
 import org.netbeans.modules.websvc.wsitmodelext.transport.OptimizedTCPTransport;
 import org.netbeans.modules.websvc.wsitmodelext.transport.TCPQName;
 import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.Model;
 
 /**
@@ -64,7 +63,6 @@ public class TransportModelHelper {
     
     // checks if Mtom is enabled in the config wsdl on specified binding
     public static boolean isMtomEnabled(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p != null) {
             OptimizedMimeSerialization mtomAssertion = getOptimizedMimeSerialization(p);
@@ -81,11 +79,10 @@ public class TransportModelHelper {
 
     // disables Mtom in the config wsdl on specified binding
     public static void disableMtom(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         OptimizedMimeSerialization mtom = getOptimizedMimeSerialization(p);
         if (mtom != null) {
-            PolicyModelHelper.removeElement(mtom.getParent(), OptimizedMimeSerialization.class, false);
+            PolicyModelHelper.removeElement(mtom);
         }
         PolicyModelHelper.cleanPolicies(b);        
     }
@@ -96,7 +93,6 @@ public class TransportModelHelper {
     
     // checks if TCP is enabled in the config wsdl on specified binding
     public static boolean isTCPEnabled(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p != null) {
             OptimizedTCPTransport tcpAssertion = getOptimizedTCPTransport(p);
@@ -113,14 +109,16 @@ public class TransportModelHelper {
         OptimizedTCPTransport tcp = 
                 PolicyModelHelper.createElement(a, TCPQName.OPTIMIZEDTCPTRANSPORT.getQName(), 
                 OptimizedTCPTransport.class, false);
-        Model model = b.getModel();
-        boolean isTransaction = model.isIntransaction();
-        if (!isTransaction) {
-            model.startTransaction();
-        }
         
         // make sure the listener is there (in Web project and jsr109 deployment
         if (enable) {
+
+            Model model = b.getModel();
+            boolean isTransaction = model.isIntransaction();
+            if (!isTransaction) {
+                model.startTransaction();
+            }
+
             WebModule wm = WebModule.getWebModule(p.getProjectDirectory());
             if (wm != null) {
                 try {
@@ -166,16 +164,15 @@ public class TransportModelHelper {
                     ex.printStackTrace();
                 }
             }
-        }
-
-        try {
-            tcp.enable(enable);
-        } finally {
-            if (!isTransaction) {
-                model.endTransaction();
+            try {
+                tcp.enable(enable);
+            } finally {
+                if (!isTransaction) {
+                    model.endTransaction();
+                }
             }
-        }
-        if (!enable) {
+        } else {
+            removeTCP(b);
             PolicyModelHelper.cleanPolicies(b);
         }
     }
@@ -201,11 +198,10 @@ public class TransportModelHelper {
     }
     
    public static void removeTCP(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         OptimizedTCPTransport tcp = getOptimizedTCPTransport(p);
         if (tcp != null) {
-            PolicyModelHelper.removeElement(tcp.getParent(), OptimizedTCPTransport.class, false);
+            PolicyModelHelper.removeElement(tcp);
         }
     }
        
@@ -215,7 +211,6 @@ public class TransportModelHelper {
     
     // checks if FI is enabled in the config wsdl on specified binding
     public static boolean isFIEnabled(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p != null) {
             OptimizedFastInfosetSerialization fiAssertion = getOptimizedFastInfosetSerialization(p);
@@ -234,14 +229,19 @@ public class TransportModelHelper {
                 OptimizedFastInfosetSerialization.class, false);
         Model model = b.getModel();
         boolean isTransaction = model.isIntransaction();
-        if (!isTransaction) {
-            model.startTransaction();
-        }
-        try {
-            fi.enable(enable);
-        } finally {
+        if (enable) {
+            removeFI(b);
+            PolicyModelHelper.cleanPolicies(b);
+        } else {
             if (!isTransaction) {
-                model.endTransaction();
+                model.startTransaction();
+            }
+            try {
+                fi.enable(enable);
+            } finally {
+                if (!isTransaction) {
+                    model.endTransaction();
+                }
             }
         }
         if (enable) {
@@ -250,11 +250,10 @@ public class TransportModelHelper {
     }
     
     public static void removeFI(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         OptimizedFastInfosetSerialization fi = getOptimizedFastInfosetSerialization(p);
         if (fi != null) {
-            PolicyModelHelper.removeElement(fi.getParent(), OptimizedFastInfosetSerialization.class, false);
+            PolicyModelHelper.removeElement(fi);
         }
     }
     
@@ -263,7 +262,6 @@ public class TransportModelHelper {
     }
     
     public static boolean isAutoEncodingEnabled(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p != null) {
             AutomaticallySelectFastInfoset ae = getAutoEncoding(p);
@@ -277,11 +275,10 @@ public class TransportModelHelper {
             All a = PolicyModelHelper.createPolicy(b);
             PolicyModelHelper.createElement(a, FIQName.AUTOMATICALLYSELECTFASTINFOSET.getQName(), AutomaticallySelectFastInfoset.class, false);
         } else {
-            WSDLModel model = b.getModel();
             Policy p = PolicyModelHelper.getPolicyForElement(b);
             AutomaticallySelectFastInfoset ae = getAutoEncoding(p);
             if (ae != null) {
-                PolicyModelHelper.removeElement(ae.getParent(), AutomaticallySelectFastInfoset.class, false);
+                PolicyModelHelper.removeElement(ae);
             }
         }
     }
@@ -291,7 +288,6 @@ public class TransportModelHelper {
     }
     
     public static boolean isAutoTransportEnabled(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p != null) {
             AutomaticallySelectOptimalTransport at = getAutoTransport(p);
@@ -307,11 +303,10 @@ public class TransportModelHelper {
                     TCPQName.AUTOMATICALLYSELECTOPTIMALTRANSPORT.getQName(), 
                     AutomaticallySelectOptimalTransport.class, false);
         } else {
-            WSDLModel model = b.getModel();
             Policy p = PolicyModelHelper.getPolicyForElement(b);
             AutomaticallySelectOptimalTransport at = getAutoTransport(p);
             if (at != null) {
-                PolicyModelHelper.removeElement(at.getParent(), AutomaticallySelectOptimalTransport.class, false);
+                PolicyModelHelper.removeElement(at);
             }
         }
     }

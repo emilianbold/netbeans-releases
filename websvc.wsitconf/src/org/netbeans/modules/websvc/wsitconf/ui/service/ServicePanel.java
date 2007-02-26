@@ -58,6 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -137,7 +138,7 @@ public class ServicePanel extends SectionInnerPanel {
         Set<SecurityProfile> profiles = SecurityProfileRegistry.getDefault().getSecurityProfiles();
 
         for (SecurityProfile profile : profiles) {
-            if (profile.isProfileSupported(binding)) {
+            if (profile.isProfileSupported(project, binding)) {
                 profileCombo.addItem(profile.getDisplayName());
             }
         }
@@ -165,7 +166,7 @@ public class ServicePanel extends SectionInnerPanel {
         setChBox(mtomChBox, mtomEnabled);
         
         boolean fiEnabled = TransportModelHelper.isFIEnabled(binding);
-        setChBox(fiChBox, fiEnabled);
+        setChBox(fiChBox, !fiEnabled);
 
         boolean tcpEnabled = TransportModelHelper.isTCPEnabled(binding);
         setChBox(tcpChBox, tcpEnabled);
@@ -234,7 +235,7 @@ public class ServicePanel extends SectionInnerPanel {
         }
 
         if (source.equals(fiChBox)) {
-            if (fiChBox.isSelected()) {
+            if (!fiChBox.isSelected()) {
                 if (!(TransportModelHelper.isFIEnabled(binding))) {
                     TransportModelHelper.enableFI(binding, true);
                 }
@@ -359,13 +360,7 @@ public class ServicePanel extends SectionInnerPanel {
         boolean isTomcat = Util.isTomcat(project);
         tcpChBox.setEnabled(!isTomcat);
         
-        boolean amSec = false;
-        
-        // If there is no registered SecurityChecker, we check it ourselves.
-        // Otherwise, delegate the checking to the SecurityChecker.
-        if (!SecurityCheckerRegistry.getDefault().getSecurityCheckers().isEmpty()) {
-            amSec = SecurityCheckerRegistry.getDefault().isNonWsitSecurityEnabled(node, jaxwsmodel);
-        }
+        boolean amSec = SecurityCheckerRegistry.getDefault().isNonWsitSecurityEnabled(node, jaxwsmodel);
         
         // everything is ok, disable security
         if (!amSec) {
@@ -677,7 +672,8 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     }//GEN-LAST:event_stsConfigButtonActionPerformed
 
     private void trustButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trustButtonActionPerformed
-        TruststorePanel storePanel = new TruststorePanel(binding); //NOI18N
+        boolean jsr109 = ((jaxwsmodel.getJsr109() == null) || (jaxwsmodel.getJsr109().equals(Boolean.TRUE)));
+        TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109);
         DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
                 NbBundle.getMessage(ServicePanel.class, "LBL_Truststore_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
@@ -689,7 +685,8 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     }//GEN-LAST:event_trustButtonActionPerformed
 
     private void keyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyButtonActionPerformed
-        KeystorePanel storePanel = new KeystorePanel(binding); //NOI18N
+        boolean jsr109 = ((jaxwsmodel.getJsr109() == null) || (jaxwsmodel.getJsr109().equals(Boolean.TRUE)));
+        KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109);
         DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
                 NbBundle.getMessage(ServicePanel.class, "LBL_Keystore_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);

@@ -85,14 +85,24 @@ public class SecurityCheckerRegistry {
     public boolean isNonWsitSecurityEnabled(Node node, JaxWsModel jaxWsModel) {
         if ((node != null) && (jaxWsModel != null)) {
             Collection<SecurityChecker> secCheckers = getSecurityCheckers();
-            for (SecurityChecker sc : secCheckers) {
-                boolean secEnabled = sc.isSecurityEnabled(node, jaxWsModel);
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.log(ErrorManager.INFORMATIONAL, "securityEnabled: " + secEnabled + ", " + sc +                 //NOI18N
-                            ", dName: " + sc.getDisplayName() + ", node: " + node + ", jaxwsmodel: " + jaxWsModel);    //NOI18N
-                }
-                if (secEnabled) {
-                    return true;
+            if ((secCheckers != null) && (!secCheckers.isEmpty())) {
+                for (SecurityChecker sc : secCheckers) {
+                    boolean secEnabled = false;
+                    try {
+                        secEnabled = sc.isSecurityEnabled(node, jaxWsModel);
+                    } catch (Exception e) { // this is required to not break if any of the checkers breaks
+                        if (err.isLoggable(ErrorManager.EXCEPTION)) {
+                            err.log(ErrorManager.EXCEPTION, "Exception from SecurityChecker: " + e.toString()); //NOI18N
+                        }
+                    } finally {
+                        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                            err.log(ErrorManager.INFORMATIONAL, "securityEnabled: " + secEnabled + ", " + sc +                 //NOI18N
+                                    ", dName: " + sc.getDisplayName() + ", node: " + node + ", jaxwsmodel: " + jaxWsModel);    //NOI18N
+                        }
+                    }
+                    if (secEnabled) {
+                        return true;
+                    }
                 }
             }
         }

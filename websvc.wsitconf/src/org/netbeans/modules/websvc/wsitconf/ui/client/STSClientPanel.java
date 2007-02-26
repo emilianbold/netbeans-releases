@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.client;
 
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
@@ -26,7 +28,6 @@ import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -38,12 +39,14 @@ public class STSClientPanel extends SectionInnerPanel {
     private Node node;
     private Binding binding;
     private boolean inSync = false;
+    private JaxWsModel jaxwsmodel;
 
-    public STSClientPanel(SectionView view, Node node, Binding binding) {
+    public STSClientPanel(SectionView view, Node node, Binding binding, JaxWsModel jaxWsModel) {
         super(view);
         this.model = binding.getModel();
         this.node = node;
         this.binding = binding;
+        this.jaxwsmodel = jaxWsModel;
         
         initComponents();
 
@@ -216,11 +219,13 @@ public class STSClientPanel extends SectionInnerPanel {
                 }
                 return;
             }
+            enableDisable();
         }
     }
     
     @Override
     public void documentChanged(javax.swing.text.JTextComponent comp, String value) {
+        enableDisable();
     }
 
     @Override
@@ -238,6 +243,24 @@ public class STSClientPanel extends SectionInnerPanel {
         return null;
     }
 
+    private void enableDisable() {
+        
+        boolean amSec = SecurityCheckerRegistry.getDefault().isNonWsitSecurityEnabled(node, jaxwsmodel);
+
+        endpointLabel.setEnabled(!amSec);
+        endpointTextField.setEnabled(!amSec);
+        metadataField.setEnabled(!amSec);
+        metadataLabel.setEnabled(!amSec);
+        namespaceLabel.setEnabled(!amSec);
+        namespaceLabel.setEnabled(!amSec);
+        portNameLabel.setEnabled(!amSec);
+        portNameTextField.setEnabled(!amSec);
+        serviceNameLabel.setEnabled(!amSec);
+        serviceNameTextField.setEnabled(!amSec);
+        wsdlLocationLabel.setEnabled(!amSec);
+        wsdlLocationTextField.setEnabled(!amSec);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -258,6 +281,21 @@ public class STSClientPanel extends SectionInnerPanel {
         namespaceTextField = new javax.swing.JTextField();
         metadataLabel = new javax.swing.JLabel();
         metadataField = new javax.swing.JTextField();
+
+        addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                formFocusGained(evt);
+            }
+        });
+        addAncestorListener(new javax.swing.event.AncestorListener() {
+            public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
+            }
+            public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
+                formAncestorAdded(evt);
+            }
+            public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
+            }
+        });
 
         endpointLabel.setLabelFor(endpointTextField);
         org.openide.awt.Mnemonics.setLocalizedText(endpointLabel, org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_Endpoint")); // NOI18N
@@ -345,6 +383,14 @@ public class STSClientPanel extends SectionInnerPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
+    enableDisable();
+}//GEN-LAST:event_formFocusGained
+
+private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_formAncestorAdded
+    enableDisable();
+}//GEN-LAST:event_formAncestorAdded
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

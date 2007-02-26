@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -13,33 +13,27 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.websvc.wsitconf;
 
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider;
-import org.openide.nodes.Node;
+package org.netbeans.modules.websvc.wsitconf.util;
+
+import org.netbeans.api.java.source.CancellableTask;
 
 /**
  *
- * @author Martin Grebac
+ * @author Andrei Badea
  */
-public class WSITEditorProvider implements WSEditorProvider {
-    
-    /**
-     * Creates a new instance of WSITEditorProvider
-     */
-    public WSITEditorProvider () {
+public abstract class AbstractTask<P> implements CancellableTask<P> {
+
+    private volatile boolean cancelled;
+
+    public void cancel() {
+        cancelled = true;
     }
 
-    public WSEditor createWSEditor() {
-        return new WSITEditor();
-    }
-
-    public boolean enable(Node node) {        
-        return true;        
+    protected boolean isCancelled() {
+        return cancelled;
     }
 }

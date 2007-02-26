@@ -87,7 +87,7 @@ public class ClientTopComponent extends TopComponent {
         initAccessibility();
 
         ToolBarDesignEditor tb = new ToolBarDesignEditor();
-        panelFactory = new ClientPanelFactory(tb, clientWsdlModel, node, serviceModel);
+        panelFactory = new ClientPanelFactory(tb, clientWsdlModel, node, serviceModel, jaxWsModel);
         
         org.netbeans.modules.xml.wsdl.model.Service s = getService(client.getName(), clientWsdlModel); //TODO - the client name just won't work!!!
         if (s != null) {

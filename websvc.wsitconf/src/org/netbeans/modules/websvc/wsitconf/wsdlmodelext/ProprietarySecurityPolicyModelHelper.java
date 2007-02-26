@@ -982,7 +982,7 @@ public class ProprietarySecurityPolicyModelHelper {
                     chc.getParent().removeExtensibilityElement(chc);
                 }
             } else {           
-                if (defaultVal != null) h.setDefault(defaultVal);
+                h.setDefault(defaultVal);
                 h.setName(type);
                 h.setClassname(value);
             }

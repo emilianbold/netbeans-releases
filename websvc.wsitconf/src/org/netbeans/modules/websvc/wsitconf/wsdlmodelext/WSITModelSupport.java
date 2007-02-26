@@ -28,20 +28,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.undo.UndoManager;
-import javax.xml.namespace.QName;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-//import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.websvc.wsitconf.util.UndoManagerHolder;
 import org.netbeans.modules.websvc.wsitconf.WSITEditor;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
@@ -151,7 +148,7 @@ public class WSITModelSupport {
         FileObject srcFolder = sourceGroups[0].getRootFolder();
 
         FileObject catalogfo = Utilities.getProjectCatalogFileObject(p);
-        ModelSource catalogms = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(catalogfo, false);
+        ModelSource catalogms = Utilities.getModelSource(catalogfo, false);
 
         try {
             CatalogModel cm = Utilities.getCatalogModel(catalogms);

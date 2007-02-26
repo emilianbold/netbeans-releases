@@ -729,22 +729,27 @@ public class SecurityPolicyModelHelper {
             if (encryptedParts != null) {
                 all = (All) encryptedParts.getParent();
                 all.removeExtensibilityElement(encryptedParts);
+                encryptedParts = null;
             }
             if (signedParts != null) {
                 all = (All) signedParts.getParent();
                 all.removeExtensibilityElement(signedParts);
+                signedParts = null;
             }
             if (encryptedElements != null) {
                 all = (All) encryptedElements.getParent();
                 all.removeExtensibilityElement(encryptedElements);
+                encryptedElements = null;
             }
             if (signedElements != null) {
                 all = (All) signedElements.getParent();
                 all.removeExtensibilityElement(signedElements);
+                signedElements = null;
             }
             if (requiredElements != null) {
                 all = (All) requiredElements.getParent();
                 all.removeExtensibilityElement(requiredElements);
+                requiredElements = null;
             }
 
             if (targetModel == null) {
@@ -884,8 +889,10 @@ public class SecurityPolicyModelHelper {
     public static ExtensibilityElement addElementForListItem(String item, WSDLComponent c, WSDLComponentFactory wcf) {
         XPath x = null;
         x = (XPath)wcf.create(c, SecurityPolicyQName.XPATH.getQName());
-        x.setXPath(item);
-        c.addExtensibilityElement(x);
+        if (x != null) {
+            c.addExtensibilityElement(x);
+            x.setXPath(item);
+        }
         return x;
     }
 
@@ -904,7 +911,6 @@ public class SecurityPolicyModelHelper {
      */
     public static String getSecurityBindingType(WSDLComponent c) {
         assert c != null;
-        WSDLModel model = c.getModel();
         ExtensibilityElement e = getSecurityBindingTypeElement(c);
         if (e instanceof SymmetricBinding) return ComboConstants.SYMMETRIC;
         if (e instanceof AsymmetricBinding) return ComboConstants.ASYMMETRIC;

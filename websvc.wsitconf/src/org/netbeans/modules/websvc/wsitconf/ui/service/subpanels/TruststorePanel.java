@@ -31,9 +31,12 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-
 import javax.swing.*;
 import java.io.File;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 /**
  *
@@ -41,20 +44,27 @@ import java.io.File;
  */
 public class TruststorePanel extends JPanel {
 
-    private static final String PKCS12 = "PKCS12";
-    private static final String JKS = "JKS";
+    private static final String PKCS12 = "PKCS12";  //NOI18N
+    private static final String JKS = "JKS";        //NOI18N
+
+    private static final String DEFAULT_PASSWORD="changeit";    //NOI18N
 
     private WSDLModel model;
     private WSDLComponent comp;
 
     private String storeType = JKS;
+
+    private boolean jsr109 = false;
+    private Project project = null;
     
     private boolean inSync = false;
     
-    public TruststorePanel(WSDLComponent comp) {
+    public TruststorePanel(WSDLComponent comp, Project p, boolean jsr109) {
         super();
         this.model = comp.getModel();
         this.comp = comp;
+        this.jsr109 = jsr109;
+        this.project = p;
         
         initComponents();
 
@@ -118,6 +128,8 @@ public class TruststorePanel extends JPanel {
         String storeLocation = ProprietarySecurityPolicyModelHelper.getStoreLocation(comp, true);
         if (storeLocation != null) {
             setStoreLocation(storeLocation);
+        } else if (jsr109) {
+            setStoreLocation(getServerStoreLocation());            
         }
 
         String storeType = ProprietarySecurityPolicyModelHelper.getStoreType(comp, true);
@@ -129,14 +141,40 @@ public class TruststorePanel extends JPanel {
         if (storePassword != null) {
             setStorePassword(storePassword);
             reloadAliases();
+        } else if (jsr109) {
+            setStorePassword(DEFAULT_PASSWORD);
         }
 
         String peerAlias = ProprietarySecurityPolicyModelHelper.getTrustPeerAlias(comp);
         setPeerAlias(peerAlias);
 
+        enableDisable();
+        
         inSync = false;
     }
 
+    private String getServerStoreLocation() {
+        String keystoreLocation = null;
+        J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        if (mp != null) {
+            String sID = mp.getServerInstanceID();
+            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(sID);
+            File[] keyLocs = null;
+            keyLocs = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_TRUSTSTORE);
+            if ((keyLocs != null) && (keyLocs.length > 0)) {
+                keystoreLocation = keyLocs[0].getAbsolutePath();
+            }
+        }
+        return keystoreLocation;
+    }
+    
+    private void enableDisable() {        
+        //these depend on jsr109 state
+        storeLocationButton.setEnabled(!jsr109);
+        storeLocationLabel.setEnabled(!jsr109);
+        storeLocationTextField.setEnabled(!jsr109);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -271,11 +309,17 @@ public class TruststorePanel extends JPanel {
         String storePasswd = getStorePassword();
         if ((storePasswd != null) && (storePasswd.length() == 0)) {
             ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, true, false);
+        } else if (jsr109 && DEFAULT_PASSWORD.equals(storePasswd)) {
+            ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, true, false);
         } else {
             ProprietarySecurityPolicyModelHelper.setStorePassword(comp, storePasswd, true, false);
-        }        
+        }
+        
         ProprietarySecurityPolicyModelHelper.setStoreType(comp, storeType, true, false);
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getStoreLocation(), true, false);
+        
+        if (!jsr109) {
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getStoreLocation(), true, false);
+        }
     }
     
     private boolean reloadAliases() {

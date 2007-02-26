@@ -19,12 +19,19 @@
 
 package org.netbeans.modules.websvc.jaxwsruntimemodel;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.xml.namespace.QName;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.websvc.wsitconf.util.AbstractTask;
 import org.netbeans.modules.websvc.wsitconf.util.JMIUtils;
+import org.netbeans.modules.websvc.wsitconf.util.SourceUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * This class is compiled from:
@@ -83,50 +90,25 @@ public class JavaWsdlMapper {
      * @param implClass the implementation class
      * @return the <code>wsdl:serviceName</code> for the <code>implClass</code>
      */
-//    public static QName getServiceName(JavaClass implClass) {
-//
-//        if (implClass == null) {
-//            return null;
-//        }
-//        
-//        String name = implClass.getSimpleName()+SERVICE;
-//        String packageName = getPackageFromClass(implClass);
-//        String targetNamespace = getNamespace(packageName);
-//
-//        if (implClass != null) {
-//            List<Annotation> annotations = implClass.getAnnotations();
-//            if (annotations != null) {
-//                for (Annotation a : annotations) {
-//                    if ("javax.jws.WebService".equals(a.getType().getName())) { //NOI18N
-//
-//                        String serviceNameAnnot = "";
-//                        String targetNamespaceAnnot = "";
-//                        
-//                        List<AttributeValue> attrs = a.getAttributeValues();
-//                        for (AttributeValue av : attrs) {
-//                            if ("serviceName".equals(av.getName())) { //NOI18N
-//                                serviceNameAnnot = ((StringLiteral)av.getValue()).getValue();
-//                            }
-//                            if ("targetNamespace".equals(av.getName())) { //NOI18N
-//                                targetNamespaceAnnot = ((StringLiteral)av.getValue()).getValue();
-//                            }
-//                        }
-//
-//                        if (serviceNameAnnot.length() > 0) {
-//                            name = serviceNameAnnot;
-//                        }
-//                        
-//                        if (targetNamespaceAnnot.length() > 0) {
-//                            targetNamespace = targetNamespaceAnnot;
-//                        }
-//
-//                        return new QName(targetNamespace, name);
-//                    }
-//                } 
-//            }
-//        }
-//        return null;
-//    }
+    public static QName getServiceName(FileObject implClass) {
+        try {
+            if (implClass == null) return null;
+            final java.lang.String[] result = new java.lang.String[1];
+            
+            JavaSource js = JavaSource.forFileObject(implClass);
+            js.runUserActionTask(new AbstractTask<CompilationController>() {
+                 public void run(CompilationController controller) throws java.io.IOException {
+                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                     SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+                     result[0] = sourceUtils.getTypeElement().getQualifiedName().toString();
+                 }
+             }, true);
+             
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
 
     /**
      * gets the <code>wsdl:portName</code> for a given implementation class

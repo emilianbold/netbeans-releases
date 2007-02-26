@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.client;
 
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
@@ -37,14 +38,16 @@ public class ClientPanelFactory implements org.netbeans.modules.xml.multiview.ui
     private WSDLModel clientModel;
     private WSDLModel serviceModel;
     private Node node;
+    private JaxWsModel jaxwsmodel;
     
     /**
      * Creates a new instance of ClientPanelFactory
      */
-    ClientPanelFactory(ToolBarDesignEditor editor, WSDLModel model, Node node, WSDLModel serviceModel) {
+    ClientPanelFactory(ToolBarDesignEditor editor, WSDLModel model, Node node, WSDLModel serviceModel, JaxWsModel jxwsmodel) {
         this.editor=editor;
         this.clientModel = model;
         this.serviceModel = serviceModel;
+        this.jaxwsmodel = jxwsmodel;
         this.node = node;        
     }
     
@@ -53,19 +56,19 @@ public class ClientPanelFactory implements org.netbeans.modules.xml.multiview.ui
             String id = (String)key;
             if (id.startsWith(ClientView.KEYSTORE_NODE_ID)) {
                 Binding b = PolicyModelHelper.getBinding(clientModel, id.substring(ClientView.KEYSTORE_NODE_ID.length()));
-                return new KeystorePanel((SectionView) editor.getContentView(), clientModel, node, b);
+                return new KeystorePanel((SectionView) editor.getContentView(), clientModel, node, b, jaxwsmodel);
             }
             if (id.startsWith(ClientView.CALLBACK_NODE_ID)) {
                 Binding b = PolicyModelHelper.getBinding(clientModel, id.substring(ClientView.CALLBACK_NODE_ID.length()));
-                return new CallbackPanel((SectionView) editor.getContentView(), clientModel, node, b);
+                return new CallbackPanel((SectionView) editor.getContentView(), clientModel, node, b, jaxwsmodel);
             }
             if (id.startsWith(ClientView.STS_NODE_ID)) {
                 Binding b = PolicyModelHelper.getBinding(clientModel, id.substring(ClientView.STS_NODE_ID.length()));
-                return new STSClientPanel((SectionView) editor.getContentView(), node, b);
+                return new STSClientPanel((SectionView) editor.getContentView(), node, b, jaxwsmodel);
             }
             if (id.startsWith(ClientView.TRANSPORT_NODE_ID)) {
                 Binding b = PolicyModelHelper.getBinding(clientModel, id.substring(ClientView.TRANSPORT_NODE_ID.length()));
-                return new TransportPanelClient((SectionView) editor.getContentView(), node, b, serviceModel);
+                return new TransportPanelClient((SectionView) editor.getContentView(), node, b, serviceModel, jaxwsmodel);
             }
             if (id.startsWith(ClientView.ADVANCEDCONFIG_NODE_ID)) {
                 Binding b = PolicyModelHelper.getBinding(clientModel, id.substring(ClientView.ADVANCEDCONFIG_NODE_ID.length()));

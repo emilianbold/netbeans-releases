@@ -133,11 +133,6 @@ public final class WSITConfigProvider extends Object {
      */
     public final boolean isWsitEnabled(Node node, JaxWsModel jaxWsModel) {
         
-        //is it a client node?
-        Client client = (Client)node.getLookup().lookup(Client.class);
-        //is it a service node?
-        Service service = (Service)node.getLookup().lookup(Service.class);
-        
         Project p = null;
         if (jaxWsModel != null) {
             p = FileOwnerQuery.getOwner(jaxWsModel.getJaxWsFile());

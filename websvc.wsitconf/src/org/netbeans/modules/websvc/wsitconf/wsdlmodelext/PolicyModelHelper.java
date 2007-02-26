@@ -47,7 +47,6 @@ public class PolicyModelHelper {
      */
     public static All createTopExactlyOneAll(final Policy p) {
         WSDLModel model = p.getModel();
-        WSDLComponentFactory wcf = model.getFactory();
         ExactlyOne eo = createElement(p, PolicyQName.EXACTLYONE.getQName(), ExactlyOne.class, false);
         All all = createElement(eo, PolicyQName.ALL.getQName(), All.class, false);
         return all;
@@ -303,7 +302,6 @@ public class PolicyModelHelper {
         if (c == null) return;
 
         WSDLModel model = c.getModel();
-        WSDLComponentFactory wcf = model.getFactory();
 
         boolean isTransaction = model.isIntransaction();
         if (!isTransaction) {
@@ -312,7 +310,6 @@ public class PolicyModelHelper {
         try {
             if (underPolicy) {
                 List<Policy> policies = c.getExtensibilityElements(Policy.class);
-                Policy p = null;
                 if ((policies != null) && (!policies.isEmpty())) {
                     c = policies.get(0);
                 }
@@ -358,16 +355,16 @@ public class PolicyModelHelper {
      */
     private static boolean isEmpty(WSDLComponent comp) {
         List<WSDLComponent> children = comp.getChildren();
-        if ((children == null) || (children.isEmpty())) return true;
         for (WSDLComponent c : children) {
-            if (!((c instanceof Policy) || 
-                  (c instanceof All) || (c instanceof ExactlyOne) || 
-                  (c instanceof Addressing10WsdlUsingAddressing))) {
+            if ((c instanceof Policy) || 
+                (c instanceof All) || (c instanceof ExactlyOne)) {
+                return isEmpty(c);
+            }
+            if (!(c instanceof Addressing10WsdlUsingAddressing)) {
                 return false;
             }
-            return isEmpty(c);
         }
-        return false;
+        return true;
     }
     
 }

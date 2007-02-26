@@ -27,8 +27,6 @@ import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
-import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
@@ -69,13 +67,6 @@ public class SenderVouchesProfile extends SecurityProfile {
      */ 
     public void profileDeselected(WSDLComponent component) {
         //do nothing
-    }
-
-    /**
-     * Should return true if the profile is supported for specific component in the wsdl
-     */
-    public boolean isProfileSupported(WSDLComponent component) {
-        return true;
     }
 
     /**
