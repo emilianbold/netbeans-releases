@@ -801,29 +801,35 @@ public class Dragger extends Interaction implements KeyListener {
         CssBox curr = box;
 
         while (curr != null) {
-            MarkupDesignBean currMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(curr);
+//            MarkupDesignBean currMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(curr);
+            Element currComponentRootElement = CssBox.getElementForComponentRootCssBox(curr);
 //            if (curr.getDesignBean() != null) {
-            if (currMarkupDesignBean != null) {
+//            if (currMarkupDesignBean != null) {
+            if (currComponentRootElement != null) {
                 // If we're within a component being dragged, look "under it".
                 // No - that's no good -- there might be another absolutely positioned
                 // component at this position that is NOT the parent; we should use
                 // it instead. I guess findBox should take an ignore-list?
 //                if (isDragged(curr.getDesignBean())) {
-                if (isDragged(currMarkupDesignBean)) {
+//                if (isDragged(currMarkupDesignBean)) {
+                if (isDraggedComponent(currComponentRootElement)) {
                     box = curr.getParent();
                 } else {
                     // If we're within a component that is not a container, look "under it".
 //                    BeanInfo bi = curr.getDesignBean().getBeanInfo();
-                    BeanInfo bi = currMarkupDesignBean.getBeanInfo();
-
-                    if (bi != null) {
-                        BeanDescriptor bd = bi.getBeanDescriptor();
-                        Object o = bd.getValue(Constants.BeanDescriptor.IS_CONTAINER);
-                        boolean notContainer = o == Boolean.FALSE;
-
-                        if (notContainer) {
-                            box = curr.getParent();
-                        }
+//                    BeanInfo bi = currMarkupDesignBean.getBeanInfo();
+//
+//                    if (bi != null) {
+//                        BeanDescriptor bd = bi.getBeanDescriptor();
+//                        Object o = bd.getValue(Constants.BeanDescriptor.IS_CONTAINER);
+//                        boolean notContainer = o == Boolean.FALSE;
+//
+//                        if (notContainer) {
+//                            box = curr.getParent();
+//                        }
+//                    }
+                    if (!WebForm.getHtmlDomProviderService().isContainerComponent(currComponentRootElement)) {
+                        box = curr.getParent();
                     }
                 }
             }
@@ -837,20 +843,28 @@ public class Dragger extends Interaction implements KeyListener {
     /** Return true iff the given DesignBean is being dragged, or if one of its
      * ancestors are being dragged.
      */
-    private boolean isDragged(DesignBean bean) {
+//    private boolean isDragged(DesignBean bean) {
+    private boolean isDraggedComponent(Element componentRootElement) {
         for (int i = 0, n = beans.size(); i < n; i++) {
-            DesignBean lb = (DesignBean)beans.get(i);
+//            DesignBean lb = (DesignBean)beans.get(i);
+            MarkupDesignBean lb = beans.get(i);
 
-            if (bean == lb) {
+//            if (bean == lb) {
+//                return true;
+//            }
+            Element lbElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(lb);
+            if (lbElement == componentRootElement) {
                 return true;
             }
         }
 
-        if (bean.getBeanParent() == null) {
-            return false;
-        } else {
-            return isDragged(bean.getBeanParent());
-        }
+//        if (bean.getBeanParent() == null) {
+//            return false;
+//        } else {
+//            return isDragged(bean.getBeanParent());
+//        }
+        Element parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(componentRootElement);
+        return parentComponentRootElement == null ? false : isDraggedComponent(parentComponentRootElement);
     }
 
     private void update(InputEvent e, int px, int py) {

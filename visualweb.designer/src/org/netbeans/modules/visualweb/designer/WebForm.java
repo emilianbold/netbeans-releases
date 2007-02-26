@@ -2333,6 +2333,14 @@ public class WebForm implements Designer {
         public boolean isEscapedComponent(Element componentRootElement) {
             return false;
         }
+
+        public Element getParentComponent(Element componentRootElement) {
+            return null;
+        }
+
+        public boolean isContainerComponent(Element componentRootElement) {
+            return false;
+        }
     } // End of DummyHtmlDomProviderService.
     
     
