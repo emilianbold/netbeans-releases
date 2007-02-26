@@ -188,7 +188,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="build/jnlp/netbeans"/> <!-- else fileset will croak -->
         <copy todir="${build.jnlp.local.dir}/netbeans/">
             <fileset dir="build/jnlp/netbeans">
-                <include name="*.jnlp"/>
+                <include name="**/*.jnlp"/>
             </fileset>
             <filterchain>
                 <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}/netbeans/"/><!-- XXX potential SPACE_IN_PATH bug -->
@@ -196,7 +196,7 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         <copy todir="${build.jnlp.local.dir}/app/">
             <fileset dir="build/jnlp/app">
-                <include name="*.jnlp"/>
+                <include name="**/*.jnlp"/>
             </fileset>
             <filterchain>
                 <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}/app/"/><!-- XXX potential SPACE_IN_PATH bug -->
