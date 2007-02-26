@@ -32,10 +32,10 @@ import java.beans.*;
 public class InvalidStatesTest extends NbTestCase {
     private static final String VERSION="2.4";
     private static final String[] expectedEvents =
-        {"PCE:STATUS[1]:dd_status:2:1",
-         "PCE:STATUS[0]:dd_status:1:0",
-         "PCE:STATUS[0]:SessionTimeout:null:30"
-        };
+    {"PCE:STATUS[1]:dd_status:2:1",
+     "PCE:STATUS[0]:dd_status:1:0",
+     "PCE:STATUS[0]:SessionTimeout:null:30"
+    };
     private static java.util.List evtList = new java.util.ArrayList();
     
     private WebApp webApp;
@@ -63,11 +63,11 @@ public class InvalidStatesTest extends NbTestCase {
         System.out.println("Expected Exception :"+webApp.getError());
         assertNull("Session Config must be null :", webApp.getSingleSessionConfig());
     }
-
+    
     public void test_Correction1 () {
         System.out.println("TEST:Invalid Data Correction - editing");
         // replacing web.xml with web_parsable.xml
-        File dataDir = new File(System.getProperty("test.data.dir")+"/invalid");
+        File dataDir = new File(getDataDir().getAbsolutePath() + File.separator + "invalid");
         FileObject dataFolder = FileUtil.toFileObject(dataDir);
         FileObject fo1 = dataFolder.getFileObject("web_parsable","xml");
         assertTrue("FileObject invalid/web_parsable.xml not found",null != fo1);
@@ -77,7 +77,7 @@ public class InvalidStatesTest extends NbTestCase {
             OutputStream os = fo.getOutputStream(lock);
             InputStream is = fo1.getInputStream();
             int b;
-            while ((b = is.read())!=-1) 
+            while ((b = is.read())!=-1)
                 os.write(b);
             is.close();
             os.close();
@@ -124,18 +124,29 @@ public class InvalidStatesTest extends NbTestCase {
             assertEquals("Incorrect PCE["+i+"] :",expectedEvents[i],evtList.get(i));
         }
     }
-     
+    
     private static FileObject fo;
+    private static boolean initialized;
     
     protected void setUp() throws Exception {
         super.setUp();
         System.out.println("setUp() .......................");
         
+        File dataDir = new File(getDataDir().getAbsolutePath() + java.io.File.separator + "invalid");
+        FileObject dataFolder = FileUtil.toFileObject(dataDir);
+        
+        if (!initialized){
+            FileObject old = dataFolder.getFileObject("web", "xml");
+            if (old != null){
+                old.delete();
+            }
+            initialized = true;
+        }
+        
         if (fo==null) {
-            File dataDir = new File(System.getProperty("test.data.dir")+"/invalid");
-            FileObject dataFolder = FileUtil.toFileObject(dataDir);
-            fo = dataFolder.getFileObject("web","xml");
-        };
+            fo = FileUtil.copyFile(dataFolder.getFileObject("web_org","xml"), dataFolder, "web");
+        }
+        
         try {
             webApp = DDProvider.getDefault().getDDRoot(fo);
         } catch (java.io.IOException ex) {
@@ -163,7 +174,7 @@ public class InvalidStatesTest extends NbTestCase {
     }
     
     private static String getDDProperty(String fullName) {
-	int index = fullName.lastIndexOf('/');
+        int index = fullName.lastIndexOf('/');
         return (index>0?fullName.substring(index+1):fullName);
     }
 }

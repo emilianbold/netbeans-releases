@@ -65,7 +65,7 @@ public class DDApiTest extends NbTestCase {
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         foOut = workDir.createData("web.xml");
     }
-    */
+     */
     public DDApiTest(java.lang.String testName) {
         super(testName);
     }
@@ -236,7 +236,7 @@ public class DDApiTest extends NbTestCase {
             context.setParamValue(VALUE3);
             JspConfig jspConfig = (JspConfig)webApp.addBean("JspConfig", null, null, null);
             jspConfig.addBean("JspPropertyGroup",new String[]{"UrlPattern","IncludePrelude","IncludeCoda"},
-                              new String[]{URL_PATTERN_JSP,PRELUDE,CODA},null);
+                    new String[]{URL_PATTERN_JSP,PRELUDE,CODA},null);
             webApp.addBean("Icon",new String[]{"LargeIcon","SmallIcon"},new String[]{LARGE_ICON,SMALL_ICON},null);
         } catch (Exception ex){
             throw new AssertionFailedErrorException("addBean() method failed for ContextParam,JspConfig or Icon",ex);
@@ -244,7 +244,7 @@ public class DDApiTest extends NbTestCase {
         // addinng new Servlet
         try {
             Servlet servlet = (Servlet)webApp.addBean("Servlet", new String[]{"ServletName","ServletClass","LoadOnStartup"},
-                            new Object[]{SERVLET_NAME1,SERVLET_CLASS,LOAD_ON_STARTUP1}, "ServletName");
+                    new Object[]{SERVLET_NAME1,SERVLET_CLASS,LOAD_ON_STARTUP1}, "ServletName");
             servlet.addBean("InitParam", new String[]{"ParamName","ParamValue"}, new String[]{PARAM1,VALUE11},null);
             webApp.addBean("ServletMapping", new String[]{"ServletName","UrlPattern"},new String[]{SERVLET_NAME1,URL_PATTERN1},"UrlPattern");
         } catch (Exception ex){
@@ -252,8 +252,8 @@ public class DDApiTest extends NbTestCase {
         }
         // attempt to add servlet with the same name
         try {
-            Servlet servlet = (Servlet)webApp.addBean("Servlet", new String[]{"ServletName","ServletClass"}, 
-                            new Object[]{SERVLET_NAME1,SERVLET_CLASS}, "ServletName");
+            Servlet servlet = (Servlet)webApp.addBean("Servlet", new String[]{"ServletName","ServletClass"},
+                    new Object[]{SERVLET_NAME1,SERVLET_CLASS}, "ServletName");
             throw new AssertionFailedError("Servlet shouldn't have been added because of the same name");
         } catch (NameAlreadyUsedException ex){
             System.out.println("Expected exception : "+ex);
@@ -269,8 +269,8 @@ public class DDApiTest extends NbTestCase {
     
     public void test_Result() {
         System.out.println("Comparing result with golden file");
-
-        String testDataDirS = System.getProperty("test.data.dir");     
+        
+        String testDataDirS = System.getProperty("test.data.dir");
         java.io.File pass = new File(getDataDir(),"/web.pass");
         File test = FileUtil.toFile(fo);
         try {
@@ -305,6 +305,7 @@ public class DDApiTest extends NbTestCase {
     
     private static DDProvider ddProvider;
     private static FileObject fo;
+    private static boolean initialized;
     
     protected void setUp() throws Exception {
         super.setUp();
@@ -312,20 +313,30 @@ public class DDApiTest extends NbTestCase {
         
         if (ddProvider==null) ddProvider = DDProvider.getDefault();
         assertTrue("DDProvider object not found",null != ddProvider);
-
+        
+        FileObject dataFolder = FileUtil.toFileObject(getDataDir());
+        
+        if (!initialized){
+            FileObject old = dataFolder.getFileObject("web", "xml");
+            if (old != null){
+                old.delete();
+            }
+            initialized = true;
+        }
+        
         if (fo==null) {
-            File dataDir = getDataDir();
-            FileObject dataFolder = FileUtil.toFileObject(dataDir);
-            fo = dataFolder.getFileObject("web","xml");
-        };
+            fo = FileUtil.copyFile(dataFolder.getFileObject("web_org","xml"), dataFolder, "web");
+        }
+        
+        
         assertTrue("FileObject web.xml not found",null != fo);
-      
+        
         try {
             webApp = ddProvider.getDDRoot(fo);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         assertTrue("WebApp object not found", null != webApp);
-
+        
     }
 }

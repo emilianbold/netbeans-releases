@@ -23,13 +23,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
 
-    <target name="init" depends="default.init">
-        <delete file="${basedir}/unit/data/web.xml"/>
-        <delete file="${basedir}/unit/data/invalid/web.xml"/>
-        <copy file="${basedir}/unit/data/web_org.xml" tofile="${basedir}/unit/data/web.xml"/>
-        <copy file="${basedir}/unit/data/invalid/web_org.xml" tofile="${basedir}/unit/data/invalid/web.xml"/>
-    </target>
-    
     <target name="realclean" depends="xtest.realclean">
         <delete file="${basedir}/unit/data/web.xml"/>
         <delete file="${basedir}/unit/data/invalid/web.xml"/>
