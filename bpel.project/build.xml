@@ -26,7 +26,7 @@
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" deprecation="true">
             <classpath>
                 <path refid="cp"/>
-                <pathelement location="${harness.dir}/../ide7/ant/lib/ant.jar"/>
+                <pathelement location="${harness.dir}/../ide8/ant/lib/ant.jar"/>
                 <pathelement location="${cluster}/${module.jar}"/>
             </classpath>
         </javac>
