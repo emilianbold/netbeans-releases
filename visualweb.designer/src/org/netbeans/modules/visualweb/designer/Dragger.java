@@ -48,8 +48,6 @@ import org.w3c.dom.Node;
 
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.PageBox;
-import com.sun.rave.designtime.Constants;
-import com.sun.rave.designtime.DesignBean;
 import org.netbeans.modules.visualweb.extension.openide.awt.StatusDisplayer_RAVE;
 import org.netbeans.modules.visualweb.text.Position;
 

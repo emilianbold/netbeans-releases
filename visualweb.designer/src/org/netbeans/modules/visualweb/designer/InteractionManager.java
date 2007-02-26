@@ -22,7 +22,6 @@ import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.ExternalDocumentBox;
 import com.sun.rave.designer.html.HtmlTag;
-import com.sun.rave.designtime.DesignContext;
 import org.netbeans.modules.visualweb.spi.designer.Decoration;
 import java.awt.Component;
 import java.awt.Cursor;
