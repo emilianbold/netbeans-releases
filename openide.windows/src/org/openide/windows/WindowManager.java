@@ -483,7 +483,19 @@ public abstract class WindowManager extends Object implements Serializable {
      * is opened and then executes all the registered methods one by one.
      * </p>
      * 
-     * Note to WindowManager providers: This method not abstract for backward compatibility reasons,
+     * <b>Usage:</b>
+     * <pre>
+     *  // some initialization method
+     *  public static void init () {
+     *     WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+     *        public void run() {
+     *           // code to be invoked when system UI is ready
+     *        }
+     *     );
+     *  }
+     * </pre>
+     * 
+     * Note to WindowManager providers: This method is not abstract for backward compatibility reasons,
      * please override and provide implementation.
      * 
      * @param run the runnable that executes piece of code when UI of the system is ready
