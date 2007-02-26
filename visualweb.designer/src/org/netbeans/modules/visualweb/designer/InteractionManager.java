@@ -1800,10 +1800,12 @@ public class InteractionManager {
                     int size = 0;
                     ArrayList selections = new ArrayList(size);
                     ArrayList boxes = new ArrayList(size);
-                    ArrayList beans = new ArrayList(size);
+//                    ArrayList beans = new ArrayList(size);
+                    Element[] componentRootElements = new Element[0];
 
                     //Iterator it = selected.iterator();
-                    dragger = new Dragger(webform, boxes, selections, beans);
+//                    dragger = new Dragger(webform, boxes, selections, beans);
+                    dragger = new Dragger(webform, boxes, selections, componentRootElements);
                     interaction = dragger;
                     interaction.mousePressed(e);
 
@@ -1982,7 +1984,14 @@ public class InteractionManager {
                     }
 
                     if (selections.size() > 0) {
-                        dragger = new Dragger(webform, boxes, selections, beans);
+                        
+                        List<Element> componentRootElements = new ArrayList<Element>();
+                        for (MarkupDesignBean bean : beans) {
+                            componentRootElements.add(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean));
+                        }
+                        
+//                        dragger = new Dragger(webform, boxes, selections, beans);
+                        dragger = new Dragger(webform, boxes, selections, componentRootElements.toArray(new Element[componentRootElements.size()]));
                         interaction = dragger;
                         interaction.mousePressed(e);
                     }

@@ -20,7 +20,6 @@ package org.netbeans.modules.visualweb.designer;
 
 import java.util.List;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -83,7 +82,8 @@ public class Dragger extends Interaction implements KeyListener {
     private WebForm webform;
     private List<CssBox> boxes;
     private List<Rectangle> selections;
-    private List<MarkupDesignBean> beans;
+//    private List<MarkupDesignBean> beans;
+    private Element[] componentRootElements;
     private List<Image> images;
     private Position pos;
     private int prevX = -500;
@@ -130,7 +130,8 @@ public class Dragger extends Interaction implements KeyListener {
      *   <p>
      *   selections may not be null, and may not an empty list.
      */
-    public Dragger(WebForm webform, List<CssBox> boxes, List<Rectangle> selections, List<MarkupDesignBean> beans) {
+//    public Dragger(WebForm webform, List<CssBox> boxes, List<Rectangle> selections, List<MarkupDesignBean> beans) {
+    public Dragger(WebForm webform, List<CssBox> boxes, List<Rectangle> selections, Element[] componentRootElements) {
         if(DesignerUtils.DEBUG) {
             DesignerUtils.debugLog(getClass().getName() + "()");
         }
@@ -143,13 +144,17 @@ public class Dragger extends Interaction implements KeyListener {
         if(selections == null) {
             throw(new IllegalArgumentException("Null selections list."));
         }
-        if(beans == null) {
-            throw(new IllegalArgumentException("Null beans list."));
+//        if(beans == null) {
+//            throw(new IllegalArgumentException("Null beans list."));
+//        }
+        if (componentRootElements == null) {
+            throw new IllegalArgumentException("Null componentRootElements list."); // NOI18N
         }
         this.webform = webform;
         this.boxes = boxes;
         this.selections = selections;
-        this.beans = beans;
+//        this.beans = beans;
+        this.componentRootElements = componentRootElements;
     }
 
     private void cleanup(DesignerPane pane, int oldAction) {
@@ -242,9 +247,10 @@ public class Dragger extends Interaction implements KeyListener {
                     Element candidate = getLinkParticipant(startX, startY);
 
                     if (candidate == null) {
-                        if (beans.size() > 0) {
+//                        if (beans.size() > 0) {
+                        if (componentRootElements.length > 0) {
 //                            candidate = (DesignBean)beans.get(0);
-                            candidate = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)beans.get(0));
+                            candidate = componentRootElements[0];
                         } else {
                             handler.clearDropMatch();
 
@@ -756,18 +762,7 @@ public class Dragger extends Interaction implements KeyListener {
 //                    ? new DesignBean[0]
 //                    : (DesignBean[])beans.toArray(new DesignBean[beans.size()]),
 //                curr);
-        List<Element> componentRootElements = new ArrayList<Element>();
-        // XXX TEMP
-        List<MarkupDesignBean> designBeans = beans;
-        if (designBeans != null) {
-            for (MarkupDesignBean designBean : designBeans) {
-                Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(designBean);
-                if (componentRootElement != null) {
-                    componentRootElements.add(componentRootElement);
-                }
-            }
-        }
-        return webform.canDropComponentsAtNode(componentRootElements.toArray(new Element[componentRootElements.size()]), curr);
+        return webform.canDropComponentsAtNode(componentRootElements.clone(), curr);
     }
 
     /** Determine whether the given box is inside one of the boxes we're dragging */
@@ -842,14 +837,14 @@ public class Dragger extends Interaction implements KeyListener {
      */
 //    private boolean isDragged(DesignBean bean) {
     private boolean isDraggedComponent(Element componentRootElement) {
-        for (int i = 0, n = beans.size(); i < n; i++) {
-//            DesignBean lb = (DesignBean)beans.get(i);
-            MarkupDesignBean lb = beans.get(i);
-
+//        for (int i = 0, n = beans.size(); i < n; i++) {
+////            DesignBean lb = (DesignBean)beans.get(i);
+//            MarkupDesignBean lb = beans.get(i);
+        for (Element lbElement : componentRootElements) {
+        
 //            if (bean == lb) {
 //                return true;
 //            }
-            Element lbElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(lb);
             if (lbElement == componentRootElement) {
                 return true;
             }
