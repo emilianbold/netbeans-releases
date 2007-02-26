@@ -118,12 +118,12 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
          */
         private String findIconPath( AquaEditorTabCellRenderer renderer ) {
             if( renderer.inCloseButton() && renderer.isPressed() ) {
-                return "org/netbeans/swing/tabcontrol/resources/vista_close_pressed.png"; // NOI18N
+                return "org/netbeans/swing/tabcontrol/resources/mac_close_pressed.png"; // NOI18N
             }
             if( renderer.inCloseButton() ) {
-                return "org/netbeans/swing/tabcontrol/resources/vista_close_over.png"; // NOI18N
+                return "org/netbeans/swing/tabcontrol/resources/mac_close_rollover.png"; // NOI18N
             }
-            return "org/netbeans/swing/tabcontrol/resources/vista_close_enabled.png"; // NOI18N
+            return "org/netbeans/swing/tabcontrol/resources/mac_close_enabled.png"; // NOI18N
         }
         
         private void paintCloseButton(Graphics g, JComponent c) {

@@ -78,7 +78,7 @@ public final class GtkEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI 
         if (g != null) {
             FontMetrics fm = g.getFontMetrics(displayer.getFont());
             Insets ins = getTabAreaInsets();
-            prefHeight = fm.getHeight() + ins.top + ins.bottom + 8;
+            prefHeight = fm.getHeight() + ins.top + ins.bottom + 12;
         }
         return new Dimension(displayer.getWidth(), prefHeight);
     }
@@ -94,44 +94,43 @@ public final class GtkEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI 
         if( null == buttonIconPaths ) {
             buttonIconPaths = new HashMap<Integer, String[]>(7);
             
-            //TODO add 'pressed' icons
             //left button
             String[] iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_editor_left_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/win_editor_left_disabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_editor_left_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_editor_left_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_scrollleft_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/gtk_scrollleft_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/gtk_scrollleft_rollover.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/gtk_scrollleft_pressed.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_SCROLL_LEFT_BUTTON, iconPaths );
             
             //right button
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_editor_right_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/win_editor_right_disabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_editor_right_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_editor_right_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_scrollright_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/gtk_scrollright_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/gtk_scrollright_rollover.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/gtk_scrollright_pressed.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_SCROLL_RIGHT_BUTTON, iconPaths );
             
             //drop down button
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_editor_down_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/win_editor_down_disabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_editor_down_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_editor_down_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_popup_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/gtk_popup_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/gtk_popup_rollover.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/gtk_popup_pressed.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_DROP_DOWN_BUTTON, iconPaths );
             
             //maximize/restore button
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_editor_maximize_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/win_editor_maximize_disabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_editor_maximize_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_editor_maximize_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_maximize_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/gtk_maximize_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/gtk_maximize_rollover.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/gtk_maximize_pressed.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_MAXIMIZE_BUTTON, iconPaths );
             
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_editor_restore_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/win_editor_restore_disabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_editor_restore_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_editor_restore_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_restore_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/gtk_restore_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/gtk_restore_rollover.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/gtk_restore_pressed.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_RESTORE_BUTTON, iconPaths );
         }
     }

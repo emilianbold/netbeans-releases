@@ -25,11 +25,9 @@ import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.event.ChangeEvent;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 
 
@@ -68,7 +66,6 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     private static Color unselFillBrightC, unselFillDarkC, selFillC, focusFillBrightC, focusFillDarkC, txtC, borderC, bottomBorderC, selBorderC, bgFillC;
     
     private static Map<Integer, String[]> buttonIconPaths;
-    private static Map<Integer, String[]> focusedButtonIconPaths;
 
     /**
      * ******** instance fields ********
@@ -259,122 +256,47 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             
             //close button
             String[] iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp-close-sel-normal.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp-close-sel-pressed.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_bigclose_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_bigclose_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp-close-sel-rollover.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_bigclose_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_CLOSE_BUTTON, iconPaths );
             
             //slide/pin button
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp-pin-select-normal-east.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp-pin-select-pressed-east.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_slideright_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_slideright_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp-pin-select-rollover-east.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_slideright_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_SLIDE_RIGHT_BUTTON, iconPaths );
             
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp-pin-select-normal-west.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp-pin-select-pressed-west.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_slideleft_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_slideleft_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp-pin-select-rollover-west.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_slideleft_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_SLIDE_LEFT_BUTTON, iconPaths );
             
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp-pin-select-normal-south.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp-pin-select-pressed-south.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_slidebottom_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_slidebottom_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp-pin-select-rollover-south.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_slidebottom_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_SLIDE_DOWN_BUTTON, iconPaths );
             
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp-pin-select-normal-center.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp-pin-select-pressed-center.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_pin_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_pin_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp-pin-select-rollover-center.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_pin_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
-            
-            //TODO change icon names
-            //maximize/restore button
-            iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_ maximize_normal.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_maximize_pressed_notselected.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_maximize_over_notselected.png"; // NOI18N
-            buttonIconPaths.put( TabControlButton.ID_MAXIMIZE_BUTTON, iconPaths );
-
-            iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_normal.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_pressed_notselected.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_over_noteselected.png"; // NOI18N
-            buttonIconPaths.put( TabControlButton.ID_RESTORE_BUTTON, iconPaths );
-        }
-        
-        if( null == focusedButtonIconPaths ) {
-            //icons for focused tab
-            focusedButtonIconPaths = new HashMap<Integer, String[]>(7);
-            
-            //close button
-            String[] iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp-close-focus-normal.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp-close-focus-pressed.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp-close-focus-rollover.gif"; // NOI18N
-            focusedButtonIconPaths.put( TabControlButton.ID_CLOSE_BUTTON, iconPaths );
-            
-            //slide/pin button
-            iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-normal-east.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-pressed-east.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-rollover-east.gif"; // NOI18N
-            focusedButtonIconPaths.put( TabControlButton.ID_SLIDE_RIGHT_BUTTON, iconPaths );
-            
-            iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-normal-west.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-pressed-west.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-rollover-west.gif"; // NOI18N
-            focusedButtonIconPaths.put( TabControlButton.ID_SLIDE_LEFT_BUTTON, iconPaths );
-            
-            iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-normal-south.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-pressed-south.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-rollover-south.gif"; // NOI18N
-            focusedButtonIconPaths.put( TabControlButton.ID_SLIDE_DOWN_BUTTON, iconPaths );
-            
-            iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-normal-center.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-pressed-center.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-rollover-center.gif"; // NOI18N
-            focusedButtonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
-            
-            //TODO change icon names
-            //maximize/restore button
-            iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_ maximize_normal.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_maximize_pressed.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_maximize_over.png"; // NOI18N
-            focusedButtonIconPaths.put( TabControlButton.ID_MAXIMIZE_BUTTON, iconPaths );
-
-            iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_normal.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_pressed.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_over.png"; // NOI18N
-            focusedButtonIconPaths.put( TabControlButton.ID_RESTORE_BUTTON, iconPaths );
         }
     }
 
     public Icon getButtonIcon(int buttonId, int buttonState) {
         Icon res = null;
         initIcons();
-        Map<Integer, String[]> iconMap = isActive() ? focusedButtonIconPaths : buttonIconPaths;
-        String[] paths = iconMap.get( buttonId );
+        String[] paths = buttonIconPaths.get( buttonId );
         if( null != paths && buttonState >=0 && buttonState < paths.length ) {
             res = TabControlButtonFactory.getIcon( paths[buttonState] );
         }

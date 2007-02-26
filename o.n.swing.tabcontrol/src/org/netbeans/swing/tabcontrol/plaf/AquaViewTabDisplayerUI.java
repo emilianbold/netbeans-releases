@@ -204,56 +204,40 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             
             //close button
             String[] iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_close_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_close_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/mac_bigclose_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/mac_bigclose_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_close_over.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/mac_bigclose_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_CLOSE_BUTTON, iconPaths );
             
             //slide/pin button
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_slideright_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_slideright_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/mac_slideright_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/mac_slideright_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_slideright_over.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/mac_slideright_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_SLIDE_RIGHT_BUTTON, iconPaths );
             
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_slideleft_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_slideleft_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/mac_slideleft_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/mac_slideleft_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_slideleft_over.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/mac_slideleft_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_SLIDE_LEFT_BUTTON, iconPaths );
             
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_slidedown_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_slidedown_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/mac_slidebottom_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/mac_slidebottom_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_slidedown_over.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/mac_slidebottom_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_SLIDE_DOWN_BUTTON, iconPaths );
             
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_pin_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_pin_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/mac_pin_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/mac_pin_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_pin_over.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/mac_pin_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
-            
-            //TODO add icons for maximize/restore
-            //maximize/restore button
-            iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_ maximize_normal.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_maximize_pressed_notselected.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_maximize_over_notselected.png"; // NOI18N
-            buttonIconPaths.put( TabControlButton.ID_MAXIMIZE_BUTTON, iconPaths );
-
-            iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_normal.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_pressed_notselected.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_over_noteselected.png"; // NOI18N
-            buttonIconPaths.put( TabControlButton.ID_RESTORE_BUTTON, iconPaths );
         }
     }
 

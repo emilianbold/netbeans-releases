@@ -26,7 +26,6 @@ package org.netbeans.swing.tabcontrol.plaf;
 
 import javax.swing.*;
 import java.awt.*;
-import org.netbeans.swing.tabcontrol.TabDisplayer;
 
 /**
  * Renderer for editor tabs in metal l&f
@@ -149,42 +148,17 @@ class MetalEditorTabCellRenderer extends AbstractTabCellRenderer {
             
             Polygon p = getInteriorPolygon(c);
             g.fillPolygon(p);
+            
+            //Get the close button bounds, more or less
             Rectangle r = new Rectangle();
             getCloseButtonRectangle(mtr, r, new Rectangle(0, 0,
                                                           mtr.getWidth(),
                                                           mtr.getHeight()));
-            r.x += 2;
-            r.y += 2;
-            r.width -= 4;
-            r.height -= 4;
 
-            if (mtr.inCloseButton() && mtr.isPressed()) {
-                Color col = ColorUtil.getMiddle(mtr.getBackground(),
-                                                mtr.getBackground().darker());
-                g.setColor(col);
-                g.fillRect(r.x - 2, r.y - 2, r.width + 3, r.height + 3);
+            if (!g.hitClip(r.x, r.y, r.width, r.height)) {
+                return;
             }
-
-            if (mtr.isSelected()) {
-                g.setColor(UIManager.getColor("controlHighlight")); //NOI18N
-                r.translate(1, 1);
-                g.drawLine(r.x, r.y, r.x + r.width - 1, r.y + r.height - 1);
-                g.drawLine(r.x, r.y + r.height - 1, r.x + r.width - 1, r.y);
-                r.translate(-1, -1);
-            }
-
-            g.setColor(mtr.getForeground());
-            g.drawLine(r.x, r.y, r.x + r.width - 1, r.y + r.height - 1);
-            g.drawLine(r.x, r.y + r.height - 1, r.x + r.width - 1, r.y);
-
-            if (mtr.inCloseButton()) {
-                Color col = mtr.getBackground().darker();//ColorUtil.getMiddle(mtr.getBackground(), UIManager.getColor("controlShadow")); //NOI18N
-                if (mtr.isPressed()) {
-                    col = col.darker();
-                }
-                g.setColor(col);
-                g.drawRect(r.x - 2, r.y - 2, r.width + 3, r.height + 3);
-            }
+            paintCloseButton( g, (JComponent)c );
         }
 
         public void getCloseButtonRectangle(JComponent jc,
@@ -197,22 +171,42 @@ class MetalEditorTabCellRenderer extends AbstractTabCellRenderer {
                 rect.height = 0;
                 return;
             }
-            Insets ins = getBorderInsets(jc);
-
-            rect.y = bounds.y + ins.top;
-
-            rect.height = bounds.height - rect.y;
-            rect.x = bounds.x + bounds.width - 10;
-            rect.width = 5;
-
-            rect.y += (rect.height / 2) - 2;
-            rect.height = 5;
-            
-            //Issue nnn
-            rect.width += 4;
-            rect.height += 4;
-            rect.x -= 2;
-            rect.y -= 2;
+            String iconPath = findIconPath((MetalEditorTabCellRenderer) jc);
+            Icon icon = TabControlButtonFactory.getIcon(iconPath);
+            int iconWidth = icon.getIconWidth();
+            int iconHeight = icon.getIconHeight();
+            rect.x = bounds.x + bounds.width - iconWidth - 2;
+            rect.y = bounds.y + (Math.max(0, bounds.height / 2 - iconHeight / 2))+2;
+            rect.width = iconWidth;
+            rect.height = iconHeight;
+        }
+                
+        private void paintCloseButton(Graphics g, JComponent c) {
+            if (((AbstractTabCellRenderer) c).isShowCloseButton()) {
+                
+                Rectangle r = new Rectangle(0, 0, c.getWidth(), c.getHeight());
+                Rectangle cbRect = new Rectangle();
+                getCloseButtonRectangle((JComponent) c, cbRect, r);
+                
+                //paint close button
+                String iconPath = findIconPath( (MetalEditorTabCellRenderer)c );
+                Icon icon = TabControlButtonFactory.getIcon( iconPath );
+                icon.paintIcon(c, g, cbRect.x, cbRect.y);
+            }
+        }
+        
+        /**
+         * Returns path of icon which is correct for currect state of tab at given
+         * index
+         */
+        private String findIconPath( MetalEditorTabCellRenderer renderer ) {
+            if( renderer.inCloseButton() && renderer.isPressed() ) {
+                return "org/netbeans/swing/tabcontrol/resources/metal_close_pressed.png"; // NOI18N
+            }
+            if( renderer.inCloseButton() ) {
+                return "org/netbeans/swing/tabcontrol/resources/metal_close_rollover.png"; // NOI18N
+            }
+            return "org/netbeans/swing/tabcontrol/resources/metal_close_enabled.png"; // NOI18N
         }
     }
 

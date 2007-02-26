@@ -68,10 +68,6 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
     }    
 
     protected int getCaptionYAdjustment() {
-        return 2;
-    }
-    
-    protected int getIconYAdjustment() {
         return 0;
     }
 
@@ -102,28 +98,6 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
 
         public Insets getBorderInsets(Component c) {
             return INSETS;
-        }
-
-        public void getCloseButtonRectangle(JComponent jc,
-                                            final Rectangle rect,
-                                            Rectangle bounds) {
-            if (!((AbstractTabCellRenderer) jc).isShowCloseButton()) {
-                rect.x = -100;
-                rect.y = -100;
-                rect.width = 0;
-                rect.height = 0;
-                return;
-            }
-            Insets ins = getBorderInsets(jc);
-
-            rect.y = bounds.y + ins.top;
-
-            rect.height = bounds.height - rect.y;
-            rect.x = bounds.x + bounds.width - 10;
-            rect.width = 5;
-
-            rect.y += (rect.height / 2);
-            rect.height = 5;
         }
 
         public Polygon getInteriorPolygon(Component c) {
@@ -166,63 +140,67 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
                 p.getBounds().x, p.getBounds().y, p.getBounds().width, p.getBounds().height);
             } else {
                 paintTabBackground(g, 0, 0,
-                p.getBounds().x, p.getBounds().y + 1, p.getBounds().width, p.getBounds().height - 1);
+                p.getBounds().x, p.getBounds().y + 2, p.getBounds().width, p.getBounds().height - 2);
             }
             
             if (!supportsCloseButton((JComponent)c)) {
                 return;
             }
             
-            Rectangle r = new Rectangle();
-            getCloseButtonRectangle(ren, r, new Rectangle(0, 0,
-                                                          ren.getWidth(),
-                                                          ren.getHeight()));
-
-            if (ren.inCloseButton()) {
-                g.setColor(UIManager.getColor("control")); //NOI18N
-                g.fillRect(r.x - 1, r.y - 1, r.width + 3, r.height + 3);
-                g.setColor(UIManager.getColor("textText")); //NOI18N
-            } else {
-                g.setColor(ren.getForeground());
-            }
-
-            g.setColor(ren.getForeground());
-            g.drawLine(r.x, r.y, r.x + r.width - 1, r.y + r.height - 1);
-            g.drawLine(r.x, r.y + r.height - 1, r.x + r.width - 1, r.y);
-
-            if (ren.isSelected()) {
-                g.setColor(UIManager.getColor("controlShadow"));
-            } else if (!ren.isSelected()) {
-                g.setColor(UIManager.getColor("controlDkShadow"));
-            }
-
-            if (ren.inCloseButton()) {
-                r.x -= 2;
-                r.y -= 2;
-                r.width += 4;
-                r.height += 4;
-                if (!ren.isPressed()) {
-                    g.setColor(UIManager.getColor("controlLtHighlight"));
-                } else {
-                    g.setColor(
-                            UIManager.getColor("controlShadow").darker());
-                }
-                g.drawLine(r.x, r.y, r.x + r.width, r.y);
-                g.drawLine(r.x, r.y, r.x, r.y + r.height);
-                if (!ren.isPressed()) {
-                    g.setColor(
-                            UIManager.getColor("controlShadow").darker());
-                } else {
-                    g.setColor(UIManager.getColor("controlLtHighlight"));
-                }
-                g.drawLine(r.x, r.y + r.height, r.x + r.width, r.y + r.height);
-                g.drawLine(r.x + r.width, r.y + r.height, r.x + r.width, r.y);
-            }
+            paintCloseButton( g, (JComponent)c );
         }
 
+        public void getCloseButtonRectangle(JComponent jc, Rectangle rect, Rectangle bounds) {
+            boolean rightClip = ((GtkEditorTabCellRenderer) jc).isClipRight();
+            boolean leftClip = ((GtkEditorTabCellRenderer) jc).isClipLeft();
+            boolean notSupported = !((GtkEditorTabCellRenderer) jc).isShowCloseButton();
+            if (leftClip || rightClip || notSupported) {
+                rect.x = -100;
+                rect.y = -100;
+                rect.width = 0;
+                rect.height = 0;
+            } else {
+                String iconPath = findIconPath((GtkEditorTabCellRenderer) jc);
+                Icon icon = TabControlButtonFactory.getIcon(iconPath);
+                int iconWidth = icon.getIconWidth();
+                int iconHeight = icon.getIconHeight();
+                rect.x = bounds.x + bounds.width - iconWidth - 2;
+                rect.y = bounds.y + (Math.max(0, bounds.height / 2 - iconHeight / 2));
+                rect.width = iconWidth;
+                rect.height = iconHeight;
+            }
+        }
+        
+        private void paintCloseButton(Graphics g, JComponent c) {
+            if (((AbstractTabCellRenderer) c).isShowCloseButton()) {
+                
+                Rectangle r = new Rectangle(0, 0, c.getWidth(), c.getHeight());
+                Rectangle cbRect = new Rectangle();
+                getCloseButtonRectangle((JComponent) c, cbRect, r);
+                
+                //paint close button
+                String iconPath = findIconPath( (GtkEditorTabCellRenderer)c );
+                Icon icon = TabControlButtonFactory.getIcon( iconPath );
+                icon.paintIcon(c, g, cbRect.x, cbRect.y);
+            }
+        }
+        
+        /**
+         * Returns path of icon which is correct for currect state of tab at given
+         * index
+         */
+        private String findIconPath( GtkEditorTabCellRenderer renderer ) {
+            if( renderer.inCloseButton() && renderer.isPressed() ) {
+                return "org/netbeans/swing/tabcontrol/resources/gtk_close_pressed.png"; // NOI18N
+            }
+            if( renderer.inCloseButton() ) {
+                return "org/netbeans/swing/tabcontrol/resources/gtk_close_rollover.png"; // NOI18N
+            }
+            return "org/netbeans/swing/tabcontrol/resources/gtk_close_enabled.png"; // NOI18N
+        }
+        
         public boolean supportsCloseButton(JComponent renderer) {
-            return 
-                ((AbstractTabCellRenderer) renderer).isShowCloseButton();
+            return ((AbstractTabCellRenderer) renderer).isShowCloseButton();
         }
 
     }
@@ -267,7 +245,7 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
                 p.getBounds().x, p.getBounds().y, p.getBounds().width, p.getBounds().height);
             } else {
                 paintTabBackground(g, 0, 0,
-                p.getBounds().x, p.getBounds().y + 1, p.getBounds().width, p.getBounds().height - 1);
+                p.getBounds().x, p.getBounds().y + 2, p.getBounds().width, p.getBounds().height - 2);
             }
         }
 
@@ -329,7 +307,7 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
                 p.getBounds().x, p.getBounds().y, p.getBounds().width, p.getBounds().height);
             } else {
                 paintTabBackground(g, 0, 0,
-                p.getBounds().x, p.getBounds().y + 1, p.getBounds().width, p.getBounds().height - 1);
+                p.getBounds().x, p.getBounds().y + 2, p.getBounds().width, p.getBounds().height - 2);
             }
         }
 

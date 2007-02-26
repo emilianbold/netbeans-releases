@@ -95,7 +95,7 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     public Dimension getPreferredSize(JComponent c) {
         FontMetrics fm = getTxtFontMetrics();
         int height = fm == null ?
-                19 : fm.getAscent() + 2 * fm.getDescent() + 3;
+                19 : fm.getAscent() + 2 * fm.getDescent() + 5;
         Insets insets = c.getInsets();
         prefSize.height = height + insets.bottom + insets.top;
         return prefSize;
@@ -146,7 +146,7 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             if( null != buttons ) {
                 Dimension buttonsSize = buttons.getPreferredSize();
                 txtWidth = width - (buttonsSize.width + ICON_X_PAD + 2*TXT_X_PAD);
-                buttons.setLocation(x + txtWidth + 2 * TXT_X_PAD, y + (height - buttonsSize.height)/2 + (TXT_Y_PAD / 2) + 1);
+                buttons.setLocation(x + txtWidth + 2 * TXT_X_PAD, y + (height - buttonsSize.height)/2 + (TXT_Y_PAD / 2));
             }
         } else {
             txtWidth = width - 2 * TXT_X_PAD;
@@ -192,7 +192,7 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             x, y, width, height);
         } else {
             paintTabBackgroundNative(g, 0, 0,
-            x, y + 1, width, height - 1);
+            x, y + 2, width, height - 2);
         }        
     }
 
@@ -211,56 +211,40 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             
             //close button
             String[] iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_bigclose_normal.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_bigclose_pressed.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/win_bigclose_disabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_bigclose_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_bigclose_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/gtk_bigclose_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/gtk_bigclose_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_CLOSE_BUTTON, iconPaths );
             
             //slide/pin button
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win-pin-normal-east.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-east.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_slideright_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/gtk_slideright_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-east.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/gtk_slideright_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_SLIDE_RIGHT_BUTTON, iconPaths );
             
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win-pin-normal-west.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-west.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_slideleft_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/gtk_slideleft_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-west.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/gtk_slideleft_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_SLIDE_LEFT_BUTTON, iconPaths );
             
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win-pin-normal-south.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-south.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_slidebottom_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/gtk_slidebottom_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-south.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/gtk_slidebottom_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_SLIDE_DOWN_BUTTON, iconPaths );
             
             iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win-pin-normal-center.gif"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-center.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_pin_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/gtk_pin_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-center.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/gtk_pin_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
-            
-            //TODO add more icons
-            //maximize/restore button
-            iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_titlebar_maximize_normal.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_titlebar_maximize_normal.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_titlebar_maximize_normal.png"; // NOI18N
-            buttonIconPaths.put( TabControlButton.ID_MAXIMIZE_BUTTON, iconPaths );
-
-            iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_titlebar_restore_normal.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_titlebar_restore_normal.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_titlebar_restore_normal.png"; // NOI18N
-            buttonIconPaths.put( TabControlButton.ID_RESTORE_BUTTON, iconPaths );
         }
     }
 

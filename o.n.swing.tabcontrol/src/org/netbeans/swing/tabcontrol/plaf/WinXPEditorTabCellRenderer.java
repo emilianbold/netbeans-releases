@@ -341,23 +341,22 @@ final class WinXPEditorTabCellRenderer extends AbstractTabCellRenderer {
                                             final Rectangle rect,
                                             Rectangle bounds) {
                                                 
-            if (!((AbstractTabCellRenderer) jc).isShowCloseButton()) {
+            WinXPEditorTabCellRenderer ren = (WinXPEditorTabCellRenderer) jc;
+            if (!ren.isShowCloseButton()) {
                 rect.x = -100;
                 rect.y = -100;
                 rect.width = 0;
                 rect.height = 0;
                 return;
             }
-            Insets ins = getBorderInsets(jc);
-
-            rect.y = bounds.y + ins.top - 3;
-
-            rect.height = bounds.height - rect.y;
-            rect.x = bounds.x + bounds.width - 12;
-            rect.width = 6;
-
-            rect.y += (rect.height / 2) - 3;
-            rect.height = 6;
+            String iconPath = findIconPath(ren);
+            Icon icon = TabControlButtonFactory.getIcon(iconPath);
+            int iconWidth = icon.getIconWidth();
+            int iconHeight = icon.getIconHeight();
+            rect.x = bounds.x + bounds.width - iconWidth - 2;
+            rect.y = bounds.y + (Math.max(0, bounds.height / 2 - iconHeight / 2));
+            rect.width = iconWidth;
+            rect.height = iconHeight;
         }
 
         public Polygon getInteriorPolygon(Component c) {
@@ -475,130 +474,26 @@ final class WinXPEditorTabCellRenderer extends AbstractTabCellRenderer {
                 return;
             }
             
-            //Draw the close button gradient background if armed
-            if (ren.inCloseButton()) {
-                //Draw a small gradient background to the close button
-                Color bottom = getCloseButtonBorderColor(ren);
-
-                Color top = Color.WHITE;
-                if (ren.inCloseButton() && ren.isPressed()) {
-                    Color q = top;
-                    top = bottom;
-                    bottom = q;
-                }
-
-                GradientPaint gp = ColorUtil.getGradientPaint(r.x - 2, r.y - 2, top, r.x
-                                                                                     + r.width
-                                                                                     - 4, r.y
-                                                                                          + r.height
-                                                                                          + 4, bottom);
-                ((Graphics2D) g).setPaint(gp);
-
-                g.fillRect(r.x - 2, r.y - 2, r.width + 4, r.height + 4);
-            }
             //Draw the close button itself
-            
-            //Derive a middle color from the foreground and background to antialias
-            //the X against its background
-            g.setColor(getCloseButtonAAColor(ren));
-            //Draw the antialiasing behind the X as some boxes in the form:
-            //  XX    XX
-            //  XX    XX
-            //    XXXX 
-            //    XXXX
-            //    XXXX
-            //    XXXX
-            //  XX    XX
-            //  XX    XX
-            
-            g.fillRect(r.x + (r.width / 2) - 2, r.y + (r.height / 2) - 2,
-                       4, 4);
-            g.fillRect(r.x, r.y, 2, 2);
-            g.fillRect(r.x + r.width - 2, r.y, 2, 2);
-            g.fillRect(r.x, r.y + r.height - 2, 2, 2);
-            g.fillRect(r.x + r.width - 2, r.y + r.height - 2, 2, 2);
-            
-            //Get the real close button color
-            g.setColor(getCloseButtonColor(ren));
-            //And draw the X itself
-            g.drawLine(r.x, r.y, r.x + r.width - 1, r.y + r.height - 1);
-            g.drawLine(r.x, r.y + r.height - 1, r.x + r.width - 1, r.y);
-
-            //Now draw the shadow of the X, or the highlight if pressed - at any rate,
-            //the lines down and to the right below the X, inverting the highlight/shadow
-            //colors if we're in the "pushed" state
-            g.setColor(ren.isPressed() && ren.inCloseButton() ?
-                       getCloseButtonHighlight(ren) :
-                       getCloseButtonShadow(ren));
-            
-            //the southeast leg right shadow
-            g.drawLine(r.x + r.width, r.y + r.height - 2, r.x + r.width,
-                       r.y + r.height - 1);
-            //the southeast leg bottom shadow
-            g.drawLine(r.x + r.width - 2, r.y + r.height, r.x + r.width - 1,
-                       r.y + r.height);
-            //the south shadow under the square in the middle
-            g.drawLine(r.x + r.width - 4, r.y + r.height - 1,
-                       r.x + r.width - 3, r.y + r.height - 1);
-            //the southwest leg bottom shadow
-            g.drawLine(r.x, r.y + r.height, r.x + 1, r.y + r.height);
-            //the right edge middle shadow
-            g.drawLine(r.x + r.width - 1, r.y + r.height - 4,
-                       r.x + r.width - 1, r.y + r.height - 3);
-            //the northeast leg left shadow
-            g.drawLine(r.x + r.width, r.y, r.x + r.width, r.y + 1);
-            
-            //Now draw the highlight of the X, or the shadow if pressed - at any rate,
-            //the lines up and to the left above the X
-            g.setColor(ren.isPressed() && ren.inCloseButton() ?
-                       getCloseButtonShadow(ren) :
-                       getCloseButtonHighlight(ren));
-            
-            //draw the northwest leg top highlight
-            g.drawLine(r.x, r.y - 1, r.x + 1, r.y - 1);
-            //draw the northwest leg left highlight
-            g.drawLine(r.x - 1, r.y, r.x - 1, r.y + 1);
-            //draw the left edge middle highlight1
-            g.drawLine(r.x, r.y + 2, r.x, r.y + 3);
-            //draw the southwest leg left highlight
-            g.drawLine(r.x - 1, r.y + r.height - 2, r.x - 1,
-                       r.y + r.height - 1);
-            //draw the top middle highlight
-            g.drawLine(r.x + 2, r.y, r.x + 3, r.y);
-            //draw the northeast leg top highlight
-            g.drawLine(r.x + r.width - 2, r.y - 1, r.x + r.width - 1, r.y - 1);
-
-            //Draw the close button border if armed
-            if (ren.inCloseButton()) {
-                Color cbColor = getCloseButtonBorderColor(ren);
-                g.setColor(cbColor);
-                //Grow the rectangle to its bounds
-                r.x -= 3;
-                r.y -= 3;
-                r.width += 5;
-                r.height += 5;
-                //Draw a rounded rectangle for it
-                g.drawRoundRect(r.x, r.y, r.width, r.height, 6, 6);
-
-                //Now draw the antialiasing lines at the corners.
-                //XXX may be smarter to leave it up to the look and feel
-                //to turn on antialiasing - then drawRoundRect will be
-                //antialiased automatically
-                g.setColor(
-                        ColorUtil.getMiddle(ren.getBackground(), cbColor));
-                //upper left corner
-                g.drawLine(r.x, r.y + 1, r.x + 1, r.y);
-                //upper right corner
-                g.drawLine(r.x + r.width - 1, r.y, r.x + r.width, r.y + 1);
-                //bottom left corner
-                g.drawLine(r.x, r.y + r.height - 1, r.x + 1, r.y + r.height);
-                //bottom right corner
-                g.drawLine(r.x + r.width, r.y + r.height - 1,
-                           r.x + r.width - 1, r.y + r.height);
-
-            }
+            String iconPath = findIconPath( ren );
+            Icon icon = TabControlButtonFactory.getIcon( iconPath );
+            icon.paintIcon(ren, g, r.x, r.y);
         }
 
+        /**
+         * Returns path of icon which is correct for currect state of tab at given
+         * index
+         */
+        private String findIconPath( WinXPEditorTabCellRenderer renderer ) {
+            if( renderer.inCloseButton() && renderer.isPressed() ) {
+                return "org/netbeans/swing/tabcontrol/resources/xp_close_pressed.png"; // NOI18N
+            }
+            if( renderer.inCloseButton() ) {
+                return "org/netbeans/swing/tabcontrol/resources/xp_close_rollover.png"; // NOI18N
+            }
+            return "org/netbeans/swing/tabcontrol/resources/xp_close_enabled.png"; // NOI18N       
+        }
+        
         public boolean supportsCloseButton(JComponent renderer) {
             return renderer instanceof TabDisplayer ? 
                 ((TabDisplayer) renderer).isShowCloseButton() : true;

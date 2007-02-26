@@ -288,7 +288,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
                 return "org/netbeans/swing/tabcontrol/resources/vista_close_pressed.png"; // NOI18N
             }
             if( renderer.inCloseButton() ) {
-                return "org/netbeans/swing/tabcontrol/resources/vista_close_over.png"; // NOI18N
+                return "org/netbeans/swing/tabcontrol/resources/vista_close_rollover.png"; // NOI18N
             }
             return "org/netbeans/swing/tabcontrol/resources/vista_close_enabled.png"; // NOI18N       
         }
