@@ -2346,6 +2346,14 @@ public class WebForm implements Designer {
         public boolean isContainerComponent(Element componentRootElement) {
             return false;
         }
+
+        public String[] getEditablePropertyNames(Element componentRootElement) {
+            return new String[0];
+        }
+
+        public String[] getEditableProperties(Element componentRootElement) {
+            return new String[0];
+        }
     } // End of DummyHtmlDomProviderService.
     
     

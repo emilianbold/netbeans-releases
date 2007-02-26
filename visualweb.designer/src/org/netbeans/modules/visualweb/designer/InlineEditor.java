@@ -133,7 +133,9 @@ public abstract class InlineEditor {
 
         MarkupDesignBean markupBean = (MarkupDesignBean)bean;
 
-        String[] properties = getEditableProperties(markupBean);
+//        String[] properties = getEditableProperties(markupBean);
+        String[] properties = WebForm.getHtmlDomProviderService().getEditableProperties(
+                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(markupBean));
 
         if ((properties == null) || (properties.length == 0)) {
             return null;
@@ -282,12 +284,59 @@ public abstract class InlineEditor {
         }
     }
 
-    /**
-     * If the given component supports inline text editing, return the
-     * String property name which stores the text that is inline
-     * editable.
-     */
-    public static String[] getEditablePropertyNames(DesignBean bean) {
+//    /**
+//     * If the given component supports inline text editing, return the
+//     * String property name which stores the text that is inline
+//     * editable.
+//     */
+//    public static String[] getEditablePropertyNames(DesignBean bean) {
+////        BeanInfo bi = bean.getBeanInfo();
+////
+////        if (bi != null) {
+////            BeanDescriptor bd = bi.getBeanDescriptor();
+////            Object o = bd.getValue(Constants.BeanDescriptor.INLINE_EDITABLE_PROPERTIES);
+////
+////            if (o instanceof String[]) {
+////                String[] source = (String[])o;
+//        String[] source = getEditableProperties(bean);
+//        if (source != null) {
+//            List names = new ArrayList(source.length);
+//
+//            for (int i = 0; i < source.length; i++) {
+//                String name;
+//                int index = source[i].indexOf(':');
+//
+//                if (index == -1) {
+//                    if ((source.length > 0) && (source[i].charAt(0) == '*')) {
+//                        name = source[i].substring(1);
+//                    } else {
+//                        name = source[i];
+//                    }
+//                } else {
+//                    int start = 0;
+//
+//                    if ((source.length > 0) && (source[i].charAt(0) == '*')) {
+//                        start = 1;
+//                    }
+//
+//                    name = source[i].substring(start, index);
+//                }
+//
+//                DesignProperty property = bean.getProperty(name);
+//
+//                if ((property != null) && isEditingAllowed(property)) {
+//                    names.add(name);
+//                }
+//            }
+//
+//            return (String[])names.toArray(new String[names.size()]);
+//        }
+////        }
+//
+//        return new String[0];
+//    }
+//
+//    private static String[] getEditableProperties(DesignBean bean) {
 //        BeanInfo bi = bean.getBeanInfo();
 //
 //        if (bi != null) {
@@ -295,80 +344,33 @@ public abstract class InlineEditor {
 //            Object o = bd.getValue(Constants.BeanDescriptor.INLINE_EDITABLE_PROPERTIES);
 //
 //            if (o instanceof String[]) {
-//                String[] source = (String[])o;
-        String[] source = getEditableProperties(bean);
-        if (source != null) {
-            List names = new ArrayList(source.length);
-
-            for (int i = 0; i < source.length; i++) {
-                String name;
-                int index = source[i].indexOf(':');
-
-                if (index == -1) {
-                    if ((source.length > 0) && (source[i].charAt(0) == '*')) {
-                        name = source[i].substring(1);
-                    } else {
-                        name = source[i];
-                    }
-                } else {
-                    int start = 0;
-
-                    if ((source.length > 0) && (source[i].charAt(0) == '*')) {
-                        start = 1;
-                    }
-
-                    name = source[i].substring(start, index);
-                }
-
-                DesignProperty property = bean.getProperty(name);
-
-                if ((property != null) && isEditingAllowed(property)) {
-                    names.add(name);
-                }
-            }
-
-            return (String[])names.toArray(new String[names.size()]);
-        }
+//                return (String[])o;
+//            }
 //        }
-
-        return new String[0];
-    }
-
-    private static String[] getEditableProperties(DesignBean bean) {
-        BeanInfo bi = bean.getBeanInfo();
-
-        if (bi != null) {
-            BeanDescriptor bd = bi.getBeanDescriptor();
-            Object o = bd.getValue(Constants.BeanDescriptor.INLINE_EDITABLE_PROPERTIES);
-
-            if (o instanceof String[]) {
-                return (String[])o;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Return true if inline editing is allowed for the given property (assuming it
-     * has already been marked via metadata for inline editing; -that- is not checked here)
-     */
-    /*protected*/private static boolean isEditingAllowed(DesignProperty property) {
-        // TODO: Change types above from DesignProperty to FacesDesignProperty, and
-        // call property.isBound() instead of the below!
-        if (NO_EDIT_VB_EXPR) {
-            String value = property.getValueSource();
-
-            // TODO: Change types above from DesignProperty to FacesDesignProperty, and
-            // call property.isBound() instead of the below!
-//            if ((value != null) && FacesSupport.isValueBindingExpression(value, false)) {
-            if ((value != null) && WebForm.getHtmlDomProviderService().isValueBindingExpression(value, false)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
+//
+//        return null;
+//    }
+//
+//    /**
+//     * Return true if inline editing is allowed for the given property (assuming it
+//     * has already been marked via metadata for inline editing; -that- is not checked here)
+//     */
+//    /*protected*/private static boolean isEditingAllowed(DesignProperty property) {
+//        // TODO: Change types above from DesignProperty to FacesDesignProperty, and
+//        // call property.isBound() instead of the below!
+//        if (NO_EDIT_VB_EXPR) {
+//            String value = property.getValueSource();
+//
+//            // TODO: Change types above from DesignProperty to FacesDesignProperty, and
+//            // call property.isBound() instead of the below!
+////            if ((value != null) && FacesSupport.isValueBindingExpression(value, false)) {
+//            if ((value != null) && WebForm.getHtmlDomProviderService().isValueBindingExpression(value, false)) {
+//                return false;
+//            }
+//        }
+//
+//        return true;
+//    }
 
     /**
      * Return the given node corresponding to the given xpath.

@@ -32,9 +32,6 @@ import org.netbeans.modules.visualweb.insync.live.DesignBeanNode;
  */
 class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
 
-    /** XXX Flag to turn off vb expression editing in inline editing mode */
-    private static final boolean NO_EDIT_VB_EXPR = !Boolean.getBoolean("rave.allow-vb-editing"); // NOI18N
-
     private final HtmlDomProvider htmlDomProvider;
     private final MarkupDesignBean markupDesignBean;
     private final DesignProperty   designProperty;
@@ -55,19 +52,6 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
 //    } // End of DummyInlineEditorSupport.
 
     public boolean isEditingAllowed() {
-        // TODO: Change types above from DesignProperty to FacesDesignProperty, and
-        // call property.isBound() instead of the below!
-        if (NO_EDIT_VB_EXPR) {
-            String value = designProperty.getValueSource();
-
-            // TODO: Change types above from DesignProperty to FacesDesignProperty, and
-            // call property.isBound() instead of the below!
-//            if ((value != null) && FacesSupport.isValueBindingExpression(value, false)) {
-            if ((value != null) && DesignBeanNode.isValueBindingExpression(value, false)) {
-                return false;
-            }
-        }
-
-        return true;
+        return HtmlDomProviderServiceImpl.isEditingAllowed(designProperty);
     }
 }
