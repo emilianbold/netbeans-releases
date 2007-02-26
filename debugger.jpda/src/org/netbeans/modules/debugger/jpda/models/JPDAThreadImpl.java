@@ -493,6 +493,7 @@ public final class JPDAThreadImpl implements JPDAThread {
             synchronized (this) {
                 if (!isSuspended()) return null;
                 if ("DestroyJavaVM".equals(threadReference.name())) {
+                    // See defect #6474293
                     return null;
                 }
                 or = threadReference.currentContendedMonitor ();
@@ -518,6 +519,7 @@ public final class JPDAThreadImpl implements JPDAThread {
             synchronized (this) {
                 if (!isSuspended()) return new ObjectVariable [0];
                 if ("DestroyJavaVM".equals(threadReference.name())) {
+                    // See defect #6474293
                     return new ObjectVariable[0];
                 }
                 l = threadReference.ownedMonitors ();
