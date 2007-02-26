@@ -178,7 +178,8 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         eo.save();
         //nodeClass.performMenuActionNoBlock("Versioning|CVS|Export");
         Operator.setDefaultStringComparator(comOperator);
-        nodeClass.performMenuActionNoBlock("Versioning|CVS|Export \"Main.java\" Diff Patch...");
+        nodeClass.select();
+        nodeClass.performMenuActionNoBlock("Versioning|Export \"Main.java\" Diff Patch...");
         Operator.setDefaultStringComparator(oldOperator);
         NbDialogOperator dialog = new NbDialogOperator("Export");
         JTextFieldOperator tf = new JTextFieldOperator(dialog, 0);
