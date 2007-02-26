@@ -154,7 +154,8 @@ class FormComponentEditor extends InlineEditor {
             return null;
         }
 
-        if (!isEditingAllowed(property)) {
+//        if (!isEditingAllowed(property)) {
+        if (!inlineEditorSupport.isEditingAllowed()) {
             return null;
         }
 

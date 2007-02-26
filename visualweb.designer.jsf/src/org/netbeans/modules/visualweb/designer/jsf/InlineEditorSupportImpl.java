@@ -22,19 +22,26 @@ package org.netbeans.modules.visualweb.designer.jsf;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.insync.live.DesignBeanNode;
 
 /**
  * Impl of <code>HtmlDomProvider.InlineEditorSupport</code>
  *
  * @author Peter Zavadsky
+ * @author Tor Norby (old original code)
  */
 class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
-    
+
+    /** XXX Flag to turn off vb expression editing in inline editing mode */
+    private static final boolean NO_EDIT_VB_EXPR = !Boolean.getBoolean("rave.allow-vb-editing"); // NOI18N
+
+    private final HtmlDomProvider htmlDomProvider;
     private final MarkupDesignBean markupDesignBean;
     private final DesignProperty   designProperty;
     
     /** Creates a new instance of InlineEditorSupportImpl */
-    public InlineEditorSupportImpl(MarkupDesignBean markupDesignBean, DesignProperty designProperty) {
+    public InlineEditorSupportImpl(HtmlDomProvider htmlDomProvider, MarkupDesignBean markupDesignBean, DesignProperty designProperty) {
+        this.htmlDomProvider = htmlDomProvider;
         this.markupDesignBean = markupDesignBean;
         this.designProperty = designProperty;
     }
@@ -46,4 +53,21 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
 //    
 //    private static class DummyInlineEditorSupport implements HtmlDomProvider.InlineEditorSupport {
 //    } // End of DummyInlineEditorSupport.
+
+    public boolean isEditingAllowed() {
+        // TODO: Change types above from DesignProperty to FacesDesignProperty, and
+        // call property.isBound() instead of the below!
+        if (NO_EDIT_VB_EXPR) {
+            String value = designProperty.getValueSource();
+
+            // TODO: Change types above from DesignProperty to FacesDesignProperty, and
+            // call property.isBound() instead of the below!
+//            if ((value != null) && FacesSupport.isValueBindingExpression(value, false)) {
+            if ((value != null) && DesignBeanNode.isValueBindingExpression(value, false)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

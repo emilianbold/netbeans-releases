@@ -353,7 +353,7 @@ public abstract class InlineEditor {
      * Return true if inline editing is allowed for the given property (assuming it
      * has already been marked via metadata for inline editing; -that- is not checked here)
      */
-    protected static boolean isEditingAllowed(DesignProperty property) {
+    /*protected*/private static boolean isEditingAllowed(DesignProperty property) {
         // TODO: Change types above from DesignProperty to FacesDesignProperty, and
         // call property.isBound() instead of the below!
         if (NO_EDIT_VB_EXPR) {

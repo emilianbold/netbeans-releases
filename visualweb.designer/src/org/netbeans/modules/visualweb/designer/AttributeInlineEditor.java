@@ -88,7 +88,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 
     public static AttributeInlineEditor get(WebForm webform, String xpath, MarkupDesignBean bean,
     DesignProperty property, HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
-        if (!isEditingAllowed(property)) {
+//        if (!isEditingAllowed(property)) {
+        if (!inlineEditorSupport.isEditingAllowed()) {
             return null;
         }
 
