@@ -23,6 +23,7 @@ import org.netbeans.modules.visualweb.project.jsf.JsfProjectTemplateJakarta;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.ProjectTemplate;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectClassPathExtender;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -36,6 +37,9 @@ import java.math.BigInteger;
 import java.util.Set;
 import java.util.HashSet;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.openide.ErrorManager;
@@ -66,120 +70,134 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Description"));       //NOI18N
     }
 
-    public Set extend (WebModule wm) {
-        FileObject fo = wm.getDocumentBase();;
-        Project project = FileOwnerQuery.getOwner(fo);
+    public Set extend (WebModule webModule) {
+        FileObject fileObject = webModule.getDocumentBase();;
+        Project project = FileOwnerQuery.getOwner(fileObject);
 
-        /* <RAVE>
-        Library jsfLibrary = LibraryManager.getDefault().getLibrary("jsf");
-        if (jsfLibrary != null) {
-            ProjectClassPathExtender cpExtender = (ProjectClassPathExtender) project.getLookup().lookup(ProjectClassPathExtender.class);
-            if (cpExtender != null) {
-                try {
-                    cpExtender.addLibrary(jsfLibrary);
-                    Library jstlLibrary = LibraryManager.getDefault().getLibrary("jstl11");
-                    if (jstlLibrary != null){
-                        cpExtender.addLibrary(jstlLibrary);
-                    }
-                } catch (IOException ioe) {
-//                    ErrorManager.getDefault().notify(ioe);
-                }
-            } else {
-//                ErrorManager.getDefault().log ("WebProjectClassPathExtender not found in the project lookup of project: "+project.getProjectDirectory().getPath());    //NOI18N
-            }
-        </RAVE> */
-
-        // <RAVE> Add the Creator libraries to the project
+        // <RAVE> Add the VWP libraries to the project
         ProjectTemplate template = new JsfProjectTemplateJakarta();
         try {
             template.addLibrary(project);
-        } catch (java.io.IOException exc) {
-        }
-        // </RAVE>
 
-        try {
-            FileSystem fs = wm.getWebInf().getFileSystem();
-            fs.runAtomicAction(new CreateFacesConfig(wm, template));
-
-            /* 'index.jsp' already been opened from the parent web project.
-            FileObject documentBase = wm.getDocumentBase();
-            FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
-            if (indexjsp != null){
-                Set resultSet = new HashSet();
-                resultSet.add(indexjsp);
-                return resultSet;
+            FileObject dd = webModule.getDeploymentDescriptor();
+            WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
+            ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
+            boolean isMyFaces = cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") != null; //NOI18N
+            if (ddRoot != null) {
+                if (!WebApp.VERSION_2_5.equals(ddRoot.getVersion())) {
+                    if (isMyFaces) {
+                        JsfProjectUtils.removeLibraryReferences(project,
+                                new Library[]{ LibraryManager.getDefault().getLibrary("jsf-designtime")},
+                                JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
+                        JsfProjectUtils.removeLibraryReferences(project,
+                                new Library[]{ LibraryManager.getDefault().getLibrary("jsf-runtime")},
+                                JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
+                    } else {
+                        boolean hasJstl = cp.findResource("javax/servlet/jsp/jstl/core/Config.class") != null; // NOI18N
+ 
+                        if (!hasJstl) {
+                            Library jstlLibrary = LibraryManager.getDefault().getLibrary("jstl11");
+                            
+                            if (jstlLibrary != null) {
+                                JsfProjectUtils.addLibraryReferences(project, new Library[] { jstlLibrary },
+                                        JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
+                                JsfProjectUtils.addLibraryReferences(project, new Library[] { jstlLibrary },
+                                        JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
+                            }
+                        }
+                    }
+                }
             }
-            */
-            return null;
+
+            FileSystem fileSystem = webModule.getWebInf().getFileSystem();
+            fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces, template));
         } catch (FileNotFoundException exc) {
-            return null;
+            ErrorManager.getDefault().notify(exc);
         } catch (IOException exc) {
-            return null;
+            ErrorManager.getDefault().notify(exc);
         }
+        return null;
     }
 
-    private static String readResource(InputStream is, String encoding) throws IOException {
+    public static String readResource(InputStream is, String encoding) throws IOException {
         // read the config from resource first
-        StringBuffer sb = new StringBuffer();
+        StringBuffer sbuffer = new StringBuffer();
         String lineSep = System.getProperty("line.separator");//NOI18N
         BufferedReader br = new BufferedReader(new InputStreamReader(is, encoding));
         String line = br.readLine();
         while (line != null) {
-            sb.append(line);
-            sb.append(lineSep);
+            sbuffer.append(line);
+            sbuffer.append(lineSep);
             line = br.readLine();
         }
         br.close();
-        return sb.toString();
+        return sbuffer.toString();
     }
-
+    
     public java.io.File[] getConfigurationFiles(org.netbeans.modules.web.api.webmodule.WebModule wm) {
-        
-        FileObject[] filesFO = JSFConfigUtilities.getConfiFilesFO(wm.getDeploymentDescriptor());
-        File[] files = new File[filesFO.length];
-        for (int i = 0; i < filesFO.length; i++)
-            files[i] = FileUtil.toFile(filesFO[i]);
-        if (files.length > 0)
-            return files;
+        // The JavaEE 5 introduce web modules without deployment descriptor. In such wm can not be jsf used.
+        FileObject dd = wm.getDeploymentDescriptor();
+        if (dd != null){
+            FileObject[] filesFO = JSFConfigUtilities.getConfiFilesFO(wm.getDeploymentDescriptor());
+            File[] files = new File[filesFO.length];
+            for (int i = 0; i < filesFO.length; i++)
+                files[i] = FileUtil.toFile(filesFO[i]);
+            if (files.length > 0)
+                return files;
+        }
         return null;
     }
-
-    public FrameworkConfigurationPanel getConfigurationPanel(WebModule wm) {
-        boolean defaultValue = (wm == null || !isInWebModule(wm));
+    
+    public FrameworkConfigurationPanel getConfigurationPanel(WebModule webModule) {
+        boolean defaultValue = (webModule == null || !isInWebModule(webModule));
         panel = new JSFConfigurationPanel(!defaultValue);
         if (!defaultValue){
             // get configuration panel with values from the wm
-            Servlet servlet = JSFConfigUtilities.getActionServlet(wm.getDeploymentDescriptor());
+            Servlet servlet = JSFConfigUtilities.getActionServlet(webModule.getDeploymentDescriptor());
             panel.setServletName(servlet.getServletName());
-            panel.setURLPattern(JSFConfigUtilities.getActionServletMapping(wm.getDeploymentDescriptor()));
-            panel.setValidateXML(JSFConfigUtilities.validateXML(wm.getDeploymentDescriptor()));
-            panel.setVerifyObjects(JSFConfigUtilities.verifyObjects(wm.getDeploymentDescriptor()));
+            panel.setURLPattern(JSFConfigUtilities.getActionServletMapping(webModule.getDeploymentDescriptor()));
+            panel.setValidateXML(JSFConfigUtilities.validateXML(webModule.getDeploymentDescriptor()));
+            panel.setVerifyObjects(JSFConfigUtilities.verifyObjects(webModule.getDeploymentDescriptor()));
         }
         
         return panel;
     }
-
+    
     public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule wm) {
         return JSFConfigUtilities.getActionServlet(wm.getDeploymentDescriptor()) == null ? false : true;
     }
     
+    public static void createFile(FileObject target, String content, String encoding) throws IOException{
+        FileLock lock = target.lock();
+        try {
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(target.getOutputStream(lock), encoding));
+            bw.write(content);
+            bw.close();
+            
+        } finally {
+            lock.releaseLock();
+        }
+    }
+    
     private class  CreateFacesConfig implements FileSystem.AtomicAction{
-        WebModule wm;
+        WebModule webModule;
+        boolean isMyFaces;
         ProjectTemplate template;
-        public CreateFacesConfig (WebModule wm, ProjectTemplate template){
-            this.wm = wm;
+        
+        public CreateFacesConfig(WebModule webModule, boolean isMyFaces, ProjectTemplate template){
+            this.webModule = webModule;
+            this.isMyFaces = isMyFaces;
             this.template = template;
         }
         
         public void run() throws IOException {            
             // Enter servlet into the deployment descriptor
-            FileObject dd = wm.getDeploymentDescriptor();
-            WebApp ddRoot = DDProvider.getDefault().getDDRootCopy(dd);
+            FileObject dd = webModule.getDeploymentDescriptor();
+            WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             if (ddRoot != null){
                 try{
                                 // Set the context parameter
                     InitParam contextParam = (InitParam)ddRoot.createBean("InitParam"); // NOI18N
-                    
                     contextParam.setParamName("javax.faces.STATE_SAVING_METHOD"); // NOI18N
                     contextParam.setParamValue("server"); // NOI18N
                     ddRoot.addContextParam(contextParam);
@@ -191,36 +209,27 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     
                     contextParam = (InitParam)ddRoot.createBean("InitParam"); //NOI18N
                     contextParam.setParamName("com.sun.faces.validateXml"); //NOI18N
-                    
-                    if(panel.validateXML()) {
+                    if(panel == null || panel.validateXML())
                         contextParam.setParamValue("true"); //NOI18N
-                    }
-                    else {
+                    else
                         contextParam.setParamValue("false"); //NOI18N
-                    }
-                        
                     ddRoot.addContextParam(contextParam);
                     
                     contextParam = (InitParam)ddRoot.createBean("InitParam"); //NOI18N
                     contextParam.setParamName("com.sun.faces.verifyObjects");  //NOI18N
-                    
-                    if (panel.verifyObjects()) {
+                    if (panel != null && panel.verifyObjects())
                         contextParam.setParamValue("true");  //NOI18N
-                    }
-                    else {
+                    else
                         contextParam.setParamValue("false");  //NOI18N
-                    }
-                        
                     ddRoot.addContextParam(contextParam);
                     
                                 // The UpLoad Filter
                     Filter filter = (Filter)ddRoot.createBean("Filter"); // NOI18N
-                    
-                    filter.setFilterClass("com.sun.rave.web.ui.util.UploadFilter"); // NOI18N
                     filter.setFilterName("UploadFilter"); // NOI18N
+                    filter.setFilterClass("com.sun.rave.web.ui.util.UploadFilter"); // NOI18N
                     
                     contextParam = (InitParam)filter.createBean("InitParam"); // NOI18N
-                    contextParam.setDescription("he maximum allowed upload size in bytes.  If this is set " +
+                    contextParam.setDescription("The maximum allowed upload size in bytes.  If this is set " +
                             "to a negative value, there is no maximum.  The default " +
                             "value is 1000000."); // NOI18N
                     contextParam.setParamName("maxSize"); // NOI18N
@@ -239,29 +248,47 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     ddRoot.addFilter(filter);
                     
                     FilterMapping filterMapping = (FilterMapping)ddRoot.createBean("FilterMapping"); // NOI18N
-                    
                     filterMapping.setFilterName("UploadFilter"); // NOI18N
                     filterMapping.setServletName(panel.getServletName());
                     ddRoot.addFilterMapping(filterMapping);
                     
                                 // The Servlets
                     Servlet servlet = (Servlet)ddRoot.createBean("Servlet"); // NOI18N
-                    
                     servlet.setServletName(panel.getServletName());
                     servlet.setServletClass("javax.faces.webapp.FacesServlet"); // NOI18N    
                     servlet.setLoadOnStartup(new BigInteger("1"));// NOI18N
                     ddRoot.addServlet(servlet);
 
                     servlet = (Servlet)ddRoot.createBean("Servlet"); // NOI18N
-                    servlet.setServletClass("com.sun.rave.web.ui.theme.ThemeServlet"); // NOI18N
+                    servlet.setServletName("ExceptionHandlerServlet");
+                    servlet.setServletClass("com.sun.errorhandler.ExceptionHandler"); // NOI18N    
+
+                    contextParam = (InitParam)servlet.createBean("InitParam"); // NOI18N
+                    contextParam.setParamName("errorHost"); // NOI18N
+                    contextParam.setParamValue("localhost"); // NOI18N
+                    servlet.addInitParam(contextParam);
+
+                    contextParam = (InitParam)servlet.createBean("InitParam"); // NOI18N
+                    contextParam.setParamName("errorPort"); // NOI18N
+                    contextParam.setParamValue("24444"); // NOI18N
+                    servlet.addInitParam(contextParam);
+
+                    ddRoot.addServlet(servlet);
+
+                    servlet = (Servlet)ddRoot.createBean("Servlet"); // NOI18N
                     servlet.setServletName("ThemeServlet"); // NOI18N
+                    servlet.setServletClass("com.sun.rave.web.ui.theme.ThemeServlet"); // NOI18N
                     ddRoot.addServlet(servlet);
                     
                                 // The Servlet Mappings
                     ServletMapping mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); // NOI18N
-                  
                     mapping.setServletName(panel.getServletName());
                     mapping.setUrlPattern(panel.getURLPattern());
+                    ddRoot.addServletMapping(mapping);
+
+                    mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); // NOI18N
+                    mapping.setServletName("ExceptionHandlerServlet");
+                    mapping.setUrlPattern("/error/ExceptionHandler");
                     ddRoot.addServletMapping(mapping);
 
                     mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); // NOI18N
@@ -269,6 +296,15 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     mapping.setUrlPattern("/theme/*"); // NOI18N
                     ddRoot.addServletMapping(mapping);
 
+                    // Adjust the path to the startpage based on JSF parameters
+                    WelcomeFileList wfl = ddRoot.getSingleWelcomeFileList();
+                    wfl.setWelcomeFile(new String[] { "faces/index.jsp" });
+
+                    if (isMyFaces) {
+                        Listener facesListener = (Listener) ddRoot.createBean("Listener");
+                        facesListener.setListenerClass("org.apache.myfaces.webapp.StartupServletContextListener");
+                        ddRoot.addListener(facesListener);
+                    }
                     ddRoot.write(dd);
                 }
                 catch (ClassNotFoundException cnfe){
@@ -276,9 +312,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
             }
             
-            FileObject documentBase = wm.getDocumentBase();
+            FileObject documentBase = webModule.getDocumentBase();
             Project project = FileOwnerQuery.getOwner(documentBase);
-            template.create(project, wm.getJ2eePlatformVersion());
+            template.create(project, webModule.getJ2eePlatformVersion());
 
             /* Replace index.jsp and index.java with Page1.jsp and Page.java.
              * The reason to do this is web project always produces a welcome file index.jsp and open it as default.
@@ -291,7 +327,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             if (indexjsp != null && pagejsp != null) {
                 String content = readResource(pagejsp.getInputStream(), "UTF-8"); //NOI18N
                 createFile(indexjsp, content.replaceAll("\\bPage1\\b", "index"), "UTF-8"); //NOI18N
-                JsfProjectUtils.putProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, "index.jsp"); // NOI18N
+                JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, "index.jsp"); // NOI18N
                 pagejsp.delete();
             }
 
@@ -301,17 +337,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 FileObject indexjava = FileUtil.moveFile(pagejava, beanBase, "index"); //NOI18N
                 String content = readResource(indexjava.getInputStream(), "UTF-8"); //NOI18N
                 createFile(indexjava, content.replaceAll("\\bPage1\\b", "index"), "UTF-8"); //NOI18N
-            }
-        }
-        
-        private void createFile(FileObject target, String content, String encoding) throws IOException{            
-            FileLock lock = target.lock();
-            try {
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(target.getOutputStream(lock), encoding));
-                bw.write(content);
-                bw.close();
-            } finally {
-                lock.releaseLock();
             }
         }
     }
