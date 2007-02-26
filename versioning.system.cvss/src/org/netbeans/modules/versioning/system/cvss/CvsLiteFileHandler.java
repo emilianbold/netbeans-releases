@@ -74,7 +74,13 @@ class CvsLiteFileHandler extends DefaultFileHandler {
             return new FileOutputStream(file);
         }
         FileLock lock = fo.lock();
-        OutputStream stream = fo.getOutputStream(lock);
+        OutputStream stream = null;
+        try {
+            stream = fo.getOutputStream(lock);
+        } catch (IOException e) {
+            lock.releaseLock();
+            throw e;
+        }
         return new LockedOutputStream(lock, stream);
     }
 
