@@ -37,7 +37,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.netbeans.modules.visualweb.css2.CssBox;
-import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
