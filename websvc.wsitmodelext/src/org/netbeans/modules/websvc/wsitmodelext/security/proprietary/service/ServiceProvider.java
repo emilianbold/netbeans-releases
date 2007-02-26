@@ -26,7 +26,7 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
  * @author Martin Grebac
  */
 public interface ServiceProvider extends ExtensibilityElement{
-    public static final String ENDPOINT = "endPoint"; //NOI18N
+    public static final String ENDPOINT = "endpoint"; //NOI18N
     
     void setEndpoint(String endpoint);
     String getEndpoint();
