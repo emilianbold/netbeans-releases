@@ -31,9 +31,12 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.ejbcore.action.SelectMethodGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -106,10 +109,22 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
                                   boolean publishToLocal,
                                   boolean publishToRemote, String ejbql,
                                   FileObject ejbClassFO, String className) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        SelectMethodGenerator generator = SelectMethodGenerator.create((Entity) entityAndSession, ejbClassFO, getDDFile(ejbClassFO));
+        generator.generate(method, publishToLocal, publishToRemote, isOneReturn, ejbql);
     }
 
     public boolean supportsEjb(FileObject fileObject, String className) {
+        try {
+            EntityAndSession ejb = getEntityAndSession(fileObject, className);
+            if (ejb instanceof Entity) {
+                Entity entity = (Entity) ejb;
+                if (Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType())) {
+                    return true;
+                }
+            }
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
         return false;
     }
 }

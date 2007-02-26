@@ -159,8 +159,8 @@ public class CreateMethodGeneratorTest extends TestBase {
         // add create method into local and remote interfaces of CMP Entity EJB 
         FileObject beanClass = testModule.getSources()[0].getFileObject("cmplr/CmpLRBean.java");
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
-        Entity session = (Entity) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, "cmplr.CmpLRBean");
-        CreateMethodGenerator generator = CreateMethodGenerator.create(session, beanClass);
+        Entity entity = (Entity) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, "cmplr.CmpLRBean");
+        CreateMethodGenerator generator = CreateMethodGenerator.create(entity, beanClass);
         final MethodModel methodModel = MethodModel.create(
                 "createTest",
                 "void",

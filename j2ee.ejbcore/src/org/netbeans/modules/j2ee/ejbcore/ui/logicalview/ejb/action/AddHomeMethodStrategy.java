@@ -27,9 +27,12 @@ import javax.lang.model.element.Modifier;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.ejbcore.action.HomeMethodGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -81,10 +84,19 @@ public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
                                   boolean publishToLocal,
                                   boolean publishToRemote, String ejbql,
                                   FileObject ejbClassFO, String className) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        HomeMethodGenerator generator = HomeMethodGenerator.create(entityAndSession, ejbClassFO);
+        generator.generate(method, publishToLocal, publishToRemote);
     }
 
     public boolean supportsEjb(FileObject fileObject, String className) {
+        try {
+            EntityAndSession ejb = getEntityAndSession(fileObject, className);
+            if (ejb instanceof Entity) {
+                return true;
+            }
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
         return false;
     }
 }

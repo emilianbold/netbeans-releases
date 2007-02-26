@@ -75,44 +75,44 @@ public final class CreateMethodGenerator extends AbstractMethodGenerator {
                     );
             FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, ejb.getLocalHome());
             addMethod(methodModelCopy, fileObject, ejb.getLocalHome());
-            
-            // remote interface
-            if (generateRemote && ejb.getRemote() != null && ejb.getHome() != null) {
-                exceptions = new ArrayList<String>(methodModel.getExceptions());
-                if (!methodModel.getExceptions().contains("javax.ejb.CreateException")) {
-                    exceptions.add("javax.ejb.CreateException");
-                }
-                if (!methodModel.getExceptions().contains("java.rmi.RemoteException")) {
-                    exceptions.add("java.rmi.RemoteException");
-                }
-                methodModelCopy = MethodModel.create(
-                        methodModel.getName(),
-                        ejb.getRemote(),
-                        null,
-                        methodModel.getParameters(),
-                        exceptions,
-                        Collections.<Modifier>emptySet()
-                        );
-                fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, ejb.getHome());
-                addMethod(methodModelCopy, fileObject, ejb.getHome());
-            }
-            
-            // ejb class
-            exceptions = new ArrayList<String>(methodModel.getExceptions());
+        }
+        
+        // remote interface
+        if (generateRemote && ejb.getRemote() != null && ejb.getHome() != null) {
+            List<String> exceptions = exceptions = new ArrayList<String>(methodModel.getExceptions());
             if (!methodModel.getExceptions().contains("javax.ejb.CreateException")) {
                 exceptions.add("javax.ejb.CreateException");
             }
-            methodModelCopy = MethodModel.create(
-                    "ejbC" + methodModel.getName().substring(1),
-                    methodModel.getReturnType(),
-                    methodModel.getBody(),
+            if (!methodModel.getExceptions().contains("java.rmi.RemoteException")) {
+                exceptions.add("java.rmi.RemoteException");
+            }
+            MethodModel methodModelCopy = MethodModel.create(
+                    methodModel.getName(),
+                    ejb.getRemote(),
+                    null,
                     methodModel.getParameters(),
                     exceptions,
-                    Collections.singleton(Modifier.PUBLIC)
+                    Collections.<Modifier>emptySet()
                     );
-            addMethod(methodModelCopy, ejbClassFileObject, ejb.getEjbClass());
-            
+            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, ejb.getHome());
+            addMethod(methodModelCopy, fileObject, ejb.getHome());
         }
+        
+        // ejb class
+        List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
+        if (!methodModel.getExceptions().contains("javax.ejb.CreateException")) {
+            exceptions.add("javax.ejb.CreateException");
+        }
+        MethodModel methodModelCopy = MethodModel.create(
+                "ejbC" + methodModel.getName().substring(1),
+                methodModel.getReturnType(),
+                methodModel.getBody(),
+                methodModel.getParameters(),
+                exceptions,
+                Collections.singleton(Modifier.PUBLIC)
+                );
+        addMethod(methodModelCopy, ejbClassFileObject, ejb.getEjbClass());
+        
     }
     
     private void generateEntity(MethodModel methodModel, boolean generateLocal, boolean generateRemote) throws IOException {
