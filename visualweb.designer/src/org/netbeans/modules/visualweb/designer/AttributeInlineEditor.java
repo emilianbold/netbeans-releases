@@ -117,10 +117,11 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
     private Node findTextNode(Node root) {
         assert root != null;
 
-        // String assumption should be checked in beandescriptor search for TEXT_NODE_PROPERTY,
-        // especially if we publish this property. Or we could at least specify that the
-        // property MUST be a String.
-        String value = (String)property.getValue();
+//        // String assumption should be checked in beandescriptor search for TEXT_NODE_PROPERTY,
+//        // especially if we publish this property. Or we could at least specify that the
+//        // property MUST be a String.
+//        String value = (String)property.getValue();
+        String value = inlineEditorSupport.getValue();
 
         // Search for the special node which contains the text.
         // Special case empty... look for span with a CSS class of
