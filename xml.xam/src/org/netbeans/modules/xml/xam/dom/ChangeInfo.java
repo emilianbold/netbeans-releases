@@ -42,11 +42,11 @@ public class ChangeInfo {
         /**
          * Creates change info.
          *
-         * @parent parent node of changed
-         * @changed added/removed domain element or first non-domain change node.
-         * @isDomainElement is the changed node a domain element.
-         * @rootToParent path from root to parent node, inclusively.
-         * @otherNodes list of other nodes that are not domain elements beside the changed nodes.
+         * @param parent parent node of changed
+         * @param changed added/removed domain element or first non-domain change node.
+         * @param isDomainElement is the changed node a domain element.
+         * @param rootToParent path from root to parent node, inclusively.
+         * @param otherNodes list of other nodes that are not domain elements beside the changed nodes.
          */
         public ChangeInfo(Element parent, Node changed, boolean isDomainElement, List<Element> rootToParent, List<Node> otherNodes) {
             this.parent = parent;

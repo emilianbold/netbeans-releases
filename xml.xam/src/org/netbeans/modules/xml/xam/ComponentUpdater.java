@@ -20,13 +20,31 @@
 package org.netbeans.modules.xml.xam;
 
 /**
- * Update children list of a component.
+ * Updater for children list of a component.
  *
  * @author nn136682
  */
 public interface ComponentUpdater<C extends Component> {
     public enum Operation { ADD, REMOVE };
     
+    /**
+     * Updates children list.
+     *
+     * @param target component to be updated
+     * @param child component to be added or removed.
+     * @param operation add or remove; if null, no update should happen, only 
+     * query for possibility the update.
+     */
     void update(C target, C child, Operation operation);
+    
+    /**
+     * Updates children list.
+     *
+     * @param target component to be updated
+     * @param child component to be added or removed.
+     * @param index of child component to be added or removed.
+     * @param operation add or remove; if null, no update should happen, only 
+     * query for possibility the update.
+     */
     void update(C target, C child, int index, Operation operation);
 }

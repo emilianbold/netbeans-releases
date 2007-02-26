@@ -69,7 +69,7 @@ public abstract class XsdBasedValidator implements Validator {
     
     /**
      * Get Schemas that the model has to be validated against.
-     * @returns compiled Schema to be used in validation of the given
+     * Returns compiled Schema to be used in validation of the given
      * model; or null if this validator does not know how to validate the model.
      * @param model Get Schemas that the model has to be validated against.
      * @return Compiled Schema object.
@@ -106,7 +106,7 @@ public abstract class XsdBasedValidator implements Validator {
      * 
      * @param model 
      * @param handler 
-     * @return 
+     * @return Source input source stream for the validation.
      */
     protected Source getSource(Model model, Handler handler) {
         Source source = (Source) model.getModelSource().getLookup().lookup(Source.class);
