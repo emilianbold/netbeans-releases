@@ -20,6 +20,7 @@ package org.netbeans.modules.visualweb.designer;
 
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.InlineEditorSupport;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProviderService;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
@@ -1990,6 +1991,10 @@ public class WebForm implements Designer {
 
     boolean canHighlightComponentRootElement(Element componentRootElement) {
         return htmlDomProvider.canHighlightComponentRootElmenet(componentRootElement);
+    }
+
+    InlineEditorSupport createInlineEditorSupport(Element componentRootElement, String propertyName) {
+        return htmlDomProvider.createInlineEditorSupport(componentRootElement, propertyName);
     }
     
     

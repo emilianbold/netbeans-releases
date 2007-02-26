@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import com.sun.rave.designtime.DesignContext;
@@ -78,15 +79,15 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 
 
     AttributeInlineEditor(WebForm webform, MarkupDesignBean bean, DesignProperty property,
-        String xpath) {
+    String xpath, HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
 //        super(webform, bean, property.getPropertyDescriptor().getName());
-        super(webform, bean, property);
+        super(webform, bean, property, inlineEditorSupport);
 //        this.property = property;
         this.xpath = xpath;
     }
 
     public static AttributeInlineEditor get(WebForm webform, String xpath, MarkupDesignBean bean,
-        DesignProperty property) {
+    DesignProperty property, HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
         if (!isEditingAllowed(property)) {
             return null;
         }
@@ -104,7 +105,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         // TODO: Ensure that the property is of String type?? I don't
         // support anything else... (and how could you inline text edit
         // anything else?)
-        return new AttributeInlineEditor(webform, bean, property, xpath);
+        return new AttributeInlineEditor(webform, bean, property, xpath, inlineEditorSupport);
     }
 
     /** Return the text node containing the value attribute.

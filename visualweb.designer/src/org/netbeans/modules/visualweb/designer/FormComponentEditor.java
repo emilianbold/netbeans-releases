@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.designer.CssUtilities;
@@ -103,9 +104,9 @@ class FormComponentEditor extends InlineEditor {
 //    private DesignProperty property;
 
     private FormComponentEditor(WebForm webform, MarkupDesignBean bean, DesignProperty property,
-        CssBox box/*, String xpath*/) {
+    CssBox box/*, String xpath*/, HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
 //        super(webform, bean, property.getPropertyDescriptor().getName());
-        super(webform, bean, property);
+        super(webform, bean, property, inlineEditorSupport);
         if(DesignerUtils.DEBUG) {
             DesignerUtils.debugLog(getClass().getName() + "()");
         }
@@ -118,7 +119,7 @@ class FormComponentEditor extends InlineEditor {
     }
 
     public static FormComponentEditor get(WebForm webform, String xpath, CssBox box,
-        MarkupDesignBean bean, DesignProperty property) {
+    MarkupDesignBean bean, DesignProperty property, HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
         if (xpath != null) {
 //            RaveElement sourceElement = (RaveElement)bean.getElement();
 //            RaveElement root = sourceElement.getRendered();
@@ -158,7 +159,7 @@ class FormComponentEditor extends InlineEditor {
         }
 
         // TODO - need metadata to specify the descriptor to use!
-        return new FormComponentEditor(webform, bean, property, box/*, xpath*/);
+        return new FormComponentEditor(webform, bean, property, box/*, xpath*/, inlineEditorSupport);
     }
 
     public void start(boolean selectText, String initialEdit) {

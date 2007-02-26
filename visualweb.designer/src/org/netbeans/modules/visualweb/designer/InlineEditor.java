@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
+import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import java.awt.Graphics2D;
@@ -89,6 +90,8 @@ public abstract class InlineEditor {
     protected DesignProperty property;
     protected Position begin;
     protected Position end;
+    
+    protected final HtmlDomProvider.InlineEditorSupport inlineEditorSupport;
 //    protected String propertyName;
 
     /** Timestamp when we last entered inline editing. */
@@ -98,11 +101,14 @@ public abstract class InlineEditor {
     private long lastClick = 0L;
 
 //    protected InlineEditor(WebForm webform, MarkupDesignBean bean, String propertyName) {
-    protected InlineEditor(WebForm webform, MarkupDesignBean bean, DesignProperty property) {
+    protected InlineEditor(WebForm webform, MarkupDesignBean bean, DesignProperty property,
+    HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
         this.webform = webform;
         this.bean = bean;
 //        this.propertyName = propertyName;
         this.property = property;
+        
+        this.inlineEditorSupport = inlineEditorSupport;
 
         assert bean.getElement() != null;
     }
@@ -219,6 +225,17 @@ public abstract class InlineEditor {
 
                 return null;
             }
+            
+            
+            HtmlDomProvider.InlineEditorSupport inlineEditorSupport = webform.createInlineEditorSupport(
+                    WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(markupBean),
+                    property.getPropertyDescriptor().getName());
+            if (inlineEditorSupport == null) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException(
+                        "Missing inline editor support, markupBean=" + markupBean + ", property=" + property)); // NOI18N
+                return null;
+            }
+            
 
             HtmlTag tag = null;
 
@@ -241,14 +258,14 @@ public abstract class InlineEditor {
             }
 
             if ((tag != null) && tag.isFormMemberTag()) {
-                editor = FormComponentEditor.get(webform, xpath, box, markupBean, property);
+                editor = FormComponentEditor.get(webform, xpath, box, markupBean, property, inlineEditorSupport);
 
                 if (editor != null) {
                     return editor;
                 }
             }
 
-            editor = AttributeInlineEditor.get(webform, xpath, markupBean, property);
+            editor = AttributeInlineEditor.get(webform, xpath, markupBean, property, inlineEditorSupport);
 
             if (editor != null) {
                 return editor;
