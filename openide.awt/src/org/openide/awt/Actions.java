@@ -32,6 +32,7 @@ import java.awt.image.ImageProducer;
 import java.awt.image.RGBImageFilter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -70,8 +71,7 @@ import org.openide.util.actions.SystemAction;
 * @author   Jaroslav Tulach
 */
 public class Actions extends Object {
-    private static Icon BLANK_ICON = null;
-    private static Map/*<Action, Reference<JMenuItem>>*/ menuActionCache;
+    private static Map<Action, Reference<JMenuItem>> menuActionCache;
     private static Object menuActionLock = new Object();
 
     /** Shared instance of filter for disabled icons */
@@ -180,7 +180,7 @@ public class Actions extends Object {
     private static void setMenuActionConnection(JMenuItem menu, Action action) {
         synchronized (menuActionLock) {
             if (menuActionCache == null) {
-                menuActionCache = new WeakHashMap();
+                menuActionCache = new WeakHashMap<Action, Reference<JMenuItem>>();
 
                 Keymap map = (Keymap) Lookup.getDefault().lookup(Keymap.class);
 
@@ -190,13 +190,13 @@ public class Actions extends Object {
                         new Observer() {
                             public void update(Observable o, Object arg) {
                                 synchronized (menuActionLock) {
-                                    Iterator it = menuActionCache.entrySet().iterator();
+                                    Iterator<Map.Entry<Action, Reference<JMenuItem>>> it = menuActionCache.entrySet().iterator();
 
                                     while (it.hasNext()) {
-                                        Map.Entry entry = (Map.Entry) it.next();
-                                        Action act = (Action) entry.getKey();
-                                        WeakReference ref = (WeakReference) entry.getValue();
-                                        JMenuItem mn = (JMenuItem) ref.get();
+                                        Map.Entry<Action, Reference<JMenuItem>> entry = it.next();
+                                        Action act = entry.getKey();
+                                        Reference<JMenuItem> ref = entry.getValue();
+                                        JMenuItem mn = ref.get();
 
                                         if ((act != null) && (mn != null)) {
                                             KeyStroke actKey = (KeyStroke) act.getValue(Action.ACCELERATOR_KEY);
@@ -222,7 +222,7 @@ public class Actions extends Object {
                 }
             }
 
-            menuActionCache.put(action, new WeakReference(menu));
+            menuActionCache.put(action, new WeakReference<JMenuItem>(menu));
         }
     }
 
@@ -1027,7 +1027,7 @@ public class Actions extends Object {
     private static final class SubMenuBridge extends MenuBridge implements ChangeListener, DynamicMenuContent {
         /** model to obtain subitems from */
         private SubMenuModel model;
-        private List currentOnes;
+        private List<JMenuItem> currentOnes;
         private JMenuItem single;
         private JMenu multi;
         /** Constructor.
@@ -1039,7 +1039,7 @@ public class Actions extends Object {
             setMenuText(multi, (String)action.getValue(Action.NAME), popup);
             prepareMargins(one, action);
             prepareMargins(more, action);
-            currentOnes = new ArrayList();
+            currentOnes = new ArrayList<JMenuItem>();
             this.model = model;
         }
 
@@ -1123,7 +1123,7 @@ public class Actions extends Object {
                 }
                 multi.setEnabled(true);
             }
-            return (JMenuItem[])currentOnes.toArray(new JMenuItem[currentOnes.size()]);
+            return currentOnes.toArray(new JMenuItem[currentOnes.size()]);
             
         }
 
