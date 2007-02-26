@@ -443,9 +443,11 @@ public final class EarProject implements Project, AntProjectListener, FileChange
         
         private static final String[] TYPES = new String[] {
             "XML",                  // NOI18N
-            "ear-types",                 // NOI18N
+            "ear-types",            // NOI18N
             "wsdl",                 // NOI18N
-            "simple-files"          // NOI18N
+            "simple-files",         // NOI18N
+            "ant-script",           // NOI18N
+            "ant-task",             // NOI18N
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
