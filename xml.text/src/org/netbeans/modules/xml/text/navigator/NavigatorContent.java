@@ -22,7 +22,6 @@ package org.netbeans.modules.xml.text.navigator;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -35,7 +34,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -118,6 +116,8 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
     
     private boolean editorOpened = false;
     
+    private Icon waitIcon;
+
     private NavigatorContent() {
         setLayout(new BorderLayout());
         //init empty panel
@@ -310,7 +310,11 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
     
     private void showScanningPanel() {
         removeAll();
-        msgLabel.setIcon(WAIT_ICON);
+        if (waitIcon == null) {
+            waitIcon = new ImageIcon( Utilities.loadImage(
+            "org/netbeans/modules/xml/text/navigator/resources/wait.gif" ) ); //NOI18N
+        }
+        msgLabel.setIcon(waitIcon);
         msgLabel.setHorizontalAlignment(SwingConstants.LEFT);
         msgLabel.setForeground(Color.BLACK);
         msgLabel.setText(NbBundle.getMessage(NavigatorContent.class, "LBL_Scan"));
@@ -576,7 +580,5 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
         
     }
     
-    private static final Icon WAIT_ICON = new ImageIcon( Utilities.loadImage(
-            "org/netbeans/modules/xml/text/navigator/resources/wait.gif" ) ); //NOI18N
 }
 

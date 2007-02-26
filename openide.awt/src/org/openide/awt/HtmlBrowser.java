@@ -28,13 +28,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Iterator;
+import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
+import javax.imageio.ImageIO;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -82,12 +83,12 @@ public class HtmlBrowser extends JPanel {
     private static String homePage = null;
 
     /** Icons for buttons. */
-    private static Icon iBack;
-    private static Icon iForward;
-    private static Icon iHome;
-    private static Icon iReload;
-    private static Icon iStop;
-    private static Icon iHistory;
+    private Icon iBack;
+    private Icon iForward;
+    private Icon iHome;
+    private Icon iReload;
+    private Icon iStop;
+    private Icon iHistory;
 
     // variables .................................................................
 
@@ -253,11 +254,8 @@ public class HtmlBrowser extends JPanel {
      *  @return Component for content displaying
      */
     private static Component findComponent(Impl[] handle) {
-        Lookup.Result r = Lookup.getDefault().lookup(new Lookup.Template(Factory.class));
-        Iterator it = r.allInstances().iterator();
-
-        while (it.hasNext()) {
-            Factory f = (Factory) it.next();
+        Lookup.Result<Factory> r = Lookup.getDefault().lookup(new Lookup.Template<Factory>(Factory.class));
+        for (Factory f: r.allInstances()) {
 
             try {
                 Impl impl = f.createHtmlBrowserImpl();
@@ -295,30 +293,23 @@ public class HtmlBrowser extends JPanel {
     /**
     * Default initializations.
     */
-    private static void init() {
-        if (iBack != null) {
-            return;
+    private void init() {
+        try     {
+            if (iBack != null) {
+                return;
+            }
+            iBack = new javax.swing.ImageIcon(ImageIO.read(org.openide.awt.HtmlBrowser.class.getResource("/org/openide/resources/html/back.gif"))); // NOI18N
+            iForward = new javax.swing.ImageIcon(ImageIO.read(org.openide.awt.HtmlBrowser.class.getResource("/org/openide/resources/html/forward.gif"))); // NOI18N
+            iHome = new javax.swing.ImageIcon(ImageIO.read(org.openide.awt.HtmlBrowser.class.getResource("/org/openide/resources/html/home.gif"))); // NOI18N
+            iReload = new javax.swing.ImageIcon(ImageIO.read(org.openide.awt.HtmlBrowser.class.getResource("/org/openide/resources/html/refresh.gif"))); // NOI18N
+            iStop = new javax.swing.ImageIcon(ImageIO.read(org.openide.awt.HtmlBrowser.class.getResource("/org/openide/resources/html/stop.gif"))); // NOI18N
+            iHistory = new javax.swing.ImageIcon(ImageIO.read(org.openide.awt.HtmlBrowser.class.getResource("/org/openide/resources/html/history.gif"))); // NOI18N
         }
-
-        iBack = new ImageIcon(HtmlBrowser.class.getResource("/org/openide/resources/html/back.gif" // NOI18N
-                )
-            );
-        iForward = new ImageIcon(HtmlBrowser.class.getResource("/org/openide/resources/html/forward.gif" // NOI18N
-                )
-            );
-        iHome = new ImageIcon(HtmlBrowser.class.getResource("/org/openide/resources/html/home.gif" // NOI18N
-                )
-            );
-        iReload = new ImageIcon(HtmlBrowser.class.getResource("/org/openide/resources/html/refresh.gif" // NOI18N
-                )
-            );
-        iStop = new ImageIcon(HtmlBrowser.class.getResource("/org/openide/resources/html/stop.gif" // NOI18N
-                )
-            );
-        iHistory = new ImageIcon(HtmlBrowser.class.getResource("/org/openide/resources/html/history.gif" // NOI18N
-                )
-            );
-    }
+        catch (IOException ex) {
+            Logger.getLogger(HtmlBrowser.class.getName()).log(java.util.logging.Level.SEVERE,
+                                                             ex.getMessage(), ex);
+        }
+}
 
     /**
     * Default initialization of toolbar.

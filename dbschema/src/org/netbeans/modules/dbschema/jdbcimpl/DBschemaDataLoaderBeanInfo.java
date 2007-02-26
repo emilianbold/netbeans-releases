@@ -21,31 +21,9 @@ package org.netbeans.modules.dbschema.jdbcimpl;
 
 import java.awt.Image;
 import java.beans.*;
-import java.text.MessageFormat;
-
-import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class DBschemaDataLoaderBeanInfo extends SimpleBeanInfo {
-
-    static String getString (String key) {
-        return NbBundle.getMessage(DBschemaDataLoaderBeanInfo.class, key);
-    }
-
-    static String getString (String key, Object o1) {
-        return MessageFormat.format (getString (key), new Object[] { o1 });
-    }
-
-    static String getString (String key, Object o1, Object o2) {
-        return MessageFormat.format (getString (key), new Object[] { o1, o2 });
-    }
-    
-    static String getString (String key, Object o1, Object o2, Object o3) {
-        return MessageFormat.format (getString (key), new Object[] { o1, o2, o3 });
-    }
-    
-    static String getString (String key, Object o1, Object o2, Object o3, Object o4) {
-        return MessageFormat.format (getString (key), new Object[] { o1, o2, o3, o4 });
-    }
 
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
@@ -58,19 +36,11 @@ public class DBschemaDataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
 
-    private static Image icon, icon32;
-    
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            if (icon == null)
-                icon = loadImage ("DBschemaDataIcon.gif"); //NOI18N
-            
-            return icon;
+            return Utilities.loadImage("org/netbeans/modules/dbschema/jdbcimpl/DBschemaDataIcon.gif"); //NOI18N
         } else {
-            if (icon32 == null)
-                icon32 = loadImage ("DBschemaDataIcon32.gif"); //NOI18N
-            
-            return icon32;
+            return Utilities.loadImage("org/netbeans/modules/dbschema/jdbcimpl/DBschemaDataIcon32.gif"); //NOI18N
         }
     }
 
