@@ -29,6 +29,9 @@
   the build.properties file.
 -->
 <project name="[name]-group" default="usage" basedir=".">
+    <!-- import the properties that are specific to this environment -->
+    <property file="${environment.properties}"/>
+    
     <!-- import the properties that are specific to this group package -->
     <property file="build.properties"/>
     

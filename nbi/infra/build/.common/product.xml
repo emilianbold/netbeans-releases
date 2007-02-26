@@ -135,7 +135,7 @@
     <target name="-clean" depends="-clean-engine,.clean">
         <!-- remove the product's distributive file from the distributives 
              directory -->
-        <delete file="${dist.dir}/${product.jar.file}"/>
+        <delete file="${dist.dir}/${product.dist.file.name}"/>
     </target>
     
     <!--
@@ -164,7 +164,7 @@
             
             <arg value="-Dengine.dist.file.name=${engine.dist.file}"/>
             
-            <arg line="-propertyfile ${properties.file}"/>
+            <arg line="-propertyfile ${environment.properties}"/>
         </exec>
     </target>
     
@@ -227,13 +227,13 @@
                   value="${product.disk.space.modificator}"/>
         
         <!-- fetch the configuration logic jars -->
-        <mkdir dir="${work.dir}/${product.logic.dir}"/>
+        <mkdir dir="${product.logic.dir}"/>
         <for-each from="1" to="${product.logic.length}" property="i">
             <!-- set the properties relevant to the current file -->
             <set property="current.uri" 
                  source="product.logic.${i}.uri"/>
             <set property="current.file" 
-                 value="${work.dir}/${product.logic.dir}/${product.logic.file}"/>
+                 value="${product.logic.dir}/${product.logic.file}"/>
             
             <get src="${current.uri}" dest="${current.file}"/>
             
@@ -252,32 +252,41 @@
         </for-each>
         
         <!-- fetch and repackage installation data zips -->
-        <mkdir dir="${work.dir}/${product.data.dir}"/>
+        <mkdir dir="${product.data.dir}"/>
         <for-each from="1" to="${product.data.length}" property="i">
             <!-- define the path to the current working file and the temporary
                  directory which should be used for repackaging -->
             <set 
-                property="current.file" 
-                value="${work.dir}/${product.data.dir}/${product.data.file}"/>
+                property="current.uri" 
+                source="product.data.${i}.uri"/>
             <set 
-                property="current.temp" 
-                value="${work.dir}/${product.data.dir}/tmpdir"/>
-            <set property="current.uri" 
-                 source="product.data.${i}.uri"/>
-            <set property="current.packaged.uri" 
-                 source="product.packaged.data.${i}.file"/>
-            <set property="current.packaged.size.uri" 
-                 source="product.packaged.data.${i}.size.file"/>
-            <set property="current.size.file" 
-                 value="${work.dir}/size"/>
+                property="current.file" 
+                value="${product.data.dir}/${product.data.file}"/>
+            <set 
+                property="current.temp.dir" 
+                value="${product.data.dir}/tmpdir"/>
+            
+            <set 
+                property="current.packaged.data.file" 
+                value="${product.packaged.data.file}"/>
+            <set 
+                property="current.packaged.data.properties.file" 
+                value="${product.packaged.data.properties.file}"/>
             
             <condition property="do.package.data" value="true">
                 <or>
                     <equals arg1="${package.data}" arg2="true"/>
                     <and>
-                        <equals arg1="${package.data}" arg2="default"/>
+                        <equals 
+                            arg1="${package.data}" 
+                            arg2="default"/>
                         <not>
-                            <available file="${current.packaged.uri}"/>
+                            <and>
+                                <available 
+                                    file="${current.packaged.data.file}"/>
+                                <available 
+                                    file="${current.packaged.data.properties.file}"/>
+                            </and>
                         </not>
                     </and>
                 </or>
@@ -286,45 +295,55 @@
                 <or>
                     <equals arg1="${package.data}" arg2="false"/>
                     <and>
-                        <equals arg1="${package.data}" arg2="default"/>
-                        <available file="${current.packaged.uri}"/>
+                        <equals 
+                            arg1="${package.data}" 
+                            arg2="default"/>
+                        <available 
+                            file="${current.packaged.data.file}"/>
+                        <available 
+                            file="${current.packaged.data.properties.file}"/>
                     </and>
                 </or>
             </condition>
             
             <!-- if the data needs to be packaged -->
             <if property="do.package.data" value="true">
-                <get src="${current.uri}" dest="${current.file}"/>
+                <get 
+                    src="${current.uri}" 
+                    dest="${current.file}"/>
                 
                 <!-- extract the zip file to a temporary directory -->
-                <mkdir dir="${current.temp}"/>
-                <unzip src="${current.file}" dest="${current.temp}"/>
+                <mkdir 
+                    dir="${current.temp.dir}"/>
+                <unzip 
+                    src="${current.file}" 
+                    dest="${current.temp.dir}"/>
                 
                 <!-- measure its size and add it to the required disk space -->
-                <sizeof file="${current.temp}" property="current.disk.space"/>
-                <sum arg1="${product.disk.space}" arg2="${current.disk.space}" 
-                     property="product.disk.space"/>
+                <sizeof 
+                    file="${current.temp.dir}" 
+                    property="current.disk.space"/>
+                <sum 
+                    arg1="${product.disk.space}" 
+                    arg2="${current.disk.space}" 
+                    property="product.disk.space"/>
                 
                 <!-- repackage (pack200, jar) and build files list -->
-                <package directory="${current.temp}" file="${current.file}"/>
+                <package 
+                    directory="${current.temp.dir}" 
+                    file="${current.file}"/>
                 
                 <!-- if we need to release the packaged data - copy the file 
                      and the original size to the specified directory -->
                 <if property="release.packaged.data" value="true">
-                    <mkdir dir="${product.packaged.data.repository}"/>
-                    
-                    <set 
-                        property="release.data.file"
-                        value="${product.packaged.data.repository}/${product.release.data.file}"/>
-                    <set 
-                        property="release.size.file"
-                        value="${release.data.file}.size"/>
+                    <mkdir 
+                        dir="${packaged.data.dir}"/>
                     
                     <copy file="${current.file}" 
-                          tofile="${release.data.file}"/>
+                          tofile="${current.packaged.data.file}"/>
                     <echo 
-                        message="product.packaged.data.${i}.real.size=${current.disk.space}" 
-                        file="${release.size.file}"/>
+                        message="product.packaged.data.${i}.original.size=${current.disk.space}" 
+                        file="${current.packaged.data.properties.file}"/>
                 </if>
                 
                 <!-- remove the temporary directory -->
@@ -333,42 +352,52 @@
             
             <!-- if the data does not need to be packaged -->
             <if property="do.package.data" value="false">
-                <copy file="${current.packaged.uri}" tofile="${current.file}"/>                              
+                <copy 
+                    file="${current.packaged.data.file}" 
+                    tofile="${current.file}"/>                              
                 
                 <!-- fetch the real size data -->
-                <copy file="${current.packaged.size.uri}" 
-                      tofile="${current.size.file}"/>
-                <property file="${current.size.file}"/>
+                <property 
+                    file="${current.packaged.data.properties.file}"/>
                 
-                <set property="current.disk.space" 
-                     source="product.packaged.data.${i}.real.size"/>
-                <sum arg1="${product.disk.space}" arg2="${current.disk.space}" 
-                     property="product.disk.space"/>
+                <set 
+                    property="current.disk.space" 
+                    source="product.packaged.data.${i}.original.size"/>
+                <sum 
+                    arg1="${product.disk.space}" 
+                    arg2="${current.disk.space}" 
+                    property="product.disk.space"/>
             </if>
             
             <!-- sign the resulting jar file -->
-            <signjar jar="${current.file}" 
-                     keystore="${jarsigner.keystore}"
-                     storepass="${jarsigner.storepass}"
-                     alias="${jarsigner.alias}"
-                     maxmemory="${jarsigner.xmx}"/>
+            <signjar 
+                jar="${current.file}" 
+                keystore="${jarsigner.keystore}"
+                storepass="${jarsigner.storepass}"
+                alias="${jarsigner.alias}"
+                maxmemory="${jarsigner.xmx}"/>
             
             <!-- calculate the metadata for the file -->
-            <sizeof file="${current.file}" property="product.data.${i}.size"/>
-            <md5 file="${current.file}" property="product.data.${i}.md5"/>
-            <set property="product.data.${i}.uri"
-                 value="resource:${product.data.dir}/${product.data.file}"/>
+            <sizeof 
+                file="${current.file}" 
+                property="product.data.${i}.size"/>
+            <md5 
+                file="${current.file}" 
+                property="product.data.${i}.md5"/>
+            <set 
+                property="product.data.${i}.uri"
+                value="resource:${product.data.dir}/${product.data.file}"/>
         </for-each>
         
         <!-- fetch the icon -->
         <copy 
             file="${product.icon}" 
-            tofile="${work.dir}/${product.icon.file}"/>
+            tofile="${product.icon.file}"/>
         <sizeof 
-            file="${work.dir}/${product.icon.file}" 
+            file="${product.icon.file}" 
             property="product.icon.size"/>
         <md5 
-            file="${work.dir}/${product.icon.file}" 
+            file="${product.icon.file}" 
             property="product.icon.md5"/>
         <set 
             property="product.icon.uri"
@@ -379,42 +408,34 @@
             basename="${product.bundle}" 
             list="product.locales.list"/>
         <product-descriptor 
-            file="${work.dir}/${product.descriptor.file}"/>
-        
-        <!-- generate the manifest file -->
-        <echo file="${work.dir}/${product.jar.manifest.file}" 
-              message="Manifest-Version: " 
-              append="false"/>
-        <echo file="${work.dir}/${product.jar.manifest.file}" 
-              message="1.0${line.separator}" 
-              append="true"/>
-        
-        <echo file="${work.dir}/${product.jar.manifest.file}" 
-              message="Product-Descriptor: " 
-              append="true"/>
-        <echo file="${work.dir}/${product.jar.manifest.file}" 
-              message="${product.descriptor.file}${line.separator}" 
-              append="true"/>
+            file="${product.descriptor.file}"/>
         
         <!-- create the distributive jar file -->
-        <jar destfile="${work.dir}/${product.jar.file}" 
-             compress="true" 
-             manifest="${work.dir}/${product.jar.manifest.file}">
+        <jar destfile="${work.dir}/${product.dist.file.name}" 
+             compress="true">
+            <manifest>
+                <attribute 
+                    name="Product-Descriptor" 
+                    value="${product.descriptor.file}"/>
+            </manifest>
             <fileset dir="${work.dir}">
-                <include name="${product.dir}"/>
-                <include name="${product.dir}/**"/>
-                <include name="${product.descriptor.file}"/>
+                <include name="${product.path}"/>
+                <include name="${product.path}/**"/>
             </fileset>
+            <fileset file="${product.descriptor.file}"/>
         </jar>
         
-        <copy file="${work.dir}/${product.jar.file}" todir="${dist.dir}"/>
+        <copy 
+            file="${work.dir}/${product.dist.file.name}" 
+            todir="${dist.dir}"/>
         
         <!-- sign it -->
-        <signjar jar="${dist.dir}/${product.jar.file}" 
-                 keystore="${jarsigner.keystore}"
-                 storepass="${jarsigner.storepass}"
-                 alias="${jarsigner.alias}"
-                 maxmemory="${jarsigner.xmx}"/>
+        <signjar 
+            jar="${dist.dir}/${product.dist.file.name}" 
+            keystore="${jarsigner.keystore}"
+            storepass="${jarsigner.storepass}"
+            alias="${jarsigner.alias}"
+            maxmemory="${jarsigner.xmx}"/>
     </target>
     
     <!--
@@ -445,7 +466,7 @@
             
             <arg value="-Dengine.dist.file.name=${engine.dist.file}"/>
             
-            <arg line="-propertyfile ${properties.file}"/>
+            <arg line="-propertyfile ${environment.properties}"/>
         </exec>
     </target>
     
@@ -473,7 +494,7 @@
                          uid="${release.parent.uid}"
                          version="${release.parent.version}"
                          platforms="${product.platforms}"
-                         archive="${work.dir}/${product.jar.file}"/>
+                         archive="${dist.dir}/${product.dist.file.name}"/>
     </target>
     
     <!-- =======================================================================

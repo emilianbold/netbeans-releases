@@ -21,14 +21,17 @@
 ============================================================================ -->
 
 <!--
-  This is the build script for [name] NBI engine instance.
+  This is the build script for [name] nbi engine instance.
   
-  It inherits most of the functionality from the base script for building NBI 
+  It inherits most of the functionality from the base script for building nbi 
   engine instances, while providing this instance-specific values for several
   core properties. For more details on the values of these properties see
   the build.properties file.
 -->
 <project name="[name]-engine" default="usage" basedir=".">
+    <!-- import the properties that are specific to this environment -->
+    <property file="${environment.properties}"/>
+    
     <!-- import the properties that are specific to this engine instance -->
     <property file="build.properties"/>
     

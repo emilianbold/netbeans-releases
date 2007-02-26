@@ -660,7 +660,7 @@
         <mkdir dir="${nbproject.dist.dir}"/>
         
         <jar manifest="${cvs.dir}/${nbproject.path}/${nbproject.manifest}" 
-             destfile="${nbproject.dist.dir}/${nbproject.dist.file}">
+             destfile="${nbproject.dist.dir}/${nbproject.dist.file.name}">
             <fileset dir="${cvs.dir}/${nbproject.path}/build/classes">
                 <include name="**/*.*"/>
             </fileset>

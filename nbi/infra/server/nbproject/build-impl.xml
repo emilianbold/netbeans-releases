@@ -289,7 +289,7 @@ is divided into following sections:
             </sourcepath>
         </nbjpdaconnect>
     </target>
-    <target name="run-debug-appclient" depends="init" if="can.debug.appclient">
+    <target name="run-debug-appclient" depends="init,-init-debug-args" if="can.debug.appclient">
         <macrodef name="debug-appclient" uri="http://www.netbeans.org/ns/j2ee-earproject/2">
             <attribute name="mainclass"/>
             <attribute name="classpath" default="${debug.classpath}"/>
@@ -299,9 +299,7 @@ is divided into following sections:
                 <parallel>
                     <java fork="true" classname="@{mainclass}">
                         <jvmarg line="${j2ee.appclient.tool.jvmoptions}"/>
-                        <jvmarg value="-Xdebug"/>
-                        <jvmarg value="-Xnoagent"/>
-                        <jvmarg value="-Djava.compiler=none"/>
+                        <jvmarg line="${debug-args-line}"/>
                         <jvmarg value="-Xrunjdwp:transport=${jpda.transport},server=y,address=${jpda.address},suspend=y"/>
                         <jvmarg line="${j2ee.appclient.jvmoptions.param}"/>
                         <arg line="@{args}"/>

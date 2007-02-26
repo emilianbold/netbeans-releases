@@ -36,7 +36,7 @@ is divided into following sections:
         <property file="nbproject/private/private.properties"/>
     </target>
     <target name="-init-user" depends="-pre-init,-init-private">
-        <property file="${user.properties.file}"/>
+        <property file="${user.environment.properties}"/>
         <!-- The two properties below are usually overridden -->
         <!-- by the active platform. Just a fallback. -->
         <property name="default.javac.source" value="1.4"/>
