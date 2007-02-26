@@ -461,7 +461,7 @@ public class JavaClassUtils {
 
     public static void findAndDeleteSymbolsByName(String fileName) {
         Log.out("The file to delete is " + fileName);
-        IProject proj = UMLSupport.getProjectForPath(fileName);
+        IProject proj = null; /* NB60TBD UMLSupport.getProjectForPath(fileName);*/
 
         // Default to the current project if there's nothing better
         if (proj == null)

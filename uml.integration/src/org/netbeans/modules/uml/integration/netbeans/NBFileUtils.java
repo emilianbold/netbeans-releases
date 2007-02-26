@@ -28,12 +28,12 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.jmi.javamodel.Codebase;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.openide.cookies.SourceCookie;
+//import org.netbeans.jmi.javamodel.Codebase;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.JavaModelPackage;
+//import org.netbeans.jmi.javamodel.Resource;
+//import org.netbeans.modules.javacore.api.JavaModel;
+//import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -42,9 +42,9 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.src.ClassElement;
-import org.openide.src.Identifier;
-import org.openide.src.SourceElement;
+//import org.openide.src.ClassElement;
+//import org.openide.src.Identifier;
+//import org.openide.src.SourceElement;
 
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import org.netbeans.modules.uml.integration.ide.JavaClassUtils;
@@ -234,6 +234,7 @@ public class NBFileUtils
      * @return The NetBeans SourceElement or null if not found.
      * @deprecated Use findResource() instead.
      */
+    /* NB60TBD
     public SourceElement findSourceFile(String filename)
     {
         Log.entry("Entering function NBFileUtils::findSourceFile");
@@ -269,7 +270,8 @@ public class NBFileUtils
         }
         return retVal;
     }
-    
+    */
+    /* NB60TBD
     public static Resource findResource(String filename)
     {
         Log.entry("Entering function NBFileUtils::findResource(String)");
@@ -283,7 +285,7 @@ public class NBFileUtils
             retVal = JavaModel.getResource(fo);
         return retVal;
     }
-    
+    */
     public static FileObject findFileObject(String fullPath)
     {
         Log.entry("Entering function NBFileUtils::findFileObject");
@@ -437,6 +439,7 @@ public class NBFileUtils
      * @param sym The symbol used to find a ClassElement.
      * @deprecated Use findJavaClass() instead.
      */
+    /* NB60TBD
     public ClassElement findClass(ClassInfo clazz)
     {
         Log.entry("Entering function NBFileUtils::findClassFromSymbol");
@@ -482,12 +485,13 @@ public class NBFileUtils
         }
         return retVal;
     }
-    
+    */
     /**
      * Finds the JavaClass that represents the class symbol.  The method
      * will only operate on CLD_Class symbols.
      * @param sym The symbol used to find a ClassElement.
      */
+    /* NB60TBD
     public static JavaClass findJavaClass(ClassInfo clazz)
     {
         Log.entry("Entering function NBFileUtils::findJavaClass");
@@ -539,7 +543,8 @@ public class NBFileUtils
         }
         return retVal;
     }
-    
+    */
+    /* NB60TBD
     public static JavaClass getTopLevel(Resource resource, String simpleName)
     {
         for (Iterator it = resource.getClassifiers().iterator(); it.hasNext();)
@@ -552,7 +557,8 @@ public class NBFileUtils
         }
         return null;
     }
-    
+    */
+
     /**
      * Retrieve the source file that contains the implementation of the Describe
      * class symbol.  The class symbol must be a CLD_Class symbol.
@@ -560,6 +566,7 @@ public class NBFileUtils
      * @return The source element or null if the file is not found.
      * @deprecated Use findResource() instead.
      */
+    /* NB60TBD
     public SourceElement findSourceFile(ClassInfo clazz)
     {
         Log.entry("Entering function NBFileUtils::findSourceFileFromSymbol");
@@ -584,7 +591,8 @@ public class NBFileUtils
         
         return retVal;
     }
-    
+    */    
+    /* NB60TBD
     public static Resource findResource(ClassInfo clazz)
     {
         Log.entry("Entering function NBFileUtils::findResource");
@@ -611,7 +619,7 @@ public class NBFileUtils
         
         return retVal;
     }
-    
+    */
     //    /**
     //     * get the Associated
     //     *
@@ -851,6 +859,7 @@ public class NBFileUtils
      * the file system that contains the file.
      * @param clazz The class used to retrieve the file name.
      */
+    /* NB60TBD
     public static String getFilename(ClassElement clazz)
     {
         Log.entry("Entering function NBFileUtils::getFilename");
@@ -865,7 +874,7 @@ public class NBFileUtils
         }
         return retVal;
     }
-    
+    */
     
     /**
      *  Signals that a file that was expected to be writable was found read-only.
@@ -885,7 +894,7 @@ public class NBFileUtils
             super("The file '" + file + "' is unwritable."); // NOI18N
         }
     }
-    
+    /* NB60TBD
     public static String getFilename(JavaClass clazz)
     {
         String retVal = null;
@@ -901,6 +910,7 @@ public class NBFileUtils
         }
         return retVal;
     }
+    */
     
     public static String getSimpleName(String resource)
     {
@@ -943,6 +953,7 @@ public class NBFileUtils
         return resource;
     }
     
+    /* NB60TBD
     public static String getFileNameForResource(Resource resource)
     {
         String retVal = null;
@@ -956,4 +967,5 @@ public class NBFileUtils
         retVal = retVal.replace("%20"," ");
         return retVal;
     }
+    */
 }

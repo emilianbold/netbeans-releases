@@ -34,11 +34,11 @@ import org.openide.util.Lookup;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import org.netbeans.modules.uml.integration.ide.DefaultSinkManager;
 import org.netbeans.modules.uml.integration.ide.UMLSupport;
-import org.netbeans.modules.uml.integration.netbeans.FileSystemInitializer;
+//import org.netbeans.modules.uml.integration.netbeans.FileSystemInitializer;
 import org.netbeans.modules.uml.integration.netbeans.FileSystemListener;
-import org.netbeans.modules.uml.integration.netbeans.NBEventProcessor;
-import org.netbeans.modules.uml.integration.netbeans.NBOperationListener;
-import org.netbeans.modules.uml.integration.netbeans.NBSourceNavigator;
+//import org.netbeans.modules.uml.integration.netbeans.NBEventProcessor;
+//import org.netbeans.modules.uml.integration.netbeans.NBOperationListener;
+//import org.netbeans.modules.uml.integration.netbeans.NBSourceNavigator;
 
 
 
@@ -56,10 +56,10 @@ public class IDEIntegrationModule  extends ModuleInstall
     
     private static final String SAVE_ALL_ID =
         "org-openide-actions-SaveAllAction";
-    
+    /* NB60TBD
     private static NBEventProcessor eventProcessor =
         new NBEventProcessor();
-    
+    */
     public void init()
     {
 //        initializeSinkManager();
@@ -278,7 +278,7 @@ public class IDEIntegrationModule  extends ModuleInstall
     {
         Log.entry("Entering function DescribeModule::uninstalled");
         
-        NBOperationListener.removeListeners();
+        //NBOperationListener.removeListeners();
 //        ResourceBundle bundle = NbBundle.getBundle(DescribeModule.class);
         
 //        removeMenus();
@@ -321,10 +321,12 @@ public class IDEIntegrationModule  extends ModuleInstall
 //        super.validate();
 //    }
 
+    /* NB60TBD
     public static NBEventProcessor getEventProcessor()
     {
         return eventProcessor;
     }
+    */
     
     
 }

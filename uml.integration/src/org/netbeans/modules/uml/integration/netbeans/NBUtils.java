@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.uml.integration.netbeans;
 
-import org.netbeans.jmi.javamodel.CallableFeature;
+//import org.netbeans.jmi.javamodel.CallableFeature;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -40,17 +40,17 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
 //import org.netbeans.modules.projects.CurrentProjectNode;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.TypeReference;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.TypeReference;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
-import org.openide.src.ClassElement;
-import org.openide.src.ConstructorElement;
-import org.openide.src.FieldElement;
-import org.openide.src.Identifier;
-import org.openide.src.MethodParameter;
-import org.openide.src.SourceElement;
+//import org.openide.src.ClassElement;
+//import org.openide.src.ConstructorElement;
+//import org.openide.src.FieldElement;
+//import org.openide.src.Identifier;
+//import org.openide.src.MethodParameter;
+//import org.openide.src.SourceElement;
 import org.openide.util.NbBundle;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -65,13 +65,13 @@ import org.netbeans.modules.uml.integration.ide.events.MemberInfo;
 import org.netbeans.modules.uml.integration.ide.events.MethodInfo;
 import org.netbeans.modules.uml.integration.ide.events.MethodParameterInfo;
 import java.util.Collection;
-import org.netbeans.jmi.javamodel.Constructor;
-import org.netbeans.jmi.javamodel.Field;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.jmi.javamodel.Constructor;
+//import org.netbeans.jmi.javamodel.Field;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.jmi.javamodel.Parameter;
+//import org.netbeans.jmi.javamodel.Type;
+//import org.netbeans.modules.javacore.api.JavaModel;
 
 /**
  *  Utility functions for general NetBeans housekeeping. Try not to put in
@@ -556,6 +556,7 @@ public final class NBUtils {
      *         decorated name. Decorated names use '.' to separate package
      *         names and '$' to separate (inner) class names.
      */
+    /* NB60TBD 
     public static String getDecoratedName(ClassElement clazz) {
         if (clazz == null) return null;
 
@@ -563,10 +564,12 @@ public final class NBUtils {
         String name = getTypeQualifiedName(clazz);
         return pack.length() > 0? (pack + "." + name) : name;
     }
+    */
 
+    /* NB60TBD 
     public static String getDecoratedName(JavaClass clazz) {
         if (clazz == null) return null;
-        /*fully qualified decorated name minus the package prefix*/
+       */  /*fully qualified decorated name minus the package prefix*/ /* NB60TBD 
         String typeQualifiedName = "";
         
         String fullName = clazz.getName();
@@ -577,7 +580,7 @@ public final class NBUtils {
         return packageName.length() > 0? (packageName + "." + typeQualifiedName) : typeQualifiedName;
 
     }
-
+*/
     /**
      *  Returns the package name for the given ClassElement.
      * @param clazz The ClassElement.
@@ -585,6 +588,7 @@ public final class NBUtils {
      *         ClassElements in the default package). The name will always be
      *         trimmed.
      */
+    /* NB60TBD 
     public static String getPackageName(ClassElement clazz) {
         if (clazz == null) return null;
 
@@ -592,7 +596,7 @@ public final class NBUtils {
         Identifier id = source.getPackage();
         return (id != null ? id.getFullName().trim() : "");
     }
-
+    */
     /**
      * Returns the name of the current project.
      * @return The <code>String</code> name of the current project.
@@ -619,6 +623,7 @@ public final class NBUtils {
      *         a package prefix. Note that inner class names will be separated
      *         by '$'.
      */
+    /* NB60TBD 
     public static String getTypeQualifiedName(ClassElement clazz) {
         if (clazz == null) return null;
 
@@ -627,7 +632,7 @@ public final class NBUtils {
 
         return getTypeQualifiedName(pack, name, null);
     }
-
+    */
     /**
      *  Returns the fully qualified decorated name of a ClassElement (given its
      * name Identifier) <em>minus</em> the package prefix.
@@ -649,6 +654,7 @@ public final class NBUtils {
      *         always a bad thing). Note that inner class names will be
      *         separated by '$' (all '.' are replaced by '$') in all cases.
      */
+    /* NB60TBD 
     public static String getTypeQualifiedName(String packageName,
                                               Identifier id,
                                               ClassElement clazz) {
@@ -670,7 +676,7 @@ public final class NBUtils {
 
         return fullName.replace('.', '$');
     }
-
+    */
     /**
      *  Retrieves a ConstructorElement for the given MethodInfo. This works
      * for both constructors and normal methods.
@@ -750,6 +756,7 @@ methodHunt:
      * @return A <code>CallableFeature</code> for the method, if found, or
      *         <code>null</code> otherwise.
      */
+    /* NB60TBD 
     public static CallableFeature getMethod(MethodInfo method,boolean isConstructor)
     {
         CallableFeature mElement = null;
@@ -796,7 +803,7 @@ methodHunt:
         }
         return mElement;
     }
-
+    */
     private static String umlTypeToType(String umlType) {
         
         String retVal = umlType;
@@ -811,6 +818,7 @@ methodHunt:
         return retVal;
     }
     
+    /* NB60TBD 
     private static CallableFeature resolveMethod(MethodInfo method, 
                                                  JavaClass clazz,
                                                  boolean isConstructor)
@@ -929,6 +937,7 @@ methodHunt:
         
         return retVal;
     }
+    */
     
 //    public static CallableFeature getCallableFeature(MethodInfo method,boolean isConstructor) {
 //        CallableFeature mElement = null;
@@ -978,6 +987,7 @@ methodHunt:
      * @return The <code>FieldElement</code> corresponding to the MemberInfo, or
      *         <code>null</code> if a FieldElement could not be found.
      */
+/* NB60TBD 
     public static FieldElement getFieldElement(MemberInfo attr) {
         if (attr == null) return null;
         ClassInfo ci = attr.getContainingClass();
@@ -988,7 +998,8 @@ methodHunt:
 
         return ce.getField(Identifier.create(attr.getName()));
     }
-    
+*/    
+/* NB60TBD 
     public static Field getField(MemberInfo attr) {
         if (attr == null) return null;
         ClassInfo ci = attr.getContainingClass();
@@ -999,12 +1010,13 @@ methodHunt:
 
         return ce.getField(attr.getName(), false);
     }
-
+*/
     /**
      *  Updates a ClassInfo to the Describe model.
      * @param ci The <code>ClassInfo</code> containing information to be updated
      *           to the Describe model.
      */
+/* NB60TBD 
     synchronized public static void update(final ClassInfo ci) {
         // EARLY EXIT
         if (EventManager.isRoundTripActive()) return ;
@@ -1021,6 +1033,7 @@ methodHunt:
         };
         UMLSupport.getUMLSupport().getRoundtripQueue().queueRunnable(r);
     }
+*/
     //////////////////// End source code utility functions ////////////////////
 
     ///////////////////////////////////////////////////////////////////////

@@ -118,9 +118,9 @@ import com.tomsawyer.drawing.geometry.TSConstPoint;
 import com.tomsawyer.editor.TSTransform;
 import java.util.StringTokenizer;
 
-import org.openide.cookies.SourceCookie;
+//import org.openide.cookies.SourceCookie;
 import org.openide.explorer.ExplorerManager;
-import org.openide.src.SourceElement;
+//import org.openide.src.SourceElement;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.modules.uml.ui.swing.testbed.addin.menu.Separator;
@@ -569,12 +569,14 @@ public abstract class ETDrawEngine extends ETTransformOwner implements IDrawEngi
                 }
 
                 String clsName = element.getName();
+		/* NB60TBD
                 org.openide.src.Identifier clsIdent = org.openide.src.Identifier.create(clsName, clsName);
                 for (int x = 0; x < nodes.length; x++) {
                     if (!isUnderClass(pkgName, clsIdent, nodes[x])) {
                         list.add(nodes[x]);
                     }
                 }
+		*/ 
                 try {
                     em.setSelectedNodes((org.openide.nodes.Node[])list.toArray(new org.openide.nodes.Node[list.size()]));
                 } catch (java.beans.PropertyVetoException e) {
@@ -582,6 +584,7 @@ public abstract class ETDrawEngine extends ETTransformOwner implements IDrawEngi
             }
         }
         
+	    /* NB60TBD
         private boolean isUnderClass(String pkgName, org.openide.src.Identifier clsName, org.openide.nodes.Node node) {
             SourceCookie cookie = null;
             while (node != null && cookie == null) {
@@ -600,6 +603,7 @@ public abstract class ETDrawEngine extends ETTransformOwner implements IDrawEngi
             }
             return false;
         }
+	    */
 
 	/* (non-Javadoc)
 		* @see org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine#anchorMouseEvent(org.netbeans.modules.uml.ui.support.viewfactorysupport.IMouseEvent, org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment)

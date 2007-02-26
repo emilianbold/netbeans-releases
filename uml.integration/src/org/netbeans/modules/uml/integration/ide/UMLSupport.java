@@ -32,15 +32,15 @@ import java.util.StringTokenizer;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Resource;
+//import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.uml.common.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.src.ClassElement;
+//import org.openide.src.ClassElement;
 
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.coreapplication.CoreProductManager;
@@ -61,7 +61,7 @@ import org.netbeans.modules.uml.integration.ide.listeners.IEnumLiteralChangeList
 import org.netbeans.modules.uml.integration.ide.listeners.IOperationChangeListener;
 import org.netbeans.modules.uml.integration.netbeans.NBFileUtils;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
-import org.netbeans.modules.uml.project.ui.java.UMLJavaAssociationUtil;
+//import org.netbeans.modules.uml.project.ui.java.UMLJavaAssociationUtil;
 import org.openide.util.NbBundle;
 
 
@@ -297,6 +297,7 @@ public class UMLSupport
         return retVal;
     }
     
+    /* NB60TBD
     public static IProject getProjectForPath(String filename)
     {
         IProject retVal = null;
@@ -343,6 +344,8 @@ public class UMLSupport
         return retVal;
         
     }
+    */
+    /* NB60TBD
     public IProject getProjectForClassElement(ClassElement el)
     {
         String retVal = null;
@@ -354,6 +357,8 @@ public class UMLSupport
         }
         return iproj;
     }
+    */
+    /* NB60TBD
     public String getProjectName(ClassElement el)
     {
         String retVal = null;
@@ -375,7 +380,8 @@ public class UMLSupport
         }
         return retVal;
     }
-    
+    */    
+/* NB60TBD 
     public static String getFileName(JavaClass clazz)
     {
         String retVal = null;
@@ -390,6 +396,8 @@ public class UMLSupport
         }
         return retVal;
     }
+*/
+/* NB60TBD 
     public static String getFileName(Resource resource)
     {
         String retVal = null;
@@ -402,7 +410,7 @@ public class UMLSupport
         }
         return retVal;
     }
-    
+*/    
     public static IWorkspace getCurrentWorkspace()
     {
         return null;

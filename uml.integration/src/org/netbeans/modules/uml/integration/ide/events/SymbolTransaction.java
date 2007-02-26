@@ -132,7 +132,7 @@ public class SymbolTransaction {
         Log.out("Inside setSymbol ..");
         // First set the symbol to null to allow the current symbol to be GC
         mGDSymbol = null;
-        IProject system = UMLSupport.getProjectForPath(info.getFilename());
+        IProject system = null; /* NB60TBD UMLSupport.getProjectForPath(info.getFilename()); */
 //        IProject system = UMLSupport.getCurrentProject();
 //        IProject system = info.getProject();
         if(system != null) {

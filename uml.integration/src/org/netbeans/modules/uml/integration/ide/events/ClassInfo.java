@@ -773,7 +773,7 @@ public class ClassInfo extends ElementInfo
     public void update()
     {
         UMLSupport support = UMLSupport.getUMLSupport();
-        IProject proj = UMLSupport.getProjectForPath(getFilename());
+        IProject proj = null; /* NB60TBD  UMLSupport.getProjectForPath(getFilename());*/
         if(proj != null)
         {
             support.getProjectManager().setCurrentProject(proj);

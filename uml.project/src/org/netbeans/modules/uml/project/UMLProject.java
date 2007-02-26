@@ -36,7 +36,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 
-import org.netbeans.api.mdr.events.MDRChangeListener;
+//import org.netbeans.api.mdr.events.MDRChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -119,9 +119,10 @@ public class UMLProject implements Project, AntProjectListener
     
     public static final int PROJECT_LANG_JAVA = 0;
     public static final String PROJECT_LANG_JAVA_STR = "Java"; // NOI18N
+    /* NB60TBD
     public static HashMap<String,MDRChangeListener> listenerMap =
             new HashMap<String,MDRChangeListener>();
-    
+    */
     /**
      * I am attempting to define an AntArtifact type so that we can
      *leverage all of the AntHelper and ReferenceHelper features when

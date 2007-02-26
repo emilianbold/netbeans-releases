@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.modules.uml.project</code-name-base>
             <suite-component/>
             <module-dependencies>
-                <dependency>
+                <!--dependency>
                     <code-name-base>javax.jmi.reflect</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                         <specification-version>1.5.1</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency-->
                 <dependency>
                     <code-name-base>org.jdesktop.layout</code-name-base>
                     <build-prerequisite/>
@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>1.8.1</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
+                <!--dependency>
                     <code-name-base>org.netbeans.api.mdr</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -59,8 +59,8 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                         <specification-version>1.2.1</specification-version>
                     </run-dependency>
-                </dependency>
-                <dependency>
+                </dependency-->
+                <!--dependency>
                     <code-name-base>org.netbeans.jmi.javamodel</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -77,8 +77,8 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                         <specification-version>1.9.22.1</specification-version>
                     </run-dependency>
-                </dependency>
-                <dependency>
+                </dependency-->
+                <!--dependency>
                     <code-name-base>org.netbeans.modules.java</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -86,7 +86,7 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                         <specification-version>1.23.1.2.2.2</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency-->
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.project</code-name-base>
                     <build-prerequisite/>
@@ -96,7 +96,7 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>1.6.1</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
+                <!--dependency>
                     <code-name-base>org.netbeans.modules.javacore</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -104,7 +104,7 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                         <specification-version>1.15.1.2.2</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency-->
                 <dependency>
                     <code-name-base>org.netbeans.modules.project.ant</code-name-base>
                     <build-prerequisite/>

@@ -44,7 +44,7 @@ import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.integration.ide.UMLSupport;
-import org.netbeans.modules.uml.integration.netbeans.NBEventProcessor;
+//import org.netbeans.modules.uml.integration.netbeans.NBEventProcessor;
 
 /**
  * The ConstructorInfo communicates with the EventManager to update Describe.
@@ -502,13 +502,13 @@ public class ConstructorInfo extends ElementInfo {
                 try
                 {
                     UMLSupport.setRoundTripEnabled(true);
-                    NBEventProcessor.setUpdatingModel(true);
+                    /* NB60TBD NBEventProcessor.setUpdatingModel(true); */
                     op.setParameters(pars);
                 }
                 finally
                 {
                     UMLSupport.setRoundTripEnabled(false);
-                    NBEventProcessor.setUpdatingModel(false);
+                    /* NB60TBD NBEventProcessor.setUpdatingModel(false); */
                 }
                 
                 Log.out("Done calling setParameters() for operation " +

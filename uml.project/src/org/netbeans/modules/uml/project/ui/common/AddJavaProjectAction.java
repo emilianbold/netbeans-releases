@@ -84,6 +84,7 @@ public class AddJavaProjectAction extends CookieAction
     
     public void performAction(Node[] activeNodes) 
 	{
+		    /* NB60TBD
         try 
 		{
             UMLProjectProperties epp = 
@@ -100,6 +101,7 @@ public class AddJavaProjectAction extends CookieAction
         {
             // this action has been cancelled
         }
+		    */
     }
     
     public String getName() 

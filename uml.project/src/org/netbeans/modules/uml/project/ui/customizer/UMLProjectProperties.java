@@ -50,13 +50,14 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
 /**
  * @author Mike Frisino
  */
-public class UMLProjectProperties
+public class UMLProjectProperties 
 {
     
     
