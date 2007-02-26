@@ -334,7 +334,7 @@ public abstract class InlineEditor {
         return new String[0];
     }
 
-    static String[] getEditableProperties(DesignBean bean) {
+    private static String[] getEditableProperties(DesignBean bean) {
         BeanInfo bi = bean.getBeanInfo();
 
         if (bi != null) {
