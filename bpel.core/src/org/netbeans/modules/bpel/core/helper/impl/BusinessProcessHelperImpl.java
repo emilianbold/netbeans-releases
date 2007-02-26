@@ -77,7 +77,7 @@ public class BusinessProcessHelperImpl extends Object implements
                 .getSourceGroups(ProjectConstants.SOURCES_TYPE_BPELPRO);
 
         for (int i = 0; i < sourceGroup.length; i++) {
-            Enumeration<FileObject> filesInProject = sourceGroup[i]
+            Enumeration<? extends FileObject> filesInProject = sourceGroup[i]
                     .getRootFolder().getChildren(true);
 
             while (filesInProject.hasMoreElements()) {
@@ -107,7 +107,7 @@ public class BusinessProcessHelperImpl extends Object implements
         // Enumeration<FileObject> filesInProject =
         // projectDir.getChildren(true);
         for (int i = 0; i < sourceGroup.length; i++) {
-            Enumeration<FileObject> filesInProject = sourceGroup[i]
+            Enumeration<? extends FileObject> filesInProject = sourceGroup[i]
                     .getRootFolder().getChildren(true);
 
             while (filesInProject.hasMoreElements()) {
