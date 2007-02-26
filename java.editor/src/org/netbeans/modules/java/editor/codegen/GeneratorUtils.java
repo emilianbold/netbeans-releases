@@ -371,6 +371,8 @@ public class GeneratorUtils {
     private static MethodTree createGetterMethod(WorkingCopy wc, VariableElement element, DeclaredType type) {
         TreeMaker make = wc.getTreeMaker();
         Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);
+        if (element.getModifiers().contains(Modifier.STATIC))
+            mods.add(Modifier.STATIC);
         CharSequence name = element.getSimpleName();
         assert name.length() > 0;
         StringBuilder sb = new StringBuilder();
@@ -382,12 +384,15 @@ public class GeneratorUtils {
     private static MethodTree createSetterMethod(WorkingCopy wc, VariableElement element, DeclaredType type) {
         TreeMaker make = wc.getTreeMaker();
         Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);
+        boolean isStatic = element.getModifiers().contains(Modifier.STATIC);
+        if (isStatic)
+            mods.add(Modifier.STATIC);
         CharSequence name = element.getSimpleName();
         assert name.length() > 0;
         StringBuilder sb = new StringBuilder();
         sb.append("set").append(Character.toUpperCase(name.charAt(0))).append(name.subSequence(1, name.length())); //NOI18N
         List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), element.getSimpleName(), make.Type(element.asType()), null));
-        BlockTree body = make.Block(Collections.singletonList(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), element.getSimpleName()), make.Identifier(element.getSimpleName())))), false); //NOI18N
+        BlockTree body = make.Block(Collections.singletonList(make.ExpressionStatement(make.Assignment(make.MemberSelect(isStatic? make.Identifier(element.getEnclosingElement().getSimpleName()) : make.Identifier("this"), element.getSimpleName()), make.Identifier(element.getSimpleName())))), false); //NOI18N
         return make.Method(make.Modifiers(mods), sb, make.Type(wc.getTypes().getNoType(TypeKind.VOID)), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null);
     }
     
