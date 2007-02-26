@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="QA functional an performance tests config">
 
-    <testbag testattribs="stable" executor="ide" name="Logger functional tests">
+    <testbag testattribs="func_test" executor="ide" name="Logger functional tests">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/modules/uihandler/test/FunctionalTest.class"/>

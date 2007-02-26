@@ -28,6 +28,6 @@ Microsystems, Inc. All Rights Reserved.
 
      <!-- default testtypes, attributes and executors -->
     <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="stable"/>
+    <property name="xtest.attribs" value="stable,func_test"/>
 </project>
 
