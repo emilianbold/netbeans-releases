@@ -420,16 +420,23 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 
         boolean handled = false;
 
-        if (!NO_EDIT_VB_EXPR) {
-            String value = property.getValueSource();
-
-//            if ((value != null) && FacesSupport.isValueBindingExpression(value, false)) {
-            if ((value != null) && WebForm.getHtmlDomProviderService().isValueBindingExpression(value, false)) {
-                // Show vb text in rendered view
-                pane.select(begin, end);
-                pane.getCaret().replaceSelection(value);
-                handled = true;
-            }
+//        if (!NO_EDIT_VB_EXPR) {
+//            String value = property.getValueSource();
+//
+////            if ((value != null) && FacesSupport.isValueBindingExpression(value, false)) {
+//            if ((value != null) && WebForm.getHtmlDomProviderService().isValueBindingExpression(value, false)) {
+//                // Show vb text in rendered view
+//                pane.select(begin, end);
+//                pane.getCaret().replaceSelection(value);
+//                handled = true;
+//            }
+//        }
+        String specialValue = inlineEditorSupport.getSpecialInitValue();
+        if (specialValue != null) {
+            // Show vb text in rendered view
+            pane.select(begin, end);
+            pane.getCaret().replaceSelection(specialValue);
+            handled = true;
         }
 
         if (handled) {

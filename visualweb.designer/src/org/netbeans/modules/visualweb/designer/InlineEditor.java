@@ -81,10 +81,10 @@ import org.netbeans.modules.visualweb.text.Position;
  * @author  Tor Norbye
  */
 public abstract class InlineEditor {
-    /**
-     * Flag to turn off vb expression editing in inline editing mode
-     */
-    protected static final boolean NO_EDIT_VB_EXPR = !Boolean.getBoolean("rave.allow-vb-editing");
+//    /**
+//     * Flag to turn off vb expression editing in inline editing mode
+//     */
+//    protected static final boolean NO_EDIT_VB_EXPR = !Boolean.getBoolean("rave.allow-vb-editing");
     protected WebForm webform;
     protected MarkupDesignBean bean;
     protected DesignProperty property;
