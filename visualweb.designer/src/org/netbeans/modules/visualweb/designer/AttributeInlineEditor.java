@@ -275,7 +275,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         if (xpath != null) {
             n = findPropertyNode(fragment, xpath);
 
-            if ((n == null) && (property.getValueSource() == null)) {
+//            if ((n == null) && (property.getValueSource() == null)) {
+            if ((n == null) && (inlineEditorSupport.getValueSource() == null)) {
                 // It's possible that we're editing a property that hasn't
                 // resulted in any markup in the component yet if it's not
                 // set. For example, an attempt to edit the "label" property
@@ -442,7 +443,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         if (handled) {
             // Done
         } else if ((initialEdit != null) && (initialEdit.length() > 0)) {
-            String value = property.getValueSource();
+//            String value = property.getValueSource();
+            String value = inlineEditorSupport.getValueSource();
 
             if (value == null) {
                 // Shadow text -- replace it completely

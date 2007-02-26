@@ -334,7 +334,8 @@ class FormComponentEditor extends InlineEditor {
             }
         }
 
-        String value = property.getValueSource();
+//        String value = property.getValueSource();
+        String value = inlineEditorSupport.getValueSource();
 
         if ((initialEdit != null) && (initialEdit.length() > 0)) {
             // If we have shadow text, replace the text. Otherwise, append at the end

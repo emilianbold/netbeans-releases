@@ -55,7 +55,12 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
         return HtmlDomProviderServiceImpl.isEditingAllowed(designProperty);
     }
 
+    // XXX AttributeInlineEditor only.
     public String getSpecialInitValue() {
         return HtmlDomProviderServiceImpl.getSpecialInitValue(designProperty);
+    }
+
+    public String getValueSource() {
+        return designProperty.getValueSource();
     }
 }
