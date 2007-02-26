@@ -471,9 +471,15 @@ public final class EarProject implements Project, AntProjectListener, FileChange
         String metaInfProp = helper.getStandardPropertyEvaluator().
                 getProperty(EarProjectProperties.META_INF);
         if (metaInfProp == null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
-                    "Cannot resolve " + EarProjectProperties.META_INF + // NOI18N
-                    " property for " + this); // NOI18N
+            // IZ 91941
+            // does project.properties exist? if yes, something is probably wrong...
+            File projectProperties = helper.resolveFile(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            if (projectProperties.exists()) {
+                // file exists, log warning
+                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                        "Cannot resolve " + EarProjectProperties.META_INF + // NOI18N
+                        " property for " + this); // NOI18N
+            }
             return null;
         }
         FileObject metaInfFO = null;
