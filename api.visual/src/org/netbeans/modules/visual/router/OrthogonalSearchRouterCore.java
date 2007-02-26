@@ -31,7 +31,7 @@ import java.util.List;
  */
 final class OrthogonalSearchRouterCore {
 
-    private static final int MAXIMAL_DEPTH = 4; // 6 is too slow for 10+ nodes and 10+ links
+    private static final int MAXIMAL_DEPTH = 5; // 6 is too slow for 10+ nodes and 10+ links
     private static final int CORNER_LENGTH = 200;
     private static final boolean UPDATE_COLLISION_LISTS = true; // set true for faster computation but not optimal results
     private static final boolean UPDATE_COLLISION_LISTS_REMOVE = true;
