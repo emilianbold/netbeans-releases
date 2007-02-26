@@ -64,7 +64,7 @@ public class MBeanUtil {
     }
 
     public Attribute[] getAttributes(MBeanServerConnection connection, ObjectName objectName, String[] attributeNames) throws Exception {
-        List<Attribute> list = (List<Attribute>) connection.getAttributes(objectName, attributeNames);
+        List<Object> list = (List<Object>) connection.getAttributes(objectName, attributeNames);
         return (Attribute[]) list.toArray(new Attribute[0]);
     }
 
