@@ -84,6 +84,24 @@ is the proper place.
 
         <change>
             <api name="editor"/>
+            <summary>Moving CustomizableSideBar and CustomizableSideBarClass2LayerFolder to a private package</summary>
+            <version major="1" minor="31"/>
+            <date day="26" month="2" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility source="incompatible" semantic="compatible" binary="incompatible" modification="no" addition="no" deletion="yes" deprecation="no" />
+            <description>
+            <p>
+                The <code>CustomizableSideBar</code> and <code>CustomizableSideBarClass2LayerFolder</code>
+                classes were accidentaly exposed in an API visible package. We
+                moved them to a private package, because they have no API use.
+                They implement support for editor side bars, which can be registered
+                using the <code>SideBar</code> subfolders in <code>MimeLookup</code>.
+            </p>
+            </description>
+        </change>
+
+        <change>
+            <api name="editor"/>
             <summary>Moving PopupActions and PopupInitializer to a private package</summary>
             <version major="1" minor="30"/>
             <date day="19" month="2" year="2007"/>
@@ -93,7 +111,7 @@ is the proper place.
             <p>
                 The <code>PopupActions</code> and <code>PopupInitializer</code>
                 classes were accidentaly exposed in an API visible package. We
-                moved them to a private package, because thet have no API use.
+                moved them to a private package, because they have no API use.
                 They implement support for editor popup menu, which can be registered
                 using the <code>Popup</code> subfolders in <code>MimeLookup</code>.
             </p>
