@@ -134,8 +134,8 @@ public class RefactoringTest extends JellyTestCase {
         node.performPopupAction("Subversion|Show Changes");
         oto.waitText("Refreshing... finished.");
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
-        
-        node.performPopupActionNoBlock("Refactor|Rename");
+        node.select();
+        node.performPopupActionNoBlock("Refactor|Rename...");
         NbDialogOperator dialog = new NbDialogOperator("Rename");
         JTextFieldOperator txt = new JTextFieldOperator(dialog);
         txt.setText("javaapp_ren");
