@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
@@ -115,6 +115,50 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Projects">
         <folder name="org-netbeans-modules-web-project">
             
+            <folder name="Customizer">
+                <file name="Sources.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createSources"/>
+                </file>
+                <attr name="Sources.instance/Frameworks.instance" boolvalue="true"/>
+                <file name="Frameworks.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createFrameworks"/>
+                </file>
+                <attr name="Frameworks.instance/Libraries.instance" boolvalue="true"/>
+                <file name="Libraries.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createLibraries"/>
+                </file>
+                <attr name="Libraries.instance/BuildCategory" boolvalue="true"/>
+                <folder name="BuildCategory">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.customizer.Bundle"/>
+                    <file name="Build.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createBuild"/>
+                    </file>
+                    <attr name="Build.instance/War.instance" boolvalue="true"/>
+                    <file name="War.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createWar"/>
+                    </file>
+                    <attr name="War.instance/Javadoc.instance" boolvalue="true"/>
+                    <file name="Javadoc.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createJavadoc"/>
+                    </file>
+                </folder>
+                <attr name="BuildCategory/Run.instance" boolvalue="true"/>
+                <file name="Run.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createRun"/>
+                </file>
+                <attr name="Run.instance/WebServiceCategory" boolvalue="true"/>
+                <folder name="WebServiceCategory">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.customizer.Bundle"/>
+                    <file name="Service.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createWebServices"/>
+                    </file>
+                    <attr name="Service.instance/Client.instance" boolvalue="true"/>
+                    <file name="Client.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createWebServiceClients"/>
+                    </file>
+                </folder>
+            </folder>
+
             <folder name="Lookup"/>
             
         </folder>
