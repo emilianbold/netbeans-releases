@@ -86,9 +86,10 @@ public abstract class InlineEditor {
     protected static final boolean NO_EDIT_VB_EXPR = !Boolean.getBoolean("rave.allow-vb-editing");
     protected WebForm webform;
     protected MarkupDesignBean bean;
+    protected DesignProperty property;
     protected Position begin;
     protected Position end;
-    protected String propertyName;
+//    protected String propertyName;
 
     /** Timestamp when we last entered inline editing. */
     private long editingStarted = 0L;
@@ -96,10 +97,12 @@ public abstract class InlineEditor {
     /** Timestamp for the last mouse click received */
     private long lastClick = 0L;
 
-    protected InlineEditor(WebForm webform, MarkupDesignBean bean, String propertyName) {
+//    protected InlineEditor(WebForm webform, MarkupDesignBean bean, String propertyName) {
+    protected InlineEditor(WebForm webform, MarkupDesignBean bean, DesignProperty property) {
         this.webform = webform;
         this.bean = bean;
-        this.propertyName = propertyName;
+//        this.propertyName = propertyName;
+        this.property = property;
 
         assert bean.getElement() != null;
     }
@@ -604,9 +607,13 @@ public abstract class InlineEditor {
 
     /** Return true iff this inline editor is editing the given property on the given bean */
     public boolean isEditing(DesignBean bean, String propertyName) {
+//        return ((bean == this.bean) &&
+//        ((this.propertyName != null) && this.propertyName.equals(propertyName))) ||
+//        (this.propertyName == propertyName);
+        String currPropertyName = property == null ? null : property.getPropertyDescriptor().getName();
         return ((bean == this.bean) &&
-        ((this.propertyName != null) && this.propertyName.equals(propertyName))) ||
-        (this.propertyName == propertyName);
+        ((currPropertyName != null) && currPropertyName.equals(propertyName))) ||
+        (currPropertyName == propertyName);
     }
     
     /** XXX Invokes delete next char action.

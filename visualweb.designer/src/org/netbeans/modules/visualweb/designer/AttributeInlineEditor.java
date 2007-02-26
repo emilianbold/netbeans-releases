@@ -67,7 +67,7 @@ import org.netbeans.modules.visualweb.text.Position;
  */
 class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.EventListener {
     private boolean hasBeenEdited = false;
-    private DesignProperty property;
+//    private DesignProperty property;
     private DocumentFragment fragment;
 //    private FacesPageUnit facesPageUnit;
     private Node text;
@@ -79,8 +79,9 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 
     AttributeInlineEditor(WebForm webform, MarkupDesignBean bean, DesignProperty property,
         String xpath) {
-        super(webform, bean, property.getPropertyDescriptor().getName());
-        this.property = property;
+//        super(webform, bean, property.getPropertyDescriptor().getName());
+        super(webform, bean, property);
+//        this.property = property;
         this.xpath = xpath;
     }
 

@@ -100,18 +100,19 @@ class FormComponentEditor extends InlineEditor {
     private CssBox box;
 //    private String xpath;
     private boolean hasBeenEdited = false;
-    private DesignProperty property;
+//    private DesignProperty property;
 
     private FormComponentEditor(WebForm webform, MarkupDesignBean bean, DesignProperty property,
         CssBox box/*, String xpath*/) {
-        super(webform, bean, property.getPropertyDescriptor().getName());
+//        super(webform, bean, property.getPropertyDescriptor().getName());
+        super(webform, bean, property);
         if(DesignerUtils.DEBUG) {
             DesignerUtils.debugLog(getClass().getName() + "()");
         }
         if(box == null) {
             throw(new IllegalArgumentException("Null CSS box."));
         }
-        this.property = property;
+//        this.property = property;
         this.box = box;
 //        this.xpath = xpath;
     }
