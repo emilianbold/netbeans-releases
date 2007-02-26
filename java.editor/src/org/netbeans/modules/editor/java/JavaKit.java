@@ -22,7 +22,6 @@ package org.netbeans.modules.editor.java;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
-//import javax.jmi.reflect.JmiException;
 import javax.swing.*;
 import javax.swing.text.*;
 import javax.swing.text.BadLocationException;
@@ -42,6 +41,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.codegen.GenerateCodeAction;
 import org.netbeans.modules.java.editor.imports.FastImportAction;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
+import org.netbeans.modules.java.editor.overridden.GoToSuperTypeAction;
 import org.netbeans.modules.java.editor.rename.InstantRenameAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -213,6 +213,7 @@ public class JavaKit extends NbEditorKit {
                                    new SelectCodeElementAction(selectNextElementAction, true),
                                    new SelectCodeElementAction(selectPreviousElementAction, false),
                                    new FastImportAction(),
+                                   new GoToSuperTypeAction(),
                                };
                                
         return TextAction.augmentList(super.createActions(), javaActions);

@@ -114,6 +114,10 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="goto-source/goto-declaration" boolvalue="true"/>
                         <file name="goto"/>
                         <attr name="goto-declaration/goto" boolvalue="true"/>
+                        
+                        <file name="goto-super-implementation"/>
+                        <attr name="goto-declaration/goto-super-implementation" boolvalue="true"/>
+                        <attr name="goto-super-implementation/goto" boolvalue="true"/>                    
                     </folder>
                     
                     <attr name="goto/org-netbeans-modules-editor-NbSelectInPopupAction.instance" boolvalue="true"/>

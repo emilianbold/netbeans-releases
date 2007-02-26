@@ -107,6 +107,7 @@ public final class PopupUtil  {
         popupWindow.setVisible( true );
         // System.out.println("     RFIW ==" + popupWindow.requestFocusInWindow() );
         content.requestFocus();
+        content.requestFocusInWindow();
 //        System.out.println("     has focus =" + content.hasFocus());
 //        System.out.println("     has focus =" + popupWindow.hasFocus());
 //        System.out.println("     window focusable=" + popupWindow.isFocusableWindow());

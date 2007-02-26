@@ -179,6 +179,40 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
         return reverseSourceRoots;
     }
     
+    public static AnnotationType detectOverrides(CompilationInfo info, TypeElement type, ExecutableElement ee, List<ElementDescription> result) {
+        final Map<Name, List<ExecutableElement>> name2Method = new HashMap<Name, List<ExecutableElement>>();
+        
+        sortOutMethods(info, name2Method, type, false);
+        
+        List<ExecutableElement> lee = name2Method.get(ee.getSimpleName());
+        
+        if (lee == null || lee.isEmpty()) {
+            return null;
+        }
+        
+        Set<ExecutableElement> seenMethods = new HashSet<ExecutableElement>();
+        
+        for (ExecutableElement overridee : lee) {
+            if (info.getElements().overrides(ee, overridee, SourceUtils.getEnclosingTypeElement(ee))) {
+                if (seenMethods.add(overridee)) {
+                    result.add(new ElementDescription(info, overridee));
+                }
+            }
+        }
+        
+        if (!result.isEmpty()) {
+            for (ElementDescription ed : result) {
+                if (!ed.getModifiers().contains(Modifier.ABSTRACT)) {
+                    return AnnotationType.OVERRIDES;
+                }
+            }
+            
+            return AnnotationType.IMPLEMENTS;
+        }
+        
+        return null;
+    }
+    
     List<IsOverriddenAnnotation> process(CompilationInfo info, final StyledDocument doc) {
         IsOverriddenVisitor v;
         
@@ -575,7 +609,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
         }
     }
 
-    private void sortOutMethods(CompilationInfo info, Map<Name, List<ExecutableElement>> where, Element td, boolean current) {
+    private static void sortOutMethods(CompilationInfo info, Map<Name, List<ExecutableElement>> where, Element td, boolean current) {
         if (current) {
             Map<Name, List<ExecutableElement>> newlyAdded = new HashMap<Name, List<ExecutableElement>>();
             

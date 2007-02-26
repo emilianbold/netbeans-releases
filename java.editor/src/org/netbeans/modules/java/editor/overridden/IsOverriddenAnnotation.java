@@ -106,6 +106,14 @@ class IsOverriddenAnnotation extends Annotation {
     }
     
     void mouseClicked(JTextComponent c, Point p) {
+        Point position = new Point(p);
+        
+        SwingUtilities.convertPointToScreen(position, c);
+        
+        performGoToAction(type, declarations, position, shortDescription);
+    }
+    
+    static void performGoToAction(AnnotationType type, List<ElementDescription> declarations, Point position, String shortDescription/*XXX*/) {
         if (type == AnnotationType.IMPLEMENTS || type == AnnotationType.OVERRIDES) {
             if (declarations.size() == 1) {
                 ElementDescription desc = declarations.get(0);
@@ -137,10 +145,6 @@ class IsOverriddenAnnotation extends Annotation {
             default:
                 throw new IllegalStateException("Currently not implemented: " + type);
         }
-        
-        Point position = new Point(p);
-        
-        SwingUtilities.convertPointToScreen(position, c);
         
         PopupUtil.showPopup(new IsOverriddenPopup(caption, declarations), caption, position.x, position.y, true, 0);
     }

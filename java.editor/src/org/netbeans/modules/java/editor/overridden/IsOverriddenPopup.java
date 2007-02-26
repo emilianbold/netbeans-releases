@@ -21,6 +21,8 @@ package org.netbeans.modules.java.editor.overridden;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Toolkit;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -40,7 +42,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Lahoda
  */
-public class IsOverriddenPopup extends JPanel {
+public class IsOverriddenPopup extends JPanel implements FocusListener {
     
     private String caption;
     private List<ElementDescription> declarations;
@@ -53,6 +55,8 @@ public class IsOverriddenPopup extends JPanel {
         initComponents();
         
         jList1.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        
+        addFocusListener(this);
     }
     
     /** This method is called from within the constructor to
@@ -65,23 +69,20 @@ public class IsOverriddenPopup extends JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jLabel1 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
 
+        setFocusCycleRoot(true);
         setLayout(new java.awt.GridBagLayout());
 
-        setFocusCycleRoot(true);
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText(caption
         );
+        jLabel1.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jLabel1, gridBagConstraints);
 
-        jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        jPanel1.setFocusCycleRoot(true);
         jList1.setModel(createListModel());
         jList1.setCellRenderer(new RendererImpl());
         jList1.setSelectedIndex(0);
@@ -97,14 +98,7 @@ public class IsOverriddenPopup extends JPanel {
                 jList1MouseClicked(evt);
             }
         });
-
         jScrollPane1.setViewportView(jList1);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jScrollPane1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -112,20 +106,18 @@ public class IsOverriddenPopup extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
-
+        add(jScrollPane1, gridBagConstraints);
+    }// </editor-fold>//GEN-END:initComponents
+    
     private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseClicked
-// TODO add your handling code here:
+        // TODO add your handling code here:
         if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 1) {
             openSelected();
         }
     }//GEN-LAST:event_jList1MouseClicked
-
+    
     private void jList1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jList1KeyPressed
-// TODO add your handling code here:
+        // TODO add your handling code here:
         if (evt.getKeyCode() == KeyEvent.VK_ENTER && evt.getModifiers() == 0) {
             openSelected();
         }
@@ -135,7 +127,6 @@ public class IsOverriddenPopup extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JList jList1;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
     
@@ -183,6 +174,14 @@ public class IsOverriddenPopup extends JPanel {
             
             return c;
         }
+    }
+    
+    public void focusGained(FocusEvent arg0) {
+        jList1.requestFocus();
+        jList1.requestFocusInWindow();
+    }
+    
+    public void focusLost(FocusEvent arg0) {
     }
     
 }
