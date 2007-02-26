@@ -2420,7 +2420,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             tm = ((ExecutableType)asMemberOf(e, t, types)).getReturnType();
                             if (!Utilities.startsWith(e.getSimpleName().toString(), prefix) ||
                                     !isOfKindAndType(tm, e, kinds, baseType, scope, trees, types) ||
-                                    !tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t))
+                                    !(isSuperCall && e.getModifiers().contains(PROTECTED) || tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t)))
                                 return false;
                             return (!isStatic || e.getModifiers().contains(STATIC)) && isOfSmartType(env, tm, finalSmartTypes);
                         case CLASS:
