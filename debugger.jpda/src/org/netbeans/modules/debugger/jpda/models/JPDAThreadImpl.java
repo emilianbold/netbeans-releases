@@ -489,8 +489,14 @@ public final class JPDAThreadImpl implements JPDAThread {
      */
     public ObjectVariable getContendedMonitor () {
         try {
-            if (!isSuspended()) return null;
-            ObjectReference or = threadReference.currentContendedMonitor ();
+            ObjectReference or;
+            synchronized (this) {
+                if (!isSuspended()) return null;
+                if ("DestroyJavaVM".equals(threadReference.name())) {
+                    return null;
+                }
+                or = threadReference.currentContendedMonitor ();
+            }
             if (or == null) return null;
             return new ThisVariable (debugger, or, "");
         } catch (ObjectCollectedException ex) {
@@ -508,8 +514,14 @@ public final class JPDAThreadImpl implements JPDAThread {
      */
     public ObjectVariable[] getOwnedMonitors () {
         try {
-            if (!isSuspended()) return new ObjectVariable [0];
-            List l = threadReference.ownedMonitors ();
+            List l;
+            synchronized (this) {
+                if (!isSuspended()) return new ObjectVariable [0];
+                if ("DestroyJavaVM".equals(threadReference.name())) {
+                    return new ObjectVariable[0];
+                }
+                l = threadReference.ownedMonitors ();
+            }
             int i, k = l.size ();
             ObjectVariable[] vs = new ObjectVariable [k];
             for (i = 0; i < k; i++) {
