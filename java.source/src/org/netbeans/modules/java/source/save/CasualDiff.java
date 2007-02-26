@@ -43,6 +43,7 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -110,7 +111,7 @@ public class CasualDiff {
     {
         CasualDiff td = new CasualDiff(context, copy);
         try {
-            td.diffTree(oldTree, newTree);
+            td.diffTree(oldTree, newTree, new int[] { -1, -1});
             String resultSrc = td.output.toString();
             td.makeListMatch(td.workingCopy.getText(), resultSrc);
             JavaSourceAccessor.INSTANCE.getCommandEnvironment(td.workingCopy).setResult(td.diffInfo, "user-info");
@@ -544,8 +545,8 @@ public class CasualDiff {
         localPointer = diffList2(oldT.thrown, newT.thrown, posHint, EstimatorFactory.throwz());
         posHint = endPos(oldT) - 1;
         localPointer = diffTree(oldT.body, newT.body, localPointer);
-        diffTree(oldT.defaultValue, newT.defaultValue);
-        printer.print(origText.substring(localPointer, bounds[1]));
+        //diffTree(oldT.defaultValue, newT.defaultValue);
+        copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
 
@@ -707,7 +708,7 @@ public class CasualDiff {
     }
 
     protected void diffCase(JCCase oldT, JCCase newT) {
-        diffTree(oldT.pat, newT.pat);
+        diffTree(oldT.pat, newT.pat, getBounds(oldT.pat));
         diffList(oldT.stats, newT.stats, LineInsertionType.BEFORE, endPos(oldT) + 1); // after colon
     }
 
@@ -975,18 +976,37 @@ public class CasualDiff {
         int[] lhsBounds = getBounds(oldT.lhs);
         copyTo(localPointer, lhsBounds[0]);
         localPointer = diffTree(oldT.lhs, newT.lhs, lhsBounds);
+        if (oldT.tag != newT.tag) { // todo (#pf): operatorName() does not work
+            copyTo(localPointer, oldT.pos);
+            printer.print(getAssignementOperator(newT));
+            localPointer = oldT.pos + getAssignementOperator(oldT).length();
+        }
         // rhs
         int[] rhsBounds = getBounds(oldT.rhs);
         copyTo(localPointer, rhsBounds[0]);
         localPointer = diffTree(oldT.rhs, newT.rhs, rhsBounds);
         
-        // todo (#pf): bugy behaviour, should be rewrriten. Perhaps nobody uses
-        // this right now.
-        if (oldT.tag != newT.tag)
-            append(Diff.name(oldT.pos, operatorName(oldT.tag), operatorName(newT.tag)));
-        
         copyTo(localPointer, bounds[1]);
         return bounds[1];
+    }
+    
+    String getAssignementOperator(Tree t) {
+        String name;
+        switch (t.getKind()) {
+            case MULTIPLY_ASSIGNMENT:    return "*=";
+            case DIVIDE_ASSIGNMENT:      return "/=";
+            case REMAINDER_ASSIGNMENT:   return "%=";
+            case PLUS_ASSIGNMENT:        return "+=";
+            case MINUS_ASSIGNMENT:       return "-=";
+            case LEFT_SHIFT_ASSIGNMENT:  return "<<=";
+            case RIGHT_SHIFT_ASSIGNMENT: return ">>=";
+            case AND_ASSIGNMENT:         return "&=";
+            case XOR_ASSIGNMENT:         return "^=";
+            case OR_ASSIGNMENT:          return "|=";
+            case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT: return ">>>=";
+            default:
+                throw new IllegalArgumentException("Illegal kind " + t.getKind());
+        }
     }
 
     protected int diffUnary(JCUnary oldT, JCUnary newT, int[] bounds) {
@@ -994,22 +1014,29 @@ public class CasualDiff {
         int[] argBounds = getBounds(oldT.arg);
         copyTo(localPointer, argBounds[0]);
         localPointer = diffTree(oldT.arg, newT.arg, argBounds);
-        if (oldT.tag != newT.tag)
-            append(Diff.name(oldT.pos, operatorName(oldT.tag), operatorName(newT.tag)));
+        if (oldT.tag != newT.tag) {
+            copyTo(localPointer, oldT.pos);
+            printer.print(operatorName(newT.tag));
+            localPointer = oldT.pos + operatorName(oldT.tag).length();
+        }
         copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
 
     protected int diffBinary(JCBinary oldT, JCBinary newT, int[] bounds) {
         int localPointer = bounds[0];
-        localPointer = diffTree(oldT.lhs, newT.lhs, new int[] { localPointer, endPos(oldT.lhs) });
-        int rhs = getOldPos(oldT.rhs);
-        if (localPointer < rhs) {
-            copyTo(localPointer, rhs);
+        
+        int[] lhsBounds = getBounds(oldT.lhs);
+        copyTo(localPointer, lhsBounds[0]);
+        localPointer = diffTree(oldT.lhs, newT.lhs, lhsBounds);
+        if (oldT.tag != newT.tag) {
+            copyTo(localPointer, oldT.pos);
+            printer.print(operatorName(newT.tag));
+            localPointer = oldT.pos + operatorName(oldT.tag).toString().length();
         }
-        localPointer = diffTree(oldT.rhs, newT.rhs, new int[] { rhs, endPos(oldT.rhs) });
-        if (oldT.tag != newT.tag)
-            append(Diff.name(oldT.pos, operatorName(oldT.tag), operatorName(newT.tag)));
+        int[] rhsBounds = getBounds(oldT.rhs);
+        copyTo(localPointer, rhsBounds[0]);
+        localPointer = diffTree(oldT.rhs, newT.rhs, rhsBounds);
         copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
@@ -1154,9 +1181,11 @@ public class CasualDiff {
     
     protected int diffWildcard(JCWildcard oldT, JCWildcard newT, int[] bounds) {
         int localPointer = bounds[0];
-        if (oldT.kind != newT.kind)
-            append(Diff.name(oldT.pos, oldT.kind.toString(), newT.kind.toString()));
-        
+        if (oldT.kind != newT.kind) {
+            copyTo(localPointer, oldT.pos);
+            printer.print(newT.kind.toString());
+            localPointer = oldT.pos + oldT.kind.toString().length();
+        }
         int[] innerBounds = getBounds(oldT.inner);
         copyTo(localPointer, innerBounds[0]);
         localPointer = diffTree(oldT.inner, newT.inner, innerBounds);
@@ -1165,9 +1194,15 @@ public class CasualDiff {
         return bounds[1];
     }
     
-    protected void diffTypeBoundKind(TypeBoundKind oldT, TypeBoundKind newT) {
-        if (oldT.kind != newT.kind)
-            append(Diff.name(oldT.pos, oldT.kind.toString(), newT.kind.toString()));
+    protected int diffTypeBoundKind(TypeBoundKind oldT, TypeBoundKind newT, int[] bounds) {
+        int localPointer = bounds[0];
+        if (oldT.kind != newT.kind) {
+            copyTo(localPointer, oldT.pos);
+            printer.print(newT.kind.toString());
+            localPointer = oldT.pos + oldT.kind.toString().length();
+        }
+        copyTo(localPointer, bounds[1]);
+        return bounds[1];
     }
     
     protected int diffAnnotation(JCAnnotation oldT, JCAnnotation newT, int[] bounds) {
@@ -1222,7 +1257,7 @@ public class CasualDiff {
     
     protected void diffLetExpr(LetExpr oldT, LetExpr newT) {
         diffList(oldT.defs, newT.defs, LineInsertionType.NONE, Query.NOPOS);
-        diffTree(oldT.expr, newT.expr);
+        diffTree(oldT.expr, newT.expr, getBounds(oldT.expr));
     }
     
     protected void diffErroneous(JCErroneous oldT, JCErroneous newT) {
@@ -2037,6 +2072,7 @@ public class CasualDiff {
      * 
      * @param  oldT  original tree in source code
      * @param  newT  tree to repace the original tree
+     * @return position in original source
      */
     protected int diffTree(JCTree oldT, JCTree newT, int[] elementBounds) {
         if (oldT == null && newT != null)
@@ -2049,8 +2085,13 @@ public class CasualDiff {
         int oldPos = getOldPos(oldT);
 
         if (oldT.tag != newT.tag) {
-            printer.print(newT);
-            return endPos(oldT);
+            if (((compAssign.contains(oldT.getKind()) && compAssign.contains(newT.getKind())) == false) &&
+                ((binaries.contains(oldT.getKind()) && binaries.contains(newT.getKind())) == false) &&
+                ((unaries.contains(oldT.getKind()) && unaries.contains(newT.getKind())) == false)) {
+                // different kind of trees found, print the whole new one.
+                printer.print(newT);
+                return endPos(oldT);
+            }
         }
 
         switch (oldT.tag) {
@@ -2176,7 +2217,7 @@ public class CasualDiff {
               retVal = diffWildcard((JCWildcard)oldT, (JCWildcard)newT, elementBounds);
               break;
           case JCTree.TYPEBOUNDKIND:
-              diffTypeBoundKind((TypeBoundKind)oldT, (TypeBoundKind)newT);
+              retVal = diffTypeBoundKind((TypeBoundKind)oldT, (TypeBoundKind)newT, elementBounds);
               break;
           case JCTree.ANNOTATION:
               retVal = diffAnnotation((JCAnnotation)oldT, (JCAnnotation)newT, elementBounds);
@@ -2242,11 +2283,59 @@ public class CasualDiff {
         return retVal;
     }
 
-    // #todo (#pf): this method should be removed!
-    private void diffTree(JCTree oldT, JCTree newT) {
-        diffTree(oldT, newT, new int[] { -1, -1 });
-    }
+    /**
+     * Three sets representing different kind which can be matched. No need
+     * to rewrite whole expression. Ensure that CompoundAssignementTrees,
+     * UnaryTrees and BinaryTrees are matched, i.e. diff method is used
+     * instead of priting whole new tree.
+     */
+    private static final EnumSet<Kind> compAssign = EnumSet.of(
+        Kind.MULTIPLY_ASSIGNMENT,
+        Kind.DIVIDE_ASSIGNMENT,
+        Kind.REMAINDER_ASSIGNMENT,
+        Kind.PLUS_ASSIGNMENT,
+        Kind.MINUS_ASSIGNMENT,
+        Kind.LEFT_SHIFT_ASSIGNMENT,
+        Kind.RIGHT_SHIFT_ASSIGNMENT,
+        Kind.UNSIGNED_RIGHT_SHIFT_ASSIGNMENT,
+        Kind.AND_ASSIGNMENT,
+        Kind.XOR_ASSIGNMENT,
+        Kind.OR_ASSIGNMENT
+    );
     
+    private static final EnumSet<Kind> binaries = EnumSet.of(
+        Kind.MULTIPLY,
+        Kind.DIVIDE,
+        Kind.REMAINDER,
+        Kind.PLUS,
+        Kind.MINUS,
+        Kind.LEFT_SHIFT,
+        Kind.RIGHT_SHIFT,
+        Kind.UNSIGNED_RIGHT_SHIFT,
+        Kind.LESS_THAN,
+        Kind.GREATER_THAN,
+        Kind.LESS_THAN_EQUAL,
+        Kind.GREATER_THAN_EQUAL,
+        Kind.EQUAL_TO,
+        Kind.NOT_EQUAL_TO,
+        Kind.AND,
+        Kind.XOR,
+        Kind.OR,
+        Kind.CONDITIONAL_AND,
+        Kind.CONDITIONAL_OR
+    );
+    
+    private static final EnumSet<Kind> unaries = EnumSet.of(
+        Kind.POSTFIX_INCREMENT,
+        Kind.POSTFIX_DECREMENT,
+        Kind.PREFIX_INCREMENT,
+        Kind.PREFIX_DECREMENT,
+        Kind.UNARY_PLUS,
+        Kind.UNARY_MINUS,
+        Kind.BITWISE_COMPLEMENT,
+        Kind.LOGICAL_COMPLEMENT
+    );
+
     private int diffTree(JCTree oldT, JCTree newT, int lastPrinted) {
         return diffTree(oldT, newT, new int[] { lastPrinted, -1 });
     }
@@ -2258,7 +2347,9 @@ public class CasualDiff {
         if (newList.size() != n)
             return false;
         for (int i = 0; i < n; i++)
-            // cannot use treeMatch, see issue #96364x
+            // todo (#pf): treesMatch is perhaps useable with deepMatch flag. 
+            // Check that it will work for #96364.
+            // if (treesMatch(oldList.get(i), newList.get(i), true))
             if (oldList.get(i) != newList.get(i))
                 return false;
         return true;
