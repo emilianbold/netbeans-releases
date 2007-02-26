@@ -153,9 +153,6 @@ final class PropUtils {
      * "zebra" style painting in property sheet) */
     static Boolean noAltBg = null;
 
-    /** Icon used by the custom editor button */
-    private static Icon bpIcon = null;
-
     /** Field to hold the width of the margin.  This is used for painting, so the
      *  grid is not displayed in the margin, and for figuring out if a mouse event
      *  occured in the margin (toggle expanded on a single click) or not.  */
@@ -171,12 +168,6 @@ final class PropUtils {
 
     /** Color for property set expanders */
     static Color setRendererColor = null;
-
-    /** Cached icon used for collapsed set renderers */
-    static Icon collapsedIcon = null;
-
-    /** Cached icon used for expanded set renderers */
-    static Icon expandedIcon = null;
 
     /** Cached height of for the icon */
     static int spinnerHeight = -1;
@@ -1071,8 +1062,8 @@ final class PropUtils {
             noAltBg = Boolean.FALSE;
         }
 
-        collapsedIcon = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
-        expandedIcon = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
+        Icon collapsedIcon = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
+        Icon expandedIcon = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
         
         assert collapsedIcon != null: "no Tree.collapsedIcon found";
         assert expandedIcon != null: "no Tree.expandedIcon found";
@@ -1114,20 +1105,16 @@ final class PropUtils {
     /** Get the icon displayed by an expanded set.  Typically this is just the
      * same icon the look and feel supplies for trees */
     static Icon getExpandedIcon() {
-        if (expandedIcon == null) {
-            deriveColorsAndMargin();
-        }
-
+        Icon expandedIcon = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
+        assert expandedIcon != null: "no Tree.expandedIcon found";
         return expandedIcon;
     }
     
     /** Get the icon displayed by a collapsed set. Typically this is just the
      * icon the look and feel supplies for trees */
     static Icon getCollapsedIcon() {
-        if (collapsedIcon == null) {
-            deriveColorsAndMargin();
-        }
-
+        Icon collapsedIcon = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
+        assert collapsedIcon != null: "no Tree.collapsedIcon found";
         return collapsedIcon;
     }
 
@@ -1201,11 +1188,7 @@ final class PropUtils {
 
     /** Lazily creates the custom editor button icon */
     static Icon getCustomButtonIcon() {
-        if (bpIcon == null) {
-            bpIcon = new BpIcon();
-        }
-
-        return bpIcon;
+        return new BpIcon();
     }
 
     /** Adjust an rgb color component.

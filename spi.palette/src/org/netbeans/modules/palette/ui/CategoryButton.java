@@ -41,8 +41,6 @@ import org.openide.util.Utilities;
  */
 class CategoryButton extends JCheckBox implements Autoscroll {
 
-    private static final Icon openedIcon = (Icon)UIManager.get("Tree.expandedIcon"); // NOI18N
-    private static final Icon closedIcon = (Icon)UIManager.get("Tree.collapsedIcon"); // NOI18N
     private static final Color AQUA_BK_COLOR = new Color(225, 235, 240);
     
     static final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() );
@@ -136,8 +134,8 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     }
     
     void updateProperties() {
-        setIcon( closedIcon );
-        setSelectedIcon( openedIcon );
+        setIcon( (Icon)UIManager.get("Tree.collapsedIcon") );
+        setSelectedIcon( (Icon)UIManager.get("Tree.expandedIcon") );
         Mnemonics.setLocalizedText( this, category.getDisplayName() );
         setToolTipText( category.getShortDescription() );
         getAccessibleContext().setAccessibleName( category.getDisplayName() );

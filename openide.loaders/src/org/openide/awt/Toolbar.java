@@ -1049,7 +1049,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                              a.getValue(javax.swing.Action.NAME).toString().length() ==
                              0)) {
                             a.putValue(javax.swing.Action.SMALL_ICON,
-                                       getUnknownIcon());
+                                       new ImageIcon( Utilities.loadImage( "org/openide/loaders/unknown.gif") ));
                         }
                         org.openide.awt.Actions.connect(b, a);
                         b.putClientProperty("file", file);
@@ -1564,22 +1564,20 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
     } // end of class DnDEvent
     
-    private static Icon unknownIcon;
-    private static Icon getUnknownIcon() {
-        if( null == unknownIcon ) {
-            unknownIcon = new ImageIcon( Utilities.loadImage( "org/openide/loaders/unknown.gif") );
-        }
-        return unknownIcon;
-    }
-    
     /**
      * A button that provides a default icon when no text and no custom icon have been set.
      */
     private static class DefaultIconButton extends JButton {
+        private Icon unknownIcon;
+        
         public Icon getIcon() {
             Icon retValue = super.getIcon();
-            if( null == retValue && (null == getText() || getText().length() == 0 ) )
-                retValue = getUnknownIcon();
+            if( null == retValue && (null == getText() || getText().length() == 0 ) ) {
+                if (unknownIcon == null) {
+                    unknownIcon = new ImageIcon( Utilities.loadImage( "org/openide/loaders/unknown.gif") );
+                }
+                retValue = unknownIcon;
+            }
             return retValue;
         }
     }
