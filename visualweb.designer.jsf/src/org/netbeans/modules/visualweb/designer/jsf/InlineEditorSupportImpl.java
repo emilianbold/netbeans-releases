@@ -63,4 +63,12 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
     public String getValueSource() {
         return designProperty.getValueSource();
     }
+
+    public void unset() {
+        designProperty.unset();
+    }
+
+    public void setValue(String value) {
+        designProperty.setValue(value);
+    }
 }
