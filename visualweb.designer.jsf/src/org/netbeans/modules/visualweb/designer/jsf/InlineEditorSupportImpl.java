@@ -36,13 +36,13 @@ import org.w3c.dom.Element;
  */
 class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
 
-    private final HtmlDomProvider htmlDomProvider;
+    private final HtmlDomProviderImpl htmlDomProviderImpl;
     private final MarkupDesignBean markupDesignBean;
     private final DesignProperty   designProperty;
     
     /** Creates a new instance of InlineEditorSupportImpl */
-    public InlineEditorSupportImpl(HtmlDomProvider htmlDomProvider, MarkupDesignBean markupDesignBean, DesignProperty designProperty) {
-        this.htmlDomProvider = htmlDomProvider;
+    public InlineEditorSupportImpl(HtmlDomProviderImpl htmlDomProviderImpl, MarkupDesignBean markupDesignBean, DesignProperty designProperty) {
+        this.htmlDomProviderImpl = htmlDomProviderImpl;
         this.markupDesignBean = markupDesignBean;
         this.designProperty = designProperty;
     }
@@ -101,6 +101,6 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
     }
 
     public DocumentFragment createSourceFragment() {
-        return htmlDomProvider.createSourceFragment(markupDesignBean);
+        return htmlDomProviderImpl.createSourceFragment(markupDesignBean);
     }
 }
