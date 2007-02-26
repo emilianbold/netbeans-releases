@@ -258,7 +258,8 @@ class FormComponentEditor extends InlineEditor {
 
 
 //                DocumentFragment fragment = webform.getDomSynchronizer().createSourceFragment(bean);
-                DocumentFragment fragment = webform.createSourceFragment(bean);
+//                DocumentFragment fragment = webform.createSourceFragment(bean);
+                DocumentFragment fragment = inlineEditorSupport.createSourceFragment();
                 
                 NodeList nl = fragment.getChildNodes();
                 

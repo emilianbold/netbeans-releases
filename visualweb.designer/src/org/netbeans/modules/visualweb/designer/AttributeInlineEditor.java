@@ -249,7 +249,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 //        }
 
 //        fragment = webform.getDomSynchronizer().createSourceFragment(bean);
-        fragment = webform.createSourceFragment(bean);
+//        fragment = webform.createSourceFragment(bean);
+        fragment = inlineEditorSupport.createSourceFragment();
 
         if (fragment == null) {
             return;
