@@ -67,23 +67,23 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="base">
                 <folder name="Toolbars">
                     <folder name="Default">
-                        <attr name="Separator-after-toggle-highlight-search.instance/bookmark-toggle.shadow" boolvalue="true"/>
-                        <file name="bookmark-toggle.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance"/>
-                        </file>
-                        <attr name="bookmark-toggle.shadow/bookmark-next.shadow" boolvalue="true"/>
-                        <file name="bookmark-next.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Edit/bookmark-next.instance"/>
-                        </file>
-			<attr name="bookmark-next.shadow/bookmark-previous.shadow" boolvalue="true"/>
+                        <attr name="Separator-after-toggle-highlight-search.instance/bookmark-previous.shadow" boolvalue="true"/>
                         <file name="bookmark-previous.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
                         </file>
-                        <attr name="bookmark-previous.shadow/Separator-after-bookmarks.instance" boolvalue="true"/>
+                        <attr name="bookmark-previous.shadow/bookmark-next.shadow" boolvalue="true"/>
+                        <file name="bookmark-next.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/bookmark-next.instance"/>
+                        </file>
+			<attr name="bookmark-next.shadow/bookmark-toggle.shadow" boolvalue="true"/>
+                        <file name="bookmark-toggle.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance"/>
+                        </file>
+                        <attr name="bookmark-toggle.shadow/Separator-after-bookmarks.instance" boolvalue="true"/>
                         <file name="Separator-after-bookmarks.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         </file>
-                        <attr name="Separator-after-bookmarks.instance/word-match-next" boolvalue="true"/>
+                        <attr name="Separator-after-bookmarks.instance/shift-line-left" boolvalue="true"/>
                     </folder>
                 </folder>
             </folder>
