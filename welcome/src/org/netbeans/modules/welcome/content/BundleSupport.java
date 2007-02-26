@@ -20,7 +20,6 @@
 package org.netbeans.modules.welcome.content;
 
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import org.openide.util.NbBundle;
 
@@ -36,43 +35,41 @@ public class BundleSupport {
     private static final String ACD_PREFIX = "ACD_"; // NOI18N
     private static final String MNM_PREFIX = "MNM_"; // NOI18N
     
-    private static ResourceBundle resources = NbBundle.getBundle(BUNDLE_NAME);
-    
     public static String getLabel(String bundleKey) {
-        return resources.getString(LABEL_PREFIX + bundleKey);
+        return NbBundle.getBundle(BUNDLE_NAME).getString(LABEL_PREFIX + bundleKey);
     }
     
     public static String getURL(String bundleKey) {
-        return resources.getString(URL_PREFIX + bundleKey);
+        return NbBundle.getBundle(BUNDLE_NAME).getString(URL_PREFIX + bundleKey);
     }
     
     public static char getMnemonic(String bundleKey) {
-        return resources.getString(MNM_PREFIX + bundleKey).charAt(0);
+        return NbBundle.getBundle(BUNDLE_NAME).getString(MNM_PREFIX + bundleKey).charAt(0);
     }
     
     public static String getSampleCategory(String bundleKey) {
-        return resources.getString(CATEGORY_PREFIX + bundleKey);
+        return NbBundle.getBundle(BUNDLE_NAME).getString(CATEGORY_PREFIX + bundleKey);
     }
 
     public static String getSampleTemplate(String bundleKey) {
-        return resources.getString(TEMPLATE_PREFIX + bundleKey);
+        return NbBundle.getBundle(BUNDLE_NAME).getString(TEMPLATE_PREFIX + bundleKey);
     }
 
     public static String getAccessibilityName(String bundleKey) {
-        return resources.getString(ACN_PREFIX + bundleKey);
+        return NbBundle.getBundle(BUNDLE_NAME).getString(ACN_PREFIX + bundleKey);
     }
     
     public static String getAccessibilityName(String bundleKey, String param) {
-        return MessageFormat.format( resources.getString(ACN_PREFIX + bundleKey), param );
+        return MessageFormat.format( NbBundle.getBundle(BUNDLE_NAME).getString(ACN_PREFIX + bundleKey), param );
     }
     
     public static String getAccessibilityDescription(String bundleKey, String param) {
-        return MessageFormat.format( resources.getString(ACD_PREFIX + bundleKey), param );
+        return MessageFormat.format( NbBundle.getBundle(BUNDLE_NAME).getString(ACD_PREFIX + bundleKey), param );
     }
     
     public static void setAccessibilityProperties(JComponent component, String bundleKey) {
-        String aName = resources.getString(ACN_PREFIX + bundleKey);  
-        String aDescr = resources.getString(ACD_PREFIX + bundleKey);  
+        String aName = NbBundle.getBundle(BUNDLE_NAME).getString(ACN_PREFIX + bundleKey);  
+        String aDescr = NbBundle.getBundle(BUNDLE_NAME).getString(ACD_PREFIX + bundleKey);  
       
         component.getAccessibleContext().setAccessibleName(aName);
         component.getAccessibleContext().setAccessibleDescription(aDescr);
