@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.editor.highlights/0
 OpenIDE-Module-Implementation-Version: 1
-xOpenIDE-Module-Layer: org/netbeans/modules/editor/highlights/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/editor/highlights/resources/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/editor/highlights/HighlighterInstaller.class
+OpenIDE-Module-Deprecated: true
