@@ -173,16 +173,17 @@ class FormComponentEditor extends InlineEditor {
             component = formComp.getComponent();
             element = formComp.getElement();
         } else {
-            element = bean.getElement();
-
-//            RaveElement xel = (RaveElement)element;
-//            if (xel.getRendered() != null) {
-//                element = xel.getRendered();
+//            element = bean.getElement();
+//
+////            RaveElement xel = (RaveElement)element;
+////            if (xel.getRendered() != null) {
+////                element = xel.getRendered();
+////            }
+//            Element rendered = MarkupService.getRenderedElementForElement(element);
+//            if (rendered != null) {
+//                element = rendered;
 //            }
-            Element rendered = MarkupService.getRenderedElementForElement(element);
-            if (rendered != null) {
-                element = rendered;
-            }
+            element = inlineEditorSupport.getRenderedElement();
         }
 
         int width;

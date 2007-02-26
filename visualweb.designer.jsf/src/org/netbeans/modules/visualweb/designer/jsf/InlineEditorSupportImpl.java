@@ -23,7 +23,9 @@ import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.lang.reflect.Method;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.insync.live.DesignBeanNode;
+import org.w3c.dom.Element;
 
 /**
  * Impl of <code>HtmlDomProvider.InlineEditorSupport</code>
@@ -90,5 +92,10 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
 
     public Method getWriteMethod() {
         return designProperty.getPropertyDescriptor().getWriteMethod();
+    }
+
+    public Element getRenderedElement() {
+        Element sourceElement = markupDesignBean.getElement();
+        return MarkupService.getRenderedElementForElement(sourceElement);
     }
 }
