@@ -266,11 +266,9 @@ public class Dragger extends Interaction implements KeyListener {
                         if (element != null) {
 //                            ArrayList candidates = new ArrayList();
 //                            candidates.add(candidate);
-                            if (candidate != null) {
 //                                handler.processLinks(element, null, candidates, true,
 //                                    true, false);
-                                handler.processLinks(element, null, candidate, true, true, false);
-                            }
+                            handler.processLinks(element, null, candidate, true, true, false);
                         }
                     } else {
                         // Try reverse link
@@ -293,11 +291,10 @@ public class Dragger extends Interaction implements KeyListener {
                             if (element != null) {
 //                                ArrayList candidates = new ArrayList();
 //                                candidates.add(candidate);
-                                if (candidate instanceof MarkupDesignBean) {
+
 //                                    handler.processLinks(element, null, candidates, true,
 //                                        true, false);
-                                    handler.processLinks(element, null, candidate, true, true, false);
-                                }
+                                handler.processLinks(element, null, candidate, true, true, false);
                             }
                         }
                     }
