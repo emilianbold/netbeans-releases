@@ -141,7 +141,8 @@ public class ExportDiffPatchTest extends JellyTestCase {
         assertEquals("Wrong number of records in Versioning view!!!", 1, vo.tabFiles().getRowCount());
         
         node = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
-        node.performMenuActionNoBlock("Versioning|Subversion|Export");
+        node.select();
+        node.performMenuActionNoBlock("Versioning|Export");
         nbdialog = new NbDialogOperator("Export");
         JButtonOperator btn = new JButtonOperator(nbdialog, "Export");
         JTextFieldOperator tf = new JTextFieldOperator(nbdialog, 0);

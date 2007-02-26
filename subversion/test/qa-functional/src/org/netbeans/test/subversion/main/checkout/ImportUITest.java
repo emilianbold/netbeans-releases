@@ -125,7 +125,7 @@ public class ImportUITest extends JellyTestCase {
        
         //Warning message for empty REPOSITORY FOLDER
         ftiso.setRepositoryFolder("");
-        assertEquals("Repository folder must be specified", "Repository folder must be specified", ftiso.lblImportMessageRequired().getText());
+        assertEquals("Repository Folder must be specified", "Repository Folder must be specified", ftiso.lblImportMessageRequired().getText());
         assertFalse("Next button should be disabled", ftiso.btNext().isEnabled());
         assertFalse("Finish button should be disabled", ftiso.btFinish().isEnabled());
         
