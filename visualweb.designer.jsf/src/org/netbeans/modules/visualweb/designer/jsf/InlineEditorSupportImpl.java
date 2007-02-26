@@ -55,11 +55,6 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
         return HtmlDomProviderServiceImpl.isEditingAllowed(designProperty);
     }
 
-    // XXX AttributeInlineEditor only.
-    public String getSpecialInitValue() {
-        return HtmlDomProviderServiceImpl.getSpecialInitValue(designProperty);
-    }
-
     public String getValueSource() {
         return designProperty.getValueSource();
     }
@@ -70,5 +65,17 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
 
     public void setValue(String value) {
         designProperty.setValue(value);
+    }
+
+    // XXX AttributeInlineEditor only.
+    public String getSpecialInitValue() {
+        return HtmlDomProviderServiceImpl.getSpecialInitValue(designProperty);
+    }
+
+    public String getValue() {
+        // String assumption should be checked in beandescriptor search for TEXT_NODE_PROPERTY,
+        // especially if we publish this property. Or we could at least specify that the
+        // property MUST be a String.
+        return (String)designProperty.getValue();
     }
 }

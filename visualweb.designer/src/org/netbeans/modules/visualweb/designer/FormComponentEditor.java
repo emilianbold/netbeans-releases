@@ -435,9 +435,11 @@ class FormComponentEditor extends InlineEditor {
             String value = getText();
 
             if ((value != null) && (value.length() == 0)) {
-                property.unset();
+//                property.unset();
+                inlineEditorSupport.unset();
             } else {
-                property.setValue(value);
+//                property.setValue(value);
+                inlineEditorSupport.setValue(value);
             }
         }
 
