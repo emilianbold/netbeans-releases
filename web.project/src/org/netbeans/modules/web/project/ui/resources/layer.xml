@@ -110,5 +110,14 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
         </folder>
+    </folder>   
+            
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-web-project">
+            
+            <folder name="Lookup"/>
+            
+        </folder>
     </folder>
+
 </filesystem>

@@ -1145,9 +1145,14 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="resources-read">
-  <p>
-   No.
-  </p>
+    <api group="layer" name="WebLookup" type="export" category="official">
+     <p>
+       "Projects/org-netbeans-modules-web-project/Lookup" folder's content is used to construct the project's additional lookup.
+       It's content is expected to be <code>LookupProvider</code> instances. Web project provides <code>LookupMerger</code>s 
+       for <code>Sources</code>, <code>PrivilegedTemplates</code> and <code>RecommendedTemplates</code>. Implementations added by 3rd parties 
+       will be merged into a single instance in the project's lookup.
+     </p>
+    </api>
  </answer>
 
 
