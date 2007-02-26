@@ -45,7 +45,7 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author Pavel Flaska
  */
-public class ModifiersTest extends GeneratorTest {
+public class ModifiersTest extends GeneratorTestMDRCompat {
     
     /** Creates a new instance of ModifiersTEst */
     public ModifiersTest(String name) {
