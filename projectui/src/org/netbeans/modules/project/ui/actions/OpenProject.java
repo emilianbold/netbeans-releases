@@ -45,13 +45,12 @@ import org.openide.windows.WindowManager;
 
 public class OpenProject extends BasicAction {
     
-    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/openProject.gif" ) ); //NOI18N    
     private static final String NAME = NbBundle.getMessage( OpenProject.class, "LBL_OpenProjectAction_Name" ); // NOI18N
     private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( OpenProject.class, "LBL_OpenProjectAction_Tooltip" ); // NOI18N
         
     /** Creates a new instance of BrowserAction */
     public OpenProject() {
-        super( NAME, ICON );
+        super( NAME, new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/openProject.gif" ) ) );
         putValue("iconBase","org/netbeans/modules/project/ui/resources/openProject.gif"); //NOI18N
         putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
     }
