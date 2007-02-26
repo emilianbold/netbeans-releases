@@ -628,7 +628,8 @@ public abstract class InlineEditor {
 //        return ((bean == this.bean) &&
 //        ((this.propertyName != null) && this.propertyName.equals(propertyName))) ||
 //        (this.propertyName == propertyName);
-        String currPropertyName = property == null ? null : property.getPropertyDescriptor().getName();
+//        String currPropertyName = property == null ? null : property.getPropertyDescriptor().getName();
+        String currPropertyName = inlineEditorSupport.getName();
         return ((bean == this.bean) &&
         ((currPropertyName != null) && currPropertyName.equals(propertyName))) ||
         (currPropertyName == propertyName);
