@@ -2188,9 +2188,9 @@ public class WebForm implements Designer {
             return null;
         }
         
-        public boolean isValueBindingExpression(String value, boolean containsOK) {
-            return false;
-        }
+//        public boolean isValueBindingExpression(String value, boolean containsOK) {
+//            return false;
+//        }
 
         public String computeFileName(Object location) {
             return location == null ? null : location.toString();
