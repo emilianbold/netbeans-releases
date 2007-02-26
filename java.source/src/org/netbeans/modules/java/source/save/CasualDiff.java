@@ -1102,7 +1102,8 @@ public class CasualDiff {
             diffInfo.put(endPos(oldT.selected) + 1, "Update reference to " + oldT.name);
             localPointer = endPos(oldT.selected) + 1 +oldT.name.length();
         }
-        return localPointer;
+        copyTo(localPointer, bounds[1]);
+        return bounds[1];
     }
 
     protected int diffIdent(JCIdent oldT, JCIdent newT, int lastPrinted) {

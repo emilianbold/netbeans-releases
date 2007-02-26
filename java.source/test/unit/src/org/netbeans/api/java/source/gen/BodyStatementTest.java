@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.gen;
@@ -83,6 +83,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new BodyStatementTest("testRenameInTypeTestII"));
 //        suite.addTest(new BodyStatementTest("testChangeLiteral"));
 //        suite.addTest(new BodyStatementTest("testRenameInArrInit"));
+//        suite.addTest(new BodyStatementTest("testRenameClazz"));
         return suite;
     }
     
@@ -1929,6 +1930,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
     /**
      * Changing names in array init - #92610
      */
@@ -1982,6 +1984,55 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    /**
+     * Rename clazz... Test.class -> RenamedTest.class is not correctly generated
+     * in method parameter (#92610)
+     * 
+     */
+    public void testRenameClazz() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(Class o) {\n" +
+            "        method(Test.class);\n" +
+            "    }\n" +
+            "}\n");
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class RenamedTest {\n" +
+            "    public Object method(Class o) {\n" +
+            "        method(RenamedTest.class);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                workingCopy.rewrite(clazz, make.setLabel(clazz, "RenamedTest"));
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                // body rename
+                BlockTree block = method.getBody();
+                ExpressionStatementTree est = (ExpressionStatementTree) block.getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                MemberSelectTree mst = (MemberSelectTree) mit.getArguments().get(0);
+                workingCopy.rewrite(mst.getExpression(), make.Identifier("RenamedTest"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     // methods not used in this test.
     String getGoldenPckg() {
         return "";
@@ -1991,11 +2042,4 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         return "";
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
-    }
-
 }
