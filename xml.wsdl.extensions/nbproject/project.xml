@@ -66,6 +66,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <friend>org.netbeans.modules.compapp.projects.jbi</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.bpel</package>
+                <package>org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.schema.resources</package>
             </friend-packages>
         </data>
     </configuration>
