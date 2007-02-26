@@ -10,13 +10,14 @@
 package org.netbeans.modules.vmd.game;
 
 import java.awt.BorderLayout;
+import java.awt.GridBagLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.EditorManagerListener;
-import org.netbeans.modules.vmd.game.view.main.MainView;
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.Lookup;
 
@@ -26,12 +27,14 @@ import org.openide.util.Lookup;
  */
 public class GameBuilderNavigator extends JPanel implements NavigatorPanel, EditorManagerListener {
     
+	private GlobalRepository gameDesign;
+	
     /** Creates a new instance of GameBuilderNavigator */
-    public GameBuilderNavigator() {
+    public GameBuilderNavigator(GlobalRepository gameDesign) {
 		System.out.println("GameBuilderNavigator instance created!");
-		MainView.getInstance().addEditorManagerListener(this);
-		this.setLayout(new BorderLayout());
-		Editable editable = MainView.getInstance().getCurrentEditable();
+		this.gameDesign = gameDesign;
+		this.gameDesign.getMainView().addEditorManagerListener(this);
+		Editable editable = this.gameDesign.getMainView().getCurrentEditable();
 		if (editable == null)
 			return;
 		JComponent navigator = editable.getNavigator();
@@ -43,7 +46,7 @@ public class GameBuilderNavigator extends JPanel implements NavigatorPanel, Edit
     }
 
     public String getDisplayHint() {
-        return "Show logical structure of game components.";
+        return "Show logical structure of game design components.";
     }
 
     public JComponent getComponent() {
@@ -64,10 +67,12 @@ public class GameBuilderNavigator extends JPanel implements NavigatorPanel, Edit
 		System.out.println("setNavigator: " + navigator);
 		this.removeAll();
 		if (navigator != null) {
+			this.setLayout(new BorderLayout());
 			this.add(new JScrollPane(navigator), BorderLayout.CENTER);
 		}
 		else {
-			this.add(new JLabel("<No structure available>"), BorderLayout.CENTER);
+			this.setLayout(new GridBagLayout());
+			this.add(new JLabel("<No structure available>"));
 		}
 		this.validate();
 		this.repaint();

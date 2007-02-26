@@ -26,7 +26,6 @@ import java.util.Iterator;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.SceneListener;
@@ -140,7 +139,7 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 				break;
 			case COL_INDEX_LAYER_NAME:
 				String name = (String) aValue;
-				if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+				if (!this.scene.getGameDesign().isComponentNameAvailable(name)) {
 					DialogDisplayer.getDefault().notify(
 							new DialogDescriptor.Message("Layer cannot be renamed because component name '" 
 							+ name + "' already exists.", DialogDescriptor.ERROR_MESSAGE)

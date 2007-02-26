@@ -59,6 +59,7 @@ import javax.swing.JViewport;
 import javax.swing.Scrollable;
 import javax.swing.ToolTipManager;
 import javax.swing.event.EventListenerList;
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Sequence;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
@@ -515,7 +516,7 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 			this.selection.setSelected(f, !alreadySelected);
 		}
 		this.repaint();
-		MainView.getInstance().requestPreview(this.sequence.getFrame(f));
+		this.sequence.getGameDesign().getMainView().requestPreview(this.sequence.getFrame(f));
     }
 
     public void mousePressed(MouseEvent e) {

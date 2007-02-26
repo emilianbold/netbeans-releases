@@ -42,7 +42,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
-
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.LayerDataFlavor;
 import org.netbeans.modules.vmd.game.model.Scene;
@@ -140,7 +140,7 @@ public class SceneLayerNavigator extends JTable {
 			int selectedLayerIndex = SceneLayerNavigator.this.getSelectionModel().getAnchorSelectionIndex();
 			Layer selectedLayer = SceneLayerNavigator.this.scene.getLayerAt(selectedLayerIndex);
 			if (DEBUG) System.out.println(selectedLayer + " has been selected.");
-			MainView.getInstance().requestPreview(selectedLayer);
+			selectedLayer.getGameDesign().getMainView().requestPreview(selectedLayer);
 		}
 	}
 	

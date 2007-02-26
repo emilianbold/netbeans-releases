@@ -58,8 +58,6 @@ public class Sequence implements Previewable, Editable {
 		
 	private String name;
 	
-	//XXX david kaspar disagrees with this being here since a squence should
-	//always use the same image resource as it's SequenceContainer implementation
 	private ImageResource imageResource;
 	
 	private int frameWidth;
@@ -95,8 +93,12 @@ public class Sequence implements Previewable, Editable {
 		this.frames.addAll(sequence.getFrames());
 	}
 
+	public GlobalRepository getGameDesign() {
+		return this.imageResource.getGameDesign();
+	}
+	
 	public void setName(String name) {
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+		if (!this.getGameDesign().isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Sequence cannot be renamed because component name '" + name + "' already exists.");
 		}
 		String oldName = this.name;

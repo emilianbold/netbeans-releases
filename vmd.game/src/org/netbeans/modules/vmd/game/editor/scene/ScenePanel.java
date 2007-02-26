@@ -52,7 +52,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
 import org.netbeans.modules.vmd.game.dialog.NewSceneDialog;
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Position;
 import org.netbeans.modules.vmd.game.model.Scene;
@@ -68,7 +67,6 @@ import org.netbeans.modules.vmd.game.model.Scene.RemoveSceneAction;
 import org.netbeans.modules.vmd.game.model.Scene.RenameSceneAction;
 import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
 import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
-import org.netbeans.modules.vmd.game.view.main.MainView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -840,7 +838,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 			Point p = this.adjustToOriginShift(e.getPoint());
 			List<Layer> layers = this.scene.getLayersAtPoint(p);
 			if (!layers.isEmpty()) {
-				MainView.getInstance().requestEditing(layers.get(0));
+				this.scene.getGameDesign().getMainView().requestEditing(layers.get(0));
 			}
 		}
 	}
@@ -871,7 +869,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		CreateSpriteAction csp = this.scene.new CreateSpriteAction();
 		
 		JMenu sub2MenuTiledLayers = new JMenu("Add tiled layer");
-		List<TiledLayer> tiledLayers = GlobalRepository.getInstance().getTiledLayers();
+		List<TiledLayer> tiledLayers = this.scene.getGameDesign().getTiledLayers();
 		for (TiledLayer layer : tiledLayers) {
 			if (this.scene.contains(layer)) {
 				continue;
@@ -887,7 +885,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 		
 		JMenu sub2MenuSprites = new JMenu("Add sprite");
-		List<Sprite> sprites = GlobalRepository.getInstance().getSprites();
+		List<Sprite> sprites = this.scene.getGameDesign().getSprites();
 		for (Sprite layer : sprites) {
 			if (this.scene.contains(layer)) {
 				continue;
@@ -1158,7 +1156,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 
 		public void actionPerformed(ActionEvent e) {
 			Layer layer = (Layer) this.getValue(PROP_LAYER);
-			MainView.getInstance().requestEditing(layer);
+			ScenePanel.this.scene.getGameDesign().getMainView().requestEditing(layer);
 		}
 	}
 	
@@ -1325,7 +1323,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			NewSceneDialog dialog = new NewSceneDialog();
+			NewSceneDialog dialog = new NewSceneDialog(ScenePanel.this.scene.getGameDesign());
 			DialogDescriptor dd = new DialogDescriptor(dialog, "Create a new Scene");
 			dd.setButtonListener(dialog);
 			dd.setValid(false);

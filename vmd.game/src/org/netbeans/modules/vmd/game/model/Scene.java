@@ -63,15 +63,19 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	
 	private Rectangle allLayersBounds = new Rectangle();
 	private SceneEditor editor;
+	
+	private GlobalRepository gameDesign;
 
-	Scene(String name) {
+	Scene(GlobalRepository gameDesign, String name) {
+		assert (gameDesign != null);
+		this.gameDesign = gameDesign;
 		editor = null;
 		this.name = name;
-		GlobalRepository.getInstance().addGlobalRepositoryListener(this);
+		this.gameDesign.addGlobalRepositoryListener(this);
 	}
 
-	Scene(String name, Scene other) {
-		this(name);
+	Scene(GlobalRepository gameDesign, String name, Scene other) {
+		this(gameDesign, name);
 		for (Iterator iter = other.layers.iterator(); iter.hasNext();) {
 			Layer layer = (Layer) iter.next();
 			this.insert(layer, other.indexOf(layer));
@@ -86,7 +90,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	}
 
 	public void setName(String name) {
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+		if (!this.gameDesign.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Scene cannot be renamed because component name '" + name + "' already exists.");
 		}
 		String oldName = this.name;
@@ -142,13 +146,13 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	}
 	
 	public TiledLayer createTiledLayer(String name, ImageResource imageResource, int rows, int columns, int tileWidth, int tileHeight) {
-		TiledLayer layer = GlobalRepository.getInstance().createTiledLayer(name, imageResource, rows, columns, tileWidth, tileHeight);
+		TiledLayer layer = this.gameDesign.createTiledLayer(name, imageResource, rows, columns, tileWidth, tileHeight);
 		this.append(layer);
 		return layer;
 	}
 
 	public Sprite createSprite(String name, ImageResource imageResource, int numberFrames, int frameWidth, int frameHeight) {
-		Sprite sprite = GlobalRepository.getInstance().createSprite(name, imageResource, numberFrames, frameWidth, frameHeight);
+		Sprite sprite = this.gameDesign.createSprite(name, imageResource, numberFrames, frameWidth, frameHeight);
 		this.append(sprite);
 		return sprite;
 	}
@@ -450,6 +454,10 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		return null;
 	}
 
+	public GlobalRepository getGameDesign() {
+		return this.gameDesign;
+	}
+	
 	public String toString() {
 		return this.name;
 	}
@@ -543,7 +551,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			GlobalRepository.getInstance().removeScene(Scene.this);
+			gameDesign.removeScene(Scene.this);
 		}
 	}
 

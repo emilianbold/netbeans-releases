@@ -45,7 +45,6 @@ import org.netbeans.modules.vmd.game.model.SequenceContainer;
 import org.netbeans.modules.vmd.game.model.SequenceContainerListener;
 import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.model.TileTransferable;
-import org.netbeans.modules.vmd.game.view.main.MainView;
 /**
  *
  * @author kherink
@@ -85,7 +84,7 @@ public class AnimatedTileList extends JList {
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (e.getClickCount() >= 2) {
 					AnimatedTile tile = (AnimatedTile) AnimatedTileList.this.getSelectedValue();
-					MainView.getInstance().requestEditing(tile);
+					tile.getImageResource().getGameDesign().getMainView().requestEditing(tile);
 				}
             }
 		});
@@ -99,7 +98,7 @@ public class AnimatedTileList extends JList {
 		Tile tile = (Tile) this.getSelectedValue();
 		if (tile == null)
 			return;
-		MainView.getInstance().requestPreview(tile);
+		tile.getImageResource().getGameDesign().getMainView().requestPreview(tile);
 		this.editorComponent.setPaintTileIndex(tile.getIndex());
 	}
 	

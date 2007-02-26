@@ -38,26 +38,27 @@ public class GlobalRepositoryListAdapter extends AbstractListModel implements Gl
 	private static final String ADDITIONAL_LIST_ITEM_TILEDLAYERS_LABEL = "Tiled Layers";
 	private static final String ADDITIONAL_LIST_ITEM_SPRITES_LABEL = "Sprites";
 	
-	private GlobalRepository globalRepository = GlobalRepository.getInstance();	
+	private GlobalRepository gameDesign;	
 	
 	/** Creates a new instance of GlobalRepositoryListAdapter */
-	public GlobalRepositoryListAdapter() {
-		this.globalRepository.addGlobalRepositoryListener(this);
+	public GlobalRepositoryListAdapter(GlobalRepository gameDesign) {
+		this.gameDesign = gameDesign;
+		this.gameDesign.addGlobalRepositoryListener(this);
 	}
 	
 	//AbstractListModel
 	public int getSize() {
-		int sceneCount = this.globalRepository.getScenes().size();
-		int tiledLayerCount = this.globalRepository.getTiledLayers().size();
-		int spriteCount = this.globalRepository.getSprites().size();
+		int sceneCount = this.gameDesign.getScenes().size();
+		int tiledLayerCount = this.gameDesign.getTiledLayers().size();
+		int spriteCount = this.gameDesign.getSprites().size();
 		
 		return sceneCount + tiledLayerCount + spriteCount + ADDITIONAL_LIST_ITEM_COUNT;
 	}
 
 	public Object getElementAt(int index) {
-		int sceneCount = this.globalRepository.getScenes().size();
-		int tiledLayerCount = this.globalRepository.getTiledLayers().size();
-		int spriteCount = this.globalRepository.getSprites().size();
+		int sceneCount = this.gameDesign.getScenes().size();
+		int tiledLayerCount = this.gameDesign.getTiledLayers().size();
+		int spriteCount = this.gameDesign.getSprites().size();
 		
 		int offset = 0;
 		
@@ -66,7 +67,7 @@ public class GlobalRepositoryListAdapter extends AbstractListModel implements Gl
 		offset += 1;
 		
 		if (index < sceneCount + offset)
-			return this.globalRepository.getScenes().get(index -offset);
+			return this.gameDesign.getScenes().get(index -offset);
 		offset += sceneCount;
 		
 		if (index == offset)
@@ -74,7 +75,7 @@ public class GlobalRepositoryListAdapter extends AbstractListModel implements Gl
 		offset += 1;
 		
 		if (index < tiledLayerCount + offset)
-			return this.globalRepository.getTiledLayers().get(index - offset);
+			return this.gameDesign.getTiledLayers().get(index - offset);
 		offset += tiledLayerCount;
 		
 		if (index == offset)
@@ -82,7 +83,7 @@ public class GlobalRepositoryListAdapter extends AbstractListModel implements Gl
 		offset += 1;
 		
 		if (index < spriteCount + offset)
-			return this.globalRepository.getSprites().get(index - offset);
+			return this.gameDesign.getSprites().get(index - offset);
 		
 		return null;
 	}
@@ -99,22 +100,22 @@ public class GlobalRepositoryListAdapter extends AbstractListModel implements Gl
 	}
 
 	public void tiledLayerAdded(TiledLayer tiledLayer, int index) {
-		int offset = 1 + this.globalRepository.getScenes().size() + 1;
+		int offset = 1 + this.gameDesign.getScenes().size() + 1;
 		this.fireIntervalAdded(this, index + offset, index + offset);
 	}
 
 	public void tiledLayerRemoved(TiledLayer tiledLayer, int index) {
-		int offset = 1 + this.globalRepository.getScenes().size() + 1;
+		int offset = 1 + this.gameDesign.getScenes().size() + 1;
 		this.fireIntervalRemoved(this, index + offset, index + offset);
 	}
 
 	public void spriteAdded(Sprite sprite, int index) {
-		int offset = 1 + this.globalRepository.getScenes().size() + 1 + this.globalRepository.getTiledLayers().size() + 1;
+		int offset = 1 + this.gameDesign.getScenes().size() + 1 + this.gameDesign.getTiledLayers().size() + 1;
 		this.fireIntervalAdded(this, index + offset, index + offset);
 	}
 
 	public void spriteRemoved(Sprite sprite, int index) {
-		int offset = 1 + this.globalRepository.getScenes().size() + 1 + this.globalRepository.getTiledLayers().size() + 1;
+		int offset = 1 + this.gameDesign.getScenes().size() + 1 + this.gameDesign.getTiledLayers().size() + 1;
 		this.fireIntervalRemoved(this, index + offset, index + offset);
 	}
 	

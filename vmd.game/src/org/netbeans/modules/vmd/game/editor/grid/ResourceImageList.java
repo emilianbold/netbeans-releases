@@ -36,7 +36,6 @@ import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.StaticTile;
 import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.model.TileTransferable;
-import org.netbeans.modules.vmd.game.view.main.MainView;
 
 /**
  *
@@ -63,8 +62,8 @@ class ResourceImageList extends JList {
 				int index = ResourceImageList.this.getSelectedIndex();
 				if (index != -1) {
 					StaticTile tile = (StaticTile) ResourceImageList.this.getModel().getElementAt(index);
-					MainView.getInstance().requestPreview(tile);
-					MainView.getInstance().paintTileChanged(tile);
+					tile.getImageResource().getGameDesign().getMainView().requestPreview(tile);
+					tile.getImageResource().getGameDesign().getMainView().paintTileChanged(tile);
 				}
 			}
 		});
@@ -124,8 +123,8 @@ class ResourceImageList extends JList {
 		private void handleTileSelection(int index) {
 			if (DEBUG) System.out.println("Tile selected: " + index);
 			StaticTile tile = (StaticTile) ResourceImageList.this.getModel().getElementAt(index);
-			MainView.getInstance().requestPreview(tile);
-			MainView.getInstance().paintTileChanged(tile);
+			tile.getImageResource().getGameDesign().getMainView().requestPreview(tile);
+			tile.getImageResource().getGameDesign().getMainView().paintTileChanged(tile);
 		}
 	}
 

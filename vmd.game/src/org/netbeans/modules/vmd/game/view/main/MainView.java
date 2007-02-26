@@ -44,15 +44,8 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 	//the right panel contains editor and optional resource grid
 	private JPanel mainEditorPanel;
 	private ResourceImageEditor resourceImageView;
-
-	private static MainView instance;
 	
-	public static MainView getInstance() {
-		return instance == null ? instance = new MainView() : instance;
-	}
-	
-	private MainView() {
-		GlobalRepository.getInstance().addGlobalRepositoryListener(this);
+	public MainView() {
 		this.initComponents();
 		this.initLayout();
 	}
@@ -213,7 +206,7 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 
 	
 	public static void main(String[] args) {
-		MainView view  = MainView.getInstance();
+		MainView view  = new MainView();
 		JFrame frame = new JFrame("Zero Effort Game Builder");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(new Dimension(900, 600));

@@ -65,6 +65,7 @@ import javax.swing.ToolTipManager;
 import org.netbeans.modules.vmd.game.dialog.DuplicateTiledLayerDialog;
 import org.netbeans.modules.vmd.game.dialog.NewSimpleTiledLayerDialog;
 import org.netbeans.modules.vmd.game.model.AnimatedTile;
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Position;
@@ -426,7 +427,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			if (e.getClickCount() >= 2 && !SwingUtilities.isRightMouseButton(e)) {
 				this.selectByIndex(this.tiledLayer.getTileAt(cell.getRow(), cell.getCol()).getIndex());
 			}
-			MainView.getInstance().requestPreview(this.tiledLayer.getTileAt(cell.getRow(), cell.getCol()));
+			this.tiledLayer.getGameDesign().getMainView().requestPreview(this.tiledLayer.getTileAt(cell.getRow(), cell.getCol()));
 		}
 		else if (isPaintMode()) {
 			//do nothing, painting happens on mouse pressed
@@ -457,7 +458,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		}
 		
 		this.repaint(getCellArea(cell));
-		MainView.getInstance().requestPreview(this.tiledLayer.getTileAt(cell.getRow(), cell.getCol()));
+		this.tiledLayer.getGameDesign().getMainView().requestPreview(this.tiledLayer.getTileAt(cell.getRow(), cell.getCol()));
 	}
 	
 	//MouseMotionListener
@@ -681,7 +682,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			TiledLayerDialog nld = new TiledLayerDialog(null);
+			TiledLayerDialog nld = new TiledLayerDialog(TiledLayerEditorComponent.this.tiledLayer.getGameDesign());
 			DialogDescriptor dd = new DialogDescriptor(nld, "Create new TiledLayer");
 			dd.setButtonListener(nld);
 			dd.setValid(false);

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.vmd.game.dialog;
 
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 
 /**
@@ -54,14 +53,14 @@ public class DuplicateTiledLayerDialog extends AbstractNameValidationDialog {
 		if (name.equals("")) {
 			return this.getInitialStateDescriptionText();
 		}
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+		if (!this.tiledLayer.getGameDesign().isComponentNameAvailable(name)) {
 			errMsg = "Component name already exists. Choose a different name.";
 		}		
 		return errMsg;
 	}
 
 	protected void handleOKButton() {
-		GlobalRepository.getInstance().duplicateTiledLayer(this.fieldName.getText(), this.tiledLayer);
+		this.tiledLayer.getGameDesign().duplicateTiledLayer(this.fieldName.getText(), this.tiledLayer);
 	}
 	
 }

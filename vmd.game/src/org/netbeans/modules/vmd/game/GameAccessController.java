@@ -20,10 +20,7 @@
 package org.netbeans.modules.vmd.game;
 
 import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.game.view.main.MainView;
-
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -34,7 +31,6 @@ public class GameAccessController implements AccessController {
 
     public static final boolean DEBUG = false;
     
-    private ArrayList<GameController> controllers;
     private DesignDocument document;
 	
 	
@@ -55,16 +51,12 @@ public class GameAccessController implements AccessController {
 			System.out.println("GameAccessController.notifyEventFired() : " + event);
 	}
 	
-    public JComponent createView () {
-        return MainView.getInstance().getRootComponent();
-    }
-	
 	public void notifyComponentsCreated(Collection<DesignComponent> createdComponents) {
 	}
 	
     public static class Factory implements AccessControllerFactory {
 
-        public AccessController createAccessController (DesignDocument document) {
+        public AccessController createAccessController(DesignDocument document) {
             return new GameAccessController (document);
         }
 

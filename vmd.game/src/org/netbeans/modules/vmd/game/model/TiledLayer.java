@@ -46,18 +46,18 @@ public class TiledLayer extends Layer {
 	private JComponent editor;
 	private int[][] grid;
 	
-	TiledLayer(String name, ImageResource imageResource, int rows, int columns, int tileWidth, int tileHeight) {
-		super(name, imageResource, tileWidth, tileHeight);
+	TiledLayer(GlobalRepository gameDesign, String name, ImageResource imageResource, int rows, int columns, int tileWidth, int tileHeight) {
+		super(gameDesign, name, imageResource, tileWidth, tileHeight);
 		this.grid = new int[rows][columns];
 	}
 	
-	TiledLayer(String name, ImageResource imageResource, int[][] grid, int tileWidth, int tileHeight) {
-		super(name, imageResource, tileWidth, tileHeight);
+	TiledLayer(GlobalRepository gameDesign, String name, ImageResource imageResource, int[][] grid, int tileWidth, int tileHeight) {
+		super(gameDesign, name, imageResource, tileWidth, tileHeight);
 		this.grid = grid;
 	}
 	
-	TiledLayer(String name, TiledLayer tiledLayer) {
-		super(name, tiledLayer.getImageResource(), tiledLayer.getTileWidth(), tiledLayer.getTileHeight());
+	TiledLayer(GlobalRepository gameDesign, String name, TiledLayer tiledLayer) {
+		super(gameDesign, name, tiledLayer.getImageResource(), tiledLayer.getTileWidth(), tiledLayer.getTileHeight());
 		this.grid = new int[tiledLayer.grid.length][];
 		for (int i = 0; i < this.grid.length; i++) {
 			int[] copyRow = new int[tiledLayer.grid[i].length];

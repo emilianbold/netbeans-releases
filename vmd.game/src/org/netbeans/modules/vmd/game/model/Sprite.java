@@ -47,16 +47,16 @@ public class Sprite extends Layer implements SequenceContainer {
 	/**
 	 * Creates a new animated Sprite using frames contained in the provided Image.
 	 */
-	Sprite(String name, ImageResource imageResource, int numberFrames, int frameWidth, int frameHeight) {
-		super(name, imageResource, frameWidth, frameHeight);
+	Sprite(GlobalRepository gameDesign, String name, ImageResource imageResource, int numberFrames, int frameWidth, int frameHeight) {
+		super(gameDesign, name, imageResource, frameWidth, frameHeight);
 		this.sequenceContainer = new SequenceContainerImpl(this, null, super.propertyChangeSupport, imageResource, frameWidth, frameHeight);
 		String seqName = this.getNextSequenceName(name + "seq");
 		Sequence defaultSequence = this.createSequence(seqName, numberFrames, frameWidth, frameHeight);
 		this.setDefaultSequence(defaultSequence);
 	}
     
-	Sprite(String name, ImageResource imageResource, Sequence defaultSequence) {
-		super(name, imageResource, defaultSequence.getFrameWidth(), defaultSequence.getFrameHeight());
+	Sprite(GlobalRepository gameDesign, String name, ImageResource imageResource, Sequence defaultSequence) {
+		super(gameDesign, name, imageResource, defaultSequence.getFrameWidth(), defaultSequence.getFrameHeight());
 		this.sequenceContainer = new SequenceContainerImpl(this, null, super.propertyChangeSupport, imageResource, defaultSequence.getFrameWidth(), defaultSequence.getFrameHeight());
 		this.setDefaultSequence(defaultSequence);
 	}

@@ -37,6 +37,8 @@ public class ImageResource {
 	
 	public static final boolean DEBUG = false;
 	
+    private GlobalRepository gameDesign;
+	
 	EventListenerList listenerList = new EventListenerList();
 	
 	private URL imageURL;
@@ -67,7 +69,9 @@ public class ImageResource {
 	/**
 	 * Only called from GlobalRepository.getImageResource()
 	 */
-	ImageResource(URL imageURL, String relativeResourcePath) {
+	ImageResource(GlobalRepository gameDesign, URL imageURL, String relativeResourcePath) {
+		assert (gameDesign != null);
+		this.gameDesign = gameDesign;
 		this.imageURL = imageURL;
 		this.relativeResourcePath = relativeResourcePath;
 	}
@@ -80,7 +84,7 @@ public class ImageResource {
 	}
 	
 	public Sequence createSequence(String name, int numberFrames, int frameWidth, int frameHeight) {
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+		if (!this.gameDesign.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Sequence cannot be created because component name '" + name + "' already exists.");
 		}
 		Sequence sequence = new Sequence(name, this, numberFrames, frameWidth, frameHeight);
@@ -90,7 +94,7 @@ public class ImageResource {
 	}
 	
 	public Sequence createSequence(String name, Sequence sequence) {
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+		if (!this.gameDesign.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Sequence cannot be created because component name '" + name + "' already exists.");
 		}
 		Sequence newSequence = new Sequence(name, sequence);
@@ -139,7 +143,7 @@ public class ImageResource {
 		assert (index < 0);
 		assert (this.animatedTiles.get(index) == null);
 		
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+		if (!this.gameDesign.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists.");
 		}
 		
@@ -155,7 +159,7 @@ public class ImageResource {
 	}
 	
 	public AnimatedTile createAnimatedTile(String name, int firstStaticTileIndex, int tileWidth, int tileHeight) {
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+		if (!this.gameDesign.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists.");
 		}
 		
@@ -167,7 +171,7 @@ public class ImageResource {
 		assert (index < 0);
 		assert (this.animatedTiles.get(index) == null);
 		
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+		if (!this.gameDesign.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists.");
 		}
 		
@@ -181,7 +185,7 @@ public class ImageResource {
 	}
 	
 	public AnimatedTile createAnimatedTile(String name, Sequence sequence) {
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+		if (!this.gameDesign.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists.");
 		}
 		int index = this.animatedTileIndexKey--;
@@ -357,6 +361,10 @@ public class ImageResource {
 		return "ImageResource: " + this.imageURL;
 	}
 	
+	public GlobalRepository getGameDesign() {
+		return this.gameDesign;
+	}
+	
 	public URL getURL() {
 		return this.imageURL;
 	}
@@ -373,5 +381,5 @@ public class ImageResource {
 		name = name.substring(0, name.lastIndexOf("."));
 		return name;
 	}
-	
+
 }

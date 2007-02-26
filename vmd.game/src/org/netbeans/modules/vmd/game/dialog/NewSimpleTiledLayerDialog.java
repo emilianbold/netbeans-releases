@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.vmd.game.dialog;
 
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 
 /**
@@ -60,14 +59,14 @@ public class NewSimpleTiledLayerDialog extends AbstractNameValidationDialog {
 		if (layerName.equals("")) {
 			return this.getInitialStateDescriptionText();
 		}
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(layerName)) {
+		if (!imgRes.getGameDesign().isComponentNameAvailable(layerName)) {
 			errMsg = "Component name already exists. Choose a different name.";
 		}		
 		return errMsg;
 	}
 
 	protected void handleOKButton() {
-		GlobalRepository.getInstance().createTiledLayer(this.fieldName.getText(), this.imgRes, this.grid, tileWidth, tileHeight);
+		this.imgRes.getGameDesign().createTiledLayer(this.fieldName.getText(), this.imgRes, this.grid, tileWidth, tileHeight);
 	}
 	
 }

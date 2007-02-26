@@ -62,16 +62,19 @@ import org.openide.util.Utilities;
  */
 public class TiledLayerDialog extends javax.swing.JPanel implements ActionListener {
 	
+	private GlobalRepository gameDesign;
+	
     private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif"));
 
 	/** Creates new form NewTiledLayerDialog */
-	public TiledLayerDialog() {
+	public TiledLayerDialog(GlobalRepository gameDesign) {
+		this.gameDesign = gameDesign;
 		initComponents();
 		init();
 	}
 	
 	public TiledLayerDialog(Scene parent) {
-		this();
+		this(parent.getGameDesign());
 		this.scene = parent;
 	}
 	
@@ -375,7 +378,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 	}
 	
 	private List<Map.Entry<FileObject, String>> getImageList() {
-		Map<FileObject, String> imgMap = MidpProjectSupport.getImagesForProject(GameController.getDesignDocument(), true);
+		Map<FileObject, String> imgMap = MidpProjectSupport.getImagesForProject(this.gameDesign.getDesignDocument(), true);
 		List<Map.Entry<FileObject, String>> list = new ArrayList<Map.Entry<FileObject, String>>();
 		list.addAll(imgMap.entrySet());
 		Collections.sort(list, new Comparator() {
@@ -464,7 +467,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 		if (layerName.equals("")) {
 			errMsg = "Enter layer name.";
 		} 
-		else if (!GlobalRepository.getInstance().isComponentNameAvailable(layerName)) {
+		else if (!this.gameDesign.isComponentNameAvailable(layerName)) {
 			errMsg = "Component name already exists. Choose a different name.";
 		}		
 		else if (!isValidJavaIdentifier(layerName)) {
@@ -605,13 +608,13 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 		assert (imageURL != null);
 		assert (relativeResourcePath != null);
 		
-		ImageResource imgRes = GlobalRepository.getInstance().getImageResource(imageURL, relativeResourcePath);
+		ImageResource imgRes = this.gameDesign.getImageResource(imageURL, relativeResourcePath);
 		
 		if (this.scene != null) {
 			this.scene.createTiledLayer(name, imgRes, (Integer) this.spinnerRows.getValue(), (Integer) this.spinnerCols.getValue(), tileWidth, tileHeight);
 		}
 		else {
-			GlobalRepository.getInstance().createTiledLayer(name, imgRes, (Integer) this.spinnerRows.getValue(), (Integer) this.spinnerCols.getValue(), tileWidth, tileHeight);
+			this.gameDesign.createTiledLayer(name, imgRes, (Integer) this.spinnerRows.getValue(), (Integer) this.spinnerCols.getValue(), tileWidth, tileHeight);
 		}
 	}
 	

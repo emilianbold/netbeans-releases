@@ -95,6 +95,7 @@ public interface SequenceContainer extends Editable {
 	
 	public String getNextSequenceName(String prefix);
 	
+	public GlobalRepository getGameDesign();
 	/**
 	 * Default implementation of SequenceContainer.
 	 */
@@ -123,6 +124,10 @@ public interface SequenceContainer extends Editable {
 			this.imageResource = imageResource;
 			this.frameWidth = frameWidth;
 			this.frameHeight = frameHeight;
+		}
+		
+		public GlobalRepository getGameDesign() {
+			return this.imageResource.getGameDesign();
 		}
 		
 		public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -198,7 +203,7 @@ public interface SequenceContainer extends Editable {
 			String nextName;
 			do {
 				nextName = prefix + df.format(++biggestNum);
-			} while (!GlobalRepository.getInstance().isComponentNameAvailable(nextName));
+			} while (!this.getGameDesign().isComponentNameAvailable(nextName));
 			return nextName;
 		}
 

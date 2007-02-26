@@ -25,7 +25,6 @@ import org.netbeans.modules.vmd.game.dialog.NewSceneDialog;
 import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.EditorManagerListener;
 import org.netbeans.modules.vmd.game.model.adapter.GlobalRepositoryComboBoxModel;
-import org.netbeans.modules.vmd.game.view.main.MainView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import javax.swing.*;
@@ -59,8 +58,8 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
     }
 
     private void init () {
-        this.controller = new GameController (context);
-        MainView.getInstance().addEditorManagerListener(this);
+        this.controller = new GameController(context);
+        this.controller.getGameDesign().getMainView().addEditorManagerListener(this);
     }
 
     public DataObjectContext getContext() {
@@ -96,7 +95,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
             JToolBar tool = new JToolBar();
 
             tool.addSeparator();
-            this.comboGlobal = new JComboBox(new GlobalRepositoryComboBoxModel());
+            this.comboGlobal = new JComboBox(new GlobalRepositoryComboBoxModel(this.controller.getGameDesign()));
             comboGlobal.setMaximumRowCount(16);
             comboGlobal.setRenderer(new DefaultListCellRenderer() {
                 public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -117,11 +116,11 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
                     Object item = comboGlobal.getSelectedItem();
                     if (item instanceof Editable) {
                         if (DEBUG) System.out.println("Request editing for: " + item);
-                        MainView.getInstance().requestEditing((Editable) item);
+                        controller.getGameDesign().getMainView().requestEditing((Editable) item);
                     }
                 }
             });
-            comboGlobal.setSelectedItem(MainView.getInstance().getCurrentEditable());
+            comboGlobal.setSelectedItem(this.controller.getGameDesign().getMainView().getCurrentEditable());
 
             tool.add(comboGlobal);
             tool.addSeparator();
@@ -129,7 +128,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
             JButton buttonCreateScene = new JButton("New scene");
             buttonCreateScene.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    NewSceneDialog dialog = new NewSceneDialog();
+                    NewSceneDialog dialog = new NewSceneDialog(controller.getGameDesign());
                     DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Scene");
                     dd.setButtonListener(dialog);
                     dd.setValid(false);
@@ -142,7 +141,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
             JButton buttonCreateTiledLayer = new JButton("New TiledLayer");
             buttonCreateTiledLayer.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    TiledLayerDialog nld = new TiledLayerDialog(null);
+                    TiledLayerDialog nld = new TiledLayerDialog(controller.getGameDesign());
                     DialogDescriptor dd = new DialogDescriptor(nld, "Create new TiledLayer");
                     dd.setButtonListener(nld);
                     dd.setValid(false);
@@ -155,7 +154,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
             JButton buttonCreateSprite = new JButton("New Sprite");
             buttonCreateSprite.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    SpriteDialog nld = new SpriteDialog(null);
+                    SpriteDialog nld = new SpriteDialog(controller.getGameDesign());
                     DialogDescriptor dd = new DialogDescriptor(nld, "Create new Sprite");
                     dd.setButtonListener(nld);
                     dd.setValid(false);

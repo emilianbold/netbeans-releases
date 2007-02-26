@@ -29,11 +29,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.event.EventListenerList;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.game.view.main.MainView;
 
 public class GlobalRepository implements PropertyChangeListener {
 
-	private static GlobalRepository instance;
-
+	private DesignDocument designDocument;
+	private MainView mainView;
+	
 	public static final boolean DEBUG = false;
 	
 	EventListenerList listenerList = new EventListenerList();
@@ -42,14 +45,20 @@ public class GlobalRepository implements PropertyChangeListener {
 	private ArrayList<TiledLayer> tiledLayers = new ArrayList<TiledLayer>();
 	private ArrayList<Sprite> sprites = new ArrayList<Sprite>();
 	private ArrayList scenes = new ArrayList();	
-	private static Map<String, ImageResource> imgResourceMap = new HashMap<String, ImageResource>();	
+	private Map<String, ImageResource> imgResourceMap = new HashMap<String, ImageResource>();	
 	
 	
-	private GlobalRepository() {
+	public GlobalRepository(DesignDocument designDocument) {
+		this.mainView = new MainView();
+		this.addGlobalRepositoryListener(this.mainView);
 	}
 	
-	public static GlobalRepository getInstance() {
-		return (instance == null) ? instance = new GlobalRepository() : instance;
+	public void setDesignDocument(DesignDocument designDocument) {
+		this.designDocument = designDocument;
+	}
+	
+	public DesignDocument getDesignDocument() {
+		return this.designDocument;
 	}
 	
 	public void addGlobalRepositoryListener(GlobalRepositoryListener l) {
@@ -57,6 +66,10 @@ public class GlobalRepository implements PropertyChangeListener {
 	}
 	public void removeGlobalRepositoryListener(GlobalRepositoryListener l) {
 		this.listenerList.remove(GlobalRepositoryListener.class, l);
+	}
+	
+	public MainView getMainView() {
+		return this.mainView;
 	}
 	
 	/**
@@ -97,7 +110,7 @@ public class GlobalRepository implements PropertyChangeListener {
 	public ImageResource getImageResource(URL imageURL, String relativeResourcePath) {
 		ImageResource imgResource = imgResourceMap.get(relativeResourcePath);
 		if (imgResource == null) {
-			imgResource = new ImageResource(imageURL, relativeResourcePath);
+			imgResource = new ImageResource(this, imageURL, relativeResourcePath);
 			imgResourceMap.put(relativeResourcePath, imgResource);
 			this.fireImageResourceAdded(imgResource);
 			
@@ -295,7 +308,7 @@ public class GlobalRepository implements PropertyChangeListener {
 		if (!this.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Scene cannot be created because component name '" + name + "' already exists.");
 		}
-		Scene scene = new Scene(name);
+		Scene scene = new Scene(this, name);
 		this.addScene(scene);
 		return scene;
 	}
@@ -304,7 +317,7 @@ public class GlobalRepository implements PropertyChangeListener {
 		if (!this.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Scene cannot be created because component name '" + name + "' already exists.");
 		}
-		Scene scene = new Scene(name, original);
+		Scene scene = new Scene(this, name, original);
 		this.addScene(scene);
 		return scene;
 	}
@@ -313,7 +326,7 @@ public class GlobalRepository implements PropertyChangeListener {
 		if (!this.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Scene cannot be created because component name '" + name + "' already exists.");
 		}
-		TiledLayer layer = new TiledLayer(name, imageResource, rows, columns, tileWidth, tileHeight);
+		TiledLayer layer = new TiledLayer(this, name, imageResource, rows, columns, tileWidth, tileHeight);
 		this.addTiledLayer(layer);
 		return layer;
 	}
@@ -322,7 +335,7 @@ public class GlobalRepository implements PropertyChangeListener {
 		if (!this.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("TiledLayer cannot be created because component name '" + name + "' already exists.");
 		}		
-		TiledLayer layer = new TiledLayer(name, imageResource, grid, tileWidth, tileHeight);
+		TiledLayer layer = new TiledLayer(this, name, imageResource, grid, tileWidth, tileHeight);
 		this.addTiledLayer(layer);
 		return layer;
 	}
@@ -331,7 +344,7 @@ public class GlobalRepository implements PropertyChangeListener {
 		if (!this.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("TiledLayer cannot be created because component name '" + name + "' already exists.");
 		}
-		TiledLayer layer = new TiledLayer(name, original);
+		TiledLayer layer = new TiledLayer(this, name, original);
 		this.addTiledLayer(layer);
 		return layer;
 	}
@@ -341,7 +354,7 @@ public class GlobalRepository implements PropertyChangeListener {
 		if (!this.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Sprite cannot be created because component name '" + name + "' already exists.");
 		}
-		Sprite sprite = new Sprite(name, imageResource, numberFrames, frameWidth, frameHeight);
+		Sprite sprite = new Sprite(this, name, imageResource, numberFrames, frameWidth, frameHeight);
 		this.addSprite(sprite);
 		return sprite;
 	}
@@ -350,7 +363,7 @@ public class GlobalRepository implements PropertyChangeListener {
 		if (!this.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Sprite cannot be created because component name '" + name + "' already exists.");
 		}
-		Sprite sprite = new Sprite(name, imageResource, defaultSequence);
+		Sprite sprite = new Sprite(this, name, imageResource, defaultSequence);
 		this.addSprite(sprite);
 		return sprite;
 	}

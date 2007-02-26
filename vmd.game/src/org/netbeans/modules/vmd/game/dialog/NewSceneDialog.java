@@ -24,11 +24,14 @@ import org.netbeans.modules.vmd.game.model.Scene;
 public class NewSceneDialog extends AbstractNameValidationDialog {
 
 	private Scene scene;
+	private GlobalRepository gameDesign;
 
-	public NewSceneDialog() {
+	public NewSceneDialog(GlobalRepository gameDesign) {
+		this.gameDesign = gameDesign;
 	}
 	
 	public NewSceneDialog(Scene scene) {
+		this.gameDesign = scene.getGameDesign();
 		this.scene = scene;
 	}
 		
@@ -48,7 +51,7 @@ public class NewSceneDialog extends AbstractNameValidationDialog {
 		if (sceneName == null || "".equals(sceneName)) {
 			return this.getInitialStateDescriptionText();
 		}
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(sceneName)) {
+		if (!this.gameDesign.isComponentNameAvailable(sceneName)) {
 			return "Component name already exists. Choose a different name.";
 		}		
 		return null;
@@ -56,10 +59,10 @@ public class NewSceneDialog extends AbstractNameValidationDialog {
 	
 	protected void handleOKButton() {
 		if (this.scene == null) {
-			GlobalRepository.getInstance().createScene(this.fieldName.getText());
+			this.gameDesign.createScene(this.fieldName.getText());
 		}
 		else {
-			GlobalRepository.getInstance().createScene(this.fieldName.getText(), scene);
+			this.gameDesign.createScene(this.fieldName.getText(), scene);
 		}
 	}
 	

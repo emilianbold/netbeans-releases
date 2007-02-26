@@ -43,12 +43,16 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 	
 	protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	
+	private GlobalRepository gameDesign;
+	
 	private String name;
 	private ImageResource imageResource;
 	private int cellWidth;
 	private int cellHeight;
 	
-	protected Layer(String name, ImageResource imageResource, int cellWidth, int cellHeight) {
+	protected Layer(GlobalRepository gameDesign, String name, ImageResource imageResource, int cellWidth, int cellHeight) {
+		assert (gameDesign != null);
+		this.gameDesign = gameDesign;
 		this.name = name;
 		this.imageResource = imageResource;
 		this.cellWidth = cellWidth;
@@ -59,8 +63,12 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 		return this.name;
 	}
 	
+	public GlobalRepository getGameDesign() {
+		return this.gameDesign;
+	}
+	
 	public void setName(String name) {
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+		if (!this.gameDesign.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Layer cannot be renamed because component name '" + name + "' already exists.");
 		}
 		String oldName = this.name;
@@ -174,7 +182,7 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 			}
 			//else remove completely
 			else {
-				GlobalRepository.getInstance().removeLayer(Layer.this);
+				Layer.this.gameDesign.removeLayer(Layer.this);
 			}
 		}
 	}

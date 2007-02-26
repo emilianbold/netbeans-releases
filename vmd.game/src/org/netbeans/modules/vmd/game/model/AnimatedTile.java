@@ -48,6 +48,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 	private SequenceContainerEditor editor;
 	private String name;
 	
+	
 	AnimatedTile(String name, ImageResource imageResource, int index, Sequence sequence, int width, int height) {
 		super(imageResource, index, width, height);
 		this.sequenceContainer = new SequenceContainerImpl(this, null, this.propertyChangeSupport, imageResource, width, height);
@@ -69,7 +70,9 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 		return this.sequenceContainer.getNextSequenceName(prefix);
 	}
 
-	
+	public GlobalRepository getGameDesign() {
+		return this.getImageResource().getGameDesign();
+	}	
 	
 	public void addSequenceContainerListener(SequenceContainerListener listener) {
 		this.sequenceContainer.addSequenceContainerListener(listener);
@@ -80,7 +83,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 	}
 
 	public void setName(String name) {
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+		if (!this.getGameDesign().isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("AnimatedTile cannot be renamed because component name '" + name + "' already exists.");
 		}
 		String oldName = this.name;

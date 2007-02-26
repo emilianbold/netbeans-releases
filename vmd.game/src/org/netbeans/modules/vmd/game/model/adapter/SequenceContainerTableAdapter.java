@@ -25,7 +25,6 @@ import java.util.Iterator;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Sequence;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
 import org.netbeans.modules.vmd.game.model.SequenceContainerListener;
@@ -138,7 +137,7 @@ public class SequenceContainerTableAdapter implements TableModel, SequenceContai
 				break;
 			case COL_NAME:
 				String name = (String) aValue;
-				if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+				if (!this.sequenceContainer.getGameDesign().isComponentNameAvailable(name)) {
 					DialogDisplayer.getDefault().notify(
 							new DialogDescriptor.Message("Sequence cannot be renamed because component name '" 
 							+ name + "' already exists.", DialogDescriptor.ERROR_MESSAGE)

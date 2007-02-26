@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.vmd.game.dialog;
 
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 
 public class RenameTiledLayerDialog extends AbstractNameValidationDialog {
@@ -47,7 +46,7 @@ public class RenameTiledLayerDialog extends AbstractNameValidationDialog {
 			return this.getInitialStateDescriptionText();
 		}
 		
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+		if (!RenameTiledLayerDialog.this.tiledLayer.getGameDesign().isComponentNameAvailable(name)) {
 			errMsg = "Component name already exists. Choose a different name.";
 		}		
 		return errMsg;

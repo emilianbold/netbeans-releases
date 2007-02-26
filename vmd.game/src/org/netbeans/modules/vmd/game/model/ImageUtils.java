@@ -37,7 +37,6 @@ public class ImageUtils {
 	static {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		gc = ge.getDefaultScreenDevice().getDefaultConfiguration();
-		
 	}
 	
 	public static BufferedImage loadImage(URL imageURL) {

@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.vmd.game.dialog;
 
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Sprite;
 
 public class RenameSpriteDialog extends AbstractNameValidationDialog {
@@ -47,7 +46,7 @@ public class RenameSpriteDialog extends AbstractNameValidationDialog {
 			return this.getInitialStateDescriptionText();
 		}
 		
-		if (!GlobalRepository.getInstance().isComponentNameAvailable(name)) {
+		if (!sprite.getGameDesign().isComponentNameAvailable(name)) {
 			errMsg = "Component name already exists. Choose a different name.";
 		}
 		return errMsg;

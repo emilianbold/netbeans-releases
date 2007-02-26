@@ -325,8 +325,9 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 
 	
 	public static void main(String[] args) {
+		GlobalRepository gameDesign = new GlobalRepository(null);
 		URL imageURL = SequenceEditingPanel.class.getResource("../../view/main/res/color_tiles.png");
-		ImageResource imgRes = GlobalRepository.getInstance().getImageResource(imageURL, "Path");
+		ImageResource imgRes = gameDesign.getImageResource(imageURL, "Path");
 		
 		Sequence s1 = imgRes.createSequence("seq1", 5, 20, 20);
 		s1.setFrame((StaticTile) imgRes.getTile(1, 20, 20), 0);
