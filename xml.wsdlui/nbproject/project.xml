@@ -365,7 +365,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <package>org.netbeans.modules.xml.wsdl.ui.wizard</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/graph2/org-netbeans-api-visual.jar</runtime-relative-path>
+                <runtime-relative-path>ext/graph/org-netbeans-api-visual.jar</runtime-relative-path>
                 <binary-origin>external/org-netbeans-api-visual.jar</binary-origin>
             </class-path-extension>
         </data>

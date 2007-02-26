@@ -25,4 +25,10 @@
 <project name="org.netbeans.modules.xml.wsdlui" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.xml.wsdl.ui.</description>
     <import file="nbproject/build-impl.xml"/>
+
+    <target name="netbeans-extra" depends="init">
+        <copy todir="${cluster}/modules/ext/graph">
+            <fileset dir="external" includes="*.jar"/>
+        </copy>
+    </target>
 </project>
