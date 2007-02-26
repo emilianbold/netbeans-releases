@@ -21,6 +21,7 @@ package org.netbeans.modules.visualweb.designer.jsf;
 
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
+import java.lang.reflect.Method;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.insync.live.DesignBeanNode;
 
@@ -77,5 +78,13 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
         // especially if we publish this property. Or we could at least specify that the
         // property MUST be a String.
         return (String)designProperty.getValue();
+    }
+
+    public String getDisplayName() {
+        return designProperty.getPropertyDescriptor().getDisplayName();
+    }
+
+    public Method getWriteMethod() {
+        return designProperty.getPropertyDescriptor().getWriteMethod();
     }
 }

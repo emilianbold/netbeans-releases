@@ -285,12 +285,15 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
                 // no <span> rendered until label is set to something. So,
                 // if this is the case, set the property temporarily, render
                 // the fragment, and unset it.
-                String oldPropertyValue = (String)property.getValue();
+//                String oldPropertyValue = (String)property.getValue();
+                String oldPropertyValue = inlineEditorSupport.getValue();
 
-                final String MARKER = property.getPropertyDescriptor().getDisplayName();
+//                final String MARKER = property.getPropertyDescriptor().getDisplayName();
+                final String MARKER = inlineEditorSupport.getDisplayName();
 
                 try {
-                    Method m = property.getPropertyDescriptor().getWriteMethod();
+//                    Method m = property.getPropertyDescriptor().getWriteMethod();
+                    Method m = inlineEditorSupport.getWriteMethod();
                     m.invoke(bean.getInstance(), new Object[] { MARKER });
                 } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ex);
@@ -320,7 +323,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
                     webform.requestChange(bean);
                 } finally {
                     try {
-                        Method m = property.getPropertyDescriptor().getWriteMethod();
+//                        Method m = property.getPropertyDescriptor().getWriteMethod();
+                        Method m = inlineEditorSupport.getWriteMethod();
                         m.invoke(bean.getInstance(), new Object[] { oldPropertyValue });
                     } catch (Exception ex) {
                         ErrorManager.getDefault().notify(ex);
