@@ -24,6 +24,7 @@ import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.lang.reflect.Method;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
+import org.netbeans.modules.visualweb.insync.faces.Entities;
 import org.netbeans.modules.visualweb.insync.live.DesignBeanNode;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -102,5 +103,9 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
 
     public DocumentFragment createSourceFragment() {
         return htmlDomProviderImpl.createSourceFragment(markupDesignBean);
+    }
+
+    public String expandHtmlEntities(String value, boolean warn) {
+        return Entities.expandHtmlEntities(value, warn, markupDesignBean.getElement());
     }
 }

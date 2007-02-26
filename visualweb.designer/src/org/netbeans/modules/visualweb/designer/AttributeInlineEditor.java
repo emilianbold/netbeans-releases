@@ -571,14 +571,15 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         }
 
         if (isEscaped()) {
-            value =
-                    // <markup_separation>
-//                MarkupServiceProvider.getDefault().expandHtmlEntities(value, false,
-//                    bean.getElement());
-                    // ====
-//                InSyncService.getProvider().expandHtmlEntities(value, false, bean.getElement());
-                WebForm.getHtmlDomProviderService().expandHtmlEntities(value, false, bean.getElement());
-                // </markup_separation>
+//            value =
+//                    // <markup_separation>
+////                MarkupServiceProvider.getDefault().expandHtmlEntities(value, false,
+////                    bean.getElement());
+//                    // ====
+////                InSyncService.getProvider().expandHtmlEntities(value, false, bean.getElement());
+//                WebForm.getHtmlDomProviderService().expandHtmlEntities(value, false, bean.getElement());
+//                // </markup_separation>\
+            value = inlineEditorSupport.expandHtmlEntities(value, false);
         }
 
         if ((value != null) && (value.length() == 0)) {

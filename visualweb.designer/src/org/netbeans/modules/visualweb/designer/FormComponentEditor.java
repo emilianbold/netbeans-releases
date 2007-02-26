@@ -497,14 +497,15 @@ class FormComponentEditor extends InlineEditor {
         String value = inlineTextEditor.getText();
 
         if (isEscaped()) {
-            value =
-                    // <markup_separation>
-//                MarkupServiceProvider.getDefault().expandHtmlEntities(value, false,
-//                    bean.getElement());
-                    // ====
-//                InSyncService.getProvider().expandHtmlEntities(value, false, bean.getElement());
-                WebForm.getHtmlDomProviderService().expandHtmlEntities(value, false, bean.getElement());
-                    // </markup_separation>
+//            value =
+//                    // <markup_separation>
+////                MarkupServiceProvider.getDefault().expandHtmlEntities(value, false,
+////                    bean.getElement());
+//                    // ====
+////                InSyncService.getProvider().expandHtmlEntities(value, false, bean.getElement());
+//                WebForm.getHtmlDomProviderService().expandHtmlEntities(value, false, bean.getElement());
+//                    // </markup_separation>
+            value = inlineEditorSupport.expandHtmlEntities(value, false);
         }
 
         return value;
