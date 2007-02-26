@@ -86,7 +86,7 @@ public abstract class InlineEditor {
 //    protected static final boolean NO_EDIT_VB_EXPR = !Boolean.getBoolean("rave.allow-vb-editing");
     protected WebForm webform;
     protected MarkupDesignBean bean;
-    protected DesignProperty property;
+//    protected DesignProperty property;
     protected Position begin;
     protected Position end;
     
@@ -100,12 +100,12 @@ public abstract class InlineEditor {
     private long lastClick = 0L;
 
 //    protected InlineEditor(WebForm webform, MarkupDesignBean bean, String propertyName) {
-    protected InlineEditor(WebForm webform, MarkupDesignBean bean, DesignProperty property,
+    protected InlineEditor(WebForm webform, MarkupDesignBean bean, /*DesignProperty property,*/
     HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
         this.webform = webform;
         this.bean = bean;
 //        this.propertyName = propertyName;
-        this.property = property;
+//        this.property = property;
         
         this.inlineEditorSupport = inlineEditorSupport;
 
@@ -259,14 +259,14 @@ public abstract class InlineEditor {
             }
 
             if ((tag != null) && tag.isFormMemberTag()) {
-                editor = FormComponentEditor.get(webform, xpath, box, markupBean, property, inlineEditorSupport);
+                editor = FormComponentEditor.get(webform, xpath, box, markupBean, /*property,*/ inlineEditorSupport);
 
                 if (editor != null) {
                     return editor;
                 }
             }
 
-            editor = AttributeInlineEditor.get(webform, xpath, markupBean, property, inlineEditorSupport);
+            editor = AttributeInlineEditor.get(webform, xpath, markupBean, /*property,*/ inlineEditorSupport);
 
             if (editor != null) {
                 return editor;

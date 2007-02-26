@@ -62,7 +62,6 @@ import org.w3c.dom.NodeList;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.CustomButtonBox;
 import org.netbeans.modules.visualweb.css2.FormComponentBox;
-import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import com.sun.rave.designer.html.HtmlAttribute;
@@ -103,10 +102,10 @@ class FormComponentEditor extends InlineEditor {
     private boolean hasBeenEdited = false;
 //    private DesignProperty property;
 
-    private FormComponentEditor(WebForm webform, MarkupDesignBean bean, DesignProperty property,
+    private FormComponentEditor(WebForm webform, MarkupDesignBean bean, /*DesignProperty property,*/
     CssBox box/*, String xpath*/, HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
 //        super(webform, bean, property.getPropertyDescriptor().getName());
-        super(webform, bean, property, inlineEditorSupport);
+        super(webform, bean, inlineEditorSupport);
         if(DesignerUtils.DEBUG) {
             DesignerUtils.debugLog(getClass().getName() + "()");
         }
@@ -119,7 +118,7 @@ class FormComponentEditor extends InlineEditor {
     }
 
     public static FormComponentEditor get(WebForm webform, String xpath, CssBox box,
-    MarkupDesignBean bean, DesignProperty property, HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
+    MarkupDesignBean bean, /*DesignProperty property,*/ HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
         if (xpath != null) {
 //            RaveElement sourceElement = (RaveElement)bean.getElement();
 //            RaveElement root = sourceElement.getRendered();
@@ -160,7 +159,7 @@ class FormComponentEditor extends InlineEditor {
         }
 
         // TODO - need metadata to specify the descriptor to use!
-        return new FormComponentEditor(webform, bean, property, box/*, xpath*/, inlineEditorSupport);
+        return new FormComponentEditor(webform, bean, /*property,*/ box/*, xpath*/, inlineEditorSupport);
     }
 
     public void start(boolean selectText, String initialEdit) {

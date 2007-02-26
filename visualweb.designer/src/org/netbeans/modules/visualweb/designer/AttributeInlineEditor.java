@@ -21,7 +21,6 @@ package org.netbeans.modules.visualweb.designer;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
-import com.sun.rave.designtime.DesignContext;
 import org.netbeans.modules.visualweb.text.DesignerPaneBase;
 import java.awt.Component;
 import java.awt.datatransfer.Transferable;
@@ -44,7 +43,6 @@ import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 
 import com.sun.rave.designtime.DesignBean;
-import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designer.html.HtmlAttribute;
 import com.sun.rave.designer.html.HtmlTag;
@@ -78,16 +76,16 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
     private final FocusListener focusListener = new AttributeInlineEditorFocusListener(this);
 
 
-    AttributeInlineEditor(WebForm webform, MarkupDesignBean bean, DesignProperty property,
+    AttributeInlineEditor(WebForm webform, MarkupDesignBean bean, /*DesignProperty property,*/
     String xpath, HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
 //        super(webform, bean, property.getPropertyDescriptor().getName());
-        super(webform, bean, property, inlineEditorSupport);
+        super(webform, bean, inlineEditorSupport);
 //        this.property = property;
         this.xpath = xpath;
     }
 
     public static AttributeInlineEditor get(WebForm webform, String xpath, MarkupDesignBean bean,
-    DesignProperty property, HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
+    /*DesignProperty property,*/ HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
 //        if (!isEditingAllowed(property)) {
         if (!inlineEditorSupport.isEditingAllowed()) {
             return null;
@@ -106,7 +104,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         // TODO: Ensure that the property is of String type?? I don't
         // support anything else... (and how could you inline text edit
         // anything else?)
-        return new AttributeInlineEditor(webform, bean, property, xpath, inlineEditorSupport);
+        return new AttributeInlineEditor(webform, bean, /*property,*/ xpath, inlineEditorSupport);
     }
 
     /** Return the text node containing the value attribute.
