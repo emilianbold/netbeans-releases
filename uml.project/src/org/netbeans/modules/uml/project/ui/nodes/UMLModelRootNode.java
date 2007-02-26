@@ -478,4 +478,17 @@ public class UMLModelRootNode extends UMLModelElementNode
         return false;
     }
     
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#equals(java.lang.Object)
+    */
+    public boolean equals(Object obj)
+    {
+	// NB60TBD special case for diagrams root node to make it work with NB60
+	if (obj instanceof UMLDiagramsRootNode) {
+	    return  false;
+	}
+	return super.equals(obj);
+    }
+
 }
