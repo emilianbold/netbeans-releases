@@ -217,6 +217,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         JScrollPane scrollPane = new JScrollPane(layeredPane);
         scrollPane.setBorder(null); // disable border, winsys will handle borders itself
+        scrollPane.setViewportBorder(null); // disable also GTK L&F viewport border 
         scrollPane.getVerticalScrollBar().setUnitIncrement(5); // Issue 50054
         scrollPane.getHorizontalScrollBar().setUnitIncrement(5);
         add(scrollPane, BorderLayout.CENTER);
