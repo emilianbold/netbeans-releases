@@ -200,7 +200,7 @@ public class SplittedPanel extends JComponent implements Accessible {
     transient private JMenuItem splitterCMI;
 
     /** A Vector of SplitChangeListeners */
-    transient private Vector listeners;
+    transient private Vector<SplitChangeListener> listeners;
 
     /** Accessible context */
     private AccessibleContext accessibleContext;
@@ -717,7 +717,7 @@ public class SplittedPanel extends JComponent implements Accessible {
     /** Adds specified listener to the current set of SplitChangeListeners */
     public void addSplitChangeListener(SplitChangeListener l) {
         if (listeners == null) {
-            listeners = new Vector();
+            listeners = new Vector<SplitChangeListener>();
         }
 
         listeners.addElement(l);
@@ -738,10 +738,10 @@ public class SplittedPanel extends JComponent implements Accessible {
             return;
         }
 
-        Vector l;
+        Vector<SplitChangeListener> l;
 
         synchronized (this) {
-            l = (Vector) listeners.clone();
+            l = (Vector<SplitChangeListener>) listeners.clone();
         }
 
         Enumeration en = l.elements();

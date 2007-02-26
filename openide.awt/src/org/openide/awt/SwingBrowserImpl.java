@@ -74,7 +74,7 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
     private SwingBrowser swingBrowser;
 
     /** list of accessed URLs for back/fwd navigation */
-    private Vector historyList;
+    private Vector<Object> historyList;
 
     /** current position in history */
     private int historyIndex;
@@ -89,7 +89,7 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
     SwingBrowserImpl() {
         pcs = new PropertyChangeSupport(this);
         swingBrowser = new SwingBrowser();
-        historyList = new Vector(5, 3);
+        historyList = new Vector<Object>(5, 3);
         historyIndex = -1;
         swingBrowser.addPropertyChangeListener(
             "page", // NOI18N

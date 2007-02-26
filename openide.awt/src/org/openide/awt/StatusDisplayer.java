@@ -90,7 +90,7 @@ public abstract class StatusDisplayer {
      * @see "#32154"
      */
     private static final class Trivial extends StatusDisplayer {
-        private List listeners = null; // List<ChangeListener>
+        private List<ChangeListener> listeners = null;
         private String text = ""; // NOI18N
 
         public synchronized String getStatusText() {
@@ -113,7 +113,7 @@ public abstract class StatusDisplayer {
 
         public synchronized void addChangeListener(ChangeListener l) {
             if (listeners == null) {
-                listeners = new ArrayList();
+                listeners = new ArrayList<ChangeListener>();
             }
 
             listeners.add(l);
@@ -128,10 +128,10 @@ public abstract class StatusDisplayer {
         protected final void fireChange() {
             if ((listeners != null) && !listeners.isEmpty()) {
                 ChangeEvent ev = new ChangeEvent(this);
-                Iterator it = listeners.iterator();
+                Iterator<ChangeListener> it = listeners.iterator();
 
                 while (it.hasNext()) {
-                    ((ChangeListener) it.next()).stateChanged(ev);
+                    it.next().stateChanged(ev);
                 }
             }
         }

@@ -101,7 +101,7 @@ public interface UndoRedo {
         private final EventListenerList list = new EventListenerList();
 
         /** vector of Edits to run */
-        private LinkedList runus = new LinkedList(); // for fix of #8692
+        private LinkedList<UndoableEditEvent> runus = new LinkedList<UndoableEditEvent>(); // for fix of #8692
 
         /** task that clears the queue */
         private Task task = Task.EMPTY; // for fix of #8692
@@ -186,7 +186,7 @@ public interface UndoRedo {
                                 break;
                             }
 
-                            ue = (UndoableEditEvent) runus.removeFirst();
+                            ue = runus.removeFirst();
                         }
 
                         if (ue == null) {

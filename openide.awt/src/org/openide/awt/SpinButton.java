@@ -178,7 +178,7 @@ public class SpinButton extends Canvas {
     private PropertyChangeSupport valueSupport = new PropertyChangeSupport(this);
 
     /** SpinButton change listeners storage */
-    private Vector spinButtonListeners = new Vector(3, 3);
+    private Vector<SpinButtonListener> spinButtonListeners = new Vector<SpinButtonListener>(3, 3);
 
     /** Create new SpinButton. */
     public SpinButton() {
@@ -614,7 +614,7 @@ public class SpinButton extends Canvas {
         int k = spinButtonListeners.size();
 
         for (i = 0; i < k; i++)
-            ((SpinButtonListener) spinButtonListeners.elementAt(i)).moveUp();
+            spinButtonListeners.elementAt(i).moveUp();
     }
 
     public void notifySpinButtonListenersAboutDownMove() {
@@ -622,7 +622,7 @@ public class SpinButton extends Canvas {
         int k = spinButtonListeners.size();
 
         for (i = 0; i < k; i++)
-            ((SpinButtonListener) spinButtonListeners.elementAt(i)).moveDown();
+            spinButtonListeners.elementAt(i).moveDown();
     }
 
     protected void repeatThreadNotify() {

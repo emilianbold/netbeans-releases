@@ -35,8 +35,6 @@ import java.lang.ref.SoftReference;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.AncestorListener;
-import javax.swing.plaf.LabelUI;
-import javax.swing.plaf.basic.BasicLabelUI;
 
 
 /**
@@ -66,7 +64,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
     //For experimentation - holding the graphics object may be the source of some
     //strange painting problems on Apple
     private static boolean noCacheGraphics = Boolean.getBoolean("nb.renderer.nocache"); //NOI18N
-    private static Reference scratchGraphics = null;
+    private static Reference<Graphics> scratchGraphics = null;
     private boolean centered = false;
     private boolean parentFocused = false;
     private Boolean html = null;
@@ -580,7 +578,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
         Graphics result = null;
 
         if (scratchGraphics != null) {
-            result = (Graphics) scratchGraphics.get();
+            result = scratchGraphics.get();
 
             if (result != null) {
                 result.setClip(null); //just in case somebody did something nasty
@@ -592,7 +590,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
                                         .createCompatibleImage(1, 1).getGraphics();
 
             if (!noCacheGraphics) {
-                scratchGraphics = new SoftReference(result);
+                scratchGraphics = new SoftReference<Graphics>(result);
             }
         }
 

@@ -82,7 +82,7 @@ public final class DefaultAWTBridge extends org.netbeans.modules.openide.util.AW
          if (comp instanceof DynamicMenuContent) {
             Component[] toRet = ((DynamicMenuContent)comp).getMenuPresenters();
             boolean atLeastOne = false;
-            Collection col = new ArrayList();
+            Collection<Component> col = new ArrayList<Component>();
             for (int i = 0; i < toRet.length; i++) {
                 if (toRet[i] instanceof DynamicMenuContent && toRet[i] != comp) {
                     col.addAll(Arrays.asList(convertComponents(toRet[i])));
@@ -95,7 +95,7 @@ public final class DefaultAWTBridge extends org.netbeans.modules.openide.util.AW
                 }
             }
             if (atLeastOne) {
-                return (Component[]) col.toArray(new Component[col.size()]);
+                return col.toArray(new Component[col.size()]);
             } else {
                 return toRet;
             }

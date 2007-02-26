@@ -187,7 +187,7 @@ public final class HtmlRenderer {
 
     /** Stack object used during HTML rendering to hold previous colors in
      * the case of nested color entries. */
-    private static Stack colorStack = new Stack();
+    private static Stack<Color> colorStack = new Stack<Color>();
 
     /**
      * Constant used by {@link #renderString renderString}, {@link #renderPlainString renderPlainString},
@@ -219,7 +219,7 @@ public final class HtmlRenderer {
 
     /** Cache for strings which have produced errors, so we don't post an
      * error message more than once */
-    private static Set badStrings = null;
+    private static Set<String> badStrings = null;
 
     private static Logger LOG = Logger.getLogger(HtmlRenderer.class.getName());
 
@@ -522,7 +522,7 @@ public final class HtmlRenderer {
         }
 
         //Thread safety - avoid allocating memory for the common case
-        Stack colorStack = SwingUtilities.isEventDispatchThread() ? HtmlRenderer.colorStack : new Stack();
+        Stack<Color> colorStack = SwingUtilities.isEventDispatchThread() ? HtmlRenderer.colorStack : new Stack<Color>();
 
         g.setColor(defaultColor);
         g.setFont(f);
@@ -723,7 +723,7 @@ public final class HtmlRenderer {
                         if (colorStack.isEmpty()) {
                             g.setColor(defaultColor);
                         } else {
-                            g.setColor((Color) colorStack.pop());
+                            g.setColor(colorStack.pop());
                         }
 
                         break;
@@ -1312,7 +1312,7 @@ public final class HtmlRenderer {
         if (!STRICT_HTML) {
             if (LOG.isLoggable(Level.WARNING)) {
                 if (badStrings == null) {
-                    badStrings = new HashSet();
+                    badStrings = new HashSet<String>();
                 }
 
                 if (!badStrings.contains(msg)) {
@@ -1325,7 +1325,7 @@ public final class HtmlRenderer {
                         LOG.warning(tk.nextToken());
                     }
 
-                    badStrings.add(msg.intern());
+                    badStrings.add(msg.intern());   // NOPMD
                 }
             }
         } else {
