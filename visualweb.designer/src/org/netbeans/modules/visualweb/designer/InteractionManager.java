@@ -2849,7 +2849,9 @@ public class InteractionManager {
             CssBox selBox = ModelViewMapper.findBox(pageBox, x, y);
             MarkupDesignBean selMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(selBox);
 //            DesignBean sel = ModelViewMapper.findComponent(pageBox, x, y);
-            DesignBean sel = ModelViewMapper.findMarkupDesignBean(pageBox, x, y);
+//            DesignBean sel = ModelViewMapper.findMarkupDesignBean(pageBox, x, y);
+            Element sel = ModelViewMapper.findComponentRootElement(pageBox, x, y);
+            
             int internalResize = selBox.getInternalResizeDirection(x, y);
             
             if (internalResize != Cursor.DEFAULT_CURSOR) {
