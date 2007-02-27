@@ -162,9 +162,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         }
 
         private boolean acceptTemplate (DataObject d) {
-            if (d.isTemplate ()) {
-                return true;
-            } else if (d instanceof DataFolder)  {
+            if (d.isTemplate () || d instanceof DataFolder) {
                 Object o = d.getPrimaryFile ().getAttribute ("simple"); // NOI18N
                 return o == null || Boolean.TRUE.equals (o);
             } else {
@@ -348,12 +346,12 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }// </editor-fold>//GEN-END:initComponents
 
     private void moveDownButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownButtonActionPerformed
-        moveDown (manager.getSelectedNodes ());
-    }//GEN-LAST:event_moveDownButtonActionPerformed
+        moveDown (manager.getSelectedNodes ());//GEN-LAST:event_moveDownButtonActionPerformed
+    }                                              
 
     private void moveUpButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpButtonActionPerformed
-        moveUp (manager.getSelectedNodes ());
-    }//GEN-LAST:event_moveUpButtonActionPerformed
+        moveUp (manager.getSelectedNodes ());//GEN-LAST:event_moveUpButtonActionPerformed
+    }                                            
     
     private void newFolderButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newFolderButtonActionPerformed
 
@@ -378,8 +376,8 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         } catch (PropertyVetoException pve) {
             Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, pve);
         }
-        
-    }//GEN-LAST:event_newFolderButtonActionPerformed
+//GEN-LAST:event_newFolderButtonActionPerformed
+    }                                               
     
     private void deleteButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         Node [] nodes = manager.getSelectedNodes (); 
@@ -390,27 +388,27 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             catch (IOException ioe) {
                 Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
             }
-        }
-    }//GEN-LAST:event_deleteButtonActionPerformed
+        }//GEN-LAST:event_deleteButtonActionPerformed
+    }                                            
 
     private void duplicateButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
         Node [] nodes = manager.getSelectedNodes ();
         assert nodes != null : "Selected Nodes cannot be null.";
         assert nodes.length == 1 : "One one node can be selected, but was " + Arrays.asList (nodes);
         createDuplicateFromNode (nodes [0]);
-        
-    }//GEN-LAST:event_duplicateButtonActionPerformed
+//GEN-LAST:event_duplicateButtonActionPerformed
+    }                                               
     
     private void renameButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameButtonActionPerformed
         Node [] nodes = manager.getSelectedNodes ();
         assert nodes != null : "Selected Nodes cannot be null.";
         assert nodes.length == 1 : "One one node can be selected, but was " + Arrays.asList (nodes);
-        view.invokeInplaceEditing ();
-    }//GEN-LAST:event_renameButtonActionPerformed
+        view.invokeInplaceEditing ();//GEN-LAST:event_renameButtonActionPerformed
+    }                                            
     
     private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        doAdd (manager.getSelectedNodes ());
-    }//GEN-LAST:event_addButtonActionPerformed
+        doAdd (manager.getSelectedNodes ());//GEN-LAST:event_addButtonActionPerformed
+    }                                         
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

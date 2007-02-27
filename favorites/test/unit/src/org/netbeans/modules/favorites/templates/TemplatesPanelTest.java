@@ -105,4 +105,13 @@ public class TemplatesPanelTest extends NbTestCase {
         Node[] arr = n.getChildren().getNodes(true);
         assertEquals("Empty: " + Arrays.asList(arr), 0, arr.length);
     }
+    public void testIgnoresSimpleNonFolders() throws Exception {
+        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        FileObject fo = FileUtil.createData(root, "Templates/SimpleFolder.java");
+        fo.setAttribute("simple", Boolean.FALSE);
+        fo.setAttribute("template", Boolean.TRUE);
+        Node n = TemplatesPanel.getTemplateRootNode();
+        Node[] arr = n.getChildren().getNodes(true);
+        assertEquals("Empty: " + Arrays.asList(arr), 0, arr.length);
+    }
 }
