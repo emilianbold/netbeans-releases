@@ -694,42 +694,43 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
             end.setOffset(n.getNodeValue().length());
         }
 
-        //        /*
-        //          Node node = (org.w3c.dom.Node)e.getTarget();
-        //          String type = e.getType();
-        //          Node parent = node.getParentNode(); // XXX or use getRelatedNode?
-        //
-        //        */
-        //        dispatchEvent(bean);
-        Node node = (org.w3c.dom.Node)e.getTarget();
-        Node parent = node.getParentNode(); // XXX or use getRelatedNode?
-
-        // Text node or entity node changes should get translated
-        // into a change event on their surrounding element...
-        // XXX I could possibly handle to rebreak only
-        // the LineBreakGroup.... That would save work -ESPECIALLY-
-        // for text right within the <body> tag... but optimize that
-        // later
-        if (!(node instanceof Element) || ((Element)node).getTagName().equals(HtmlTag.BR.name)) { // text, cdata, entity, ...
-            node = parent;
-            parent = parent.getParentNode();
-
-            if (node instanceof Element) {
-//                MarkupDesignBean b = ((RaveElement)node).getDesignBean();
-//                MarkupDesignBean b = InSyncService.getProvider().getMarkupDesignBeanForElement((Element)node);
-                MarkupDesignBean b = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)node);
-
-                if (b == null) {
-                    b = bean;
-                }
-
-//                webform.getDomSynchronizer().requestTextUpdate(b);
-                webform.requestTextUpdate(b);
-            }
-        } else {
-//            webform.getDomSynchronizer().requestChange(bean);
-            webform.requestChange(bean);
-        }
+//        //        /*
+//        //          Node node = (org.w3c.dom.Node)e.getTarget();
+//        //          String type = e.getType();
+//        //          Node parent = node.getParentNode(); // XXX or use getRelatedNode?
+//        //
+//        //        */
+//        //        dispatchEvent(bean);
+//        Node node = (org.w3c.dom.Node)e.getTarget();
+//        Node parent = node.getParentNode(); // XXX or use getRelatedNode?
+//
+//        // Text node or entity node changes should get translated
+//        // into a change event on their surrounding element...
+//        // XXX I could possibly handle to rebreak only
+//        // the LineBreakGroup.... That would save work -ESPECIALLY-
+//        // for text right within the <body> tag... but optimize that
+//        // later
+//        if (!(node instanceof Element) || ((Element)node).getTagName().equals(HtmlTag.BR.name)) { // text, cdata, entity, ...
+//            node = parent;
+//            parent = parent.getParentNode();
+//
+//            if (node instanceof Element) {
+////                MarkupDesignBean b = ((RaveElement)node).getDesignBean();
+////                MarkupDesignBean b = InSyncService.getProvider().getMarkupDesignBeanForElement((Element)node);
+//                MarkupDesignBean b = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)node);
+//
+//                if (b == null) {
+//                    b = bean;
+//                }
+//
+////                webform.getDomSynchronizer().requestTextUpdate(b);
+//                webform.requestTextUpdate(b);
+//            }
+//        } else {
+////            webform.getDomSynchronizer().requestChange(bean);
+//            webform.requestChange(bean);
+//        }
+        inlineEditorSupport.handleEvent(e);
     }
 
     //    /** Good for changes only

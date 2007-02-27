@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.visualweb.designer.jsf;
 
+import com.sun.rave.designer.html.HtmlTag;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.lang.reflect.Method;
@@ -26,8 +27,11 @@ import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.insync.faces.Entities;
 import org.netbeans.modules.visualweb.insync.live.DesignBeanNode;
+import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.events.Event;
 
 /**
  * Impl of <code>HtmlDomProvider.InlineEditorSupport</code>
@@ -111,5 +115,48 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
 
     public boolean isEscaped() {
         return HtmlDomProviderServiceImpl.isEscapedDesignBean(markupDesignBean);
+    }
+
+    public void handleEvent(Event e) {
+        //        /*
+        //          Node node = (org.w3c.dom.Node)e.getTarget();
+        //          String type = e.getType();
+        //          Node parent = node.getParentNode(); // XXX or use getRelatedNode?
+        //
+        //        */
+        //        dispatchEvent(bean);
+        Node node = (org.w3c.dom.Node)e.getTarget();
+        Node parent = node.getParentNode(); // XXX or use getRelatedNode?
+
+        // Text node or entity node changes should get translated
+        // into a change event on their surrounding element...
+        // XXX I could possibly handle to rebreak only
+        // the LineBreakGroup.... That would save work -ESPECIALLY-
+        // for text right within the <body> tag... but optimize that
+        // later
+        if (!(node instanceof Element) || ((Element)node).getTagName().equals(HtmlTag.BR.name)) { // text, cdata, entity, ...
+            node = parent;
+            parent = parent.getParentNode();
+
+            if (node instanceof Element) {
+//                MarkupDesignBean b = ((RaveElement)node).getDesignBean();
+//                MarkupDesignBean b = InSyncService.getProvider().getMarkupDesignBeanForElement((Element)node);
+//                MarkupDesignBean b = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement((Element)node);
+                MarkupDesignBean b = MarkupUnit.getMarkupDesignBeanForElement((Element)node);
+
+                if (b == null) {
+//                    b = bean;
+                    b = markupDesignBean;
+                }
+
+//                webform.getDomSynchronizer().requestTextUpdate(b);
+//                webform.requestTextUpdate(b);
+                htmlDomProviderImpl.requestTextUpdate(b);
+            }
+        } else {
+//            webform.getDomSynchronizer().requestChange(bean);
+//            webform.requestChange(bean);
+            htmlDomProviderImpl.requestChange(markupDesignBean);
+        }
     }
 }
