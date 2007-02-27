@@ -273,7 +273,8 @@ final class PanelProjectImportVisual extends SettingsPanel implements DocumentLi
     
     boolean valid(WizardDescriptor wizardDescriptor) {
         String sourceLocationPath = projectLocationTextField.getText().trim();
-        if (sourceLocationPath.length() == 0) {
+        if (sourceLocationPath.length() == 0
+                || !new File(sourceLocationPath).isDirectory()) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", //NOI18N
                     customBundle.getString("MSG_ProvideExistingSourcesLocation")); //NOI18N
             return false;
