@@ -532,8 +532,9 @@ public class Resizer extends Interaction implements KeyListener {
     }
 
     /** Look up the resize constraints for the given component */
-    public static int getResizeConstraints(WebForm webForm, MarkupDesignBean component) {
-        Element element = component.getElement();
+    public static int getResizeConstraints(WebForm webForm, /*MarkupDesignBean component*/ Element componentRootElement) {
+//        Element element = component.getElement();
+        Element element = componentRootElement;
 
         if (element != null) {
 //            CssBox box = CssBox.getBox(element);
@@ -547,27 +548,28 @@ public class Resizer extends Interaction implements KeyListener {
             }
         }
 
-        int constraints = Constants.ResizeConstraints.ANY;
-
-        // Special case: The Jsp Include box is not resizable.
-        // If I build a BeanDescriptor for it I can inject
-        // this value right on it, but I also want to make it
-        // as NOT POSITIONABLE.
-        if (component.getInstance() instanceof Jsp_Directive_Include) {
-            return Constants.ResizeConstraints.NONE;
-        }
-
-        BeanInfo bi = component.getBeanInfo();
-
-        if (bi != null) {
-            BeanDescriptor bd = bi.getBeanDescriptor();
-            Object o = bd.getValue(Constants.BeanDescriptor.RESIZE_CONSTRAINTS);
-
-            if ((o != null) && o instanceof Integer) {
-                constraints = ((Integer)o).intValue();
-            }
-        }
-
-        return constraints;
+//        int constraints = Constants.ResizeConstraints.ANY;
+//
+//        // Special case: The Jsp Include box is not resizable.
+//        // If I build a BeanDescriptor for it I can inject
+//        // this value right on it, but I also want to make it
+//        // as NOT POSITIONABLE.
+//        if (component.getInstance() instanceof Jsp_Directive_Include) {
+//            return Constants.ResizeConstraints.NONE;
+//        }
+//
+//        BeanInfo bi = component.getBeanInfo();
+//
+//        if (bi != null) {
+//            BeanDescriptor bd = bi.getBeanDescriptor();
+//            Object o = bd.getValue(Constants.BeanDescriptor.RESIZE_CONSTRAINTS);
+//
+//            if ((o != null) && o instanceof Integer) {
+//                constraints = ((Integer)o).intValue();
+//            }
+//        }
+//
+//        return constraints;
+        return WebForm.getHtmlDomProviderService().getResizeConstraintsForComponent(componentRootElement);
     }
 }

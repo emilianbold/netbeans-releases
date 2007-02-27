@@ -409,7 +409,7 @@ public class SelectionManager {
         }
 
 //        fo.resizeConstraints = Resizer.getResizeConstraints(webform, component);
-        sc.resizeConstraints = Resizer.getResizeConstraints(webform, WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement));
+        sc.resizeConstraints = Resizer.getResizeConstraints(webform, componentRootElement);
 
 //        selected.add(fo);
 //        leaf = fo.component;

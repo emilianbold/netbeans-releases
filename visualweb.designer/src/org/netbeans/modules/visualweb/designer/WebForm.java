@@ -2357,6 +2357,10 @@ public class WebForm implements Designer {
         public String[] getEditableProperties(Element componentRootElement) {
             return new String[0];
         }
+
+        public int getResizeConstraintsForComponent(Element componentRootElement) {
+            return -1;
+        }
     } // End of DummyHtmlDomProviderService.
     
     
