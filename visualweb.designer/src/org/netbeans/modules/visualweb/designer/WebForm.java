@@ -1376,9 +1376,9 @@ public class WebForm implements Designer {
         htmlDomProvider.beanChanged(bean);
     }
 
-    public void requestTextUpdate(MarkupDesignBean bean) {
-        htmlDomProvider.requestTextUpdate(bean);
-    }
+//    public void requestTextUpdate(MarkupDesignBean bean) {
+//        htmlDomProvider.requestTextUpdate(bean);
+//    }
     
     
 //    ////// Moved form DesignerActions
