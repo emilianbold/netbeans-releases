@@ -184,20 +184,24 @@ abstract class FlashingIcon extends JComponent implements MouseListener {
     private class Timer implements Runnable {
         public void run() {
             synchronized( FlashingIcon.this ) {
-                long currentTime = System.currentTimeMillis();
-                if( keepFlashing ) {
-                    if( currentTime - startTime < STOP_FLASHING_DELAY ) {
-                        flashIcon();
-                    } else {
-                        stopFlashing();
+                try {
+                    long currentTime = System.currentTimeMillis();
+                    if( keepFlashing ) {
+                        if( currentTime - startTime < STOP_FLASHING_DELAY ) {
+                            flashIcon();
+                        } else {
+                            stopFlashing();
+                        }
                     }
-                }
-                if( currentTime - startTime >= DISAPPEAR_DELAY_MILLIS ) {
-                    disappear();
-                    timeout();
-                } else {
-                    if( null != timerTask )
-                        timerTask.schedule( 500 );
+                    if( currentTime - startTime >= DISAPPEAR_DELAY_MILLIS ) {
+                        disappear();
+                        timeout();
+                    } else {
+                        if( null != timerTask )
+                            timerTask.schedule( 500 );
+                    }
+                } catch( Throwable e ) {
+                    //swallow all exceptions to avoid endless exception <-> notification loop
                 }
             }
         }
