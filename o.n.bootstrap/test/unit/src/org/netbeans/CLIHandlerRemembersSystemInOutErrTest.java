@@ -51,6 +51,7 @@ public class CLIHandlerRemembersSystemInOutErrTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         clearWorkDir();
+        System.setProperty ("netbeans.user", getWorkDirPath());
         LOG = Logger.getLogger("TEST-" + getName());
     }
 
