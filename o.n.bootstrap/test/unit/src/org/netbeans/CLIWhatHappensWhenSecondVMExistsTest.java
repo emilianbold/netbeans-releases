@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.fakepkg.FakeHandler;
 import org.netbeans.junit.NbTestCase;
 
@@ -41,6 +42,7 @@ implements Map {
     private Exception e;
     private int howMuchOut;
     private boolean open;
+    private static Logger LOG;
     
     public CLIWhatHappensWhenSecondVMExistsTest(String testName) {
         super(testName);
@@ -52,6 +54,7 @@ implements Map {
 
     protected void setUp() throws Exception {
         clearWorkDir();
+        LOG = Logger.getLogger("TEST." + getName());
         called = false;
         
         System.setProperty("netbeans.mainclass", CLIWhatHappensWhenSecondVMExistsTest.class.getName());
@@ -61,7 +64,9 @@ implements Map {
 
     public static void main(String[] args) {
         // ok, ready to work
+        LOG.info("We are in main, finishInitialization now");
         CLIHandler.finishInitialization(false);
+        LOG.info("finishInitialization done");
     }
     
     private int cli(CLIHandler.Args a) {
@@ -69,7 +74,7 @@ implements Map {
         
         
         String[] args = a.getArguments();
-//        System.err.println("args: " + Arrays.asList(args));
+        LOG.info("  cli: args: " + Arrays.asList(args));
         
         boolean yes = false;
         for (int i = 0; i < args.length; i++) {
@@ -84,40 +89,49 @@ implements Map {
             }
         }
         
+        LOG.info("  yes: " + yes);
         if (yes) {
             this.open = a.isOpen();
             assertTrue("We are open at begining", this.open);
             try {
                 OutputStream os = a.getOutputStream();
                 os.write("123\n".getBytes());
+                LOG.info("send 123 to the output stream");
                 for (howMuchOut = 0; howMuchOut < 1000; howMuchOut++) {
                     try {
                         Thread.sleep(10);
                     } catch (InterruptedException ex) {
                         this.e = ex;
                     }
+                    LOG.info(" howMuchOut " + howMuchOut);
                     
                     if (!a.isOpen()) {
+                        LOG.info("a is closed, break");
                         break;
                     }
                 }
                 
             } catch (IOException ex) {
                 this.e = ex;
+                LOG.log(Level.WARNING, "Exception while writing", ex);
             } finally {
                 synchronized (this) {
                     this.open = a.isOpen();
                     notifyAll();
                 }
+                LOG.info("open assigned " + this.open + " all notified");
             }
         }
         
+        LOG.info("Exit cli");
         return 0;
     }
     
 
     public void testGet1000AndExit() throws Exception {
+        LOG.info("testGet1000AndExit starts");
         org.netbeans.MainImpl.main(new String[] { "--userdir", getWorkDirPath() });
+        LOG.log(Level.INFO, "main finished with userdir {0}", getWorkDirPath());
         assertEquals("Called", true, called);
 
         called = false;
@@ -175,7 +189,7 @@ implements Map {
         String cp = System.getProperty("java.class.path");
         assertNotNull(cp);
         
-        ArrayList l = new ArrayList();
+        ArrayList<String> l = new ArrayList<String>();
         l.add(s + File.separator + "bin" + File.separator + "java");
         l.add("-cp");
         l.add(cp);
@@ -184,7 +198,7 @@ implements Map {
         
 //        System.err.println("exec: " + l);
         
-        args = (String[])l.toArray(args);
+        args = l.toArray(args);
         
         return Runtime.getRuntime().exec(args);
     }
