@@ -25,7 +25,10 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -33,6 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
@@ -54,6 +58,7 @@ public class PanelModuleDetectionVisual extends JPanel {
     private final Vector<Vector<String>> modules = new Vector<Vector<String>>();
     private static final int REL_PATH_INDEX = 0;
     private static final int TYPE_INDEX = 1;
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     
     // Location of Enterprise Application to be imported, chosen on the previous panel.
     private File eaLocation;
@@ -65,6 +70,29 @@ public class PanelModuleDetectionVisual extends JPanel {
         setName(getMessage("LBL_IW_ApplicationModulesStep"));
         putClientProperty("NewProjectWizard_Title", getMessage("TXT_ImportProject"));
         getAccessibleContext().setAccessibleDescription(getMessage("ACS_NWP1_NamePanel_A11YDesc"));
+    }
+    
+    public void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
+    }
+    
+    public void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
+    }
+    
+    protected void fireChangeEvent() {
+        Iterator<ChangeListener> it;
+        synchronized (listeners) {
+            it = new HashSet<ChangeListener>(listeners).iterator();
+        }
+        ChangeEvent ev = new ChangeEvent(this);
+        while (it.hasNext()) {
+            it.next().stateChanged(ev);
+        }
     }
     
     private void initModuleTable() {
@@ -99,7 +127,29 @@ public class PanelModuleDetectionVisual extends JPanel {
     }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
+        File project = getProject(wizardDescriptor);
+        for (Vector<String> module : modules) {
+            if (isModuleForbidden(project, module.get(REL_PATH_INDEX))) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", //NOI18N
+                        getMessage("MSG_ModuleLocationAlreadyExists")); //NOI18N
+                return false;
+            }
+        }
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", null); // NOI18N
         return true;
+    }
+    
+    /** Get the project directory. */
+    private File getProject(WizardDescriptor wizardDescriptor) {
+        return (File) wizardDescriptor.getProperty(WizardProperties.PROJECT_DIR);
+    }
+    
+    // #87604
+    /** Return <code>true</code> if the module location already exists in the project directory. */
+    private boolean isModuleForbidden(File project, String module) {
+        String moduleName = new File(project, module).getName();
+        File forbiddenLocation = new File(project, moduleName);
+        return forbiddenLocation.exists();
     }
     
     void store(WizardDescriptor wd) {
@@ -136,6 +186,7 @@ public class PanelModuleDetectionVisual extends JPanel {
         row.add(relPath);
         row.add(getModuleType(relPath).getDescription());
         modules.add(row);
+        fireChangeEvent();
     }
     
     private static final String getMessage(String bundleKey) {
@@ -218,6 +269,7 @@ public class PanelModuleDetectionVisual extends JPanel {
         if (row != -1) {
             modules.remove(row);
             getModuleTableModel().fireTableRowsDeleted(row, row);
+            fireChangeEvent();
         }
     }//GEN-LAST:event_removeModuleButtonActionPerformed
     

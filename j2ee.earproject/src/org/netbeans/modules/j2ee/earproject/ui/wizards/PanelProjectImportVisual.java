@@ -275,7 +275,7 @@ final class PanelProjectImportVisual extends SettingsPanel implements DocumentLi
         String sourceLocationPath = projectLocationTextField.getText().trim();
         if (sourceLocationPath.length() == 0) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", //NOI18N
-                    customBundle.getString("MSG_ProvideExistingSourcesLocation"));
+                    customBundle.getString("MSG_ProvideExistingSourcesLocation")); //NOI18N
             return false;
         }
         

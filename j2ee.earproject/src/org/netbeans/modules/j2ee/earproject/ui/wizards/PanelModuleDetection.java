@@ -34,7 +34,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Martin Krauskopf
  */
-final public class PanelModuleDetection implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+final public class PanelModuleDetection implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener {
     
     private WizardDescriptor wizardDescriptor;
     private PanelModuleDetectionVisual component;
@@ -47,6 +47,7 @@ final public class PanelModuleDetection implements WizardDescriptor.Panel, Wizar
     public Component getComponent() {
         if (component == null) {
             component = new PanelModuleDetectionVisual();
+            component.addChangeListener(this);
         }
         return component;
     }
@@ -105,4 +106,7 @@ final public class PanelModuleDetection implements WizardDescriptor.Panel, Wizar
         return "NWP1"; // NOI18N
     }
     
+    public void stateChanged(ChangeEvent arg0) {
+        fireChangeEvent();
+    }
 }
