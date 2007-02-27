@@ -157,4 +157,12 @@ Microsystems, Inc. All Rights Reserved.
         </folder>        
     </folder>
 
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="Cvs.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.options.CvsOptions"/>
+            </file>
+        </folder>
+    </folder>
+    
 </filesystem>

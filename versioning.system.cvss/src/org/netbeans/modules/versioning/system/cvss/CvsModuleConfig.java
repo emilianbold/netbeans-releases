@@ -39,9 +39,13 @@ public class CvsModuleConfig {
     
     public static final String PROP_IGNORED_FILEPATTERNS    = "ignoredFilePatterns";  // NOI18N
     public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";  // NOI18N
-    public static final String PROP_TEXT_ANNOTATIONS_FORMAT = "textAnnotations";  // NOI18N
     public static final String PROP_SEARCHHISTORY_FETCHTAGS = "searchHistory.fetchTags";  // NOI18N
+    public static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles";  // NOI18N
     public static final String ROOTS_CONFIG = "rootsConfig";  // NOI18N
+    public static final String PROP_ANNOTATIONS_VISIBLE = "textAnnotationsVisible";  // NOI18N
+    public static final String PROP_ANNOTATIONS_FORMAT = "annotationsFormat";  // NOI18N
+    
+    public static final String DEFAULT_ANNOTATIONS_FORMAT = "[{status}; {tag}]";
     
     private static final String FIELD_SEPARATOR = "<~>";
     

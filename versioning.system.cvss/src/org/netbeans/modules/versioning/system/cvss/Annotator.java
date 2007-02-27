@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,10 +24,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusAction;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusProjectsAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.CheckoutAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.project.UpdateWithDependenciesAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction;
@@ -36,15 +34,12 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.log.AnnotationsAct
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ResolveConflictsAction;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffProjectsAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ExportDiffAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.tag.*;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitAction;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitProjectsAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateProjectsAction;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
@@ -55,6 +50,8 @@ import org.netbeans.api.project.Project;
 import javax.swing.*;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.text.MessageFormat;
 import java.io.File;
@@ -92,7 +89,10 @@ public class Annotator {
     private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
     
     private final FileStatusCache cache;
-    private MessageFormat format;
+    
+    private String          lastAnnotationsFormat;
+    private MessageFormat   lastMessageFormat;
+    private String          lastEmptyAnnotation;
 
     Annotator(CvsVersioningSystem cvs) {
         cache = cvs.getStatusCache();
@@ -106,16 +106,6 @@ public class Annotator {
             if (name.endsWith("Format")) {  // NOI18N
                 initDefaultColor(name.substring(0, name.length() - 6)); 
             }
-        }
-
-        String string = System.getProperty("netbeans.experimental.cvs.ui.statusLabelFormat");  // NOI18N
-        if (string != null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "CVS status labels use format \"" + string + "\" where:"); // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{0} stays for revision"); // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{1} stays for status"); // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{2} stays for branch or sticky tag"); // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{3} stays for binary flag"); // NOI18N
-            format = new MessageFormat(string);
         }
     }
 
@@ -158,22 +148,10 @@ public class Annotator {
         name = htmlEncode(name);
         int status = info.getStatus();
         String textAnnotation;
-        String textAnnotationFormat = CvsModuleConfig.getDefault().getPreferences().get(CvsModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT, null);
-        if (textAnnotationFormat != null && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
-            if (format != null) {
-                textAnnotation = formatAnnotation(info, file);
-            } else {
-                String sticky = Utils.getSticky(file);
-                if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
-                    textAnnotation = "";  // NOI18N
-                } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
-                    textAnnotation = " [" + sticky.substring(1) + "]"; // NOI18N
-                } else  if (sticky == null) {
-                    textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
-                } else {
-                    textAnnotation = " [" + info.getShortStatusText() + "; " + sticky.substring(1) + "]"; // NOI18N
-                }
-            }
+        boolean annotationsVisible = CvsModuleConfig.getDefault().getPreferences().getBoolean(CvsModuleConfig.PROP_ANNOTATIONS_VISIBLE, false);
+        if (annotationsVisible && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
+            textAnnotation = formatAnnotation(info, file);
+            if (textAnnotation.equals(lastEmptyAnnotation)) textAnnotation = ""; // NOI18N
         } else {
             textAnnotation = ""; // NOI18N
         }
@@ -215,6 +193,8 @@ public class Annotator {
     }
 
     private String formatAnnotation(FileInformation info, File file) {
+        updateMessageFormat();
+
         String statusString = "";  // NOI18N
         int status = info.getStatus();
         if (status != FileInformation.STATUS_VERSIONED_UPTODATE) {
@@ -244,25 +224,35 @@ public class Annotator {
             stickyString,
             binaryString
         };
-        return format.format(arguments, new StringBuffer(), null).toString().trim();
+        return lastMessageFormat.format(arguments, new StringBuffer(), null).toString().trim();
+    }
+
+    private void updateMessageFormat() {
+        String taf = CvsModuleConfig.getDefault().getPreferences().get(CvsModuleConfig.PROP_ANNOTATIONS_FORMAT, CvsModuleConfig.DEFAULT_ANNOTATIONS_FORMAT);
+        if (lastMessageFormat == null || !taf.equals(lastAnnotationsFormat)) {
+            for (;;) {  // executes at most 2 times
+                lastAnnotationsFormat = taf;
+                taf = taf.replaceAll("\\{revision}", "{0}").replaceAll("\\{status}", "{1}").replaceAll("\\{tag}", "{2}").replaceAll("\\{binary}", "{3}"); // NOI18N
+                try {
+                    lastMessageFormat = new MessageFormat(taf);
+                    lastEmptyAnnotation = lastMessageFormat.format(new Object [] { "", "", "", "" }); // NOI18N
+                    break;
+                } catch (Exception e) {
+                    Logger.getLogger(Annotator.class.getName()).log(Level.SEVERE, lastAnnotationsFormat, e);
+                    taf = CvsModuleConfig.DEFAULT_ANNOTATIONS_FORMAT;
+                }
+            }
+        }
     }
 
     private String annotateFolderNameHtml(String name, FileInformation info, File file) {
         name = htmlEncode(name);
         int status = info.getStatus();
         String textAnnotation;
-        String textAnnotationFormat = CvsModuleConfig.getDefault().getPreferences().get(CvsModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT, null);        
-        if (textAnnotationFormat != null && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
-            String sticky = Utils.getSticky(file);
-            if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
-                textAnnotation = ""; // NOI18N
-            } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
-                textAnnotation = " [" + sticky.substring(1) + "]"; // NOI18N
-            } else  if (sticky == null) {
-                textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
-            } else {
-                textAnnotation = " [" + info.getShortStatusText() + "; " + sticky.substring(1) + "]"; // NOI18N
-            }
+        boolean annotationsVisible = CvsModuleConfig.getDefault().getPreferences().getBoolean(CvsModuleConfig.PROP_ANNOTATIONS_VISIBLE, false);
+        if (annotationsVisible && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
+            textAnnotation = formatAnnotation(info, file);
+            if (textAnnotation.equals(lastEmptyAnnotation)) textAnnotation = ""; // NOI18N
         } else {
             textAnnotation = ""; // NOI18N
         }
@@ -347,8 +337,8 @@ public class Annotator {
         boolean allExcluded = true;
         boolean modified = false;
 
-        Map map = cache.getAllModifiedFiles();
-        Map modifiedFiles = new HashMap();
+        Map<File, FileInformation> map = cache.getAllModifiedFiles();
+        Map<File, FileInformation> modifiedFiles = new HashMap<File, FileInformation>();
         for (Iterator i = map.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = (FileInformation) map.get(file);
@@ -529,8 +519,8 @@ public class Annotator {
 
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         boolean isVersioned = false;
-        for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
-            File file = (File) i.next();
+        for (Iterator<File> i = context.getRootFiles().iterator(); i.hasNext();) {
+            File file = i.next();
             if ((cache.getStatus(file).getStatus() & STATUS_BADGEABLE) != 0) {  
                 isVersioned = true;
                 break;
@@ -546,21 +536,21 @@ public class Annotator {
         boolean allExcluded = true;
         boolean modified = false;
 
-        Map map = cache.getAllModifiedFiles();
-        Map modifiedFiles = new HashMap();
-        for (Iterator i = map.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = (FileInformation) map.get(file);
+        Map<File, FileInformation> map = cache.getAllModifiedFiles();
+        Map<File, FileInformation> modifiedFiles = new HashMap<File, FileInformation>();
+        for (Iterator<File> i = map.keySet().iterator(); i.hasNext();) {
+            File file = i.next();
+            FileInformation info = map.get(file);
             if (!info.isDirectory() && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(file, info);
         }
 
-        for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
-            File file = (File) i.next();
+        for (Iterator<File> i = context.getRootFiles().iterator(); i.hasNext();) {
+            File file = i.next();
             if (file instanceof FlatFolder) {
-                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
-                    File mf = (File) j.next();
+                for (Iterator<File> j = modifiedFiles.keySet().iterator(); j.hasNext();) {
+                    File mf = j.next();
                     if (mf.getParentFile().equals(file)) {
-                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
+                        FileInformation info = modifiedFiles.get(mf);
                         if (info.isDirectory()) continue;
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
@@ -572,10 +562,10 @@ public class Annotator {
                     }
                 }
             } else {
-                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
-                    File mf = (File) j.next();
+                for (Iterator<File> j = modifiedFiles.keySet().iterator(); j.hasNext();) {
+                    File mf = j.next();
                     if (Utils.isParentOrEqual(file, mf)) {
-                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
+                        FileInformation info = modifiedFiles.get(mf);
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                             Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png", true); // NOI18N

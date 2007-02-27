@@ -21,9 +21,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
-import org.netbeans.modules.versioning.system.cvss.VersionsCache;
-import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
-import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
+import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.diff.EncodedReaderFactory;
 import org.openide.filesystems.FileObject;
@@ -108,7 +106,20 @@ public class DiffStreamSource extends StreamSource {
     }
 
     public boolean isEditable() {
-        return VersionsCache.REVISION_CURRENT.equals(revision);
+        return VersionsCache.REVISION_CURRENT.equals(revision) && isPrimary();
+    }
+
+    private boolean isPrimary() {
+        FileObject fo = FileUtil.toFileObject(baseFile);
+        if (fo != null) {
+            try {
+                DataObject dao = DataObject.find(fo);
+                return fo.equals(dao.getPrimaryFile());
+            } catch (DataObjectNotFoundException e) {
+                // no dataobject, never mind
+            }
+        }
+        return true;
     }
 
     public synchronized Lookup getLookup() {
@@ -117,7 +128,7 @@ public class DiffStreamSource extends StreamSource {
         } catch (IOException e) {
             return Lookups.fixed();
         }
-        if (remoteFile == null) return Lookups.fixed();
+        if (remoteFile == null || !isPrimary()) return Lookups.fixed();
         FileObject remoteFo = FileUtil.toFileObject(remoteFile);
         if (remoteFo == null) return Lookups.fixed();
 
@@ -164,13 +175,18 @@ public class DiffStreamSource extends StreamSource {
                 // if it also finds associate .form file in the same directory
                 Set<File> allFiles = getAllDataObjectFiles(baseFile);
                 for (File file : allFiles) {
-                    boolean isBase = file.equals(baseFile); 
-                    File rf = VersionsCache.getInstance().getRemoteFile(file, isBase ? revision : VersionsCache.REVISION_BASE, group);
-                    File newRemoteFile = new File(tempFolder, file.getName());
-                    Utils.copyStreamsCloseAll(new FileOutputStream(newRemoteFile), new FileInputStream(rf));
-                    newRemoteFile.deleteOnExit();
-                    if (isBase) {
-                        remoteFile = newRemoteFile;
+                    boolean isBase = file.equals(baseFile);
+                    try {
+                        File rf = VersionsCache.getInstance().getRemoteFile(file, revision, group);
+                        File newRemoteFile = new File(tempFolder, file.getName());
+                        Utils.copyStreamsCloseAll(new FileOutputStream(newRemoteFile), new FileInputStream(rf));
+                        newRemoteFile.deleteOnExit();
+                        if (isBase) {
+                            remoteFile = newRemoteFile;
+                        }
+                    } catch (Exception e) {
+                        if (isBase) throw e;
+                        // we cannot check out peer file so the dataobject will not be constructed properly
                     }
                 }
             }

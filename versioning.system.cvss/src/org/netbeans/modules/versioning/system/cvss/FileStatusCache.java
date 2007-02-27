@@ -374,7 +374,7 @@ public class FileStatusCache {
 
     // --- Package private contract ------------------------------------------
     
-    Map getAllModifiedFiles() {
+    Map<File, FileInformation> getAllModifiedFiles() {
         return cacheProvider.getAllModifiedValues();
     }
 
