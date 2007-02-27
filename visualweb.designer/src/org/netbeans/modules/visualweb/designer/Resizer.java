@@ -216,7 +216,10 @@ public class Resizer extends Interaction implements KeyListener {
                         resizeVertically = false;
                     }
 
-                    gm.resize(pane, component, r.x, origX != r.x, r.y, origY != r.y, r.width,
+//                    gm.resize(pane, component, r.x, origX != r.x, r.y, origY != r.y, r.width,
+//                        resizeHorizontally, r.height, resizeVertically, box, snapDisabled);
+                    Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component);
+                    gm.resize(pane, componentRootElement, r.x, origX != r.x, r.y, origY != r.y, r.width,
                         resizeHorizontally, r.height, resizeVertically, box, snapDisabled);
                 }
 
