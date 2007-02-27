@@ -42,8 +42,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 
-import com.sun.rave.designtime.DesignBean;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designer.html.HtmlAttribute;
 import com.sun.rave.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.text.Bias;

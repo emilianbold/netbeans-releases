@@ -62,7 +62,6 @@ import org.w3c.dom.NodeList;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.CustomButtonBox;
 import org.netbeans.modules.visualweb.css2.FormComponentBox;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import com.sun.rave.designer.html.HtmlAttribute;
 import com.sun.rave.designer.html.HtmlTag;
