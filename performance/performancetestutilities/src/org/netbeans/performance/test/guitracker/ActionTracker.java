@@ -87,20 +87,30 @@ public class ActionTracker {
     /** KEY_RELEASED event. */
     public final static int TRACK_KEY_RELEASE = 21;
     
+    private static final int TRACK_FRAME = 1000;
+    private static final int TRACK_DIALOG = 2000;
+    private static final int TRACK_COMPONENT = 3000;
+    
     /** COMPONENT_SHOWN event happened on a Frame or JFrame. */
-    public static final int TRACK_FRAME_SHOW = 30;
+    public static final int TRACK_FRAME_SHOW = TRACK_FRAME + ComponentEvent.COMPONENT_SHOWN;
     /** COMPONENT_HIDDEN event happened on a Frame or JFrame. */
-    public static final int TRACK_FRAME_HIDE = 31;
+    public static final int TRACK_FRAME_HIDE = TRACK_FRAME + ComponentEvent.COMPONENT_HIDDEN;
+    /** COMPONENT_RESIZED event happened on a Frame or JFrame. */
+    public static final int TRACK_FRAME_RESIZE = TRACK_FRAME + ComponentEvent.COMPONENT_RESIZED;
     
     /** COMPONENT_SHOWN event happened on a Dialog or JDialog. */
-    public final static int TRACK_DIALOG_SHOW = 32;
+    public final static int TRACK_DIALOG_SHOW = TRACK_DIALOG + ComponentEvent.COMPONENT_SHOWN;
     /** COMPONENT_HIDDEN event happened on a Dialog or JDialog. */
-    public final static int TRACK_DIALOG_HIDE = 33;
+    public final static int TRACK_DIALOG_HIDE = TRACK_DIALOG + ComponentEvent.COMPONENT_HIDDEN;
+    /** COMPONENT_RESIZED event happened on a Dialog or JDialog. */
+    public final static int TRACK_DIALOG_RESIZE = TRACK_DIALOG + ComponentEvent.COMPONENT_RESIZED;
     
     /** COMPONENT_SHOWN event happened on a Component. */
-    public final static int TRACK_COMPONENT_SHOW = 34;
+    public final static int TRACK_COMPONENT_SHOW = TRACK_COMPONENT + ComponentEvent.COMPONENT_SHOWN;
     /** COMPONENT_HIDDEN event happened on a Component. */
-    public final static int TRACK_COMPONENT_HIDE = 35;
+    public final static int TRACK_COMPONENT_HIDE = TRACK_COMPONENT + ComponentEvent.COMPONENT_HIDDEN;
+    /** COMPONENT_RESIZED event happened on a Component. */
+    public final static int TRACK_COMPONENT_RESIZE = TRACK_COMPONENT + ComponentEvent.COMPONENT_RESIZED;
     
     /** Any messages the application wants to send. */
     public final static int TRACK_APPLICATION_MESSAGE = 50;
@@ -464,22 +474,15 @@ public class ActionTracker {
             // ignore ComponentEvent.COMPONENT_MOVED & ComponentEvent.COMPONENT_RESIZED
             if (id == ComponentEvent.COMPONENT_HIDDEN
                     || id == ComponentEvent.COMPONENT_SHOWN) {
+                
                 Component c = ce.getComponent();
+                
                 if (c instanceof Frame  || c instanceof JFrame) {
-                    add(id == ComponentEvent.COMPONENT_HIDDEN
-                            ? ActionTracker.TRACK_FRAME_HIDE
-                            : ActionTracker.TRACK_FRAME_SHOW,
-                            ce.paramString() + " " + c.getClass().getName());
+                    add(TRACK_FRAME + id, ce.paramString() + " " + c.getClass().getName());
                 } else if (c instanceof Dialog || c instanceof JDialog) {
-                    add(id == ComponentEvent.COMPONENT_HIDDEN
-                            ? ActionTracker.TRACK_DIALOG_HIDE
-                            : ActionTracker.TRACK_DIALOG_SHOW,
-                            ce.paramString() + " " + c.getClass().getName());
-                } else if (c instanceof Window || c instanceof JWindow) {
-                    add(id == ComponentEvent.COMPONENT_HIDDEN
-                            ? ActionTracker.TRACK_COMPONENT_HIDE
-                            : ActionTracker.TRACK_COMPONENT_SHOW,
-                            ce.paramString() + " " + c.getClass().getName());
+                    add(TRACK_DIALOG + id, ce.paramString() + " " + c.getClass().getName());
+                } else {
+                    add(TRACK_COMPONENT +id, ce.paramString() + " " + c.getClass().getName());
                 }
             }
         } else if (event instanceof InvocationEvent) {

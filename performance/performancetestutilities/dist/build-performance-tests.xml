@@ -52,4 +52,23 @@ Microsystems, Inc. All Rights Reserved.
         <unzip src="${nbextra.dir}/qa/projectized/SystemProperties.zip" dest="${xtest.tmpdir}/"/>
     </target>
 
+    <!-- =========================== -->
+    <!-- IDE Command Line Suffix     -->
+    <!-- =========================== -->
+    <target name="ide_command_line_suffix" depends="ide_command_line_suffix_yes,ide_command_line_suffix_no" />
+    
+    <target name="ide_command_line_suffix_yes" depends="ide_command_line_suffix_new" if="new.suffix">
+        <property name="xtest.ide.commandline.suffix" value="${ide.commandline.suffix} ${xtest.perf.commandline.suffix}"/>
+    </target>
+
+    <target name="ide_command_line_suffix_no" depends="ide_command_line_suffix_new" unless="new.suffix">
+        <property name="xtest.ide.commandline.suffix" value="${ide.commandline.suffix}"/>
+    </target>
+
+    <target name="ide_command_line_suffix_new">
+        <condition property="new.suffix">
+            <isset property="xtest.perf.commandline.suffix" />
+         </condition>
+    </target>
+    
 </project>
