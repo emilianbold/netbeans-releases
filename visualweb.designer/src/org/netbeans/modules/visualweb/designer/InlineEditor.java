@@ -132,9 +132,9 @@ public abstract class InlineEditor {
 
         MarkupDesignBean markupBean = (MarkupDesignBean)bean;
 
+        Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(markupBean);
 //        String[] properties = getEditableProperties(markupBean);
-        String[] properties = WebForm.getHtmlDomProviderService().getEditableProperties(
-                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(markupBean));
+        String[] properties = WebForm.getHtmlDomProviderService().getEditableProperties(componentRootElement);
 
         if ((properties == null) || (properties.length == 0)) {
             return null;
@@ -229,7 +229,7 @@ public abstract class InlineEditor {
             
             
             HtmlDomProvider.InlineEditorSupport inlineEditorSupport = webform.createInlineEditorSupport(
-                    WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(markupBean),
+                    componentRootElement,
                     property.getPropertyDescriptor().getName());
             if (inlineEditorSupport == null) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException(
@@ -259,14 +259,14 @@ public abstract class InlineEditor {
             }
 
             if ((tag != null) && tag.isFormMemberTag()) {
-                editor = FormComponentEditor.get(webform, xpath, box, markupBean, /*property,*/ inlineEditorSupport);
+                editor = FormComponentEditor.get(webform, xpath, box, componentRootElement, /*markupBean, property,*/ inlineEditorSupport);
 
                 if (editor != null) {
                     return editor;
                 }
             }
 
-            editor = AttributeInlineEditor.get(webform, xpath, markupBean, /*property,*/ inlineEditorSupport);
+            editor = AttributeInlineEditor.get(webform, xpath, componentRootElement, /*markupBean, property,*/ inlineEditorSupport);
 
             if (editor != null) {
                 return editor;

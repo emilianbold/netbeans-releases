@@ -118,13 +118,14 @@ class FormComponentEditor extends InlineEditor {
     }
 
     public static FormComponentEditor get(WebForm webform, String xpath, CssBox box,
-    MarkupDesignBean bean, /*DesignProperty property,*/ HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
+    Element componentRootElement, /*MarkupDesignBean bean, DesignProperty property,*/ HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
         if (xpath != null) {
 //            RaveElement sourceElement = (RaveElement)bean.getElement();
 //            RaveElement root = sourceElement.getRendered();
-            Element sourceElement = bean.getElement();
-            Element root = MarkupService.getRenderedElementForElement(sourceElement);
+//            Element sourceElement = bean.getElement();
+//            Element root = MarkupService.getRenderedElementForElement(sourceElement);
 
+            Element root = componentRootElement;
             if (root != null) {
                 Node node = findPropertyNode(root, xpath);
 

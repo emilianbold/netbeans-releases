@@ -84,7 +84,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         this.xpath = xpath;
     }
 
-    public static AttributeInlineEditor get(WebForm webform, String xpath, MarkupDesignBean bean,
+    public static AttributeInlineEditor get(WebForm webform, String xpath, Element componentRootElement, /*MarkupDesignBean bean,*/
     /*DesignProperty property,*/ HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
 //        if (!isEditingAllowed(property)) {
         if (!inlineEditorSupport.isEditingAllowed()) {
@@ -96,7 +96,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         // how to create linebreaks in the document fragment
         // and have them added to as DesignBeans (br is a DesignBean)
         // when committed, etc.
-        if (!isEscaped(bean)) {
+//        if (!isEscaped(bean)) {
+        if (!isEscaped(componentRootElement)) {
             // Don't support editing unescaped properties yet...
             return null;
         }
@@ -611,7 +612,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
     }
 
     /** Determine if the given bean is escaped */
-    private /*public*/ static boolean isEscaped(DesignBean bean) {
+    private /*public*/ static boolean isEscaped(Element componentRootElement) {
 //        // See if the bean looks like an output text that has escape
 //        // turned off. If so, it's multiline. All others are considered
 //        // single line.
@@ -628,8 +629,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 //        }
 //
 //        return true;
-        return bean instanceof MarkupDesignBean && WebForm.getHtmlDomProviderService().isEscapedComponent(
-                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)bean));
+        return WebForm.getHtmlDomProviderService().isEscapedComponent(componentRootElement);
     }
 
     public boolean isMultiLine() {
