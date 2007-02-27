@@ -19,7 +19,6 @@
 package org.netbeans.modules.visualweb.designer;
 
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
-import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -37,9 +36,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.netbeans.modules.visualweb.css2.CssBox;
-import com.sun.rave.designtime.DesignBean;
-import com.sun.rave.designtime.DesignProperty;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.extension.openide.awt.MouseUtils_RAVE;
 import com.sun.rave.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.text.Position;

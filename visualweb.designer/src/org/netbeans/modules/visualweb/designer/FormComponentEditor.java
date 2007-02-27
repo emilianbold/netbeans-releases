@@ -20,7 +20,6 @@ package org.netbeans.modules.visualweb.designer;
 
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
-import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.designer.CssUtilities;
 import java.awt.Color;
 import java.awt.Component;
