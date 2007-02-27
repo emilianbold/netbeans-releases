@@ -34,7 +34,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.java.JavaDataObject;
+//import org.netbeans.modules.java.JavaDataObject;
 
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.reverseengineering.reintegration.ReverseEngineerTask;
@@ -70,11 +70,12 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.CookieAction;
+//import org.openide.util.actions.CookieAction;
+import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
-public final class ReverseEngineerAction extends CookieAction
+public final class ReverseEngineerAction extends NodeAction
     implements ITaskFinishListener
 {
     Project sourceProject;
@@ -88,7 +89,7 @@ public final class ReverseEngineerAction extends CookieAction
 
         ReverseEngineerPanel rePanel;
         boolean doRE;
-        
+        	
         // Java project node selected
         if (sourceProject != null)
         {
@@ -97,8 +98,8 @@ public final class ReverseEngineerAction extends CookieAction
                 UMLJavaAssociationUtil.getAssociatedUMLProject(sourceProject));
             
             doRE = displayDialogDescriptor(rePanel);
-        }
-        
+        }        
+
         // Java packages and/or classes selected
         else
         {
@@ -113,7 +114,7 @@ public final class ReverseEngineerAction extends CookieAction
         }
 
         if (doRE)
-            doReverseEngineer(rePanel);
+            doReverseEngineer(rePanel);	
     }
 
 
@@ -141,11 +142,13 @@ public final class ReverseEngineerAction extends CookieAction
             NotifyDescriptor.OK_OPTION);
     }
     
-    
+
+    /* NB60TBD
     protected int mode()
     {
         return CookieAction.MODE_ANY;
     }
+    */
 
     private String getLocalizedMessage(String key)
     {
@@ -157,6 +160,7 @@ public final class ReverseEngineerAction extends CookieAction
         return getLocalizedMessage("CTL_ReverseEngineerAction"); // NOI18N
     }
 
+    /* NB60TBD
     protected Class[] cookieClasses()
     {
         return new Class[] 
@@ -166,6 +170,7 @@ public final class ReverseEngineerAction extends CookieAction
             JavaDataObject.class
         };
     }
+    */
 
     
 // TODO: conover - fix this enable method
@@ -176,10 +181,12 @@ public final class ReverseEngineerAction extends CookieAction
      */
     protected boolean enable(Node[] nodes)
     {
+	/* NB60TBD
         boolean enabled = super.enable(nodes);
 
         if (!enabled)
             return false;
+	*/
 
         Project project;
         

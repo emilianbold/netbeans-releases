@@ -29,7 +29,7 @@ import org.netbeans.modules.uml.project.AssociatedSourceProvider;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.JavaClass;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
@@ -41,10 +41,10 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
-import org.netbeans.jmi.javamodel.JavaEnum;
+//import org.netbeans.jmi.javamodel.JavaEnum;
 //import  org.netbeans.modules.uml.project.*;
 //import org.netbeans.jmi.javamodel.*;
-import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -64,6 +64,7 @@ public class UMLJavaAssociationUtil {
 	// java project might be intentionally or unintentionally associated with
 	// > 1 uml project? Perhaps we should detect that and throw an invalid state
 	// exception?
+    /* NB60TBD
 	public static Project getAssociatedUMLProject(JavaClass c) {
 //		DataObject sourceDO = JavaMetamodel.getManager().getDataObject(c.getResource());
             DataObject sourceDO = null;
@@ -75,7 +76,8 @@ public class UMLJavaAssociationUtil {
             }
       return getAssociatedUMLProject(sourceDO);
 	}
-   
+    */
+
    /**
     * Retrieve a UML project that is associatied with the given data object.
     */
@@ -124,6 +126,7 @@ public class UMLJavaAssociationUtil {
 	
 	// For a given jmi.javamodel.JavaClass this will determine which 
 	// embarcadero i type it would be associated with
+    /* NB60TBD
 	 public static Class getIType(JavaClass c) {
 		 
 		 // hmm, is this a instanceof or isAssignable from situation?
@@ -147,6 +150,7 @@ public class UMLJavaAssociationUtil {
 		 }
 		 
 	 }
+    */
 
 //proj=The UML project to search
 //qualifiedName=The fully qualified name of the class.
