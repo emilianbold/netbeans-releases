@@ -258,7 +258,7 @@ public class CommitAction extends AbstractSystemAction {
         if (bucket.size() == 0) return null;
         CommitCommand cmd = new CommitCommand();
         cmd.setFiles((File []) bucket.toArray(new File[bucket.size()]));
-        cmd.setMessage(message);
+        cmd.setMessage(org.netbeans.modules.versioning.util.Utils.wordWrap(message, CvsModuleConfig.getDefault().getWrapCommitMessagelength()));
         return CommitExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null);
     }
 

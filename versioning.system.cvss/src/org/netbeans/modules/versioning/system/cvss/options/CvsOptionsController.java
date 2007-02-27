@@ -37,11 +37,17 @@ class CvsOptionsController extends OptionsPanelController {
     public void update() {
         panel.getExcludeNewFiles().setSelected(CvsModuleConfig.getDefault().getPreferences().getBoolean(CvsModuleConfig.PROP_EXCLUDE_NEW_FILES, false));
         panel.getStatusLabelFormat().setText(CvsModuleConfig.getDefault().getPreferences().get(CvsModuleConfig.PROP_ANNOTATIONS_FORMAT, CvsModuleConfig.DEFAULT_ANNOTATIONS_FORMAT));
+        int wrapLength = CvsModuleConfig.getDefault().getWrapCommitMessagelength();
+        panel.getWrapCommitMessages().setSelected(wrapLength > 0);
+        panel.getWrapCharCount().setText(wrapLength > 0 ? Integer.toString(wrapLength) : "");
     }
 
     public void applyChanges() {
+        if (!isValid()) return;
         CvsModuleConfig.getDefault().getPreferences().putBoolean(CvsModuleConfig.PROP_EXCLUDE_NEW_FILES, panel.getExcludeNewFiles().isSelected());
         CvsModuleConfig.getDefault().getPreferences().put(CvsModuleConfig.PROP_ANNOTATIONS_FORMAT, panel.getStatusLabelFormat().getText());
+        int wrapLength = panel.getWrapCommitMessages().isSelected() ? Integer.parseInt(panel.getWrapCharCount().getText().trim()) : 0;
+        CvsModuleConfig.getDefault().setWrapCommitMessagelength(wrapLength);
     }
 
     public void cancel() {
@@ -49,12 +55,15 @@ class CvsOptionsController extends OptionsPanelController {
     }
 
     public boolean isValid() {
-        return true;
+        try {
+            return !panel.getWrapCommitMessages().isSelected() || Integer.parseInt(panel.getWrapCharCount().getText().trim()) > 0;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public boolean isChanged() {
-        return panel.getExcludeNewFiles().isSelected() != CvsModuleConfig.getDefault().getPreferences().getBoolean(CvsModuleConfig.PROP_EXCLUDE_NEW_FILES, false)
-                || !panel.getStatusLabelFormat().getText().equals(CvsModuleConfig.getDefault().getPreferences().get(CvsModuleConfig.PROP_ANNOTATIONS_FORMAT, CvsModuleConfig.DEFAULT_ANNOTATIONS_FORMAT));
+        return true;
     }
 
     public JComponent getComponent(Lookup masterLookup) {

@@ -44,6 +44,7 @@ public class CvsModuleConfig {
     public static final String ROOTS_CONFIG = "rootsConfig";  // NOI18N
     public static final String PROP_ANNOTATIONS_VISIBLE = "textAnnotationsVisible";  // NOI18N
     public static final String PROP_ANNOTATIONS_FORMAT = "annotationsFormat";  // NOI18N
+    private static final String PROP_WRAP_COMMIT_MESSAGE_LENGTH = "wrapCommitMessageLength";  // NOI18N
     
     public static final String DEFAULT_ANNOTATIONS_FORMAT = "[{status}; {tag}]";
     
@@ -63,6 +64,21 @@ public class CvsModuleConfig {
     public CvsModuleConfig() {
         excludedFiles = new FileCollection();
         excludedFiles.load(getPreferences(), PROP_COMMIT_EXCLUSIONS);
+    }
+
+    /**
+     * @return 0 = do NOT wrap commit message
+     */
+    public int getWrapCommitMessagelength() {
+        return getPreferences().getInt(PROP_WRAP_COMMIT_MESSAGE_LENGTH, 0);
+    }
+    
+    /**
+     * @param length 0 = do NOT wrap commit message
+     */
+    public void setWrapCommitMessagelength(int length) {
+        if (length < 0) throw new IllegalArgumentException();
+        getPreferences().putInt(PROP_WRAP_COMMIT_MESSAGE_LENGTH, length);
     }
 
     public Pattern [] getIgnoredFilePatterns() {

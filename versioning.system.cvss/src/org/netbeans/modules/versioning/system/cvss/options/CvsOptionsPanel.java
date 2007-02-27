@@ -34,6 +34,11 @@ class CvsOptionsPanel extends javax.swing.JPanel {
     /** Creates new form CvsOptionsPanel */
     public CvsOptionsPanel() {
         initComponents();
+        refreshComponents();
+    }
+    
+    private void refreshComponents() {
+        wrapCharCount.setEnabled(wrapCommitMessages.isSelected());
     }
     
     public JCheckBox getExcludeNewFiles() {
@@ -46,6 +51,14 @@ class CvsOptionsPanel extends javax.swing.JPanel {
 
     public JButton getStatusVarsBrowse() {
         return statusVarsBrowse;
+    }
+
+    public JTextField getWrapCharCount() {
+        return wrapCharCount;
+    }
+
+    public JCheckBox getWrapCommitMessages() {
+        return wrapCommitMessages;
     }
 
     /** This method is called from within the constructor to
@@ -135,8 +148,8 @@ class CvsOptionsPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void wrapCommitMessagesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_wrapCommitMessagesActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_wrapCommitMessagesActionPerformed
+        refreshComponents();
+    }//GEN-LAST:event_wrapCommitMessagesActionPerformed
 
     private void statusVarsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statusVarsBrowseActionPerformed
         List<String> formatVars = new ArrayList<String>();
