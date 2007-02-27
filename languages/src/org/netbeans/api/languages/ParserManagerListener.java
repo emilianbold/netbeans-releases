@@ -22,10 +22,17 @@ import java.util.EventListener;
 import org.netbeans.api.languages.ParserManager.State;
 
 /**
+ * Listens on ParserManager.
  *
  * @author Jan Jancura
  */
 public interface ParserManagerListener extends EventListener {
     
+    /**
+     * Called when parser state is changed.
+     * 
+     * @param state new state of parser
+     * @param root a root node of current AST tree
+     */
     public void parsed (State state, ASTNode root);
 }

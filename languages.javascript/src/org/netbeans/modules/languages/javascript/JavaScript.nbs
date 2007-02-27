@@ -448,9 +448,8 @@ ACTION:goto_declaration {
     explorer:"false";
 }
 
-IMPORT:s {
+IMPORT:js_string {
     mimeType:"text/x-string";
-    token:"js_string";
     startSkipLength:"1";
     endSkipLength:"1";
 }

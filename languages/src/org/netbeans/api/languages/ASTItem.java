@@ -28,9 +28,9 @@ import java.util.TreeMap;
 
 
 /**
- * Represents one AST node.
+ * Represents one item in AST tree.
  * 
- * @auASASTItemn Jancura
+ * @author jan Jancura
  */
 public class ASTItem {
    
@@ -70,46 +70,46 @@ public class ASTItem {
     }
 
     /**
-     * Returns offset of this node.
+     * Returns offset of this item.
      * 
-     * @return offset of this node
+     * @return offset of this item
      */
     public int getOffset () {
         return offset;
     }
 
     /**
-     * Returns MIME type of this node.
+     * Returns MIME type of this item.
      * 
-     * @return MIME type of this node
+     * @return MIME type of this item
      */
     public String getMimeType () {
         return mimeType;
     }
 
     /**
-     * Returns list of all subnodes (ASTNode) and tokens (ASTToken).
+     * Returns list of all subitems (ASTItem).
      * 
-     * @return list of all subnodes (ASTNode) and tokens (ASTToken)
+     * @return list of all subitems (ASTItem)
      */
     public List<ASTItem> getChildren () {
         return children;
     }
     
     /**
-     * Returns end offset of this node. Tt is the offset that is not part 
+     * Returns end offset of this item. Tt is the first offset that is not part 
      * of this node.
      * 
-     * @return end offset of this node
+     * @return end offset of this item
      */
     public int getEndOffset () {
         return getOffset () + getLength ();
     }
     
     /**
-     * Returns length of this node (end offset - start offset).
+     * Returns length of this item (end offset - start offset).
      * 
-     * @return length of this node (end offset - start offset)
+     * @return length of this item (end offset - start offset)
      */
     public int getLength () {
         if (length < 0) {
@@ -125,21 +125,11 @@ public class ASTItem {
     }
     
     /**
-     * Returns index of given node inside this node or -1.
-     * 
-     * @param node node
-     * @return index of given token inside this node or -1
-     */
-    public int findIndex (ASTItem node) {
-        return getChildren ().indexOf (node);
-    }
-    
-    /**
-     * Returns path from this node to the token on given offset.
+     * Returns path from this item to the item on given offset.
      * 
      * @param offset offset
      * 
-     * @return path from this node to the token on given offset
+     * @return path from this item to the item on given offset
      */
     public ASTPath findPath (int offset) {
         return findPath (new ArrayList<ASTItem> (), offset);

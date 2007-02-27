@@ -69,6 +69,8 @@ public class Language {
     public static final String TOKEN = "TOKEN";
     public static final String TOOLTIP = "TOOLTIP";
     
+    public static final String TOKEN_IMPORT = "TOKEN_IMPORT";
+    public static final String PREPROCESSOR_IMPORT = "PREPROCESSOR_IMPORT";
     
     private Parser              parser;
     private List<TokenType>     tokenTypes = new ArrayList ();
@@ -226,48 +228,50 @@ public class Language {
     ) throws ParseException {
         String mimeType = (String) ((Evaluator) properties.get ("mimeType")).evaluate ();
         Language language = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
-        if (properties.containsKey ("token")) {
-            String token = (String) ((Evaluator) properties.get ("token")).evaluate ();
+        if (properties.containsKey ("start")) {
+            properties.put ("token", "PE");
+            assert (getFeature (Language.IMPORT, Language.PREPROCESSOR_IMPORT) == null);
             addFeature (
                 Language.IMPORT, 
-                Language.createIdentifier (token), 
+                Language.createIdentifier (Language.PREPROCESSOR_IMPORT), 
                 properties
             );
             importedLangauges.add (language);
+//            Iterator<Language> it = importedLangauges.iterator ();
+//            while (it.hasNext ()) {
+//                Language l = it.next ();
+//                l.addSkipTokenType (name);
+//                l.addToken (
+//                    null,
+//                    name,
+//                    null,
+//                    null,
+//                    null
+//                );
+//            }
+//            addSkipTokenType (name);
+//            addToken (
+//                null,
+//                name,
+//                null,
+//                null,
+//                null
+//            );
             return;
         }
-        if (properties.containsKey ("start")) {
-            Iterator<Language> it = importedLangauges.iterator ();
-            while (it.hasNext ()) {
-                Language l = it.next ();
-                l.addSkipTokenType (name);
-                l.addToken (
-                    null,
-                    name,
-                    null,
-                    null,
-                    null
-                );
-                l.addFeature (
+        if (!properties.containsKey ("state")) {
+            properties.put ("token", name);
+            Map m = (Map) getFeature (Language.IMPORT, Language.TOKEN_IMPORT);
+            if (m == null) {
+                m = new HashMap ();
+                addFeature (
                     Language.IMPORT, 
-                    createIdentifier (name), 
-                    properties
+                    Language.createIdentifier (Language.TOKEN_IMPORT), 
+                    m
                 );
-                l.importedLangauges.add (language);
             }
-            addSkipTokenType (name);
-            addToken (
-                null,
-                name,
-                null,
-                null,
-                null
-            );
-            addFeature (
-                Language.IMPORT, 
-                createIdentifier (name), 
-                properties
-            );
+            assert (!m.containsKey (name));
+            m.put (name, properties);
             importedLangauges.add (language);
             return;
         }
@@ -410,9 +414,9 @@ public class Language {
         return value;
     }
     
-    public Map getFeature (String featureName) {
-        return (Map) features.get (featureName);
-    }
+//    public Map getFeature (String featureName) {
+//        return (Map) features.get (featureName);
+//    }
     
 //    private Object getFeature (String featureName, ASTItem item) {
 //        if (item instanceof ASTNode)
@@ -535,7 +539,7 @@ public class Language {
             else
                 addColor (token.getType (), null, colorsMap, defaultsMap);
         }
-        Map m = getFeature (Language.COLOR);
+        Map m = (Map) features.get (Language.COLOR);
         if (m == null)
             return Collections.EMPTY_MAP;
         Iterator<String> it2 = m.keySet ().iterator ();

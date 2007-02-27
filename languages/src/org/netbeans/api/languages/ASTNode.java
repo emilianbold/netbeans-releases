@@ -48,11 +48,10 @@ public final class ASTNode extends ASTItem {
     public static ASTNode create (
         String      mimeType,
         String      nt,
-        int         rule,
         List<ASTItem> children,
         int         offset
     ) {
-        return new ASTNode (mimeType, nt, rule, offset, children);
+        return new ASTNode (mimeType, nt, offset, children);
     }
     
     /**
@@ -68,26 +67,22 @@ public final class ASTNode extends ASTItem {
     public static ASTNode create (
         String      mimeType,
         String      nt,
-        int         rule,
         int         offset
     ) {
-        return new ASTNode (mimeType, nt, rule, offset, Collections.<ASTItem>emptyList ());
+        return new ASTNode (mimeType, nt, offset, Collections.<ASTItem>emptyList ());
     }
 
     
     private String      nt;
-    private int         rule;
 
     private ASTNode (
         String      mimeType, 
         String      nt, 
-        int         rule, 
         int         offset,
         List<ASTItem> children
     ) {
         super (mimeType, offset, -1, children);
         this.nt =       nt;
-        this.rule =     rule;
     }
 
     /**
@@ -104,9 +99,9 @@ public final class ASTNode extends ASTItem {
      * 
      * @return id of rule that has created this node
      */
-    public int getRule () {
-        return rule;
-    }
+//    public int getRule () {
+//        return rule;
+//    }
 
     /**
      * Finds path to the first token defined by type and identifier or null.

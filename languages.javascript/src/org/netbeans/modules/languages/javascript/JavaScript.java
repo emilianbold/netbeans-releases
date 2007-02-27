@@ -29,16 +29,16 @@ import org.netbeans.api.languages.DatabaseManager;
 import org.netbeans.api.languages.LibrarySupport;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.SyntaxCookie;
+import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.support.CompletionSupport;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.api.languages.Cookie;
+import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.LibrarySupport;
-import org.netbeans.api.languages.SyntaxCookie;
+import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
 import org.openide.DialogDisplayer;
@@ -99,7 +99,7 @@ public class JavaScript {
             ) {
                 input.setIndex (start);
                 return new Object[] {
-                    ASTToken.create (MIME_TYPE, "js_operator", ""),
+                    ASTToken.create (MIME_TYPE, "js_operator", "", 0),
                     null
                 };
             }
@@ -133,13 +133,13 @@ public class JavaScript {
             ) {
                 input.setIndex (start);
                 return new Object[] {
-                    ASTToken.create (MIME_TYPE, "js_operator", ""),
+                    ASTToken.create (MIME_TYPE, "js_operator", "", 0),
                     null
                 };
             } else {
                 input.setIndex (end);
                 return new Object[] {
-                    ASTToken.create (MIME_TYPE, "js_regularExpression", ""),
+                    ASTToken.create (MIME_TYPE, "js_regularExpression", "", 0),
                     null
                 };
             }
@@ -149,19 +149,19 @@ public class JavaScript {
         ) {
             input.setIndex (end);
             return new Object[] {
-                ASTToken.create (MIME_TYPE, "js_regularExpression", ""),
+                ASTToken.create (MIME_TYPE, "js_regularExpression", "", 0),
                 null
             };
         }
         input.setIndex (start);
         return new Object[] {
-            ASTToken.create (MIME_TYPE, "js_operator", ""),
+            ASTToken.create (MIME_TYPE, "js_operator", "", 0),
             null
         };
     }
 
-    public static Runnable hyperlink (SyntaxCookie cookie) {
-        ASTPath path = cookie.getASTPath ();
+    public static Runnable hyperlink (SyntaxContext context) {
+        ASTPath path = context.getASTPath ();
         ASTToken t = (ASTToken) path.getLeaf ();
         ASTNode n = path.size () > 1 ? 
             (ASTNode) path.get (path.size () - 2) :
@@ -190,8 +190,8 @@ public class JavaScript {
         };
     }
     
-    public static String functionName (SyntaxCookie cookie) {
-        ASTPath path = cookie.getASTPath ();
+    public static String functionName (SyntaxContext context) {
+        ASTPath path = context.getASTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
         String name = null;
         ASTNode nameNode = n.getNode ("FunctionName");
@@ -222,8 +222,8 @@ public class JavaScript {
         return "?";
     }
 
-    public static String objectName (SyntaxCookie cookie) {
-        ASTPath path = cookie.getASTPath ();
+    public static String objectName (SyntaxContext context) {
+        ASTPath path = context.getASTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
         ListIterator<ASTItem> it = path.listIterator (path.size ());
         while (it.hasPrevious ()) {
@@ -245,10 +245,10 @@ public class JavaScript {
     
     // code completion .........................................................
     
-    public static List completionItems (Cookie cookie) {
+    public static List completionItems (Context context) {
         List result = new ArrayList ();
-        if (cookie instanceof SyntaxCookie) {
-            ASTPath path = ((SyntaxCookie) cookie).getASTPath ();
+        if (context instanceof SyntaxContext) {
+            ASTPath path = ((SyntaxContext) context).getASTPath ();
             DatabaseManager databaseManager = DatabaseManager.getDefault ();
             Collection c = databaseManager.getIds (path, true);
             result.addAll (c);
@@ -257,26 +257,26 @@ public class JavaScript {
             return result;
         }
         
-        TokenSequence ts = cookie.getTokenSequence ();
+        TokenSequence ts = context.getTokenSequence ();
         Token token = ts.token ();
         String tokenText = token.text ().toString ();
-        String context = null;
+        String libraryContext = null;
         if (tokenText.equals (".")) {
             token = previousToken (ts);
             if (token.id ().name ().endsWith ("identifier"))
-                context = token.text ().toString ();
+                libraryContext = token.text ().toString ();
         } else
         if (token.id ().name ().endsWith ("identifier") ) {
             token = previousToken (ts);
             if (token.text ().toString ().equals (".")) {
                 token = previousToken (ts);
                 if (token.id ().name ().endsWith ("identifier"))
-                    context = token.text ().toString ();
+                    libraryContext = token.text ().toString ();
             }
         }
         
-        if (context != null) {
-            result.addAll (getFromLibrary (context, 1, "black"));
+        if (libraryContext != null) {
+            result.addAll (getFromLibrary (libraryContext, 1, "black"));
             result.addAll (getFromLibrary ("member", 2, "black"));
         } else
             result.addAll (getFromLibrary ("keyword", 2, "blue"));
@@ -327,10 +327,10 @@ public class JavaScript {
 
     private static List completionDescriptions;
 
-    public static List completionDescriptions (Cookie cookie) {
-        return completionItems (cookie);
+    public static List completionDescriptions (Context context) {
+        return completionItems (context);
 //        if (completionDescriptions == null) {
-//            List tags = completionItems (cookie);
+//            List tags = completionItems (context);
 //            tags = completionItems;
 //            completionDescriptions = new ArrayList (tags.size ());
 //            Iterator it = tags.iterator ();
@@ -361,8 +361,8 @@ public class JavaScript {
 //                }
 //            }
 //        }
-//        if (!(cookie instanceof SyntaxCookie)) return completionDescriptions;
-//        ASTPath path = ((SyntaxCookie) cookie).getASTPath ();
+//        if (!(context instanceof SyntaxContext)) return completionDescriptions;
+//        ASTPath path = ((SyntaxContext) context).getASTPath ();
 //        ArrayList l = new ArrayList ();
 //        DatabaseManager databaseManager = DatabaseManager.getDefault ();
 //        Collection c = databaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
@@ -559,12 +559,12 @@ public class JavaScript {
     
     // ..........................................................................
     
-    public static boolean isFunctionParameter (Cookie cookie) {
-        if (!(cookie instanceof SyntaxCookie)) {
+    public static boolean isFunctionParameter (Context context) {
+        if (!(context instanceof SyntaxContext)) {
             return false;
         }
-        SyntaxCookie scookie = (SyntaxCookie)cookie;
-        ASTPath path = scookie.getASTPath ();
+        SyntaxContext scontext = (SyntaxContext)context;
+        ASTPath path = scontext.getASTPath ();
         int size = path.size ();
         if (size < 2) return false;
         if (!(path.get (size - 2) instanceof ASTNode)) return false;
@@ -596,12 +596,12 @@ public class JavaScript {
         return false;
     }
     
-    public static boolean isLocalVariable(Cookie cookie) {
-        if (!(cookie instanceof SyntaxCookie)) {
+    public static boolean isLocalVariable(Context context) {
+        if (!(context instanceof SyntaxContext)) {
             return false;
         }
-        SyntaxCookie scookie = (SyntaxCookie)cookie;
-        ASTPath path = scookie.getASTPath();
+        SyntaxContext scontext = (SyntaxContext)context;
+        ASTPath path = scontext.getASTPath();
         return isLocalVariable(path);
     }
     

@@ -184,7 +184,7 @@ public class LLSyntaxAnalyser {
                     //S ystem.out.println(input.getIndex () + ": unexpected eof " + token);
                     return root.createASTNode ();
                 } else
-                if (!token.isCompatible (input.next (1))) {
+                if (!isCompatible (token, input.next (1))) {
                     if (!skipErrors)
                         throw new ParseException ("Unexpected token " + input.next (1) + " in " + input + ". Ecpecting " + token, root.createASTNode ());
                     createErrorNode (node, input.getOffset ()).addItem (readEmbeddings (input.read (), skipErrors));
@@ -201,6 +201,18 @@ public class LLSyntaxAnalyser {
         )
             createErrorNode (node, input.getOffset ()).addItem (readEmbeddings (input.read (), skipErrors));
         return root.createASTNode ();
+    }
+    
+    private static boolean isCompatible (ASTToken t1, ASTToken t2) {
+        if (t1.getType () == null) {
+            return t1.getIdentifier ().equals (t2.getIdentifier ());
+        } else {
+            if (t1.getIdentifier () == null)
+                return t1.getType ().equals (t2.getType ());
+            else
+                return t1.getType ().equals (t2.getType ()) && 
+                       t1.getIdentifier ().equals (t2.getIdentifier ());
+        }
     }
     
     private List<ASTItem> readWhitespaces (
@@ -237,6 +249,7 @@ public class LLSyntaxAnalyser {
             getLanguage (children.get (0).getMimeType ());
         ASTNode root = language.getAnalyser ().read (in, skipErrors);
         return ASTToken.create (
+            token.getMimeType (),
             token.getType (),
             token.getIdentifier (),
             token.getOffset (),
@@ -587,7 +600,6 @@ public class LLSyntaxAnalyser {
             return ASTNode.create (
                 language.getMimeType (),
                 nt,
-                rule,
                 l,
                 offset
             );

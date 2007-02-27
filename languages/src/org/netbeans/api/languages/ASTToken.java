@@ -19,61 +19,28 @@
 
 package org.netbeans.api.languages;
 
-import java.util.Collections;
 import java.util.List;
 
-public class ASTToken extends ASTItem {
+/**
+ * Represents one token in AST.
+ */
+public final class ASTToken extends ASTItem {
     
     private String      identifier;
     private String      type;
     
     
-    public static ASTToken create (
-        String  type,
-        String  identifier,
-        int     offset,
-        int     length,
-        List     children
-    ) {
-        return new ASTToken (
-            null,
-            type, 
-            identifier, 
-            offset, 
-            length,
-            children
-        );
-    }
-    
-    public static ASTToken create (
-        String  type,
-        String  identifier,
-        int     offset
-    ) {
-        return new ASTToken (
-            null,
-            type, 
-            identifier, 
-            offset, 
-            identifier == null ? 0 : identifier.length (),
-            null
-        );
-    }
-    
-    public static ASTToken create (
-        String  type,
-        String  identifier
-    ) {
-        return new ASTToken (
-            null,
-            type, 
-            identifier, 
-            0, 
-            identifier == null ? 0 : identifier.length (),
-            null
-        );
-    }
-    
+    /**
+     * Creates new token with given parameters.
+     * 
+     * @param mimeType a mime type of token 
+     * @param type a type of token 
+     * @param identifier token identifier
+     * @param offset token offset
+     * @param length token length
+     * @param children a list of token children
+     * @return new ASTToken
+     */
     public static ASTToken create (
         String  mimeType,
         String  type,
@@ -92,6 +59,17 @@ public class ASTToken extends ASTItem {
         );
     }
     
+    
+    /**
+     * Creates new token with given parameters, no children and length 
+     * derived from identifier.
+     * 
+     * @param mimeType a mime type of token 
+     * @param type a type of token 
+     * @param identifier token identifier
+     * @param offset token offset
+     * @return new ASTToken
+     */
     public static ASTToken create (
         String  mimeType,
         String  type,
@@ -107,21 +85,7 @@ public class ASTToken extends ASTItem {
             null
         );
     }
-    
-    public static ASTToken create (
-        String  mimeType,
-        String  type,
-        String  identifier
-    ) {
-        return new ASTToken (
-            mimeType,
-            type, 
-            identifier, 
-            0, 
-            identifier == null ? 0 : identifier.length (),
-            null
-        );
-    }
+
     
     private ASTToken (
         String  mimeType,
@@ -136,25 +100,32 @@ public class ASTToken extends ASTItem {
         this.type = type;
     }
 
+    /**
+     * Retruns type of token.
+     * 
+     * @return type of token
+     */
     public String getType () {
         return type;
     }
     
+
+    /**
+     * Retruns token identifier.
+     * 
+     * @return token identifier
+     */
     public String getIdentifier () {
         return identifier;
     }
-
-    public boolean isCompatible (Object obj) {
-        if (!(obj instanceof ASTToken)) return false;
-        if (type != null && 
-            ((ASTToken) obj).type != null &&
-            !type.equals (((ASTToken) obj).type)
-        ) return false;
-        if (identifier == null || ((ASTToken) obj).identifier == null) return true;
-        return identifier.equals (((ASTToken) obj).identifier);
-    }
     
     private String toString;
+
+    /**
+     * Retruns string representation of this token.
+     * 
+     * @return string representation of this token
+     */
     public String toString () {
         if (toString == null) {
             StringBuffer sb = new StringBuffer ();

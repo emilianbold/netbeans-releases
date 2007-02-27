@@ -19,14 +19,11 @@
 
 package org.netbeans.modules.languages.css;
 
-import java.util.ListIterator;
-import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.languages.SyntaxCookie;
+import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.languages.Cookie;
+import org.netbeans.api.languages.Context;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -40,10 +37,10 @@ import org.openide.windows.TopComponent;
  */
 public class CSS {
 
-    public static String tooltip (Cookie cookie) {
-        if (!(cookie instanceof SyntaxCookie)) return null;
-        SyntaxCookie syntaxCookie = (SyntaxCookie) cookie;
-        ASTPath path = syntaxCookie.getASTPath ();
+    public static String tooltip (Context context) {
+        if (!(context instanceof SyntaxContext)) return null;
+        SyntaxContext syntaxContext = (SyntaxContext) context;
+        ASTPath path = syntaxContext.getASTPath ();
         StringBuilder sb = new StringBuilder ();
         sb.append ("<html>");
         sb.append ("<p style=\"");
@@ -59,9 +56,9 @@ public class CSS {
         return sb.toString ();
     }
 
-    public static String navigatorTooltip (Cookie cookie) {
-        if (!(cookie instanceof SyntaxCookie)) return null;
-        ASTNode n = (ASTNode) ((SyntaxCookie) cookie).getASTPath ().getLeaf ();
+    public static String navigatorTooltip (Context context) {
+        if (!(context instanceof SyntaxContext)) return null;
+        ASTNode n = (ASTNode) ((SyntaxContext) context).getASTPath ().getLeaf ();
         StringBuilder sb = new StringBuilder ();
         sb.append ("<html>");
         sb.append ("<p style=\"");
@@ -77,8 +74,8 @@ public class CSS {
         return sb.toString ();
     }
     
-    public static Runnable hyperlink (Cookie cookie) {
-        Token t = cookie.getTokenSequence ().token ();
+    public static Runnable hyperlink (Context context) {
+        Token t = context.getTokenSequence ().token ();
         String s = t.id ().name ();
         s = s.substring (1, s.length () - 1);
         s = s.replace ("%20", " "); // HACK

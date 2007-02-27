@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
-
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -36,9 +35,18 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 
+/**
+ * Support for definition of libraries. Used for code completion.
+ * 
+ * @author Jan Jancura
+ */
 public class LibrarySupport {
 
-    
+    /**
+     * Crates new Instance of LibrarySupport and reads library definition from give resource file.
+     * 
+     * @param resourceName a name of resource file
+     */
     public static LibrarySupport create (String resourceName) {
         return new LibrarySupport (resourceName);
     }
@@ -52,6 +60,13 @@ public class LibrarySupport {
     
     private Map<String,List<String>> keys = new HashMap<String,List<String>> ();
     
+    /**
+     * Returns list of items for given context (e.g. list of static methods 
+     * for fiven class name).
+     * 
+     * @param context
+     * @return list of items for given context
+     */
     public List<String> getItems (String context) {
         List<String> k = keys.get (context);
         if (k == null) {
@@ -65,6 +80,13 @@ public class LibrarySupport {
         return k;
     }
     
+    /**
+     * Returns property for given item, context and property name.
+     * 
+     * @param context a context
+     * @param item an item
+     * @param propertyName a name of property
+     */
     public String getProperty (String context, String item, String propertyName) {
         Map<String,Map<String,String>> m = getItems ().get (context);
         if (m == null) return null;

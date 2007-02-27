@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.languages.lexer;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
@@ -52,45 +54,87 @@ public class SLanguageProvider extends LanguageProvider {
 
     public LanguageEmbedding<? extends TokenId> findLanguageEmbedding (
         Token token, 
-        LanguagePath tokenLanguage, 
+        LanguagePath languagePath, 
         InputAttributes inputAttributes
     ) {
-        String mimeType = tokenLanguage.innerLanguage ().mimeType ();
-        if (!LanguagesManager.getDefault ().getSupportedMimeTypes ().contains (mimeType))
-            return null;
-        try {
-            org.netbeans.modules.languages.Language language = 
-                ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
-                getLanguage (mimeType);
-            Map properties = (Map) language.getFeature (
-                org.netbeans.modules.languages.Language.IMPORT, 
-                token.id ().name ()
-            );
-            if (properties == null)
-                return null;
-            String innerMT = (String) ((Evaluator) properties.get ("mimeType")).evaluate ();
-            Language l = Language.find (innerMT);
-            int startSkipLength = 0, endSkipLength = 0;
-            if (properties.containsKey ("startSkipLength")) {
-                String s = (String) ((Evaluator) properties.get ("startSkipLength")).evaluate ();
-                startSkipLength = Integer.parseInt (s);
-            } else {
-                Integer i = (Integer) token.getProperty ("startSkipLength");
-                if (i != null)
-                    startSkipLength = i.intValue ();
+        String mimeType = languagePath.innerLanguage ().mimeType ();
+        Language language = getTokenImport (mimeType, token);
+        if (language == null) 
+            language = getPreprocessorImport (languagePath, token);
+        if (language == null) return null;
+        Integer i = (Integer) token.getProperty ("startSkipLength");
+        int startSkipLength = i == null ? 0 : i.intValue ();
+        i = (Integer) token.getProperty ("endSkipLength");
+        int endSkipLength = i == null ? 0 : i.intValue ();
+        return LanguageEmbedding.create (
+            language, 
+            startSkipLength, 
+            endSkipLength
+        );
+    }
+
+    
+    // other methods ...........................................................
+    
+    private static Map<String,Language> preprocessorImport = new HashMap<String,Language> ();
+    
+    private static Language getPreprocessorImport (LanguagePath languagePath, Token token) {
+        String tokenType = token.id ().name ();
+        if (!tokenType.equals ("PE")) return null;
+        String mimeType = languagePath.topLanguage ().mimeType ();
+        if (!preprocessorImport.containsKey (mimeType)) {
+            try {
+                org.netbeans.modules.languages.Language language = 
+                    ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+                    getLanguage (mimeType);
+                Map properties = (Map) language.getFeature (
+                    org.netbeans.modules.languages.Language.IMPORT, 
+                    org.netbeans.modules.languages.Language.PREPROCESSOR_IMPORT
+                );
+                if (properties != null) {
+                    String innerMT = (String) ((Evaluator) properties.get ("mimeType")).evaluate ();
+                    preprocessorImport.put (
+                        mimeType,
+                        Language.find (innerMT)
+                    );
+                }
+            } catch (ParseException ex) {
             }
-            if (properties.containsKey ("endSkipLength")) {
-                String s = (String) ((Evaluator) properties.get ("endSkipLength")).evaluate ();
-                endSkipLength = Integer.parseInt (s);
-            } else {
-                Integer i = (Integer) token.getProperty ("endSkipLength");
-                if (i != null)
-                    endSkipLength = i.intValue ();
-            }
-            return LanguageEmbedding.create (l, startSkipLength, endSkipLength);
-        } catch (ParseException ex) {
-            ErrorManager.getDefault ().notify (ex);
-            return null;
         }
+        return preprocessorImport.get (mimeType);
+    }
+    
+    private static Map<String,Map<String,Language>> tokenImports = new HashMap ();
+    
+    private static Language getTokenImport (String mimeType, Token token) {
+        String tokenType = token.id ().name ();
+        Map<String,Language> tokenTypeToLanguage = tokenImports.get (mimeType);
+        if (tokenTypeToLanguage == null) {
+            tokenTypeToLanguage = new HashMap<String,Language> ();
+            tokenImports.put (mimeType, tokenTypeToLanguage);
+            try {
+                org.netbeans.modules.languages.Language language = 
+                    ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
+                    getLanguage (mimeType);
+                Map<String,Map> tokenImports = (Map<String,Map>) language.getFeature (
+                    org.netbeans.modules.languages.Language.IMPORT, 
+                    org.netbeans.modules.languages.Language.TOKEN_IMPORT
+                );
+                if (tokenImports != null) {
+                    Iterator<String> it = tokenImports.keySet ().iterator ();
+                    while (it.hasNext ()) {
+                        String tokenType2 = it.next ();
+                        Map properties = tokenImports.get (tokenType2);
+                        String innerMT = (String) ((Evaluator) properties.get ("mimeType")).evaluate ();
+                        tokenTypeToLanguage.put (
+                            tokenType2,
+                            Language.find (innerMT)
+                        );
+                    }
+                }
+            } catch (ParseException ex) {
+            }
+        }
+        return tokenTypeToLanguage.get (tokenType);
     }
 }

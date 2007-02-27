@@ -33,7 +33,7 @@ class DelegatingInputBridge extends CharInput {
     private Pattern         start;
     private Pattern         end;
     private String          tokenType;
-    private List            embeddings = new ArrayList ();
+    private List            embeddings = new ArrayList<Vojta> ();
 
     DelegatingInputBridge (
         InputBridge         input, 
@@ -78,9 +78,9 @@ class DelegatingInputBridge extends CharInput {
         return input.toString ();
     }
     
-    public List getEmbeddings () {
+    public List<Vojta> getEmbeddings () {
         List e = embeddings;
-        embeddings = new ArrayList ();
+        embeddings = new ArrayList<Vojta> ();
         return e;
     }
     

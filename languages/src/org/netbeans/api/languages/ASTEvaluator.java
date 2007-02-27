@@ -21,12 +21,34 @@ package org.netbeans.api.languages;
 import org.netbeans.api.languages.ParserManager.State;
 
 /**
- *
+ * Listens on AST changes. Use {@link ParserManager.addASTEvaluator} to register
+ * instance of ASTEvaluator.
+ * 
  * @author Jan Jancura
  */
-public interface ASTEvaluator {
-    
-    public void beforeEvaluation (State state, ASTNode root);
-    public void afterEvaluation (State state, ASTNode root);
-    public void evaluate (State state, ASTPath path);
+public abstract class ASTEvaluator {
+
+    /**
+     * Called when AST is changed before evaluation of AST tree.
+     * 
+     * @param state state of parser
+     * @param root root node of ast tree
+     */
+    public abstract void beforeEvaluation (State state, ASTNode root);
+
+    /**
+     * Called when AST is changed after evaluation of tree.
+     * 
+     * @param state state of parser
+     * @param root root node of ast tree
+     */
+    public abstract void afterEvaluation (State state, ASTNode root);
+
+    /**
+     * Called when AST is changed for all different ASTPaths.
+     * 
+     * @param state state of parser
+     * @param path path to the current {@link ASTItem}
+     */
+    public abstract void evaluate (State state, ASTPath path);
 }

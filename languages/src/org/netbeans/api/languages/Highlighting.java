@@ -31,7 +31,8 @@ import org.netbeans.api.languages.ASTToken;
 
 
 /**
- *
+ * Support for semantic highlighting.
+ * 
  * @author Jan Jancura
  */
 public class Highlighting {
@@ -43,12 +44,17 @@ public class Highlighting {
         //Utils.startTest("Highlighting.highlightings", highlightings);
     }
     
-    public static Highlighting getHighlighting (Document doc) {
-        WeakReference<Highlighting> wr = highlightings.get (doc);
+    /**
+     * Returns Highlighting for given document.
+     * 
+     * @param document a document
+     */
+    public static Highlighting getHighlighting (Document document) {
+        WeakReference<Highlighting> wr = highlightings.get (document);
         Highlighting highlighting = wr == null ? null : wr.get ();
         if (highlighting == null) {
             highlighting = new Highlighting ();
-            highlightings.put (doc, new WeakReference<Highlighting> (highlighting));
+            highlightings.put (document, new WeakReference<Highlighting> (highlighting));
         }
         return highlighting;
     }
@@ -60,6 +66,12 @@ public class Highlighting {
     
     private Highlighting () {}
     
+    /**
+     * Defines highlighting for given item.
+     * 
+     * @param item a item
+     * @param as set of highlighting attributes
+     */
     public void highlight (ASTItem item, AttributeSet as) {
         if (item instanceof ASTNode) {
             highlights.put ((ASTNode) item, as);
@@ -75,6 +87,11 @@ public class Highlighting {
         m.put (token.getIdentifier (), as);
     }
     
+    /**
+     * Removes highlightings from given item.
+     * 
+     * @param item a item
+     */
     public void removeHighlight (ASTItem item) {
         if (item instanceof ASTNode) {
             highlights.remove ((ASTNode) item);
@@ -89,6 +106,11 @@ public class Highlighting {
             tokens.remove (id);
     }
     
+    /**
+     * Returns highlighting for given AST item.
+     * 
+     * @param highlighting for given AST item
+     */
     public AttributeSet get (ASTItem item) {
         if (item instanceof ASTNode)
             return (AttributeSet) highlights.get ((ASTNode) item);

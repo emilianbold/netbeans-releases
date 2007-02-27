@@ -40,9 +40,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
     
-    private String                  mimeType;
-    private Collection<STokenId>    tokenIds;
-    private HashMap                 tokensMap;
+    private String                      mimeType;
+    private Collection<STokenId>        tokenIds;
+    private HashMap<String,STokenId>    tokensMap;
     
     
     SLanguageHierarchy (String mimeType) {
@@ -51,11 +51,11 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
     
     protected Collection<STokenId> createTokenIds () {
         if (tokenIds == null) {
-            tokenIds = new ArrayList ();
-            tokensMap = new HashMap ();
-            Iterator it = getLanguage ().getTokenTypes ().iterator ();
+            tokenIds = new ArrayList<STokenId> ();
+            tokensMap = new HashMap<String,STokenId> ();
+            Iterator<TokenType> it = getLanguage ().getTokenTypes ().iterator ();
             while (it.hasNext ()) {
-                TokenType t = (TokenType) it.next ();
+                TokenType t = it.next ();
                 if (tokensMap.containsKey (t.getType ())) continue;
                 STokenId tokenId = new STokenId (
                     t.getType (), 
@@ -71,7 +71,13 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
                 "error"
             );
             tokenIds.add (errorTokenId);
-            tokensMap.put ("error", errorTokenId);
+            STokenId embeddingTokenId = new STokenId (
+                "PE",
+                tokenIds.size (), 
+                "PE"
+            );
+            tokenIds.add (embeddingTokenId);
+            tokensMap.put ("PE", embeddingTokenId);
         }
         return tokenIds;
     }

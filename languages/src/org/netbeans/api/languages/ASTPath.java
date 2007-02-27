@@ -19,7 +19,6 @@
 
 package org.netbeans.api.languages;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -27,33 +26,89 @@ import java.util.ListIterator;
 
 
 /**
+ * Represents path in AST tree.
  *
  * @author Jan Jancura
  */
 public abstract class ASTPath {
 
     ASTPath () {};
+    
+    /**
+     * Returns last ASTItem in this path.
+     * 
+     * @return last ASTItem in this path
+     */
     public abstract ASTItem                 getLeaf ();
+    
+    /**
+     * Returns size of this path.
+     * 
+     * @return size of this path
+     */
     public abstract int                     size ();
+    
+    /**
+     * Returns first ASTItem in this path.
+     * 
+     * @return first ASTItem in this path
+     */
     public abstract ASTItem                 getRoot ();
+    
+    /**
+     * Returns iterator for this path.
+     * 
+     * @return iterator for this path
+     */
     public abstract ListIterator<ASTItem>   listIterator ();
+    
+    /**
+     * Returns iterator for this path.
+     * 
+     * @return iterator for this path
+     */
     public abstract ListIterator<ASTItem>   listIterator (int index);
+    
+    /**
+     * Returns ASTItem on given index.
+     * 
+     * @return ASTItem on given index
+     */
     public abstract ASTItem                 get (int index);
+    
+    /**
+     * Returns subpath of this path from given index.
+     * 
+     * @return subpath of this path from given index
+     */
     public abstract ASTPath                 subPath (int index);
 
+    /**
+     * Creates new path from {@link javax.util.List}.
+     * 
+     * @param path list of ASTItems
+     * @return new ASTPath
+     */
     public static ASTPath create (List<ASTItem> path) {
         return new Token2Path (path);
     }
 
-    public static ASTPath create (ASTItem n) {
-        if (n == null) throw new NullPointerException ();
-        return new TokenPath (n);
+
+    /**
+     * Creates new singleton path.
+     * 
+     * @param item 
+     * @return new ASTPath
+     */
+    public static ASTPath create (ASTItem item) {
+        if (item == null) throw new NullPointerException ();
+        return new TokenPath (item);
     }
     
     
     // innerclasses ............................................................
 
-    private static class TokenPath extends ASTPath {
+    private static final class TokenPath extends ASTPath {
 
         private ASTItem o;
         
@@ -96,7 +151,7 @@ public abstract class ASTPath {
         }
     }
 
-    private static class Token2Path extends ASTPath {
+    private static final class Token2Path extends ASTPath {
 
         private List<ASTItem> path;
         private int s;

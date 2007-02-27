@@ -27,6 +27,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
@@ -35,12 +36,12 @@ import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.languages.SyntaxCookie;
+import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.languages.SyntaxCookie;
+import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
@@ -60,7 +61,7 @@ import org.openide.windows.TopComponent;
  */
 public class ParserManagerImpl extends ParserManager {
 
-    private NbEditorDocument        doc;
+    private Document                doc;
     private ASTNode                 ast = null;
     private ParseException          exception = null;
     private State                   state = State.NOT_PARSED;
@@ -69,7 +70,7 @@ public class ParserManagerImpl extends ParserManager {
     private static RequestProcessor rp = new RequestProcessor ("Parser");
     
     
-    public ParserManagerImpl (NbEditorDocument doc) {
+    public ParserManagerImpl (Document doc) {
         this.doc = doc;
         new DocListener (this, doc);
         String mimeType = (String) doc.getProperty ("mimeType");
@@ -239,7 +240,7 @@ public class ParserManagerImpl extends ParserManager {
             if (m != null && ast != null) {
                 Evaluator e = (Evaluator) m.get ("process");
                 if (e != null) 
-                    return (ASTNode) e.evaluate (SyntaxCookie.create (doc, ASTPath.create (root)));
+                    return (ASTNode) e.evaluate (SyntaxContext.create (doc, ASTPath.create (root)));
             }
             return root;
         } catch (Exception ex) {
@@ -248,7 +249,7 @@ public class ParserManagerImpl extends ParserManager {
         }
     }
     
-    private static ASTNode parse (NbEditorDocument doc) throws ParseException {
+    private static ASTNode parse (Document doc) throws ParseException {
         String mimeType = (String) doc.getProperty ("mimeType");
         Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
             getLanguage (mimeType);
@@ -262,18 +263,21 @@ public class ParserManagerImpl extends ParserManager {
         return n;
     }
 
-    private static TokenInput createTokenInput (NbEditorDocument doc) {
+    private static TokenInput createTokenInput (Document doc) {
         try {
-            doc.readLock ();
+            if (doc instanceof NbEditorDocument)
+                ((NbEditorDocument) doc).readLock ();
             TokenHierarchy th = TokenHierarchy.get (doc);
             TokenSequence ts = th.tokenSequence ();
             return TokenInput.create (getTokens (ts));
         } finally {
-            doc.readUnlock ();
+            if (doc instanceof NbEditorDocument)
+                ((NbEditorDocument) doc).readUnlock ();
         }
     }
     
     private static List<ASTToken> getTokens (TokenSequence ts) {
+        System.out.println("getTokens " + ts.language().mimeType());
         List<ASTToken> tokens = new ArrayList<ASTToken> ();
         while (ts.moveNext ()) {
             Token t = ts.token ();
@@ -360,16 +364,16 @@ public class ParserManagerImpl extends ParserManager {
     private static class DocListener implements DocumentListener, 
     LanguagesManagerListener {
         
-        private WeakReference       pmwr;
+        private WeakReference<ParserManagerImpl>       pmwr;
         
-        DocListener (ParserManagerImpl pm, NbEditorDocument doc) {
-            pmwr = new WeakReference (pm);
+        DocListener (ParserManagerImpl pm, Document doc) {
+            pmwr = new WeakReference<ParserManagerImpl> (pm);
             doc.addDocumentListener (this);
             ((LanguagesManagerImpl) LanguagesManager.getDefault ()).addLanguagesManagerListener (this);
         }
         
         private ParserManagerImpl getPM () {
-            ParserManagerImpl pm = (ParserManagerImpl) pmwr.get ();
+            ParserManagerImpl pm = pmwr.get ();
             if (pm != null) return pm;
             ((LanguagesManagerImpl) LanguagesManager.getDefault ()).removeLanguagesManagerListener (this);
             return null;

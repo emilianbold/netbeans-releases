@@ -23,6 +23,7 @@ import java.util.Set;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
 
 /**
+ * Defines set of supported mime types.
  *
  * @author Jan Jancura
  */
@@ -30,6 +31,11 @@ public abstract class LanguagesManager {
     
     private static LanguagesManager manager;
     
+    /**
+     * Returns default LanguagesManager.
+     * 
+     * @return default LanguagesManager
+     */
     public static LanguagesManager getDefault () {
         if (manager == null) {
             manager = new LanguagesManagerImpl ();
@@ -37,6 +43,11 @@ public abstract class LanguagesManager {
         return manager;
     }
 
+    /**
+     * Returns set of supported languages.
+     * 
+     * @return set of supported languages
+     */
     public abstract Set getSupportedMimeTypes ();
 
 //    public abstract Language getLanguage (String mimeType) throws ParseException;
