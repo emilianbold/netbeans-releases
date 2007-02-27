@@ -19,7 +19,6 @@
 
 package footprint;
 
-import gui.Utilities;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -45,7 +44,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class FootprintUtilities extends Utilities{
+public class FootprintUtilities extends gui.Utilities{
     
     static void collapseProject(String project) {
         ProjectRootNode prn = new ProjectsTabOperator().getProjectRootNode(project);

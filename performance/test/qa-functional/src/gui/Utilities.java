@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -38,10 +39,13 @@ import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
+
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
+import org.netbeans.junit.ide.ProjectSupport;
 
 
 
@@ -192,7 +196,6 @@ public class Utilities {
         while((data=fis.read())!=-1){
             fos.write(data);
         }
-        
     }
 
     /*
@@ -215,8 +218,9 @@ public class Utilities {
 
     }
     
-    /*
+    /**
      * open small form file in the editor
+     * @return Form Designer
      */
     public static FormDesignerOperator openSmallFormFile(){
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),SOURCE_PACKAGES + "|org.netbeans.test.performance|JFrame20kB.java");
@@ -225,4 +229,15 @@ public class Utilities {
 
     }
     
+    
+    /**
+     * Open project and wait until it's scanned
+     * @param projectFolder Project's location
+     */
+    public static void waitProjectOpenedScanFinished(String projectFolder){
+        ProjectSupport.openProject(projectFolder);
+        ProjectSupport.waitScanFinished();
+        new QueueTool().waitEmpty(1000);
+        ProjectSupport.waitScanFinished();
+    }
 }

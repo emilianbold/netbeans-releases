@@ -21,10 +21,6 @@ package gui.setup;
 
 import gui.Utilities;
 
-import org.netbeans.junit.ide.ProjectSupport;
-
-import org.netbeans.jemmy.QueueTool;
-
 /**
  * Test suite that actually does not perform any test but sets up user directory
  * for UI responsiveness tests
@@ -38,19 +34,19 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
     }
     
     public void openDataProject() {
-        waitProjectOpenedScanFinished(System.getProperty("xtest.data")+"/PerformanceTestData");
+        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.data")+"/PerformanceTestData");
     }
     
     public void openWebProject() {
-        waitProjectOpenedScanFinished(System.getProperty("xtest.data")+"/PerformanceTestWebApplication");
+        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.data")+"/PerformanceTestWebApplication");
     }
     
     public void openFoldersProject() {
-        waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/PerformanceTestFoldersData");
+        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/PerformanceTestFoldersData");
     }
     
     public void openNBProject() {
-        waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/SystemProperties");
+        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/SystemProperties");
     }
     
     /**
@@ -88,13 +84,5 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
     public void closeUIGesturesToolbar(){
         Utilities.closeUIGesturesToolbar();
     }
-    
-    private void waitProjectOpenedScanFinished(String projectFolder){
-        ProjectSupport.openProject(projectFolder);
-        ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
-        ProjectSupport.waitScanFinished();
-    }
-    
     
 }
