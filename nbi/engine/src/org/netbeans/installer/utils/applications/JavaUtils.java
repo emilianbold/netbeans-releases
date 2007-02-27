@@ -60,7 +60,7 @@ public class JavaUtils {
     
     public static final String TEST_JDK_CLASSNAME = "TestJDK";
     public static final String TEST_JDK_FILENAME  = "TestJDK.class";
-    public static final int TEST_JDK_OUTPUT_PARAMETERS = 3; // java.version, java.vm.version, java.vendor
+    public static final int TEST_JDK_OUTPUT_PARAMETERS = 5; // java.version, java.vm.version, java.vendor, os.name, os.arch
     
     /////////////////////////////////////////////////////////////////////////////////
     // Static
@@ -319,12 +319,14 @@ public class JavaUtils {
             
             Version version = null;
             String  vendor  = null;
+            String  osName  = null;
             
             if (lines.length == TEST_JDK_OUTPUT_PARAMETERS) {
                 final String javaVersion = lines[0]; // java.version
                 final String vmVersion   = lines[1]; // java.vm.version
                 
                 vendor = lines[2]; // java.vendor
+                osName = lines[3]; // os.name
                 
                 String versionString;
                 
