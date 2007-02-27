@@ -181,4 +181,12 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
     public void requestChange() {
         htmlDomProviderImpl.requestChange(markupDesignBean);
     }
+
+    public void clearPrerendered() {
+        htmlDomProviderImpl.setPrerenderedBean(null, null);
+    }
+
+    public boolean setPrerendered(DocumentFragment fragment) {
+        return htmlDomProviderImpl.setPrerenderedBean(markupDesignBean, fragment);
+    }
 }

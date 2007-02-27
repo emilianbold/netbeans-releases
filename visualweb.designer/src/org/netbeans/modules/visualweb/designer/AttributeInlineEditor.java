@@ -257,7 +257,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         }
 
 //        facesPageUnit.setPreRendered(bean, fragment);
-        if (!webform.setPrerenderedBean(bean, fragment)) {
+//        if (!webform.setPrerenderedBean(bean, fragment)) {
+        if (!inlineEditorSupport.setPrerendered(fragment)) {
             return;
         }
 
@@ -300,7 +301,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 
                 try {
 //                    facesPageUnit.setPreRendered(null, null);
-                    webform.setPrerenderedBean(null, null);
+//                    webform.setPrerenderedBean(null, null);
+                    inlineEditorSupport.clearPrerendered();
 
                     // XXX TODO There is not needed webform here.
 //                    FileObject markupFile = webform.getModel().getMarkupFile();
@@ -314,7 +316,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
                     webform.updateErrorsInComponent();
                     
 //                    facesPageUnit.setPreRendered(bean, fragment);
-                    webform.setPrerenderedBean(bean, fragment);
+//                    webform.setPrerenderedBean(bean, fragment);
+                    inlineEditorSupport.setPrerendered(fragment);
                     
                     n = findPropertyNode(fragment, xpath);
                     selectText = true;
@@ -500,7 +503,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 //        if (facesPageUnit != null) {
 //            facesPageUnit.setPreRendered(null, null);
 //        }
-        webform.setPrerenderedBean(null, null);
+//        webform.setPrerenderedBean(null, null);
+        inlineEditorSupport.clearPrerendered();
 
         if (fragment != null) {
             unregisterDomListeners();
