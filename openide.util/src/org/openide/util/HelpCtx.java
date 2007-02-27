@@ -29,7 +29,7 @@ import javax.swing.JComponent;
 /** Provides help for any window or other feature in the system.
 * It is designed to be JavaHelp-compatible and to use the same tactics when
 * assigning help to {@link JComponent} instances.
-* @see <a href="http://www.netbeans.org/download/dev/javadoc/JavaHelpAPI/org/netbeans/api/javahelp/package-summary.html">JavaHelp Integration API</a></p>
+* @see <a href="@org-netbeans-modules-javahelp@/">JavaHelp Integration API</a>
 * @author Petr Hamernik, Jaroslav Tulach, Jesse Glick
 */
 public final class HelpCtx extends Object {
