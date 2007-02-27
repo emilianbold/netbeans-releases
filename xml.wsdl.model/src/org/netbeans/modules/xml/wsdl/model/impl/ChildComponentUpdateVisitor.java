@@ -344,8 +344,13 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
     
     public void visit(ExtensibilityElement child) {
         if (parent instanceof ExtensibilityElement.UpdaterProvider) {
-            ExtensibilityElement.UpdaterProvider target = (ExtensibilityElement.UpdaterProvider) parent;
-            target.getComponentUpdater().update(target, child, index, operation);
+            if (operation != null) { 
+                ExtensibilityElement.UpdaterProvider target = (ExtensibilityElement.UpdaterProvider) parent;
+                    target.getComponentUpdater().update(target, child, index, operation);
+            } else {
+                //TODO a separate API method for canAdd
+                canAdd = true;
+            }
         } else {
             if (operation == Operation.ADD) {
                 parent.addExtensibilityElement(child);
