@@ -102,10 +102,10 @@ class FormComponentEditor extends InlineEditor {
     private boolean hasBeenEdited = false;
 //    private DesignProperty property;
 
-    private FormComponentEditor(WebForm webform, MarkupDesignBean bean, /*DesignProperty property,*/
+    private FormComponentEditor(WebForm webform, /*MarkupDesignBean bean, DesignProperty property,*/
     CssBox box/*, String xpath*/, HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
 //        super(webform, bean, property.getPropertyDescriptor().getName());
-        super(webform, bean, inlineEditorSupport);
+        super(webform, /*bean,*/ inlineEditorSupport);
         if(DesignerUtils.DEBUG) {
             DesignerUtils.debugLog(getClass().getName() + "()");
         }
@@ -159,7 +159,7 @@ class FormComponentEditor extends InlineEditor {
         }
 
         // TODO - need metadata to specify the descriptor to use!
-        return new FormComponentEditor(webform, bean, /*property,*/ box/*, xpath*/, inlineEditorSupport);
+        return new FormComponentEditor(webform, /*bean, property,*/ box/*, xpath*/, inlineEditorSupport);
     }
 
     public void start(boolean selectText, String initialEdit) {

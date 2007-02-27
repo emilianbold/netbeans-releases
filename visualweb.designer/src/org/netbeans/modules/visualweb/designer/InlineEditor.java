@@ -100,7 +100,7 @@ public abstract class InlineEditor {
     private long lastClick = 0L;
 
 //    protected InlineEditor(WebForm webform, MarkupDesignBean bean, String propertyName) {
-    protected InlineEditor(WebForm webform, MarkupDesignBean bean, /*DesignProperty property,*/
+    protected InlineEditor(WebForm webform, /*MarkupDesignBean bean, DesignProperty property,*/
     HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
         this.webform = webform;
 //        this.bean = bean;
@@ -109,7 +109,7 @@ public abstract class InlineEditor {
         
         this.inlineEditorSupport = inlineEditorSupport;
 
-        assert bean.getElement() != null;
+//        assert bean.getElement() != null;
     }
 
     /**

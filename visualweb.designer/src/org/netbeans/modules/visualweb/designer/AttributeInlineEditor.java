@@ -76,10 +76,10 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
     private final FocusListener focusListener = new AttributeInlineEditorFocusListener(this);
 
 
-    AttributeInlineEditor(WebForm webform, MarkupDesignBean bean, /*DesignProperty property,*/
+    AttributeInlineEditor(WebForm webform, /*MarkupDesignBean bean, DesignProperty property,*/
     String xpath, HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
 //        super(webform, bean, property.getPropertyDescriptor().getName());
-        super(webform, bean, inlineEditorSupport);
+        super(webform, /*bean,*/ inlineEditorSupport);
 //        this.property = property;
         this.xpath = xpath;
     }
@@ -104,7 +104,7 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
         // TODO: Ensure that the property is of String type?? I don't
         // support anything else... (and how could you inline text edit
         // anything else?)
-        return new AttributeInlineEditor(webform, bean, /*property,*/ xpath, inlineEditorSupport);
+        return new AttributeInlineEditor(webform, /*bean, property,*/ xpath, inlineEditorSupport);
     }
 
     /** Return the text node containing the value attribute.
