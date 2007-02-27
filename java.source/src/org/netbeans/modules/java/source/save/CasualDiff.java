@@ -1108,7 +1108,7 @@ public class CasualDiff {
 
     protected int diffIdent(JCIdent oldT, JCIdent newT, int lastPrinted) {
         if (nameChanged(oldT.name, newT.name)) {
-            copyTo(lastPrinted, getOldPos(oldT));
+            copyTo(lastPrinted, oldT.pos);
             printer.print(newT.name);
             diffInfo.put(oldT.pos, "Update reference to " + oldT.name);
             return endPos(oldT);
@@ -1355,7 +1355,7 @@ public class CasualDiff {
           case JCTree.INDEXED:
               return matchIndexed((JCArrayAccess)t1, (JCArrayAccess)t2);
           case JCTree.SELECT:
-              return ((JCFieldAccess)t1).sym == ((JCFieldAccess)t2).sym;
+              return matchSelect((JCFieldAccess) t1, (JCFieldAccess) t2);
           case JCTree.IDENT:
               return ((JCIdent)t1).sym == ((JCIdent)t2).sym;
           case JCTree.LITERAL:
@@ -2348,10 +2348,7 @@ public class CasualDiff {
         if (newList.size() != n)
             return false;
         for (int i = 0; i < n; i++)
-            // todo (#pf): treesMatch is perhaps useable with deepMatch flag. 
-            // Check that it will work for #96364.
-            // if (treesMatch(oldList.get(i), newList.get(i), true))
-            if (oldList.get(i) != newList.get(i))
+            if (!treesMatch(oldList.get(i), newList.get(i)))
                 return false;
         return true;
     }
@@ -2441,7 +2438,8 @@ public class CasualDiff {
         return t1.constructor == t2.constructor && 
                listsMatch(t1.typeargs, t2.typeargs) &&
                listsMatch(t1.args, t2.args) &&
-               t1.varargsElement == t2.varargsElement;
+               (t1.varargsElement == t2.varargsElement) &&
+               treesMatch(t1.def, t2.def);
     }
     
     private boolean matchNewArray(JCNewArray t1, JCNewArray t2) {
@@ -2478,7 +2476,11 @@ public class CasualDiff {
     private boolean matchIndexed(JCArrayAccess t1, JCArrayAccess t2) {
         return treesMatch(t1.indexed, t2.indexed) && treesMatch(t1.index, t2.index);
     }
-
+    
+    private boolean matchSelect(JCFieldAccess t1, JCFieldAccess t2) {
+        return treesMatch(t1.selected, t2.selected) && t1.sym == t2.sym;
+    }
+    
     private boolean matchLiteral(JCLiteral t1, JCLiteral t2) {
         return t1.typetag == t2.typetag && t1.value == t2.value;
     }
