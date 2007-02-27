@@ -189,14 +189,14 @@ public class SyntaxElement {
     
     
     public static class Tag extends org.netbeans.editor.ext.html.parser.SyntaxElement.Named {
-        private Collection<TagAttribute> attribs;
+        private List<TagAttribute> attribs;
         private boolean empty = false;
         
-        public Tag( SyntaxParser parser, int from, int to, String name, Collection<TagAttribute> attribs) {
+        public Tag( SyntaxParser parser, int from, int to, String name, List<TagAttribute> attribs) {
             this(parser, from, to, name, attribs, false);
         }
         
-        public Tag( SyntaxParser parser, int from, int to, String name, Collection attribs, boolean isEmpty ) {
+        public Tag( SyntaxParser parser, int from, int to, String name, List attribs, boolean isEmpty ) {
             super( parser, from, to, TYPE_TAG, name );
             this.attribs = attribs;
             this.empty = isEmpty;
@@ -206,7 +206,7 @@ public class SyntaxElement {
             return empty;
         }
         
-        public Collection<TagAttribute> getAttributes() {
+        public List<TagAttribute> getAttributes() {
             return attribs;
         }
         
@@ -270,7 +270,10 @@ public class SyntaxElement {
             this.valueOffset = ofs;
         }
         
-        
+        public String toString() {
+            return "TagAttribute[name=" + getName() + "; value=" + getValue() + "; nameOffset=" + getNameOffset() + "; valueOffset=" + getValueOffset() +"]";
+        }
+       
         //backward compatibility
         public boolean equals(Object o) {
             if (!(o instanceof TagAttribute)) {
