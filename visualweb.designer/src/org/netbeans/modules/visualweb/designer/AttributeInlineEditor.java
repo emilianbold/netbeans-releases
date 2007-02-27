@@ -515,7 +515,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
             // Update component rendering the rendered html may contain the
             // rendered value
 //            webform.getDomSynchronizer().beanChanged(bean);
-            webform.beanChanged(bean);
+//            webform.beanChanged(bean);
+            inlineEditorSupport.beanChanged();
 
             return; // don't apply value
         }
