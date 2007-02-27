@@ -1368,9 +1368,9 @@ public class WebForm implements Designer {
 //        return htmlDomProvider.createSourceFragment(bean);
 //    }
 
-    public void requestChange(MarkupDesignBean bean) {
-        htmlDomProvider.requestChange(bean);
-    }
+//    public void requestChange(MarkupDesignBean bean) {
+//        htmlDomProvider.requestChange(bean);
+//    }
 
 //    public void beanChanged(MarkupDesignBean bean) {
 //        htmlDomProvider.beanChanged(bean);
