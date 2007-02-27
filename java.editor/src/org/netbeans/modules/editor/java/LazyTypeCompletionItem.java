@@ -20,7 +20,6 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.Scope;
-import com.sun.source.util.Trees;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;

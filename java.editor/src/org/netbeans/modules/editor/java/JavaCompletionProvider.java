@@ -3458,6 +3458,61 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                         }
                         return null;
+                    case MULTIPLY_ASSIGNMENT:
+                    case DIVIDE_ASSIGNMENT:
+                    case REMAINDER_ASSIGNMENT:
+                    case PLUS_ASSIGNMENT:
+                    case MINUS_ASSIGNMENT:
+                    case AND_ASSIGNMENT:
+                    case XOR_ASSIGNMENT:
+                    case OR_ASSIGNMENT:
+                    case PREFIX_INCREMENT:
+                    case PREFIX_DECREMENT:
+                    case BITWISE_COMPLEMENT:
+                    case LEFT_SHIFT:
+                    case RIGHT_SHIFT:
+                    case UNSIGNED_RIGHT_SHIFT:
+                    case LEFT_SHIFT_ASSIGNMENT:
+                    case RIGHT_SHIFT_ASSIGNMENT:
+                    case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                    case AND:                        
+                    case OR:
+                    case XOR:
+                    case REMAINDER:
+                        ret = new HashSet<TypeMirror>();
+                        types = controller.getTypes();
+                        ret.add(types.getPrimitiveType(TypeKind.BYTE));
+                        ret.add(types.getPrimitiveType(TypeKind.CHAR));
+                        ret.add(types.getPrimitiveType(TypeKind.INT));
+                        ret.add(types.getPrimitiveType(TypeKind.LONG));
+                        ret.add(types.getPrimitiveType(TypeKind.SHORT));
+                        return ret;
+                    case CONDITIONAL_AND:
+                    case CONDITIONAL_OR:
+                    case LOGICAL_COMPLEMENT:
+                        return Collections.singleton(controller.getTypes().getPrimitiveType(TypeKind.BOOLEAN));
+                    case DIVIDE:
+                    case EQUAL_TO:
+                    case GREATER_THAN:
+                    case GREATER_THAN_EQUAL:
+                    case LESS_THAN:
+                    case LESS_THAN_EQUAL:
+                    case MINUS:
+                    case MULTIPLY:
+                    case NOT_EQUAL_TO:
+                    case PLUS:
+                    case UNARY_PLUS:
+                    case UNARY_MINUS:
+                        ret = new HashSet<TypeMirror>();
+                        types = controller.getTypes();
+                        ret.add(types.getPrimitiveType(TypeKind.BYTE));
+                        ret.add(types.getPrimitiveType(TypeKind.CHAR));
+                        ret.add(types.getPrimitiveType(TypeKind.DOUBLE));
+                        ret.add(types.getPrimitiveType(TypeKind.FLOAT));
+                        ret.add(types.getPrimitiveType(TypeKind.INT));
+                        ret.add(types.getPrimitiveType(TypeKind.LONG));
+                        ret.add(types.getPrimitiveType(TypeKind.SHORT));
+                        return ret;
                 }
                 lastTree = tree;
                 path = path.getParentPath();
