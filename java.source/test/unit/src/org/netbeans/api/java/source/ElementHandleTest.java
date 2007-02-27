@@ -360,6 +360,118 @@ public class ElementHandleTest extends NbTestCase {
         
     }
     
+    
+    public void testEquals() throws Exception {
+        final JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathProviderImpl.getDefault().findClassPath(data,ClassPath.BOOT), ClassPathProviderImpl.getDefault().findClassPath(data, ClassPath.COMPILE), null));
+        assertNotNull(js);
+        final ElementHandle[] utilElementHandle = new ElementHandle[1];
+        final ElementHandle[] stringElementHandle = new ElementHandle[1];
+        final ElementHandle[] stringLengthElementHandle = new ElementHandle[1];
+        final ElementHandle[] stringConstructorElementHandle = new ElementHandle[1];
+        final ElementHandle[] stringCountElementHandle = new ElementHandle[1];
+        final ElementHandle[] retentionPolicyHandle = new ElementHandle[1];
+        final ElementHandle[] retentionPolicyClassHandle = new ElementHandle[1];
+        final ElementHandle[] innerClassHandle = new ElementHandle[1];
+        final ElementHandle[] collectionAddHandle = new ElementHandle[1];
+        final ElementHandle[] annonClassHandle = new ElementHandle[1];
+        
+        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+            public void run(CompilationController parameter) {
+                JavacElements elements = (JavacElements) parameter.getElements();
+                Element utilElement = elements.getPackageElement("java.util");
+                assertNotNull (utilElement);
+                utilElementHandle[0] = ElementHandle.create(utilElement);
+                assertNotNull (utilElementHandle[0]);
+                Element stringElement = elements.getTypeElement (String.class.getName());
+                assertNotNull (stringElement);
+                stringElementHandle[0] = ElementHandle.create(stringElement);
+                assertNotNull (stringElementHandle[0]);
+                Element[] stringMembers = getStringElements(stringElement);
+                assertEquals(3,stringMembers.length);
+                assertNotNull (stringMembers[0]);
+                assertNotNull (stringMembers[1]);
+                assertNotNull (stringMembers[2]);
+                stringLengthElementHandle[0] = ElementHandle.create(stringMembers[0]);
+                assertNotNull (stringLengthElementHandle[0]);
+                stringConstructorElementHandle[0] = ElementHandle.create(stringMembers[1]);
+                assertNotNull (stringConstructorElementHandle[0]);
+                stringCountElementHandle[0] = ElementHandle.create(stringMembers[2]);
+                assertNotNull (stringCountElementHandle[0]);
+                Element retentionPolicy = elements.getTypeElement(java.lang.annotation.RetentionPolicy.class.getName());
+                assertNotNull (retentionPolicy);
+                retentionPolicyHandle[0] = ElementHandle.create(retentionPolicy);
+                assertNotNull (retentionPolicyHandle[0]);
+                List<? extends Element> members = ((TypeElement)retentionPolicy).getEnclosedElements();                    
+                for (Element member : members) {
+                    if (member.getKind() == ElementKind.ENUM_CONSTANT && "CLASS".contentEquals(((VariableElement)member).getSimpleName())) {
+                        retentionPolicyClassHandle[0] = ElementHandle.create(member);
+                        break;
+                    }
+                }
+                assertNotNull (retentionPolicyClassHandle[0]);
+                Element csl = elements.getTypeElement("java.util.Collections.SingletonList");
+                assertNotNull (csl);
+                innerClassHandle[0] = ElementHandle.create(csl);
+                assertNotNull (innerClassHandle[0]);
+                Element cadd = getCollectionAdd (elements.getTypeElement(java.util.Collection.class.getName()));
+                assertNotNull (cadd);
+                collectionAddHandle[0] = ElementHandle.create(cadd);
+                assertNotNull (collectionAddHandle[0]);
+                TypeElement annonClass = elements.getTypeElementByBinaryName("java.lang.String$1"); //NOI18N
+                assertNotNull (annonClass);
+                annonClassHandle[0] = ElementHandle.create(annonClass);
+                assertNotNull (annonClassHandle[0]);
+            }
+
+            public void cancel() {
+            }
+            
+        },true);                
+        
+        
+        assertTrue (utilElementHandle[0].equals(utilElementHandle[0]));
+        assertTrue (stringElementHandle[0].equals(stringElementHandle[0]));
+        assertTrue (stringLengthElementHandle[0].equals(stringLengthElementHandle[0]));
+        assertTrue (stringConstructorElementHandle[0].equals(stringConstructorElementHandle[0]));
+        assertTrue (stringCountElementHandle[0].equals(stringCountElementHandle[0]));
+        assertTrue (retentionPolicyHandle[0].equals(retentionPolicyHandle[0]));
+        assertTrue (retentionPolicyClassHandle[0].equals(retentionPolicyClassHandle[0]));
+        assertTrue (innerClassHandle[0].equals(innerClassHandle[0]));
+        assertTrue (collectionAddHandle[0].equals(collectionAddHandle[0]));
+        assertTrue (annonClassHandle[0].equals(annonClassHandle[0]));
+        
+        assertFalse (utilElementHandle[0].equals(stringElementHandle[0]));
+        assertFalse (utilElementHandle[0].equals(stringLengthElementHandle[0]));
+        assertFalse (utilElementHandle[0].equals(stringConstructorElementHandle[0]));
+        assertFalse (utilElementHandle[0].equals(stringCountElementHandle[0]));
+        assertFalse (utilElementHandle[0].equals(retentionPolicyHandle[0]));
+        assertFalse(utilElementHandle[0].equals(retentionPolicyClassHandle[0]));
+        assertFalse (utilElementHandle[0].equals(innerClassHandle[0]));
+        assertFalse (utilElementHandle[0].equals(collectionAddHandle[0]));
+        assertFalse (utilElementHandle[0].equals(annonClassHandle[0]));        
+        
+        assertTrue (utilElementHandle[0].hashCode() == utilElementHandle[0].hashCode());
+        assertTrue (stringElementHandle[0].hashCode() == stringElementHandle[0].hashCode());
+        assertTrue (stringLengthElementHandle[0].hashCode() == stringLengthElementHandle[0].hashCode());
+        assertTrue (stringConstructorElementHandle[0].hashCode() == stringConstructorElementHandle[0].hashCode());
+        assertTrue (stringCountElementHandle[0].hashCode() == stringCountElementHandle[0].hashCode());
+        assertTrue (retentionPolicyHandle[0].hashCode() == retentionPolicyHandle[0].hashCode());
+        assertTrue (retentionPolicyClassHandle[0].hashCode() == retentionPolicyClassHandle[0].hashCode());
+        assertTrue (innerClassHandle[0].hashCode() == innerClassHandle[0].hashCode());
+        assertTrue (collectionAddHandle[0].hashCode() == collectionAddHandle[0].hashCode());
+        assertTrue (annonClassHandle[0].hashCode() == annonClassHandle[0].hashCode());
+        
+        assertFalse (stringElementHandle[0].hashCode() == utilElementHandle[0].hashCode());
+        assertTrue (stringLengthElementHandle[0].hashCode() == stringCountElementHandle[0].hashCode());
+        assertFalse (stringLengthElementHandle[0].hashCode() == retentionPolicyHandle[0].hashCode());
+        assertFalse (stringLengthElementHandle[0].hashCode() == retentionPolicyClassHandle[0].hashCode());
+        assertFalse (stringLengthElementHandle[0].hashCode() == innerClassHandle[0].hashCode());
+        assertFalse (stringLengthElementHandle[0].hashCode() == collectionAddHandle[0].hashCode());
+        assertFalse (stringLengthElementHandle[0].hashCode() == annonClassHandle[0].hashCode());
+        
+    }
+    
+    
     public void testNames () throws Exception {
         final JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathProviderImpl.getDefault().findClassPath(data,ClassPath.BOOT), ClassPathProviderImpl.getDefault().findClassPath(data, ClassPath.COMPILE), null));
         assertNotNull(js);

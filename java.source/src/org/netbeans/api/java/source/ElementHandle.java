@@ -302,6 +302,22 @@ public final class ElementHandle<T extends Element> {
     }
     
     
+    /**@inheritDoc*/
+    @Override
+    public int hashCode () {
+        return signatures.length == 0 || signatures[0] == null ? 0 : signatures[0].hashCode();
+    }
+    
+    /**@inheritDoc*/
+    @Override
+    public boolean equals (Object other) {
+        if (other instanceof ElementHandle) {
+            return signatureEquals((ElementHandle)other);
+        }
+        return false;
+    }
+    
+    
     /**
      * Returns the element signature.
      * Package private, used by ClassIndex.
