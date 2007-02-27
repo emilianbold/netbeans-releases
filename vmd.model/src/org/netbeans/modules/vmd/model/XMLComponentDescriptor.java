@@ -155,7 +155,7 @@ public class XMLComponentDescriptor extends ComponentDescriptor {
                 properties.add (new PropertyDescriptor (
                         name,
                         typeID,
-                        defaultValue != null ? PropertyValue.deserialize (defaultValue, null, typeID) : PropertyValue.createNull (), // TODO - null document is passed
+                        defaultValue != null ? PropertyValue.createUserCode (defaultValue) : PropertyValue.createNull (),
                         Boolean.parseBoolean (getAttributeValue (node, ALLOW_NULL)),
                         Boolean.parseBoolean (getAttributeValue (node, ALLOW_USER_CODE)),
                         Versionable.FOREVER,

@@ -45,6 +45,8 @@ public class ComponentSerializationSupport {
      */
     public static void refreshDescriptorRegistry (String projectType) {
         GlobalDescriptorRegistry registry = GlobalDescriptorRegistry.getGlobalDescriptorRegistry (projectType);
+        DataFolder registryFolder = registry.getRegistryFolder ();
+        registryFolder.getPrimaryFile ().refresh (true);
         registry.reload ();
     }
 
@@ -67,6 +69,7 @@ public class ComponentSerializationSupport {
         Element typeNode = document.createElement (XMLComponentDescriptor.TYPE_NODE);
         if (typeDescriptor.getSuperType () != null)
             setAttribute (document, typeNode, XMLComponentDescriptor.SUPER_TYPEID_ATTR, typeDescriptor.getSuperType ().toString ());
+        setAttribute (document, typeNode, XMLComponentDescriptor.THIS_TYPEID_ATTR, typeDescriptor.getThisType ().toString ());
         setAttribute (document, typeNode, XMLComponentDescriptor.CAN_DERIVE_ATTR, Boolean.toString (typeDescriptor.isCanDerive ()));
         setAttribute (document, typeNode, XMLComponentDescriptor.CAN_DERIVE_ATTR, Boolean.toString (typeDescriptor.isCanDerive ()));
         setAttribute (document, typeNode, XMLComponentDescriptor.CAN_INSTANTIATE_ATTR, Boolean.toString (typeDescriptor.isCanDerive ()));
@@ -85,7 +88,9 @@ public class ComponentSerializationSupport {
             Element propertyNode = document.createElement (XMLComponentDescriptor.PROPERTY_DESCRIPTOR_NODE);
             setAttribute (document, propertyNode, XMLComponentDescriptor.NAME_ATTR, propertyDescriptor.getName ());
             setAttribute (document, propertyNode, XMLComponentDescriptor.TYPEID_ATTR, propertyDescriptor.getType ().toString ());
-            setAttribute (document, propertyNode, XMLComponentDescriptor.DEFAULT_VALUE_ATTR, propertyDescriptor.getDefaultValue ().serialize ());
+            String userCode = propertyDescriptor.getDefaultValue ().getUserCode ();
+            if (userCode != null)
+                setAttribute (document, propertyNode, XMLComponentDescriptor.DEFAULT_VALUE_ATTR, userCode);
             setAttribute (document, propertyNode, XMLComponentDescriptor.ALLOW_NULL, Boolean.toString (propertyDescriptor.isAllowNull ()));
             setAttribute (document, propertyNode, XMLComponentDescriptor.ALLOW_USER_CODE, Boolean.toString (propertyDescriptor.isAllowUserCode ()));
             setAttribute (document, propertyNode, XMLComponentDescriptor.USE_FOR_SERIALIZATION_ATTR, Boolean.toString (propertyDescriptor.isUseForSerialization ()));

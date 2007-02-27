@@ -45,7 +45,7 @@ final class GlobalDescriptorRegistry {
     private static final HashMap<String, WeakReference<GlobalDescriptorRegistry>> registries = new HashMap<String, WeakReference<GlobalDescriptorRegistry>> ();
 
     static GlobalDescriptorRegistry getGlobalDescriptorRegistry (String projectType) {
-        assert Debug.isFriend (DescriptorRegistry.class, "getDescriptorRegistry")  ||  Debug.isFriend (ComponentSerializationSupport.class, "serialize"); // NOI18N
+        assert Debug.isFriend (DescriptorRegistry.class, "getDescriptorRegistry")  ||  Debug.isFriend (ComponentSerializationSupport.class, "serialize")  ||  Debug.isFriend (ComponentSerializationSupport.class, "refreshDescriptorRegistry"); // NOI18N
         synchronized (registries) {
             WeakReference<GlobalDescriptorRegistry> ref = registries.get (projectType);
             GlobalDescriptorRegistry registry = ref != null ? ref.get () : null;
@@ -103,7 +103,7 @@ final class GlobalDescriptorRegistry {
     }
 
     DataFolder getRegistryFolder () {
-        assert Debug.isFriend (ComponentSerializationSupport.class, "serialize"); // NOI18N
+        assert Debug.isFriend (ComponentSerializationSupport.class, "serialize")  || Debug.isFriend (ComponentSerializationSupport.class, "refreshDescriptorRegistry"); // NOI18N
         return registryFolder;
     }
 
