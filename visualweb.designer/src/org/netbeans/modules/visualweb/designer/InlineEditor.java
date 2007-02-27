@@ -85,7 +85,7 @@ public abstract class InlineEditor {
 //     */
 //    protected static final boolean NO_EDIT_VB_EXPR = !Boolean.getBoolean("rave.allow-vb-editing");
     protected WebForm webform;
-    protected MarkupDesignBean bean;
+//    protected MarkupDesignBean bean;
 //    protected DesignProperty property;
     protected Position begin;
     protected Position end;
@@ -103,7 +103,7 @@ public abstract class InlineEditor {
     protected InlineEditor(WebForm webform, MarkupDesignBean bean, /*DesignProperty property,*/
     HtmlDomProvider.InlineEditorSupport inlineEditorSupport) {
         this.webform = webform;
-        this.bean = bean;
+//        this.bean = bean;
 //        this.propertyName = propertyName;
 //        this.property = property;
         

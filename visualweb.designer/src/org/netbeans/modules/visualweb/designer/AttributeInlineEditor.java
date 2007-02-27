@@ -308,7 +308,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 //                    FileObject markupFile = webform.getModel().getMarkupFile();
 //                    fragment = FacesSupport.renderHtml(markupFile, bean, false);
 //                    fragment = InSyncService.getProvider().renderHtml(markupFile, bean);
-                    fragment = webform.renderHtmlForMarkupDesignBean(bean);
+//                    fragment = webform.renderHtmlForMarkupDesignBean(bean);
+                    fragment = inlineEditorSupport.renderHtmlDomFragment();
                     // XXX To get it into source document so it can work (Positions work only against source doc!).
                     fragment = (DocumentFragment)webform.getJspDom().importNode(fragment, true);
                     

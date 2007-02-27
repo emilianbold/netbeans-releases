@@ -221,4 +221,8 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
             }
         }
     }
+
+    public DocumentFragment renderHtmlDomFragment() {
+        return htmlDomProviderImpl.renderHtmlForMarkupDesignBean(markupDesignBean);
+    }
 }
