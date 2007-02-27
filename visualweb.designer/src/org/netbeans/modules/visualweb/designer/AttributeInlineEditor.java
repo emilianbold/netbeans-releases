@@ -290,13 +290,13 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 //                final String MARKER = property.getPropertyDescriptor().getDisplayName();
                 final String MARKER = inlineEditorSupport.getDisplayName();
 
-                try {
+//                try {
 //                    Method m = property.getPropertyDescriptor().getWriteMethod();
-                    Method m = inlineEditorSupport.getWriteMethod();
-                    m.invoke(bean.getInstance(), new Object[] { MARKER });
-                } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ex);
-                }
+//                    m.invoke(bean.getInstance(), new Object[] { MARKER });
+                    inlineEditorSupport.setViaWriteMethod(MARKER);
+//                } catch (Exception ex) {
+//                    ErrorManager.getDefault().notify(ex);
+//                }
 
                 try {
 //                    facesPageUnit.setPreRendered(null, null);
@@ -322,13 +322,13 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 //                    webform.requestChange(bean);
                     inlineEditorSupport.requestChange();
                 } finally {
-                    try {
+//                    try {
 //                        Method m = property.getPropertyDescriptor().getWriteMethod();
-                        Method m = inlineEditorSupport.getWriteMethod();
-                        m.invoke(bean.getInstance(), new Object[] { oldPropertyValue });
-                    } catch (Exception ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    }
+//                        m.invoke(bean.getInstance(), new Object[] { oldPropertyValue });
+                        inlineEditorSupport.setViaWriteMethod(oldPropertyValue);
+//                    } catch (Exception ex) {
+//                        ErrorManager.getDefault().notify(ex);
+//                    }
                 }
             }
         }

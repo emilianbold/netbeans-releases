@@ -22,12 +22,14 @@ package org.netbeans.modules.visualweb.designer.jsf;
 import com.sun.rave.designer.html.HtmlTag;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.insync.faces.Entities;
 import org.netbeans.modules.visualweb.insync.live.DesignBeanNode;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
+import org.openide.ErrorManager;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -96,8 +98,20 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
         return designProperty.getPropertyDescriptor().getDisplayName();
     }
 
-    public Method getWriteMethod() {
-        return designProperty.getPropertyDescriptor().getWriteMethod();
+//    public Method getWriteMethod() {
+//        return designProperty.getPropertyDescriptor().getWriteMethod();
+//    }
+    public void setViaWriteMethod(String value) {
+        Method m = designProperty.getPropertyDescriptor().getWriteMethod();
+        try {
+            m.invoke(markupDesignBean.getInstance(), new Object[] {value});
+        } catch (IllegalArgumentException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch (IllegalAccessException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch (InvocationTargetException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
     }
 
     public Element getRenderedElement() {
