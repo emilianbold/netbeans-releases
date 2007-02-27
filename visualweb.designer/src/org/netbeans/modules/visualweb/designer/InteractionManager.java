@@ -374,7 +374,8 @@ public class InteractionManager {
             box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
         }
 
-        inlineEditor = InlineEditor.getInlineEditor(webform, box, lb, property, useDefault);
+//        inlineEditor = InlineEditor.getInlineEditor(webform, box, lb, property, useDefault);
+        inlineEditor = InlineEditor.getInlineEditor(webform, box, componentRootElement, property, useDefault);
 
         if (inlineEditor != null) {
             SelectionManager sm = webform.getSelection();

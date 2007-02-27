@@ -124,15 +124,17 @@ public abstract class InlineEditor {
      * @param useDefault If true, start editing the property marked default (if any) (marked with a "*" in the metadata)
      * @return An InlineEditor for editing the chosen property, or null if none apply
      */
-    static InlineEditor getInlineEditor(WebForm webform, CssBox box, DesignBean bean,
-        String propertyName, boolean useDefault) {
-        if (!(bean instanceof MarkupDesignBean)) {
+    static InlineEditor getInlineEditor(WebForm webform, CssBox box, Element componentRootElement, /*DesignBean bean,*/
+    String propertyName, boolean useDefault) {
+//        if (!(bean instanceof MarkupDesignBean)) {
+//            return null;
+//        }
+//
+//        MarkupDesignBean markupBean = (MarkupDesignBean)bean;
+        if (componentRootElement == null) {
             return null;
         }
 
-        MarkupDesignBean markupBean = (MarkupDesignBean)bean;
-
-        Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(markupBean);
 //        String[] properties = getEditableProperties(markupBean);
         String[] properties = WebForm.getHtmlDomProviderService().getEditableProperties(componentRootElement);
 
@@ -185,8 +187,9 @@ public abstract class InlineEditor {
                 } else if (xpaths[i] != null) {
 //                    RaveElement sourceElement = (RaveElement)markupBean.getElement();
 //                    RaveElement root = sourceElement.getRendered();
-                    Element sourceElement = markupBean.getElement();
-                    Element root = MarkupService.getRenderedElementForElement(sourceElement);
+//                    Element sourceElement = markupBean.getElement();
+//                    Element root = MarkupService.getRenderedElementForElement(sourceElement);
+                    Element root = componentRootElement;
                     
                     if (root != null) {
                         Node node = findPropertyNode(root, xpaths[i]);
@@ -219,21 +222,20 @@ public abstract class InlineEditor {
             String name = propertyNames[chosenProperty];
             String xpath = xpaths[chosenProperty];
 
-            DesignProperty property = bean.getProperty(name);
-
-            if (property == null) {
-                assert false : property;
-
-                return null;
-            }
-            
+//            DesignProperty property = bean.getProperty(name);
+//
+//            if (property == null) {
+//                assert false : property;
+//
+//                return null;
+//            }
             
             HtmlDomProvider.InlineEditorSupport inlineEditorSupport = webform.createInlineEditorSupport(
                     componentRootElement,
-                    property.getPropertyDescriptor().getName());
+                    name);
             if (inlineEditorSupport == null) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException(
-                        "Missing inline editor support, markupBean=" + markupBean + ", property=" + property)); // NOI18N
+                        "Missing inline editor support, componentRootElement=" + componentRootElement + ", propertyName=" + name)); // NOI18N
                 return null;
             }
             
