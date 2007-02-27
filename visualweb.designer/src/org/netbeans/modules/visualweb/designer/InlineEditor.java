@@ -525,7 +525,8 @@ public abstract class InlineEditor {
         while (box != null) {
 //            if (box.getDesignBean() == bean) {
 //            if (CssBox.getMarkupDesignBeanForCssBox(box) == bean) {
-            Element componentRootElement = WebForm.getHtmlDomProviderService().getRenderedElement(bean);
+//            Element componentRootElement = WebForm.getHtmlDomProviderService().getRenderedElement(bean);
+            Element componentRootElement = inlineEditorSupport.getRenderedElement();
             if (componentRootElement != null && componentRootElement == CssBox.getElementForComponentRootCssBox(box)) {
                 return true;
             }
@@ -584,7 +585,8 @@ public abstract class InlineEditor {
 //        ArrayList rectangles = webform.getMapper().getComponentRectangles(bean);
 //        List rectangles = ModelViewMapper.getComponentRectangles(webform.getPane().getPageBox(), bean);
         List rectangles = ModelViewMapper.getComponentRectangles(webform.getPane().getPageBox(),
-                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean));
+//                WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean));
+                inlineEditorSupport.getRenderedElement());
         int n = rectangles.size();
 
         if (n > 0) {
@@ -624,13 +626,14 @@ public abstract class InlineEditor {
     public abstract Transferable copyText(boolean cut);
 
     /** Return true iff this inline editor is editing the given property on the given bean */
-    public boolean isEditing(DesignBean bean, String propertyName) {
+    public boolean isEditing(/*DesignBean bean,*/Element componentRootElement, String propertyName) {
 //        return ((bean == this.bean) &&
 //        ((this.propertyName != null) && this.propertyName.equals(propertyName))) ||
 //        (this.propertyName == propertyName);
 //        String currPropertyName = property == null ? null : property.getPropertyDescriptor().getName();
         String currPropertyName = inlineEditorSupport.getName();
-        return ((bean == this.bean) &&
+//        return ((bean == this.bean) &&
+        return ((componentRootElement == inlineEditorSupport.getRenderedElement()) &&
         ((currPropertyName != null) && currPropertyName.equals(propertyName))) ||
         (currPropertyName == propertyName);
     }
