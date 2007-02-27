@@ -1372,9 +1372,9 @@ public class WebForm implements Designer {
         htmlDomProvider.requestChange(bean);
     }
 
-    public void beanChanged(MarkupDesignBean bean) {
-        htmlDomProvider.beanChanged(bean);
-    }
+//    public void beanChanged(MarkupDesignBean bean) {
+//        htmlDomProvider.beanChanged(bean);
+//    }
 
 //    public void requestTextUpdate(MarkupDesignBean bean) {
 //        htmlDomProvider.requestTextUpdate(bean);
