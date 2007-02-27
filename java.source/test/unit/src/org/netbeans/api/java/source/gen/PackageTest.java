@@ -239,11 +239,6 @@ public class PackageTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
-    protected void setUp() throws Exception {
-        super.setUp();
-        testFile = getFile(getSourceDir(), getSourcePckg() + "Test.java");
-    }
-
     // not important for this test
     String getGoldenPckg() {
         return "";
