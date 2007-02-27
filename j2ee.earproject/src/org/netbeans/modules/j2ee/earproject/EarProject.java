@@ -48,6 +48,7 @@ import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -62,6 +63,7 @@ import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -159,7 +161,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
-        return Lookups.fixed(new Object[] {
+        Lookup base = Lookups.fixed(new Object[] {
             new Info(),
             aux,
             spp,
@@ -183,8 +185,12 @@ public final class EarProject implements Project, AntProjectListener, FileChange
             this,
             new EarProjectOperations(this),
             brokenProjectSupport,
-            new AntArtifactProviderImpl()
+            new AntArtifactProviderImpl(),
+            UILookupMergerSupport.createPrivilegedTemplatesMerger(),
+            UILookupMergerSupport.createRecommendedTemplatesMerger(),
+            LookupProviderSupport.createSourcesMerger()
         });
+        return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-earproject/Lookup"); //NOI18N
     }
     
     public void configurationXmlChanged(AntProjectEvent ev) {
