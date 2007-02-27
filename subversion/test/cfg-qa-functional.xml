@@ -30,10 +30,10 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/test/subversion/main/checkout/ImportUITest.class"/>
                 <!-- diff -->
                 <include name="org/netbeans/test/subversion/main/diff/DiffTest.class"/>
-                <include name="org/netbeans/test/subversion/main/diff/ExportDiffPatchTest.class"/>
+                <!--<include name="org/netbeans/test/subversion/main/diff/ExportDiffPatchTest.class"/>-->
                 <!-- delete -->
                 <include name="org/netbeans/test/subversion/main/delete/DeleteTest.class"/>
-                <include name="org/netbeans/test/subversion/main/delete/RefactoringTest.class"/>
+                <!--<include name="org/netbeans/test/subversion/main/delete/RefactoringTest.class"/>-->
                 <!-- archeology -->
                 <include name="org/netbeans/test/subversion/main/archeology/SearchHistoryUITest.class"/>
                 <include name="org/netbeans/test/subversion/main/archeology/AnnotationsTest.class"/>
