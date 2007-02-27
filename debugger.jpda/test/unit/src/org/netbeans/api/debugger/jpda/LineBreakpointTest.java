@@ -64,9 +64,9 @@ public class LineBreakpointTest extends NbTestCase {
             LineBreakpoint lb1 = LineBreakpoint.create (TEST_APP, 32);
             LineBreakpoint lb2 = LineBreakpoint.create (TEST_APP, 37);
             LineBreakpoint lb3 = LineBreakpoint.create (TEST_APP, 109);
-            lb3.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.LineBreakpoint$Inner");
+            lb3.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp$Inner");
             LineBreakpoint lb4 = LineBreakpoint.create (TEST_APP, 92);
-            lb4.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.LineBreakpoint$InnerStatic");
+            lb4.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp$InnerStatic");
             LineBreakpoint lb5 = LineBreakpoint.create (TEST_APP, 41);
 
             DebuggerManager dm = DebuggerManager.getDebuggerManager ();
@@ -98,6 +98,10 @@ public class LineBreakpointTest extends NbTestCase {
                 lb1.getLineNumber (), 
                 debugger.getCurrentCallStackFrame ().getLineNumber (null)
             );
+            tb2.checkNotNotified();
+            tb3.checkNotNotified();
+            tb4.checkNotNotified();
+            tb5.checkNotNotified();
 
             support.doContinue();
             support.waitState (JPDADebugger.STATE_STOPPED);  // 2nd breakpoint hit
@@ -106,6 +110,9 @@ public class LineBreakpointTest extends NbTestCase {
                 lb2.getLineNumber (), 
                 debugger.getCurrentCallStackFrame ().getLineNumber (null)
             );
+            tb3.checkNotNotified();
+            tb4.checkNotNotified();
+            tb5.checkNotNotified();
 
             support.doContinue ();
             support.waitState (JPDADebugger.STATE_STOPPED);  // 3rd breakpoint hit
@@ -114,6 +121,8 @@ public class LineBreakpointTest extends NbTestCase {
                 lb3.getLineNumber (), 
                 debugger.getCurrentCallStackFrame ().getLineNumber (null)
             );
+            tb4.checkNotNotified();
+            tb5.checkNotNotified();
 
             support.doContinue ();
             support.waitState (JPDADebugger.STATE_STOPPED);  // 4th breakpoint hit
@@ -122,6 +131,7 @@ public class LineBreakpointTest extends NbTestCase {
                 lb4.getLineNumber (), 
                 debugger.getCurrentCallStackFrame ().getLineNumber (null)
             );
+            tb5.checkNotNotified();
 
             support.doContinue ();
             support.waitState (JPDADebugger.STATE_STOPPED);  // 5th breakpoint hit
@@ -216,9 +226,9 @@ public class LineBreakpointTest extends NbTestCase {
         JPDASupport.removeAllBreakpoints ();
         LineBreakpoint lb = LineBreakpoint.create (TEST_APP, line);
         if (73 <= line && line <= 98) {
-            lb.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.LineBreakpoint$InnerStatic");
+            lb.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp$InnerStatic");
         } else if (100 <= line && line <= 115) {
-            lb.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.LineBreakpoint$Inner");
+            lb.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp$Inner");
         }
         lb.setCondition (condition);
         TestBreakpointListener tbl = new TestBreakpointListener 
