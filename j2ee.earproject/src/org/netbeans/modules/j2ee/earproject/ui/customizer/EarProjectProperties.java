@@ -144,9 +144,7 @@ public final class EarProjectProperties {
     public static final String RESOURCE_DIR = "resource.dir"; //NOI18N
     public static final String WEB_DOCBASE_DIR = "web.docbase.dir"; //NOI18N
     public static final String BUILD_DIR = "build.dir"; //NOI18N
-    public static final String BUILD_ARCHIVE_DIR = "build.archive.dir"; //NOI18N
     public static final String BUILD_GENERATED_DIR = "build.generated.dir"; //NOI18N
-    public static final String BUILD_CLASSES_DIR = "build.classes.dir"; //NOI18N
     public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; //NOI18N
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; //NOI18N
     public static final String NO_DEPENDENCIES="no.dependencies"; //NOI18N
@@ -245,7 +243,6 @@ public final class EarProjectProperties {
         new PropertyDescriptor( JAVAC_TARGET, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( RESOURCE_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( BUILD_CLASSES_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_JAVADOC_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( WEB_DOCBASE_DIR, PROJECT, STRING_PARSER ),
@@ -1525,8 +1522,7 @@ public final class EarProjectProperties {
         
     // Contains well known paths in the J2SEProject
     private static final String[][] WELL_KNOWN_PATHS = new String[][] {
-        { JAVAC_CLASSPATH, NbBundle.getMessage( EarProjectProperties.class, "LBL_JavacClasspath_DisplayName" ) }, //NOI18N
-        { BUILD_CLASSES_DIR, NbBundle.getMessage( EarProjectProperties.class, "LBL_BuildClassesDir_DisplayName" ) } //NOI18N
+        { JAVAC_CLASSPATH, NbBundle.getMessage( EarProjectProperties.class, "LBL_JavacClasspath_DisplayName" ) } //NOI18N
     };
     
     private class PathParser extends PropertyParser {

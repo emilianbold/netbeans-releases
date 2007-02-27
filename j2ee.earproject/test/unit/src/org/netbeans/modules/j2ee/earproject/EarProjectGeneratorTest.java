@@ -64,8 +64,6 @@ public class EarProjectGeneratorTest extends NbTestCase {
     };
     
     private static final String[] CREATED_PROPERTIES = {
-        "build.archive.dir",
-        "build.classes.dir",
         "build.classes.excludes",
         "build.dir",
         "build.generated.dir",
@@ -93,8 +91,6 @@ public class EarProjectGeneratorTest extends NbTestCase {
     };
     
     private static final String[] CREATED_PROPERTIES_EXT_SOURCES = {
-        "build.archive.dir",
-        "build.classes.dir",
         "build.classes.excludes",
         "build.dir",
         "build.generated.dir",

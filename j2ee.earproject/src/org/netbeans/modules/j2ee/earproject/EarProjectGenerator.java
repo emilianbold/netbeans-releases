@@ -489,15 +489,12 @@ public final class EarProjectGenerator {
         ep.setProperty(EarProjectProperties.JAVAC_TARGET, srcLevel); //NOI18N
         
         ep.setProperty(EarProjectProperties.BUILD_DIR, DEFAULT_BUILD_DIR);
-        ep.setProperty(EarProjectProperties.BUILD_ARCHIVE_DIR, "${"+EarProjectProperties.BUILD_DIR+"}/jar"); // NOI18N
         ep.setProperty(EarProjectProperties.BUILD_GENERATED_DIR, "${"+EarProjectProperties.BUILD_DIR+"}/generated"); // NOI18N
-        ep.setProperty(EarProjectProperties.BUILD_CLASSES_DIR, "${"+EarProjectProperties.BUILD_ARCHIVE_DIR+"}"); // NOI18N
         ep.setProperty(EarProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form,**/.nbattrs"); // NOI18N
         ep.setProperty(EarProjectProperties.NO_DEPENDENCIES, "false"); // NOI18N
         ep.setProperty(EarProjectProperties.JAVA_PLATFORM, "default_platform"); // NOI18N
         ep.setProperty(EarProjectProperties.DEBUG_CLASSPATH,
-                "${"+EarProjectProperties.JAVAC_CLASSPATH+"}:${"+ // NOI18N
-                EarProjectProperties.BUILD_CLASSES_DIR+"}:${"+ // NOI18N
+                "${"+EarProjectProperties.JAVAC_CLASSPATH+"}::${"+ // NOI18N
                 EarProjectProperties.JAR_CONTENT_ADDITIONAL+"}:${"+ // NOI18N
                 EarProjectProperties.RUN_CLASSPATH+"}"); // NOI18N
         

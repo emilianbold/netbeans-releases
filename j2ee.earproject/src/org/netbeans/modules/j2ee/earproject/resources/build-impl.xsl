@@ -166,10 +166,8 @@ is divided into following sections:
                 <!-- Note that if the properties were defined in project.xml that would be easy -->
                 <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
                 <fail unless="build.dir">Must set build.dir</fail>
-                <fail unless="build.archive.dir">Must set build.archive.dir</fail>
                 <fail unless="build.generated.dir">Must set build.generated.dir</fail>
                 <fail unless="dist.dir">Must set dist.dir</fail>
-                <fail unless="build.classes.dir">Must set build.classes.dir</fail>
                 <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
                 <fail unless="dist.jar">Must set dist.jar</fail>
             </target>
@@ -199,7 +197,6 @@ is divided into following sections:
 
             <target name="pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar,deps-j2ee-archive</xsl:attribute>
-                <mkdir dir="${{build.classes.dir}}"/>
             </target>
 
             <target name="pre-compile">
