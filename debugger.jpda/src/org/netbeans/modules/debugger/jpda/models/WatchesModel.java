@@ -230,6 +230,7 @@ public class WatchesModel implements TreeModel {
         private JPDADebuggerImpl debugger;
         private JPDAWatch evaluatedWatch;
         private Expression expression;
+        private ParseException parseException;
         private boolean[] evaluating = new boolean[] { false };
         private PropertyChangeSupport propSupp = new PropertyChangeSupport(this);
         
@@ -247,12 +248,17 @@ public class WatchesModel implements TreeModel {
                     exprStr, 
                     Expression.LANGUAGE_JAVA_1_5
                 );
+                parseException = null;
             } catch (ParseException e) {
                 setEvaluated(new JPDAWatchImpl(debugger, w, e, this));
+                parseException = e;
             }
         }
         
-        Expression getParsedExpression() {
+        Expression getParsedExpression() throws ParseException {
+            if (parseException != null) {
+                throw parseException;
+            }
             return expression;
         }
 
@@ -346,6 +352,10 @@ public class WatchesModel implements TreeModel {
                 jwi.addPropertyChangeListener(this);
                 jw = jwi;
             } catch (InvalidExpressionException e) {
+                JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, e, this);
+                jwi.addPropertyChangeListener(this);
+                jw = jwi;
+            } catch (ParseException e) {
                 JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, e, this);
                 jwi.addPropertyChangeListener(this);
                 jw = jwi;
