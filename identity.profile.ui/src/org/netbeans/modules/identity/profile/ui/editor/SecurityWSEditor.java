@@ -68,11 +68,11 @@ public class SecurityWSEditor implements WSEditor {
             
             // Check to see if we can parse the wsdl for the client
             List<WsdlData> wsdlData = helper.getWsdlData();
-            if (!helper.isServer() && (wsdlData == null)) {
+            if (!helper.isServer() && (wsdlData != null)) {
                 for (WsdlData w : wsdlData) {
                     if (w == null || !w.isValid()) {
                         iPanel = new MessagePanel(NbBundle.getMessage(
-                            SecurityWSEditor.class, "LBL_CannotParseWSDL")); //NOI18N
+                                SecurityWSEditor.class, "LBL_CannotParseWSDL")); //NOI18N
                         return iPanel;
                     }
                 }
@@ -102,6 +102,9 @@ public class SecurityWSEditor implements WSEditor {
     }
     
     public void cancel(Node node, JaxWsModel jaxWsModel) {
+        if (iPanel instanceof SecurityView) {
+            ((SecurityView) iPanel).cancel();
+        }
     }
     
     private JPanel displaySunDDAlert() {
@@ -135,14 +138,9 @@ public class SecurityWSEditor implements WSEditor {
                 NotifyDescriptor.YES_NO_OPTION);
         DialogDisplayer.getDefault().notify(d);
         if (d.getValue() == NotifyDescriptor.NO_OPTION) {
-            if (isServer)
-                p = new MessagePanel(NbBundle.getMessage(
-                        SecurityWSEditor.class, "LBL_AuthNProviderExists") + //NOI18N
-                        providerName);
-            else
-                p = new MessagePanel(NbBundle.getMessage(
-                        SecurityWSEditor.class, "LBL_AuthNProviderExists") + //NOI18N
-                        providerName);
+            p = new MessagePanel(NbBundle.getMessage(
+                    SecurityWSEditor.class, "LBL_AuthNProviderExists") + //NOI18N
+                    providerName);
         }
         return p;
     }
@@ -156,7 +154,7 @@ public class SecurityWSEditor implements WSEditor {
             if (helper.closeSunDDEditor()) {
                 return new WSCSecurityView(helper);
             } else {
-                return  new MessagePanel(NbBundle.getMessage(SecurityWSEditor.class, 
+                return  new MessagePanel(NbBundle.getMessage(SecurityWSEditor.class,
                         "LBL_SunDDEditorOpen"));
             }
         }

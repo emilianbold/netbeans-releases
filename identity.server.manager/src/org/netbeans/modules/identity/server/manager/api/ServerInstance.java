@@ -59,7 +59,7 @@ public class ServerInstance extends Object implements Serializable {
     private String password;
     private boolean isDefault;
     private ServerProperties properties;
- 
+    
     private PropertyChangeSupport propertySupport;
     
     public ServerInstance() {
@@ -154,13 +154,12 @@ public class ServerInstance extends Object implements Serializable {
         if (properties == null) {
             properties = new ServerProperties();
         }
-      
+        
         // Update the ServerProperties with the current configuration data.
         
-        // Use the displayName to identity the ServerProperties.
-        properties.setProperty(ServerProperties.PROP_ID, displayName);
-        
         if (!isDefault()) {
+            // Use the displayName to identity the ServerProperties.
+            properties.setProperty(ServerProperties.PROP_ID, displayName);
             properties.setProperty(ServerProperties.PROP_HOST, host);
             properties.setProperty(ServerProperties.PROP_PORT, port);
             properties.setProperty(ServerProperties.PROP_CONTEXT_ROOT, contextRoot);
@@ -186,10 +185,10 @@ public class ServerInstance extends Object implements Serializable {
         try {
             URL isAliveURL = new URL(getServerProperties().getProperty(ServerProperties.PROP_IS_ALIVE_URL));
             conn = (HttpURLConnection) isAliveURL.openConnection();
-      
+            
             if (conn.getResponseCode() == 200) {
                 return true;
-            } 
+            }
         } catch (MalformedURLException ex) {
             //ex.printStackTrace();
         } catch (IOException ex) {
@@ -199,7 +198,7 @@ public class ServerInstance extends Object implements Serializable {
                 conn.disconnect();
             }
         }
-   
+        
         return false;
     }
     

@@ -14,7 +14,7 @@
 <p>The Security tab of the Web Service Attributes Editor lets you configure message-level security for web service clients.</p>
 <p>You can configure the following settings:</p>
 <ul>
-<li><b>Enable Message Level Security.</b> Specifies whether message-level security is enabled.</li>
+<li><b>Enable Message Level Security.</b> Specifies whether message-level security is enabled. You can enable message-level security also for application clients, for profiles except Liberty Profiles.</li>
 <li><b>Security Mechanism.</b>
 <ul>
 <li><b>Request.</b> Specifies the security mechanism for the requests: <tt>SAML-HolderOfKey</tt>, <tt>SAML-SenderVouches</tt>, <tt>X509Token</tt>, <tt>UserNameToken</tt>, or <tt>LibertyDiscoverySecurity</tt>.
@@ -30,7 +30,7 @@
 <li><b>Existing&nbsp;Certificate&nbsp;Settings.</b>
 <ul>
 <li><b>Use Default Key Store.</b> Lets you use the default key store. When selected, the other fields in this area are disabled.</li>
-<li><b>Keystore Location.</b> Specifies the location of the keystore file that contains the key alias.</li>
+<li><b>Keystore Location.</b> Specifies the location of the keystore file that contains the key alias. This specification should be an absolute path.</li>
 <li><b>Keystore Password.</b> Specifies the password needed to access the keystore file.</li>
 <li><b>Key Alias to Use.</b> Specifies the key alias for the entry in the keystore. Each entry in a keystore file is identified by an alias string.</li>
 <li><b>Key Alias Password.</b> Specifies the password needed to access the key alias for the entry in the keystore.</li>

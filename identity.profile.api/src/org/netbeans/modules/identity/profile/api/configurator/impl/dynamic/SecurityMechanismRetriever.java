@@ -64,10 +64,10 @@ public class SecurityMechanismRetriever {
             Method method = clazz.getMethod(AM_GET_ALL_SUPPORT_SECURITY_MECH_METHOD);
             return convertToSecurityMechProxies((List) method.invoke(null));
         } catch (Exception ex) {
-           // ignore
+           ex.printStackTrace();
         }
         
-        return null;
+        return Collections.emptyList();
     }
     
     /**
@@ -82,10 +82,10 @@ public class SecurityMechanismRetriever {
             
             return convertToSecurityMechProxies((List) method.invoke(null));
         } catch (Exception ex) {
-            // ignore
+            ex.printStackTrace();
         }
         
-        return null;
+        return Collections.emptyList();
     }
     
     /*
@@ -112,7 +112,7 @@ public class SecurityMechanismRetriever {
             ex.printStackTrace();
         }
         
-        return null;
+        return Collections.emptyList();
         
     }
     
@@ -134,7 +134,7 @@ public class SecurityMechanismRetriever {
             ex.printStackTrace();
         }
         
-        return null;
+        return Collections.emptyList();
     }
     
     private static Collection<SecurityMechanism> convertToSecurityMechProxies(List secMechs) {

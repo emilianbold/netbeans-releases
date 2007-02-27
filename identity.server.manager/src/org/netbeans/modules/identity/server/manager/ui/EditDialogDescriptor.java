@@ -40,16 +40,11 @@ import org.openide.util.NbBundle;
 public abstract class EditDialogDescriptor extends DialogDescriptor
         implements ChangeListener {
     public static final String STATUS_PREFIX = "Status:";      //NOI18N
-    
-    private javax.swing.JPanel panel;
-    private InnerPanel innerPanel;
-    
+   
     /** Creates a new instance of EditDialog */
     public EditDialogDescriptor(javax.swing.JPanel panel, String title,
             boolean add, JComponent[] components, HelpCtx helpCtx) {
         this(new InnerPanel(panel), title, add, components, helpCtx);
-        
-        this.panel = panel;
     }
    
     private EditDialogDescriptor(InnerPanel innerPanel, String title,
@@ -162,6 +157,10 @@ public abstract class EditDialogDescriptor extends DialogDescriptor
         public void removeUpdate(javax.swing.event.DocumentEvent evt) {
             dialog.checkValues();
         }
+    }
+    
+    public interface Panel {
+        JComponent[] getEditableComponents();
     }
 }
 

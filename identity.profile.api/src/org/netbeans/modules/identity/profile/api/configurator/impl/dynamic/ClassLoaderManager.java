@@ -42,9 +42,9 @@ class ClassLoaderManager {
     private static final String AM_INITIALIZE_PROPERTIES_METHOD = "initializeProperties";     //NOI18N
     
     private static String[] dependentJars = {
-        "/addons/amserver/amclientsdk.jar",      //NOI18N
+        "/addons/accessmanager/amclientsdk.jar",      //NOI18N
         "/lib/javaee.jar",                       //NOI18N
-        "/lib/appserv-ws.jar"                    //NOI18N
+        "/lib/webservices-rt.jar"                    //NOI18N
     };
     
     private static ClassLoaderManager instance;

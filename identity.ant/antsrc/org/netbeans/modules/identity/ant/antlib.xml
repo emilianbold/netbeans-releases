@@ -19,4 +19,5 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <antlib>
     <taskdef name="amdeploy" classname="org.netbeans.modules.identity.ant.AMDeploy"/>
+    <taskdef name="amclasspathsetup" classname="org.netbeans.modules.identity.ant.AMClassPathSetup"/>
 </antlib>

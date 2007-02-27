@@ -33,18 +33,10 @@ abstract class Modifier {
     public Modifier(Enum configurable, Object source,
             Configurator configurator) {
 
-        if (configurable == null) {
-            // should throw an exception
-        }
+        assert configurable != null;
+        assert source != null;
+        assert configurator != null;
 
-        if (source == null) {
-            // should throw an exception
-        }
-        
-        if (configurator == null) {
-            // should throw an exception
-        }
-        
         this.configurable = configurable;
         this.source = source;
         this.configurator = configurator;

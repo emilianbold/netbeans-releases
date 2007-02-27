@@ -450,7 +450,19 @@ public class ProviderConfigImpl implements ProviderConfig {
         try {
             Constructor constructor =
                     getPasswordCredentialClass().getConstructor(String.class, String.class);
-            return constructor.newInstance(pair.get(0), pair.get(1));
+            
+            String userName = pair.get(0);
+            
+            //
+            // Empty user name exposes a security leak on the UserNameToken
+            // profile in the AM authentication provider.  Appending an empty
+            // space to plug the hole.
+            //
+            if (userName == null || userName.length() == 0) {
+                userName = " ";    //NOI18N 
+            }
+            
+            return constructor.newInstance(userName, pair.get(1));
         } catch (Exception ex) {
             throw createConfiguratorException(ex);
         }

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.identity.server.manager.ui;
 
-import java.awt.Color;
 import java.awt.Dialog;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -27,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -60,7 +58,8 @@ import org.openide.util.NbBundle;
  *
  * @author  ptliu
  */
-public class ProfileEditorPanel extends JPanel implements ChangeListener {
+public class ProfileEditorPanel extends JPanel 
+        implements ChangeListener, EditDialogDescriptor.Panel {
     private static final long WAIT_TIME = 400;
     
     private static final String JKS_EXTENSION = ".jks"; //NOI18N
@@ -74,8 +73,8 @@ public class ProfileEditorPanel extends JPanel implements ChangeListener {
         INIT_FAILED
     }
     
-    private ProviderConfigurator configurator;
-    private SecurityMechanism secMech;
+    private transient ProviderConfigurator configurator;
+    private transient SecurityMechanism secMech;
     private ServerInstance instance;
     private Collection<ChangeListener> listeners;
     private Throwable cause;
@@ -301,7 +300,7 @@ public class ProfileEditorPanel extends JPanel implements ChangeListener {
         }
     }
     
-    public JComponent[] getComponents() {
+    public JComponent[] getEditableComponents() {
         return new JComponent[] {};
     }
     
@@ -363,7 +362,7 @@ public class ProfileEditorPanel extends JPanel implements ChangeListener {
                 panel,
                 NbBundle.getMessage(ProfileEditorPanel.class, "TTL_User"),
                 add,
-                panel.getComponents(),
+                panel.getEditableComponents(),
                 getHelpCtx()) {
             public String validate() {
                 return panel.checkValues();

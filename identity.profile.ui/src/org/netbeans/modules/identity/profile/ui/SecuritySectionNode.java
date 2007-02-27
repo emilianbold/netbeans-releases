@@ -42,4 +42,7 @@ public class SecuritySectionNode extends SectionNode {
     }
     
     public void save() {}
+    
+    public void cancel() {}
+    
 }

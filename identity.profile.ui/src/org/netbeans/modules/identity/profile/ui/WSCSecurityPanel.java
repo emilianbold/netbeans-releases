@@ -33,7 +33,7 @@ import org.netbeans.modules.identity.profile.api.configurator.ProviderConfigurat
 import org.netbeans.modules.identity.profile.api.configurator.SecurityMechanism;
 import org.netbeans.modules.identity.profile.api.configurator.SecurityMechanismHelper;
 import org.netbeans.modules.identity.profile.ui.support.J2eeProjectHelper;
-import org.netbeans.modules.identity.profile.ui.support.J2eeProjectHelper.Version;
+import org.netbeans.modules.identity.profile.ui.support.J2eeProjectHelper.ProjectType;
 import org.netbeans.modules.identity.server.manager.api.ServerManager;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
@@ -87,7 +87,7 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
         for (ProviderConfigurator configurator : configurators) {
             
             configurator.addModifier(Configurable.SECURITY_MECH, requestSecMechCB,
-                    (helper.getVersion() == Version.VERSION_1_4) ?
+                    (helper.getProjectType() == ProjectType.WEB) ?
                         SecurityMechanismHelper.getDefault().getAllWSCSecurityMechanisms() :
                         SecurityMechanismHelper.getDefault().getAllMessageLevelSecurityMechanisms());
             
@@ -121,7 +121,17 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
     }
     
     private void updateVisualState() {
-        if (enableSecurityCB.isSelected()) {
+        if (helper.isWsitSecurityEnabled()) {
+            enableSecurityCB.setEnabled(false);
+            errorLabel.setText(NbBundle.getMessage(WSCSecurityPanel.class, 
+                    "MSG_WsitEnabled"));
+        } else {
+            enableSecurityCB.setEnabled(true);
+            errorLabel.setText("");         //NOI18N
+        }
+        
+        if (enableSecurityCB.isSelected() &&
+                enableSecurityCB.isEnabled()) {
             secMechLabel.setEnabled(true);
             requestLabel.setEnabled(true);
             requestSecMechCB.setEnabled(true);
@@ -157,7 +167,6 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
             }
             serverLabel.setEnabled(true);
             serverCB.setEnabled(true);
-            
         } else {
             secMechLabel.setEnabled(false);
             requestLabel.setEnabled(false);
@@ -184,7 +193,9 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
         }
         
         SecurityMechanism secMech = (SecurityMechanism) requestSecMechCB.getSelectedItem();
-        if (secMech.isPasswordCredentialRequired()) {
+        
+        if (secMech.isPasswordCredentialRequired() &&
+                requestSecMechCB.isEnabled()) {
             userNameLabel.setVisible(true);
             userNameTF.setVisible(true);
             passwordLabel.setVisible(true);
@@ -215,6 +226,12 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
             //helper.removeAMSecurityConstraint();
             helper.disableWSCSecurity();
         }
+        
+        helper.clearTransientState();
+    }
+    
+    public void cancel() {
+        helper.clearTransientState();
     }
     
     private boolean isLiberty() {
@@ -259,6 +276,11 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
         jSeparator3 = new javax.swing.JSeparator();
 
         setEnabled(false);
+        addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                formFocusGained(evt);
+            }
+        });
         addAncestorListener(new javax.swing.event.AncestorListener() {
             public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
             }
@@ -460,6 +482,11 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     
+    private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
+// TODO add your handling code here:
+        updateVisualState();
+    }//GEN-LAST:event_formFocusGained
+    
     private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_formAncestorAdded
 // TODO add your handling code here:
         requestFocusInWindow();
@@ -520,6 +547,12 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
     
     private void enableSecurityCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableSecurityCBActionPerformed
 // TODO add your handling code here:
+        if (enableSecurityCB.isSelected()) {
+            helper.setTransientState(true);
+        } else {
+            helper.setTransientState(false);
+        }
+        
         updateVisualState();
     }//GEN-LAST:event_enableSecurityCBActionPerformed
     

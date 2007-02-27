@@ -49,7 +49,7 @@ class CheckBoxModifier extends Modifier {
     }
     
     public void setValue(Object value) {
-        if (((Boolean) value) == Boolean.TRUE) {
+        if (Boolean.TRUE.equals(value)) {
             checkBox.setSelected(true);
         } else {
             checkBox.setSelected(false);

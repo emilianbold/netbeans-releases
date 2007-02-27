@@ -73,4 +73,9 @@ public abstract class SecurityView extends SectionNodeView {
         SecuritySectionNode node = (SecuritySectionNode) this.getRootNode();
         node.save();
     }
+    
+    public void cancel() {
+        SecuritySectionNode node = (SecuritySectionNode) this.getRootNode();
+        node.cancel();
+    }
 }

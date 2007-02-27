@@ -62,7 +62,7 @@ public class WsdlParser {
 	
     public static WsdlData parseWSDLFile(InputSource xmlFile, String svc) 
         throws IOException {
-        WsdlData wsdlData = new WsdlData();
+        WsdlData wsdlData = null;
         try {
             SAXParserFactory saxFactory = SAXParserFactory.newInstance();
             saxFactory.setNamespaceAware(true);
@@ -166,8 +166,7 @@ public class WsdlParser {
         private static final String W3C_WSDL_SCHEMA_SLASH = "http://schemas.xmlsoap.org/wsdl/"; // NOI18N
         
         ArrayList wsdlSvcNames = new ArrayList();
-        boolean found = false;
-        
+      
         public SvcNameHandler() {
             super();
         }

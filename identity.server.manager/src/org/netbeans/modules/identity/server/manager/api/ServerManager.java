@@ -292,7 +292,7 @@ public class ServerManager {
             }
         }
         
-        instanceFO.delete();
+        if (instanceFO != null) instanceFO.delete();
     }
     
     public static FileObject getInstanceFileObject(String id) {

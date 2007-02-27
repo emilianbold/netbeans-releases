@@ -31,6 +31,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -257,12 +258,13 @@ public class SunDDHelper {
                     
                     //transformer.transform(source, new StreamResult(System.out));
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 } finally {
                     if (os != null) {
                         try {
                             os.close();
                         } catch (IOException ex) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         }
                     }
                     
@@ -288,14 +290,15 @@ public class SunDDHelper {
                 is = sunDD.getInputStream();
                 document = builder.parse(is);
             } catch (SAXException ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             } finally {
                 if (is != null) {
                     try {
                         is.close();
                     } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
                 }
          
@@ -323,7 +326,7 @@ public class SunDDHelper {
             builder = factory.newDocumentBuilder();
             builder.setEntityResolver(new SunWebDTDResolver());
         } catch (ParserConfigurationException ex) {
-            ex.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         
         return builder;
@@ -333,7 +336,7 @@ public class SunDDHelper {
      *
      *
      */
-    public class SunWebDTDResolver implements EntityResolver {
+    private static class SunWebDTDResolver implements EntityResolver {
         public InputSource resolveEntity(String publicId, String systemId) {
             String dtd = null;
             

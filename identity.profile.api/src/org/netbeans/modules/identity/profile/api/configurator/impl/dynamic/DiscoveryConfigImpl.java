@@ -78,7 +78,6 @@ public class DiscoveryConfigImpl extends TrustAuthorityConfigImpl
         Thread.currentThread().setContextClassLoader(getClassLoader());
         
         try {
-            ProviderConfigImpl providerConfigImpl = (ProviderConfigImpl) providerConfig;
             Method method = getDiscoveryConfigClass().getMethod(
                     AM_UNREGISTER_PROVIDER_WITH_TA_METHOD, 
                     String.class);

@@ -329,8 +329,6 @@ public class ProviderConfigImpl implements ProviderConfig {
         Collection<String> providerNames = new ArrayList<String>();
         
         for (ProviderConfigType providerConfig : providerConfigs) {
-            String type = providerConfig.getType();
-            
             if (pType.equals(providerConfig.getType())) {
                 providerNames.add(providerConfig.getName());
             }

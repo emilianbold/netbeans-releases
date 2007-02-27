@@ -54,6 +54,12 @@ public class WSCSectionNode extends SecuritySectionNode {
         }
     }
     
+    public void cancel() {
+        if (currentPanel != null) {
+            currentPanel.cancel();
+        }
+    }
+    
     protected SectionNodeInnerPanel createNodeInnerPanel() {
         currentPanel = new WSCSecurityPanel(getSectionNodeView(), helper);
         

@@ -83,7 +83,6 @@ public class ProviderConfigurator extends Configurator {
     private boolean disabled = false;
     private JLabel errorComponent;
     private String errorText;
-    private boolean skipValidation = false;
     private Collection<ChangeListener> listeners;
     
     /** Creates a new instance of ProviderConfigurator */
@@ -227,9 +226,7 @@ public class ProviderConfigurator extends Configurator {
             case SERVICE_TYPE:
             case USERNAME:
             case PASSWORD:
-                if (!(source instanceof JTextField)) {
-                    // throw an exception
-                }
+                assert source instanceof JTextField;
                 break;
         }
         
@@ -298,7 +295,7 @@ public class ProviderConfigurator extends Configurator {
     
     public void setValue(Enum configurable, Object value) {
         if (providerConfig == null) return;
-      
+        
         if (configurable instanceof Configurable) {
             switch((Configurable) configurable) {
                 case SECURITY_MECH:
@@ -308,7 +305,7 @@ public class ProviderConfigurator extends Configurator {
                     setSecurityMechanisms((Collection<SecurityMechanism>) value);
                     break;
                 case SIGN_RESPONSE:
-                    if (((Boolean) value) == Boolean.TRUE) {
+                    if (Boolean.TRUE.equals(value)) {
                         //System.out.println("enable Sign Response");
                         providerConfig.setResponseSignEnabled(true);
                     } else {
@@ -354,7 +351,7 @@ public class ProviderConfigurator extends Configurator {
                     providerConfig.setServiceType((String) value);
                     break;
                 case USE_DEFAULT_KEYSTORE:
-                    if (((Boolean) value) == Boolean.TRUE) {
+                    if (Boolean.TRUE.equals(value)) {
                         providerConfig.setDefaultKeyStore(true);
                     } else {
                         providerConfig.setDefaultKeyStore(false);
@@ -362,7 +359,7 @@ public class ProviderConfigurator extends Configurator {
                     break;
             }
             
-            validate();           
+            validate();
             fireStateChanged();
         }
     }
@@ -401,12 +398,12 @@ public class ProviderConfigurator extends Configurator {
     
     public String validate() {
         clearError();
-      
+        
         String errorText = validateKeyStore();
-     
+        
         if (errorText != null) {
             setError(errorText);
-        } 
+        }
         
         return errorText;
     }
@@ -420,36 +417,39 @@ public class ProviderConfigurator extends Configurator {
         Boolean signResponse = (Boolean) getValue(Configurable.SIGN_RESPONSE);
         
         //
-        // For UserNameToken profile, we don't care about the keystore 
+        // For UserNameToken profile, we don't care about the keystore
         // unless signResponse is true.
         //
-        if (secMech.isPasswordCredentialRequired() && signResponse == Boolean.FALSE) {
+        if (secMech.isPasswordCredentialRequired() && 
+                Boolean.FALSE.equals(signResponse)) {
             return null;
         }
-      
-        if (getValue(Configurable.USE_DEFAULT_KEYSTORE) == Boolean.FALSE) {
+        
+        if (Boolean.FALSE.equals(getValue(Configurable.USE_DEFAULT_KEYSTORE))) {
             //
             // Call setKeyStore() to see if we get any error first.
             // For example, the client sdk does some validation of the
             // keystore information and we want to capture them here.
             //
-            setKeyStore();    
+            setKeyStore();
             String errorText = getError();
             if (errorText != null) return errorText;
             
             // Now check for empty values
+            String keyAlias = (String) getValue(Configurable.KEY_ALIAS);
+            
             if (keystoreLocation == null || keystoreLocation.trim().length() == 0) {
                 return NbBundle.getMessage(ProviderConfigurator.class,
                         "LBL_InvalidKeystoreLocation");
             } else if (keystorePassword == null || keystorePassword.trim().length() == 0) {
                 return NbBundle.getMessage(ProviderConfigurator.class,
                         "LBL_InvalidKeystorePassword");
-            } else {
-                String keyAlias = (String) getValue(Configurable.KEY_ALIAS);
-                if (keyAlias == null || keyAlias.trim().length() == 0) {
-                    return NbBundle.getMessage(ProviderConfigurator.class,
-                            "LBL_InvalidKeyAlias");
-                }
+            } else if (keyAlias == null || keyAlias.trim().length() == 0) {
+                return NbBundle.getMessage(ProviderConfigurator.class,
+                        "LBL_InvalidKeyAlias");                
+            } else if (keyPassword == null || keyPassword.trim().length() == 0) {
+                return NbBundle.getMessage(ProviderConfigurator.class,
+                        "LBL_InvalidKeyPassword");
             }
         }
         
@@ -473,7 +473,6 @@ public class ProviderConfigurator extends Configurator {
         } catch (ConfiguratorException ex) {
             //System.out.println("ex from keystore password = " + ex);
             setError(ex.getCause().getMessage());
-            skipValidation = true;
         }
     }
     

@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -56,7 +56,7 @@ public class ServerProperties extends Properties implements Cloneable {
     
     public static final String PROP_IS_ALIVE_URL = "org.netbeans.modules.identity.profile.api.configurator.isaliveurl";    //NOI18N
     
-    public static final String PROP_LIBERTY_DISCO_SERVICE_URL = 
+    public static final String PROP_LIBERTY_DISCO_SERVICE_URL =
             "org.netbeans.modules.identity.profile.api.configurator.libertydiscoserviceurl"; //NOI18N
     
     public static final String PROP_AS_ROOT = "org.netbeans.modules.identity.profile.api.configurator.asroot";  //NOI18N
@@ -75,7 +75,7 @@ public class ServerProperties extends Properties implements Cloneable {
     
     private static final String AM_CONFIG_FILE = "AM_CONFIG_FILE";   //NOI18N
     
-    private static final String AM_CONFIG_FILE_RELATIVE_PATH = "/addons/amserver/AMConfig.properties";  //NOI18N
+    private static final String AS_DOMAINS = "/domains";  //NOI18N
     
     private static final String NAMING_SERVICE = "/namingservice";  //NOI18N
     
@@ -168,11 +168,11 @@ public class ServerProperties extends Properties implements Cloneable {
     
     private String getASRoot(String amConfigFile) {
         amConfigFile = amConfigFile.replace('\\', '/');
-        int index = amConfigFile.indexOf(AM_CONFIG_FILE_RELATIVE_PATH);
+        int index = amConfigFile.indexOf(AS_DOMAINS);
         
         if (index != -1) {
             return amConfigFile.substring(0, index);
-        } 
+        }
         
         return null;
     }
@@ -221,14 +221,42 @@ public class ServerProperties extends Properties implements Cloneable {
         return false;
     }
     
+    public int hashCode() {
+        int hashCode = 0;
+        Object value = null;
+        
+        if ((value = getProperty(PROP_HOST)) != null) {
+            hashCode += value.hashCode();
+        }
+        
+        if ((value = getProperty(PROP_PORT)) != null) {
+            hashCode += value.hashCode();
+        }
+        
+        if ((value = getProperty(PROP_USERNAME)) != null) {
+            hashCode += value.hashCode();
+        }
+        
+        if ((value = getProperty(PROP_PASSWORD)) != null) {
+            hashCode += value.hashCode();
+        }
+        
+        if ((value = getProperty(PROP_CONTEXT_ROOT)) != null) {
+            hashCode += value.hashCode();
+        }
+        
+        return hashCode;
+    }
+    
+    
     public Object clone() {
-        ServerProperties clone = new ServerProperties();
+        Object clone = super.clone();
         
         Enumeration propNames = this.propertyNames();
         while (propNames.hasMoreElements()) {
             String name = (String) propNames.nextElement();
             
-            clone.setProperty(name, this.getProperty(name));
+            ((ServerProperties) clone).setProperty(name, this.getProperty(name));
         }
         
         return clone;

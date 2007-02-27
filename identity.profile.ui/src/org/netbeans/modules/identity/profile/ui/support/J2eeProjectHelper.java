@@ -60,6 +60,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.netbeans.modules.identity.profile.api.bridgeapi.RuntimeBridge;
+import org.netbeans.modules.j2ee.api.ejbjar.Car;
+import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
 import org.netbeans.modules.j2ee.dd.api.web.AuthConstraint;
@@ -67,6 +69,8 @@ import org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint;
 import org.netbeans.modules.j2ee.dd.api.web.WebResourceCollection;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+//import org.netbeans.modules.websvc.wsitconf.api.WSITConfigProvider;
+//import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataNode;
 import org.openide.windows.TopComponent;
@@ -86,6 +90,8 @@ public class J2eeProjectHelper {
     private static final String WEB_CONFIG_FILE_NAME = "WEB-INF/" + SUN_WEB_XML; //NOI18N
     
     private static final String EJB_CONFIG_FILE_NAME = "sun-ejb-jar.xml"; //NOI18N
+    
+    private static final String CLIENT_CONFIG_FILE_NAME = "sun-application-client.xml"; //NOI18N
     
     private static final String SERVICE_REF_NAME_PREFIX = "service/"; //NOI18N
     
@@ -109,19 +115,31 @@ public class J2eeProjectHelper {
     
     private static final String AM_ROLE_NAME = "AUTHENTICATED_USERS";       //NOI18N
     
-    public static final String DEFAULT_ENCODING = "UTF-8"; // NOI18N;
-  
-    public static final String EJB_WSDL_LOC = "META-INF"; // NOI18N;
+    private static final String DEFAULT_ENCODING = "UTF-8"; // NOI18N;
     
-    public static final String WEB_WSDL_LOC = "WEB-INF"; // NOI18N;
+    private static final String EJB_WSDL_LOC = "META-INF"; // NOI18N;
+    
+    private static final String WEB_WSDL_LOC = "WEB-INF"; // NOI18N;
+    
+    private static final String CLIENT_WSDL_LOC = "META-INF"; // NOI18N;
+    
+    private static SecurityCheckerImpl securityChecker;
+    
+    static {
+        securityChecker = new SecurityCheckerImpl();
+        
+        // TODO - uncomment this after WSIT is merged into trunk
+        //SecurityCheckerRegistry.getDefault().register(securityChecker);
+    }
     
     public enum ProjectType {
-        WEB, EJB, UNKNOWN
+        WEB, EJB, CLIENT, UNKNOWN
     };
     
     public enum Version {
         VERSION_1_4, VERSION_1_5, UNKNOWN
     };
+    
     
     private Node node;
     private JaxWsModel model;
@@ -135,8 +153,7 @@ public class J2eeProjectHelper {
     private List<String> serviceRefNames;
     private List<WsdlData> wsdlData;
     private List<String> serviceNames;
-    private List<String> securedServiceNames;
-    
+   
     /** Creates a new instance of J2eeProjectHelper */
     public J2eeProjectHelper(Node node, JaxWsModel model) {
         this.node = node;
@@ -151,16 +168,25 @@ public class J2eeProjectHelper {
             if (getPortComponentName() != null &&
                     getServiceDescriptionName() != null)
                 return true;
-        } else if (!getAllServiceRefNames().isEmpty()) {
-            return true;
+        } else {
+            // We don't support 1.4 appclient.
+             if (getProjectType() == ProjectType.CLIENT && 
+                    getVersion() == Version.VERSION_1_4) {
+                return false;
+            }
+            
+            if (!getAllServiceRefNames().isEmpty()) {
+                return true;
+            }
         }
+        
         return false;
     }
     
     public boolean isServer() {
         // this is a server for 1.4 and 1.5 projects
         if (getJavaSource() != null) return true;
-     
+        
         //For 1.5 project client this should be not null.
         if (getClient() != null) return false;
         
@@ -189,15 +215,15 @@ public class J2eeProjectHelper {
                 }
             }
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
         }
@@ -215,7 +241,7 @@ public class J2eeProjectHelper {
                 int index = 0;
                 
                 while ((line = reader.readLine()) != null) {
-                    if (!added & (index = line.indexOf(IMPORT_TAG)) != -1) {
+                    if (!added && (index = line.indexOf(IMPORT_TAG)) != -1) {
                         StringBuffer buf = new StringBuffer(line);
                         buf = buf.replace(index, line.length(), IMPORT_AM_DEPLOY_XML);
                         writer.write(buf.toString());
@@ -227,9 +253,9 @@ public class J2eeProjectHelper {
                     writer.newLine();
                 }
             } catch (FileNotFoundException ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             } finally {
                 try {
                     if (writer != null) {
@@ -241,7 +267,7 @@ public class J2eeProjectHelper {
                         reader.close();
                     }
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
         }
@@ -268,6 +294,8 @@ public class J2eeProjectHelper {
                 projectType = ProjectType.WEB;
             } else if (J2eeModule.EJB.equals(moduleType)) {
                 projectType = ProjectType.EJB;
+            } else if (J2eeModule.CLIENT.equals(moduleType)) {
+                projectType = ProjectType.CLIENT;
             } else {
                 projectType = ProjectType.UNKNOWN;
             }
@@ -287,9 +315,13 @@ public class J2eeProjectHelper {
                 case EJB:
                     versionString = getEjbModule().getJ2eePlatformVersion();
                     break;
+                case CLIENT:
+                    versionString = getClientModule().getJ2eePlatformVersion();
+                    break;
                 default:
                     break;
             }
+            
             if (versionString.equals("1.4")) {  //NOI18N
                 version = Version.VERSION_1_4;
             } else if (versionString.equals("1.5")) { //NOI18N
@@ -312,6 +344,10 @@ public class J2eeProjectHelper {
                 case EJB:
                     sunDD = getProvider().getDeploymentConfigurationFile(
                             EJB_CONFIG_FILE_NAME);
+                    break;
+                case CLIENT:
+                    sunDD = getProvider().getDeploymentConfigurationFile(
+                            CLIENT_CONFIG_FILE_NAME);
                     break;
                 default:
                     break;
@@ -388,32 +424,32 @@ public class J2eeProjectHelper {
     }
     
     private void getServiceInfo() {
-            String endpointName = getEndpointName();
-            Webservices webServices = this.getWebServicesXML();
-            ProjectType projectType = getProjectType();
-            
-            try {
-                for (WebserviceDescription desc : webServices.getWebserviceDescription()) {
-                    for (PortComponent pc : desc.getPortComponent()) {
-                        String linkName = "";       //NOI18N
-
-                        if (projectType == ProjectType.WEB) {
-                            linkName = pc.getServiceImplBean().getServletLink();
-                        } else if (projectType == ProjectType.EJB) {
-                            linkName = pc.getServiceImplBean().getEjbLink();
-                        }
-
-                        if (linkName.equals(endpointName)) {
-                            portComponentName = pc.getPortComponentName();
-                            serviceDescriptionName = desc.getWebserviceDescriptionName();
-                            return;
-                        }
+        String endpointName = getEndpointName();
+        Webservices webServices = this.getWebServicesXML();
+        ProjectType projectType = getProjectType();
+        
+        try {
+            for (WebserviceDescription desc : webServices.getWebserviceDescription()) {
+                for (PortComponent pc : desc.getPortComponent()) {
+                    String linkName = "";       //NOI18N
+                    
+                    if (projectType == ProjectType.WEB) {
+                        linkName = pc.getServiceImplBean().getServletLink();
+                    } else if (projectType == ProjectType.EJB) {
+                        linkName = pc.getServiceImplBean().getEjbLink();
+                    }
+                    
+                    if (linkName.equals(endpointName)) {
+                        portComponentName = pc.getPortComponentName();
+                        serviceDescriptionName = desc.getWebserviceDescriptionName();
+                        return;
                     }
                 }
-            } catch (Exception excp) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                        excp);
             }
+        } catch (Exception excp) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    excp);
+        }
         
     }
     
@@ -459,7 +495,22 @@ public class J2eeProjectHelper {
                             }
                         }
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                    break;
+                case CLIENT:
+                    try {
+                        for (ServiceRef s : getAppClient().getServiceRef()) {
+                            if (version == Version.VERSION_1_4) {
+                                if (s.getServiceRefName().equalsIgnoreCase(getServiceRefName()))
+                                    serviceRefNames.add(s.getServiceRefName());
+                            } else if (version == Version.VERSION_1_5) {
+                                //if (isThisTheServiceRef(s))
+                                serviceRefNames.add(s.getServiceRefName());
+                            }
+                        }
+                    } catch (Exception ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
                     break;
                 case EJB:
@@ -478,7 +529,7 @@ public class J2eeProjectHelper {
                             }
                         }
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
                     break;
             }
@@ -487,23 +538,28 @@ public class J2eeProjectHelper {
     }
     
     private boolean isThisTheServiceRef(ServiceRef s) {
-        String name = s.getServiceRefName();
         String wsdlFile = getWsdlFO().getPath();
+        
         //System.out.println("wsdlfile from client node " + wsdlFile);
         //System.out.println("wsdlfo name from client node " + getWsdlFO().getName());
         //System.out.println("wsdlfo path from client node " + getWsdlFO().getPath());
         URI wsdlUri = s.getWsdlFile();
+   
         //System.out.println("wsdlfile from service-ref " + wsdlUri.toString());
         //System.out.println("wsdlfile from service-ref " + wsdlUri.getPath());
         //System.out.println("wsdlfile from service-ref " + wsdlUri.getSchemeSpecificPart());
+        
         String path = wsdlUri.getPath();
         int idx = 0;
-
+    
         if (path.startsWith(EJB_WSDL_LOC)) {
             idx = EJB_WSDL_LOC.length();
         } else if (path.startsWith(WEB_WSDL_LOC)) {
             idx = WEB_WSDL_LOC.length();
+        } else if (path.startsWith(CLIENT_WSDL_LOC)) {
+            idx = CLIENT_WSDL_LOC.length();
         }
+        
         path = path.substring(idx, path.length());
         //System.out.println("extracted path " + path);
         if (wsdlFile != null && wsdlUri != null &&
@@ -540,9 +596,11 @@ public class J2eeProjectHelper {
     
     private FileObject getWsdlFO() {
         if (version == Version.VERSION_1_4) {
+            String refName = null;
+            
             switch (getProjectType()) {
                 case WEB:
-                    String refName = getServiceRefName();
+                    refName = getServiceRefName();
                     
                     try {
                         for (ServiceRef s : getWebApp().getServiceRef()) {
@@ -552,8 +610,23 @@ public class J2eeProjectHelper {
                             }
                         }
                     } catch (Exception ex) {
-                        // ignore
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
+                    break;
+                case CLIENT:
+                    refName = getServiceRefName();
+                    
+                    try {
+                        for (ServiceRef s : getAppClient().getServiceRef()) {
+                            if (s.getServiceRefName().equalsIgnoreCase(refName)) {
+                                return getProjectDirectory().getFileObject(
+                                        "src/conf/" + s.getWsdlFile().getPath().substring(9));    //NOI18N
+                            }
+                        }
+                    } catch (Exception ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                    break;
                 case EJB:
                     // Not applicable?
                     break;
@@ -629,11 +702,24 @@ public class J2eeProjectHelper {
         return false;
     }
     
+    public boolean isWsitSecurityEnabled() {
+        // TODO - uncomment this after WSIT is merged into trunk
+        //return WSITConfigProvider.getDefault().isWsitSecurityEnabled(node, model);
+        return false;
+    }
+    
+    public void setTransientState(boolean isEnabled) {
+        securityChecker.setTransientState(isEnabled);
+    }
+    
+    public void clearTransientState() {
+        securityChecker.clearTransientState();
+    }
+    
     public void enableWSPSecurity(String providerId) {
         enableMessageLevelSecurity(providerId);
     }
-    
-    
+        
     public void disableWSPSecurity() {
         disableMessageLevelSecurity();
     }
@@ -675,7 +761,7 @@ public class J2eeProjectHelper {
             int i = 0;
             assert(wsdlInfo.size() >= refNames.size());
             for (String s : refNames) {
-                if (wsdlInfo.get(i) != null) { 
+                if (wsdlInfo.get(i) != null) {
                     String namespace = wsdlInfo.get(i).getTargetNameSpace();
                     String localPart = wsdlInfo.get(i).getPort();
 //                    System.out.println("refName : namespace: localpart: " + s +
@@ -710,7 +796,7 @@ public class J2eeProjectHelper {
             int i = 0;
             assert(wsdlInfo.size() >= refNames.size());
             for (String s : refNames) {
-                if (wsdlInfo.get(i) != null) { 
+                if (wsdlInfo.get(i) != null) {
                     String namespace = wsdlInfo.get(i).getTargetNameSpace();
                     String localPart = wsdlInfo.get(i).getPort();
 //                    System.out.println("Into delete -- refName : namespace: localpart: " + s +
@@ -728,7 +814,7 @@ public class J2eeProjectHelper {
     private void enableLiberty() {
         addAMSecurityConstraint();
         SunDDHelper helper = new SunDDHelper(getSunDDFO());
-        helper.addSecurityRoleMapping();      
+        helper.addSecurityRoleMapping();
     }
     
     private void disableLiberty() {
@@ -750,7 +836,7 @@ public class J2eeProjectHelper {
                 isModified = true;
             }
         } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         
         SecurityConstraint amConstraint = getAMSecurityConstraint(webApp);
@@ -775,7 +861,7 @@ public class J2eeProjectHelper {
                 isModified = true;
             }
         } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         
         if (isModified) saveDD(webApp);
@@ -842,7 +928,7 @@ public class J2eeProjectHelper {
             ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
         } catch (IllegalStateException e) {
             ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
-        }
+        } 
     }
     
     public String getConfigPath() {
@@ -881,14 +967,13 @@ public class J2eeProjectHelper {
     public List<String> getAllServiceNames() {
         if (serviceNames == null) {
             serviceNames = new ArrayList<String>();
-            Version version = getVersion();
-            
+        
             FileObject wsdlFO = getWsdlFO();
-
+            
             if (wsdlFO != null) {
                 try {
                     serviceNames = WsdlParser.getWsdlSvcNames(
-                        FileUtil.toFile(wsdlFO));
+                            FileUtil.toFile(wsdlFO));
                 } catch (IOException ioex) {
                     ErrorManager.getDefault().notify(
                             ErrorManager.INFORMATIONAL, ioex);
@@ -902,7 +987,7 @@ public class J2eeProjectHelper {
     public List<String> getEndpointURI() {
         if (endpointUri == null) {
             endpointUri = new ArrayList<String>();
-            Version version = getVersion();
+      
             if (isServer()) {
                 endpointUri.add(getServiceDescriptionName());
             } else {
@@ -939,7 +1024,7 @@ public class J2eeProjectHelper {
                         Method method = component.getClass().getMethod("getConfigDataObject"); //NOI18N
                         dObj = (DataObject) method.invoke(component);
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
                 }
                 
@@ -1029,18 +1114,27 @@ public class J2eeProjectHelper {
         return EjbJar.getEjbJar(getProjectDirectory());
     }
     
+    private Car getClientModule() {
+        return Car.getCar(getProjectDirectory());
+    }
+    
     private WebApp getWebApp() {
         //System.out.println(getProvider().getJ2eeModule().getDeploymentDescriptor(
         //        J2eeModule.WEB_XML).dumpBeanNode());
-        return (WebApp)getProvider().getJ2eeModule().getDeploymentDescriptor(
-            J2eeModule.WEB_XML);
+        return (WebApp)getJ2eeModule().getDeploymentDescriptor(
+                J2eeModule.WEB_XML);
+    }
+    
+    private AppClient getAppClient() {
+        return (AppClient)getJ2eeModule().getDeploymentDescriptor(
+                J2eeModule.CLIENT_XML);
     }
     
     private org.netbeans.modules.j2ee.dd.api.ejb.EjbJar getEjbJar() {
         //System.out.println(getProvider().getJ2eeModule().getDeploymentDescriptor(
         //        J2eeModule.EJBJAR_XML).dumpBeanNode());
         return (org.netbeans.modules.j2ee.dd.api.ejb.EjbJar)
-        getProvider().getJ2eeModule().getDeploymentDescriptor(
+        getJ2eeModule().getDeploymentDescriptor(
                 J2eeModule.EJBJAR_XML);
     }
     
@@ -1050,17 +1144,21 @@ public class J2eeProjectHelper {
                 //System.out.println(getProvider().getJ2eeModule().getDeploymentDescriptor(
                 //        J2eeModule.WEBSERVICES_XML).dumpBeanNode());
                 return (org.netbeans.modules.j2ee.dd.api.webservices.Webservices)
-                getProvider().getJ2eeModule().getDeploymentDescriptor(
+                getJ2eeModule().getDeploymentDescriptor(
                         J2eeModule.WEBSERVICES_XML);
             case EJB:
                 //System.out.println("dumping the bean node for webservices xml file ");
                 //getProvider().getJ2eeModule().getDeploymentDescriptor(
                 //        J2eeModule.EJBSERVICES_XML).dumpXml();
                 return (org.netbeans.modules.j2ee.dd.api.webservices.Webservices)
-                getProvider().getJ2eeModule().getDeploymentDescriptor(
+                getJ2eeModule().getDeploymentDescriptor(
                         J2eeModule.EJBSERVICES_XML);
         }
         return null;
+    }
+    
+    private J2eeModule getJ2eeModule() {
+        return getProvider().getJ2eeModule();
     }
 }
 

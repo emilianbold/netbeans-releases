@@ -65,7 +65,7 @@ class SecurityMechanismImpl implements SecurityMechanism {
                 Method method = clazz.getMethod(AM_GET_URI_METHOD);
                 uri = (String) method.invoke(proxied);
             } catch (Exception ex) {
-                
+                ex.printStackTrace();
             }
         }
         return uri;
@@ -77,7 +77,7 @@ class SecurityMechanismImpl implements SecurityMechanism {
                 Method method = clazz.getMethod(AM_GET_NAME_METHOD);
                 name = (String) method.invoke(proxied);
             } catch (Exception ex) {
-                
+                ex.printStackTrace();
             }
         }
         
@@ -90,7 +90,7 @@ class SecurityMechanismImpl implements SecurityMechanism {
                 Method method = clazz.getMethod(AM_IS_TA_REGISTRATION_REQUIRED_METHOD);
                 isTARegistrationRequired = (Boolean) method.invoke(proxied);
             } catch (Exception ex) {
-                
+                isTARegistrationRequired = Boolean.FALSE;
             }
         }
         return isTARegistrationRequired;
@@ -102,7 +102,7 @@ class SecurityMechanismImpl implements SecurityMechanism {
                 Method method = clazz.getMethod(AM_IS_TA_LOOKUP_REQUIRED_METHOD);
                 isTALookupRequired = (Boolean) method.invoke(proxied);
             } catch (Exception ex) {
-                
+                isTALookupRequired = Boolean.FALSE;
             }
         }
         return isTALookupRequired;
@@ -127,5 +127,9 @@ class SecurityMechanismImpl implements SecurityMechanism {
         }
         
         return false;
+    }
+    
+    public int hashCode() {
+        return getURI().hashCode();
     }
 }

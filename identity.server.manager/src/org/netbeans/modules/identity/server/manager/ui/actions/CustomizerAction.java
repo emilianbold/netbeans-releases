@@ -54,7 +54,7 @@ public class CustomizerAction extends NodeAction {
                 panel, 
                 instance.getDisplayName(),
                 false,
-                panel.getComponents(),
+                panel.getEditableComponents(),
                 getHelpCtx()) {
             public String validate() {
                 return panel.checkValues();

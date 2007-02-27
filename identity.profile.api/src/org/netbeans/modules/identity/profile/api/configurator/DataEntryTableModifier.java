@@ -35,15 +35,13 @@ import javax.swing.event.TableModelListener;
  */
 class DataEntryTableModifier extends Modifier {
     
-    private JTable table;
     private DataEntryTableModel model;
     
     /** Creates a new instance of TableModifier */
     public DataEntryTableModifier(final Enum configurable, final JTable table,
             final Configurator configurator) {
         super(configurable, table, configurator);
-        
-        this.table = table;
+ 
         this.model = (DataEntryTableModel) table.getModel();
      
         setValue(configurator.getValue(configurable));

@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -37,7 +37,7 @@ import org.openide.ErrorManager;
  * @author Vidhya Narayanan
  */
 public class RuntimeBridge {
-    private static String amStatusCheckURL = 
+    private static String amStatusCheckURL =
             "/amserver/isAlive.jsp"; //NOI18N
     
     private RuntimeBridge() {
@@ -47,7 +47,7 @@ public class RuntimeBridge {
         if (provider != null) {
             if (provider.getInstanceProperties() != null) {
                 return provider.getInstanceProperties().getProperty(
-                    InstanceProperties.URL_ATTR).contains("Sun:AppServer"); //NOI18N
+                        InstanceProperties.URL_ATTR).contains("Sun:AppServer"); //NOI18N
             }
         }
         return false;
@@ -66,12 +66,7 @@ public class RuntimeBridge {
             URL amurl = null;
             try {
                 amurl = new URL(protocol+"://"+host+":"+port+amStatusCheckURL); //NOI18N
-            } catch (MalformedURLException mexcp) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new Exception(mexcp.getMessage()));
-            }
-            
-            try {
+                
                 HttpURLConnection conn = (HttpURLConnection)amurl.openConnection();
                 if (conn != null) {
                     int resCode = conn.getResponseCode();
@@ -79,11 +74,16 @@ public class RuntimeBridge {
                         status = true;
                     conn.disconnect();
                 }
+            } catch (MalformedURLException mexcp) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                        new Exception(mexcp.getMessage()));
             }  catch (IOException io) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new Exception(io.getMessage()));
-            } 
+                        new Exception(io.getMessage()));
+            }
         }
+        
         return status;
     }
+    
 }

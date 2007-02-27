@@ -29,7 +29,8 @@ import org.openide.util.NbBundle;
  *
  * @author  ptliu
  */
-public class UserNamePasswordEditorPanel extends javax.swing.JPanel {
+public class UserNamePasswordEditorPanel extends javax.swing.JPanel 
+    implements EditDialogDescriptor.Panel {
     
     private boolean add;
     private String[] userNames;
@@ -40,7 +41,8 @@ public class UserNamePasswordEditorPanel extends javax.swing.JPanel {
         initComponents();
         
         this.add = add;
-        this.userNames = userNames;
+        this.userNames = new String[userNames.length];
+        System.arraycopy(userNames, 0, this.userNames, 0, userNames.length);
         
         setUserName(null);
         setPassword(null);
@@ -63,7 +65,7 @@ public class UserNamePasswordEditorPanel extends javax.swing.JPanel {
         passwordTF.setText(password);
     }
     
-    public JComponent[] getComponents() {
+    public JComponent[] getEditableComponents() {
         return new JComponent[] {userNameTF, passwordTF};
     }
     

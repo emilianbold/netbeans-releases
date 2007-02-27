@@ -36,7 +36,8 @@ import org.openide.util.NbBundle;
  *
  * @author  ptliu
  */
-public class ServerConfigEditorPanel extends javax.swing.JPanel {
+public class ServerConfigEditorPanel extends javax.swing.JPanel
+    implements EditDialogDescriptor.Panel {
     private final List listeners = new ArrayList();
     
     private ServerInstance instance;
@@ -51,7 +52,7 @@ public class ServerConfigEditorPanel extends javax.swing.JPanel {
         init();
     }
     
-    public JComponent[] getComponents() {
+    public JComponent[] getEditableComponents() {
         return new JTextField[] {instanceNameTF, hostTF,
         portTF, contextRootTF, usernameTF, passwordTF
         };

@@ -52,6 +52,17 @@ introduced by support for multiple source roots. -jglick
         <project>
             <xsl:attribute name="default">-am-deploy</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
+            
+            <target name="-pre-init-am">
+                <subant>
+                    <xsl:attribute name="target">-am-classpath-setup</xsl:attribute>
+                    <xsl:attribute name="antfile">nbproject/am-deploy.xml</xsl:attribute>
+                    <xsl:attribute name="buildpath">${basedir}</xsl:attribute>
+                </subant>
+                <property file="nbproject/private/private.properties_am"/>
+                <delete file="nbproject/private/private.properties_am"/>
+            </target>
+            
             <target name="-run-deploy-am">
                 <xsl:attribute name="depends">-am-deploy</xsl:attribute>
             </target>
@@ -62,14 +73,19 @@ introduced by support for multiple source roots. -jglick
                 ======================
             </xsl:comment>
 
-            <target name="-am-init" depends="init, -am-task-init">
+            <target name="-am-init">
                 <xsl:comment> Initialize properties here. </xsl:comment>
                 <echo message="am-init:"/>
-                <fail unless="user.properties.file">Must set user properties file</fail>
-                <fail unless="deploy.ant.properties.file">Must set ant deploy properties</fail>
                 <property file="nbproject/private/private.properties"/>
+                <condition property="user.properties.file" value="${{netbeans.user}}/build.properties">
+                    <not>
+                        <isset property="user.properties.file"/>
+                    </not>
+                </condition>
                 <property file="${{user.properties.file}}"/>
                 <property file="${{deploy.ant.properties.file}}"/>
+                <fail unless="user.properties.file">Must set user properties file</fail>
+                <fail unless="deploy.ant.properties.file">Must set ant deploy properties</fail>
                 <property file="nbproject/project.properties"/>
                 <fail unless="sjsas.root">Must set Sun app server root</fail>
                 <property name="am.config.file" value="${{sjsas.root}}/addons/amserver/AMConfig.properties"/>
@@ -80,12 +96,21 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="-am-task-init" unless="netbeans.home">
+                <xsl:attribute name="depends">-am-init</xsl:attribute>
                 <echo message="am-task-init:"/>
                 <taskdef>
                     <xsl:attribute name="name">amdeploy</xsl:attribute>
                     <xsl:attribute name="classname">org.netbeans.modules.identity.ant.AMDeploy</xsl:attribute>
                     <classpath>
                         <xsl:attribute name="path">${libs.IdentityAntTasks.classpath};${libs.jaxb20.classpath}</xsl:attribute>
+                    </classpath>
+                </taskdef>
+                
+                <taskdef>
+                    <xsl:attribute name="name">amclasspathsetup</xsl:attribute>
+                    <xsl:attribute name="classname">org.netbeans.modules.identity.ant.AMClassPathSetup</xsl:attribute>
+                    <classpath>
+                        <xsl:attribute name="path">${libs.IdentityAntTasks.classpath}</xsl:attribute>
                     </classpath>
                 </taskdef>
             </target>
@@ -96,14 +121,24 @@ introduced by support for multiple source roots. -jglick
                 ======================
             </xsl:comment>
 
-            <target name="-am-deploy">
-                <xsl:attribute name="depends">-am-init</xsl:attribute>
+            <target name="-am-deploy" if="libs.IdentityAntTasks.classpath">
+                <xsl:attribute name="depends">-am-task-init</xsl:attribute>
                 <xsl:attribute name="description">Deploy to Access Manager.</xsl:attribute>
                 <echo message="am-deploy:"/>          
                 <amdeploy>
                     <xsl:attribute name="amconfigfile">${am.config.file}</xsl:attribute>
                     <xsl:attribute name="amconfigxmldir">${am.config.xml.dir}</xsl:attribute>
                 </amdeploy>
+            </target>
+            
+            <target name="-am-classpath-setup" if="libs.IdentityAntTasks.classpath">
+                <xsl:attribute name="depends">-am-task-init</xsl:attribute>
+                <xsl:attribute name="description">Set up Access Manager classpath</xsl:attribute>
+                <echo message="am-classpath-setup:"/>          
+                <amclasspathsetup>
+                    <xsl:attribute name="propertiesfile">${basedir}/nbproject/private/private.properties</xsl:attribute>
+                    <xsl:attribute name="asroot">${sjsas.root}</xsl:attribute>
+                </amclasspathsetup>
             </target>
         </project>
     </xsl:template>

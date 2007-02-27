@@ -136,8 +136,7 @@ class AMConfigManager {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(JAXB_CONTEXT);
             Marshaller marshaller = jaxbContext.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT ,
-                    new Boolean(true));
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             
             return marshaller;
         } catch (JAXBException ex) {

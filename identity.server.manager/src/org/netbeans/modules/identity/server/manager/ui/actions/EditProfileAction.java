@@ -60,7 +60,7 @@ public class EditProfileAction extends NodeAction {
                 NbBundle.getMessage(EditProfileAction.class, "TTL_Profile",
                 secMech.getName()),
                 false,
-                panel.getComponents(),
+                panel.getEditableComponents(),
                 getHelpCtx()) {
             public String validate() {
                 return panel.checkValues();
