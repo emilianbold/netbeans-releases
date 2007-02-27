@@ -30,8 +30,8 @@ import org.netbeans.installer.infra.build.ant.utils.AntUtils;
 public class LoadLocales extends Task {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private String basename = null;
-    private String localesList = null;
+    private String basename;
+    private String localesList;
     
     // setters //////////////////////////////////////////////////////////////////////
     public void setBasename(final String basename) {

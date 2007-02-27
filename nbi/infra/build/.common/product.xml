@@ -84,7 +84,7 @@
             classpath="${custom.tasks.cls}"/>
         <taskdef 
             name="product-descriptor" 
-            classname="org.netbeans.installer.infra.build.ant.XmlProduct" 
+            classname="org.netbeans.installer.infra.build.ant.ProductDescriptor" 
             classpath="${custom.tasks.cls}"/>
         <taskdef
             name="release-product"
@@ -108,12 +108,12 @@
         <absolutize property="engine.work.dir"/>
         <absolutize property="engine.dist.dir"/>
         
-        <absolutize property="engine.jar.file"/>
+        <absolutize property="engine.dist.file"/>
         
         <!-- define the javac.classpath for the netbeans project -->
         <property 
             name="nb.custom.parameter" 
-            value="-Djavac.classpath=${engine.jar.file}"/>
+            value="-Djavac.classpath=${engine.dist.file}"/>
     </target>
     
     <!-- =======================================================================
@@ -162,9 +162,9 @@
             <arg value="-Dskip.build.custom.tasks=true"/>
             <arg value="-Dcustom.tasks.cls=${custom.tasks.cls}"/>
             
-            <arg value="-Dengine.dist.file.name=${engine.dist.file}"/>
+            <arg value="-Dengine.dist.file.name=${engine.dist.file.name}"/>
             
-            <arg line="-propertyfile ${environment.properties}"/>
+            <arg value="-Denvironment.properties=${environment.properties}"/>
         </exec>
     </target>
     
@@ -182,6 +182,20 @@
     <!-- =======================================================================
       Build
     ======================================================================== -->
+    
+    <target name="-pre-build">
+        <!-- substitute the params in product's source tree -->
+        <for-each from="1" to="${product.params.length}" property="i">
+            <set property="current.token" 
+                 source="product.params.${i}.token"/>
+            <set property="current.value" 
+                 source="product.params.${i}.value"/>
+            
+            <replace dir="${cvs.dir}" 
+                     token="${current.token}" 
+                     value="${current.value}"/>
+        </for-each>
+    </target>
     
     <!--
       Builds the product package.
@@ -209,31 +223,43 @@
       This target is not intended to be called directly.
     -->
     <target name="-build" depends="-build-engine,.build">
-        <!-- substitute the params in product's source tree (normally that would
-             consist only of the icon and the localizing bundle -->
-        <for-each from="1" to="${product.params.length}" property="i">
-            <set property="current.token" 
-                 source="product.params.${i}.token"/>
-            <set property="current.value" 
-                 source="product.params.${i}.value"/>
-            
-            <replace dir="${cvs.dir}" 
-                     token="${current.token}" 
-                     value="${current.value}"/>
-        </for-each>
-        
         <!-- init the required disk space -->
         <property name="product.disk.space" 
                   value="${product.disk.space.modificator}"/>
         
-        <!-- fetch the configuration logic jars -->
-        <mkdir dir="${product.logic.dir}"/>
-        <for-each from="1" to="${product.logic.length}" property="i">
+        <!-- some necessary mkdirs -->
+        <mkdir dir="${packaged.data.dir}"/>
+        <mkdir dir="${downloads.cache.dir}"/>
+        <mkdir dir="${package.dir}/${product.logic.path}"/>
+        <mkdir dir="${package.dir}/${product.data.path}"/>
+        
+        <!-- fetch the configuration logic jars; the first jar is handled 
+             separately, if the the ${build.nbproject} has been set to true - 
+             we don't need to fetch it, as we ca just copy -->
+        <if property="build.nbproject" value="true">
+            <property 
+                name="i" 
+                value="1"/>
+            <set 
+                property="current.file" 
+                value="${package.dir}/${product.logic.path}/${product.logic.file}"/>
+            
+            <copy 
+                file="${nbproject.dist.dir}/${nbproject.dist.file.name}"
+                tofile="${current.file}"/>
+            
+            <property 
+                name="start.index" 
+                value="2"/>
+        </if>
+        <property name="start.index" value="1"/>
+        
+        <for-each from="${start.index}" to="${product.logic.length}" property="i">
             <!-- set the properties relevant to the current file -->
             <set property="current.uri" 
                  source="product.logic.${i}.uri"/>
             <set property="current.file" 
-                 value="${product.logic.dir}/${product.logic.file}"/>
+                 value="${package.dir}/${product.logic.path}/${product.logic.file}"/>
             
             <get src="${current.uri}" dest="${current.file}"/>
             
@@ -248,11 +274,10 @@
             <sizeof file="${current.file}" property="product.logic.${i}.size"/>
             <md5 file="${current.file}" property="product.logic.${i}.md5"/>
             <set property="product.logic.${i}.uri"
-                 value="resource:${product.logic.dir}/${product.logic.file}"/>
+                 value="resource:${product.logic.path}/${product.logic.file}"/>
         </for-each>
         
         <!-- fetch and repackage installation data zips -->
-        <mkdir dir="${product.data.dir}"/>
         <for-each from="1" to="${product.data.length}" property="i">
             <!-- define the path to the current working file and the temporary
                  directory which should be used for repackaging -->
@@ -261,10 +286,13 @@
                 source="product.data.${i}.uri"/>
             <set 
                 property="current.file" 
-                value="${product.data.dir}/${product.data.file}"/>
+                value="${package.dir}/${product.data.path}/${product.data.file}"/>
+            <set 
+                property="current.download" 
+                value="${product.downloaded.data.file}"/>
             <set 
                 property="current.temp.dir" 
-                value="${product.data.dir}/tmpdir"/>
+                value="${package.dir}/${product.data.path}/tmpdir"/>
             
             <set 
                 property="current.packaged.data.file" 
@@ -308,9 +336,11 @@
             
             <!-- if the data needs to be packaged -->
             <if property="do.package.data" value="true">
-                <get 
-                    src="${current.uri}" 
-                    dest="${current.file}"/>
+                <get src="${current.uri}" 
+                     dest="${current.download}"/>
+                
+                <copy file="${current.download}"
+                      tofile="${current.file}"/>
                 
                 <!-- extract the zip file to a temporary directory -->
                 <mkdir 
@@ -318,6 +348,13 @@
                 <unzip 
                     src="${current.file}" 
                     dest="${current.temp.dir}"/>
+                
+                <!-- call the pre-package hook, to allow derivative scripts to 
+                     perform any required operations on the data if they 
+                     like -->
+                <antcall target="-pre-package">
+                    <param name="data.directory" value="${current.temp.dir}"/>
+                </antcall>
                 
                 <!-- measure its size and add it to the required disk space -->
                 <sizeof 
@@ -386,43 +423,39 @@
                 property="product.data.${i}.md5"/>
             <set 
                 property="product.data.${i}.uri"
-                value="resource:${product.data.dir}/${product.data.file}"/>
+                value="resource:${product.data.path}/${product.data.file}"/>
         </for-each>
         
         <!-- fetch the icon -->
         <copy 
             file="${product.icon}" 
-            tofile="${product.icon.file}"/>
+            tofile="${package.dir}/${product.icon.path}"/>
         <sizeof 
-            file="${product.icon.file}" 
+            file="${package.dir}/${product.icon.path}" 
             property="product.icon.size"/>
         <md5 
-            file="${product.icon.file}" 
+            file="${package.dir}/${product.icon.path}" 
             property="product.icon.md5"/>
         <set 
             property="product.icon.uri"
-            value="resource:${product.icon.file}"/>
+            value="resource:${product.icon.path}"/>
         
         <!-- load product's localizing bundle and generate descriptor -->
         <load-locales 
             basename="${product.bundle}" 
             list="product.locales.list"/>
         <product-descriptor 
-            file="${product.descriptor.file}"/>
+            file="${package.dir}/${package.descriptor.path}"/>
         
         <!-- create the distributive jar file -->
-        <jar destfile="${work.dir}/${product.dist.file.name}" 
+        <jar basedir="${package.dir}"
+             destfile="${work.dir}/${product.dist.file.name}" 
              compress="true">
             <manifest>
                 <attribute 
                     name="Product-Descriptor" 
-                    value="${product.descriptor.file}"/>
+                    value="${package.descriptor.path}"/>
             </manifest>
-            <fileset dir="${work.dir}">
-                <include name="${product.path}"/>
-                <include name="${product.path}/**"/>
-            </fileset>
-            <fileset file="${product.descriptor.file}"/>
         </jar>
         
         <copy 
@@ -452,8 +485,7 @@
         <exec executable="${ant.executable}" 
               dir="${engine.dir}" 
               failonerror="true"
-              failifexecutionfails="true"
-              errorproperty="error.code">
+              failifexecutionfails="true">
             <arg value="checkout,build"/>
             
             <arg value="-Dwork.dir=${engine.work.dir}"/>
@@ -464,11 +496,26 @@
             <arg value="-Dskip.build.custom.tasks=true"/>
             <arg value="-Dcustom.tasks.cls=${custom.tasks.cls}"/>
             
-            <arg value="-Dengine.dist.file.name=${engine.dist.file}"/>
+            <arg value="-Dengine.dist.file.name=${engine.dist.file.name}"/>
             
-            <arg line="-propertyfile ${environment.properties}"/>
+            <arg value="-Denvironment.properties=${environment.properties}"/>
         </exec>
     </target>
+    
+    <!--
+      An empty hook. 
+      
+      It allows derivative scripts to perform arbitrary manipulations on the 
+      data prior to it getting packaged. E.g. the netbeans ide build script 
+      might want to remove the 'netbeans' directory and move its contents up one
+      level.
+      
+      A special property - 'data.directory' will be set pointing to the 
+      unzipped data.
+      
+      This target is not intended to be called directly.
+    -->
+    <target name="-pre-package"/>
     
     <!-- =======================================================================
       Release

@@ -421,6 +421,14 @@
              package="${cvs.module}/${cvs.path}" 
              dest="${work.dir}"
              failonerror="true"/>
+        <cvs cvsroot="${cvs.root}"
+             command="checkout"
+             package="${translatedfiles.module}/${translatedfiles.path}"
+             dest="${work.dir}"
+             failonerror="false"/>
+        <copy todir="${cvs.dir}" failonerror="false">
+            <fileset dir="${translatedfiles.dir}"/>
+        </copy>
     </target>
     
     <!--
@@ -440,6 +448,15 @@
              tag="${cvs.branch}" 
              dest="${work.dir}"
              failonerror="true"/>
+        <cvs cvsroot="${cvs.root}"
+             command="checkout"
+             package="${translatedfiles.module}/${translatedfiles.path}"
+             tag="${cvs.branch}" 
+             dest="${work.dir}"
+             failonerror="false"/>
+        <copy todir="${cvs.dir}" failonerror="false">
+            <fileset dir="${translatedfiles.dir}"/>
+        </copy>
     </target>
     
     <!--

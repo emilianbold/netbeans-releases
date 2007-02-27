@@ -662,7 +662,7 @@ public class Installer implements FinishHandler {
             jos.putNextEntry(new JarEntry(EngineResources.DATA_DIRECTORY + StringUtils.FORWARD_SLASH));
             
             jos.putNextEntry(new JarEntry(EngineResources.DATA_DIRECTORY + StringUtils.FORWARD_SLASH +
-                    "bundled-registry.xml"));
+                    "registry.xml"));
             
             XMLUtils.saveXMLDocument(
                     Registry.getInstance().getEmptyRegistryDocument(),

@@ -299,7 +299,7 @@ public class CreateBundleAction extends WizardAction {
             
             // serialize the registry: get the document and save it to the jar file
             output.putNextEntry(new JarEntry(
-                    EngineResources.DATA_DIRECTORY + "/bundled-registry.xml"));
+                    EngineResources.DATA_DIRECTORY + "/registry.xml"));
             XMLUtils.saveXMLDocument(
                     registry.getRegistryDocument(filter, false, true, true), output);
             

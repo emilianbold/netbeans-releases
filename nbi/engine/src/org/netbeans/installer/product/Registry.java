@@ -1368,7 +1368,7 @@ public class Registry {
     
     public static final String DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX +
-            "data/bundled-registry.xml";
+            "data/registry.xml";
     
     public static final String BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY =
             "nbi.product.bundled.registry.uri";

@@ -84,7 +84,7 @@
             classpath="${custom.tasks.cls}"/>
         <taskdef 
             name="group-descriptor" 
-            classname="org.netbeans.installer.infra.build.ant.XmlGroup" 
+            classname="org.netbeans.installer.infra.build.ant.GroupDescriptor" 
             classpath="${custom.tasks.cls}"/>
         <taskdef
             name="release-group"
@@ -111,7 +111,7 @@
     <target name="-clean" depends=".clean">
         <!-- remove the group's distributive file from the distributives 
              directory -->
-        <delete file="${dist.dir}/${group.jar.file}"/>
+        <delete file="${dist.dir}/${group.dist.file.name}"/>
     </target>
     
     <!-- =======================================================================
@@ -171,10 +171,10 @@
         <!-- copy the group's icon to the soon-to-be package directory 
              structure and calculate some metadata for it -->
         <copy file="${group.icon}" 
-              tofile="${work.dir}/${group.icon.file}"/>
-        <sizeof file="${work.dir}/${group.icon.file}" 
+              tofile="${package.dir}/${group.icon.path}"/>
+        <sizeof file="${package.dir}/${group.icon.path}" 
                 property="group.icon.size"/>
-        <md5 file="${work.dir}/${group.icon.file}" 
+        <md5 file="${package.dir}/${group.icon.path}" 
              property="group.icon.md5"/>
         
         <!-- load the group's localizing bundle and store the locales list to 
@@ -182,35 +182,28 @@
         <load-locales basename="${group.bundle}" list="group.locales.list"/>
         
         <!-- generate the group package descriptor -->
-        <group-descriptor file="${work.dir}/${group.descriptor.file}"/>
-        
-        <!-- create the package manifest file -->
-        <echo file="${work.dir}/${group.jar.manifest.file}" 
-              message="Manifest-Version: 1.0${nl}" 
-              append="false"/>
-        <echo file="${work.dir}/${group.jar.manifest.file}" 
-              message="Package-Descriptor: ${group.descriptor.file}${nl}" 
-              append="true"/>
+        <group-descriptor file="${package.dir}/${package.descriptor.path}"/>
         
         <!-- create the package jar file and sign it -->
-        <jar destfile="${work.dir}/${group.jar.file}" 
-             compress="true" 
-             manifest="${work.dir}/${group.jar.manifest.file}">
-            <fileset dir="${work.dir}">
-                <include name="${group.dir}"/>
-                <include name="${group.dir}/**"/>
-                <include name="${group.descriptor.file}"/>
-            </fileset>
+        <jar basedir="${package.dir}"
+             destfile="${work.dir}/${group.dist.file.name}" 
+             compress="true">
+            <manifest>
+                <attribute 
+                    name="Product-Descriptor" 
+                    value="${package.descriptor.path}"/>
+            </manifest>
         </jar>
-        <signjar jar="${work.dir}/${group.jar.file}" 
+        
+        <!-- copy the distributive to the distributives directory -->
+        <move file="${work.dir}/${group.dist.file.name}" 
+              todir="${dist.dir}"/>
+        
+        <signjar jar="${dist.dir}/${group.dist.file.name}" 
                  keystore="${jarsigner.keystore}"
                  storepass="${jarsigner.storepass}"
                  alias="${jarsigner.alias}"
                  maxmemory="${jarsigner.xmx}"/>
-        
-        <!-- move the distributive to the distributives directory -->
-        <move file="${work.dir}/${group.jar.file}" 
-              todir="${dist.dir}"/>
     </target>
     
     <!-- =======================================================================
@@ -236,7 +229,7 @@
                       registry="${release.registry}"
                       uid="${release.parent.uid}"
                       version="${release.parent.version}"
-                      archive="${dist.dir}/${group.jar.file}"/>
+                      archive="${dist.dir}/${group.dist.file.name}"/>
     </target>
     
     <!-- =======================================================================
