@@ -461,7 +461,7 @@ public class Installer extends ModuleInstall {
             params.add(getOS());
             params.add(getVM());
             params.add(getVersion());
-            reportPanel.saveUserName();
+            if (reportPanel != null) reportPanel.saveUserName();
             params.add(settings.getUserName());
             if (reportPanel != null){
                 params.add(reportPanel.getSummary());
