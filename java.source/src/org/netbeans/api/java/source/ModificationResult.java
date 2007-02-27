@@ -37,10 +37,12 @@ import org.openide.text.PositionRef;
  */
 public final class ModificationResult {
 
+    private JavaSource js;
     Map<FileObject, List<Difference>> diffs = new HashMap<FileObject, List<Difference>>();
     
     /** Creates a new instance of ModificationResult */
-    ModificationResult() {
+    ModificationResult(final JavaSource js) {
+        this.js = js;
     }
 
     // API of the class --------------------------------------------------------
@@ -58,8 +60,14 @@ public final class ModificationResult {
      * to commit the changes to the source files
      */
     public void commit() throws IOException {
-        for (Map.Entry<FileObject, List<Difference>> me : diffs.entrySet()) {
-            commit(me.getKey(), me.getValue(), null);
+        try {
+            for (Map.Entry<FileObject, List<Difference>> me : diffs.entrySet()) {
+                commit(me.getKey(), me.getValue(), null);
+            }
+        } finally {
+            if (this.js != null) {
+                this.js.revalidate();
+            }
         }
     }
     

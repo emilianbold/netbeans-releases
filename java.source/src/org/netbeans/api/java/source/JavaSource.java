@@ -524,7 +524,7 @@ public final class JavaSource {
         
         assert !holdsDocumentWriteLock(files) : "JavaSource.runModificationTask called under Document write lock.";    //NOI18N
         
-        ModificationResult result = new ModificationResult();
+        ModificationResult result = new ModificationResult(this);
         if (this.files.size()<=1) {
             long start = System.currentTimeMillis();
             CompilationInfo currentInfo = null;
@@ -622,6 +622,9 @@ public final class JavaSource {
                 currentRequest.cancelCompleted(request);
             }
         }        
+        synchronized (this) {
+            this.flags|=INVALID;
+        }
         return result;
     }
        
