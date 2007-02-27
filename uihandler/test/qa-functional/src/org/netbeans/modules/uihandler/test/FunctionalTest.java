@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.uihandler.test;
 
+import java.awt.Component;
 import org.netbeans.modules.uihandler.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -26,7 +27,10 @@ import java.util.logging.Logger;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
@@ -68,9 +72,13 @@ public class FunctionalTest extends NbTestCase {
         reportOper.userName().setText(userName);
         reportOper.submitData();// verify button
         reportOper.viewData().pushNoBlock();
-        ViewDataDialogOperator viewOper = new ViewDataDialogOperator();
+        ViewDataDialogOperator viewOper = new ViewDataDialogOperator("Report Problem");
         viewOper.submitData();//verify button
-        String text =viewOper.paneRawContent();
+        assertEquals("USER CONFIGURATION SHOULD BE SHOWN",
+                viewOper.listView().getModel().getElementAt(0).toString(), "User Configuration");
+        assertEquals("TESTING LOG SHOULD BE SHOWN",
+                viewOper.listView().getModel().getElementAt(3).toString(), "TESTING LOG");
+        String text = viewOper.paneRawContent();
         assertTrue(text.contains("<message>TESTING LOG</message>"));
         assertTrue(text.contains("<message>java.lang.NullPointerException: TESTING EXCEPTION</message>"));
         assertTrue(text.contains("<method>textExceptionThrown</method>"));
@@ -85,14 +93,76 @@ public class FunctionalTest extends NbTestCase {
         reportOper.cancel();
     }
     
+    public void testUIGestures(){
+        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
+        ContainerOperator toolbar = mainWindow.getToolbar("UIGestures");
+        assertNotNull("UIGESTURES Toolbar", toolbar);
+        assertEquals("ToolbarBump, NrButton", 2, toolbar.getComponentCount());
+        Component label = toolbar.getComponent(1);
+        assertNotNull("UIGESTURES BUTTON", label);
+        new ComponentOperator(label).clickMouse();
+        WelcomeDialogOperator welcome = new WelcomeDialogOperator();
+        welcome.submitData();//verify existance
+        welcome.viewData().pushNoBlock();
+        ViewDataDialogOperator viewData = new ViewDataDialogOperator("UI Gestures Collector");
+        viewData.submitData();//verify existance
+        assertEquals("USER CONFIGURATION SHOULD BE SHOWN",
+                viewData.listView().getModel().getElementAt(0).toString(), "User Configuration");
+        String text = viewData.paneRawContent();
+        assertTrue(text.contains("<key>UI_ENABLED_MODULES</key>"));
+        assertTrue(text.contains("<key>UI_DISABLED_MODULES</key>"));
+        assertTrue(text.contains("<key>UI_USER_CONFIGURATION</key>"));
+        
+        viewData.hideData().pushNoBlock();
+        welcome = new WelcomeDialogOperator();
+        welcome.cancel();
+    }
+    
+    private class WelcomeDialogOperator extends NbDialogOperator{
+        private JButtonOperator viewData;
+        private JButtonOperator submitData;
+        
+        public WelcomeDialogOperator() {
+            super("UI Gestures Collector");
+        }
+        
+        public JButtonOperator viewData(){
+            if (viewData == null){
+                viewData = new JButtonOperator(this, "View Data");
+            }
+            assertNotNull("THERE SHOULD BE A VIEW DATA BUTTON", viewData);
+            return viewData;
+        }
+        
+        public JButtonOperator submitData(){
+            if (submitData == null){
+                submitData = new JButtonOperator(this, "Submit Data");
+            }
+            assertNotNull("THERE SHOULD BE A SUBMIT DATA BUTTON", submitData);
+            return submitData;
+        }
+        
+        
+    }
+    
     
     private class ViewDataDialogOperator extends NbDialogOperator{
         private JButtonOperator backtoReport;
         private JButtonOperator submitData;
         private JTabbedPaneOperator pane;
+        private JButtonOperator hideData;
+        private JListOperator listView;
         
-        public ViewDataDialogOperator() {
-            super("Report Problem");
+        public ViewDataDialogOperator(String title) {
+            super(title);
+        }
+        
+        public JButtonOperator hideData(){
+            if (hideData == null){
+                hideData = new JButtonOperator(this, "Hide Data");
+            }
+            assertNotNull("THERE SHOULD BE A HIDE DATA BUTTON", hideData);
+            return hideData;
         }
         
         public JButtonOperator submitData(){
@@ -111,22 +181,31 @@ public class FunctionalTest extends NbTestCase {
             return backtoReport;
         }
         
-        private String paneRawContent(){
+        public String paneRawContent(){
+            listView();
+            pane().selectPage("Raw");
+            JTextAreaOperator textArea;
+            textArea = new JTextAreaOperator(pane(), 0);
+            assertNotNull("THERE SHOULD BE A TEXT AREA", textArea);
+            return textArea.getText();
+        }
+        
+        public JListOperator listView(){
+            pane().selectPage("Structured");
+            if (listView == null){
+                listView = new JListOperator(this, 0);
+            }
+            assertNotNull("THERE SHOULD BE A LIST VIEW ON VIEW DATA WINDOW", listView);
+            return listView;
+        }
+        
+        private JTabbedPaneOperator pane(){
             if (pane == null) {
                 pane = new JTabbedPaneOperator(this, 0);
             }
             assertNotNull("THERE SHOULD BE A PANE", pane);
             assertEquals("THERE SHOULD BE 2 TABS", 2, pane.getTabCount());
-            pane.selectPage("Structured");
-            JListOperator listView = new JListOperator(this, 0);
-            assertEquals("TESTING LOG SHOULD BE SHOWN",
-                    listView.getModel().getElementAt(3).toString(), "TESTING LOG");
-            assertEquals("USER CONFIGURATION SHOULD BE SHOWN", 
-                    listView.getModel().getElementAt(0).toString(), "User Configuration");
-            pane.selectPage("Raw");
-            JTextAreaOperator textArea = new JTextAreaOperator(pane, 0);
-            assertNotNull("THERE SHOULD BE A TEXT AREA", textArea);
-            return textArea.getText();
+            return pane;
         }
     }
     
@@ -166,7 +245,7 @@ public class FunctionalTest extends NbTestCase {
         
         public JButtonOperator submitData(){
             if (submitData == null){
-                submitData = new JButtonOperator(this, "View Data");
+                submitData = new JButtonOperator(this, "Submit Data");
             }
             assertNotNull("THERE SHOULD BE A SUBMIT DATA BUTTON", submitData);
             return submitData;
@@ -203,6 +282,7 @@ public class FunctionalTest extends NbTestCase {
     public static Test suite() {
         TestSuite suite = new NbTestSuite();
         suite.addTest(new FunctionalTest("textExceptionThrown"));
+        suite.addTest(new FunctionalTest("testUIGestures"));
         return suite;
     }
     
