@@ -176,7 +176,9 @@ public class Utilities {
     public static boolean checkAnnotation(EditorOperator operator, int line, String annotationType) {
         Object[] annotations = operator.getAnnotations(line);
         boolean found = false;
+        JemmyProperties.getProperties().getOutput().print(">>>>> Annotations on line: "+line+"\n");
         for (int i=0;i < annotations.length;i++) {
+            JemmyProperties.getProperties().getOutput().print("    "+operator.getAnnotationType(annotations[i])+"\n");
             if (annotationType.equals(operator.getAnnotationType(annotations[i]))) found=true;
         }
         return found;
@@ -225,7 +227,7 @@ public class Utilities {
         new TopComponentOperator(viewName);
         new EventTool().waitNoEvent(500);
     }
-        
+    
     public static String removeTags(String in) {
         String out = "";
         in = in.trim();

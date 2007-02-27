@@ -115,7 +115,7 @@ public class Breakpoints extends JellyTestCase {
      *
      */
     public void setUp() {
-        System.out.print("########  " + getName() + "  ####### ");
+        System.out.println("########  " + getName() + "  ####### ");
     }
     
     /**
@@ -273,9 +273,9 @@ public class Breakpoints extends JellyTestCase {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
             //toggle breakpoints
-            Utilities.toggleBreakpoint(eo, 122);
+            Utilities.toggleBreakpoint(eo, 123);
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread Thread-0 stopped at MemoryView.java:122", 0);
+            Utilities.waitDebuggerConsole("Thread Thread-0 stopped at MemoryView.java:123", 0);
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
@@ -294,9 +294,9 @@ public class Breakpoints extends JellyTestCase {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
             //toggle breakpoints
-            Utilities.toggleBreakpoint(eo, 153);
+            Utilities.toggleBreakpoint(eo, 154);
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:153", 0);
+            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:154", 0);
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
@@ -328,9 +328,9 @@ public class Breakpoints extends JellyTestCase {
             Utilities.startDebugger();
             int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:63", 0);
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:63", lines);
+            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:63", lines+1);
             new ContinueAction().perform();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:64", lines);
+            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:64", lines+1);
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
@@ -434,11 +434,11 @@ public class Breakpoints extends JellyTestCase {
      */
     public void testMethodBreakpointFunctionalityInSecondClass() throws Throwable {
         try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(153);
+            NbDialogOperator dialog = Utilities.newBreakpoint(154);
             new JComboBoxOperator(dialog, 0).selectItem("Method");
             dialog.ok();
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:153", 0);
+            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:154", 0);
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
@@ -461,17 +461,17 @@ public class Breakpoints extends JellyTestCase {
             Utilities.startDebugger();
             int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:39", 0);
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:113", lines);
+            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:114", lines+1);
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:50", lines);
+            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:50", lines+1);
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:51", lines);
+            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:51", lines+1);
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:120", lines);
+            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:121", lines+1);
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:79", lines);
+            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:79", lines+1);
             new ContinueAction().perform();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", lines);
+            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", lines+1);
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
@@ -576,7 +576,7 @@ public class Breakpoints extends JellyTestCase {
      */
     public void testClassBreakpointPrefilledInSecondClass() throws Throwable {
         try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(153);
+            NbDialogOperator dialog = Utilities.newBreakpoint(154);
             if (!new JComboBoxOperator(dialog, 0).getSelectedItem().equals("Class"))
                 new JComboBoxOperator(dialog, 0).selectItem("Class");
             assertEquals("Package Name was not set to correct value.", "examples.advanced", new JTextFieldOperator(dialog, 0).getText());
@@ -627,7 +627,7 @@ public class Breakpoints extends JellyTestCase {
             Utilities.startDebugger();
             int lines = Utilities.waitDebuggerConsole("Thread main stopped.", 0);
             new ContinueAction().perform();
-            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines);
+            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines+1);
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
@@ -644,13 +644,13 @@ public class Breakpoints extends JellyTestCase {
      */
     public void testClassBreakpointFunctionalityOnSecondClass() throws Throwable {
         try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(153);
+            NbDialogOperator dialog = Utilities.newBreakpoint(154);
             new JComboBoxOperator(dialog, 0).selectItem("Class");
             dialog.ok();
             Utilities.startDebugger();
             int lines = Utilities.waitDebuggerConsole("Thread main stopped.", 0);
             new ContinueAction().perform();
-            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines);
+            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines+1);
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
@@ -679,12 +679,12 @@ public class Breakpoints extends JellyTestCase {
             new EventTool().waitNoEvent(500);
             new ContinueAction().perform();
             //Class breakpoint hit for class examples.advanced.MemoryView
-            lines = Utilities.waitDebuggerConsole("Thread main stopped.", lines);
+            lines = Utilities.waitDebuggerConsole("Thread main stopped.", lines+1);
             new ContinueAction().perform();
             //Class breakpoint hit for class examples.advanced.MemoryView$1
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:120.", lines);
+            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:121.", lines+1);
             new ContinueAction().perform();
-            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines);
+            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines+1);
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
@@ -821,9 +821,9 @@ public class Breakpoints extends JellyTestCase {
             Utilities.startDebugger();
             int lines = Utilities.waitDebuggerConsole("Thread breakpoint hit by thread ", 0);
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread breakpoint hit by thread ", lines);
+            lines = Utilities.waitDebuggerConsole("Thread breakpoint hit by thread ", lines+1);
             new ContinueAction().perform();
-            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines);
+            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines+1);
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed

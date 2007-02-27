@@ -98,7 +98,7 @@ public class Views extends JellyTestCase {
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.callStackViewTitle));
             assertEquals("MemoryView.updateStatus:92", Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()));
             assertEquals("MemoryView.updateConsumption:80", Utilities.removeTags(jTableOperator.getValueAt(1,0).toString()));
-            assertEquals("MemoryView.main:116", Utilities.removeTags(jTableOperator.getValueAt(2,0).toString()));
+            assertEquals("MemoryView.main:117", Utilities.removeTags(jTableOperator.getValueAt(2,0).toString()));
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed

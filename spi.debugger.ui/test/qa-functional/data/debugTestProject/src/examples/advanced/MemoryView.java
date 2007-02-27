@@ -88,7 +88,7 @@ public class MemoryView extends Helper {
     }
 
     /** Updates the status of memory consumption */
-    private void updateStatus () {
+    private int updateStatus () {
         Runtime r = Runtime.getRuntime ();
         long free = r.freeMemory ();
         long total = r.totalMemory ();
@@ -106,6 +106,7 @@ public class MemoryView extends Helper {
                                             new Long (free),
                                             new Integer (taken)
                                         })));
+        return taken;
     }
 
 

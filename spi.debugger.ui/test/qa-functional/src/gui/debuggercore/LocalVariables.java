@@ -24,6 +24,7 @@ package gui.debuggercore;
 import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.RunToCursorAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -72,6 +73,7 @@ public class LocalVariables extends JellyTestCase {
         suite.addTest(new LocalVariables("testLocalVariablesInheritedNode"));
         suite.addTest(new LocalVariables("testLocalVariablesExtended"));
         suite.addTest(new LocalVariables("testLocalVariablesValues"));
+        suite.addTest(new LocalVariables("testLocalVariablesSubExpressions"));
         return suite;
     }
     
@@ -90,8 +92,8 @@ public class LocalVariables extends JellyTestCase {
             Utilities.getDebugToolbar().waitComponentVisible(true);
             consoleLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:52.", 0);
             new EventTool().waitNoEvent(1000);
+            expandNodes();
         }
-        expandNodes();
     }
     
     /**
@@ -99,7 +101,7 @@ public class LocalVariables extends JellyTestCase {
      */
     public void tearDown() {
         JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        if (getName().equals("testLocalVariablesValues")) {//last
+        if (getName().equals("testLocalVariablesSubExpressions")) {//last
             Utilities.endAllSessions();
         }
     }
@@ -211,7 +213,7 @@ public class LocalVariables extends JellyTestCase {
             EditorOperator eo = new EditorOperator("MemoryView.java");
             Utilities.setCaret(eo, 76);
             new RunToCursorAction().perform();
-            consoleLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:76.", consoleLineNumber);
+            consoleLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:76.", consoleLineNumber+1);
             new EventTool().waitNoEvent(1000);
             
             Utilities.showDebuggerView(Utilities.localVarsViewTitle);
@@ -294,7 +296,7 @@ public class LocalVariables extends JellyTestCase {
             new EventTool().waitNoEvent(500);
             new RunToCursorAction().performMenu();
             new EventTool().waitNoEvent(500);
-            consoleLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104.", consoleLineNumber);
+            consoleLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104.", consoleLineNumber+1);
             
             Utilities.showDebuggerView(Utilities.localVarsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
@@ -313,6 +315,52 @@ public class LocalVariables extends JellyTestCase {
             } catch (java.lang.reflect.InvocationTargetException e2) {
                 assertTrue(e2.getMessage(), false);
             }
+        } catch (Throwable th) {
+            try {
+                // capture screen before cleanup in finally clause is completed
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+            } catch (Exception e1) {
+                // ignore it
+            }
+            throw th;
+        }
+    }
+    
+    /**
+     *
+     */
+    public void testLocalVariablesSubExpressions() throws Throwable {
+        try {
+            /*Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.setCaret(eo, 104);
+            new EventTool().waitNoEvent(500);
+            new RunToCursorAction().performMenu();
+            new EventTool().waitNoEvent(500);
+            consoleLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104.", consoleLineNumber+1);
+            */
+            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            
+            Utilities.showDebuggerView(Utilities.localVarsViewTitle);
+            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+                TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
+                String name = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.models.Bundle", "lastOperationsNode");
+                org.netbeans.jellytools.nodes.Node nd = new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), name);
+                nd.expand();
+                String[] children = nd.getChildren();
+                assertEquals(5, children.length);
+                assertEquals("Wrong sub-expression node", "return <init>()", children[0]);
+                assertEquals("Wrong sub-expression node", "return <init>()", children[1]);
+                assertEquals("Wrong sub-expression node", "return <init>()", children[2]);
+                assertEquals("Wrong sub-expression node", "return format()", children[3]);
+                assertEquals("Wrong sub-expression node", "return println()", children[4]);
+
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
