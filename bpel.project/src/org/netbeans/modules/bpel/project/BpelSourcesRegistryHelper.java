@@ -48,6 +48,9 @@ public class BpelSourcesRegistryHelper {
     }
     
     public synchronized void register() {
+        if (mySourcesRegistry == null) {
+            return;
+        }
         Sources sources = ProjectUtils.getSources(myProject);
         SourceGroup sgs [] = sources.getSourceGroups(IcanproProject.SOURCES_TYPE_ICANPRO);
         for (int i = 0; i < sgs.length; i++) {
@@ -69,6 +72,9 @@ public class BpelSourcesRegistryHelper {
     }
     
     public synchronized void unregister() {
+        if (mySourcesRegistry == null) {
+            return;
+        }
         for (String path : myRegisteredSources) {
             mySourcesRegistry.removeSourceRoot(path);
         }
