@@ -71,8 +71,7 @@ public class ComponentSerializationSupport {
             setAttribute (document, typeNode, XMLComponentDescriptor.SUPER_TYPEID_ATTR, typeDescriptor.getSuperType ().toString ());
         setAttribute (document, typeNode, XMLComponentDescriptor.THIS_TYPEID_ATTR, typeDescriptor.getThisType ().toString ());
         setAttribute (document, typeNode, XMLComponentDescriptor.CAN_DERIVE_ATTR, Boolean.toString (typeDescriptor.isCanDerive ()));
-        setAttribute (document, typeNode, XMLComponentDescriptor.CAN_DERIVE_ATTR, Boolean.toString (typeDescriptor.isCanDerive ()));
-        setAttribute (document, typeNode, XMLComponentDescriptor.CAN_INSTANTIATE_ATTR, Boolean.toString (typeDescriptor.isCanDerive ()));
+        setAttribute (document, typeNode, XMLComponentDescriptor.CAN_INSTANTIATE_ATTR, Boolean.toString (typeDescriptor.isCanInstantiate ()));
         rootNode.appendChild (typeNode);
 
         Element paletteNode = document.createElement (XMLComponentDescriptor.PALETTE_NODE);
