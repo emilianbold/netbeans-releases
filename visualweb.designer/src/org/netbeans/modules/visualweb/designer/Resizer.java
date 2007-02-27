@@ -66,7 +66,8 @@ public class Resizer extends Interaction implements KeyListener {
     protected transient Cursor previousCursor = null;
     private WebForm webform;
     private boolean snapDisabled = false;
-    private MarkupDesignBean component;
+//    private MarkupDesignBean component;
+    private Element componentRootElement;
     private int origW = 0;
     private int origH = 0;
     private int origX = 0;
@@ -90,10 +91,11 @@ public class Resizer extends Interaction implements KeyListener {
      * @param preserveAspect Whether to preserve aspect on two-dimension resizing
      *   (e.g. dragging the corners - NE, NW, SE, SW)
      */
-    public Resizer(WebForm webform, MarkupDesignBean component, CssBox box, int direction,
+    public Resizer(WebForm webform, Element componentRootElement, /*MarkupDesignBean component,*/ CssBox box, int direction,
         Shape alloc, boolean preserveAspect) {
         this.webform = webform;
-        this.component = component;
+//        this.component = component;
+        this.componentRootElement = componentRootElement;
         this.direction = direction;
         this.box = box;
 
@@ -115,12 +117,13 @@ public class Resizer extends Interaction implements KeyListener {
         // an image button
 //        RaveElement element = (RaveElement)component.getElement();
 //        RaveElement rendered = element.getRendered();
-        Element element = component.getElement();
-        Element rendered = MarkupService.getRenderedElementForElement(element);
-
-        if (rendered != null) {
-            element = rendered;
-        }
+//        Element element = component.getElement();
+//        Element rendered = MarkupService.getRenderedElementForElement(element);
+//
+//        if (rendered != null) {
+//            element = rendered;
+//        }
+        Element element = componentRootElement;
 
         String tagName = element.getTagName();
 
@@ -191,7 +194,8 @@ public class Resizer extends Interaction implements KeyListener {
 
                 resize(r, x, y);
 
-                if ((component != null) && (r.width > 0) && (r.height > 0)) {
+//                if ((component != null) && (r.width > 0) && (r.height > 0)) {
+                if ((componentRootElement != null) && (r.width > 0) && (r.height > 0)) {
                     boolean resizeHorizontally = origW != r.width;
                     boolean resizeVertically = origH != r.height;
 
@@ -218,7 +222,6 @@ public class Resizer extends Interaction implements KeyListener {
 
 //                    gm.resize(pane, component, r.x, origX != r.x, r.y, origY != r.y, r.width,
 //                        resizeHorizontally, r.height, resizeVertically, box, snapDisabled);
-                    Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component);
                     gm.resize(pane, componentRootElement, r.x, origX != r.x, r.y, origY != r.y, r.width,
                         resizeHorizontally, r.height, resizeVertically, box, snapDisabled);
                 }
@@ -234,7 +237,8 @@ public class Resizer extends Interaction implements KeyListener {
                 e.consume();
             }
         } finally {
-            component = null;
+//            component = null;
+            componentRootElement = null;
             previousCursor = null;
             currentSize = null;
         }
