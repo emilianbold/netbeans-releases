@@ -25,6 +25,7 @@ import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
+import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.insync.faces.Entities;
 import org.netbeans.modules.visualweb.insync.live.DesignBeanNode;
@@ -33,6 +34,7 @@ import org.openide.ErrorManager;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.events.Event;
 
 /**
@@ -188,5 +190,35 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
 
     public boolean setPrerendered(DocumentFragment fragment) {
         return htmlDomProviderImpl.setPrerenderedBean(markupDesignBean, fragment);
+    }
+
+    public void setStyleParent(DocumentFragment fragment) {
+        NodeList children = fragment.getChildNodes();
+
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+//                RaveElement e = (RaveElement)child;
+                Element e = (Element)child;
+//                CssLookup.getCssEngine(e).clearComputedStyles(e, null);
+//                CssProvider.getEngineService().clearComputedStylesForElement(e);
+                Element beanElement = markupDesignBean.getElement();
+                // XXX #6489063 Inherit the style from the original element.
+                // Maybe there should be just the size of the font inherited.
+                CssProvider.getEngineService().setStyleParentForElement(e, beanElement);
+                
+//                e = e.getRendered();
+                e = MarkupService.getRenderedElementForElement(e);
+                Element beanRenderedElement = MarkupService.getRenderedElementForElement(beanElement);
+                if (e != null && beanRenderedElement != null) {
+//                    CssLookup.getCssEngine(e).clearComputedStyles(e, null);
+//                    CssProvider.getEngineService().clearComputedStylesForElement(e);
+                    // XXX #6489063 Inherit the style from the original element.
+                    // Maybe there should be just the size of the font inherited.
+                    CssProvider.getEngineService().setStyleParentForElement(e, beanRenderedElement);
+                }
+            }
+        }
     }
 }
