@@ -20,27 +20,47 @@ package org.netbeans.modules.web.project;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import javax.xml.namespace.QName;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.modules.schema2beans.BaseBean;
+import org.netbeans.modules.serviceapi.InterfaceDescription;
+import org.netbeans.modules.serviceapi.ServiceInterface;
+import org.netbeans.modules.serviceapi.ServiceLink;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportImpl;
 import org.netbeans.modules.serviceapi.ServiceComponent;
 import org.netbeans.modules.serviceapi.ServiceModule;
+import org.netbeans.modules.serviceapi.wsdl.WSDL11Description;
+import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Nam Nguyen
  */
 public class ServiceModuleImpl extends ServiceModule {
-    private WebServicesSupportImpl wsSupport;
     private WebProject project;
     
     /** Creates a new instance of ServiceModuleImpl */
     public ServiceModuleImpl(WebProject webProject) {
         this.project = webProject;
-        this.wsSupport = project.getLookup().lookup(WebServicesSupportImpl.class);
+    }
+
+    private WebServicesSupportImpl getWebServiceSupport() {
+        return project.getLookup().lookup(WebServicesSupportImpl.class);
     }
     
     /**
@@ -56,16 +76,184 @@ public class ServiceModuleImpl extends ServiceModule {
     public Collection<ServiceComponent> getServiceComponents() {
         ArrayList<ServiceComponent> ret = new ArrayList<ServiceComponent>();
         Webservices wss = getWebservices();
+        
         if (wss != null) {
-            for (WebserviceDescription wsd : wss.getWebserviceDescription()) {
-                String path = wsd.getWsdlFile();
-                //the webservices.xml gives u the servlet-link or the ejb-link 
-                //then you have to go to the EE DD and resolve the links
+            WebserviceDescription[] descriptions = wss.getWebserviceDescription();
+            if (descriptions == null) return ret;
+            for (WebserviceDescription wsd : descriptions) {
+                PortComponent[] portComponents = wsd.getPortComponent();
+                if (portComponents == null) continue;
+                String wsdlPath = wsd.getWsdlFile();
+                assert wsdlPath != null;
+                for (PortComponent pc : portComponents) {
+                    ret.add(new ProviderComponent(wsdlPath, pc));
+                }
+            }
+            
+            for (Servlet s : getWebApp().getServlet()) {
+                s.getServletClass();
             }
         }
         return ret;
     }
 
+    public static QName convertSchema2BeansQName(org.netbeans.modules.schema2beans.QName q) {
+        return new QName(q.getNamespaceURI(), q.getLocalPart());
+    }
+
+    private class ProviderComponent extends Component {
+        private PortComponent portComponent;
+        private String wsdlFilePath;
+        
+        private ProviderComponent(String wsdlFilePath, PortComponent pc) {
+            this.wsdlFilePath = wsdlFilePath;
+            portComponent = pc;
+        }
+
+        public String getWsdlFilePath() {
+            return wsdlFilePath;
+        }
+
+        public List<ServiceInterface> getServiceProviders() {
+            QName portQName =  convertSchema2BeansQName(portComponent.getWsdlPort());
+            Description def = new Description(getWsdlFilePath(), portQName);
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getImplClassName() {
+            String link = portComponent.getServiceImplBean().getServletLink();
+            return getWebServiceSupport().getImplementationBean(link);
+        }
+
+    }    
+    
+    private abstract class Component extends ServiceComponent {
+        
+        public List<ServiceInterface> getServiceProviders() {
+            return Collections.emptyList();
+        }
+
+        public List<ServiceInterface> getServiceConsumers() {
+            return Collections.emptyList();
+        }
+
+        public Collection<ServiceLink> getServiceLinks() {
+            return Collections.emptyList();
+        }
+
+        public abstract String getImplClassName();
+
+        public Node getNode() {
+            FileObject fo = getSourcesClassPath().findResource(getImplClassName());
+            assert fo != null;
+            try {
+                DataObject dobj =  DataObject.find(fo);
+                assert dobj != null;
+                return dobj.getNodeDelegate();
+            } catch(DataObjectNotFoundException ex) {
+                assert false : "DataObjectNotFoundException: " + ex.getMessage();
+                return null;
+            }
+        }
+
+        public ServiceInterface createServiceInterface(InterfaceDescription description,
+                                                       boolean provider) {
+            if (provider) return null;
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public ServiceInterface createServiceInterface(ServiceInterface other) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeServiceInterface(ServiceInterface serviceInterface) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+        @Override
+        public int hashCode() {
+            return getImplClassName().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (! (obj instanceof Component)) return false;
+            Component other = (Component) obj;
+            return this.getImplClassName().equals(other.getImplClassName());
+        }
+    }
+
+    private class Interface implements ServiceInterface {
+        Component component;
+        Description description;
+        boolean isProvider = true;
+
+        Interface(Component parent, Description description, boolean isProvider) {
+            this(parent, description);
+            this.isProvider = isProvider;
+        }
+    
+        private Interface(Component parent, Description description) {
+            this.component = parent;
+            this.description = description;
+        }
+
+        public Description getInterfaceDescription() {
+            return description;
+        }
+
+        public ServiceComponent getServiceComponent() {
+            return component;
+        }
+
+        public boolean canConnect(ServiceInterface other) {
+            if (! (other.getInterfaceDescription() instanceof WSDL11Description)) {
+                return false;
+            }
+            WSDL11Description otherDescription = (WSDL11Description) other.getInterfaceDescription();
+            return other.isProvider() != isProvider() && 
+                   otherDescription.getInterfaceQName().equals(getQName());
+        }
+
+        public boolean isProvider() {
+            return isProvider;
+        }
+
+        public Node getNode() {
+            //TODO how do I get portType node without WSLD UI
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public QName getQName() {
+            return getInterfaceDescription().getInterfaceQName();
+        }
+    }
+    
+    private class Description extends WSDL11Description {
+        private String pathToWSDL;
+        private QName portTypeQName;
+
+        Description(String pathToWSDL, QName portTypeQName) {
+            this.pathToWSDL = pathToWSDL;
+            this.portTypeQName = portTypeQName;
+        }
+
+        @Override
+        public QName getInterfaceQName() {
+            return portTypeQName;
+        }
+
+        public String getDisplayName() {
+            return portTypeQName.getLocalPart();
+        }
+
+        public PortType getInterface() {
+            //TODO
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
+    
     private Webservices getWebservices() {
         BaseBean bb = project.getWebModule().getDeploymentDescriptor(J2eeModule.WEBSERVICES_XML);
         if (bb instanceof Webservices) {
@@ -74,17 +262,28 @@ public class ServiceModuleImpl extends ServiceModule {
         return null;
     }
     
+    private WebApp getWebApp() {
+        BaseBean bb = project.getWebModule().getDeploymentDescriptor(J2eeModule.WEB_XML);
+        if (bb instanceof WebApp) {
+            return (WebApp) bb;
+        }
+        assert false : "Failed to get WebApp";
+        return null;
+    }
+
     /**
      * Add service component.
      */
     
     public void addServiceComponent(ServiceComponent component) {
+            throw new UnsupportedOperationException("Not supported yet.");
     }
     
     /**
      * Remove service component.
      */
     public void removeServiceComponent(ServiceComponent component) {
+            throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /**
@@ -92,5 +291,18 @@ public class ServiceModuleImpl extends ServiceModule {
      */
     public Project getProject() {
 	return project;
+    }
+
+    private ClassPath sourcesClassPath;
+    private ClassPath getSourcesClassPath() {
+        synchronized (this) {
+            if (sourcesClassPath == null) {
+                ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
+                sourcesClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
+                    cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                });
+            }
+            return sourcesClassPath;
+        }
     }
 }
