@@ -1465,7 +1465,8 @@ public class InteractionManager {
 
             while (bx != null) {
 //                if (bx.getDesignBean() != null) {
-                if (CssBox.getMarkupDesignBeanForCssBox(bx) != null) {
+//                if (CssBox.getMarkupDesignBeanForCssBox(bx) != null) {
+                if (CssBox.getElementForComponentRootCssBox(bx) != null) {
                     break;
                 }
 
@@ -1489,43 +1490,48 @@ public class InteractionManager {
             if (ancestor != null) {
                 // "ancestor" is the currently selected component
                 // we're over: "cycle" outwards
-                DesignBean parent = null;
+//                DesignBean parent = null;
+                Element parentComponentRootElement = null;
 
-                MarkupDesignBean ancestorMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(ancestor);
+//                MarkupDesignBean ancestorMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(ancestor);
 //                if (webform.getActions().canSelectParent(ancestor.getDesignBean())) {
 //                if (SelectionManager.canSelectParent(ancestor.getDesignBean())) {
 //                    parent = ancestor.getDesignBean().getBeanParent();
 //                if (SelectionManager.canSelectParent(ancestorMarkupDesignBean)) {
                 Element ancestorComponentRootElement = CssBox.getElementForComponentRootCssBox(ancestor);
                 if (SelectionManager.canSelectParent(ancestorComponentRootElement)) {
-                    parent = ancestorMarkupDesignBean.getBeanParent();
+//                    parent = ancestorMarkupDesignBean.getBeanParent();
+                    parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(ancestorComponentRootElement);
                 }
 
                 boolean found = false;
 
-                while (parent != null) {
+//                while (parent != null) {
+                while (parentComponentRootElement != null) {
                     // Find the visual (non-form, non-root) parent
                     // and select it
 //                    Element element = FacesSupport.getElement(parent);
 //                    Element element = Util.getElement(parent);
-                    Element element = WebForm.getHtmlDomProviderService().getElement(parent);
-
-                    if (element != null) {
+                    
+//                    Element element = WebForm.getHtmlDomProviderService().getElement(parent);
+//                    if (element != null) {
 //                        CssBox box = mapper.findBox(element);
-                        CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), element);
+//                        CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), element);
+                    CssBox box = ModelViewMapper.findBox(webform.getPane().getPageBox(), parentComponentRootElement);
 
                         if (box != null) {
 //                            sm.selectComponents(new DesignBean[] { parent }, true);
-                            if (parent instanceof MarkupDesignBean) {
-                                sm.selectComponents(new Element[] { WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent) }, true);
+//                            if (parent instanceof MarkupDesignBean) {
+                                sm.selectComponents(new Element[] { parentComponentRootElement }, true);
                                 found = true;
 
                                 break;
-                            }
+//                            }
                         }
-                    }
+//                    }
 
-                    parent = parent.getBeanParent();
+//                    parent = parent.getBeanParent();
+                    parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(parentComponentRootElement);
                 }
 
                 if (!found && (bx != ancestor)) {
