@@ -70,6 +70,7 @@ public abstract class ServiceComponent {
     /**
      * Returns the visualization of the service component.  The node should provide
      * navigation to the component editors and access to its content.
+     * @return visualization node for the service component.
      */
     public abstract Node getNode();
     

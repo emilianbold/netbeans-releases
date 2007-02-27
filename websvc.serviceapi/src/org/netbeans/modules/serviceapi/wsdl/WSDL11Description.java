@@ -18,15 +18,26 @@
  */
 package org.netbeans.modules.serviceapi.wsdl;
 
+import javax.xml.namespace.QName;
 import org.netbeans.modules.serviceapi.InterfaceDescription;
 import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 
 /**
  * A service endpoint description for WSDL 1.1.
  *
  * @author Nam Nguyen
  */
-public interface WSDL11Description extends InterfaceDescription {
-    
-    PortType getDescription();
+public abstract class WSDL11Description implements InterfaceDescription<PortType> {
+
+    public QName getInterfaceQName() {
+        return AbstractDocumentComponent.getQName(getInterface().getPeer());
+    }
+
+    public abstract PortType getInterface();
+
+    public Class<PortType> getType() {
+        return PortType.class;
+    }
+
 }
