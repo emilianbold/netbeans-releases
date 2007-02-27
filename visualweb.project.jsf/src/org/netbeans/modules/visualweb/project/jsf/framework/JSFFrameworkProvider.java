@@ -37,6 +37,7 @@ import java.math.BigInteger;
 import java.util.Set;
 import java.util.HashSet;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -194,6 +195,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             // Enter servlet into the deployment descriptor
             FileObject dd = webModule.getDeploymentDescriptor();
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
+            String j2eeLevel = webModule.getJ2eePlatformVersion();
             if (ddRoot != null){
                 try{
                                 // Set the context parameter
@@ -226,7 +228,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 // The UpLoad Filter
                     Filter filter = (Filter)ddRoot.createBean("Filter"); // NOI18N
                     filter.setFilterName("UploadFilter"); // NOI18N
-                    filter.setFilterClass("com.sun.rave.web.ui.util.UploadFilter"); // NOI18N
+                    if (J2eeModule.JAVA_EE_5.equals(j2eeLevel))
+                        filter.setFilterClass("com.sun.webui.jsf.util.UploadFilter"); // NOI18N
+                    else
+                        filter.setFilterClass("com.sun.rave.web.ui.util.UploadFilter"); // NOI18N
                     
                     contextParam = (InitParam)filter.createBean("InitParam"); // NOI18N
                     contextParam.setDescription("The maximum allowed upload size in bytes.  If this is set " +
@@ -277,7 +282,12 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
                     servlet = (Servlet)ddRoot.createBean("Servlet"); // NOI18N
                     servlet.setServletName("ThemeServlet"); // NOI18N
-                    servlet.setServletClass("com.sun.rave.web.ui.theme.ThemeServlet"); // NOI18N
+
+                    if (J2eeModule.JAVA_EE_5.equals(j2eeLevel))
+                        servlet.setServletClass("com.sun.webui.theme.ThemeServlet"); // NOI18N
+                    else
+                        servlet.setServletClass("com.sun.rave.web.ui.theme.ThemeServlet"); // NOI18N
+
                     ddRoot.addServlet(servlet);
                     
                                 // The Servlet Mappings
