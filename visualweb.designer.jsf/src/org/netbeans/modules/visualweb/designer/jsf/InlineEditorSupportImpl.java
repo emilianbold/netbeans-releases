@@ -108,4 +108,8 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
     public String expandHtmlEntities(String value, boolean warn) {
         return Entities.expandHtmlEntities(value, warn, markupDesignBean.getElement());
     }
+
+    public boolean isEscaped() {
+        return HtmlDomProviderServiceImpl.isEscapedDesignBean(markupDesignBean);
+    }
 }

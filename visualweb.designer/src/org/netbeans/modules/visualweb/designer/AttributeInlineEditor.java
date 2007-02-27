@@ -596,11 +596,12 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
     }
 
     public boolean isEscaped() {
-        return isEscaped(bean);
+//        return isEscaped(bean);
+        return inlineEditorSupport.isEscaped();
     }
 
     /** Determine if the given bean is escaped */
-    public static boolean isEscaped(DesignBean bean) {
+    private /*public*/ static boolean isEscaped(DesignBean bean) {
 //        // See if the bean looks like an output text that has escape
 //        // turned off. If so, it's multiline. All others are considered
 //        // single line.
