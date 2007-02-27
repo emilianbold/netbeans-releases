@@ -37,10 +37,8 @@ import javax.swing.ImageIcon;
 
 import org.w3c.dom.Element;
 
-import org.netbeans.modules.visualweb.xhtml.Jsp_Directive_Include;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import com.sun.rave.designtime.Constants;
-import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.extension.openide.awt.StatusDisplayer_RAVE;
 import com.sun.rave.designer.html.HtmlAttribute;
 import com.sun.rave.designer.html.HtmlTag;
