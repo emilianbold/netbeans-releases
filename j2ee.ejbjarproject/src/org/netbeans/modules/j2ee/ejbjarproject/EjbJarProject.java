@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -68,7 +68,6 @@ import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
-//import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -110,6 +109,8 @@ import org.w3c.dom.Text;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
+import org.netbeans.spi.project.support.LookupProviderSupport;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.NotifyDescriptor;
 
 /**
@@ -295,7 +296,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
-        return Lookups.fixed(new Object[] {
+        Lookup base = Lookups.fixed(new Object[] {
                 new Info(),
                 aux,
                 helper.createCacheDirectoryProvider(),
@@ -328,9 +329,13 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarEMGenStrategyResolver(),
                 new EjbJarJPASupport(this),
                 new EjbJarServerStatusProvider(this),
-                new EjbJarJPAModuleInfo(this)
+                new EjbJarJPAModuleInfo(this),
+                UILookupMergerSupport.createPrivilegedTemplatesMerger(),
+                UILookupMergerSupport.createRecommendedTemplatesMerger(),
+                LookupProviderSupport.createSourcesMerger()
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
+            return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Lookup"); //NOI18N
     }
     
     public void configurationXmlChanged(AntProjectEvent ev) {
