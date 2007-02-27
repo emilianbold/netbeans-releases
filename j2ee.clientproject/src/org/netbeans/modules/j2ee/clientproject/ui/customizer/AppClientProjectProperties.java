@@ -700,6 +700,20 @@ public class AppClientProjectProperties {
             }
         }
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newServInstID);
+        if (j2eePlatform == null) {
+            // probably missing server error
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "J2EE platform is null."); // NOI18N
+            
+            // update j2ee.server.type (throws NPE)
+            //projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
+            // update j2ee.server.instance
+            privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
+            
+            privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
+            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
+            privateProps.remove("wa.copy.client.jar.from"); // NOI18N
+            return;
+        }
         ((AppClientProject)project).registerJ2eePlatformListener(j2eePlatform);
         String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
         privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);

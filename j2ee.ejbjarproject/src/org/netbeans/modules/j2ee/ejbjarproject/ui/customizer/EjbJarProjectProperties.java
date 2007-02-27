@@ -62,7 +62,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectUtil;
-import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -563,6 +562,24 @@ public class EjbJarProjectProperties {
             }
         }
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newServInstID);
+        if (j2eePlatform == null) {
+            // probably missing server error
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "J2EE platform is null."); // NOI18N
+            
+            // update j2ee.server.type (throws NPE)
+            //projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
+            // update j2ee.server.instance
+            privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
+            
+            privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
+            privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH);
+            privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
+            privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH);
+            privateProps.remove(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH);
+            
+            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
+            return;
+        }
         ((EjbJarProject)project).registerJ2eePlatformListener(j2eePlatform);
         String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
         privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
