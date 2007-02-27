@@ -19,6 +19,7 @@
 
 package gui.action;
 
+import java.io.PrintStream;
 import org.netbeans.performance.test.guitracker.LoggingRepaintManager.RegionFilter;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
@@ -59,7 +60,6 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
     }
     
     public void initialize() {
-        MY_END_EVENT = ActionTracker.TRACK_COMPONENT_SHOW;
         // prepare editor/completion for measuring
         setCompletionForMeasuringOn();
         
@@ -72,6 +72,9 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
         
         // insert the initial text
         editorOperator.insert(ccText);
+        
+        // track component show (no paints from Code Completion)
+        MY_END_EVENT = ActionTracker.TRACK_COMPONENT_SHOW;
     }
     
     public void prepare() {
@@ -85,7 +88,8 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
     
     public ComponentOperator open(){
         // invoke the completion dialog
-        editorOperator.pushKey('.');
+        editorOperator.typeKey('.');
+        
         // wait for the completion window
         return new CompletionJListOperator();
     }
