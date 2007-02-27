@@ -104,6 +104,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="wrapCommitMessages">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/versioning/system/cvss/options/Bundle.properties" key="CvsOptionsPanel.wrapCommitMessages.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>

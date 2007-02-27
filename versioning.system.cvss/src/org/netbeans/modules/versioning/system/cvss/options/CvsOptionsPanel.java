@@ -85,6 +85,7 @@ class CvsOptionsPanel extends javax.swing.JPanel {
             }
         });
 
+        wrapCommitMessages.setBackground(new java.awt.Color(255, 255, 255));
         org.openide.awt.Mnemonics.setLocalizedText(wrapCommitMessages, org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.wrapCommitMessages.text")); // NOI18N
         wrapCommitMessages.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         wrapCommitMessages.setMargin(new java.awt.Insets(0, 0, 0, 0));

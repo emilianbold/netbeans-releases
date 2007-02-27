@@ -41,7 +41,7 @@ class CommitTableModel extends AbstractTableModel {
     /**
      * Defines labels for Versioning view table columns.
      */ 
-    private static final Map columnLabels = new HashMap(5);
+    private final Map<String, String[]> columnLabels = new HashMap<String, String[]>(5);
     {
         ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
         columnLabels.put(CommitSettings.COLUMN_NAME_NAME, new String [] {
@@ -144,7 +144,7 @@ class CommitTableModel extends AbstractTableModel {
     }
 
     private void createCommitOptions() {
-        boolean excludeNew = System.getProperty("netbeans.javacvs.excludeNewFiles") != null; // NOI18N
+        boolean excludeNew = CvsModuleConfig.getDefault().getPreferences().getBoolean(CvsModuleConfig.PROP_EXCLUDE_NEW_FILES, false);
         commitOptions = new CommitOptions[nodes.length];
         for (int i = 0; i < nodes.length; i++) {
             CvsFileNode node = nodes[i];
