@@ -93,6 +93,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/TypeParameterTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/CommentsTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/OperatorsTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/AnonymousClassTest.class"/>
                 
                 <!--
                 Makes many operation on field declaration.
