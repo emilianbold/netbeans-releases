@@ -163,4 +163,8 @@ class InlineEditorSupportImpl implements HtmlDomProvider.InlineEditorSupport {
     public void beanChanged() {
         htmlDomProviderImpl.beanChanged(markupDesignBean);
     }
+
+    public void requestChange() {
+        htmlDomProviderImpl.requestChange(markupDesignBean);
+    }
 }

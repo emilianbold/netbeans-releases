@@ -319,7 +319,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
                     n = findPropertyNode(fragment, xpath);
                     selectText = true;
 //                    webform.getDomSynchronizer().requestChange(bean);
-                    webform.requestChange(bean);
+//                    webform.requestChange(bean);
+                    inlineEditorSupport.requestChange();
                 } finally {
                     try {
 //                        Method m = property.getPropertyDescriptor().getWriteMethod();
@@ -467,7 +468,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
 
         if (changed) {
 //            webform.getDomSynchronizer().requestChange(bean);
-            webform.requestChange(bean);
+//            webform.requestChange(bean);
+            inlineEditorSupport.requestChange();
         }
 
         // TODO Set up key bindings such that Ctrl-B will toggle bold,
@@ -528,7 +530,8 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
             // Ensure that we re-render the component anyway
             // such that the rendered-references are correct again
 //            webform.getDomSynchronizer().requestChange(bean);
-            webform.requestChange(bean);
+//            webform.requestChange(bean);
+            inlineEditorSupport.requestChange();
 
             return;
         }
