@@ -522,19 +522,23 @@ public class InteractionManager {
 //
 //        return false;
         SelectionManager sm = webform.getSelection();
-        DesignBean component;
+//        DesignBean component;
+        Element componentRootElement;
         if (sm.isSelectionEmpty()) {
 //            webform.getModel().openDefaultHandler();
 //
 //            return false;
-            component = null;
+//            component = null;
+            componentRootElement = null;
         } else {
 //            component = getDefaultSelectionBean();
-            Element componentRootElement = getDefaultSelectionComponentRootElement();
-            component = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//            Element componentRootElement = getDefaultSelectionComponentRootElement();
+//            component = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+            componentRootElement = getDefaultSelectionComponentRootElement();
         }
 
-        return webform.editEventHandlerForDesignBean(component);
+//        return webform.editEventHandlerForDesignBean(component);
+        return webform.editEventHandlerForComponent(componentRootElement);
     }
     
 //    // XXX Copied from DesignerActions.

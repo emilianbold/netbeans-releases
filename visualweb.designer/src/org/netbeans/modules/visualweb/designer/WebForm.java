@@ -1755,8 +1755,11 @@ public class WebForm implements Designer {
     }
 
     // XXX
-    boolean editEventHandlerForDesignBean(DesignBean designBean) {
-        return htmlDomProvider.editEventHandlerForDesignBean(designBean);
+//    boolean editEventHandlerForDesignBean(DesignBean designBean) {
+//        return htmlDomProvider.editEventHandlerForDesignBean(designBean);
+//    }
+    boolean editEventHandlerForComponent(Element componentRootElement) {
+        return htmlDomProvider.editEventHandlerForComponent(componentRootElement);
     }
     
     // >>> Designer impl
