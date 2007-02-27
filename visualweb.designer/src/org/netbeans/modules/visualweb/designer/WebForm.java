@@ -1859,9 +1859,9 @@ public class WebForm implements Designer {
         return htmlDomProvider.moveComponent(componentRootElement, parentNode, before);
     }
 
-    boolean setPrerenderedBean(MarkupDesignBean markupDesignBean, DocumentFragment documentFragment) {
-        return htmlDomProvider.setPrerenderedBean(markupDesignBean, documentFragment);
-    }
+//    boolean setPrerenderedBean(MarkupDesignBean markupDesignBean, DocumentFragment documentFragment) {
+//        return htmlDomProvider.setPrerenderedBean(markupDesignBean, documentFragment);
+//    }
 
     MarkupDesignBean getMarkupDesignBeanEquivalentTo(MarkupDesignBean oldBean) {
         return htmlDomProvider.getMarkupDesignBeanEquivalentTo(oldBean);
