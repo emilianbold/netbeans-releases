@@ -241,8 +241,8 @@ public class ComputeImports {
         
         @Override
         public Void visitVariable(VariableTree tree, Map<String, Object> p) {
-            //should be useless for our purpose:
-            //scan(tree.getModifiers(), p);
+            scan(tree.getModifiers(), p);
+            
             if (tree.getType().getKind() == Kind.IDENTIFIER) {
                 p.put("request", null);
             }

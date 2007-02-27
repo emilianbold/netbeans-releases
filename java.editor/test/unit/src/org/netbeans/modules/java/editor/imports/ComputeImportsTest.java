@@ -149,6 +149,14 @@ public class ComputeImportsTest extends NbTestCase {
         doTest("TestUnfinishedMethod2", NO_MASKS, NO_MASKS);
     }
     
+    public void testAnnotation() throws Exception {
+        doTest("TestAnnotation", NO_MASKS, NO_MASKS);
+    }
+    
+    public void testAnnotation2() throws Exception {
+        doTest("TestAnnotation2", NO_MASKS, NO_MASKS);
+    }
+    
     private void prepareTest(String capitalizedName) throws Exception {
         FileObject workFO = IsOverriddenAnnotationCreatorTest.makeScratchDir(this);
         
