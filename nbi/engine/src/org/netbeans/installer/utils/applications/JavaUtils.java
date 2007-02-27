@@ -320,6 +320,7 @@ public class JavaUtils {
             Version version = null;
             String  vendor  = null;
             String  osName  = null;
+            String  osArch  = null;
             
             if (lines.length == TEST_JDK_OUTPUT_PARAMETERS) {
                 final String javaVersion = lines[0]; // java.version
@@ -327,6 +328,7 @@ public class JavaUtils {
                 
                 vendor = lines[2]; // java.vendor
                 osName = lines[3]; // os.name
+                osArch = lines[4]; // os.arch
                 
                 String versionString;
                 
