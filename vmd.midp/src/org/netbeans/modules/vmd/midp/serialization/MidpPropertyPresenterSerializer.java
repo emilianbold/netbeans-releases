@@ -22,6 +22,8 @@ package org.netbeans.modules.vmd.midp.serialization;
 
 import org.netbeans.modules.vmd.api.model.PresenterSerializer;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.w3c.dom.Element;
 import org.w3c.dom.Document;
 
@@ -46,13 +48,34 @@ public class MidpPropertyPresenterSerializer implements PresenterSerializer {
     public List<Element> serialize (Document document) {
         org.w3c.dom.Element element = document.createElement (MidpPropertyPresenterDeserializer.PROPERTY_NODE);
         XMLUtils.setAttribute (document, element, MidpPropertyPresenterDeserializer.DISPLAY_NAME_ATTR, displayName);
-        XMLUtils.setAttribute (document, element, MidpPropertyPresenterDeserializer.EDITOR_ATTR, editorID);
+        if (editorID != null)
+            XMLUtils.setAttribute (document, element, MidpPropertyPresenterDeserializer.EDITOR_ATTR, editorID);
         XMLUtils.setAttribute (document, element, MidpPropertyPresenterDeserializer.PROPERTY_NAME_ATTR, propertyName);
         return Arrays.asList (element);
     }
 
     private static String createEditorIDForPropertyDescriptor (PropertyDescriptor property) {
-        return null; // TODO
+        TypeID type = property.getType ();
+        if (MidpTypes.TYPEID_BOOLEAN.equals (type))
+            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+        if (MidpTypes.TYPEID_CHAR.equals (type))
+            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+        if (MidpTypes.TYPEID_BYTE.equals (type))
+            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+        if (MidpTypes.TYPEID_SHORT.equals (type))
+            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+        if (MidpTypes.TYPEID_INT.equals (type))
+            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+        if (MidpTypes.TYPEID_LONG.equals (type))
+            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+        if (MidpTypes.TYPEID_FLOAT.equals (type))
+            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+        if (MidpTypes.TYPEID_DOUBLE.equals (type))
+            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+        // TODO
+        if (MidpTypes.TYPEID_JAVA_LANG_STRING.equals (type))
+            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+        return MidpPropertyPresenterDeserializer.EDITOR_JAVA_CODE;
     }
 
 }

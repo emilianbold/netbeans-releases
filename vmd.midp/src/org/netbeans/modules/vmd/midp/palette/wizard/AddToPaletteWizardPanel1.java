@@ -78,15 +78,15 @@ public class AddToPaletteWizardPanel1 implements WizardDescriptor.Panel {
 
     public void readSettings(Object settings) {
         getComponent();
-        component.reload ((Project) ((WizardDescriptor) settings).getProperty ("project")); // NOI18N
+        component.reload ((Project) ((WizardDescriptor) settings).getProperty (AddToPaletteWizardAction.PROPERTY_PROJECT));
 
     }
     public void storeSettings(Object settings) {
         getComponent();
         Project project = component.getActiveProject ();
-        ((WizardDescriptor) settings).putProperty ("project", project); // NOI18N
-        Map<String, ComponentInstaller.Item> descriptors = ComponentInstaller.search (project);
-        ((WizardDescriptor) settings).putProperty ("descriptors", descriptors); // NOI18N
+        ((WizardDescriptor) settings).putProperty (AddToPaletteWizardAction.PROPERTY_PROJECT, project);
+        Map<String, ComponentInstaller.Item> items = ComponentInstaller.search (project);
+        ((WizardDescriptor) settings).putProperty (AddToPaletteWizardAction.PROPERTY_ITEMS, items);
     }
 
 }

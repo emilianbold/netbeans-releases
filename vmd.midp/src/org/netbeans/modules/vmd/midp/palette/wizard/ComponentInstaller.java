@@ -46,12 +46,22 @@ import java.util.*;
  */
 public final class ComponentInstaller {
 
-    public static void install (Map<String, Item> componentsToInstall) {
-        for (Item item : componentsToInstall.values ()) {
+    public static void install (Map<String,Item> allFoundComponents, List<Item> componentsToInstall) {
+        HashMap<String,Item> toInstall = new HashMap<String,Item> ();
+        for (Item item : componentsToInstall)
+            recursiveAdd (toInstall, allFoundComponents, item);
+        for (Item item : toInstall.values ())
             ComponentSerializationSupport.serialize (MidpDocumentSupport.PROJECT_TYPE_MIDP, item.getTypeDescriptor (), item.getPaletteDescriptor (), item.getProperties (), item.getPresenters ());
-        }
         ComponentSerializationSupport.refreshDescriptorRegistry (MidpDocumentSupport.PROJECT_TYPE_MIDP);
-        // TODO
+    }
+
+    private static void recursiveAdd (HashMap<String,Item> toInstall, Map<String,Item> allFoundComponents, Item item) {
+        if (item == null)
+            return;
+        if (toInstall.containsKey (item.getFQN ()))
+            return;
+        toInstall.put (item.getFQN (), item);
+        recursiveAdd (toInstall, allFoundComponents, allFoundComponents.get (item.getSuperFQN ()));
     }
 
     public static Map<String,Item> search (Project project) {
@@ -147,8 +157,8 @@ public final class ComponentInstaller {
         item = new Item (superFQN, fqn, isAbstract, isFinal);
 
         boolean hasConstructor = inspectElement (item, element);
-        if (! isAbstract  ||  ! hasConstructor)
-            return false;
+//        if (! isAbstract  &&  ! hasConstructor)
+//            return false;
 
         result.put (fqn, item);
         return true;
@@ -179,6 +189,8 @@ public final class ComponentInstaller {
             } else if (el.getKind () == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) el;
                 String name = method.getSimpleName ().toString ();
+                if (! name.startsWith ("set")  ||  name.length () < 4  ||  ! Character.isUpperCase (name.charAt (3)))
+                    continue;
                 ArrayList<String> properties = new ArrayList<String> ();
                 List<? extends VariableElement> parameters = method.getParameters ();
                 if (parameters.size () != 1)
@@ -229,15 +241,21 @@ public final class ComponentInstaller {
 
         private TypeDescriptor typeDescriptor;
         private PaletteDescriptor paletteDescriptor;
+        private String superFQN;
         private String fqn;
         private ArrayList<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor> ();
         private ArrayList<PresenterSerializer> presenters = new ArrayList<PresenterSerializer> ();
 
         public Item (String superFQN, String fqn, boolean isAbstract, boolean isFinal) {
+            this.superFQN = superFQN;
             this.fqn = fqn;
             TypeID typeID = new TypeID (TypeID.Kind.COMPONENT, fqn);
             typeDescriptor = new TypeDescriptor (new TypeID (TypeID.Kind.COMPONENT, superFQN), typeID, isAbstract, isFinal);
             paletteDescriptor = new PaletteDescriptor (MidpPaletteProvider.CATEGORY_CUSTOM, MidpTypes.getSimpleClassName (typeID), fqn, null, null);
+        }
+
+        public String getSuperFQN () {
+            return superFQN;
         }
 
         public String getFQN () {

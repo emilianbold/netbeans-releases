@@ -19,21 +19,47 @@
  */
 package org.netbeans.modules.vmd.midp.palette.wizard;
 
-import javax.swing.JPanel;
+import javax.swing.*;
+import java.util.*;
+import java.util.List;
+import java.awt.*;
 
 /**
  * @author David Kaspar
  */
 public final class AddToPaletteVisualPanel2 extends JPanel {
-    
+
     public AddToPaletteVisualPanel2() {
         initComponents();
+        list.setCellRenderer (new ItemRenderer ());
     }
-    
+
     public String getName() {
         return "Select Classes";
     }
-    
+
+    public void setItems (Collection<ComponentInstaller.Item> items) {
+        final ArrayList<ComponentInstaller.Item> lst = new ArrayList<ComponentInstaller.Item> (items);
+        Collections.sort (lst, new Comparator<ComponentInstaller.Item>() {
+            public int compare (ComponentInstaller.Item o1, ComponentInstaller.Item o2) {
+                return o1.getFQN ().compareTo (o2.getFQN ());
+            }
+        });
+        list.setModel (new AbstractListModel() {
+            public int getSize () { return lst.size (); }
+            public Object getElementAt (int i) { return lst.get (i); }
+        });
+        if (lst.size () > 0)
+            list.setSelectionInterval (0, lst.size () - 1);
+    }
+
+    public List<ComponentInstaller.Item> getSelectedItems () {
+        ArrayList<ComponentInstaller.Item> lst = new ArrayList<ComponentInstaller.Item> ();
+        for (Object o : list.getSelectedValues ())
+            lst.add ((ComponentInstaller.Item) o);
+        return lst;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -42,21 +68,88 @@ public final class AddToPaletteVisualPanel2 extends JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jLabel1 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        list = new javax.swing.JList();
+        bSelectAll = new javax.swing.JButton();
+        bDeselectAll = new javax.swing.JButton();
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Found classes:");
+
+        jScrollPane1.setViewportView(list);
+
+        org.openide.awt.Mnemonics.setLocalizedText(bSelectAll, "Select All");
+        bSelectAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bSelectAllActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(bDeselectAll, "Deselect All");
+        bDeselectAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bDeselectAllActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 400, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 202, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(bSelectAll)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(bDeselectAll)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 300, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(bDeselectAll)
+                    .add(bSelectAll))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+
+private void bDeselectAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bDeselectAllActionPerformed
+    list.setSelectedIndices(new int[0]);
+}//GEN-LAST:event_bDeselectAllActionPerformed
+
+private void bSelectAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bSelectAllActionPerformed
+    int size = list.getModel().getSize();
+    if (size > 0)
+        list.setSelectionInterval(0, size - 1);
+}//GEN-LAST:event_bSelectAllActionPerformed
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton bDeselectAll;
+    private javax.swing.JButton bSelectAll;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JList list;
     // End of variables declaration//GEN-END:variables
-    
+
+    private static class ItemRenderer extends DefaultListCellRenderer {
+
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            return super.getListCellRendererComponent (list, ((ComponentInstaller.Item) value).getFQN (), index, isSelected, cellHasFocus);
+        }
+
+    }
+
 }
 

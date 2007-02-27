@@ -20,12 +20,17 @@
 
 package org.netbeans.modules.vmd.midp.serialization;
 
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PresenterDeserializer;
+import org.netbeans.modules.vmd.api.model.Versionable;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.w3c.dom.Node;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -44,13 +49,32 @@ public class MidpSetterPresenterDeserializer extends PresenterDeserializer {
     public PresenterFactory deserialize (Node node) {
         if (! SETTER_NODE.equalsIgnoreCase (node.getNodeName ()))
             return null;
-        return null; // TODO
+        String name = XMLUtils.getAttributeValue (node, NAME_ATTR);
+        String parametersString = XMLUtils.getAttributeValue (node, PARAMETERS_ATTR);
+        String[] parameters = parametersString.split (",", -1);
+        return new MidpPropertyPresenterFactory (name, parameters);
     }
 
     private static class MidpPropertyPresenterFactory extends PresenterFactory {
 
+        private String name;
+        private String[] parameters;
+
+        public MidpPropertyPresenterFactory (String name, String[] parameters) {
+            this.name = name;
+            this.parameters = parameters;
+        }
+
         public List<Presenter> createPresenters (ComponentDescriptor descriptor) {
-            return null; // TODO
+            MidpSetter setter;
+            if (name != null)
+                setter = MidpSetter.createSetter (name, Versionable.FOREVER);
+            else
+                setter = MidpSetter.createConstructor (descriptor.getTypeDescriptor ().getThisType (), Versionable.FOREVER);
+            setter.addParameters (parameters);
+            return Arrays.<Presenter>asList (
+                new CodeSetterPresenter ().addParameters (MidpParameter.create (parameters)).addSetters (setter)
+            );
         }
 
     }

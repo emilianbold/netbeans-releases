@@ -39,28 +39,28 @@ public final class MidpTypesConvertor {
         TypeMirror type = element.asType ();
         switch (type.getKind ()) {
             case BOOLEAN:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue (false));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_BOOLEAN, PropertyValue.createUserCode ("false"));
             case BYTE:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_BYTE, MidpTypes.createByteValue ((byte) 0));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_BYTE, PropertyValue.createUserCode ("(byte) 0"));
             case CHAR:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_CHAR, MidpTypes.createCharValue ((char) 0));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_CHAR, PropertyValue.createUserCode ("(char) 0"));
             case SHORT:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_SHORT, MidpTypes.createShortValue ((short) 0));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_SHORT, PropertyValue.createUserCode ("(short) 0"));
             case DOUBLE:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_DOUBLE, MidpTypes.createDoubleValue (0));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_DOUBLE, PropertyValue.createUserCode ("0.0"));
             case FLOAT:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_FLOAT, MidpTypes.createFloatValue (0));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_FLOAT, PropertyValue.createUserCode ("0.0f"));
             case INT:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (0));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_INT, PropertyValue.createUserCode ("0"));
             case LONG:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_LONG, MidpTypes.createLongValue (0));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_LONG, PropertyValue.createUserCode ("0l"));
             case DECLARED:
                 String className = ((DeclaredType) type).asElement ().getSimpleName ().toString ();
                 if ("java.lang.String".equals (className))
                     return new PropertyDescriptor (name, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull (), true, true, Versionable.FOREVER);
                 // TODO - component references like Image...
             default:
-                return new PropertyDescriptor (name, MidpTypes.TYPEID_JAVA_CODE, MidpTypes.createJavaCodeValue (""), false, true, Versionable.FOREVER);
+                return new PropertyDescriptor (name, MidpTypes.TYPEID_JAVA_CODE, MidpTypes.createJavaCodeValue ("null"), false, true, Versionable.FOREVER);
         }
     }
 

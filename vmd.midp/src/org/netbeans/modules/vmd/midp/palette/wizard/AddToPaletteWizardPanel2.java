@@ -24,18 +24,19 @@ import org.openide.util.HelpCtx;
 
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.util.Map;
 
 /**
  * @author David Kaspar
  */
 public class AddToPaletteWizardPanel2 implements WizardDescriptor.Panel {
-    
+
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private Component component;
-    
+    private AddToPaletteVisualPanel2 component;
+
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
@@ -46,14 +47,14 @@ public class AddToPaletteWizardPanel2 implements WizardDescriptor.Panel {
         }
         return component;
     }
-    
+
     public HelpCtx getHelp() {
         // Show no Help button for this panel:
         return HelpCtx.DEFAULT_HELP;
         // If you have context help:
         // return new HelpCtx(SampleWizardPanel1.class);
     }
-    
+
     public boolean isValid() {
         // If it is always OK to press Next or Finish, then:
         return true;
@@ -63,7 +64,7 @@ public class AddToPaletteWizardPanel2 implements WizardDescriptor.Panel {
         // fireChangeEvent();
         // and uncomment the complicated stuff below.
     }
-    
+
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
     /*
@@ -95,11 +96,13 @@ public class AddToPaletteWizardPanel2 implements WizardDescriptor.Panel {
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(Object settings) {
-        // TODO - read descriptors
+        getComponent ();
+        Map<String,ComponentInstaller.Item> items = (Map<String,ComponentInstaller.Item>) ((WizardDescriptor) settings).getProperty (AddToPaletteWizardAction.PROPERTY_ITEMS);
+        component.setItems (items.values ());
     }
     public void storeSettings(Object settings) {
-        // TODO - write selected descriptors and their dependencies only
+        ((WizardDescriptor) settings).putProperty (AddToPaletteWizardAction.PROPERTY_TO_INSTALL, component.getSelectedItems ());
     }
-    
+
 }
 

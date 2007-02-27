@@ -18,7 +18,6 @@
  *
  */
 package org.netbeans.modules.vmd.midp.palette.wizard;
-
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -31,11 +30,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.MessageFormat;
 import java.util.Map;
+import java.util.List;
 
 /**
  * @author David Kaspar
  */
 public final class AddToPaletteWizardAction extends CallableSystemAction {
+
+    static final String PROPERTY_PROJECT = "project"; // NOI18N
+    static final String PROPERTY_ITEMS = "items"; // NOI18N
+    static final String PROPERTY_TO_INSTALL = "toInstall"; // NOI18N
 
     private WizardDescriptor.Panel[] panels;
 
@@ -54,7 +58,10 @@ public final class AddToPaletteWizardAction extends CallableSystemAction {
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
 
         if (!cancelled) {
-            ComponentInstaller.install ((Map<String, ComponentInstaller.Item>) wizardDescriptor.getProperty ("descriptors")); // NOI18N
+            ComponentInstaller.install (
+                (Map<String, ComponentInstaller.Item>) wizardDescriptor.getProperty (PROPERTY_ITEMS),
+                (List<ComponentInstaller.Item>) wizardDescriptor.getProperty (PROPERTY_TO_INSTALL)
+            );
         }
     }
 
