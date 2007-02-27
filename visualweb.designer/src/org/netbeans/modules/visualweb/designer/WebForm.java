@@ -2235,7 +2235,10 @@ public class WebForm implements Designer {
 //            return false;
 //        }
 
-        public boolean setDesignProperty(MarkupDesignBean bean, String attribute, int value) {
+//        public boolean setDesignProperty(MarkupDesignBean bean, String attribute, int value) {
+//            return false;
+//        }
+        public boolean setStyleAttribute(Element componentRootElement, String attribute, int value) {
             return false;
         }
 
