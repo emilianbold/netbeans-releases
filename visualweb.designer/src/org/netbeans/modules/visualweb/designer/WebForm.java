@@ -2241,6 +2241,10 @@ public class WebForm implements Designer {
         public Element getElement(DesignBean designBean) {
             return null;
         }
+        
+        public Element getSourceElement(Element componentRootElement) {
+            return null;
+        }
 
         public Element getMarkupBeanElement(DesignBean designBean) {
             return null;

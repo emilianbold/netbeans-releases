@@ -963,7 +963,8 @@ public class SelectionManager {
                         // and repeat the insert.)
 //                        Element element = FacesSupport.getElement(lb);
 //                        Element element = Util.getElement(lb);
-                        Element element = WebForm.getHtmlDomProviderService().getElement(lb);
+//                        Element element = WebForm.getHtmlDomProviderService().getElement(lb);
+                        Element element = WebForm.getHtmlDomProviderService().getSourceElement(sc.componentRootElement);
 
                         if (element != null) {
 //                            org.w3c.dom.Node text = DesignerUtils.findFirstTextChild(element);
