@@ -198,7 +198,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             String j2eeLevel = webModule.getJ2eePlatformVersion();
             if (ddRoot != null){
                 try{
-                                // Set the context parameter
+                    // Set the context parameter
                     InitParam contextParam = (InitParam)ddRoot.createBean("InitParam"); // NOI18N
                     contextParam.setParamName("javax.faces.STATE_SAVING_METHOD"); // NOI18N
                     contextParam.setParamValue("server"); // NOI18N
@@ -225,7 +225,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         contextParam.setParamValue("false");  //NOI18N
                     ddRoot.addContextParam(contextParam);
                     
-                                // The UpLoad Filter
+                    // The UpLoad Filter
                     Filter filter = (Filter)ddRoot.createBean("Filter"); // NOI18N
                     filter.setFilterName("UploadFilter"); // NOI18N
                     if (J2eeModule.JAVA_EE_5.equals(j2eeLevel))
@@ -257,7 +257,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     filterMapping.setServletName(panel.getServletName());
                     ddRoot.addFilterMapping(filterMapping);
                     
-                                // The Servlets
+                    // The Servlets
                     Servlet servlet = (Servlet)ddRoot.createBean("Servlet"); // NOI18N
                     servlet.setServletName(panel.getServletName());
                     servlet.setServletClass("javax.faces.webapp.FacesServlet"); // NOI18N    
@@ -290,7 +290,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
                     ddRoot.addServlet(servlet);
                     
-                                // The Servlet Mappings
+                    // The Servlet Mappings
                     ServletMapping mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); // NOI18N
                     mapping.setServletName(panel.getServletName());
                     mapping.setUrlPattern(panel.getURLPattern());
@@ -309,6 +309,30 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     // Adjust the path to the startpage based on JSF parameters
                     WelcomeFileList wfl = ddRoot.getSingleWelcomeFileList();
                     wfl.setWelcomeFile(new String[] { "faces/index.jsp" });
+
+                    // Catch ServletException
+                    ErrorPage errorPage = (ErrorPage)ddRoot.createBean("ErrorPage");
+                    errorPage.setExceptionType("javax.servlet.ServletException");
+                    errorPage.setLocation("/error/ExceptionHandler");
+                    ddRoot.addErrorPage(errorPage);
+
+                    // Catch IOException
+                    errorPage = (ErrorPage)ddRoot.createBean("ErrorPage");
+                    errorPage.setExceptionType("java.io.IOException");
+                    errorPage.setLocation("/error/ExceptionHandler");
+                    ddRoot.addErrorPage(errorPage);
+
+                    // Catch FacesException
+                    errorPage = (ErrorPage)ddRoot.createBean("ErrorPage");
+                    errorPage.setExceptionType("javax.faces.FacesException");
+                    errorPage.setLocation("/error/ExceptionHandler");
+                    ddRoot.addErrorPage(errorPage);
+
+                    // Catch ApplicationException
+                    errorPage = (ErrorPage)ddRoot.createBean("ErrorPage");
+                    errorPage.setExceptionType("com.sun.rave.web.ui.appbase.ApplicationException");
+                    errorPage.setLocation("/error/ExceptionHandler");
+                    ddRoot.addErrorPage(errorPage);
 
                     if (isMyFaces) {
                         Listener facesListener = (Listener) ddRoot.createBean("Listener");
