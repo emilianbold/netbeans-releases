@@ -40,6 +40,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitActio
 import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.ChangeCVSRootAction;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
@@ -408,6 +409,7 @@ public class Annotator {
         if (destination == VCSAnnotator.DEST_MAINMENU) {
             actions.add(SystemAction.get(CheckoutAction.class));
             actions.add(SystemAction.get(AddToRepositoryAction.class));
+            actions.add(new ChangeCVSRootAction(loc.getString("CTL_MenuItem_ChangeCVSRoot"), ctx));
             actions.add(null);
             actions.add(SystemAction.get(UpdateWithDependenciesAction.class));
             actions.add(null);
