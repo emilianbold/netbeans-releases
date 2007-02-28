@@ -688,7 +688,6 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                         Collections.<Modifier>emptySet()),
                         "Honza",
                         Collections.<TypeParameterTree>emptyList(),
-                        null,
                         Collections.<ExpressionTree>emptyList(),
                         Collections.<Tree>emptyList()
                 );
@@ -732,9 +731,6 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                 ClassTree innerIntfc = make.AnnotationType(make.Modifiers(
                         Collections.<Modifier>singleton(Modifier.PUBLIC)),
                         "Honza",
-                        Collections.<TypeParameterTree>emptyList(),
-                        null,
-                        Collections.<ExpressionTree>emptyList(),
                         Collections.<Tree>emptyList()
                 );
                 workingCopy.rewrite(topLevel, make.addClassMember(topLevel, innerIntfc));
@@ -777,8 +773,6 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                 ClassTree innerIntfc = make.Enum(make.Modifiers(
                         Collections.<Modifier>singleton(Modifier.PROTECTED)),
                         "Honza",
-                        Collections.<TypeParameterTree>emptyList(),
-                        null,
                         Collections.<ExpressionTree>emptyList(),
                         Collections.<Tree>emptyList()
                 );

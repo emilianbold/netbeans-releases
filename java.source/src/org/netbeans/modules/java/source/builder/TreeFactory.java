@@ -24,7 +24,6 @@ import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.java.source.engine.TreeMakerInt;
 import org.netbeans.api.java.source.query.Query;
-
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.BoundKind;
@@ -40,19 +39,16 @@ import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Context;
-
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.util.Types;
-
-
 import static com.sun.tools.javac.code.Flags.*;
 import static com.sun.tools.javac.code.Kinds.*;
 import static com.sun.tools.javac.code.TypeTags.*;
@@ -193,32 +189,26 @@ public class TreeFactory implements TreeMakerInt {
     public ClassTree Interface(ModifiersTree modifiers, 
                      CharSequence simpleName,
                      List<? extends TypeParameterTree> typeParameters,
-                     Tree extendsClause,
-                     List<? extends ExpressionTree> implementsClauses,
+                     List<? extends ExpressionTree> extendsClauses,
                      List<? extends Tree> memberDecls) 
     {
         long flags = getBitFlags(modifiers.getFlags()) | Flags.INTERFACE;
-        return Class(flags, (com.sun.tools.javac.util.List<JCAnnotation>) modifiers.getAnnotations(), simpleName, typeParameters, extendsClause, implementsClauses, memberDecls);
+        return Class(flags, (com.sun.tools.javac.util.List<JCAnnotation>) modifiers.getAnnotations(), simpleName, typeParameters, null, extendsClauses, memberDecls);
     }
 
     public ClassTree AnnotationType(ModifiersTree modifiers, 
              CharSequence simpleName,
-             List<? extends TypeParameterTree> typeParameters,
-             Tree extendsClause,
-             List<? extends ExpressionTree> implementsClauses,
              List<? extends Tree> memberDecls) {
         long flags = getBitFlags(modifiers.getFlags()) | Flags.ANNOTATION;
-        return Class(flags, (com.sun.tools.javac.util.List<JCAnnotation>) modifiers.getAnnotations(), simpleName, typeParameters, extendsClause, implementsClauses, memberDecls);
+        return Class(flags, (com.sun.tools.javac.util.List<JCAnnotation>) modifiers.getAnnotations(), simpleName, Collections.<TypeParameterTree>emptyList(), null, Collections.<ExpressionTree>emptyList(), memberDecls);
     }
     
     public ClassTree Enum(ModifiersTree modifiers, 
              CharSequence simpleName,
-             List<? extends TypeParameterTree> typeParameters,
-             Tree extendsClause,
              List<? extends ExpressionTree> implementsClauses,
              List<? extends Tree> memberDecls) {
         long flags = getBitFlags(modifiers.getFlags()) | Flags.ENUM;
-        return Class(flags, (com.sun.tools.javac.util.List<JCAnnotation>) modifiers.getAnnotations(), simpleName, typeParameters, extendsClause, implementsClauses, memberDecls);
+        return Class(flags, (com.sun.tools.javac.util.List<JCAnnotation>) modifiers.getAnnotations(), simpleName, Collections.<TypeParameterTree>emptyList(), null, implementsClauses, memberDecls);
     }
     
     public CompilationUnitTree CompilationUnit(ExpressionTree packageDecl, 
