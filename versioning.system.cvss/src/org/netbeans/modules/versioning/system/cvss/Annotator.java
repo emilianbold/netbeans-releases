@@ -540,10 +540,9 @@ public class Annotator {
 
         Map<File, FileInformation> map = cache.getAllModifiedFiles();
         Map<File, FileInformation> modifiedFiles = new HashMap<File, FileInformation>();
-        for (Iterator<File> i = map.keySet().iterator(); i.hasNext();) {
-            File file = i.next();
-            FileInformation info = map.get(file);
-            if (!info.isDirectory() && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(file, info);
+        for (Map.Entry<File, FileInformation> entry : map.entrySet()) {
+            FileInformation info = entry.getValue();
+            if (!info.isDirectory() && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(entry.getKey(), info);
         }
 
         for (Iterator<File> i = context.getRootFiles().iterator(); i.hasNext();) {
