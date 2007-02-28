@@ -1394,7 +1394,8 @@ public class InteractionManager {
 //                        if ((fb != null) &&
 ////                                !FacesSupport.isSpecialBean(/*webform, */curr.getDesignBean())) {
 //                                !Util.isSpecialBean(curr.getDesignBean())) {
-                    MarkupDesignBean currMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(curr);
+//                    MarkupDesignBean currMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(curr);
+                    Element currComponentRootElement = CssBox.getElementForComponentRootCssBox(curr);
 //                    if (currMarkupDesignBean != null) {
 ////                        FacesBean fb = FacesSupport.getFacesBean(currMarkupDesignBean);
 //                        FacesBean fb = Util.getFacesBean(currMarkupDesignBean);
@@ -1403,7 +1404,8 @@ public class InteractionManager {
 //                            break;
 //                        }
 //                    }
-                    if (webform.isNormalAndHasFacesBean(currMarkupDesignBean)) {
+//                    if (webform.isNormalAndHasFacesBean(currMarkupDesignBean)) {
+                    if (webform.isNormalAndHasFacesComponent(currComponentRootElement)) {
                         break;
                     }
 

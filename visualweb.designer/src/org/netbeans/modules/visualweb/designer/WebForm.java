@@ -1844,8 +1844,11 @@ public class WebForm implements Designer {
     }
 
     // XXX, Also better name needed.
-    boolean isNormalAndHasFacesBean(MarkupDesignBean markupDesignBean) {
-        return htmlDomProvider.isNormalAndHasFacesBean(markupDesignBean);
+//    boolean isNormalAndHasFacesBean(MarkupDesignBean markupDesignBean) {
+//        return htmlDomProvider.isNormalAndHasFacesBean(markupDesignBean);
+//    }
+    boolean isNormalAndHasFacesComponent(Element componentRootElement) {
+        return htmlDomProvider.isNormalAndHasFacesComponent(componentRootElement);
     }
 
     boolean canHighlightMarkupDesignBean(MarkupDesignBean markupDesignBean) {
