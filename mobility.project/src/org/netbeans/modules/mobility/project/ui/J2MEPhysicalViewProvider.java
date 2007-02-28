@@ -120,7 +120,13 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
             if ( !project.equals( owner ) ) {
                 return null; // Don't waste time if project does not own the fo
             }
-            return PackageView.findPath( root, target );
+            
+            for (Node n : root.getChildren().getNodes(true)) {
+                Node result = PackageView.findPath(n, target);
+                if (result != null) {
+                    return result;
+                }
+            }
         }
         return null;
     }
