@@ -21,8 +21,11 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import java.io.*;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Comment.Style;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
@@ -49,8 +52,10 @@ public class CommentsTest extends GeneratorTestMDRCompat {
     }
     
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(CommentsTest.class);
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTestSuite(CommentsTest.class);
 //        suite.addTest(new CommentsTest("testAddStatement"));
+//        suite.addTest(new CommentsTest("testAddJavaDocToMethod"));
         return suite;
     }
 
@@ -96,9 +101,8 @@ public class CommentsTest extends GeneratorTestMDRCompat {
                         "    int a;\n" +
                         "    /** becko */\n" +
                         "    int b;\n" +
-                        "    /* cecko */" +
-                        "    \n" +
-                        "    int c;" +
+                        "    /* cecko\n */\n" +
+                        "    int c; // trail\n" +
                         "}";
                 BlockTree block = make.createMethodBody(method, bodyText);
                 CommentHandler comments = workingCopy.getCommentHandler();
@@ -148,6 +152,55 @@ public class CommentsTest extends GeneratorTestMDRCompat {
         src.runModificationTask(task).commit();
     }
     
+    public void testAddJavaDocToMethod() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    Test() {\n" +
+            "    }\n\n" +
+            "}\n"
+            );
+        
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(final WorkingCopy copy) throws Exception {
+                copy.toPhase(Phase.RESOLVED);
+                
+                TreeMaker make = copy.getTreeMaker();
+                ClassTree node = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = make.Method(
+                        make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
+                        "nuevoMetodo",
+                        make.PrimitiveType(TypeKind.VOID),
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<VariableTree>emptyList(),
+                        Collections.<ExpressionTree>emptyList(),
+                        "{ }",
+                        null
+                );
+                make.addComment(method, Comment.create(
+                        Comment.Style.JAVADOC, 
+                        Query.NOPOS, 
+                        Query.NOPOS, 
+                        Query.NOPOS, 
+                        "Comentario"), 
+                        true
+                );
+                ClassTree clazz = make.addClassMember(node, method);
+                copy.rewrite(node, clazz);
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        System.err.println(TestUtilities.copyFileToString(testFile));
+        assertTrue(TestUtilities.copyFileToString(testFile).contains("nuevoMetodo"));
+        assertTrue(TestUtilities.copyFileToString(testFile).contains("Comentario"));
+    }
+
     String getGoldenPckg() {
         return "";
     }
