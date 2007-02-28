@@ -125,7 +125,13 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             debuggerImpl.getOperator().register(stepRequest, this);
             stepRequest.setSuspendPolicy(debugger.getSuspend());
 
-            stepRequest.enable ();
+            try {
+                stepRequest.enable ();
+            } catch (IllegalThreadStateException itsex) {
+                // the thread named in the request has died.
+                debuggerImpl.getOperator().unregister(stepRequest);
+                stepRequest = null;
+            }
         }
     }
     
@@ -247,7 +253,14 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         }
         ((JPDADebuggerImpl) debugger).getOperator().register(boundaryStepRequest, this);
         boundaryStepRequest.setSuspendPolicy(debugger.getSuspend());
-        boundaryStepRequest.enable ();
+        try {
+            boundaryStepRequest.enable ();
+        } catch (IllegalThreadStateException itsex) {
+            // the thread named in the request has died.
+            ((JPDADebuggerImpl) debugger).getOperator().unregister(boundaryStepRequest);
+            boundaryStepRequest = null;
+            return false;
+        }
         
         this.currentOperations = ops;
         return true;
@@ -345,7 +358,12 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     stepRequest.addCountFilter(1);
                     debuggerImpl.getOperator ().register (stepRequest, this);
                     stepRequest.setSuspendPolicy (debugger.getSuspend ());
-                    stepRequest.enable ();
+                    try {
+                        stepRequest.enable ();
+                    } catch (IllegalThreadStateException itsex) {
+                        // the thread named in the request has died.
+                        debuggerImpl.getOperator ().unregister (stepRequest);
+                    }
                     return true;
                 }
             } catch (IncompatibleThreadStateException e) {
@@ -372,7 +390,12 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             stepRequest.addCountFilter(1);
             debuggerImpl.getOperator ().register (stepRequest, this);
             stepRequest.setSuspendPolicy (debugger.getSuspend ());
-            stepRequest.enable ();
+            try {
+                stepRequest.enable ();
+            } catch (IllegalThreadStateException itsex) {
+                // the thread named in the request has died.
+                debuggerImpl.getOperator ().unregister (stepRequest);
+            }
             return true; // resume
         }
     }

@@ -145,7 +145,13 @@ implements Executor {
                 stepRequest.addCountFilter (1);
                 getDebuggerImpl ().getOperator ().register (stepRequest, StepActionProvider.this);
                 stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
-                stepRequest.enable ();
+                try {
+                    stepRequest.enable ();
+                } catch (IllegalThreadStateException itsex) {
+                    // the thread named in the request has died.
+                    getDebuggerImpl ().getOperator ().unregister(stepRequest);
+                    return ;
+                }
                 logger.fine("JDI Request (action "+action+"): " + stepRequest);
                 if (action == ActionsManager.ACTION_STEP_OUT) {
                     addMethodExitBP(tr);
@@ -250,7 +256,13 @@ implements Executor {
                     stepRequest.addCountFilter(1);
                     getDebuggerImpl ().getOperator ().register (stepRequest, this);
                     stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
-                    stepRequest.enable ();
+                    try {
+                        stepRequest.enable ();
+                    } catch (IllegalThreadStateException itsex) {
+                        // the thread named in the request has died.
+                        getDebuggerImpl ().getOperator ().unregister(stepRequest);
+                        stepRequest = null;
+                    }
                     return true;
                 }
             } catch (IncompatibleThreadStateException e) {

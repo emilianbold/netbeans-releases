@@ -237,7 +237,14 @@ implements Executor, PropertyChangeListener {
                 if (smartSteppingStepOut) {
                     setStepRequest (StepRequest.STEP_OUT);
                 } else if (stepRequest != null) {
-                    stepRequest.enable ();
+                    try {
+                        stepRequest.enable ();
+                    } catch (IllegalThreadStateException itsex) {
+                        // the thread named in the request has died.
+                        getDebuggerImpl ().getOperator ().unregister(stepRequest);
+                        stepRequest = null;
+                        return true;
+                    }
                 } else {
                     setStepRequest (StepRequest.STEP_INTO);
                 }
@@ -296,7 +303,14 @@ implements Executor, PropertyChangeListener {
         addPatternsToRequest (
             getSmartSteppingFilterImpl ().getExclusionPatterns ()
         );
-        stepRequest.enable ();
+        try {
+            stepRequest.enable ();
+        } catch (IllegalThreadStateException itsex) {
+            // the thread named in the request has died.
+            getDebuggerImpl ().getOperator ().unregister(stepRequest);
+            stepRequest = null;
+            return ;
+        }
     }
 
     private SmartSteppingFilter smartSteppingFilter;
