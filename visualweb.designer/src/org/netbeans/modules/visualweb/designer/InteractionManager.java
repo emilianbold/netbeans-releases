@@ -1577,7 +1577,8 @@ public class InteractionManager {
                 CssBox selBox = ModelViewMapper.findBox(pane.getPageBox(), e.getX(), e.getY());
 
 //                if (selBox.getDesignBean() == null) {
-                if (CssBox.getMarkupDesignBeanForCssBox(selBox) == null) {
+//                if (CssBox.getMarkupDesignBeanForCssBox(selBox) == null) {
+                if (CssBox.getElementForComponentRootCssBox(selBox) == null) {
                     // Reroute the mouse press to the insert box
                     caret.mouseDragged(e);
 
