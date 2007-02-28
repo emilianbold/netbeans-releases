@@ -22,6 +22,7 @@ package org.netbeans.core;
 import java.awt.Dialog;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
@@ -372,7 +373,6 @@ public final class NbErrorManagerTest extends NbTestCase {
             String s = readLog();
             assertTrue("added [catch] marker in simple cases", s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
         }
-        //w.reset();
         try {
             m3();
             fail();
@@ -381,7 +381,6 @@ public final class NbErrorManagerTest extends NbTestCase {
             String s = readLog();
             assertTrue("added [catch] marker in compound exception", s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
         }
-        //w.reset();
         try {
             m5();
             fail();
@@ -427,6 +426,8 @@ public final class NbErrorManagerTest extends NbTestCase {
         int r = is.read(arr);
         assertEquals("all read", arr.length, r);
         is.close();
+
+        new FileOutputStream(log).close(); // truncate
 
         return new String(arr);
     }
