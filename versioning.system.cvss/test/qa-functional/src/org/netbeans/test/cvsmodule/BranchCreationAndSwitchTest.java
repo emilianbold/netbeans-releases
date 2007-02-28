@@ -212,7 +212,7 @@ public class BranchCreationAndSwitchTest extends JellyTestCase {
         Node nodeFile = new Node(new SourcePackagesNode(projectName), "ForImport" + "|Main.java");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
-        boolean comparison = status.equals("[MyNewBranch]");
+        boolean comparison = status.equals("[; MyNewBranch]");
         assertEquals("Wrong annotation of node!!!", true, comparison);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
