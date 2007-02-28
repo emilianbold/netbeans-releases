@@ -1790,7 +1790,7 @@ public class InteractionManager {
             if ((resize != Cursor.DEFAULT_CURSOR) && (resize != Cursor.MOVE_CURSOR)) {
 //                MarkupDesignBean bean = sm.getSelectionHandleView(x, y, maxWidth, maxHeight);
                 Element componentRootElement = sm.getSelectionHandleView(x, y, maxWidth, maxHeight);
-                MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//                MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
 //                CssBox box = mapper.findBox(bean);
                 CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
 //                ArrayList bounds = mapper.getComponentRectangles(bean);
@@ -1954,7 +1954,8 @@ public class InteractionManager {
                     int size = sm.getNumSelected() + 1;
                     List<Rectangle> selections = new ArrayList<Rectangle>(size);
                     List<CssBox> boxes = new ArrayList<CssBox>(size);
-                    List<MarkupDesignBean> beans = new ArrayList<MarkupDesignBean>(size);
+//                    List<MarkupDesignBean> beans = new ArrayList<MarkupDesignBean>(size);
+                    List<Element> componentRootElements = new ArrayList<Element>(size);
 //                    Iterator it = sm.iterator();
 //
 //                    while (it.hasNext()) {
@@ -1981,7 +1982,7 @@ public class InteractionManager {
                         Rectangle a = ModelViewMapper.getComponentBounds(webform.getPane().getPageBox(), componentRootElement);
 
                         if (a != null) {
-                            addDragItem(selections, boxes, beans, a, p, box);
+                            addDragItem(selections, boxes, componentRootElements, /*beans,*/ a, p, box);
                         }
                     }
 
@@ -1996,17 +1997,11 @@ public class InteractionManager {
                         CssBox box = ModelViewMapper.findBoxForComponentRootElement(pageBox, sel);
 
                         if (a != null) {
-                            addDragItem(selections, boxes, beans, a, p, box);
+                            addDragItem(selections, boxes, componentRootElements, /*beans,*/ a, p, box);
                         }
                     }
 
                     if (selections.size() > 0) {
-                        
-                        List<Element> componentRootElements = new ArrayList<Element>();
-                        for (MarkupDesignBean bean : beans) {
-                            componentRootElements.add(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean));
-                        }
-                        
 //                        dragger = new Dragger(webform, boxes, selections, beans);
                         dragger = new Dragger(webform, boxes, selections, componentRootElements.toArray(new Element[componentRootElements.size()]));
                         interaction = dragger;
@@ -2072,42 +2067,51 @@ public class InteractionManager {
             }
         }
 
-        private void addDragItem(List<Rectangle> selections, List<CssBox> boxes, List<MarkupDesignBean> beans,
+        private void addDragItem(List<Rectangle> selections, List<CssBox> boxes, List<Element> componentRootElements, /*List<MarkupDesignBean> beans,*/
             Rectangle r, Point p, CssBox box) {
 //            MarkupDesignBean bean = box.getDesignBean();
-            MarkupDesignBean bean = CssBox.getMarkupDesignBeanForCssBox(box);
+//            MarkupDesignBean bean = CssBox.getMarkupDesignBeanForCssBox(box);
+            Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
 //            MarkupDesignBean pbean = findMovableParent(box);
-            MarkupDesignBean pbean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(findMovableParentComponentRootElement(box));
+//            MarkupDesignBean pbean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(findMovableParentComponentRootElement(box));
+            Element pComponentRootElement = findMovableParentComponentRootElement(box);
 
-            if (pbean == null) {
-                pbean = bean;
+//            if (pbean == null) {
+//                pbean = bean;
+//            }
+            if (pComponentRootElement == null) {
+                pComponentRootElement = componentRootElement;
             }
 
-            if (pbean != bean) {
+//            if (pbean != bean) {
+            if (pComponentRootElement != componentRootElement) {
                 // We're an "unrepositionable" child in another container,
                 // so we want to move the parent container.
-                bean = pbean;
+//                bean = pbean;
+                componentRootElement = pComponentRootElement;
 
                 // Since the user may have chosen multiple children in
                 // this container, make sure that we don't already have
                 // the parent in the list - if so, just skip it
-                int n = beans.size();
-
-                for (int i = 0; i < n; i++) {
-                    if (beans.get(i) == bean) {
-                        return;
-                    }
+//                int n = beans.size();
+//                for (int i = 0; i < n; i++) {
+//                    if (beans.get(i) == bean) {
+//                        return;
+//                    }
+//                }
+                if (componentRootElements.contains(componentRootElement)) {
+                    return;
                 }
 
                 // Change the view rectangle to reflect the parent instead
 //                box = webform.getMapper().findBox(pbean);
-                box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(),
-                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(pbean));
+//                box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(),
+//                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(pbean));
+                box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), pComponentRootElement);
 
                 if (box == null) {
                     // This item not draggable for some reason
-                    ErrorManager.getDefault().log("Didn't find box for " + pbean); // NOI18N
-
+                    ErrorManager.getDefault().log("Didn't find box for " + pComponentRootElement); // NOI18N
                     return;
                 }
 
@@ -2124,7 +2128,8 @@ public class InteractionManager {
             boxes.add(box);
 
             //assert bean == fo.component; // why search again??? pass it in!
-            beans.add(bean);
+//            beans.add(bean);
+            componentRootElements.add(componentRootElement);
         }
 
         /** escape-like things: cancel dragging, select parent, etc. */
