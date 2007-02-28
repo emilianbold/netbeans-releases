@@ -159,7 +159,8 @@ public class CasualDiff {
 
     protected void diffTopLevel(JCCompilationUnit oldT, JCCompilationUnit newT) {
         oldTopLevel = oldT;
-        diffList(oldT.packageAnnotations, newT.packageAnnotations, LineInsertionType.NONE, 0);
+        // todo (#pf): make package annotation diffing correctly
+        // diffList(oldT.packageAnnotations, newT.packageAnnotations, LineInsertionType.NONE, 0);
         int posHint;
         // no package declaration available (default package)
         if (oldT.pid == null) {
@@ -282,7 +283,7 @@ public class CasualDiff {
     
             // package statement was modified.
             case MODIFY:
-                output.writeTo(origText.substring(pointer, getOldPos(oldT.pid)));
+                copyTo(pointer, getOldPos(oldT.pid));
                 pointer = endPos(oldT.pid);
                 printer.print(newT.pid);
                 diffInfo.put(getOldPos(oldT.pid), "Update package statement");

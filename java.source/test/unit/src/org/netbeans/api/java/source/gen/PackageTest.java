@@ -18,14 +18,11 @@
  */
 package org.netbeans.api.java.source.gen;
 
-import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.*;
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.*;
+import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.jackpot.test.TestUtilities;
 import org.netbeans.junit.NbTestSuite;
 
@@ -43,11 +40,12 @@ public class PackageTest extends GeneratorTestMDRCompat {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        // suite.addTestSuite(PackageTest.class);
-        suite.addTest(new PackageTest("testChangePackage"));
-        suite.addTest(new PackageTest("testChangeDefToNamedPackage"));
-        suite.addTest(new PackageTest("testChangeDefToNamedPackageWithImport"));
-        suite.addTest(new PackageTest("testChangeToDefPackage"));
+        suite.addTestSuite(PackageTest.class);
+//        suite.addTest(new PackageTest("testChangePackage"));
+//        suite.addTest(new PackageTest("testChangeDefToNamedPackage"));
+//        suite.addTest(new PackageTest("testChangeDefToNamedPackageWithImport"));
+//        suite.addTest(new PackageTest("testChangeToDefPackage"));
+//        suite.addTest(new PackageTest("testPackageRenameWithAnnotation"));
         return suite;
     }
     
@@ -228,6 +226,37 @@ public class PackageTest extends GeneratorTestMDRCompat {
                         cut.getSourceFile()
                     );
                 workingCopy.rewrite(cut, copy);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #93045: Package annotation removed when renaming package
+     */
+    public void testPackageRenameWithAnnotation() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "@SuppressWarnings()\n" +
+            "package javaapplication1;\n");
+        String golden = 
+            "@SuppressWarnings()\n" +
+            "package app;\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ExpressionTree pckgName = workingCopy.getCompilationUnit().getPackageName();
+                workingCopy.rewrite(pckgName, make.setLabel(pckgName, "app"));
             }
 
             public void cancel() {
