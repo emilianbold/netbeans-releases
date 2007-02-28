@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.websvc.core.webservices.action;
 
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.core.InvokeOperationCookie;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 import org.netbeans.modules.websvc.core.webservices.ui.panels.ClientExplorerPanel;
@@ -81,12 +79,9 @@ public class InvokeOperationAction extends NodeAction {
                 if(DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION)) {
                     // !PW FIXME refactor this as a method implemented in a cookie
                     // on the method node.
-                    Project project = FileOwnerQuery.getOwner(currentFO);
-                    if (project!=null) {
-                    InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(project);
+                    InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(currentFO);
                     if (invokeCookie!=null)
                         invokeCookie.invokeOperation(getTargetSourceType(activatedNodes[0]), activatedNodes[0], serviceExplorer.getSelectedMethod());
-                    }
                 }
             }
         }

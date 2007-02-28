@@ -20,7 +20,6 @@
 package org.netbeans.modules.websvc.core;
 
 import java.util.Collection;
-import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -32,11 +31,13 @@ public class WebServiceActionProvider {
 
     private static final Lookup.Result<AddOperationActionProvider> addOperationActionProviders =
         Lookup.getDefault().lookup(new Lookup.Template<AddOperationActionProvider>(AddOperationActionProvider.class));
-
-    public static AddOperationCookie getAddOperationAction(FileObject fileObject) {
+    
+    /** Find AddOperationCookie for given FileObject (target source)
+     */
+    public static AddOperationCookie getAddOperationAction(FileObject targetSource) {
         Collection<? extends AddOperationActionProvider> instances = addOperationActionProviders.allInstances();
         for (AddOperationActionProvider impl: instances) {
-            AddOperationCookie cookie = impl.getAddOperationCookie(fileObject);
+            AddOperationCookie cookie = impl.getAddOperationCookie(targetSource);
             if (cookie != null) {
                 return cookie;
             }
@@ -47,10 +48,12 @@ public class WebServiceActionProvider {
     private static final Lookup.Result<InvokeOperationActionProvider> invokeOperationActionProviders =
         Lookup.getDefault().lookup(new Lookup.Template<InvokeOperationActionProvider>(InvokeOperationActionProvider.class));
 
-    public static InvokeOperationCookie getInvokeOperationAction(Project project) {
+    /** Find InvokeOperationCookie for given FileObject (target source)
+     */
+    public static InvokeOperationCookie getInvokeOperationAction(FileObject targetSource) {
         Collection<? extends InvokeOperationActionProvider> instances = invokeOperationActionProviders.allInstances();
         for (InvokeOperationActionProvider impl: instances) {
-            InvokeOperationCookie cookie = impl.getInvokeOperationCookie(project);
+            InvokeOperationCookie cookie = impl.getInvokeOperationCookie(targetSource);
             if (cookie != null) {
                 return cookie;
             }

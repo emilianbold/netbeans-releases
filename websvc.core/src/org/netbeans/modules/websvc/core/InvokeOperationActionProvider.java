@@ -19,12 +19,12 @@
 
 package org.netbeans.modules.websvc.core;
 
-import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author mkuchtiak
  */
 public interface InvokeOperationActionProvider {
-    public InvokeOperationCookie getInvokeOperationCookie(Project project);
+    public InvokeOperationCookie getInvokeOperationCookie(FileObject targetSource);
 }
