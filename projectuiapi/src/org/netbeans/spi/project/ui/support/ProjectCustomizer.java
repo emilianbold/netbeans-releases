@@ -442,15 +442,23 @@ public final class ProjectCustomizer {
                         CompositeCategoryProvider provider = (CompositeCategoryProvider)cook.instanceCreate();
                         ProjectCustomizer.Category cat = provider.createCategory(context);
                         if (cat != null) {
-                            assert cat.getSubcategories() == null || cat.getSubcategories().length == 0
-                               : "Cannot have subcategories for declaratively added category. Please declare the subcategories as well."; //NOI18N
                             toRet.add(cat);
                             category2provider.put(cat, provider);
+                            includeSubcats(cat.getSubcategories(), provider);
                         }
                     }
                 }
             }
             return toRet.toArray(new ProjectCustomizer.Category[toRet.size()]);
+        }
+        
+        private void includeSubcats(ProjectCustomizer.Category[] cats, ProjectCustomizer.CompositeCategoryProvider provider) {
+            if (cats != null) {
+                for (ProjectCustomizer.Category cat : cats) {
+                    category2provider.put(cat, provider);
+                    includeSubcats(cat.getSubcategories(), provider);
+                }
+            }
         }
 
         /**
