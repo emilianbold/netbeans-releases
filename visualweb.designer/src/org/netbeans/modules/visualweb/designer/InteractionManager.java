@@ -1652,19 +1652,20 @@ public class InteractionManager {
             int resize = sm.getSelectionHandleDir(x, y, maxWidth, maxHeight);
 
             CssBox selBox;
-            MarkupDesignBean sel;
+//            MarkupDesignBean sel;
+            Element sel;
 
             if (resize == Cursor.MOVE_CURSOR) {
 //                sel = sm.getSelectionHandleView(x, y, maxWidth, maxHeight);
-                Element selComponentRootElement = sm.getSelectionHandleView(x, y, maxWidth, maxHeight);
-                sel = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(selComponentRootElement);
+                sel = sm.getSelectionHandleView(x, y, maxWidth, maxHeight);
 //                selBox = mapper.findBox(sel);
-                selBox = ModelViewMapper.findBoxForComponentRootElement(pageBox, selComponentRootElement);
+                selBox = ModelViewMapper.findBoxForComponentRootElement(pageBox, sel);
             } else {
 //                selBox = mapper.findBox(x, y);
                 selBox = ModelViewMapper.findBox(pageBox, x, y);
 //                sel = ModelViewMapper.findComponent(selBox);
-                sel = ModelViewMapper.findMarkupDesignBean(selBox);
+//                sel = ModelViewMapper.findMarkupDesignBean(selBox);
+                sel = ModelViewMapper.findComponentRootElement(selBox);
             }
 
             if (inlineEditor != null) {
@@ -1984,15 +1985,14 @@ public class InteractionManager {
                     }
 
 //                    if (!sm.isSelected(sel)) {
-                    Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(sel);
-                    if (!sm.isSelected(componentRootElement)) {
+                    if (!sm.isSelected(sel)) {
                         // The currently clicked item is not in the selection
                         // set yet
 //                        Rectangle a = mapper.findShape(sel);
 //                        CssBox box = mapper.findBox(sel);
-                        Rectangle a = ModelViewMapper.findShape(pageBox, componentRootElement);
+                        Rectangle a = ModelViewMapper.findShape(pageBox, sel);
 //                        CssBox box = ModelViewMapper.findBox(pageBox, sel);
-                        CssBox box = ModelViewMapper.findBoxForComponentRootElement(pageBox, componentRootElement);
+                        CssBox box = ModelViewMapper.findBoxForComponentRootElement(pageBox, sel);
 
                         if (a != null) {
                             addDragItem(selections, boxes, beans, a, p, box);
