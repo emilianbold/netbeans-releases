@@ -344,7 +344,9 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         
         try {
             SunONEDeploymentConfiguration config = getDeploymentConfiguration();
-            storage = config.getStorage();
+            if(config != null) {
+                storage = config.getStorage();
+            }
         } catch (ConfigurationException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
