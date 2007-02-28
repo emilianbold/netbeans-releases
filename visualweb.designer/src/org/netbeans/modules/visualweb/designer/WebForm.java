@@ -2380,6 +2380,10 @@ public class WebForm implements Designer {
         public Element[] getChildComponents(Element componentRootElement) {
             return new Element[0];
         }
+
+        public boolean isRootContainerComponent(Element componentRootElement) {
+            return false;
+        }
     } // End of DummyHtmlDomProviderService.
     
     
