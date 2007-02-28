@@ -197,9 +197,11 @@ public final class ProjectCustomizer {
      * The panel/category created by the provider can get notified that the customizer got
      * closed by setting an <code>ActionListener</code> to 
      * {@link org.netbeans.spi.project.ui.support.ProjectCustomizer.Category#setOkButtonListener} .
-     * UI Component can be defined for category folder that is repesented as node with subnodes in the category
+     * UI Component can be defined for category folder that is represented as node with subnodes in the category
      * tree of project customizer. Name of the file that defines the instance class in layer for such category 
-     * must be named "Self". For details and usage see issue #91276.
+     * must be named "Self". Such CompositeCategory won't have the createCategory() method called, but will have the category created by
+     * the infrastructure based on the folder content.
+     * For details and usage see issue #91276.
      * @since org.netbeans.modules.projectuiapi/1 1.22
      */
     public static interface CompositeCategoryProvider {
