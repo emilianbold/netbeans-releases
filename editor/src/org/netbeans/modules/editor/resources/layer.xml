@@ -193,49 +193,50 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
         
+        <folder name="Toolbars">
+            <folder name="Default">
+                <file name="Separator0.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                </file>
+                <attr name="Separator0.instance/jump-list-prev" boolvalue="true"/>
+                <file name="jump-list-prev"/>
+                <attr name="jump-list-prev/jump-list-next" boolvalue="true"/>
+                <file name="jump-list-next"/>
+                <attr name="jump-list-next/Separator-before-find-previous.instance" boolvalue="true"/>
+                <file name="Separator-before-find-previous.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                </file>
+                <attr name="Separator-before-find-previous.instance/find-selection" boolvalue="true"/>
+                <file name="find-selection"/>
+                <attr name="find-selection/find-previous" boolvalue="true"/>
+                <file name="find-previous"/>
+                <attr name="find-previous/find-next" boolvalue="true"/>
+                <file name="find-next"/>
+                <attr name="find-next/toggle-highlight-search" boolvalue="true"/>
+                <file name="toggle-highlight-search"/>
+                <attr name="toggle-highlight-search/Separator-after-toggle-highlight-search.instance" boolvalue="true"/>
+                <file name="Separator-after-toggle-highlight-search.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                </file>
+                <attr name="Separator-after-toggle-highlight-search.instance/shift-line-left" boolvalue="true"/>
+                <file name="shift-line-left"/>
+                <attr name="shift-line-left/shift-line-right" boolvalue="true"/>
+                <file name="shift-line-right"/>
+                <attr name="shift-line-right/Separator-after-shift-line.instance" boolvalue="true"/>
+                <file name="Separator-after-shift-line.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                </file>
+                <attr name="Separator-after-shift-line.instance/start-macro-recording" boolvalue="true"/>
+                <file name="start-macro-recording"/>
+                <attr name="start-macro-recording/stop-macro-recording" boolvalue="true"/>
+                <file name="stop-macro-recording"/>
+            </folder>
+        </folder>
+
         <folder name="text">
             <folder name="base">
                 <folder name="Defaults">
                     <file name="keybindings.xml" url="NetBeans-keybindings.xml"/>
-                </folder>
-                <folder name="Toolbars">
-                    <folder name="Default">
-                        <file name="Separator0.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        </file>
-                        <attr name="Separator0.instance/jump-list-prev" boolvalue="true"/>
-                        <file name="jump-list-prev"/>
-                        <attr name="jump-list-prev/jump-list-next" boolvalue="true"/>
-                        <file name="jump-list-next"/>
-                        <attr name="jump-list-next/Separator-before-find-previous.instance" boolvalue="true"/>
-                        <file name="Separator-before-find-previous.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        </file>
-                        <attr name="Separator-before-find-previous.instance/find-selection" boolvalue="true"/>
-                        <file name="find-selection"/>
-                        <attr name="find-selection/find-previous" boolvalue="true"/>
-                        <file name="find-previous"/>
-                        <attr name="find-previous/find-next" boolvalue="true"/>
-                        <file name="find-next"/>
-                        <attr name="find-next/toggle-highlight-search" boolvalue="true"/>
-                        <file name="toggle-highlight-search"/>
-                        <attr name="toggle-highlight-search/Separator-after-toggle-highlight-search.instance" boolvalue="true"/>
-                        <file name="Separator-after-toggle-highlight-search.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        </file>
-                        <attr name="Separator-after-toggle-highlight-search.instance/shift-line-left" boolvalue="true"/>
-                        <file name="shift-line-left"/>
-                        <attr name="shift-line-left/shift-line-right" boolvalue="true"/>
-                        <file name="shift-line-right"/>
-                        <attr name="shift-line-right/Separator-after-shift-line.instance" boolvalue="true"/>
-                        <file name="Separator-after-shift-line.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        </file>
-                        <attr name="Separator-after-shift-line.instance/start-macro-recording" boolvalue="true"/>
-                        <file name="start-macro-recording"/>
-                        <attr name="start-macro-recording/stop-macro-recording" boolvalue="true"/>
-                        <file name="stop-macro-recording"/>
-                    </folder>
                 </folder>
             </folder>
         </folder>

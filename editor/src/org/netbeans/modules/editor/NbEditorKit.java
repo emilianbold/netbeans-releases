@@ -271,7 +271,7 @@ public class NbEditorKit extends ExtKit {
             JPopupMenu pm = createPopupMenu(component);
             
             String mimeType = NbEditorUtilities.getMimeType(component);
-            List l = PopupMenuActionsProvider.getPopupMenuInstances(mimeType);
+            List l = PopupMenuActionsProvider.getPopupMenuItems(mimeType);
             
             if (l.isEmpty()){
                 l = (List)Settings.getValue(Utilities.getKitClass(component),

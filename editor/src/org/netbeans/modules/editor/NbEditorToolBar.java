@@ -30,22 +30,17 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
-
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -71,24 +66,21 @@ import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.impl.ToolbarActionsProvider;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.BaseOptions;
-import org.openide.ErrorManager;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
-import org.openide.util.TopologicalSortException;
 import org.openide.util.actions.Presenter;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
@@ -101,25 +93,18 @@ import org.openide.util.lookup.ProxyLookup;
  * @version 1.00
  */
 
-final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
+/* package */ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     
     /** Flag for testing the sorting support by debugging messages. */
     private static final boolean debugSort
         = Boolean.getBoolean("netbeans.debug.editor.toolbar.sort"); // NOI18N
 
-    /** Name of the main folder where the particular toolbars' folders
-     * are located.
-     */
-    private static final String TOOLBARS_FOLDER_NAME = "Toolbars"; // NOI18N
-    
-    /** Name of the folder for the default toolbar. */
-    private static final String DEFAULT_TOOLBAR_NAME = "Default"; // NOI18N
-    
-    static final String BASE_MIME_TYPE = "text/base"; // NOI18N
-    
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
     
-    FileChangeListener moduleRegListener;
+    // An empty lookup. Can't use Lookup.EMPTY as this can be returned by clients.
+    private static final Lookup NO_ACTION_CONTEXT = Lookups.fixed();
+    
+    private FileChangeListener moduleRegListener;
 
     /** Runnable for returning the focus back to the last active text component. */
     private static final Runnable returnFocusRunnable
@@ -145,9 +130,11 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     private static final MouseListener sharedMouseListener
         = new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
-                if (evt.getSource() instanceof JButton) {
-                    JButton button = (JButton)evt.getSource();
-                    if (button.isEnabled()){
+                Object src = evt.getSource();
+                
+                if (src instanceof AbstractButton) {
+                    AbstractButton button = (AbstractButton)evt.getSource();
+                    if (button.isEnabled()) {
                         button.setContentAreaFilled(true);
                         button.setBorderPainted(true);
                     }
@@ -155,8 +142,10 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
             }
             
             public void mouseExited(MouseEvent evt) {
-                if (evt.getSource() instanceof JButton) {
-                    JButton button = (JButton)evt.getSource();
+                Object src = evt.getSource();
+                if (src instanceof AbstractButton)
+                {
+                    AbstractButton button = (AbstractButton)evt.getSource();
                     button.setContentAreaFilled(false);
                     button.setBorderPainted(false);
                 }
@@ -179,7 +168,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     private static final Action NOOP_ACTION = new NoOpAction();
     
    
-    NbEditorToolBar(JTextComponent component) {
+    public NbEditorToolBar(JTextComponent component) {
         this.componentRef = new WeakReference(component);
         
         setFloatable(false);
@@ -284,7 +273,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     
     public void settingsChange(SettingsChangeEvent evt) {
         final boolean visible = isToolBarVisible();
-	JTextComponent c = getComponent();
+	final JTextComponent c = getComponent();
         final boolean keyBindingsChanged = 
                 evt!=null && 
                 SettingsNames.KEY_BINDING_LIST.equals(evt.getSettingName()) &&
@@ -297,7 +286,8 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                         if (keyBindingsChanged){ //#62487
                             installNoOpActionMappings();
                             int componentCount = getComponentCount();
-                            Map keybsMap = getKeyBindingMap();
+                            String mimeType = NbEditorUtilities.getMimeType(c);
+                            Map keybsMap = getKeyBindingMap(mimeType);
                             Component comps[] = getComponents();
                             for (int i=0; i<comps.length; i++){
                                 Component comp = comps[i];
@@ -342,10 +332,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     private void checkPresentersAdded() {
         if (!presentersAdded) {
             presentersAdded = true;
-            DataFolder baseFolder = getToolBarFolder(BASE_MIME_TYPE, false);
-            DataFolder mimeFolder = getToolBarFolder(getMimeType(), false);
-            
-            addPresenters(baseFolder, mimeFolder);
+            addPresenters();
         }
     }
     
@@ -354,50 +341,8 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         removeAll();
     }    
 
-    /** Get the target toolbar folder for the given mimetype.
-     * @param type mime type of the requested toolbar folder
-     * or "text/base" for the global folder.
-     */
-    private static DataFolder getToolBarFolder(String type, boolean forceCreate) {
-        String toolbarFolderPath = "Editors/" + type + "/" // NOI18N
-            + TOOLBARS_FOLDER_NAME + "/" + DEFAULT_TOOLBAR_NAME; // NOI18N
-
-        DataFolder toolbarFolder = null;
-        FileObject f = Repository.getDefault().
-            getDefaultFileSystem().findResource(toolbarFolderPath);
-
-        if (f != null) {
-            try {
-                DataObject dob = DataObject.find(f);
-                toolbarFolder = (DataFolder)dob.getCookie(DataFolder.class);
-            } catch (DataObjectNotFoundException e) {
-                // DataObject for the toolbar folder not found
-            }
-            
-        } else if (forceCreate) { // does not exist yet
-            try {
-                FileUtil.createFolder(
-                    Repository.getDefault().getDefaultFileSystem().getRoot(),
-                    toolbarFolderPath
-                );
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
-            }
-                
-        }
-        
-        return toolbarFolder;
-    }
-    
     private static boolean isToolBarVisible() {
         return AllOptionsFolder.getDefault().isToolbarVisible();
-    }
-    
-    private String getMimeType() {
-	JTextComponent c = getComponent();
-        EditorKit kit = (c != null) ? Utilities.getKit(c) : null;
-        String mimeType = (kit != null) ? kit.getContentType() : null;
-        return mimeType;
     }
     
     /** Utility method for getting the mnemonic of the multi key binding.
@@ -451,9 +396,9 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         return sb.toString();
     }
 
-    private Map/*<ActionName,MultiKeyBinding>*/ getKeyBindingMap(){
+    private static Map/*<String, MultiKeyBinding>*/ getKeyBindingMap(String mimeType) {
         Map retMap = new HashMap();
-        List keybList = getKeyBindingList();
+        List keybList = getKeyBindingList(mimeType);
         Iterator it = keybList.iterator();
         while(it.hasNext()){
             Object obj = it.next();
@@ -465,7 +410,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         return retMap;
     }
     
-    private List getKeyBindingList(){
+    private static List getKeyBindingList(String mimeType) {
         List keyBindingsList = new ArrayList();
 
         AllOptionsFolder aof = AllOptionsFolder.getDefault();
@@ -476,8 +421,6 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
             }
         }
 
-	JTextComponent c = getComponent();
-        String mimeType = NbEditorUtilities.getMimeType(c);
         if (mimeType != null) {
             BaseOptions options = (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
             if (options != null) {
@@ -502,103 +445,137 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
      * @param mimeFolder target mime type folder.
      * @param toolbar toolbar being constructed.
      */
-    private void addPresenters(DataFolder baseFolder, DataFolder mimeFolder) {
+    private void addPresenters() {
+        JTextComponent c = getComponent();
+        String mimeType = c == null ? null : NbEditorUtilities.getMimeType(c);
         
-        List keyBindingsList = getKeyBindingList();
+        if (mimeType == null) {
+            return; // Probably no component or it's not loaded properly
+        }
 
-	JTextComponent c = getComponent();
-        EditorKit kit = (c != null) ? Utilities.getKit(c) : null;
-        if (kit instanceof BaseKit) {
-            BaseKit baseKit = (BaseKit)kit;
-
-            for (Iterator it = getToolbarObjects(baseFolder, mimeFolder).iterator();
-                it.hasNext();
-            ) {
-
-                DataObject dob = (DataObject)it.next();
-                InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
-                if (ic != null){
-                    try {
-                        if(JSeparator.class.isAssignableFrom(ic.instanceClass())){
-                            addSeparator();
-
-                        } else { // attempt to instantiate the cookie
-                            Lookup actionContext = null;
-                            Object obj = ic.instanceCreate();
-                            
-                            if (obj instanceof ContextAwareAction) {
-                                if (actionContext == null) {
-                                    actionContext = createActionContext();
-                                }
-                                Action contextAware = (actionContext == null) ? null : 
-                                    ((ContextAwareAction)obj).createContextAwareInstance(actionContext);
-                                // use the context aware instance only if it implements Presenter.Toolbar or is a component
-                                // else fall back to the original object
-                                if (contextAware instanceof Presenter.Toolbar || contextAware instanceof Component) {
-                                    obj = contextAware;
-                                }
-                            }
-                            if (obj instanceof Presenter.Toolbar) {
-                                Component tbp = ((Presenter.Toolbar)obj).getToolbarPresenter();
-                                add(tbp);
-                                if (tbp instanceof AbstractButton) {
-                                    processButton((AbstractButton)tbp);
-                                }
-
-                            } else if (obj instanceof Component) {
-                                add((Component)obj);
-                                if (obj instanceof AbstractButton) {
-                                    processButton((AbstractButton)obj);
-                                }
-                            }
-                        }
-
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    } catch (ClassNotFoundException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    }
-
-                } else { // no instance cookie present
-                    // Attempt to find action with the name of dob
-                    String actionName = dob.getName();
-                    Action a = baseKit.getActionByName(actionName);
+        List keybindings = null;
+        Lookup actionContext = null;
+        List items = ToolbarActionsProvider.getToolbarItems(mimeType);
+        
+        // COMPAT: The ToolbarsActionsProvider treats 'text/base' in a special way. It
+        // will list only items registered for this particular mime type, but won't
+        // inherit anything else. The 'text/base' is normally empty, but could be
+        // used by some legacy code.
+        List oldTextBaseItems = ToolbarActionsProvider.getToolbarItems("text/base"); //NOI18N
+        if (oldTextBaseItems.size() > 0) {
+            items = new ArrayList(items);
+            items.add(new JSeparator());
+            items.addAll(oldTextBaseItems);
+        }
+        
+        for(Object item : items) {
+            if (item instanceof JSeparator) {
+                addSeparator();
+                continue;
+            }
+            
+            if (item instanceof String) {
+                EditorKit kit = c.getUI().getEditorKit(c);
+                if (kit instanceof BaseKit) {
+                    Action a = ((BaseKit) kit).getActionByName((String) item);
                     if (a != null) {
-                        // Wrap action to execute on the proper text component
-                        // because the default fallback in TextAction.getTextComponent()
-                        // might not work properly if the focus was switched
-                        // to e.g. a JTextField and then toolbar was clicked.
-                        a = new WrapperAction(componentRef, a);
-                        // Try to find an icon if not present
-                        Object icon = a.getValue(Action.SMALL_ICON);
-                        if (icon == null) {
-                            String resourceId = (String)a.getValue(BaseAction.ICON_RESOURCE_PROPERTY);
-                            if (resourceId == null) { // use default icon
-                                resourceId = "org/netbeans/modules/editor/resources/default.gif"; // NOI18N
-                            }
-                            Image img = org.openide.util.Utilities.loadImage(resourceId);
-                            if (img != null) {
-                                a.putValue(Action.SMALL_ICON, new ImageIcon(img));
-                            }
-                        }
-                        
-                        JButton button = add(a);
-                        
-                        // Possibly find mnemonic
-                        for (Iterator kbIt = keyBindingsList.iterator(); kbIt.hasNext();) {
-                            Object o = kbIt.next();
-                            if (o instanceof MultiKeyBinding) {
-                                MultiKeyBinding binding = (MultiKeyBinding)o;
-                                if (actionName.equals(binding.actionName)) {
-                                    button.setToolTipText(button.getToolTipText()
-                                        + " (" + getMnemonic(binding) + ")"); // NOI18N
-                                    break; // multiple shortcuts ?
-                                }
-                            }
-                        }
-                        
-                        processButton(button);
+                        item = a;
+                    } else {
+                        // unknown action
+                        continue;
                     }
+                }
+            }
+            
+            if (item instanceof ContextAwareAction) {
+                if (actionContext == null) {
+                    Lookup context = createActionContext(c);
+                    actionContext = context == null ? NO_ACTION_CONTEXT : context;
+                }
+                
+                if (actionContext != NO_ACTION_CONTEXT) {
+                    Action caa = ((ContextAwareAction) item).createContextAwareInstance(actionContext);
+                    
+                    // use the context aware instance only if it implements Presenter.Toolbar
+                    // or is a Component else fall back to the original object
+                    if (caa instanceof Presenter.Toolbar || caa instanceof Component) {
+                        item = caa;
+                    }
+                }
+            }
+            
+            if (item instanceof Presenter.Toolbar) {
+                Component presenter = ((Presenter.Toolbar) item).getToolbarPresenter();
+                if (presenter != null) {
+                    item = presenter;
+                }
+            }
+            
+            if (item instanceof Component) {
+                add((Component)item);
+            } else if (item instanceof Action) {
+                // Wrap action to execute on the proper text component
+                // because the default fallback in TextAction.getTextComponent()
+                // might not work properly if the focus was switched
+                // to e.g. a JTextField and then toolbar was clicked.
+                Action a = new WrapperAction(componentRef, (Action) item);
+                
+                // Try to find an icon if not present
+                updateIcon(a);
+
+                // Add the action and let the JToolbar to creat a presenter for it
+                item = add(a);
+            } else {
+                // Some sort of crappy item -> ignore
+                continue;
+            }
+
+            if (item instanceof AbstractButton) {
+                AbstractButton button = (AbstractButton)item;
+                processButton(button);
+                
+                if (keybindings == null) {
+                    List l = getKeyBindingList(mimeType);
+                    keybindings = l == null ? Collections.emptyList() : l;
+                }
+                updateTooltip(button, keybindings);
+            }
+        }
+    }
+    
+    // XXX: this is actually wierd, because it changes the action's properties
+    // perhaps we should just update the presenter, but should not touch the
+    // action itself
+    private static void updateIcon(Action a) {
+        Object icon = a.getValue(Action.SMALL_ICON);
+        if (icon == null) {
+            String resourceId = (String)a.getValue(BaseAction.ICON_RESOURCE_PROPERTY);
+            if (resourceId == null) { // use default icon
+                resourceId = "org/netbeans/modules/editor/resources/default.gif"; // NOI18N
+            }
+            Image img = org.openide.util.Utilities.loadImage(resourceId);
+            if (img != null) {
+                a.putValue(Action.SMALL_ICON, new ImageIcon(img));
+            }
+        }
+    }
+
+    private static void updateTooltip(AbstractButton b, List keybindings) {
+        Action a = b.getAction();
+        String actionName = a == null ? null : (String) a.getValue(Action.NAME);
+        
+        if (actionName == null) {
+            // perhaps no action at all
+            return;
+        }
+        
+        for (Iterator kbIt = keybindings.iterator(); kbIt.hasNext();) {
+            Object o = kbIt.next();
+            if (o instanceof MultiKeyBinding) {
+                MultiKeyBinding binding = (MultiKeyBinding)o;
+                if (actionName.equals(binding.actionName)) {
+                    b.setToolTipText(b.getToolTipText() + " (" + getMnemonic(binding) + ")"); // NOI18N
+                    break; // multiple shortcuts ?
                 }
             }
         }
@@ -607,9 +584,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     /**
      * Not private because of the tests.
      */
-    Lookup createActionContext() {
-	JTextComponent c = getComponent();
-
+    private static Lookup createActionContext(JTextComponent c) {
         Lookup nodeLookup = null;
         DataObject dobj = (c != null) ? NbEditorUtilities.getDataObject(c.getDocument()) : null;
         if (dobj != null && dobj.isValid()) {
@@ -650,100 +625,11 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         button.setBorderPainted(false);
         button.addActionListener(sharedActionListener);
         button.setMargin(BUTTON_INSETS);
-        if (button instanceof JButton) {
+        if (button instanceof AbstractButton) {
             button.addMouseListener(sharedMouseListener);
         }
         //fix of issue #69642. Focus shouldn't stay in toolbar
         button.setFocusable(false);
-    }
-
-    /** Merge together the base and mime folders.
-     * @param baseFolder folder that corresponds to "text/base"
-     * @param mimeFolder target mime type folder.
-     * @return list of data objects resulted from merging.
-     */
-    static List getToolbarObjects(DataFolder baseFolder, DataFolder mimeFolder) {
-        Map name2dob = new HashMap();
-        Map edges = new HashMap();
-
-        if (baseFolder != null) {
-            addDataObjects(name2dob, baseFolder.getChildren());
-        }
-        if (mimeFolder != null) {
-            addDataObjects(name2dob, mimeFolder.getChildren());
-        }
-        
-        if (baseFolder != null) {
-            addEdges(edges, name2dob, baseFolder);
-        }
-        if (mimeFolder != null) {
-            addEdges(edges, name2dob, mimeFolder);
-        }
-
-        try {
-            return org.openide.util.Utilities.topologicalSort(name2dob.values(), edges);
-        } catch (TopologicalSortException ex) {
-            ErrorManager.getDefault().notify(ex);
-            return ex.partialSort();
-        }
-    }
-    
-    /** Append array of dataobjects to the existing list of dataobjects. Also
-     * append the names of added dataobjects so that the both dobs and names
-     * list are in the same order.
-     * @param dobs valid existing list of dataobjects
-     * @param names valid existing list of names of the dataobjects from dobs list.
-     * @param addDobs dataobjects to be added.
-     */
-    private static void addDataObjects(Map name2dob, DataObject[] addDobs) {
-        int addDobsLength = addDobs.length;
-        for (int i = 0; i < addDobsLength; i++) {
-            DataObject dob = addDobs[i];
-            String dobName = dob.getPrimaryFile().getNameExt();
-            name2dob.put(dobName, dob);
-        }
-    }
-
-    /** Append the pairs - first dob name then second dob name to the list
-     * of sort pairs for the dataobjects from the given folder.
-     */
-    private static void addEdges(Map edges, Map name2dob, DataFolder toolbarFolder) {
-        FileObject primaryFile = toolbarFolder.getPrimaryFile();
-        for (Enumeration e = primaryFile.getAttributes();
-            e.hasMoreElements();
-        ) {
-            String name = (String)e.nextElement();
-            int slashIndex = name.indexOf("/"); // NOI18N
-            if (slashIndex != -1) { //NOI18N
-                Object value = primaryFile.getAttribute(name);
-                if ((value instanceof Boolean) && ((Boolean) value).booleanValue()){
-                    String name1 = name.substring(0, slashIndex);
-                    String name2 = name.substring(slashIndex + 1);
-                    if (debugSort) {
-                        System.err.println("SORT-PAIR: [" + name1 + ", " + name2 + "]"); // NOI18N
-                    }
-                    
-                    DataObject dob = (DataObject)name2dob.get(name1);
-                    DataObject target = (DataObject)name2dob.get(name2);
-                    if (dob != null && target != null) {
-                        Collection targetVertices = (Collection)edges.get(dob);
-                        if (targetVertices == null) { // none target vertices yet
-                            // Use just singleton list to save space
-                            targetVertices = Collections.singletonList(target);
-                            edges.put(dob, targetVertices);
-
-                        } else if (targetVertices.size() == 1) { // singleton list
-                            targetVertices = new HashSet(targetVertices);
-                            targetVertices.add(target);
-                            edges.put(dob, targetVertices);
-
-                        } else {
-                            targetVertices.add(target);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     /** Attempt to find the editor keystroke for the given action. */
@@ -784,7 +670,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         }
         public void actionPerformed(ActionEvent e) {
         }
-    }
+    } // End of NoOpAction class
     
     private static final class WrapperAction implements Action {
         
@@ -829,7 +715,5 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
             }
             delegate.actionPerformed(e);
         }
-        
-    }
-    
+    } // End of WrapperAction class
 }

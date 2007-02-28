@@ -84,6 +84,24 @@ is the proper place.
 
         <change>
             <api name="editor"/>
+            <summary>Deprecating Editors/text/base/Toolbars/Default</summary>
+            <version major="1" minor="32"/>
+            <date day="28" month="2" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility source="compatible" semantic="compatible" binary="compatible" modification="no" addition="no" deletion="no" deprecation="yes" />
+            <description>
+            <p>
+                The <code>Editors/text/base/Toolbars/Default</code> folder has
+                been deprecated in favor of <code>Editors/Toolbars/Default</code>.
+                The artificial mime type <code>text/base</code> should not be used
+                for registering toolbar actions that apply to all editors anymore,
+                instead use the root of the folders hierarchy.
+            </p>
+            </description>
+        </change>
+
+        <change>
+            <api name="editor"/>
             <summary>Moving CustomizableSideBar and CustomizableSideBarClass2LayerFolder to a private package</summary>
             <version major="1" minor="31"/>
             <date day="26" month="2" year="2007"/>

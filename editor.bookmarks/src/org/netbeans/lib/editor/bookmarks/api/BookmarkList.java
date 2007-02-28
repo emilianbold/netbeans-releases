@@ -19,6 +19,8 @@
 
 package org.netbeans.lib.editor.bookmarks.api;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
@@ -68,6 +70,8 @@ public final class BookmarkList {
         return bookmarkManagerFactory;
     }
 
+    private static final String PROP_BOOKMARKS = "bookmarks";
+    
     /**
      * Document for which the bookmark list was created.
      */
@@ -88,6 +92,8 @@ public final class BookmarkList {
      */
     private List bookmarks;
 
+    private final PropertyChangeSupport PCS = new PropertyChangeSupport(this);
+    
     private BookmarkList(Document doc, BookmarkManager manager) {
         if (doc == null) {
             throw new NullPointerException("Document cannot be null"); // NOI18N
@@ -271,16 +277,20 @@ public final class BookmarkList {
     public Bookmark removeBookmarkAtIndex(int index) {
         Bookmark bookmark = (Bookmark)bookmarks.remove(index);
         bookmark.release();
+        PCS.firePropertyChange(PROP_BOOKMARKS, null, null);
         return bookmark;
     }
     
     /** Removes all bookmarks */
     public void removeAllBookmarks(){
-        for (int i = 0; i<bookmarks.size(); i++){
-            Bookmark bookmark = (Bookmark)bookmarks.get(i);
-            bookmark.release();
+        if (!bookmarks.isEmpty()) {
+            for (int i = 0; i<bookmarks.size(); i++){
+                Bookmark bookmark = (Bookmark)bookmarks.get(i);
+                bookmark.release();
+            }
+            bookmarks.clear();
+            PCS.firePropertyChange(PROP_BOOKMARKS, null, null);
         }
-        bookmarks.clear();
     }
     
     /**
@@ -301,6 +311,7 @@ public final class BookmarkList {
         Bookmark bookmark = new Bookmark(this, impl);
         int index = getBookmarkIndex(impl.getOffset() + 1);
         bookmarks.add(index, bookmark);
+        PCS.firePropertyChange(PROP_BOOKMARKS, null, null);
         return bookmark;
     }
 
@@ -323,6 +334,14 @@ public final class BookmarkList {
         return "Bookmarks: " + bookmarks; // NOI18N
     }
 
+    void addPropertyChangeListener(PropertyChangeListener l) {
+        PCS.addPropertyChangeListener(l);
+    }
+    
+    void removePropertyChangeListener(PropertyChangeListener l) {
+        PCS.removePropertyChangeListener(l);
+    }
+    
     /**
      * Implementation of the class accessing package-private methods
      * in the bookmarks API.
@@ -340,7 +359,14 @@ public final class BookmarkList {
         public Bookmark addBookmark(BookmarkList list, BookmarkImplementation impl) {
             return list.addBookmark(impl);
         }
-    }
+        
+        public void addBookmarkListPcl(BookmarkList list, PropertyChangeListener l) {
+            list.addPropertyChangeListener(l);
+        }
 
+        public void removeBookmarkListPcl(BookmarkList list, PropertyChangeListener l) {
+            list.removePropertyChangeListener(l);
+        }
+    } // End of ApiAccessor class
 }
 

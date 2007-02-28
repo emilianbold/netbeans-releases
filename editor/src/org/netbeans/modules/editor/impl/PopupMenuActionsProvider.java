@@ -34,7 +34,7 @@ public final class PopupMenuActionsProvider extends ActionsList implements Class
 
     private static final String POPUP_MENU_ACTIONS_FOLDER_NAME = "Popup"; //NOI18N
     
-    public static List getPopupMenuInstances(String mimeType) {
+    public static List getPopupMenuItems(String mimeType) {
         MimePath mimePath = MimePath.parse(mimeType);
         PopupMenuActionsProvider provider = (PopupMenuActionsProvider) MimeLookup.getLookup(mimePath).lookup(PopupMenuActionsProvider.class);
         return provider == null ? Collections.emptyList() : provider.getAllInstances();

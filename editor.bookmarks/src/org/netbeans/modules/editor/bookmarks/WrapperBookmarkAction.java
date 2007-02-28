@@ -103,14 +103,6 @@ public class WrapperBookmarkAction extends NodeAction {
 
     }
 
-    public static final class Toggle extends WrapperBookmarkAction {
-        
-        public Toggle() {
-            super(new ToggleBookmarkAction());
-        }
-
-    }
-
     public static final class ClearDocumentBookmarks extends WrapperBookmarkAction {
         
         public ClearDocumentBookmarks() {

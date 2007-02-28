@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.editor.bookmarks;
 
+import java.beans.PropertyChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -60,5 +61,8 @@ public abstract class BookmarksApiPackageAccessor {
     public abstract BookmarkImplementation getBookmarkImplementation(Bookmark bookmark);
     
     public abstract Bookmark addBookmark(BookmarkList list, BookmarkImplementation impl);
+    
+    public abstract void addBookmarkListPcl(BookmarkList list, PropertyChangeListener l);
 
+    public abstract void removeBookmarkListPcl(BookmarkList list, PropertyChangeListener l);
 }
