@@ -1682,7 +1682,8 @@ public class InteractionManager {
 //            if (!paletteItemSelected && (inlineEditor != null) && (caret != null)) {
             if (!isCnCInProgress() && (inlineEditor != null) && (caret != null)) {
 //                if (((selBox.getDesignBean() == null) || (selBox == pageBox)) &&
-                if (((CssBox.getMarkupDesignBeanForCssBox(selBox) == null) || (selBox == pageBox)) &&
+//                if (((CssBox.getMarkupDesignBeanForCssBox(selBox) == null) || (selBox == pageBox)) &&
+                if (((CssBox.getElementForComponentRootCssBox(selBox) == null) || (selBox == pageBox)) &&
                         inlineEditor.isEdited(selBox)) {
                     // Reroute the mouse press to the insert box
                     caret.mousePressed(e);
