@@ -23,7 +23,6 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.lang.reflect.Method;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -355,7 +354,20 @@ public final class XMLUtil extends Object {
             throw new NullPointerException("You must set an encoding; use \"UTF-8\" unless you have a good reason not to!"); // NOI18N
         }
         Document doc2 = normalize(doc);
-        // XXX should try to use org.w3c.dom.ls.LSSerializer if it exists...
+        // XXX the following DOM 3 LS implementation of the rest of this method works fine on JDK 6 but pretty-printing is broken on JDK 5:
+        /*
+        DOMImplementationLS ls = (DOMImplementationLS) doc.getImplementation().getFeature("LS", "3.0"); // NOI18N
+        assert ls != null : "No DOM 3 LS supported in " + doc.getClass().getName();
+        LSOutput output = ls.createLSOutput();
+        output.setEncoding(enc);
+        output.setByteStream(out);
+        LSSerializer ser = ls.createLSSerializer();
+        String fpp = "format-pretty-print"; // NOI18N
+        if (ser.getDomConfig().canSetParameter(fpp, true)) {
+            ser.getDomConfig().setParameter(fpp, true);
+        }
+        ser.write(doc2, output);
+         */
         // XXX #66563 workaround
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         ClassLoader global = Lookup.getDefault().lookup(ClassLoader.class);
