@@ -13,30 +13,24 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.JTable;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.openide.util.HelpCtx;
@@ -46,7 +40,7 @@ import org.openide.util.NbBundle;
  *
  * @author  phrebejk
  */
-public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, ListDataListener, CustomizerProviderImpl.SubCategoryProvider {
+public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, ListDataListener {
     
     public static final String COMPILE = "COMPILE";
     public static final String COMPILE_TESTS = "COMPILE_TESTS";
@@ -54,7 +48,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     
     EjbJarProjectProperties uiProperties;
     
-    public CustomizerLibraries( EjbJarProjectProperties uiProperties ) {
+    public CustomizerLibraries( EjbJarProjectProperties uiProperties, CustomizerProviderImpl.SubCategoryProvider subcat) {
         this.uiProperties = uiProperties;
         initComponents();
 
@@ -109,6 +103,9 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jComboBoxTarget.setModel(uiProperties.PLATFORM_MODEL);               
         jComboBoxTarget.setRenderer(uiProperties.PLATFORM_LIST_RENDERER);
         testBroken();
+        if (EjbJarCompositePanelProvider.LIBRARIES.equals(subcat.getCategory())) {
+            showSubCategory(subcat.getSubcategory());
+        }
         
         uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel().addListDataListener( this );
         uiProperties.JAVAC_TEST_CLASSPATH_MODEL.addListDataListener( this );
@@ -186,7 +183,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         // NOP
     }
     
-    public void showSubCategory( String name ) {
+    private void showSubCategory (String name) {
         if (name.equals(COMPILE)) {
             jTabbedPane1.setSelectedIndex(0);
         } 
