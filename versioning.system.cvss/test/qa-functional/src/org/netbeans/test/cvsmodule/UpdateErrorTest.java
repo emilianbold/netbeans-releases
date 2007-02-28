@@ -79,8 +79,8 @@ public class UpdateErrorTest extends JellyTestCase {
     
     public void testCheckOutProject() throws Exception {
         PROTOCOL_FOLDER = "protocol";
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
         TestKit.closeProject(projectName);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -158,7 +158,7 @@ public class UpdateErrorTest extends JellyTestCase {
     }
     
     public void testUpdate() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss, cvss2, cvss3;
         InputStream in, in2, in3;
         CommitOperator co;

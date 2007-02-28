@@ -94,8 +94,8 @@ public class IgnoreUnignoreTest extends JellyTestCase {
     }
     
     public void testCheckOutProject() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
         TestKit.closeProject(projectName);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -160,7 +160,7 @@ public class IgnoreUnignoreTest extends JellyTestCase {
     }
     
     public void testIgnoreUnignoreFile() throws Exception{
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         VersioningOperator vo;
         //OutputOperator oo;
         OutputTabOperator oto;
@@ -236,7 +236,7 @@ public class IgnoreUnignoreTest extends JellyTestCase {
     }
     
     public void testIgnoreUnignoreGuiForm() throws Exception{
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         VersioningOperator vo;
         OutputTabOperator oto;
         InputStream in;

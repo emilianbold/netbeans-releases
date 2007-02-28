@@ -93,8 +93,8 @@ public class ShowAnnotationsAndSearchHistoryTest extends JellyTestCase {
     }
     
     public void testCheckOutProject() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
         TestKit.closeProject(projectName);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -155,7 +155,7 @@ public class ShowAnnotationsAndSearchHistoryTest extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
     public void testShowAnnotations() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         PseudoCvsServer cvss, cvss2;
         InputStream in, in2;
         //OutputOperator oo;
@@ -189,7 +189,7 @@ public class ShowAnnotationsAndSearchHistoryTest extends JellyTestCase {
     }
     
     public void testSearchHistory() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         PseudoCvsServer cvss, cvss2;
         InputStream in, in2;
         //OutputOperator oo;

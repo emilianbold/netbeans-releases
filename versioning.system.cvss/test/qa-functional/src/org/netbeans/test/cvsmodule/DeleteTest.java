@@ -86,8 +86,8 @@ public class DeleteTest extends JellyTestCase {
     }
     
     public void testCheckOutProject() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         TestKit.closeProject(projectName);
         OutputOperator oo = OutputOperator.invoke();
         comOperator = new Operator.DefaultStringComparator(true, true);
@@ -168,7 +168,7 @@ public class DeleteTest extends JellyTestCase {
     }
     
     public void testDeleteFile() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss, cvss2, cvss3;
         InputStream in, in2, in3;
         //OutputOperator oo;

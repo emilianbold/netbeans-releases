@@ -319,7 +319,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testPserverUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -357,7 +357,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testLocalUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -395,7 +395,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     
     public void testForkUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -432,7 +432,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testExtUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -473,7 +473,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testEditCVSRootDialogUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -515,7 +515,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     /** Test login for Pserver */
     public void testPserverLoginFailed() throws Exception{
         //invoke CVSCheckoutWizard
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -545,7 +545,7 @@ public class CheckOutWizardTest extends JellyTestCase {
             throw e;
         }
         
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         try {
             JLabelOperator message = new JLabelOperator(crso, "Please check username, password and repository.");
         } catch (TimeoutExpiredException e) {
@@ -558,7 +558,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testPserverLoginSuccess() throws Exception{
         //invoke CVSCheckoutWizard
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -596,7 +596,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testRepositoryBrowsing() throws Exception {
         String CVSroot = "";
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -650,7 +650,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testAliasBrowsing() throws Exception {
         String CVSroot = "";
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -703,7 +703,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testBranchBrowsing() throws Exception {
         String CVSroot;
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -764,7 +764,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testTagBrowsing() throws Exception {
         String CVSroot;
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -834,7 +834,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testCheckWizardSecondStepUI() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -913,8 +913,8 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testCheckWizardFinish() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         TestKit.closeProject(projectName);
         String sessionCVSroot;
         OutputOperator oo = OutputOperator.invoke();

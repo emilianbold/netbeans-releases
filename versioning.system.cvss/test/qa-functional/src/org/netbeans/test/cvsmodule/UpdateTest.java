@@ -108,8 +108,6 @@ public class UpdateTest extends JellyTestCase {
     }
     
     public void testOpen() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         File loc = new File("/tmp/work/w1153322002833");
         //closeProject(PROJECT1);
         //closeProject(PROJECT2);
@@ -117,8 +115,6 @@ public class UpdateTest extends JellyTestCase {
     }
     
     public void testUpdate() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         String cvsRoot = ":pserver:anoncvs@cvsnetbeansorg.sfbay.sun.com:/cvs";
         Node node;
         org.openide.nodes.Node nodeIDE;
@@ -227,9 +223,6 @@ public class UpdateTest extends JellyTestCase {
         Node node2;
         org.openide.nodes.Node nodeIDE1;
         org.openide.nodes.Node nodeIDE2;
-        
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
         //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
@@ -341,9 +334,6 @@ public class UpdateTest extends JellyTestCase {
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
-               
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
                
@@ -432,9 +422,6 @@ public class UpdateTest extends JellyTestCase {
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
-                
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
                 
@@ -490,9 +477,6 @@ public class UpdateTest extends JellyTestCase {
                
         Node node1;
         org.openide.nodes.Node nodeIDE1;
-        
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
         
@@ -566,9 +550,6 @@ public class UpdateTest extends JellyTestCase {
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
-        
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
         
@@ -654,9 +635,6 @@ public class UpdateTest extends JellyTestCase {
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
-               
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
         
@@ -740,9 +718,6 @@ public class UpdateTest extends JellyTestCase {
         Node node1;
         org.openide.nodes.Node nodeIDE1;
         
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
-        
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
         iter1 = System.currentTimeMillis();
         //change last file from last package
@@ -824,9 +799,6 @@ public class UpdateTest extends JellyTestCase {
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
-               
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
                
@@ -909,9 +881,6 @@ public class UpdateTest extends JellyTestCase {
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
-               
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
         iter1 = System.currentTimeMillis();
@@ -988,9 +957,6 @@ public class UpdateTest extends JellyTestCase {
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
-                
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
                 
@@ -1077,9 +1043,6 @@ public class UpdateTest extends JellyTestCase {
         org.openide.nodes.Node nodeIDE1;
         org.openide.nodes.Node nodeIDE2;
         
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
-        
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
         
         iter1 = System.currentTimeMillis();
@@ -1163,9 +1126,6 @@ public class UpdateTest extends JellyTestCase {
         Node node1;
         org.openide.nodes.Node nodeIDE1;
         
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
-        
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
         
         iter1 = System.currentTimeMillis();
@@ -1241,9 +1201,6 @@ public class UpdateTest extends JellyTestCase {
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
-        
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
         
@@ -1334,9 +1291,6 @@ public class UpdateTest extends JellyTestCase {
         Node node1;
         org.openide.nodes.Node nodeIDE1;
         
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
-        
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
         
         iter1 = System.currentTimeMillis();
@@ -1426,9 +1380,6 @@ public class UpdateTest extends JellyTestCase {
         org.openide.nodes.Node nodeIDE1;
         org.openide.nodes.Node nodeIDE2;
         
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
-        
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
         
         iter1 = System.currentTimeMillis();
@@ -1517,9 +1468,6 @@ public class UpdateTest extends JellyTestCase {
         Node node1;
         org.openide.nodes.Node nodeIDE1;
         
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
-        
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
         
         iter1 = System.currentTimeMillis();
@@ -1600,8 +1548,6 @@ public class UpdateTest extends JellyTestCase {
     }
     
     public void updateProject(String project, String cvsRoot) throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         OutputTabOperator oto = new OutputTabOperator(cvsRoot);
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         Node node = new Node(new ProjectsTabOperator().tree(), project);
@@ -1611,8 +1557,6 @@ public class UpdateTest extends JellyTestCase {
     }
     
     public File checkOutProject(String cvsRoot, String passwd, String project) throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         File work = new File("/tmp/work/w" + System.currentTimeMillis());
         work.mkdir();
         OutputOperator oo = OutputOperator.invoke();

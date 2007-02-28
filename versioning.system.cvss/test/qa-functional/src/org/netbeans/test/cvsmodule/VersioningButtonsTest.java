@@ -88,8 +88,6 @@ public class VersioningButtonsTest extends JellyTestCase {
         return suite;
     }
     public void testCheckOutProject() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
         TestKit.closeProject(projectName);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -151,7 +149,6 @@ public class VersioningButtonsTest extends JellyTestCase {
     }
     
     public void testVersioningButtons() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         VersioningOperator vo;
         //OutputOperator oo;
         OutputTabOperator oto;

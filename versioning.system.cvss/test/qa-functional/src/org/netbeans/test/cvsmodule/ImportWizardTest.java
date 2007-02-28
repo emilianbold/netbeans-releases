@@ -116,8 +116,8 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardPserverUI() {   
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -157,8 +157,8 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardLocalUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -196,8 +196,8 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardForkUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -236,8 +236,8 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardExtUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -279,8 +279,8 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardLoginSuccess() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -320,8 +320,8 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardExt() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -365,8 +365,8 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardLocal() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -394,8 +394,8 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardFork() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -423,8 +423,8 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardPserver() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -468,9 +468,9 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardSecondStepUI() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -529,8 +529,8 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardFinish() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         String CVSroot;
         PseudoCvsServer cvss;
         OutputOperator oo = OutputOperator.invoke();

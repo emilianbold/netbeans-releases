@@ -102,8 +102,8 @@ public class BranchTest extends JellyTestCase {
     }
     
     public void testCheckOutProject() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         TestKit.closeProject(projectName);
         String CVSroot;
         OutputOperator oo = OutputOperator.invoke();
@@ -188,8 +188,8 @@ public class BranchTest extends JellyTestCase {
     
     public void testBranchDialogUI() throws Exception {
         
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         PseudoCvsServer cvss;
         InputStream in;
         
@@ -246,8 +246,8 @@ public class BranchTest extends JellyTestCase {
     }
     
     public void testSwitchToBranchDialogUI() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         Node node = new Node(new SourcePackagesNode(projectName), pathToMain);
         SwitchToBranchOperator sbo = SwitchToBranchOperator.invoke(node);
         JRadioButtonOperator trunkRb = new JRadioButtonOperator(sbo, "Switch to Trunk");
@@ -318,8 +318,8 @@ public class BranchTest extends JellyTestCase {
     }
     
     public void testMergeChangesFromBranchDialogUI() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         Node node = new Node(new SourcePackagesNode(projectName), pathToMain);
         MergeChangesFromBranchOperator mcbo = MergeChangesFromBranchOperator.invoke(node);
         mcbo.mergeFromBranch();
@@ -446,8 +446,8 @@ public class BranchTest extends JellyTestCase {
     }
     
     public void testOnNonVersioned() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         //delete fake versioning of file
         //TestKit.unversionProject(file, projNonName);
         
