@@ -764,19 +764,23 @@ public class SelectionManager {
     private void selectAll(/*MarkupDesignBean bean*/Element componentRootElement) {
 //        if (!FacesSupport.isSpecialBean(/*webform, */bean)) {
 //        if (!Util.isSpecialBean(bean)) {
-        MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//        MarkupDesignBean bean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
         if (!WebForm.getHtmlDomProviderService().isSpecialComponent(componentRootElement)) {
 //            addSelected(bean, false);
             addSelected(componentRootElement, false);
         }
 
-        for (int i = 0, n = bean.getChildBeanCount(); i < n; i++) {
-            DesignBean child = bean.getChildBean(i);
-
-            if (child instanceof MarkupDesignBean) {
-//                selectAll((MarkupDesignBean)child);
-                selectAll(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)child));
-            }
+//        for (int i = 0, n = bean.getChildBeanCount(); i < n; i++) {
+//            DesignBean child = bean.getChildBean(i);
+//
+//            if (child instanceof MarkupDesignBean) {
+////                selectAll((MarkupDesignBean)child);
+//                selectAll(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)child));
+//            }
+//        }
+        Element[] children = WebForm.getHtmlDomProviderService().getChildComponents(componentRootElement);
+        for (Element child : children) {
+            selectAll(child);
         }
     }
 
