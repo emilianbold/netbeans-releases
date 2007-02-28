@@ -1291,7 +1291,7 @@ public final class EarProjectProperties {
                 for (int i=0; i < allPaths.length; i++) {
                     PropertyInfo pi = (PropertyInfo)properties.get( allPaths[i] );
                     @SuppressWarnings("unchecked")
-                    List<VisualClassPathItem> values = (List) pi.getValue();
+                    List<VisualClassPathItem> values = (List) pi.getOldValue();
                     if (values == null) {
                         break;
                     }
