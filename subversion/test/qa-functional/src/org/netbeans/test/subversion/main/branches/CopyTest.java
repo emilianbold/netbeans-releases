@@ -83,193 +83,199 @@ public class CopyTest extends JellyTestCase {
     }
     
     public void testCreateNewCopySwitch() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
-        TestKit.closeProject(PROJECT_NAME);
-        
-        stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-        comOperator = new Operator.DefaultStringComparator(true, true);
-        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-        Operator.setDefaultStringComparator(comOperator);
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        Operator.setDefaultStringComparator(oldOperator);
-        RepositoryStepOperator rso = new RepositoryStepOperator();       
-                
-        //create repository... 
-        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
-        new File(TMP_PATH).mkdirs();
-        work.mkdirs();
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
-        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-        
-        rso.next();
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
-        WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        wdso.setLocalFolder(work.getCanonicalPath());
-        wdso.checkCheckoutContentOnly(false);
-        wdso.finish();
-        //open project
-        oto.waitText("Checking out... finished.");
-        NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
-        JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
-        open.push();
-        
-        ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
-        ProjectSupport.waitScanFinished();
-        
-        oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
-        Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
-        CopyToOperator cto = CopyToOperator.invoke(projNode);
-        cto.setRepositoryFolder("branches/release01/" + PROJECT_NAME);
-        cto.setCopyPurpose("New branch for project.");
-        cto.checkSwitchToCopy(true);
-        cto.copy();
-        Thread.sleep(2000);
-        oto.waitText("Copy");
-        oto.waitText("finished.");
-        
-        Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
-        org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
-        //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-        String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
-        assertEquals("Wrong annotation of node!!!", "[ release01]", status);
-        
-        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
-        nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
-        //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-        status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
-        assertEquals("Wrong annotation of node!!!", "[ release01]", status);
-        //to do 
-        stream.flush();
-        stream.close();
-        
-        TestKit.closeProject(PROJECT_NAME);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
+        try {
+            TestKit.closeProject(PROJECT_NAME);
+
+            stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
+            comOperator = new Operator.DefaultStringComparator(true, true);
+            oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+            Operator.setDefaultStringComparator(comOperator);
+            CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+            Operator.setDefaultStringComparator(oldOperator);
+            RepositoryStepOperator rso = new RepositoryStepOperator();       
+
+            //create repository... 
+            File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
+            new File(TMP_PATH).mkdirs();
+            work.mkdirs();
+            RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+            //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+            RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+            rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+
+            rso.next();
+            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.clear();
+            WorkDirStepOperator wdso = new WorkDirStepOperator();
+            wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            wdso.setLocalFolder(work.getCanonicalPath());
+            wdso.checkCheckoutContentOnly(false);
+            wdso.finish();
+            //open project
+            oto.waitText("Checking out... finished.");
+            NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
+            JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
+            open.push();
+
+            ProjectSupport.waitScanFinished();
+            new QueueTool().waitEmpty(1000);
+            ProjectSupport.waitScanFinished();
+
+            oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.clear();
+            Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
+            CopyToOperator cto = CopyToOperator.invoke(projNode);
+            cto.setRepositoryFolder("branches/release01/" + PROJECT_NAME);
+            cto.setCopyPurpose("New branch for project.");
+            cto.checkSwitchToCopy(true);
+            cto.copy();
+            Thread.sleep(2000);
+            oto.waitText("Copy");
+            oto.waitText("finished.");
+
+            Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
+            org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            assertEquals("Wrong annotation of node!!!", "[ release01]", status);
+
+            nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            assertEquals("Wrong annotation of node!!!", "[ release01]", status);
+            //to do 
+            stream.flush();
+            stream.close();
+        } catch (Exception e) {
+        } finally {
+            TestKit.closeProject(PROJECT_NAME);
+        }
     }
     
     public void testCreateNewCopy() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
-        TestKit.closeProject(PROJECT_NAME);
-        
-        stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-        comOperator = new Operator.DefaultStringComparator(true, true);
-        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-        Operator.setDefaultStringComparator(comOperator);
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        Operator.setDefaultStringComparator(oldOperator);
-        RepositoryStepOperator rso = new RepositoryStepOperator();       
-        
-        //create repository... 
-        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
-        new File(TMP_PATH).mkdirs();
-        work.mkdirs();
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
-        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-        
-        rso.next();
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-        oto.clear();
-        WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        wdso.setLocalFolder(work.getCanonicalPath());
-        wdso.checkCheckoutContentOnly(false);
-        wdso.finish();
-        //open project
-        oto.waitText("Checking out... finished.");
-        NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
-        JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
-        open.push();
-        
-        ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
-        ProjectSupport.waitScanFinished();
-        
-        oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
-        Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
-        CopyToOperator cto = CopyToOperator.invoke(projNode);
-        cto.setRepositoryFolder("branches/release01");
-        cto.setCopyPurpose("New branch for project.");
-        cto.checkSwitchToCopy(false);
-        cto.copy();
-        oto.waitText("Copy");
-        oto.waitText("finished.");
-        
-        Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
-        org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
-        //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-        String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
-        assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
-        
-        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
-        nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
-        //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-        status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
-        assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
-        //to do 
-        
-        //switch to branch
-        oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
-        projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
-        SwitchOperator so = SwitchOperator.invoke(projNode);
-        so.setRepositoryFolder("branches/release01/" + PROJECT_NAME);
-        so.switchBt();
-        oto.waitText("Switch");
-        oto.waitText("finished.");
-        
-        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
-        nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
-        //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-        status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
-        assertEquals("Wrong annotation of node!!!", "[ release01]", status);
-        
-        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
-        nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
-        //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-        status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
-        assertEquals("Wrong annotation of node!!!", "[ release01]", status);
-        
-        oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
-        projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
-        so = SwitchOperator.invoke(projNode);
-        so.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        so.switchBt();
-        oto.waitText("Switch");
-        oto.waitText("finished.");
-        Thread.sleep(2000);
-        
-        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
-        nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
-        //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-        status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
-        assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
-        
-        nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
-        nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
-        //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-        status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
-        assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
-        
-        stream.flush();
-        stream.close();
-        
-        TestKit.closeProject(PROJECT_NAME);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
+        try {
+            TestKit.closeProject(PROJECT_NAME);
+
+            stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
+            comOperator = new Operator.DefaultStringComparator(true, true);
+            oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+            Operator.setDefaultStringComparator(comOperator);
+            CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+            Operator.setDefaultStringComparator(oldOperator);
+            RepositoryStepOperator rso = new RepositoryStepOperator();       
+
+            //create repository... 
+            File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
+            new File(TMP_PATH).mkdirs();
+            work.mkdirs();
+            RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+            //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+            RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+            rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+
+            rso.next();
+            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+            oto.clear();
+            WorkDirStepOperator wdso = new WorkDirStepOperator();
+            wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            wdso.setLocalFolder(work.getCanonicalPath());
+            wdso.checkCheckoutContentOnly(false);
+            wdso.finish();
+            //open project
+            oto.waitText("Checking out... finished.");
+            NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
+            JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
+            open.push();
+
+            ProjectSupport.waitScanFinished();
+            new QueueTool().waitEmpty(1000);
+            ProjectSupport.waitScanFinished();
+
+            oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.clear();
+            Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
+            CopyToOperator cto = CopyToOperator.invoke(projNode);
+            cto.setRepositoryFolder("branches/release01");
+            cto.setCopyPurpose("New branch for project.");
+            cto.checkSwitchToCopy(false);
+            cto.copy();
+            oto.waitText("Copy");
+            oto.waitText("finished.");
+
+            Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
+            org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
+
+            nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
+            //to do 
+
+            //switch to branch
+            oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.clear();
+            projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
+            SwitchOperator so = SwitchOperator.invoke(projNode);
+            so.setRepositoryFolder("branches/release01/" + PROJECT_NAME);
+            so.switchBt();
+            oto.waitText("Switch");
+            oto.waitText("finished.");
+
+            nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
+            nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            assertEquals("Wrong annotation of node!!!", "[ release01]", status);
+
+            nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            assertEquals("Wrong annotation of node!!!", "[ release01]", status);
+
+            oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.clear();
+            projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
+            so = SwitchOperator.invoke(projNode);
+            so.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            so.switchBt();
+            oto.waitText("Switch");
+            oto.waitText("finished.");
+            Thread.sleep(2000);
+
+            nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
+            nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
+
+            nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
+
+            stream.flush();
+            stream.close();
+        } catch (Exception e) {
+        } finally {
+            TestKit.closeProject(PROJECT_NAME);
+        }
     }
 }

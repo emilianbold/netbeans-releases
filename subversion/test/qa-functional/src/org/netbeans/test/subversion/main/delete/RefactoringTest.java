@@ -84,131 +84,134 @@ public class RefactoringTest extends JellyTestCase {
     }
     
     public void testRefactoring() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
-        TestKit.closeProject(PROJECT_NAME);
-        OutputOperator.invoke();
-        JTableOperator table;
-        stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-        VersioningOperator vo = VersioningOperator.invoke();
-        comOperator = new Operator.DefaultStringComparator(true, true);
-        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();        
-        Operator.setDefaultStringComparator(comOperator);        
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        Operator.setDefaultStringComparator(oldOperator);        
-        RepositoryStepOperator rso = new RepositoryStepOperator();       
-        
-        //create repository... 
-        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
-        new File(TMP_PATH).mkdirs();
-        work.mkdirs();
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
-        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-        
-        rso.next();
-        WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        wdso.setLocalFolder(work.getCanonicalPath());
-        wdso.checkCheckoutContentOnly(false);
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
-        wdso.finish();
-        //open project
-        oto.waitText("Checking out... finished.");
-        NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
-        JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
-        open.push();
-        
-        ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
-        ProjectSupport.waitScanFinished();
-        
-        oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();            
-        Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "");
-        node.performPopupAction("Subversion|Show Changes");
-        oto.waitText("Refreshing... finished.");
-        node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
-        node.select();
-        node.performPopupActionNoBlock("Refactor|Rename...");
-        NbDialogOperator dialog = new NbDialogOperator("Rename");
-        JTextFieldOperator txt = new JTextFieldOperator(dialog);
-        txt.setText("javaapp_ren");
-        JButtonOperator btn = new JButtonOperator(dialog, "Refactor");
-        btn.push();
-        dialog.waitClosed();
-        Thread.sleep(2000);
-
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
+        try {
+            TestKit.closeProject(PROJECT_NAME);
+            OutputOperator.invoke();
+            JTableOperator table;
+            stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
+            VersioningOperator vo = VersioningOperator.invoke();
+            comOperator = new Operator.DefaultStringComparator(true, true);
+            oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+            Operator.setDefaultStringComparator(comOperator);
+            CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+            Operator.setDefaultStringComparator(oldOperator);
+            RepositoryStepOperator rso = new RepositoryStepOperator();
+            
+            //create repository...
+            File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
+            new File(TMP_PATH).mkdirs();
+            work.mkdirs();
+            RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+            //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+            RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+            rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+            
+            rso.next();
+            WorkDirStepOperator wdso = new WorkDirStepOperator();
+            wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            wdso.setLocalFolder(work.getCanonicalPath());
+            wdso.checkCheckoutContentOnly(false);
+            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.clear();
+            wdso.finish();
+            //open project
+            oto.waitText("Checking out... finished.");
+            NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
+            JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
+            open.push();
+            
+            ProjectSupport.waitScanFinished();
+            new QueueTool().waitEmpty(1000);
+            ProjectSupport.waitScanFinished();
+            
+            oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.clear();
+            Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "");
+            node.performPopupAction("Subversion|Show Changes");
+            oto.waitText("Refreshing... finished.");
+            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            node.select();
+            node.performPopupActionNoBlock("Refactor|Rename...");
+            NbDialogOperator dialog = new NbDialogOperator("Rename");
+            JTextFieldOperator txt = new JTextFieldOperator(dialog);
+            txt.setText("javaapp_ren");
+            JButtonOperator btn = new JButtonOperator(dialog, "Refactor");
+            btn.push();
+            dialog.waitClosed();
+            Thread.sleep(2000);
+            
         /*RefactoringOperator ro = new RefactoringOperator();
         ro.doRefactoring();
         NbDialogOperator ndo = new NbDialogOperator("Refactoring");
         ndo.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         ndo.waitClosed();
         Thread.sleep(2000);*/
-        
-        vo = VersioningOperator.invoke();
-        String[] expected = new String[] {"Main.java", "Main.java", "javaapp_ren"};
-        String[] actual = new String[vo.tabFiles().getRowCount()];
-        for (int i = 0; i < vo.tabFiles().getRowCount(); i++) {
-            actual[i] = vo.tabFiles().getValueAt(i, 0).toString().trim();
-        }
-        int result = TestKit.compareThem(expected, actual, false);
-        assertEquals("Wrong files in Versioning View", 3, result);
-        
-        expected = new String[] {"Locally Deleted", "Locally New", "Locally Copied"};
-        actual = new String[vo.tabFiles().getRowCount()];
-        for (int i = 0; i < vo.tabFiles().getRowCount(); i++) {
-            actual[i] = vo.tabFiles().getValueAt(i, 1).toString().trim();
-        }
-        result = TestKit.compareThem(expected, actual, false);
-        assertEquals("Wrong status in Versioning View", 3, result);
-        
-        oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear(); 
-        node = new Node(new SourcePackagesNode(PROJECT_NAME), "");
-        CommitOperator cmo = CommitOperator.invoke(node);
-        expected = new String[] {"Main.java", "Main.java", "javaapp_ren"};
-        actual = new String[cmo.tabFiles().getRowCount()];
-        for (int i = 0; i < actual.length; i++) {
-            actual[i] = cmo.tabFiles().getValueAt(i, 0).toString();
-        }
-        result = TestKit.compareThem(expected, actual, false);
-        assertEquals("Wrong files in Commit dialog", 3, result);
-        
-        expected = new String[] {"Locally Deleted", "Locally New", "Locally Copied"};
-        actual = new String[cmo.tabFiles().getRowCount()];
-        for (int i = 0; i < actual.length; i++) {
-            actual[i] = cmo.tabFiles().getValueAt(i, 1).toString();
-        }
-        result = TestKit.compareThem(expected, actual, false);
-        assertEquals("Wrong status in Commit dialog", 3, result);
-        cmo.commit();
-        oto.waitText("Committing... finished.");
-        
-        Exception e = null;
-        try {
+            
             vo = VersioningOperator.invoke();
-            table = vo.tabFiles();
-        }
-        catch (Exception ex) {
-            e = ex;
-        }
-        assertNotNull("Unexpected behavior - Versioning view should be empty!!!", e);
-        
-        e = null;
-        try {
-            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
-        } catch (Exception ex) {
-            e = ex;
-        }
-        assertNotNull("Unexpected behavior - File shouldn't be in explorer!!!", e);
-     
-        TestKit.closeProject(PROJECT_NAME);
+            String[] expected = new String[] {"Main.java", "Main.java", "javaapp_ren"};
+            String[] actual = new String[vo.tabFiles().getRowCount()];
+            for (int i = 0; i < vo.tabFiles().getRowCount(); i++) {
+                actual[i] = vo.tabFiles().getValueAt(i, 0).toString().trim();
+            }
+            int result = TestKit.compareThem(expected, actual, false);
+            assertEquals("Wrong files in Versioning View", 3, result);
+            
+            expected = new String[] {"Locally Deleted", "Locally New", "Locally Copied"};
+            actual = new String[vo.tabFiles().getRowCount()];
+            for (int i = 0; i < vo.tabFiles().getRowCount(); i++) {
+                actual[i] = vo.tabFiles().getValueAt(i, 1).toString().trim();
+            }
+            result = TestKit.compareThem(expected, actual, false);
+            assertEquals("Wrong status in Versioning View", 3, result);
+            
+            oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.clear();
+            node = new Node(new SourcePackagesNode(PROJECT_NAME), "");
+            CommitOperator cmo = CommitOperator.invoke(node);
+            expected = new String[] {"Main.java", "Main.java", "javaapp_ren"};
+            actual = new String[cmo.tabFiles().getRowCount()];
+            for (int i = 0; i < actual.length; i++) {
+                actual[i] = cmo.tabFiles().getValueAt(i, 0).toString();
+            }
+            result = TestKit.compareThem(expected, actual, false);
+            assertEquals("Wrong files in Commit dialog", 3, result);
+            
+            expected = new String[] {"Locally Deleted", "Locally New", "Locally Copied"};
+            actual = new String[cmo.tabFiles().getRowCount()];
+            for (int i = 0; i < actual.length; i++) {
+                actual[i] = cmo.tabFiles().getValueAt(i, 1).toString();
+            }
+            result = TestKit.compareThem(expected, actual, false);
+            assertEquals("Wrong status in Commit dialog", 3, result);
+            cmo.commit();
+            oto.waitText("Committing... finished.");
+            
+            Exception e = null;
+            try {
+                vo = VersioningOperator.invoke();
+                table = vo.tabFiles();
+            } catch (Exception ex) {
+                e = ex;
+            }
+            assertNotNull("Unexpected behavior - Versioning view should be empty!!!", e);
+            
+            e = null;
+            try {
+                node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
+            } catch (Exception ex) {
+                e = ex;
+            }
+            assertNotNull("Unexpected behavior - File shouldn't be in explorer!!!", e);
+            
+        } catch (Exception e) {
+        } finally {
+            TestKit.closeProject(PROJECT_NAME);
+        }    
     }
 }

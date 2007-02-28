@@ -63,8 +63,8 @@ public class ProxySettingsUITest extends JellyTestCase {
     }    
     
     public void testProxySettings() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -87,8 +87,8 @@ public class ProxySettingsUITest extends JellyTestCase {
     }
     
     public void testProxyBeforeUrl() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);

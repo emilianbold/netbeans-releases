@@ -71,89 +71,94 @@ public class RevertUiTest extends JellyTestCase{
     }
     
     public void testInvokeCloseRevert() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
-        TestKit.closeProject(PROJECT_NAME);
-        
-        new File(TMP_PATH).mkdirs();
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
-        projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
-        
-        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
-        RepositoryStepOperator rso = new RepositoryStepOperator();
-        //rso.verify();
-        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-        rso.next();
-        Thread.sleep(1000);
-        
-        FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
-        ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        ftiso.setImportMessage("initial import");
-        ftiso.next();
-        Thread.sleep(1000);
-        CommitStepOperator cso = new CommitStepOperator();
-        cso.finish();
-        
-        Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
-        //Node projNode = new Node(new ProjectsTabOperator().tree(), "AnagramGame");
-        RevertModificationsOperator rmo = RevertModificationsOperator.invoke(projNode);
-        rmo.verify();
-        TimeoutExpiredException tee = null;
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         try {
+            TestKit.closeProject(PROJECT_NAME);
+
+            new File(TMP_PATH).mkdirs();
+            RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+            RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+            projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
+
+            ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+            RepositoryStepOperator rso = new RepositoryStepOperator();
+            //rso.verify();
+            rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+            rso.next();
+            Thread.sleep(1000);
+
+            FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
+            ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            ftiso.setImportMessage("initial import");
+            ftiso.next();
+            Thread.sleep(1000);
+            CommitStepOperator cso = new CommitStepOperator();
+            cso.finish();
+
+            Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
+            //Node projNode = new Node(new ProjectsTabOperator().tree(), "AnagramGame");
+            RevertModificationsOperator rmo = RevertModificationsOperator.invoke(projNode);
+            rmo.verify();
+            TimeoutExpiredException tee = null;
+            try {
+                rmo.setStartRevision("1");
+            } catch (Exception e) {
+                tee = (TimeoutExpiredException) e;
+            }
+            assertNotNull("Components shouldn't be accessed", tee);
+            tee = null;
+            try {
+                rmo.setEndRevision("1");
+            } catch (Exception e) {
+                tee = (TimeoutExpiredException) e;
+            }
+            assertNotNull("Components shouldn't be accessed", tee);
+            tee = null;
+            try {
+                rmo.setEndRevision("1");
+            } catch (Exception e) {
+                tee = (TimeoutExpiredException) e;
+            }
+            assertNotNull("Components shouldn't be accessed", tee);
+
+            rmo.rbPreviousCommits().push();
             rmo.setStartRevision("1");
-        } catch (Exception e) {
-            tee = (TimeoutExpiredException) e;
-        }
-        assertNotNull("Components shouldn't be accessed", tee);
-        tee = null;
-        try {
-            rmo.setEndRevision("1");
-        } catch (Exception e) {
-            tee = (TimeoutExpiredException) e;
-        }
-        assertNotNull("Components shouldn't be accessed", tee);
-        tee = null;
-        try {
-            rmo.setEndRevision("1");
-        } catch (Exception e) {
-            tee = (TimeoutExpiredException) e;
-        }
-        assertNotNull("Components shouldn't be accessed", tee);
-        
-        rmo.rbPreviousCommits().push();
-        rmo.setStartRevision("1");
-        rmo.setEndRevision("2");
-        
-        tee = null;
-        try {
-            rmo.setRevision("3");
-        } catch (Exception e) {
-            tee = (TimeoutExpiredException) e;
-        }
-        assertNotNull("Components shouldn't be accessed", tee);
-        
-        rmo.rbSingleCommit().push();
-        rmo.setRevision("3");
-        
-        tee = null;
-        try {
-            rmo.setStartRevision("1");
-        } catch (Exception e) {
-            tee = (TimeoutExpiredException) e;
-        }
-        assertNotNull("Components shouldn't be accessed", tee);
-        
-        tee = null;
-        try {
             rmo.setEndRevision("2");
+
+            tee = null;
+            try {
+                rmo.setRevision("3");
+            } catch (Exception e) {
+                tee = (TimeoutExpiredException) e;
+            }
+            assertNotNull("Components shouldn't be accessed", tee);
+
+            rmo.rbSingleCommit().push();
+            rmo.setRevision("3");
+
+            tee = null;
+            try {
+                rmo.setStartRevision("1");
+            } catch (Exception e) {
+                tee = (TimeoutExpiredException) e;
+            }
+            assertNotNull("Components shouldn't be accessed", tee);
+
+            tee = null;
+            try {
+                rmo.setEndRevision("2");
+            } catch (Exception e) {
+                tee = (TimeoutExpiredException) e;
+            }
+            assertNotNull("Components shouldn't be accessed", tee);
+
+            rmo.cancel(); 
         } catch (Exception e) {
-            tee = (TimeoutExpiredException) e;
-        }
-        assertNotNull("Components shouldn't be accessed", tee);
+        } finally {
+            TestKit.closeProject(PROJECT_NAME);
+        } 
         
-        rmo.cancel();
-        TestKit.closeProject(PROJECT_NAME);
     }
 }

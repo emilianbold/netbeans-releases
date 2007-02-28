@@ -80,89 +80,97 @@ public class CheckoutContentTest extends JellyTestCase {
     }
     
     public void testCheckoutProject() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
-        TestKit.closeProject(PROJECT_NAME);
-        OutputTabOperator oto;
-        OutputOperator oo = OutputOperator.invoke();
-        
-        comOperator = new Operator.DefaultStringComparator(true, true);
-        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-        Operator.setDefaultStringComparator(comOperator);
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        Operator.setDefaultStringComparator(oldOperator);
-        RepositoryStepOperator rso = new RepositoryStepOperator();
-        
-        //create repository... 
-        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
-        new File(TMP_PATH).mkdirs();
-        work.mkdirs();
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
-        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-        
-        rso.next();
-        oto = new OutputTabOperator("file:///tmp/repo");
-        oto.clear();
-        WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        wdso.setLocalFolder(work.getCanonicalPath());
-        wdso.checkCheckoutContentOnly(false);
-        wdso.finish();
-        //open project
-        oto.waitText("Checking out... finished.");
-        NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
-        JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
-        open.push();
-        
-        ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
-        ProjectSupport.waitScanFinished();
-        
-        Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
-        
-        TestKit.closeProject(PROJECT_NAME); 
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
+        try {
+            TestKit.closeProject(PROJECT_NAME);
+            OutputTabOperator oto;
+            OutputOperator oo = OutputOperator.invoke();
+            
+            comOperator = new Operator.DefaultStringComparator(true, true);
+            oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+            Operator.setDefaultStringComparator(comOperator);
+            CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+            Operator.setDefaultStringComparator(oldOperator);
+            RepositoryStepOperator rso = new RepositoryStepOperator();
+            
+            //create repository...
+            File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
+            new File(TMP_PATH).mkdirs();
+            work.mkdirs();
+            RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+            //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+            RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+            rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+            
+            rso.next();
+            oto = new OutputTabOperator("file:///tmp/repo");
+            oto.clear();
+            WorkDirStepOperator wdso = new WorkDirStepOperator();
+            wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            wdso.setLocalFolder(work.getCanonicalPath());
+            wdso.checkCheckoutContentOnly(false);
+            wdso.finish();
+            //open project
+            oto.waitText("Checking out... finished.");
+            NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
+            JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
+            open.push();
+            
+            ProjectSupport.waitScanFinished();
+            new QueueTool().waitEmpty(1000);
+            ProjectSupport.waitScanFinished();
+            
+            Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
+            
+        } catch (Exception e) {
+        } finally {
+            TestKit.closeProject(PROJECT_NAME); 
+        }    
     }
     
     public void testCheckoutContent() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
-        TestKit.closeProject(PROJECT_NAME);
-        
-        comOperator = new Operator.DefaultStringComparator(true, true);
-        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-        Operator.setDefaultStringComparator(comOperator);
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        Operator.setDefaultStringComparator(oldOperator);
-        RepositoryStepOperator rso = new RepositoryStepOperator();
-        
-        //create repository... 
-        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
-        new File(TMP_PATH).mkdirs();
-        work.mkdirs();
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
-        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-        
-        rso.next();
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-        oto.clear();
-        WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/JavaApp/src");
-        wdso.checkCheckoutContentOnly(true);
-        wdso.setLocalFolder(work.getCanonicalPath());
-        wdso.finish();
-        //open project
-        oto.waitText("Checking out... finished.");
-        NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
-        JButtonOperator create = new JButtonOperator(nbdialog, "Create Project...");
-        JButtonOperator close = new JButtonOperator(nbdialog, "Close");
-        close.push();
-        
-        TestKit.closeProject(PROJECT_NAME);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
+        try {
+            TestKit.closeProject(PROJECT_NAME);
+            
+            comOperator = new Operator.DefaultStringComparator(true, true);
+            oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+            Operator.setDefaultStringComparator(comOperator);
+            CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+            Operator.setDefaultStringComparator(oldOperator);
+            RepositoryStepOperator rso = new RepositoryStepOperator();
+            
+            //create repository...
+            File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
+            new File(TMP_PATH).mkdirs();
+            work.mkdirs();
+            RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+            //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+            RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+            rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+            
+            rso.next();
+            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+            oto.clear();
+            WorkDirStepOperator wdso = new WorkDirStepOperator();
+            wdso.setRepositoryFolder("trunk/JavaApp/src");
+            wdso.checkCheckoutContentOnly(true);
+            wdso.setLocalFolder(work.getCanonicalPath());
+            wdso.finish();
+            //open project
+            oto.waitText("Checking out... finished.");
+            NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
+            JButtonOperator create = new JButtonOperator(nbdialog, "Create Project...");
+            JButtonOperator close = new JButtonOperator(nbdialog, "Close");
+            close.push();
+            
+        } catch (Exception e) {
+        } finally {
+            TestKit.closeProject(PROJECT_NAME);
+        }    
     }
 }

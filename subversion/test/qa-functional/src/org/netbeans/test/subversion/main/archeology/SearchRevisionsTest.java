@@ -74,50 +74,53 @@ public class SearchRevisionsTest extends JellyTestCase {
     }
     
     public void testSearchRevisionsTest() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
-        TestKit.closeProject(PROJECT_NAME);
-        
-        stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-        comOperator = new Operator.DefaultStringComparator(true, true);
-        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-        Operator.setDefaultStringComparator(comOperator);
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        Operator.setDefaultStringComparator(oldOperator);
-        RepositoryStepOperator rso = new RepositoryStepOperator();        
-        
-        //create repository... 
-        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
-        new File(TMP_PATH).mkdirs();
-        work.mkdirs();
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
-        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-        
-        rso.next();
-        
-        WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        wdso.setLocalFolder(work.getCanonicalPath());
-        wdso.checkCheckoutContentOnly(false);
-        
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-        oto.clear();
-        SearchRevisionsOperator sro = wdso.search();
-        sro.setFrom("");
-        sro.list();
-        oto.waitText("Searching revisions finished.");
-        sro.verify();
-        sro.selectListItem(0);
-        sro.ok();
-        assertEquals("Requested repository revision is not propagated!!!", "5", wdso.getRevisionNumber());
-        wdso.cancel();
-        
-        stream.flush();
-        stream.close();
-        
-        TestKit.closeProject(PROJECT_NAME);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
+        try {
+            TestKit.closeProject(PROJECT_NAME);
+
+            stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
+            comOperator = new Operator.DefaultStringComparator(true, true);
+            oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+            Operator.setDefaultStringComparator(comOperator);
+            CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+            Operator.setDefaultStringComparator(oldOperator);
+            RepositoryStepOperator rso = new RepositoryStepOperator();        
+
+            //create repository... 
+            File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
+            new File(TMP_PATH).mkdirs();
+            work.mkdirs();
+            RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+            //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+            RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+            rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+
+            rso.next();
+
+            WorkDirStepOperator wdso = new WorkDirStepOperator();
+            wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            wdso.setLocalFolder(work.getCanonicalPath());
+            wdso.checkCheckoutContentOnly(false);
+
+            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+            oto.clear();
+            SearchRevisionsOperator sro = wdso.search();
+            sro.setFrom("");
+            sro.list();
+            oto.waitText("Searching revisions finished.");
+            sro.verify();
+            sro.selectListItem(0);
+            sro.ok();
+            assertEquals("Requested repository revision is not propagated!!!", "5", wdso.getRevisionNumber());
+            wdso.cancel();
+
+            stream.flush();
+            stream.close();
+        } catch (Exception e) { 
+        } finally {
+            TestKit.closeProject(PROJECT_NAME);
+        }   
     }
 }

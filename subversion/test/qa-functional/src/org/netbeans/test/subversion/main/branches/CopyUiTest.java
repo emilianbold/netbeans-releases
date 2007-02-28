@@ -73,60 +73,64 @@ public class CopyUiTest extends JellyTestCase{
     }
     
     public void testInvokeCloseCopy() throws Exception{
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
-        TestKit.closeProject(PROJECT_NAME);
-        
-        new File(TMP_PATH).mkdirs();
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
-        projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
-        
-        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
-        RepositoryStepOperator rso = new RepositoryStepOperator();
-        //rso.verify();
-        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-        rso.next();
-        Thread.sleep(1000);
-        
-        FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
-        ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        ftiso.setImportMessage("initial import");
-        ftiso.next();
-        Thread.sleep(1000);
-        CommitStepOperator cso = new CommitStepOperator();
-        cso.finish();
-        
-        Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
-        CopyToOperator cto = CopyToOperator.invoke(projNode);
-        cto.verify();
-        RepositoryBrowserImpOperator rbio = cto.browseRepository();
-        rbio.verify();
-        rbio.selectFolder("tags");
-        rbio.selectFolder("trunk");
-        rbio.selectFolder("branches");
-        CreateNewFolderOperator cnfo = rbio.createNewFolder();
-        cnfo.setFolderName("release01-" + PROJECT_NAME);
-        cnfo.cancel();
-        //Creation of new folder was canceled - no new folder can't be created
-        TimeoutExpiredException tee = null;
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         try {
+            TestKit.closeProject(PROJECT_NAME);
+
+            new File(TMP_PATH).mkdirs();
+            RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+            RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+            projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
+
+            ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+            RepositoryStepOperator rso = new RepositoryStepOperator();
+            //rso.verify();
+            rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+            rso.next();
+            Thread.sleep(1000);
+
+            FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
+            ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            ftiso.setImportMessage("initial import");
+            ftiso.next();
+            Thread.sleep(1000);
+            CommitStepOperator cso = new CommitStepOperator();
+            cso.finish();
+
+            Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
+            CopyToOperator cto = CopyToOperator.invoke(projNode);
+            cto.verify();
+            RepositoryBrowserImpOperator rbio = cto.browseRepository();
+            rbio.verify();
+            rbio.selectFolder("tags");
+            rbio.selectFolder("trunk");
+            rbio.selectFolder("branches");
+            CreateNewFolderOperator cnfo = rbio.createNewFolder();
+            cnfo.setFolderName("release01-" + PROJECT_NAME);
+            cnfo.cancel();
+            //Creation of new folder was canceled - no new folder can't be created
+            TimeoutExpiredException tee = null;
+            try {
+                rbio.selectFolder("branches|release01-" + PROJECT_NAME);
+            } catch (Exception e) {
+                tee = (TimeoutExpiredException) e;
+            }
+            assertNotNull(tee);
+
+            rbio.selectFolder("branches");
+            cnfo = rbio.createNewFolder();
+            cnfo.setFolderName("release01-" + PROJECT_NAME);
+            cnfo.ok();
             rbio.selectFolder("branches|release01-" + PROJECT_NAME);
+            rbio.ok();
+            assertEquals("New folder for copy purpose wasn't created", "branches/release01-" + PROJECT_NAME, cto.getRepositoryFolder());
+
+            cto.cancel();
         } catch (Exception e) {
-            tee = (TimeoutExpiredException) e;
-        }
-        assertNotNull(tee);
-        
-        rbio.selectFolder("branches");
-        cnfo = rbio.createNewFolder();
-        cnfo.setFolderName("release01-" + PROJECT_NAME);
-        cnfo.ok();
-        rbio.selectFolder("branches|release01-" + PROJECT_NAME);
-        rbio.ok();
-        assertEquals("New folder for copy purpose wasn't created", "branches/release01-" + PROJECT_NAME, cto.getRepositoryFolder());
-       
-        cto.cancel();
-        TestKit.closeProject(PROJECT_NAME); 
+        } finally {
+            TestKit.closeProject(PROJECT_NAME); 
+        }    
     }
 }

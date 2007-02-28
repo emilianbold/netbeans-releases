@@ -83,209 +83,213 @@ public class DeleteTest extends JellyTestCase {
     }
     
     public void testDeleteRevert() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
-        TestKit.closeProject(PROJECT_NAME);
-        
-        stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-        VersioningOperator vo = VersioningOperator.invoke();
-        comOperator = new Operator.DefaultStringComparator(true, true);
-        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();        
-        Operator.setDefaultStringComparator(comOperator);
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        Operator.setDefaultStringComparator(oldOperator);
-        RepositoryStepOperator rso = new RepositoryStepOperator();       
-        
-        //create repository... 
-        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
-        new File(TMP_PATH).mkdirs();
-        work.mkdirs();
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
-        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-        
-        rso.next();
-        WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        wdso.setLocalFolder(work.getCanonicalPath());
-        wdso.checkCheckoutContentOnly(false);
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
-        wdso.finish();
-        //open project
-        oto.waitText("Checking out... finished.");
-        NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
-        JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
-        open.push();
-        
-        ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
-        ProjectSupport.waitScanFinished();
-        
-        oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
-        Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
-        node.performPopupAction("Subversion|Show Changes");
-        oto.waitText("Refreshing... finished.");
-        node.performPopupActionNoBlock("Delete");
-        NbDialogOperator dialog = new NbDialogOperator("Confirm Object Deletion");
-        dialog.yes();
-        
-        Thread.sleep(1000);
-        vo = VersioningOperator.invoke();
-        JTableOperator table;
-        Exception e = null;
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         try {
-            table = vo.tabFiles();
-            assertEquals("Files should have been [Locally Deleted]", "Locally Deleted", table.getValueAt(0, 1).toString());       
-        }
-        catch (Exception ex) {
-            e = ex;
-        }
-        assertNull("Unexpected behavior - file should appear in Versioning view!!!", e);
-        
-        e = null;
-        try {
-            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
-        } catch (Exception ex) {
-            e = ex;
-        }
-        assertNotNull("TimeoutExpiredException should have been thrown. Deleted file can't be visible!!!", e);
-        
-        //revert local changes
-        
-        oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
-        node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
-        RevertModificationsOperator rmo = RevertModificationsOperator.invoke(node);
-        rmo.rbLocalChanges().push();
-        rmo.revert();
-        oto.waitText("Modifications finished.");
-     
-        e = null;
-        try {
+            TestKit.closeProject(PROJECT_NAME);
+            
+            stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
+            VersioningOperator vo = VersioningOperator.invoke();
+            comOperator = new Operator.DefaultStringComparator(true, true);
+            oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+            Operator.setDefaultStringComparator(comOperator);
+            CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+            Operator.setDefaultStringComparator(oldOperator);
+            RepositoryStepOperator rso = new RepositoryStepOperator();
+            
+            //create repository...
+            File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
+            new File(TMP_PATH).mkdirs();
+            work.mkdirs();
+            RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+            //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+            RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+            rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+            
+            rso.next();
+            WorkDirStepOperator wdso = new WorkDirStepOperator();
+            wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            wdso.setLocalFolder(work.getCanonicalPath());
+            wdso.checkCheckoutContentOnly(false);
+            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.clear();
+            wdso.finish();
+            //open project
+            oto.waitText("Checking out... finished.");
+            NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
+            JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
+            open.push();
+            
+            ProjectSupport.waitScanFinished();
+            new QueueTool().waitEmpty(1000);
+            ProjectSupport.waitScanFinished();
+            
+            oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.clear();
+            Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            node.performPopupAction("Subversion|Show Changes");
+            oto.waitText("Refreshing... finished.");
+            node.performPopupActionNoBlock("Delete");
+            NbDialogOperator dialog = new NbDialogOperator("Confirm Object Deletion");
+            dialog.yes();
+            
+            Thread.sleep(1000);
             vo = VersioningOperator.invoke();
-            table = vo.tabFiles();
-        }
-        catch (Exception ex) {
-            e = ex;
-        }
-        assertNotNull("Unexpected behavior - file should disappear in Versioning view!!!", e);
-        
-        e = null;
-        try {
-            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
-        } catch (Exception ex) {
-            e = ex;
-        }
-        assertNull("Reverted file should be visible!!!", e);
-        
-        TestKit.closeProject(PROJECT_NAME);
+            JTableOperator table;
+            Exception e = null;
+            try {
+                table = vo.tabFiles();
+                assertEquals("Files should have been [Locally Deleted]", "Locally Deleted", table.getValueAt(0, 1).toString());
+            } catch (Exception ex) {
+                e = ex;
+            }
+            assertNull("Unexpected behavior - file should appear in Versioning view!!!", e);
+            
+            e = null;
+            try {
+                node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
+            } catch (Exception ex) {
+                e = ex;
+            }
+            assertNotNull("TimeoutExpiredException should have been thrown. Deleted file can't be visible!!!", e);
+            
+            //revert local changes
+            
+            oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.clear();
+            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            RevertModificationsOperator rmo = RevertModificationsOperator.invoke(node);
+            rmo.rbLocalChanges().push();
+            rmo.revert();
+            oto.waitText("Modifications finished.");
+            
+            e = null;
+            try {
+                vo = VersioningOperator.invoke();
+                table = vo.tabFiles();
+            } catch (Exception ex) {
+                e = ex;
+            }
+            assertNotNull("Unexpected behavior - file should disappear in Versioning view!!!", e);
+            
+            e = null;
+            try {
+                node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
+            } catch (Exception ex) {
+                e = ex;
+            }
+            assertNull("Reverted file should be visible!!!", e);
+            
+        } catch (Exception e) {
+        } finally {
+            TestKit.closeProject(PROJECT_NAME);
+        }    
     }
     
     public void testDeleteCommit() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
-        TestKit.closeProject(PROJECT_NAME);
-        
-        stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-        VersioningOperator vo = VersioningOperator.invoke();
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
-        RepositoryStepOperator rso = new RepositoryStepOperator();       
-        
-        //create repository... 
-        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
-        new File(TMP_PATH).mkdirs();
-        work.mkdirs();
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
-        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-        
-        rso.next();
-        WorkDirStepOperator wdso = new WorkDirStepOperator();
-        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        wdso.setLocalFolder(work.getCanonicalPath());
-        wdso.checkCheckoutContentOnly(false);
-        OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
-        wdso.finish();
-        //open project
-        oto.waitText("Checking out... finished.");
-        NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
-        JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
-        open.push();
-        
-        ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
-        ProjectSupport.waitScanFinished();
-        
-        oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
-        Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
-        node.performPopupAction("Subversion|Show Changes");
-        oto.waitText("Refreshing... finished.");
-        node.performPopupActionNoBlock("Delete");
-        NbDialogOperator dialog = new NbDialogOperator("Confirm Object Deletion");
-        dialog.yes();
-        
-        Thread.sleep(1000);
-        vo = VersioningOperator.invoke();
-        JTableOperator table;
-        Exception e = null;
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         try {
-            table = vo.tabFiles();
-            assertEquals("Files should have been [Locally Deleted]", "Locally Deleted", table.getValueAt(0, 1).toString());       
-        }
-        catch (Exception ex) {
-            e = ex;
-        }
-        assertNull("Unexpected behavior - file should appear in Versioning view!!!", e);
-        
-        e = null;
-        try {
-            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
-        } catch (Exception ex) {
-            e = ex;
-        }
-        assertNotNull("TimeoutExpiredException should have been thrown. Deleted file can't be visible!!!", e);
-        
-        //commit deleted file
-        oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
-        node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
-        CommitOperator cmo = CommitOperator.invoke(node);
-        assertEquals("There should be \"Main.java\" file in Commit dialog!!!", cmo.tabFiles().getValueAt(0, 0), "Main.java");
-        cmo.commit();
-        oto.waitText("finished.");
-     
-        e = null;
-        try {
+            TestKit.closeProject(PROJECT_NAME);
+            
+            stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
+            VersioningOperator vo = VersioningOperator.invoke();
+            CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+            RepositoryStepOperator rso = new RepositoryStepOperator();
+            
+            //create repository...
+            File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
+            new File(TMP_PATH).mkdirs();
+            work.mkdirs();
+            RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+            //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+            RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+            rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+            
+            rso.next();
+            WorkDirStepOperator wdso = new WorkDirStepOperator();
+            wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            wdso.setLocalFolder(work.getCanonicalPath());
+            wdso.checkCheckoutContentOnly(false);
+            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.clear();
+            wdso.finish();
+            //open project
+            oto.waitText("Checking out... finished.");
+            NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
+            JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
+            open.push();
+            
+            ProjectSupport.waitScanFinished();
+            new QueueTool().waitEmpty(1000);
+            ProjectSupport.waitScanFinished();
+            
+            oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.clear();
+            Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            node.performPopupAction("Subversion|Show Changes");
+            oto.waitText("Refreshing... finished.");
+            node.performPopupActionNoBlock("Delete");
+            NbDialogOperator dialog = new NbDialogOperator("Confirm Object Deletion");
+            dialog.yes();
+            
+            Thread.sleep(1000);
             vo = VersioningOperator.invoke();
-            table = vo.tabFiles();
-        }
-        catch (Exception ex) {
-            e = ex;
-        }
-        assertNotNull("Unexpected behavior - file should disappear in Versioning view!!!", e);
-        
-        e = null;
-        try {
-            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
-        } catch (Exception ex) {
-            e = ex;
-        }
-        assertNotNull("Deleteted file should be visible!!!", e);
-        
-        TestKit.closeProject(PROJECT_NAME);
+            JTableOperator table;
+            Exception e = null;
+            try {
+                table = vo.tabFiles();
+                assertEquals("Files should have been [Locally Deleted]", "Locally Deleted", table.getValueAt(0, 1).toString());
+            } catch (Exception ex) {
+                e = ex;
+            }
+            assertNull("Unexpected behavior - file should appear in Versioning view!!!", e);
+            
+            e = null;
+            try {
+                node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
+            } catch (Exception ex) {
+                e = ex;
+            }
+            assertNotNull("TimeoutExpiredException should have been thrown. Deleted file can't be visible!!!", e);
+            
+            //commit deleted file
+            oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.clear();
+            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            CommitOperator cmo = CommitOperator.invoke(node);
+            assertEquals("There should be \"Main.java\" file in Commit dialog!!!", cmo.tabFiles().getValueAt(0, 0), "Main.java");
+            cmo.commit();
+            oto.waitText("finished.");
+            
+            e = null;
+            try {
+                vo = VersioningOperator.invoke();
+                table = vo.tabFiles();
+            } catch (Exception ex) {
+                e = ex;
+            }
+            assertNotNull("Unexpected behavior - file should disappear in Versioning view!!!", e);
+            
+            e = null;
+            try {
+                node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
+            } catch (Exception ex) {
+                e = ex;
+            }
+            assertNotNull("Deleteted file should be visible!!!", e);
+            
+        } catch (Exception e) {
+        } finally {
+            TestKit.closeProject(PROJECT_NAME);
+        }    
     }
 }

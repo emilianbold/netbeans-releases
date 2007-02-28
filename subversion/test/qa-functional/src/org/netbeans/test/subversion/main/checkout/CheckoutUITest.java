@@ -105,8 +105,8 @@ public class CheckoutUITest extends JellyTestCase{
     }
     
     public void testChangeAccessTypes() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -140,8 +140,8 @@ public class CheckoutUITest extends JellyTestCase{
     }
     
     public void testIncorrentUrl() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -174,8 +174,8 @@ public class CheckoutUITest extends JellyTestCase{
     }
     
     public void testAvailableFields() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -314,8 +314,8 @@ public class CheckoutUITest extends JellyTestCase{
     }
     
     public void testRepositoryFolder() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);    
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);    
         
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -361,8 +361,8 @@ public class CheckoutUITest extends JellyTestCase{
     }
     
     public void testStopProcess() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);    
+        //emmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);    
         
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();

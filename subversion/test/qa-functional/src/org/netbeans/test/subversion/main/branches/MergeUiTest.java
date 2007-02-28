@@ -74,76 +74,79 @@ public class MergeUiTest extends JellyTestCase {
     }
     
     public void testInvokeCloseMerge() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
-        TestKit.closeProject(PROJECT_NAME);
-        
-        new File(TMP_PATH).mkdirs();
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
-        projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
-        
-        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
-        RepositoryStepOperator rso = new RepositoryStepOperator();
-        //rso.verify();
-        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-        rso.next();
-        Thread.sleep(1000);
-        
-        FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
-        ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-        ftiso.setImportMessage("initial import");
-        ftiso.next();
-        Thread.sleep(1000);
-        CommitStepOperator cso = new CommitStepOperator();
-        cso.finish();
-        
-        Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
-        //Node projNode = new Node(new ProjectsTabOperator().tree(), "AnagramGame");
-        MergeOperator mo = MergeOperator.invoke(projNode);
-        
-        //0. one repository operator
-        mo.cboMergeFrom().selectItem(0);
-        MergeOneRepoOperator moro = new MergeOneRepoOperator();
-        moro.verify();
-        RepositoryBrowserOperator rbo = moro.browseRepository();
-        //moro.selectRepositoryFolder("ok");
-        rbo.selectFolder("trunk");
-        rbo.selectFolder("branches");
-        rbo.selectFolder("tags");
-        rbo.ok();
-        assertEquals("Wrong folder selection!!!", "tags", moro.getRepositoryFolder());
-        
-        //1. two repository operator
-        moro.cboMergeFrom().selectItem(1);
-        MergeTwoRepoOperator mtro = new MergeTwoRepoOperator();
-        mtro.verify();
-        rbo = mtro.browseRepositoryFolder1();
-        rbo.selectFolder("trunk");
-        rbo.selectFolder("branches");
-        rbo.selectFolder("tags");
-        rbo.ok();
-        assertEquals("Wrong folder selection!!!", "tags", mtro.getRepositoryFolder1());
-        rbo = mtro.browseRepositoryFolder2();
-        rbo.selectFolder("tags");
-        rbo.selectFolder("branches");
-        rbo.selectFolder("trunk");
-        rbo.ok();
-        assertEquals("Wrong folder selection!!!", "trunk", mtro.getRepositoryFolder2());
-        
-        //2. two repository operator
-        moro.cboMergeFrom().selectItem(2);
-        MergeOriginOperator moo = new MergeOriginOperator();
-        moo.verify();
-        rbo = moo.browseRepositoryFolder();
-        rbo.selectFolder("trunk");
-        rbo.selectFolder("branches");
-        rbo.selectFolder("tags");
-        rbo.ok();
-        assertEquals("Wrong folder selection!!!", "tags", moo.getRepositoryFolder());
-        moo.cancel();
-        
-        TestKit.closeProject(PROJECT_NAME);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        try {
+            TestKit.closeProject(PROJECT_NAME);
+
+            new File(TMP_PATH).mkdirs();
+            RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+            RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+            projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
+
+            ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+            RepositoryStepOperator rso = new RepositoryStepOperator();
+            //rso.verify();
+            rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+            rso.next();
+            Thread.sleep(1000);
+
+            FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
+            ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+            ftiso.setImportMessage("initial import");
+            ftiso.next();
+            Thread.sleep(1000);
+            CommitStepOperator cso = new CommitStepOperator();
+            cso.finish();
+
+            Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
+            //Node projNode = new Node(new ProjectsTabOperator().tree(), "AnagramGame");
+            MergeOperator mo = MergeOperator.invoke(projNode);
+
+            //0. one repository operator
+            mo.cboMergeFrom().selectItem(0);
+            MergeOneRepoOperator moro = new MergeOneRepoOperator();
+            moro.verify();
+            RepositoryBrowserOperator rbo = moro.browseRepository();
+            //moro.selectRepositoryFolder("ok");
+            rbo.selectFolder("trunk");
+            rbo.selectFolder("branches");
+            rbo.selectFolder("tags");
+            rbo.ok();
+            assertEquals("Wrong folder selection!!!", "tags", moro.getRepositoryFolder());
+
+            //1. two repository operator
+            moro.cboMergeFrom().selectItem(1);
+            MergeTwoRepoOperator mtro = new MergeTwoRepoOperator();
+            mtro.verify();
+            rbo = mtro.browseRepositoryFolder1();
+            rbo.selectFolder("trunk");
+            rbo.selectFolder("branches");
+            rbo.selectFolder("tags");
+            rbo.ok();
+            assertEquals("Wrong folder selection!!!", "tags", mtro.getRepositoryFolder1());
+            rbo = mtro.browseRepositoryFolder2();
+            rbo.selectFolder("tags");
+            rbo.selectFolder("branches");
+            rbo.selectFolder("trunk");
+            rbo.ok();
+            assertEquals("Wrong folder selection!!!", "trunk", mtro.getRepositoryFolder2());
+
+            //2. two repository operator
+            moro.cboMergeFrom().selectItem(2);
+            MergeOriginOperator moo = new MergeOriginOperator();
+            moo.verify();
+            rbo = moo.browseRepositoryFolder();
+            rbo.selectFolder("trunk");
+            rbo.selectFolder("branches");
+            rbo.selectFolder("tags");
+            rbo.ok();
+            assertEquals("Wrong folder selection!!!", "tags", moo.getRepositoryFolder());
+            moo.cancel();
+        } catch (Exception e) {
+        } finally {
+            TestKit.closeProject(PROJECT_NAME);
+        }    
     }
 }
