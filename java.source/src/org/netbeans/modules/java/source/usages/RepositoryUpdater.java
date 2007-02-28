@@ -1665,6 +1665,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
     private static void getAllClassFilesImpl (final File folder, final File root, final int oi, final Map<String,List<File>> result, final boolean recursive) {
         final File[] content = folder.listFiles();
+        if (content == null) {
+            LOGGER.info("IO error while listing folder: " + folder.getAbsolutePath() +" isDirectory: " + folder.isDirectory() +" canRead: " + folder.canRead());    //NOI18N
+            return;
+        }
         for (File f: content) {
             if (f.isDirectory() && recursive) {
                 getAllClassFilesImpl(f, root, oi,result, recursive);                    
