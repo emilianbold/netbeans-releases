@@ -2404,23 +2404,25 @@ public class InteractionManager {
                 sm.selectAncestor(p.x, p.y);
             }
 
-            MarkupDesignBean component = null;
+//            MarkupDesignBean component = null;
+            Element component = null;
+            
 //            ModelViewMapper mapper = webform.getMapper();
 //            CssBox bx = mapper.findBox(x, y);
             CssBox bx = ModelViewMapper.findBox(webform.getPane().getPageBox(), x, y);
 
             if ((bx != null) && !(bx instanceof PageBox)) { // can't select body
 //                component = ModelViewMapper.findComponent(bx);
-                component = ModelViewMapper.findMarkupDesignBean(bx);
+//                component = ModelViewMapper.findMarkupDesignBean(bx);
+                component = ModelViewMapper.findComponentRootElement(bx);
             }
 
             if (component != null) {
 //                sm.setPrimary(component);
-                sm.setPrimary(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component));
+                sm.setPrimary(component);
 
 //                CssBox sel = mapper.findBox(component);
-                CssBox sel = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(),
-                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component));
+                CssBox sel = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), component);
                 CssBox insertBox = null;
                 CssBox ancestor;
 
@@ -2429,12 +2431,12 @@ public class InteractionManager {
 
                     if ((ancestor != null) && (ancestor != sel)) {
 //                        component = ancestor.getDesignBean();
-                        component = CssBox.getMarkupDesignBeanForCssBox(ancestor);
+//                        component = CssBox.getMarkupDesignBeanForCssBox(ancestor);
+                        component = CssBox.getElementForComponentRootCssBox(ancestor);
                     }
                 } else {
 //                    ancestor = sm.isSelected(component) ? sel : null;
-                    Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component);
-                    ancestor = sm.isSelected(componentRootElement) ? sel : null;
+                    ancestor = sm.isSelected(component) ? sel : null;
                 }
 
                 boolean alreadySelected = ancestor != null;
@@ -2450,10 +2452,10 @@ public class InteractionManager {
                     // Toggle selected component
                     if (alreadySelected) {
 //                        sm.removeSelected(component, false);
-                        sm.removeSelected(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component), false);
+                        sm.removeSelected(component, false);
                     } else {
 //                        sm.addSelected(component, false);
-                        sm.addSelected(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component), false);
+                        sm.addSelected(component, false);
                     }
                 } else if (alreadySelected && (e.getButton() == 1) /* &&
                     (isInlineEditable(component))*/) {
@@ -2465,7 +2467,7 @@ public class InteractionManager {
                     if (!alreadySelected) {
                         sm.clearSelection(false);
 //                        sm.addSelected(component, false);
-                        sm.addSelected(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component), false);
+                        sm.addSelected(component, false);
                     }
                 }
 
