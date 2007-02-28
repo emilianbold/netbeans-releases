@@ -84,6 +84,25 @@ public final class TreeUtilities {
             return (((JCMethodDecl)path.getLeaf()).mods.flags & Flags.GENERATEDCONSTR) != 0L;
         }
         
+        //check for synthetic superconstructor call:
+        if (leaf.getKind() == Kind.EXPRESSION_STATEMENT) {
+            ExpressionStatementTree est = (ExpressionStatementTree) leaf;
+            
+            if (est.getExpression().getKind() == Kind.METHOD_INVOCATION) {
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                
+                if (mit.getMethodSelect().getKind() == Kind.IDENTIFIER) {
+                    IdentifierTree it = (IdentifierTree) mit.getMethodSelect();
+                    
+                    if ("super".equals(it.getName().toString())) {
+                        SourcePositions sp = info.getTrees().getSourcePositions();
+                        
+                        return sp.getEndPosition(path.getCompilationUnit(), leaf) == (-1);
+                    }
+                }
+            }
+        }
+        
         return false;
     }
     
