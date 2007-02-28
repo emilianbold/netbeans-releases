@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="stable, validation, indentation" executor="ide_as" name="JSP indentation test">
+    <testbag testattribs="indentation" executor="ide_as" name="JSP indentation test">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="**/IndentationTest.class"/>
