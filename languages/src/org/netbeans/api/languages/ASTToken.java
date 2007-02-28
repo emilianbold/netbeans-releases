@@ -42,12 +42,12 @@ public final class ASTToken extends ASTItem {
      * @return new ASTToken
      */
     public static ASTToken create (
-        String  mimeType,
-        String  type,
-        String  identifier,
-        int     offset,
-        int     length,
-        List    children
+        String          mimeType,
+        String          type,
+        String          identifier,
+        int             offset,
+        int             length,
+        List<? extends ASTItem> children
     ) {
         return new ASTToken (
             mimeType,
@@ -93,7 +93,7 @@ public final class ASTToken extends ASTItem {
         String  identifier, 
         int     offset,
         int     length,
-        List<ASTItem> children
+        List<? extends ASTItem> children
     ) {
         super (mimeType, offset, length, children);
         this.identifier = identifier;

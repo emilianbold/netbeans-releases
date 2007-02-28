@@ -10,7 +10,7 @@ package org.netbeans.modules.languages.parser;
 import junit.framework.TestCase;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.languages.parser.TokenInput;
 import org.netbeans.api.languages.ASTNode;
 
@@ -37,28 +37,28 @@ public class AnalyserTest extends TestCase {
     public void test1 () throws ParseException {
         Language l = new Language (mimeType);
         l.addRule (LLSyntaxAnalyser.Rule.create (mimeType, "S", Arrays.asList (new Object[] {
-            SToken.create (mimeType, "identifier", null), 
+            ASTToken.create (mimeType, "identifier", null, 0), 
             "S"
         })));
         l.addRule (LLSyntaxAnalyser.Rule.create (mimeType, "S", Arrays.asList (new Object[] {
-            SToken.create (mimeType, "operator", "{"), 
+            ASTToken.create (mimeType, "operator", "{", 0), 
             "S", 
-            SToken.create (mimeType, "operator", "}"), 
+            ASTToken.create (mimeType, "operator", "}", 0), 
             "S"
         })));
         l.addRule (LLSyntaxAnalyser.Rule.create (mimeType, "S", Arrays.asList (new Object[] {
         })));
         LLSyntaxAnalyser a = l.getAnalyser ();
         //PetraTest.print (Petra.first (r, 5));
-        TokenInput input = TokenInput.create (new SToken[] {
-            SToken.create (mimeType, "identifier", "asd"),
-            SToken.create (mimeType, "identifier", "ss"),
-            SToken.create (mimeType, "operator", "{"),
-            SToken.create (mimeType, "identifier", "a"),
-            SToken.create (mimeType, "operator", "{"),
-            SToken.create (mimeType, "operator", "}"),
-            SToken.create (mimeType, "identifier", "asd"),
-            SToken.create (mimeType, "operator", "}"),
+        TokenInput input = TokenInput.create (new ASTToken[] {
+            ASTToken.create (mimeType, "identifier", "asd"),
+            ASTToken.create (mimeType, "identifier", "ss"),
+            ASTToken.create (mimeType, "operator", "{"),
+            ASTToken.create (mimeType, "identifier", "a"),
+            ASTToken.create (mimeType, "operator", "{"),
+            ASTToken.create (mimeType, "operator", "}"),
+            ASTToken.create (mimeType, "identifier", "asd"),
+            ASTToken.create (mimeType, "operator", "}"),
         });
         assertNotNull (a.read (input, false));
         assert (input.eof ());
@@ -342,7 +342,7 @@ public class AnalyserTest extends TestCase {
         while (it.hasNext ()) {
             Object next = it.next ();
             System.out.println (indent + next);
-            if (next instanceof SToken) continue;
+            if (next instanceof ASTToken) continue;
             print ((List) it.next (), indent + "  ");
         }
     }

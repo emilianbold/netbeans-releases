@@ -413,7 +413,12 @@ public class Language {
         }
         return value;
     }
-    
+
+    public Collection getFeatures (String featureName) {
+        Map m = (Map) features.get (featureName);
+        if (m == null) return null;
+        return m.values ();
+    }
 //    public Map getFeature (String featureName) {
 //        return (Map) features.get (featureName);
 //    }

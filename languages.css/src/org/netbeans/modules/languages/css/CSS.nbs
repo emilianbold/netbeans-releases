@@ -124,8 +124,14 @@ COLOR:key {
 
 ########### code folding #######################################################
 
-FOLD:body
-FOLD:mediaBody
+FOLD:body {
+    expand_type_action_name:"Expand CSS Rulesets";
+    collapse_type_action_name:"Collapse CSS Rulesets";
+}
+FOLD:mediaBody {
+    expand_type_action_name:"Expand CSS Rulesets";
+    collapse_type_action_name:"Collapse CSS Rulesets";
+}
 
 ########### navigator ##########################################################
 

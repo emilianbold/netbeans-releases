@@ -421,9 +421,6 @@ public class NBSLanguageReader {
                 throw new ParseException ("Syntax error.");
             if (feature == null)
                 feature = Evaluator.createExpressionEvaluator ("...");
-            else
-            if (!(feature instanceof Evaluator))
-                throw new ParseException ("Syntax error.");
             language.addFeature (featureName, identifier, feature);
         } else
         if (Language.HYPERLINK.equals (featureName)) {

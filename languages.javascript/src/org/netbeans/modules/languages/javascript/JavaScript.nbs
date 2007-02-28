@@ -330,9 +330,18 @@ COLOR:js_identifier {
 
 ########### code folding #######################################################
 
-FOLD:FunctionBody:"{...}"
-FOLD:js_comment:"{...}"
-FOLD:js_line_comment:"{...}"
+FOLD:FunctionBody {
+    expand_type_action_name:"Expand Methods";
+    collapse_type_action_name:"Collapse Methods";
+}
+FOLD:js_comment {
+    expand_type_action_name:"Expand Comments";
+    collapse_type_action_name:"Collapse Comments";
+}
+FOLD:js_line_comment {
+    expand_type_action_name:"Expand Comments";
+    collapse_type_action_name:"Collapse Comments";
+}
 
 ########### navigator ##########################################################
 

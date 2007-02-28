@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManagerImpl;
@@ -254,7 +255,7 @@ public class LLSyntaxAnalyser {
             token.getIdentifier (),
             token.getOffset (),
             token.getLength (),
-            Collections.singletonList (root)
+            Collections.<ASTItem>singletonList (root)
         );
     }
     
@@ -403,32 +404,17 @@ public class LLSyntaxAnalyser {
         
         private String  nt;
         private List    right;
-        private int     save;
-        private int     load;
         
         private Rule () {}
         
         public static Rule create (
             String      nt, 
-            List        right,
-            int         save,
-            int         load
+            List        right
         ) {
             Rule r = new Rule ();
             r.nt = nt;
             r.right = right;
-            r.save = save;
-            r.load = load;
             return r;
-        }
-        
-        public static Rule create (
-            String      nt, 
-            List        right
-        ) {
-            return create (
-                nt, right, -1, -1
-            );
         }
 
         public String getNT () {
@@ -437,14 +423,6 @@ public class LLSyntaxAnalyser {
         
         public List getRight () {
             return right;
-        }
-
-        public int getSave () {
-            return save;
-        }
-
-        public int getLoad () {
-            return load;
         }
         
         private String toString = null;
@@ -455,21 +433,9 @@ public class LLSyntaxAnalyser {
                 sb.append ("Rule ").append (nt).append (" = ");
                 int i = 0, k = right.size ();
                 if (i < k) 
-                    if (save == i)
-                        sb.append ('$').append (right.get (i++));
-                    else 
-                    if (load == i)
-                        sb.append ('^').append (right.get (i++));
-                    else 
-                        sb.append (right.get (i++));
+                    sb.append (right.get (i++));
                 while (i < k)
-                    if (save == i)
-                        sb.append (' ').append ('$').append (right.get (i++));
-                    else 
-                    if (load == i)
-                        sb.append (' ').append ('^').append (right.get (i++));
-                    else 
-                        sb.append (' ').append (right.get (i++));
+                    sb.append (' ').append (right.get (i++));
                 toString = sb.toString ();
             }
             return toString;
