@@ -614,8 +614,9 @@ public class SelectionManager {
 //            }
 //        }
         for (SelectedComponent sc : selectedComponents) {
-            DesignBean lb = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
-            if (lb.isContainer()) {
+//            DesignBean lb = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
+//            if (lb.isContainer()) {
+            if (WebForm.getHtmlDomProviderService().isContainerTypeComponent(sc.componentRootElement)) {
 //                return lb;
                 return sc.componentRootElement;
             }
@@ -633,10 +634,12 @@ public class SelectionManager {
 //            }
 //        }
         for (SelectedComponent sc : selectedComponents) {
-            DesignBean lb = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
-            if (lb.getBeanParent() != null) {
+//            DesignBean lb = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
+//            if (lb.getBeanParent() != null) {
+            Element parentComponentRootElement = WebForm.getHtmlDomProviderService().getParentComponent(sc.componentRootElement);
+            if (parentComponentRootElement != null) {
 //                return lb.getBeanParent();
-                return sc.componentRootElement;
+                return parentComponentRootElement;
             }
         }
 

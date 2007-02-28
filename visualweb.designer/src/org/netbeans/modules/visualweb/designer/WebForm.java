@@ -2384,6 +2384,10 @@ public class WebForm implements Designer {
         public boolean isRootContainerComponent(Element componentRootElement) {
             return false;
         }
+
+        public boolean isContainerTypeComponent(Element componentRootElement) {
+            return false;
+        }
     } // End of DummyHtmlDomProviderService.
     
     
