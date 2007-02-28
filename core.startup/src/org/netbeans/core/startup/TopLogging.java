@@ -393,6 +393,7 @@ public final class TopLogging {
 
 
         private void print(StringBuilder sb, LogRecord record, Set<Throwable> beenThere) {
+            // XXX this is copied from NbErrorManager? why are we maintaining two copies? -jglick
             String message = formatMessage(record);
             if (message != null && message.indexOf('\n') != -1 && record.getThrown() == null) {
                 // multi line messages print witout any wrappings
@@ -539,12 +540,7 @@ public final class TopLogging {
         private static String[] decompose(Throwable t) {
             StringWriter sw = new StringWriter();
             t.printStackTrace(new PrintWriter(sw));
-            StringTokenizer tok = new StringTokenizer(sw.toString(), "\n\r"); // NOI18N
-            int c = tok.countTokens();
-            String[] lines = new String[c];
-            for (int i = 0; i < c; i++)
-                lines[i] = tok.nextToken();
-            return lines;
+            return sw.toString().split("(\r\n?|\n)($|(?=\\s*at ))"); // NOI18N
         }
     } // end of NbFormater
 

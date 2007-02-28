@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -384,12 +383,7 @@ public final class NbErrorManager extends Handler {
         private  String[] decompose(Throwable t) {
             StringWriter sw = new StringWriter();
             t.printStackTrace(new PrintWriter(sw));
-            StringTokenizer tok = new StringTokenizer(sw.toString(), "\n\r"); // NOI18N
-            int c = tok.countTokens();
-            String[] lines = new String[c];
-            for (int i = 0; i < c; i++)
-                lines[i] = tok.nextToken();
-            return lines;
+            return sw.toString().split("(\r\n?|\n)($|(?=\\s*at ))"); // NOI18N
         }
         
         /**

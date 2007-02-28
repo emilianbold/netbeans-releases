@@ -389,6 +389,13 @@ public final class NbErrorManagerTest extends NbTestCase {
             String s = readLog();
             assertTrue("added [catch] marker in multiply compound exception", s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
         }
+        try {
+            throw new IOException("main line\ndata 1\ndata 2\ndata 3\ndata 4");
+        } catch (IOException e) {
+            err.notify(ErrorManager.INFORMATIONAL, e);
+            String s = readLog();
+            assertTrue("added [catch] marker in an actual stack trace line: " + s, s.indexOf("[catch] at " + NbErrorManagerTest.class.getName() + ".testCatchMarker") != -1);
+        }
     }
     private static void m1() throws IOException {
         m2();
