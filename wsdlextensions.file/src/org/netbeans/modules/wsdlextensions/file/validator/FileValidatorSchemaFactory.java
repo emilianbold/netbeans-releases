@@ -20,6 +20,7 @@
 package org.netbeans.modules.wsdlextensions.file.validator;
 
 import java.io.InputStream;
+import javax.xml.transform.Source;
 import org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory;
 
 /**
@@ -36,5 +37,9 @@ public class FileValidatorSchemaFactory extends ValidatorSchemaFactory{
     
     public InputStream getSchemaInputStream() {
         return FileValidatorSchemaFactory.class.getResourceAsStream(fileXSDUrl);
+    }
+
+    public Source getSchemaSource() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
