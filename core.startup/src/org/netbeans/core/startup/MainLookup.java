@@ -66,6 +66,10 @@ public final class MainLookup extends ProxyLookup {
     /** Called when a system classloader changes.
      */
     public static final void systemClassLoaderChanged (ClassLoader nue) {
+        if (!(Lookup.getDefault() instanceof MainLookup)) {
+            // May be called from MockServices.setServices even though we are not main lookup.
+            return;
+        }
         if (classLoader != nue) {
             classLoader = nue;
             MainLookup l = (MainLookup)Lookup.getDefault();
