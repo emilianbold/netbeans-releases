@@ -209,6 +209,39 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
         };
     }
     
+    /**
+     * Creates instance of property editor for char type
+     * 
+     * @return propertyEditor
+     */
+    public static final PropertyEditorNumber createCharInstance() {
+        return new PropertyEditorNumber(){
+            protected boolean isTextCorrect(String text) {
+                return Pattern.matches("[\\d\\-]+", text); // NOI18N
+            }
+            
+            protected String prepareText(String text) {
+                return text.replaceAll("[^0-9\\-]+", ""); // NOI18N
+            }
+            
+            protected String getLocalizedRadioButtonLabel() {
+                return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_CHAR_STR"); // NOI18N
+            }
+            
+            protected void saveValue(String text) {
+                if (text.length() > 0) {
+                    char charValue = 0;
+                    try {
+                        text = prepareText(text);
+                        charValue = text.charAt(0);
+                    } catch (NumberFormatException e) {
+                    }
+                    super.setValue(MidpTypes.createCharValue(charValue));
+                }
+            }
+        };
+    }
+    
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, getLocalizedRadioButtonLabel());

@@ -91,8 +91,8 @@ public class MidpPropertyPresenterDeserializer extends PresenterDeserializer {
                 presenter.addProperty (displayName, PropertyEditorString.createInstance (), propertyName);
             else if (EDITOR_JAVA_CODE.equals (editor))
                 presenter.addProperty (displayName, PropertyEditorJavaString.createInstance (null), propertyName);
-//            else if (EDITOR_CHAR.equals (editor))
-//                presenter.addProperty (displayName, PropertyEditorChar.createInstance (), propertyName);
+            else if (EDITOR_CHAR.equals (editor))
+                presenter.addProperty (displayName, PropertyEditorNumber.createCharInstance(), propertyName);
             else if (EDITOR_BYTE.equals (editor))
                 presenter.addProperty (displayName, PropertyEditorNumber.createByteInstance(), propertyName);
             else if (EDITOR_SHORT.equals (editor))
