@@ -159,14 +159,16 @@ public final class LogRecords {
         r.setMillis(Long.parseLong(millis));
         if (catalog != null && key != null) {
             r.setResourceBundleName(catalog);
-            try {
-                ResourceBundle b = ResourceBundle.getBundle(catalog);
-                b.getObject(key);
-                // ok, the key is there
-                r.setResourceBundle(b);
-            } catch (MissingResourceException e) {
-                LOG.log(Level.CONFIG, "Cannot find resource bundle for {0} and key {1}", new Object[] { catalog, key });
-                r.setResourceBundle(new FakeBundle(key, msg));
+            if (!"<null>".equals(catalog)) { // NOI18N
+                try {
+                    ResourceBundle b = ResourceBundle.getBundle(catalog);
+                    b.getObject(key);
+                    // ok, the key is there
+                    r.setResourceBundle(b);
+                } catch (MissingResourceException e) {
+                    LOG.log(Level.CONFIG, "Cannot find resource bundle for {0} and key {1}", new Object[] { catalog, key });
+                    r.setResourceBundle(new FakeBundle(key, msg));
+                }
             }
         
             int[] paramFrom = new int[1];
@@ -432,22 +434,6 @@ public final class LogRecords {
                 String msg = Elem.MESSAGE.parse(values);
                 String key = Elem.KEY.parse(values);
                 String catalog = Elem.CATALOG.parse(values);
-                if ("<null>".equals(catalog)) { // NOI18N
-                    // XXX hotfix for e.g.
-                    //WARNING [org.netbeans.ProxyClassLoader]: You are trying to access file: <null>_en.properties from the default package. Please see ...
-                    //java.lang.IllegalStateException
-                    //	at org.netbeans.ProxyClassLoader.printDefaultPackageWarning(ProxyClassLoader.java:470)
-                    //	at org.netbeans.ProxyClassLoader.getResource(ProxyClassLoader.java:230)
-                    //	at java.lang.ClassLoader.getResourceAsStream(ClassLoader.java:1159)
-                    //	at java.util.ResourceBundle$1.run(ResourceBundle.java:1079)
-                    //	at java.security.AccessController.doPrivileged(Native Method)
-                    //	at java.util.ResourceBundle.loadBundle(ResourceBundle.java:1075)
-                    //	at java.util.ResourceBundle.findBundle(ResourceBundle.java:928)
-                    //	at java.util.ResourceBundle.getBundleImpl(ResourceBundle.java:762)
-                    //	at java.util.ResourceBundle.getBundle(ResourceBundle.java:549)
-                    //	at org.netbeans.lib.uihandler.LogRecords$Parser.endElement(LogRecords.java:444)
-                    catalog = null;
-                }
                 
                 LogRecord r = new LogRecord(parseLevel(lev), key != null && catalog != null ? key : msg);
                 r.setThreadID(Integer.parseInt(thread));
@@ -456,14 +442,18 @@ public final class LogRecords {
                 r.setResourceBundleName(key);
                 if (catalog != null && key != null) {
                     r.setResourceBundleName(catalog);
-                    try {
-                        ResourceBundle b = ResourceBundle.getBundle(catalog);
-                        b.getObject(key);
-                        // ok, the key is there
-                        r.setResourceBundle(b);
-                    } catch (MissingResourceException e) {
-                        LOG.log(Level.CONFIG, "Cannot find resource bundle {0} for key {1}", new Object[] { catalog, key });
-                        r.setResourceBundle(new FakeBundle(key, msg));
+                    if (!"<null>".equals(catalog)) { // NOI18N
+                        try {
+                            ResourceBundle b = ResourceBundle.getBundle(catalog);
+                            b.getObject(key);
+                            // ok, the key is there
+                            r.setResourceBundle(b);
+                        } catch (MissingResourceException e) {
+                            LOG.log(Level.CONFIG, "Cannot find resource bundle {0} for key {1}", new Object[] { catalog, key });
+                            r.setResourceBundle(new FakeBundle(key, msg));
+                        }
+                    } else {
+                        LOG.log(Level.CONFIG, "Cannot find resource bundle <null> for key {1}", key);
                     }
                     if (params != null) {
                         r.setParameters(params.toArray());

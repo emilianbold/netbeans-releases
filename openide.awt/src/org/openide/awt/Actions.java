@@ -573,6 +573,7 @@ public class Actions extends Object {
             LogRecord rec = new LogRecord(Level.FINER, "UI_ACTION_BUTTON_PRESS"); // NOI18N
             rec.setParameters(new Object[] { button, button.getClass().getName(), action, action.getClass().getName(), action.getValue(Action.NAME) });
             rec.setResourceBundle(NbBundle.getBundle(Actions.class));
+            rec.setResourceBundleName(Actions.class.getPackage().getName() + ".Bundle"); // NOI18N
             rec.setLoggerName(UILOG.getName());
             UILOG.log(rec);
         }

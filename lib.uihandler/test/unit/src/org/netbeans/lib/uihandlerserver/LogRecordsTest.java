@@ -18,6 +18,7 @@
 package org.netbeans.lib.uihandlerserver;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -29,11 +30,13 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.ResourceBundle;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.Test;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.lib.uihandler.LogRecords;
@@ -297,6 +300,46 @@ public class LogRecordsTest extends NbTestCase {
         
         assertEquals("The same amount of records", cnt, h.cnt);
     }
+    
+    
+
+    public void testDoesNotAskForWrongBunles() throws Exception {
+        LogRecord rec = new LogRecord(Level.FINER, "UI_ACTION_BUTTON_PRESS"); // NOI18N
+        rec.setParameters(new Object[] { "0", "1" });
+        rec.setResourceBundle(ResourceBundle.getBundle(LogRecordsTest.class.getPackage().getName() + ".Props"));
+        
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        LogRecords.write(os, rec);
+        os.close();
+        
+        
+        class H extends Handler {
+            int cnt;
+            
+            public void publish(LogRecord arg0) {
+                cnt++;
+                assertNotNull("We have params " + cnt, arg0.getParameters());
+                assertEquals("Two argument for " + cnt + "th record", 2, arg0.getParameters().length);
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+        }
+        H h = new H();
+        
+        CharSequence log = Log.enable("", Level.INFO);
+        LogRecords.scan(new ByteArrayInputStream(os.toByteArray()), h);
+
+        assertEquals("One record", 1, h.cnt);
+        
+        if (log.toString().indexOf("Cannot find resource") < 0) {
+            fail(log.toString());
+        }
+    }
+    
     public void testScanEmpty91974() throws Exception {
         String what = "uigestures-iz91974.xml";
         InputStream is = getClass().getResourceAsStream(what);
