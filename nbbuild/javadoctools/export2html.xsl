@@ -82,6 +82,7 @@ Microsystems, Inc. All Rights Reserved.
         a list of APIs for a particular version, you may want to go to:
         </p>
         <ul>
+            <li><a href="http://www.netbeans.org/download/5_5_1/javadoc/" target="_top">5.5.1</a> - Javadoc as released for NetBeans IDE 5.5.1</li>
             <li><a href="http://www.netbeans.org/download/5_5/javadoc/" target="_top">5.5</a> - Javadoc as released for NetBeans IDE 5.5</li>
             <li><a href="http://www.netbeans.org/download/5_0/javadoc/" target="_top">5.0</a> - Javadoc as released for NetBeans IDE 5.0</li>
         </ul>
