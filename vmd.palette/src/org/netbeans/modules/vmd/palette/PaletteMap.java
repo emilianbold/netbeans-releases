@@ -62,6 +62,7 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
             return;
         }
         
+        deactivatedDocument.getDescriptorRegistry().removeRegistryListener(this);
         activatedDocument.getDescriptorRegistry().addRegistryListener(this);
         updatePalette(activatedDocument);
     }
