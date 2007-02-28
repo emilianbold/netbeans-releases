@@ -364,11 +364,10 @@ public class InteractionManager {
      *    or the default property provided allow default is true
      * @param useDefault If true, start editing the property marked default (if any) (marked with a "*" in the metadata)
      */
-    public boolean startInlineEditing(MarkupDesignBean lb, String property, CssBox box,
+    public boolean startInlineEditing(Element componentRootElement, /*MarkupDesignBean lb,*/ String property, CssBox box,
         boolean ensureSelected, boolean selectText, String initialEdit, boolean useDefault) {
         finishInlineEditing(false);
 
-        Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(lb);
         if (box == null) {
 //            box = webform.getMapper().findBox(lb);
             box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
@@ -1355,7 +1354,8 @@ public class InteractionManager {
                     }
 
 //                    if (startInlineEditing(box.getDesignBean(), null, box, true, true, null, false)) {
-                    if (startInlineEditing(CssBox.getMarkupDesignBeanForCssBox(box), null, box, true, true, null, false)) {
+//                    if (startInlineEditing(CssBox.getMarkupDesignBeanForCssBox(box), null, box, true, true, null, false)) {
+                    if (startInlineEditing(CssBox.getElementForComponentRootCssBox(box), null, box, true, true, null, false)) {
                         return;
                     }
                 }
@@ -1415,14 +1415,15 @@ public class InteractionManager {
                     CssBox insertBox = findInsertBox(box);
                     setInsertBox(insertBox, e);
                 } else {
-                    MarkupDesignBean currMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(curr);
+//                    MarkupDesignBean currMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(curr);
                     // Inline editing takes precedence over selection
                     // cycling!
 //                    if ((inlineEditor == null) && sm.isSelected(curr.getDesignBean())) {
 //                        if (startInlineEditing(curr.getDesignBean(), null, box, true, true, null,
                     Element componentRootElement = CssBox.getElementForComponentRootCssBox(curr);
                     if ((inlineEditor == null) && sm.isSelected(componentRootElement)) {
-                        if (startInlineEditing(currMarkupDesignBean, null, box, true, true, null,
+//                        if (startInlineEditing(currMarkupDesignBean, null, box, true, true, null,
+                        if (startInlineEditing(componentRootElement, null, box, true, true, null,
                                     false)) {
                             return;
                         }
@@ -2953,21 +2954,24 @@ public class InteractionManager {
     
     /** Put the designer in inline-editing mode for the first
      * eligible component in the inserted set of beans  */
-    void inlineEdit(final List beans) {
+//    void inlineEdit(final List beans) {
+    void inlineEdit(final Element[] componentRootElements) {
         SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    int n = beans.size();
-
-                    for (int i = 0; i < n; i++) {
-                        DesignBean lb = (DesignBean)beans.get(i);
-
-                        if (!(lb instanceof MarkupDesignBean)) {
+//                    int n = beans.size();
+//                    for (int i = 0; i < n; i++) {
+//                        DesignBean lb = (DesignBean)beans.get(i);
+                    for (Element componentRootElement : componentRootElements) {
+//                        if (!(lb instanceof MarkupDesignBean)) {
+//                            continue;
+//                        }
+                        if (componentRootElement == null) {
                             continue;
                         }
 
                         boolean editing =
-                            startInlineEditing((MarkupDesignBean)lb, null,
-                                null, false, true, null, true);
+//                            startInlineEditing((MarkupDesignBean)lb, null,
+                                startInlineEditing(componentRootElement, null, null, false, true, null, true);
 
                         if (editing) {
                             return;
@@ -2977,16 +2981,19 @@ public class InteractionManager {
                         // For example, for a hyperlink or a commandlink, we want the child output text
                         // to be inline edited. For a TabSet we want the Tab to be edited.
                         // We could consider searching recursively here but that's probably overkill.
-                        for (int j = 0, m = lb.getChildBeanCount(); j < m; j++) {
-                            DesignBean lbc = lb.getChildBean(j);
+//                        for (int j = 0, m = lb.getChildBeanCount(); j < m; j++) {
+//                            DesignBean lbc = lb.getChildBean(j);
+                        Element[] children = WebForm.getHtmlDomProviderService().getChildComponents(componentRootElement);
+                        for (Element child : children) {
 
-                            if (lbc instanceof MarkupDesignBean) {
-                                MarkupDesignBean mlbc = (MarkupDesignBean)lbc;
+//                            if (lbc instanceof MarkupDesignBean) {
+//                                MarkupDesignBean mlbc = (MarkupDesignBean)lbc;
+                            if (child != null) {
 
-                                editing =
-                                    startInlineEditing(mlbc, null, null,
-                                        false, true, null, true);
-
+//                                editing =
+//                                    startInlineEditing(mlbc, null, null,
+//                                        false, true, null, true);
+                                editing = startInlineEditing(child, null, null, false, true, null, true);
                                 if (editing) {
                                     return;
                                 }

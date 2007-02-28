@@ -851,24 +851,22 @@ public class SelectionManager {
 //            for (FormObject fo : selected) {
 //                DesignBean lb = fo.component;
             for (SelectedComponent sc : selectedComponents) {
+//                if (lb instanceof MarkupDesignBean) {
+//                    MarkupDesignBean bean = (MarkupDesignBean)lb;
+//                    CssBox box = mapper.findBox(bean);
+                CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), sc.componentRootElement);
+                // TODO - pass in keystroke too
+                boolean inlineEdited =
+//                    webform.getManager().startInlineEditing(bean, null, box, true, false,
+                    webform.getManager().startInlineEditing(sc.componentRootElement, null, box, true, false,
+                        event.getActionCommand(), false);
+                if (inlineEdited) {
+                    return true;
+                }
+//                }
+
                 DesignBean lb = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
                 BeanInfo bi = lb.getBeanInfo();
-
-                if (lb instanceof MarkupDesignBean) {
-                    MarkupDesignBean bean = (MarkupDesignBean)lb;
-//                    CssBox box = mapper.findBox(bean);
-                    CssBox box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), sc.componentRootElement);
-
-                    // TODO - pass in keystroke too
-                    boolean inlineEdited =
-                        webform.getManager().startInlineEditing(bean, null, box, true, false,
-                            event.getActionCommand(), false);
-
-                    if (inlineEdited) {
-                        return true;
-                    }
-                }
-
                 if (bi != null) {
                     int defaultProp = bi.getDefaultPropertyIndex();
 

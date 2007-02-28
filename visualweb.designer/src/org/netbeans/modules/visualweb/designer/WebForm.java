@@ -1700,7 +1700,16 @@ public class WebForm implements Designer {
 //    }
     
     public void inlineEdit(DesignBean[] designBeans) {
-        getManager().inlineEdit(Arrays.asList(designBeans));
+        List<Element> componentRootElements = new ArrayList<Element>();
+        for (DesignBean designBean : designBeans) {
+            if (designBean instanceof MarkupDesignBean) {
+                Element componentRootElement = WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean);
+                if (componentRootElement != null) {
+                    componentRootElements.add(componentRootElement);
+                }
+            }
+        }
+        getManager().inlineEdit(componentRootElements.toArray(new Element[componentRootElements.size()]));
         // XXX #6484250 To activate the window after drop.
         getTopComponent().requestActive();
     }
@@ -2363,6 +2372,10 @@ public class WebForm implements Designer {
 
         public int getResizeConstraintsForComponent(Element componentRootElement) {
             return -1;
+        }
+
+        public Element[] getChildComponents(Element componentRootElement) {
+            return new Element[0];
         }
     } // End of DummyHtmlDomProviderService.
     
