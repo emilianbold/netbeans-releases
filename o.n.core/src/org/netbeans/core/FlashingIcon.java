@@ -202,6 +202,7 @@ abstract class FlashingIcon extends JComponent implements MouseListener {
                     }
                 } catch( Throwable e ) {
                     //swallow all exceptions to avoid endless exception <-> notification loop
+                    e.printStackTrace();
                 }
             }
         }
