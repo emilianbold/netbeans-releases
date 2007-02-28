@@ -21,7 +21,6 @@ package org.netbeans.modules.visualweb.designer;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.api.designtime.idebridge.DesigntimeIdeBridgeProvider;
-import com.sun.rave.designtime.DesignContext;
 import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Container;
@@ -442,28 +441,32 @@ public class SelectionManager {
         addSelected(componentRootElement, update);
 
         // Is the new component an ancestor of the old leaf?
-        MarkupDesignBean component = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
+//        MarkupDesignBean component = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
         if (PAINT_SELECTION_HIERARCHY) {
 //            DesignBean curr = oldLeaf;
-            DesignBean curr = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(oldLeaf);
+//            DesignBean curr = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(oldLeaf);
+            Element curr = oldLeaf;
 
             while (curr != null) {
-                if (component == curr) {
+//                if (component == curr) {
+                if (componentRootElement == curr) {
                     // Yes!
                     leaf = oldLeaf;
 
                     return;
                 }
 
-                curr = curr.getBeanParent();
+//                curr = curr.getBeanParent();
+                curr = WebForm.getHtmlDomProviderService().getParentComponent(curr);
             }
 
             // No. This is the new leaf.
 //            assert leaf == component;
-            if (leaf != WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component)) {
+//            if (leaf != WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component)) {
+            if (leaf != componentRootElement) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                         new IllegalStateException("Leaf is different from expected, leaf=" + leaf
-                        + ", expected=" + WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(component))); // NOI18N
+                        + ", expected=" + componentRootElement)); // NOI18N
             }
         }
     }
