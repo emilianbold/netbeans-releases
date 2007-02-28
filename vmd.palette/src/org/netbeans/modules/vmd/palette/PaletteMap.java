@@ -27,18 +27,18 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.filesystems.*;
 import org.openide.util.Lookup;
-
 import javax.swing.*;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.modules.vmd.api.model.DescriptorRegistryListener;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 
 /**
  * @author David Kaspar, Anton Chechel
  */
-public final class PaletteMap implements ActiveDocumentSupport.Listener, FileChangeListener {
+public final class PaletteMap implements ActiveDocumentSupport.Listener, FileChangeListener, DescriptorRegistryListener {
     
     private static final PaletteMap instance = new PaletteMap();
     
@@ -62,10 +62,22 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
             return;
         }
         
+        activatedDocument.getDescriptorRegistry().addRegistryListener(this);
+        updatePalette(activatedDocument);
+    }
+    
+    public void activeComponentsChanged(Collection<DesignComponent> activeComponents) {
+    }
+    
+    public void descriptorRegistryUpdated() {
+        updatePalette(ActiveDocumentSupport.getDefault().getActiveDocument());
+    }
+    
+    private void updatePalette(DesignDocument document) {
         String oldProjectID;
         synchronized (this) {
             oldProjectID = activeProjectID;
-            activeProjectID = activatedDocument.getDocumentInterface().getProjectID();
+            activeProjectID = document.getDocumentInterface().getProjectID();
         }
         
         if (!activeProjectID.equals(oldProjectID)) {
@@ -76,7 +88,7 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
             }
         }
         
-        WeakReference<PaletteKit> kitReference = kitMap.get(activatedDocument.getDocumentInterface().getProjectType());
+        WeakReference<PaletteKit> kitReference = kitMap.get(document.getDocumentInterface().getProjectType());
         if (kitReference == null) {
             return;
         }
@@ -84,12 +96,9 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
         if (kit == null) {
             return;
         }
-        kit.setActiveDocument(activatedDocument);
+        kit.setActiveDocument(document);
         kit.update();
         kit.refreshPalette();
-    }
-    
-    public void activeComponentsChanged(Collection<DesignComponent> activeComponents) {
     }
     
     public synchronized PaletteController getPaletteControllerForProjectType(String projectType) {
