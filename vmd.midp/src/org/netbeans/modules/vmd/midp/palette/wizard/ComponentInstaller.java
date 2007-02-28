@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.midp.palette.wizard;
 
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
@@ -32,7 +33,9 @@ import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.serialization.MidpPropertyPresenterSerializer;
 import org.netbeans.modules.vmd.midp.serialization.MidpSetterPresenterSerializer;
 import org.netbeans.modules.vmd.midp.serialization.MidpTypesConvertor;
+import org.netbeans.modules.vmd.midp.serialization.MidpAddImportPresenterSerializer;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
@@ -68,6 +71,7 @@ public final class ComponentInstaller {
         ClasspathInfo info = MidpProjectSupport.getClasspathInfo (project);
         if (info == null)
             return Collections.emptyMap ();
+        final SourceGroup sourceGroup = MidpProjectSupport.getSourceGroup (project);
         final Set<ElementHandle<TypeElement>> allHandles = info.getClassIndex ().getDeclaredTypes ("", ClassIndex.NameKind.PREFIX, EnumSet.of (ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES)); // NOI18N
         final Map<String, ComponentDescriptor> registry = resolveRegistryMap (project);
         final HashMap<String, Item> result = new HashMap<String, Item> ();
@@ -90,7 +94,7 @@ public final class ComponentInstaller {
                         if (! iterator.hasNext ())
                             break;
                         TypeElement element = iterator.next ();
-                        search (element, elements, registry, result);
+                        search (element, elements, registry, sourceGroup, result);
                     }
                 }
             }, true);
@@ -124,7 +128,7 @@ public final class ComponentInstaller {
         return registryMap;
     }
 
-    private static boolean search (TypeElement element, Set<TypeElement> elements, Map<String, ComponentDescriptor> registry, Map<String, Item> result) {
+    private static boolean search (TypeElement element, Set<TypeElement> elements, Map<String, ComponentDescriptor> registry, SourceGroup sourceGroup, Map<String, Item> result) {
         if (element == null)
             return false;
 
@@ -145,7 +149,7 @@ public final class ComponentInstaller {
         TypeElement superElement = getSuperElement (element);
         if (superElement == null)
             return false;
-        if (! search (superElement, elements, registry, result))
+        if (! search (superElement, elements, registry, sourceGroup, result))
             return false;
 
         String superFQN = superElement.getQualifiedName ().toString ();
@@ -154,7 +158,10 @@ public final class ComponentInstaller {
 
         boolean isAbstract = element.getModifiers ().contains (Modifier.ABSTRACT);
         boolean isFinal = element.getModifiers ().contains (Modifier.FINAL);
-        item = new Item (superFQN, fqn, isAbstract, isFinal);
+        FileObject file = SourceUtils.getFile (element);
+        boolean isInSource = file != null  &&  sourceGroup != null  &&  sourceGroup.contains (file);
+        item = new Item (superFQN, fqn, isAbstract, isFinal, isInSource);
+        item.addPresenter (new MidpAddImportPresenterSerializer ());
 
         boolean hasConstructor = inspectElement (item, element);
 //        if (! isAbstract  &&  ! hasConstructor)
@@ -181,7 +188,8 @@ public final class ComponentInstaller {
                     PropertyDescriptor property = MidpTypesConvertor.createPropertyDescriptorForParameter (fqn + "#" + constructorIndex + "#" + index, true, parameter);
                     item.addProperty (property);
                     properties.add (property.getName ());
-                    item.addPresenter (new MidpPropertyPresenterSerializer ("" + constructorIndex + ". constructor - " + index + ". parameter", property));
+                    String displayName = parameter.getSimpleName () + " (" + constructorIndex + ". constructor - " + index + ". parameter)";
+                    item.addPresenter (new MidpPropertyPresenterSerializer (displayName, property));
                     index ++;
                 }
                 item.addPresenter (new MidpSetterPresenterSerializer (null, properties));
@@ -200,7 +208,8 @@ public final class ComponentInstaller {
                 PropertyDescriptor property = MidpTypesConvertor.createPropertyDescriptorForParameter (fqn + "#" + name, false, parameter);
                 item.addProperty (property);
                 properties.add (property.getName ());
-                item.addPresenter (new MidpPropertyPresenterSerializer (name + " method parameter", property));
+                String displayName = parameter.getSimpleName () + " (" + name + " method parameter)";
+                item.addPresenter (new MidpPropertyPresenterSerializer (displayName, property));
 
                 item.addPresenter (new MidpSetterPresenterSerializer (name, properties));
             }
@@ -243,14 +252,16 @@ public final class ComponentInstaller {
         private PaletteDescriptor paletteDescriptor;
         private String superFQN;
         private String fqn;
+        private boolean inSource;
         private ArrayList<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor> ();
         private ArrayList<PresenterSerializer> presenters = new ArrayList<PresenterSerializer> ();
 
-        public Item (String superFQN, String fqn, boolean isAbstract, boolean isFinal) {
+        public Item (String superFQN, String fqn, boolean isAbstract, boolean isFinal, boolean inSource) {
             this.superFQN = superFQN;
             this.fqn = fqn;
+            this.inSource = inSource;
             TypeID typeID = new TypeID (TypeID.Kind.COMPONENT, fqn);
-            typeDescriptor = new TypeDescriptor (new TypeID (TypeID.Kind.COMPONENT, superFQN), typeID, isAbstract, isFinal);
+            typeDescriptor = new TypeDescriptor (new TypeID (TypeID.Kind.COMPONENT, superFQN), typeID, ! isAbstract, ! isFinal);
             paletteDescriptor = new PaletteDescriptor (MidpPaletteProvider.CATEGORY_CUSTOM, MidpTypes.getSimpleClassName (typeID), fqn, null, null);
         }
 
@@ -260,6 +271,10 @@ public final class ComponentInstaller {
 
         public String getFQN () {
             return fqn;
+        }
+
+        public boolean isInSource () {
+            return inSource;
         }
 
         public TypeDescriptor getTypeDescriptor () {

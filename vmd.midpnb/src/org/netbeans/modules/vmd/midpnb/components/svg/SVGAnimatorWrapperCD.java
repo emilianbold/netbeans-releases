@@ -20,8 +20,8 @@
 package org.netbeans.modules.vmd.midpnb.components.svg;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.*;
@@ -30,24 +30,22 @@ import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
-import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
-import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
-import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
-import org.netbeans.modules.vmd.midp.codegen.SwitchDisplayableParameterPresenter;
+import org.netbeans.modules.vmd.midp.codegen.*;
 import org.netbeans.modules.vmd.midp.components.*;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.openide.util.NbBundle;
+
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 
 /**
  *
@@ -121,7 +119,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                 new AcceptSVGFilesPresenter(),
                 // code
                 createSetterPresenter(),
-                MidpCustomCodePresenterSupport.createAddImportPresenter(),
+                MidpCodePresenterSupport.createAddImportPresenter(),
                 new SwitchDisplayableParameterPresenter() {
                     public String generateSwitchDisplayableParameterCode () {
                         return CodeReferencePresenter.generateAccessCode (getComponent ()) + ".getSvgCanvas ()"; // NOI18N

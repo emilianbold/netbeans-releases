@@ -20,11 +20,6 @@
 
 package org.netbeans.modules.vmd.midpnb.codegen;
 
-import com.sun.source.util.TreePath;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.vmd.api.codegen.*;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -42,10 +37,8 @@ import org.netbeans.modules.vmd.midpnb.components.displayables.SplashScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGSplashScreenCD;
-import org.openide.util.Exceptions;
 
 import javax.swing.text.StyledDocument;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -117,28 +110,6 @@ public final class MidpCustomCodePresenterSupport {
         if (menu == null || ! menu.getDocument ().getDescriptorRegistry ().isInHierarchy (SVGMenuCD.TYPEID, menu.getType ()))
             return null;
         return MidpTypes.getString (menu.readProperty (ClassCD.PROP_INSTANCE_NAME)) + SVG_MENU_ACTION_METHOD_SUFFIX;
-    }
-
-    public static Presenter createAddImportPresenter () {
-        return new CodeGlobalLevelPresenter() {
-            protected void performGlobalGeneration (StyledDocument styledDocument) {
-                try {
-                    JavaSource.forDocument (styledDocument).runModificationTask (new CancellableTask<WorkingCopy>() {
-                        public void cancel () {
-                        }
-
-                        public void run (WorkingCopy parameter) throws Exception {
-                            String fqn = getComponent ().getType ().getString ();
-                            parameter.toPhase (JavaSource.Phase.PARSED);
-                            SourceUtils.resolveImport (parameter, new TreePath (parameter.getCompilationUnit ()), fqn);
-                        }
-                    }).commit ();
-                } catch (IOException e) {
-                    Exceptions.printStackTrace (e);
-                }
-            }
-        };
-
     }
 
     private static class DisplayParameter implements Parameter {

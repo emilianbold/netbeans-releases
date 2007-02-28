@@ -1,2 +1,3 @@
 org.netbeans.modules.vmd.midp.serialization.MidpPropertyPresenterSerializer
 org.netbeans.modules.vmd.midp.serialization.MidpSetterPresenterSerializer
+org.netbeans.modules.vmd.midp.serialization.MidpAddImportPresenterSerializer

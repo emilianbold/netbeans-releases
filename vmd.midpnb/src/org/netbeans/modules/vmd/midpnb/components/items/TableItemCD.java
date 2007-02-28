@@ -21,15 +21,17 @@ package org.netbeans.modules.vmd.midpnb.components.items;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.api.properties.common.TextFieldBC;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
@@ -39,9 +41,9 @@ import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.openide.util.NbBundle;
+
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 
 /**
  *
@@ -117,7 +119,7 @@ public class TableItemCD extends ComponentDescriptor {
             createPropertiesPresenter(),
             // code
             createSetterPresenter (),
-            MidpCustomCodePresenterSupport.createAddImportPresenter (),
+            MidpCodePresenterSupport.createAddImportPresenter (),
             // delete
             DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_MODEL)
         );

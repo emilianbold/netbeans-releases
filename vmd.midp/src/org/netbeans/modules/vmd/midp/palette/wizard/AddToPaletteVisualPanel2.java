@@ -29,6 +29,8 @@ import java.awt.*;
  */
 public final class AddToPaletteVisualPanel2 extends JPanel {
 
+    private Collection<ComponentInstaller.Item> items;
+
     public AddToPaletteVisualPanel2() {
         initComponents();
         list.setCellRenderer (new ItemRenderer ());
@@ -39,7 +41,20 @@ public final class AddToPaletteVisualPanel2 extends JPanel {
     }
 
     public void setItems (Collection<ComponentInstaller.Item> items) {
-        final ArrayList<ComponentInstaller.Item> lst = new ArrayList<ComponentInstaller.Item> (items);
+        this.items = items;
+        reload ();
+    }
+
+    public void reload () {
+        final ArrayList<ComponentInstaller.Item> lst;
+        if (! cLibraries.isSelected ())
+            lst = new ArrayList<ComponentInstaller.Item> (items);
+        else {
+            lst = new ArrayList<ComponentInstaller.Item> ();
+            for (ComponentInstaller.Item item : items)
+                if (item.isInSource ())
+                    lst.add (item);
+        }
         Collections.sort (lst, new Comparator<ComponentInstaller.Item>() {
             public int compare (ComponentInstaller.Item o1, ComponentInstaller.Item o2) {
                 return o1.getFQN ().compareTo (o2.getFQN ());
@@ -73,22 +88,32 @@ public final class AddToPaletteVisualPanel2 extends JPanel {
         list = new javax.swing.JList();
         bSelectAll = new javax.swing.JButton();
         bDeselectAll = new javax.swing.JButton();
+        cLibraries = new javax.swing.JCheckBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Found classes:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "&Found MIDP Classes - select those you want to add:");
 
         jScrollPane1.setViewportView(list);
 
-        org.openide.awt.Mnemonics.setLocalizedText(bSelectAll, "Select All");
+        org.openide.awt.Mnemonics.setLocalizedText(bSelectAll, "&Select All");
         bSelectAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bSelectAllActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(bDeselectAll, "Deselect All");
+        org.openide.awt.Mnemonics.setLocalizedText(bDeselectAll, "&Deselect All");
         bDeselectAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bDeselectAllActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(cLibraries, "Show Components from &Libraries");
+        cLibraries.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cLibraries.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        cLibraries.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cLibrariesActionPerformed(evt);
             }
         });
 
@@ -99,14 +124,15 @@ public final class AddToPaletteVisualPanel2 extends JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 202, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 13, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(bSelectAll)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(bDeselectAll)))
+                        .add(bDeselectAll))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, cLibraries))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -115,7 +141,9 @@ public final class AddToPaletteVisualPanel2 extends JPanel {
                 .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cLibraries)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(bDeselectAll)
@@ -123,6 +151,10 @@ public final class AddToPaletteVisualPanel2 extends JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void cLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cLibrariesActionPerformed
+    reload ();
+}//GEN-LAST:event_cLibrariesActionPerformed
 
 private void bDeselectAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bDeselectAllActionPerformed
     list.setSelectedIndices(new int[0]);
@@ -138,6 +170,7 @@ private void bSelectAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bDeselectAll;
     private javax.swing.JButton bSelectAll;
+    private javax.swing.JCheckBox cLibraries;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JList list;

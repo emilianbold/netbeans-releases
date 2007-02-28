@@ -25,7 +25,9 @@ import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodeSupport;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
@@ -33,12 +35,11 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.imagechooser.PropertyEditorImageChooser;
-import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 
 /**
  *
@@ -127,7 +128,7 @@ public class SVGImageCD extends ComponentDescriptor {
                 createPropertiesPresenter(),
                 // code
                 createSetterPresenter(),
-                MidpCustomCodePresenterSupport.createAddImportPresenter(),
+                MidpCodePresenterSupport.createAddImportPresenter(),
                 // inspector
                 InspectorFolderPresenter.create(true),
                 InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical())

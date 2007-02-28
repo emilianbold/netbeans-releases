@@ -29,18 +29,17 @@ import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFac
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
-import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
-
 
 import java.util.Arrays;
 import java.util.List;
@@ -102,7 +101,7 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
             createPropertiesPresenter(),
             // setter
             createSetterPresenter (),
-            MidpCustomCodePresenterSupport.createAddImportPresenter (),
+            MidpCodePresenterSupport.createAddImportPresenter (),
              // inspector
             InspectorFolderPresenter.create(true),
             InspectorPositionPresenter.create(new ResourcePC (), FolderPositionControllerFactory.createHierarchical())

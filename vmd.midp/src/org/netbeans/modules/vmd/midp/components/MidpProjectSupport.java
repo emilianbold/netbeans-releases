@@ -19,25 +19,26 @@
 
 package org.netbeans.modules.vmd.midp.components;
 
-import java.io.IOException;
-import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
-import org.netbeans.modules.vmd.api.io.ProjectUtils;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  *
@@ -79,9 +80,9 @@ public final class MidpProjectSupport {
     }
     
     /**
-     * Gets project for document
-     * @param document
-     * @return
+     * Gets project for document.
+     * @param document the document
+     * @return the project
      */
     private static Project getProjectForDocument(DesignDocument document) {
         if (document == null)
@@ -223,10 +224,9 @@ public final class MidpProjectSupport {
     
     /**
      * Gets classpath for given project and fileobject.
-     *
-     * @param project
-     * @param fileObject
-     * @return
+     * @param project the project
+     * @param fileObject the file object within the project
+     * @return the list of classpaths
      */
     private static List<ClassPath> getClassPath(Project project, FileObject fileObject) {
         ArrayList<ClassPath> classPathList = new ArrayList<ClassPath>();
@@ -238,11 +238,18 @@ public final class MidpProjectSupport {
     }
     
     public static ClasspathInfo getClasspathInfo(Project project) {
+        SourceGroup group = getSourceGroup (project);
+        if (group == null)
+            return null;
+        FileObject fileObject = group.getRootFolder ();
+        return ClasspathInfo.create (fileObject);
+    }
+
+    public static SourceGroup getSourceGroup (Project project) {
         SourceGroup[] sourceGroups = org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sourceGroups == null || sourceGroups.length < 1)
             return null;
-        FileObject fileObject = sourceGroups[0].getRootFolder();
-        return ClasspathInfo.create(fileObject);
+        return sourceGroups[0];
     }
-    
+
 }
