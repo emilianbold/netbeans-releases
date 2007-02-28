@@ -20,7 +20,9 @@
 package org.netbeans.modules.visualweb.insync.java;
 
 import java.io.IOException;
+import java.util.List;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
@@ -52,8 +54,17 @@ public class WriteTaskWrapper implements CancellableTask<WorkingCopy> {
     }
     
     public static Object execute(Write task,  FileObject fObj) {
-        WriteTaskWrapper taskWrapper = new WriteTaskWrapper(task);
         JavaSource js = JavaSource.forFileObject(fObj);
+        return execute(task, js);
+    }
+    
+    public static Object execute(Write task,  List<FileObject> fObjs) {
+        JavaSource js = JavaSource.create(ClasspathInfo.create(fObjs.get(0)), fObjs);
+        return execute(task, js);
+    }
+    
+    public static Object execute(Write task, JavaSource js) {
+        WriteTaskWrapper taskWrapper = new WriteTaskWrapper(task);        
         ModificationResult result = null;
         try {
             result = js.runModificationTask(taskWrapper);
@@ -65,5 +76,6 @@ public class WriteTaskWrapper implements CancellableTask<WorkingCopy> {
         }
         return taskWrapper.result;
     }
+    
 }
 

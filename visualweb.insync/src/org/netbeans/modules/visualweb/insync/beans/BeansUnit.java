@@ -20,6 +20,8 @@ package org.netbeans.modules.visualweb.insync.beans;
 
 import org.netbeans.modules.visualweb.insync.java.JMIUtils;
 import org.netbeans.modules.visualweb.insync.java.JavaClass;
+import org.netbeans.modules.visualweb.insync.java.Method;
+import org.netbeans.modules.visualweb.insync.java.Statement;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
@@ -263,6 +265,9 @@ public class BeansUnit implements Unit {
             bindEventSets(blocks[i]);
         }
  //*/
+        Method method = getPropertiesInitMethod();
+        List<Statement> stmts = method.getPropertySetStatements();
+        bindProperties(stmts);
         bindBeanParents();
     }
 
@@ -495,8 +500,8 @@ public class BeansUnit implements Unit {
      * @param s
      * @return
      */
-    protected Property newBoundProperty(Object/*StatementTree*/ s) {
-        return Property.newBoundInstance(this, s);
+    protected Property newBoundProperty(Statement stmt) {
+        return Property.newBoundInstance(this, stmt);
     }
 
     /**
@@ -522,6 +527,21 @@ public class BeansUnit implements Unit {
  //*/
     }
 
+    /**
+     *
+     */
+    protected void bindProperties(List<Statement> stmts) {
+        for(Statement stmt : stmts) {
+            Property p = newBoundProperty(stmt);
+            if (p != null) {
+                Bean b = p.bean;
+                b.properties.add(p);
+            } else {
+                assert Trace.trace("insync.beans", "BU.bindProperties: Stmnt was NOT a property setter:" + stmt);  //NOI18N
+            }
+        }
+    }
+    
     /**
      * Overridable hook to allow subclasses an opportunity to create different kinds of bound event
      * sets.
@@ -635,7 +655,7 @@ public class BeansUnit implements Unit {
     /**
      * @return
      */
-    public Object/*ExecutableElement*/ getPropertiesInitMethod() {
+    public Method getPropertiesInitMethod() {
         return getBeanStructureScanner().getPropertiesInitMethod();
     }
     
@@ -650,7 +670,7 @@ public class BeansUnit implements Unit {
     /**
      * @return
      */
-    public Object/*ExecutableElement*/ getCleanupMethod() {
+    public Method getCleanupMethod() {
         return getBeanStructureScanner().getDestroyMethod();
     }
 
@@ -790,14 +810,10 @@ public class BeansUnit implements Unit {
      * @param name
      * @return
      */
-    public Object/*ExecutableElement*/ getEventMethod(String name, MethodDescriptor md) {
-/*//NB6.0
+    public Method getEventMethod(String name, MethodDescriptor md) {
         Class[] pts = md.getMethod().getParameterTypes();
-        Method m = javaClass.getMethod(name, pts);
         assert Trace.trace("insync.beans", "BU.getEventMethod name:" + name + " null");  //NOI18N
-        return m;
-//*/
-        return null;
+        return javaClass.getMethod(name, pts);
     }
 
     /**
@@ -806,7 +822,7 @@ public class BeansUnit implements Unit {
      * @param name
      * @return
      */
-    public Object/*ExecutableElement*/ getInitializerMethod() {
+    public Method getInitializerMethod() {
         return javaClass.getMethod("init", new Class[0]);
     }
     
@@ -830,7 +846,7 @@ public class BeansUnit implements Unit {
      * @param name  The name of the metod to find or create.
      * @return The existing or newly created method.
      */
-    public Object/*ExecutableElement*/ ensureEventMethod(MethodDescriptor md, String name, String defaultBody, 
+    public Method ensureEventMethod(MethodDescriptor md, String name, String defaultBody, 
              String[] parameterNames, String[] requiredImports) {
         return getBeanStructureScanner().ensureEventMethod(md, name, defaultBody, 
                 parameterNames, requiredImports);

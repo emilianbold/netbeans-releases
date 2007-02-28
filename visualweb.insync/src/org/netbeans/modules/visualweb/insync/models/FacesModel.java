@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.insync.models;
 
+import java.beans.MethodDescriptor;
 import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import com.sun.rave.designer.html.HtmlTag;
@@ -38,6 +39,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.visualweb.insync.java.Method;
 import org.openide.ErrorManager;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
@@ -1243,7 +1245,7 @@ public class FacesModel extends Model {
      * double clicks on the document itself, not on any of the components on the page.
      **/
     public void openDefaultHandler() {
-        Object/*ExecutableElement*/ m = facesUnit.getInitializerMethod();
+        Method m = facesUnit.getInitializerMethod();
         positionTheCursor(m, false);
     }
 
@@ -1269,10 +1271,10 @@ public class FacesModel extends Model {
     public void openEventHandler(DesignEvent event) {
         boolean inserted = createEventHandler(event);
         String handlerName = event.getHandlerName();
+        MethodDescriptor md = event.getEventDescriptor().getListenerMethodDescriptor();
         
         // now navigate the editor to the body of the newly created method
-        Object/*ExecutableElement*/ m =
-                beansUnit.getEventMethod(handlerName, event.getEventDescriptor().getListenerMethodDescriptor());
+        Method m = beansUnit.getEventMethod(handlerName, md);
         positionTheCursor(m, inserted);
     }
     /**
@@ -1340,7 +1342,7 @@ public class FacesModel extends Model {
      * @param Method 
      * @param boolean indicates if the method is newly added
      */    
-    void positionTheCursor(Object/*ExecutableElement*/ m, boolean inserted) {
+    void positionTheCursor(Method m, boolean inserted) {
 /*//NB6.0
         try {
             int indent = 0;

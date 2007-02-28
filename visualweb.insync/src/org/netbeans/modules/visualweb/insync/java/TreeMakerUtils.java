@@ -21,9 +21,12 @@ package org.netbeans.modules.visualweb.insync.java;
 
 import com.sun.rave.designtime.ContextMethod;
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
@@ -149,8 +152,10 @@ public class TreeMakerUtils {
                 );
         
          if(mInfo.getCommentText() != null) {
-            make.addComment(mtree, Comment.create(mInfo.getCommentText()), true);
-        }
+             Comment comment = Comment.create(Comment.Style.JAVADOC, -2, 
+                     -2, -2, mInfo.getCommentText());
+             make.addComment(mtree, comment, true);
+         }
         
         return mtree;
     }
@@ -255,5 +260,28 @@ public class TreeMakerUtils {
      */ 
     public ModifiersTree createModifiers(long flags) {
         return getTreeMaker().Modifiers(flags, Collections.<AnnotationTree>emptyList());
-    }          
+    }
+    
+    /*
+     * Creates a method invocation expression of the form a.b(arg1, ...)
+     */ 
+    public static MethodInvocationTree createMethodInvocation(WorkingCopy wc, String beanName, String methodName, List<ExpressionTree> args) {
+        TreeMaker treeMaker = wc.getTreeMaker();
+        return treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(),
+                treeMaker.MemberSelect(treeMaker.Identifier(beanName), methodName), args);
+    }
+    
+    /*
+     * Creates a new class expression with empty class body
+     */ 
+    public static NewClassTree createNewClassExpression(WorkingCopy wc, String className) {
+        TreeMaker treeMaker = wc.getTreeMaker();
+        TreeMakerUtils treeMakerUtils = new TreeMakerUtils(wc);
+        Tree type = treeMakerUtils.createType(className);
+        ClassTree classTree = treeMaker.Class(treeMakerUtils.createModifiers(), null, 
+                Collections.<TypeParameterTree>emptyList(), null,
+                Collections.<ExpressionTree>emptyList(), Collections.<Tree>emptyList());
+        return treeMaker.NewClass(null, Collections.<ExpressionTree>emptyList(), 
+                (ExpressionTree)type, Collections.<ExpressionTree>emptyList(), classTree);
+    }        
 }

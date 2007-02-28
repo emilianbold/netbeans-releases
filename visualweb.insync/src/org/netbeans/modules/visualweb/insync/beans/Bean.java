@@ -21,9 +21,9 @@ package org.netbeans.modules.visualweb.insync.beans;
 
 import com.sun.org.apache.bcel.internal.classfile.JavaClass;
 import com.sun.rave.designtime.Position;
+import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.java.JMIUtils;
 import org.netbeans.modules.visualweb.insync.java.JMIMethodUtils;
-
 import java.beans.BeanInfo;
 import java.beans.EventSetDescriptor;
 import java.beans.PropertyDescriptor;
@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.openide.util.NbBundle;
-
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.DesignBean;
@@ -42,6 +41,7 @@ import org.netbeans.modules.visualweb.insync.java.JMIRefactor.MethodInvocationRe
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -63,9 +63,6 @@ public class Bean extends BeansNode {
     protected final ArrayList eventSets = new ArrayList();
 
     private String name;
-    private Object/*VariableElement*/  field;
-    private Object/*ExecutableElement*/ getter;
-    private Object/*ExecutableElement*/ setter;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -94,9 +91,6 @@ public class Bean extends BeansNode {
     protected Bean(BeansUnit unit, BeanInfo beanInfo, String name,
             Object/*VariableElement*/ field, Object/*ExecutableElement*/ getter, Object/*ExecutableElement*/ setter) {
         this(unit, beanInfo, name);
-        this.field = field;
-        this.getter = getter;
-        this.setter = setter;
         bindCleanup();
     }
 
@@ -150,7 +144,6 @@ public class Bean extends BeansNode {
         unit.getThisClass().removeProperty(name);
 
         removed |= true; //!CQ don't really know since clazz didn't tell us...
-        field = getter = setter = null;
         return removed;
     }
 
@@ -257,17 +250,10 @@ public class Bean extends BeansNode {
     }
 
     /**
-     * @return the underlying field for this bean, null if dead.
-     */
-    public Object/*VariableElement*/ getField() {
-        return field;
-    }
-
-    /**
      * @return whether there is a getter method available
      */
     public boolean hasGetter() {
-        return getter != null;
+        return true;
     }
 
     /**
@@ -305,46 +291,16 @@ public class Bean extends BeansNode {
             return null;
         }
         
-        String oldname = this.name;
+        String oldname = name;
         if (!oldname.equals(newname)) {
             //System.err.println("B.setName " + oldname + "=>" + name);
-            this.name = newname;
-            String getterName = Naming.getterName(newname);
-            String setterName = Naming.setterName(newname);
-            
+            name = newname;
+            List<FileObject> fObjs = new ArrayList<FileObject>();
             LiveUnit[] units = (LiveUnit[]) ((FacesModelSet)unit.getModel().getOwner()).getDesignContexts();
             for (int i=0; i < units.length; i++) {
-                LiveUnit lu = units[i];
-                String description = NbBundle.getMessage(Bean.class, "RenameId", oldname);  //NOI18N
-                //UndoEvent event = lu.getSourceUnit().model.writeLock(description);
-                JMIRefactor.IdentRenamer renamer = null;
-                JavaUnit ju = lu.getBeansUnit().getJavaUnit();
-                if(lu.getSourceUnit() == unit) {
-                    ju.getJavaClass().renameProperty(oldname, newname);
-                } else {
-                    /*
-                    //To take care of cross referencing accessors
-                    //Example: getSessionBean1().getPersonRowSet()
-                    String parentMethodInvocationName = Naming.getterName(unit.getBeanName()); //NOI18N
-                    
-                    // getter
-                    String oName = Naming.getterName(oldname);
-                    String nName = Naming.getterName(newname);
-                    
-                    JMIRefactor.MethodInvocationRenamer methodInvocationRenamer =
-                            new JMIRefactor.MethodInvocationRenamer(parentMethodInvocationName, oName, nName);
-                    methodInvocationRenamer.apply(ju.getJavaClass());
-                    
-                    // setter
-                    oName = Naming.setterName(oldname);
-                    nName = Naming.setterName(newname);
-                    
-                    methodInvocationRenamer =
-                            new JMIRefactor.MethodInvocationRenamer(parentMethodInvocationName, oName, nName);
-                    methodInvocationRenamer.apply(ju.getJavaClass());
-                     * */
-                }
+                fObjs.add(units[i].getBeansUnit().getJavaUnit().getFileObject());
              }
+            unit.getJavaUnit().getJavaClass().renameProperty(oldname, newname, fObjs);
         }
         return newname;
     }

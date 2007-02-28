@@ -40,7 +40,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeMaker;
@@ -50,17 +49,16 @@ import org.netbeans.modules.visualweb.insync.beans.Naming;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.filesystems.FileObject;
-import org.netbeans.api.java.classpath.ClassPath;
 
 /**
  *
  * @author jdeva
  */
 public class JavaClass {
-    ElementHandle<TypeElement> typeElementHandle;
+    private ElementHandle<TypeElement> typeElementHandle;
     //JavaUnit javaUnit;    //To obtain FileObject/JavaSource
-    FileObject fObj;        //Temporary till we plug this into insync
-    String name;
+    private FileObject fObj;        //Temporary till we plug this into insync
+    private String name;
     
     /** Creates a new instance of TypeElementAdapter */
     public JavaClass(TypeElement element, FileObject fObj) {
@@ -82,6 +80,13 @@ public class JavaClass {
     public String getName() {
         return name;
     }
+    
+    /*
+     * Return the file which contains this java class
+     */     
+    public FileObject getFileObject() {
+        return fObj;
+    }    
     
     /*
      * Checks if the passed in type as string is a super type of this class
@@ -231,36 +236,43 @@ public class JavaClass {
     }
     
     /*
-     * Renames field, getter and setter and its usage given the property new and old names
+     * Renames field, getter and setter and its usage given the property new & old names, and
+     * the list of files where the property could be used
      */    
-    public void renameProperty(final String name, final String newName) {
+    public void renameProperty(final String name, final String newName, final List<FileObject> fObjs) {
+        final HashMap<ElementHandle, String> elementAndNames = getElementHandlesToReplace(name, newName);
         WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
             public Object run(WorkingCopy wc) {
-                TypeElement typeElement = typeElementHandle.resolve(wc);
-                ClassTree ctree = wc.getTrees().getTree(typeElement);
-                List<Element> elemsToRename = new ArrayList<Element>();
-                Refactor.ElementRenamer elementRenamer = null;
-                VariableElement varElem = getField(wc, name);
-                if(varElem != null) {
-                    elementRenamer = new Refactor.ElementRenamer(wc, newName);
-                    elementRenamer.scan(wc.getCompilationUnit(), varElem);
-                }
-                ExecutableElement getElem = getMethod(wc, Naming.getterName(name), new Class[0]);
-                if(getElem != null) {
-                    elementRenamer = new Refactor.ElementRenamer(wc, Naming.getterName(newName));
-                    elementRenamer.scan(wc.getCompilationUnit(), getElem);
-                    TypeMirror type = getElem.getReturnType();
-                    ExecutableElement setElem = getMethod(wc, Naming.setterName(name), Collections.<TypeMirror>singletonList(type));
-                    if(setElem != null) {
-                        elementRenamer = new Refactor.ElementRenamer(wc, Naming.setterName(newName));
-                        elementRenamer.scan(wc.getCompilationUnit(), setElem);
-                    }
-                }
-                //To take care of VB expressions, Ex:- getValue(#{SessionBean1.personRowSet})                
-                //renamePropertyBindingExpression(wc, name, newName);
+                    new Refactor.ElementsRenamer(wc, elementAndNames).scan(wc.getCompilationUnit(), null);
+                    //To take care of VB expressions, Ex:- getValue(#{SessionBean1.personRowSet})
+                    renamePropertyBindingExpression(wc, name, newName);
                 return null;
             }
-        }, fObj);    
+        //}, fObjs);
+        }, fObj);
+    }
+    
+    private HashMap<ElementHandle, String> getElementHandlesToReplace(final String name, final String newName) {
+        return (HashMap<ElementHandle, String>)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+            public Object run(CompilationInfo cinfo) {
+                final HashMap<ElementHandle, String> elementAndNames = new HashMap<ElementHandle, String>();
+                TypeElement typeElement = typeElementHandle.resolve(cinfo);
+                VariableElement varElem = getField(cinfo, name);
+                if(varElem != null) {
+                    elementAndNames.put(ElementHandle.create(varElem), newName);
+                }
+                ExecutableElement getElem = getMethod(cinfo, Naming.getterName(name), new Class[0]);
+                if(getElem != null) {
+                    elementAndNames.put(ElementHandle.create(getElem), Naming.getterName(newName));
+                    TypeMirror type = getElem.getReturnType();
+                    ExecutableElement setElem = getMethod(cinfo, Naming.setterName(name), Collections.<TypeMirror>singletonList(type));
+                    if(setElem != null) {
+                        elementAndNames.put(ElementHandle.create(setElem), Naming.setterName(newName));
+                    }
+                }
+                return elementAndNames;
+            }
+        }, fObj);
     }
     
     public void renamePropertyBindingExpression(WorkingCopy wc, String name, String newName) {
@@ -272,11 +284,14 @@ public class JavaClass {
     /*
      *  Internal method to add a method, returns element handle which can be cached by the caller
      */ 
-    private ElementHandle<ExecutableElement> addMethod(final ContextMethod cm, final String retType) {
-        return (ElementHandle<ExecutableElement>)WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
+    private Method addMethod(final ContextMethod cm, final String retType) {
+        Method method = null;
+        method = (Method)WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
             public Object run(WorkingCopy wc) {
                 ExecutableElement elem = getMethod(wc, cm.getName(), cm.getParameterTypes());
-                if(elem == null) {
+                if(elem != null) {
+                    return new Method(elem, JavaClass.this);
+                } else {
                     TreeMaker make = wc.getTreeMaker();
                     TypeElement typeElement = typeElementHandle.resolve(wc);
                     TreeMakerUtils utils = new TreeMakerUtils(wc);
@@ -285,14 +300,18 @@ public class JavaClass {
                     MethodTree mtree = utils.createMethod(cm, retType);
                     newctree = make.addClassMember(ctree, mtree);
                     wc.rewrite(ctree, newctree);
-                    elem = (ExecutableElement)wc.getTrees().getElement(TreeUtils.getTreePath(wc, mtree));
+                    return null;                    
                 }
-                return ElementHandle.create(elem);
             }
-        }, fObj);            
+        }, fObj);
+        //If the method is newly added
+        if(method == null) {
+            method = getMethod(cm.getName(), cm.getParameterTypes());
+        }
+        return method;
     }
     
-   public ElementHandle<ExecutableElement> addMethod(ContextMethod cm) {
+   public Method addMethod(ContextMethod cm) {
         String retTypeName = null;
         if(cm.getReturnType() != null) {
             retTypeName = cm.getReturnType().getCanonicalName();
@@ -301,7 +320,7 @@ public class JavaClass {
     }
     
 
-    public ElementHandle<ExecutableElement> addMethod(MethodInfo mInfo) {
+    public Method addMethod(MethodInfo mInfo) {
         return addMethod(mInfo, mInfo.getReturnTypeName());
     }
     
@@ -339,12 +358,16 @@ public class JavaClass {
     }
     
     /*
-     * Returns a element handle corresponding to a method by given name and parameter types
+     * Returns a method corresponding to a method by given name and parameter types
      */     
-    public ElementHandle<ExecutableElement> getMethod(final String name, final Class[] params) {
-        return (ElementHandle<ExecutableElement>)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
+    public Method getMethod(final String name, final Class[] params) {
+        return (Method)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
-                return ElementHandle.<ExecutableElement>create(getMethod(cinfo, name, params));
+                ExecutableElement elem = getMethod(cinfo, name, params);
+                if(elem != null) {
+                    return new Method(elem, JavaClass.this);
+                }
+                return null;
             }
         }, fObj);
     }
@@ -352,9 +375,29 @@ public class JavaClass {
     /*
      * Returns a element corresponding to a method by given name and parameter types
      */     
-    private ExecutableElement getMethod(CompilationInfo cinfo, String name, Class[] params) {
-        List<ExecutableElement> methods = getMethods(cinfo, name, params, null);
-        return (methods.size() == 1) ? methods.get(0) : null;
+    public ExecutableElement getMethod(CompilationInfo cinfo, String name, Class[] params) {
+        if(params == null) {
+            params = new Class[0];
+        }
+        if(name.equals("<init>")) {
+            return getConstructor(cinfo, params);
+        }else {
+            List<ExecutableElement> methods = getMethods(cinfo, name, params, null);
+            return (methods.size() == 1) ? methods.get(0) : null;
+        }
+    }
+    
+    /*
+     * Returns element corresponding to a method by given parameter types
+     */
+    private ExecutableElement getConstructor(CompilationInfo cinfo, Class[] params) {
+        TypeElement typeElement = typeElementHandle.resolve(cinfo);
+        for(ExecutableElement method : ElementFilter.constructorsIn(typeElement.getEnclosedElements())) {
+             if((params == null || matchTypes(cinfo, method.getParameters(), params))) {
+                return method;
+            }
+        }
+        return null;        
     }
     
     /*
@@ -517,7 +560,10 @@ public class JavaClass {
                 String pkgName = JsfProjectUtils.getProjectProperty(FileOwnerQuery.getOwner(fObj), 
                         JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE);
                 TypeElement element = cinfo.getElements().getTypeElement(pkgName + "." + fObj.getName());
-                return new JavaClass(element, fObj);
+                if(element != null) {
+                    return new JavaClass(element, fObj);
+                }
+                return null;
             }
         }, fObj);        
     }

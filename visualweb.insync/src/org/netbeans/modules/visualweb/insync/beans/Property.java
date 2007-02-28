@@ -18,14 +18,12 @@
  */
 package org.netbeans.modules.visualweb.insync.beans;
 
-import org.netbeans.modules.visualweb.insync.java.JMIUtils;
-import org.netbeans.modules.visualweb.insync.java.JMIExpressionUtils;
-import org.netbeans.modules.visualweb.insync.java.JMIMethodUtils;
 import java.beans.PropertyDescriptor;
 
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
-import java.util.ArrayList;
-import java.util.List;
+import org.netbeans.modules.visualweb.insync.java.JavaClass;
+import org.netbeans.modules.visualweb.insync.java.Method;
+import org.netbeans.modules.visualweb.insync.java.Statement;
 
 /**
  * Representation of a single property setting on our parent bean, which maps to a single property
@@ -40,8 +38,8 @@ public class Property extends BeansNode {
     final PropertyDescriptor descriptor;
 
     // Java source-based property fields
-    Object/*StatementTree*/ stmt;
-    Object/*ExpressionTree*/ valueExpr;
+    private JavaClass javaClass;
+    private Statement stmt;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -56,6 +54,7 @@ public class Property extends BeansNode {
         this.bean = bean;
         //this.name = name;
         this.descriptor = descriptor;
+        javaClass = unit.getJavaUnit().getJavaClass();
     }
 
     /**
@@ -64,35 +63,11 @@ public class Property extends BeansNode {
      * @param beansUnit
      */
     private Property(Bean bean, PropertyDescriptor descriptor,
-            Object/*StatementTree*/ stmnt, Object/*ExpressionTree*/ valueExpr
+            Statement stmt, Object/*ExpressionTree*/ valueExpr
                      ) {
         this(bean, descriptor, false);
-        this.stmt = stmnt;
-        this.valueExpr = valueExpr;
+        this.stmt = stmt;
         assert Trace.trace("insync.beans", "P new bound Property: " + this);
-    }
-
-
-    static protected Object/*MethodInvocationTree*/ getExpression
-            (BeansUnit unit, Object/*StatementTree*/ s) {
-/*//NB6.0
-        if(!(s instanceof ExpressionStatement))
-            return null;
-        ExpressionStatement exStmt = (ExpressionStatement)s;
- 
-        if(!(exStmt.getExpression() instanceof MethodInvocation))
-            return null;
-        MethodInvocation mExpr = (MethodInvocation)exStmt.getExpression();
- 
-        if(mExpr.getParameters().size() > 1)
-            return null;
- 
-        PrimaryExpression pExpr = mExpr.getParentClass();
-        if(pExpr == null && !(pExpr instanceof VariableAccess))
-            return null;
-        return mExpr; 
-//*/
-        return null;
     }
 
     /**
@@ -101,35 +76,17 @@ public class Property extends BeansNode {
      * @param s
      * @return the new bound property if bindable, else null
      */
-    static protected Property newBoundInstance(BeansUnit unit, Object/*StatementTree*/ s) {
-/*//NB6.0
-        JMIUtils.beginTrans(false);
-        try {
-            MethodInvocation mExpr = getExpression(unit, s);
-            if(mExpr == null)
-                return null;
-            PrimaryExpression pExpr = mExpr.getParentClass();
-            String cname = null;
-            if (pExpr instanceof VariableAccess) {
-                cname = ((VariableAccess)pExpr).getName();
-            } else if (pExpr instanceof MultipartId) {
-                cname = ((MultipartId)pExpr).getName();
-            }
-            Bean bean = unit.getBean(cname);
-            if (bean == null)
-                return null;
-            String mname = mExpr.getName();
-            PropertyDescriptor pd = bean.getPropertyDescriptorForSetter(mname);
-            if (pd == null)
-                return null;
- 
-            return new Property(bean, pd, s,
-                    (Expression) mExpr.getParameters().get(0));
-        }finally {
-            JMIUtils.endTrans();
-        } 
-//*/
-        return null;
+    static protected Property newBoundInstance(BeansUnit unit, Statement stmt) {
+        Bean bean = unit.getBean(stmt.getBeanName());
+        if(bean == null) {
+            return null;
+        }
+        PropertyDescriptor pd = bean.getPropertyDescriptorForSetter(stmt.getPropertySetterName());
+        if (pd == null) {
+            return null;      
+        }
+        
+        return new Property(bean, pd, stmt, null);
     }
 
     /**
@@ -139,28 +96,7 @@ public class Property extends BeansNode {
      */
     protected Property(Bean bean, PropertyDescriptor descriptor) {
         this(bean, descriptor, false);
-        insertEntry();
         assert Trace.trace("insync.beans", "P new created Property: " + this);
-    }
-
-    /**
-     * Insert this property's statement into the init method. 
-     */
-    protected void insertEntry() {
-/*//NB6.0
-        JMIUtils.beginTrans(true);
-        boolean rollback = true;
-        try {
-            CallableFeature method = unit.getPropertiesInitMethod();
-            JMIMethodUtils.addMethodInvocationStatement(method,
-                    bean.getName(), descriptor.getWriteMethod().getName(), new ArrayList());
-            rollback = false;
-        }finally {
-            JMIUtils.endTrans(rollback);
-        }
- 
-        // Args are added in setValue()
-//*/
     }
 
     /**
@@ -169,35 +105,8 @@ public class Property extends BeansNode {
      * 
      * @return true iff the source entry for this property was actually removed.
      */
-    protected boolean removeEntry() {        
-/*//NB6.0
-        boolean retVal = false;
-        JMIUtils.beginTrans(true);
-        boolean rollback = true;
-        try {
-            StatementBlock[] blocks = unit.getInitBlocks();
-            for(int i = 0; i < blocks.length; i++) {
-                Statement stmt = JMIMethodUtils.findStatement(
-                        blocks[i],
-                        descriptor.getWriteMethod().getName(), bean.getName());
-                if (stmt != null) {
-                    retVal = JMIMethodUtils.removeStatement(blocks[i], stmt);
-                    if(retVal)
-                        //!CQ maybe remove the delegate method(s) also? would need to let Event do that...
-                        stmt = null;
-                    break;
-                }
-            }
-            rollback = false;
-        }finally {
-            JMIUtils.endTrans(rollback);
-        }
- 
-        if(retVal)
-            stmt = null;
-        return retVal; 
-//*/
-        return false;
+    protected boolean removeEntry() {
+        return stmt == null ? false : stmt.remove();
     }
 
     //------------------------------------------------------------------------------------ Accessors
@@ -228,19 +137,7 @@ public class Property extends BeansNode {
      * literals.
      */
     public Object getValue(Class type) {
-        //!CQ TODO: make use of type to check/coerce idents & literals
-        /*
-        if (valExpr instanceof Identifier)
-            return unit.getBean(((Identifier)valExpr).getName());
-        return valExpr.getValue();
-         */
-        JMIUtils.beginTrans(true);
-        try {
-            valueExpr = getValueExpression();
-            return valueExpr != null ? JMIExpressionUtils.getValue(valueExpr, unit.getJavaUnit()) : null;
-        }finally {
-            JMIUtils.endTrans();
-        }
+        return stmt == null ? null : stmt.evaluateArgument();
     }
 
     /**
@@ -248,103 +145,22 @@ public class Property extends BeansNode {
      * default, but may be returned in other forms by subclasses.
      */
     public String getValueSource() {
-/*//NB6.0
-        JMIUtils.beginTrans(false);
-        try {
-            if(unit.getJavaUnit() != null) {
-                valueExpr = getValueExpression();
-                JavaClass jCls = unit.getJavaUnit().getJavaClass();
-                return valueExpr != null ? JMIExpressionUtils.getArgumentSource(
-                        valueExpr) : null;
-            }
-            return null;
-        }finally {
-            JMIUtils.endTrans();
-        } 
-//*/
-        return null;
+        return stmt == null ? null : stmt.getArgumentSource();
     }
 
     /**
      * Set the value of this property, creating the call arg expression of the appropriate type
      */
     public void setValue(Object value, String valueSource) {
-/*//NB6.0
-        CallableFeature method = unit.getPropertiesInitMethod();
-        JMIUtils.beginTrans(true);
-        boolean rollback = true;
-        try {
-            int startPos = -1;
-            int endPos = -1;
-            MethodInvocation mExpr = getMethodInvocation();
- 
-            if(mExpr != null) {
-                List l = mExpr.getParameters();
-                if(l.size() == 0) {
-                    startPos = mExpr.getEndOffset()-1;
-                    endPos = startPos;
-                }else {
-                    Element elem = (Element)l.get(0);
-                    startPos = elem.getStartOffset();
-                    endPos = mExpr.getEndOffset()-1;
-                }
-            }
- 
-            int methStartPos = method.getBody().getStartOffset()+1;
-            String bodyText = method.getBodyText();
-            String body = bodyText.substring(1, startPos-methStartPos);
-            body += valueSource;
-            body += bodyText.substring(endPos-methStartPos);
-            method.setBodyText(body);
-            rollback = false;
-        }finally {
-            JMIUtils.endTrans(rollback);
+        if(stmt == null) {
+            Method method = unit.getPropertiesInitMethod();
+            stmt = method.addMethodInvocationStatement(bean.getName(), 
+                    descriptor.getWriteMethod().getName(), valueSource);
+        }else {
+            stmt.replaceArgument(valueSource);
         }
-//*/
     }
     
-    Object/*MethodInvocationTree*/ getMethodInvocation() {
-/*//NB6.0
-        JMIUtils.beginTrans(false);
-        try {
-            StatementBlock[] blocks = unit.getInitBlocks();
-            for (int i = 0; i < blocks.length; i++) {
-                Statement stmt = JMIMethodUtils.findStatement(
-                        blocks[i],
-                        descriptor.getWriteMethod().getName(), bean.getName());
-                if (stmt != null) {
-                    ExpressionStatement exStmt =
-                            (ExpressionStatement)stmt;
- 
-                    MethodInvocation mExpr =
-                            (MethodInvocation)exStmt.getExpression();
-                    return mExpr;
-                }
-            }
-        } finally {
-            JMIUtils.endTrans();
-        }
- 
-        return null;
-//*/
-        return null;
-    }
-    
-    Object/*ExpressionTree*/ getValueExpression() {
-/*//NB6.0
-        MethodInvocation mExpr = getMethodInvocation();
-        if (mExpr == null) {
-            return null;
-        }
-        List params = mExpr.getParameters();
-        if(params.size() > 0)
-            return (Expression)params.get(0);
-        else
-            return null;
-//*/
-        return null;
-    }
-
     /**
      * 
      */

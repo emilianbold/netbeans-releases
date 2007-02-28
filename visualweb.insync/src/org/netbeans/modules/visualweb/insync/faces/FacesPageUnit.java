@@ -22,6 +22,7 @@ import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.insync.InSyncServiceProvider;
 import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.insync.java.JavaUnit;
+import org.netbeans.modules.visualweb.insync.java.Statement;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import java.beans.BeanInfo;
@@ -746,8 +747,8 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
     /*
      * @see org.netbeans.modules.visualweb.insync.beans.BeansUnit#newBoundProperty(org.netbeans.modules.visualweb.insync.java.Statement)
      */
-    protected Property newBoundProperty(Object/*StatementTree*/ s) {
-        return MarkupProperty.newBoundInstance(this, s);
+    protected Property newBoundProperty(Statement stmt) {
+        return MarkupProperty.newBoundInstance(this, stmt);
     }
 
     /*

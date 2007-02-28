@@ -28,6 +28,7 @@ import javax.faces.el.MethodBinding;
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.markup.AttributeDescriptor;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
+import org.netbeans.modules.visualweb.insync.java.Statement;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
@@ -73,7 +74,7 @@ public class MarkupProperty extends Property {
      * @param s
      * @return the new bound property if bindable, else null
      */
-    static Property newBoundInstance(FacesPageUnit unit, Object/*StatementTree*/ s) {
+    static Property newBoundInstance(FacesPageUnit unit, Statement s) {
         return Property.newBoundInstance(unit, s);
     }
 

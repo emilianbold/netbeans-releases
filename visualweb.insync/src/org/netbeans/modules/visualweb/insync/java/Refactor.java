@@ -30,8 +30,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import java.util.HashMap;
 import java.util.List;
 import javax.lang.model.element.Element;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 
@@ -42,8 +44,8 @@ import org.netbeans.api.java.source.WorkingCopy;
 public class Refactor {
     
     public static class ElementRenamer extends TreePathScanner<Tree, Element>{
-        protected final WorkingCopy workingCopy;
-        String newName;
+        private WorkingCopy workingCopy;
+        private String newName;
         
         /** Creates a new instance of Refactor */
         public ElementRenamer(WorkingCopy workingCopy, String newName) {
@@ -88,8 +90,8 @@ public class Refactor {
     }
     
    public static class LiteralRenamer extends TreePathScanner<Tree, Void>{
-        protected final WorkingCopy workingCopy;
-        String newName, oldName;
+        private WorkingCopy workingCopy;
+        private String newName, oldName;
         
         public LiteralRenamer(WorkingCopy workingCopy, String oldName, String newName) {
             this.oldName = oldName;
@@ -109,5 +111,57 @@ public class Refactor {
                 workingCopy.rewrite(tree, nju);             
             }
         }
-    }            
+    }
+   
+    public static class ElementsRenamer extends TreePathScanner<Tree, Void>{
+        private final WorkingCopy workingCopy;
+        private final TreeMaker make;
+        private HashMap<Element, String> elementAndNames = new HashMap<Element, String>();
+        
+        /** Creates a new instance of Refactor */
+        public ElementsRenamer(WorkingCopy workingCopy, HashMap<? extends ElementHandle, String> handleAndNames) {
+            this.workingCopy = workingCopy;
+            make = workingCopy.getTreeMaker();
+            for(ElementHandle elemHandle : handleAndNames.keySet()){
+                Element elem = elemHandle.resolve(workingCopy);
+                elementAndNames.put(elem, handleAndNames.get(elemHandle));
+            }            
+        }
+        
+        @Override
+        public Tree visitIdentifier(IdentifierTree tree, Void v) {
+            renameIfMatch(getCurrentPath(), tree);
+            return super.visitIdentifier(tree, v);
+        }
+        
+        @Override
+        public Tree visitMemberSelect(MemberSelectTree tree, Void v) {
+            renameIfMatch(getCurrentPath(), tree);
+            return super.visitMemberSelect(tree, v);
+        }
+        
+        @Override
+        public Tree visitMethod(MethodTree tree, Void v) {
+            renameIfMatch(getCurrentPath(), tree);
+            return super.visitMethod(tree, v);
+        }
+        
+        
+        @Override
+        public Tree visitVariable(VariableTree tree, Void v) {
+            renameIfMatch(getCurrentPath(), tree);
+            return super.visitVariable(tree, v);
+        }
+        
+        private void renameIfMatch(TreePath path, Tree tree) {
+            if (workingCopy.getTreeUtilities().isSynthetic(path)) {
+                return;
+            }
+            Element el = workingCopy.getTrees().getElement(path);
+            if(el != null && elementAndNames.containsKey(el)) {
+                Tree nju = make.setLabel(tree, elementAndNames.get(el));
+                workingCopy.rewrite(tree, nju);
+            }
+        }
+    }   
 }
