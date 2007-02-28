@@ -3045,15 +3045,13 @@ public class InteractionManager {
             return DesignerUtils.getNonTabbedTextWidth(s, offset, length, metrics);
         }
 
-        public Rectangle getBoundsForDesignBean(DesignBean designBean) {
-            if (designBean instanceof MarkupDesignBean) {
-                return ModelViewMapper.getComponentBounds(webForm.getPane().getPageBox(),
-                        WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean) designBean));
+        public Rectangle getBoundsForComponent(Element componentRootElement) {
+            if (componentRootElement != null) {
+                return ModelViewMapper.getComponentBounds(webForm.getPane().getPageBox(), componentRootElement);
             } else {
                 return null;
             }
         }
-
     } // End of RenderContextImpl.
 
 
