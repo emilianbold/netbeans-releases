@@ -41,6 +41,7 @@ import org.netbeans.api.languages.LibrarySupport;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.modules.languages.javascript.Semantic.Declaration;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.ErrorManager;
@@ -535,7 +536,7 @@ public class JavaScript {
         if (info == null || decl == null) {
             return;
         }
-        int offset = decl.getItem().getOffset();
+        int offset = decl.getASTItem().getOffset();
         DataObject dobj = NbEditorUtilities.getDataObject (doc);
         LineCookie lc = (LineCookie)dobj.getCookie(LineCookie.class);
         Line.Set lineSet = lc.getLineSet();
@@ -557,112 +558,30 @@ public class JavaScript {
         return info != null && info.getItem(item) != null;
     }
     
-    // ..........................................................................
-    
     public static boolean isFunctionParameter (Context context) {
+        return isVariable(context, Declaration.PARAMETER);
+    }
+    
+    public static boolean isLocalVariable(Context context) {
+        return isVariable(context, Declaration.LOCAL_VARIABLE);
+    }
+    
+    // helper methods ..........................................................
+    
+    private static boolean isVariable(Context context, int kind) {
         if (!(context instanceof SyntaxContext)) {
             return false;
         }
         SyntaxContext scontext = (SyntaxContext)context;
         ASTPath path = scontext.getASTPath ();
-        int size = path.size ();
-        if (size < 2) return false;
-        if (!(path.get (size - 2) instanceof ASTNode)) return false;
-        ASTNode node = (ASTNode) path.get (size - 2);
-        String nt = node.getNT();
-        if ("FormalParameterList".equals(nt)) { // NOI18N
-            return true;
-        }
-        if ("MemberOperator".equals(nt)) { // NOI18N
+        Object obj = path.getLeaf ();
+        if (!(obj instanceof ASTToken)) {
             return false;
         }
-        ASTToken leaf = (ASTToken)path.getLeaf ();
-        ListIterator<ASTItem> iter = path.listIterator (size - 1);
-        while (iter.hasPrevious ()) {
-            ASTItem item = iter.previous ();
-            if (item instanceof ASTNode) {
-                node = (ASTNode) item;
-                if ("FunctionDeclaration".equals (node.getNT ())) { // NOI18N
-                    for (Iterator it = node.getChildren ().listIterator(1); it.hasNext(); ) {
-                        Object o = it.next();
-                        if (o instanceof ASTNode && "FormalParameterList".equals(((ASTNode)o).getNT())) { // NOI18N
-                            return ((ASTNode)o).findToken("js_identifier", leaf.getIdentifier()) != null; // NOI18N
-                        }
-                    } // for
-                    return false;
-                } // if
-            } // if
-        } // while
-        return false;
-    }
-    
-    public static boolean isLocalVariable(Context context) {
-        if (!(context instanceof SyntaxContext)) {
-            return false;
-        }
-        SyntaxContext scontext = (SyntaxContext)context;
-        ASTPath path = scontext.getASTPath();
-        return isLocalVariable(path);
-    }
-    
-    public static boolean isLocalVariable(ASTPath path) {
-        int size = path.size();
-        if (size < 2) return false;
-        if (!(path.get (size - 2) instanceof ASTNode)) return false;
-        ASTNode node = (ASTNode) path.get (size - 2);
-        String nt = node.getNT();
-        if ("VariableDeclaration".equals(nt) || "VariableDeclarationNoIn".equals(nt)) { // NOI18N
-            return true;
-        }
-        if ("MemberOperator".equals(nt)) { // NOI18N
-            return false;
-        }
-        ASTToken leaf = (ASTToken)path.getLeaf();
-        Object lastElem = leaf;
-        String varId = leaf.getIdentifier();
-        ListIterator iter = path.listIterator(size - 1);
-        while (iter.hasPrevious()) {
-            Object obj = iter.previous();
-            if (obj instanceof ASTNode) {
-                node = (ASTNode)obj;
-                if ("FunctionDeclaration".equals(node.getNT())) { // NOI18N
-                    return false;
-                }
-                Iterator it = node.getChildren().listIterator();
-                while (it.hasNext()) {
-                    Object o = it.next();
-                    if (o == lastElem) {
-                        break;
-                    }
-                    if (o instanceof ASTNode) {
-                        ASTNode n = (ASTNode)o;
-                        String nterm = n.getNT();
-                        if ("VariableStatement".equals(nterm) && containsVariable(n, varId)) { // NOI18N
-                            return true;
-                        }
-                    } // if
-                } // while
-            } // if
-            lastElem = obj;
-        } // while
-        return false;
-    }
-    
-    // helper methods ..........................................................
-    
-    private static boolean containsVariable(ASTNode node, String varId) {
-        for (Iterator iter = node.getChildren().iterator(); iter.hasNext(); ) {
-            Object obj = iter.next();
-            if (!(obj instanceof ASTNode)) {
-                continue;
-            }
-            ASTNode n = (ASTNode)obj;
-            if ("VariableDeclaration".equals(n.getNT()) && 
-                    ((ASTToken)n.getChildren().get(0)).getIdentifier().equals(varId)) { // NOI18N
-                return true;
-            }
-        }
-        return false;
+        ASTToken leaf = (ASTToken)obj;
+        Semantic.Info info = Semantic.getInfo(scontext.getDocument());
+        Declaration decl = info.getItem(leaf);
+        return decl != null && decl.getKind() == kind;
     }
     
     private static LibrarySupport library;
