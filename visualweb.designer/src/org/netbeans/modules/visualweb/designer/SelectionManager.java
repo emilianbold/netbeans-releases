@@ -687,19 +687,25 @@ public class SelectionManager {
         Element element = webform.getHtmlBody();
 //        DesignBean root = element.getDesignBean();
 //        DesignBean root = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
-        DesignBean root = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
-        
-        if (root == null) {
+//        DesignBean root = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(element);
+//        
+//        if (root == null) {
+//            return;
+//        }
+        if (element == null) {
             return;
         }
 
-        for (int i = 0, n = root.getChildBeanCount(); i < n; i++) {
-            DesignBean child = root.getChildBean(i);
+        Element[] children = WebForm.getHtmlDomProviderService().getChildComponents(element);
+//        for (int i = 0, n = root.getChildBeanCount(); i < n; i++) {
+//            DesignBean child = root.getChildBean(i);
+        for (Element child : children) {
 
-            if (child instanceof MarkupDesignBean) {
+//            if (child instanceof MarkupDesignBean) {
 //                selectAll((MarkupDesignBean)child);
-                selectAll(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)child));
-            }
+//                selectAll(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)child));
+//            }
+            selectAll(child);
         }
 
         // We should not select the two special <br> components that are added
@@ -707,30 +713,40 @@ public class SelectionManager {
         // and the first br in the body component. These are there to ensure that
         // there are caret-viable lines in the document.
         if (!webform.isGridMode()) {
-            if ((root.getChildBeanCount() > 0) &&
-                    ((MarkupDesignBean)root.getChildBean(0)).getElement().getTagName().equals(HtmlTag.BR.name)) {
+//            if ((root.getChildBeanCount() > 0) &&
+//                    ((MarkupDesignBean)root.getChildBean(0)).getElement().getTagName().equals(HtmlTag.BR.name)) {
+            if (children.length > 0 && HtmlTag.BR.name.equals(children[0].getTagName())) {
 //                removeSelected((MarkupDesignBean)root.getChildBean(0), false);
-                removeSelected(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)root.getChildBean(0)), false);
+//                removeSelected(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)root.getChildBean(0)), false);
+                removeSelected(children[0], false);
             }
 
             // Look for last bean in the default parent
 //            MarkupDesignBean defaultBean =
 //                FacesSupport.getDesignBean(webform.getModel().getFacesUnit().getDefaultParent()
 //                                                  .getElement());
-            MarkupDesignBean defaultBean =
-//                    WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(webform.getModel().getFacesUnit().getDefaultParent()
-//                                                  .getElement());
-                    WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(
-                        webform.getDefaultParentMarkupBeanElement());
+//            MarkupDesignBean defaultBean =
+////                    WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(webform.getModel().getFacesUnit().getDefaultParent()
+////                                                  .getElement());
+//                    WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(
+//                        webform.getDefaultParentMarkupBeanElement());
+            Element defaultElement = webform.getDefaultParentMarkupBeanElement();
             
-            if (defaultBean != null) {
-                int n = defaultBean.getChildBeanCount();
-
-                if ((n > 0) &&
-                        ((MarkupDesignBean)defaultBean.getChildBean(n - 1)).getElement().getTagName()
-                             .equals(HtmlTag.BR.name)) {
-//                    removeSelected((MarkupDesignBean)defaultBean.getChildBean(n - 1), false);
-                    removeSelected(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)defaultBean.getChildBean(n - 1)), false);
+//            if (defaultBean != null) {
+//                int n = defaultBean.getChildBeanCount();
+//
+//                if ((n > 0) &&
+//                        ((MarkupDesignBean)defaultBean.getChildBean(n - 1)).getElement().getTagName()
+//                             .equals(HtmlTag.BR.name)) {
+////                    removeSelected((MarkupDesignBean)defaultBean.getChildBean(n - 1), false);
+//                    removeSelected(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)defaultBean.getChildBean(n - 1)), false);
+//                }
+//            }
+            if (defaultElement != null) {
+                Element[] defaultElementChildren = WebForm.getHtmlDomProviderService().getChildComponents(defaultElement);
+                int n = defaultElementChildren.length;
+                if ((n > 0) && HtmlTag.BR.name.equals(defaultElementChildren[n-1].getTagName())) {
+                    removeSelected(defaultElementChildren[n - 1], false);
                 }
             }
         }
