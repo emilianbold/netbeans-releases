@@ -9,9 +9,9 @@
 
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
-import org.netbeans.modules.web.jsf.navigation.NavigableComponent;
-import org.netbeans.modules.web.jsf.navigation.Page;
-import org.netbeans.modules.web.jsf.navigation.Pin;
+import org.netbeans.modules.web.jsf.navigation.vwmodel.NavigableComponent;
+import org.netbeans.modules.web.jsf.navigation.vwmodel.Page;
+import org.netbeans.modules.web.jsf.navigation.vwmodel.Pin;
 import org.netbeans.modules.web.jsf.navigation.graph.NavigationBridgeUtilities;
 import java.awt.Point;
 import org.netbeans.api.visual.action.ConnectProvider;
