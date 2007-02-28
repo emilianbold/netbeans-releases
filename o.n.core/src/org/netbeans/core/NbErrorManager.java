@@ -44,10 +44,8 @@ import java.util.logging.Logger;
  * @author Jaroslav Tulach, Jesse Glick
  */
 public final class NbErrorManager extends Handler {
-    /** our root logger */
-    static NbErrorManager ROOT = new NbErrorManager();
     
-    Exc createExc(Throwable t, Level severity, LogRecord add) {
+    static Exc createExc(Throwable t, Level severity, LogRecord add) {
         LogRecord[] ann = findAnnotations(t, add);
         return new Exc(t, severity, ann, findAnnotations0(t, add, true, new HashSet<Throwable>()));
     }
@@ -77,7 +75,7 @@ public final class NbErrorManager extends Handler {
     }
     
     /** Extracts localized message from a LogRecord */
-    static final String getLocalizedMessage(LogRecord rec) {
+    private static final String getLocalizedMessage(LogRecord rec) {
         ResourceBundle rb = rec.getResourceBundle();
         if (rb == null) {
             return null;
@@ -102,7 +100,7 @@ public final class NbErrorManager extends Handler {
      * @param t the exception
      * @return array of annotations or null
      */
-    public synchronized LogRecord[] findAnnotations(Throwable t, LogRecord add) {
+    private static LogRecord[] findAnnotations(Throwable t, LogRecord add) {
         return findAnnotations0(t, add, false, new HashSet<Throwable>());
     }
     
@@ -110,7 +108,7 @@ public final class NbErrorManager extends Handler {
      * because a lot of warnings will be printed. But while searching for
      * localized message we should scan all the annotations (even recursively).
      */
-    private synchronized LogRecord[] findAnnotations0(Throwable t, LogRecord add, boolean recursively, Set<Throwable> alreadyVisited) {
+    private static LogRecord[] findAnnotations0(Throwable t, LogRecord add, boolean recursively, Set<Throwable> alreadyVisited) {
         List<LogRecord> l = new ArrayList<LogRecord>();
         Throwable collect = t;
         while (collect != null) {
@@ -169,7 +167,7 @@ public final class NbErrorManager extends Handler {
      * Another final class that is used to communicate with
      * NotifyExcPanel and provides enough information to the dialog.
      */
-    final class Exc {
+    static final class Exc {
         /** the original throwable */
         private Throwable t;
         private Date d;

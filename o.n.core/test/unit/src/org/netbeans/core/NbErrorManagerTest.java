@@ -219,7 +219,7 @@ public final class NbErrorManagerTest extends NbTestCase {
     public void testNotifyException() throws Exception {
         IOException ioe = new IOException("unloc msg");
         err.annotate(ioe, "loc msg");
-        NbErrorManager.Exc x = NbErrorManager.ROOT.createExc(ioe, Level.INFO, null);
+        NbErrorManager.Exc x = NbErrorManager.createExc(ioe, Level.INFO, null);
         assertEquals(Level.INFO, x.getSeverity());
         assertEquals("loc msg", x.getLocalizedMessage());
         assertTrue(x.isLocalized());
@@ -234,7 +234,7 @@ public final class NbErrorManagerTest extends NbTestCase {
         
         // Simple exception is EXCEPTION.
         Throwable t = new IOException("unloc msg");
-        NbErrorManager.Exc x = NbErrorManager.ROOT.createExc(t, null, null);
+        NbErrorManager.Exc x = NbErrorManager.createExc(t, null, null);
         assertEquals(Level.WARNING, x.getSeverity());
         assertEquals("unloc msg", x.getMessage());
         assertEquals("unloc msg", x.getLocalizedMessage());
@@ -243,7 +243,7 @@ public final class NbErrorManagerTest extends NbTestCase {
         // Same when there is unloc debug info attached.
         t = new IOException("unloc msg");
         err.annotate(t, ErrorManager.UNKNOWN, "some debug info", null, null, null);
-        x = NbErrorManager.ROOT.createExc(t, null, null);
+        x = NbErrorManager.createExc(t, null, null);
         assertEquals(Level.WARNING, x.getSeverity());
         assertEquals("unloc msg", x.getMessage());
         assertEquals("unloc msg", x.getLocalizedMessage());
@@ -253,7 +253,7 @@ public final class NbErrorManagerTest extends NbTestCase {
         t = new IOException("unloc msg");
         Throwable t2 = new IOException("unloc msg #2");
         err.annotate(t, ErrorManager.UNKNOWN, null, null, t2, null);
-        x = NbErrorManager.ROOT.createExc(t, null, null);
+        x = NbErrorManager.createExc(t, null, null);
         assertEquals(Level.WARNING, x.getSeverity());
         assertEquals("unloc msg", x.getMessage());
         assertEquals("unloc msg", x.getLocalizedMessage());
@@ -263,7 +263,7 @@ public final class NbErrorManagerTest extends NbTestCase {
         // set the severity for the exception.
         t = new IOException("unloc msg");
         err.annotate(t, ErrorManager.USER, null, "loc msg", null, null);
-        x = NbErrorManager.ROOT.createExc(t, null, null);
+        x = NbErrorManager.createExc(t, null, null);
         assertEquals(1973, x.getSeverity().intValue());
         assertEquals("unloc msg", x.getMessage());
         assertEquals("loc msg", x.getLocalizedMessage());
@@ -274,7 +274,7 @@ public final class NbErrorManagerTest extends NbTestCase {
         t2 = new IOException("unloc msg #2");
         err.annotate(t2, ErrorManager.USER, null, "loc msg", null, null);
         err.annotate(t, ErrorManager.UNKNOWN, null, null, t2, null);
-        x = NbErrorManager.ROOT.createExc(t, null, null);
+        x = NbErrorManager.createExc(t, null, null);
         assertEquals(1973, x.getSeverity().intValue());
         assertEquals("unloc msg", x.getMessage());
         assertEquals("loc msg", x.getLocalizedMessage());
@@ -285,7 +285,7 @@ public final class NbErrorManagerTest extends NbTestCase {
         err.annotate(t2, ErrorManager.USER, null, "loc msg", null, null);
         t = new IOException("loc msg");
         err.annotate(t, ErrorManager.USER, null, null, t2, null);
-        x = NbErrorManager.ROOT.createExc(t, null, null);
+        x = NbErrorManager.createExc(t, null, null);
         assertEquals(1973, x.getSeverity().intValue());
         assertEquals("loc msg", x.getMessage());
         assertEquals("loc msg", x.getLocalizedMessage());
