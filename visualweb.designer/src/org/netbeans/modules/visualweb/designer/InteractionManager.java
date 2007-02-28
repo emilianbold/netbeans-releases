@@ -2238,7 +2238,8 @@ public class InteractionManager {
                 CssBox selBox = ModelViewMapper.findBox(pane.getPageBox(), e.getX(), e.getY());
 
 //                if ((selBox.getDesignBean() == null) && inlineEditor.isEdited(selBox)) {
-                if ((CssBox.getMarkupDesignBeanForCssBox(selBox) == null) && inlineEditor.isEdited(selBox)) {
+//                if ((CssBox.getMarkupDesignBeanForCssBox(selBox) == null) && inlineEditor.isEdited(selBox)) {
+                if ((CssBox.getElementForComponentRootCssBox(selBox) == null) && inlineEditor.isEdited(selBox)) {
                     // Reroute the mouse press to the insert box
                     caret.mouseReleased(e);
 
@@ -2253,7 +2254,8 @@ public class InteractionManager {
                 CssBox selBox = ModelViewMapper.findBox(pane.getPageBox(), e.getX(), e.getY());
 
 //                if (selBox.getDesignBean() == null) {
-                if (CssBox.getMarkupDesignBeanForCssBox(selBox) == null) {
+//                if (CssBox.getMarkupDesignBeanForCssBox(selBox) == null) {
+                if (CssBox.getElementForComponentRootCssBox(selBox) == null) {
                     // Reroute the mouse press to the insert box
                     caret.mouseReleased(e);
 
