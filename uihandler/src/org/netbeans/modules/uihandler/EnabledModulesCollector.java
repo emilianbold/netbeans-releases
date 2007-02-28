@@ -69,6 +69,7 @@ public class EnabledModulesCollector implements Deactivated {
             rec.setParameters(enabledNames);
             rec.setLoggerName(uiLogger.getName());
             rec.setResourceBundle(NbBundle.getBundle(EnabledModulesCollector.class));
+            rec.setResourceBundleName(EnabledModulesCollector.class.getPackage().getName()+".Bundle");
             uiLogger.log(rec);
         }
         if (!newDisabled.isEmpty()) {
@@ -81,6 +82,7 @@ public class EnabledModulesCollector implements Deactivated {
             rec.setParameters(disabledNames);
             rec.setLoggerName(uiLogger.getName());
             rec.setResourceBundle(NbBundle.getBundle(EnabledModulesCollector.class));
+            rec.setResourceBundleName(EnabledModulesCollector.class.getPackage().getName()+".Bundle");
             uiLogger.log(rec);
         }
         

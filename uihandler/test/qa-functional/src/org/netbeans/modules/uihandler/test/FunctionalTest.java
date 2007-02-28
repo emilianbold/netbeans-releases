@@ -216,7 +216,7 @@ public class FunctionalTest extends NbTestCase {
         }
         
         public void report(){
-            JButtonOperator op = new JButtonOperator(this, "Report Problem");
+            JButtonOperator op = new JButtonOperator(this, "Review and Report Problem");
             assertNotNull("THERE SHOULD BE A REPORT BUTTON", op);
             op.pushNoBlock();
         }

@@ -457,7 +457,7 @@ public class Installer extends ModuleInstall {
         private LogRecord getUserData(){
             LogRecord userData;
             ExceptionsSettings settings = new ExceptionsSettings();
-            ArrayList<String> params = new ArrayList<String>();
+            ArrayList<String> params = new ArrayList<String>(6);
             params.add(getOS());
             params.add(getVM());
             params.add(getVersion());
@@ -469,6 +469,7 @@ public class Installer extends ModuleInstall {
             }
             userData = new LogRecord(Level.CONFIG, USER_CONFIGURATION);
             userData.setResourceBundle(NbBundle.getBundle(Installer.class));
+            userData.setResourceBundleName(Installer.class.getPackage().getName()+".Bundle");
             userData.setParameters(params.toArray());
             return userData;
         }
