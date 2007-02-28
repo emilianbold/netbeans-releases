@@ -2861,7 +2861,8 @@ public class InteractionManager {
 //            CssBox selBox = mapper.findBox(x, y);
 //            DesignBean sel = mapper.findComponent(x, y);
             CssBox selBox = ModelViewMapper.findBox(pageBox, x, y);
-            MarkupDesignBean selMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(selBox);
+//            MarkupDesignBean selMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(selBox);
+            Element selComponentRootElement = CssBox.getElementForComponentRootCssBox(selBox);
 //            DesignBean sel = ModelViewMapper.findComponent(pageBox, x, y);
 //            DesignBean sel = ModelViewMapper.findMarkupDesignBean(pageBox, x, y);
             Element sel = ModelViewMapper.findComponentRootElement(pageBox, x, y);
@@ -2877,7 +2878,8 @@ public class InteractionManager {
                 // make it selectable. But if you're pointing below a rendered component that
                 // has focus, like an output text, show a text cursor.
 //                if ((selBox != pageBox) && (selBox.getDesignBean() != null)) {
-                if ((selBox != pageBox) && (selMarkupDesignBean != null)) {
+//                if ((selBox != pageBox) && (selMarkupDesignBean != null)) {
+                if ((selBox != pageBox) && (selComponentRootElement != null)) {
                     pane.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
                 } else {
                     pane.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
@@ -2887,7 +2889,8 @@ public class InteractionManager {
                 // make it selectable. But if you're pointing below a rendered component that
                 // has focus, like an output text, show a text cursor.
 //                if ((selBox != pageBox) && (selBox.getDesignBean() != null)) {
-                if ((selBox != pageBox) && (selMarkupDesignBean != null)) {
+//                if ((selBox != pageBox) && (selMarkupDesignBean != null)) {
+                if ((selBox != pageBox) && (selComponentRootElement != null)) {
                     pane.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
                 } else {
                     pane.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
