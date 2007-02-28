@@ -179,12 +179,15 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
             if (newBookmarks != bookmarks) {
                 if (bookmarksListener != null) {
                     BookmarksApiPackageAccessor.get().removeBookmarkListPcl(bookmarks, bookmarksListener);
+                    bookmarksListener = null;
                 }
 
                 bookmarks = newBookmarks;
 
-                bookmarksListener = WeakListeners.propertyChange(this, bookmarks);
-                BookmarksApiPackageAccessor.get().addBookmarkListPcl(bookmarks, bookmarksListener);
+                if (bookmarks != null) {
+                    bookmarksListener = WeakListeners.propertyChange(this, bookmarks);
+                    BookmarksApiPackageAccessor.get().addBookmarkListPcl(bookmarks, bookmarksListener);
+                }
             }
             
             // Hookup the caret
@@ -192,12 +195,15 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
             if (newCaret != caret) {
                 if (caretListener != null) {
                     caret.removeChangeListener(caretListener);
+                    caretListener = null;
                 }
 
                 caret = newCaret;
 
-                caretListener = WeakListeners.change(this, caret);
-                caret.addChangeListener(caretListener);
+                if (caret != null) {
+                    caretListener = WeakListeners.change(this, caret);
+                    caret.addChangeListener(caretListener);
+                }
             }
             
             lastCurrentLineStartOffset = -1;
