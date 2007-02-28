@@ -1845,6 +1845,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <exclude name="extra/**"/>
       <exclude name="testtools/**"/>
       <exclude name="bin/**"/>
+      <exclude name="profiler2/**"/>
       <exclude name="README.html"/>
       <exclude name="CREDITS.html"/>
       <exclude name="LICENSE.txt"/>
