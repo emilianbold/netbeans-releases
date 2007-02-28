@@ -32,10 +32,9 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorConstraints;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInteger;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 
 /**
  *
@@ -93,7 +92,7 @@ public class TextFieldCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Maximum Size", PropertyEditorInteger.createInstance(), PROP_MAX_SIZE)
+                .addProperty("Maximum Size", PropertyEditorNumber.createIntegerInstance(), PROP_MAX_SIZE)
                 .addProperty("Text", PropertyEditorString.createInstance(PropertyEditorString.DEPENDENCE_TEXT_FIELD), PROP_TEXT)
                 .addProperty("Initial Input Mode", PropertyEditorString.createInstance(), PROP_INITIAL_INPUT_MODE)
                 .addProperty("Input Constraints", PropertyEditorConstraints.createInstance(), PROP_CONSTRAINTS);

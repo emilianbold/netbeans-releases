@@ -40,15 +40,14 @@ import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorFloat;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.openide.util.NbBundle;
-
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 
 /**
  *
@@ -100,7 +99,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty("SVG Image", PropertyEditorResourcesComboBox.create(SVGImageCD.TYPEID, NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NEW"), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NONE")), PROP_SVG_IMAGE) //NOI18N
                 .addProperty("Start Animation Immediately", PropertyEditorBooleanUC.createInstance(), PROP_START_ANIM_IMMEDEATELY) //NOI18N
-                .addProperty("Animation Time Increment", PropertyEditorFloat.createInstance(), PROP_TIME_INCREMENT) //NOI18N
+                .addProperty("Animation Time Increment", PropertyEditorNumber.createFloatInstance(), PROP_TIME_INCREMENT) //NOI18N
                 .addProperty("Reset Animation When Stopped", PropertyEditorBooleanUC.createInstance(), PROP_RESET_ANIMATION_WHEN_STOPPED); //NOI18N
     }
     

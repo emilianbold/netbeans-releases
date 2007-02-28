@@ -241,7 +241,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
             if (text.length() > 0) {
                 boolean isTextCorrect = Pattern.matches("[\\d\\-]+", text); // NOI18N
                 if (!isTextCorrect) {
-                    displayWarning(PropertyEditorInteger.NON_DIGITS_TEXT);
+                    displayWarning(PropertyEditorNumber.NON_DIGITS_TEXT);
                 } else {
                     clearErrorStatus();
                 }

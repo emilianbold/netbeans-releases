@@ -34,9 +34,8 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-
 import java.util.*;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInteger;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 
 /**
  * @author David Kaspar
@@ -93,7 +92,7 @@ public final class CommandCD extends ComponentDescriptor {
                     .addProperty("Label", PropertyEditorString.createInstance(), PROP_LABEL) 
                     .addProperty("Long Label", PropertyEditorString.createInstance(), PROP_LONG_LABEL) 
                     .addProperty("Type", PropertyEditorComboBox.createInstance(getTypes(), TYPEID), PROP_TYPE)
-                    .addProperty("Priority", PropertyEditorInteger.createInstance(), PROP_PRIORITY); 
+                    .addProperty("Priority", PropertyEditorNumber.createIntegerInstance(), PROP_PRIORITY); 
     }
 
     public static Map<String, PropertyValue> getTypes() {

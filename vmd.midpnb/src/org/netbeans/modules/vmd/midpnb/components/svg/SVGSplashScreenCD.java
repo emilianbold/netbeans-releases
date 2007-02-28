@@ -30,11 +30,11 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInteger;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 
 /**
  *
@@ -76,7 +76,7 @@ public class SVGSplashScreenCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Timeout", PropertyEditorInteger.createInstance(), PROP_TIMEOUT)
+                .addProperty("Timeout", PropertyEditorNumber.createIntegerInstance(), PROP_TIMEOUT)
                 .addProperty("Allow Timeout Interrupt", PropertyEditorBooleanUC.createInstance(), PROP_ALLOW_TIMEOUT_INTERRUPT);
     }
 

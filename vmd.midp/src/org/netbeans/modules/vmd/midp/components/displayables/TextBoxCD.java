@@ -34,10 +34,9 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorConstraints;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInteger;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 
 /**
  *
@@ -84,7 +83,7 @@ public class TextBoxCD extends ComponentDescriptor{
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty("Text", PropertyEditorString.createInstance(PropertyEditorString.DEPENDENCE_TEXT_BOX), new TextAreaBC(), PROP_STRING)
-                .addProperty("Maximum Size", PropertyEditorInteger.createInstance(), PROP_MAX_SIZE)
+                .addProperty("Maximum Size", PropertyEditorNumber.createIntegerInstance(), PROP_MAX_SIZE)
                 .addProperty("Input Constraints", PropertyEditorConstraints.createInstance(), PROP_CONSTRAINTS)
                 .addProperty("Initial Input Mode", PropertyEditorString.createInstance(), PROP_INITIAL_INPUT_MODE);
 

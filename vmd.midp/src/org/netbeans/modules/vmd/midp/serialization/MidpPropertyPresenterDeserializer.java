@@ -84,24 +84,23 @@ public class MidpPropertyPresenterDeserializer extends PresenterDeserializer {
             if (EDITOR_BOOLEAN.equals (editor))
                 presenter.addProperty (displayName, PropertyEditorBooleanUC.createInstance (), propertyName);
             else if (EDITOR_INT.equals (editor))
-                presenter.addProperty (displayName, PropertyEditorInteger.createInstance (), propertyName);
+                presenter.addProperty (displayName, PropertyEditorNumber.createIntegerInstance(), propertyName);
             else if (EDITOR_FLOAT.equals (editor))
-                presenter.addProperty (displayName, PropertyEditorFloat.createInstance (), propertyName);
+                presenter.addProperty (displayName, PropertyEditorNumber.createFloatInstance(), propertyName);
             else if (EDITOR_STRING.equals (editor))
                 presenter.addProperty (displayName, PropertyEditorString.createInstance (), propertyName);
             else if (EDITOR_JAVA_CODE.equals (editor))
                 presenter.addProperty (displayName, PropertyEditorJavaString.createInstance (null), propertyName);
 //            else if (EDITOR_CHAR.equals (editor))
 //                presenter.addProperty (displayName, PropertyEditorChar.createInstance (), propertyName);
-//            else if (EDITOR_BYTE.equals (editor))
-//                presenter.addProperty (displayName, PropertyEditorByte.createInstance (), propertyName);
-//            else if (EDITOR_SHORT.equals (editor))
-//                presenter.addProperty (displayName, PropertyEditorShort.createInstance (), propertyName);
-//            else if (EDITOR_LONG.equals (editor))
-//                presenter.addProperty (displayName, PropertyEditorLong.createInstance (), propertyName);
-//            else if (EDITOR_DOUBLE.equals (editor))
-//                presenter.addProperty (displayName, PropertyEditorDouble.createInstance (), propertyName);
-                // TODO
+            else if (EDITOR_BYTE.equals (editor))
+                presenter.addProperty (displayName, PropertyEditorNumber.createByteInstance(), propertyName);
+            else if (EDITOR_SHORT.equals (editor))
+                presenter.addProperty (displayName, PropertyEditorNumber.createShortInstance(), propertyName);
+            else if (EDITOR_LONG.equals (editor))
+                presenter.addProperty (displayName, PropertyEditorNumber.createLongInstance(), propertyName);
+            else if (EDITOR_DOUBLE.equals (editor))
+                presenter.addProperty (displayName, PropertyEditorNumber.createDoubleInstance(), propertyName);
             else
                 return null;
             return Arrays.<Presenter>asList (presenter);
