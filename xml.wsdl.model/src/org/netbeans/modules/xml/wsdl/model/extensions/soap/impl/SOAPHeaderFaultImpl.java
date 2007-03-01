@@ -21,8 +21,10 @@ package org.netbeans.modules.xml.wsdl.model.extensions.soap.impl;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPComponent;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeader;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeaderFault;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPQName;
+import org.netbeans.modules.xml.xam.Component;
 import org.w3c.dom.Element;
 
 /**
@@ -42,5 +44,13 @@ public class SOAPHeaderFaultImpl extends SOAPHeaderBaseImpl implements SOAPHeade
     
     public void accept(SOAPComponent.Visitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public boolean canBeAddedTo(Component target) {
+        if (target instanceof SOAPHeader) {
+            return true;
+        }
+        return false;
     }
 }

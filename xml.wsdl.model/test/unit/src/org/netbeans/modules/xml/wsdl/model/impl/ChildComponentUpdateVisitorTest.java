@@ -10,6 +10,8 @@ package org.netbeans.modules.xml.wsdl.model.impl;
 import java.util.ArrayList;
 import junit.framework.*;
 import org.netbeans.modules.xml.wsdl.model.*;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.impl.SOAPHeaderImpl;
+import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
 
 /**
  *
@@ -104,7 +106,8 @@ public class ChildComponentUpdateVisitorTest extends TestCase {
             recursiveCanPasteChildren(child);
         }
         if (target.getParent() != null) {
-            assertTrue(target.getParent().canPaste(target));
+            String msg = target.getParent().getClass().getName() + " cannot paste " + target.getClass().getName();
+            assertTrue(msg, target.getParent().canPaste(target));
         }
     }
 
@@ -116,11 +119,16 @@ public class ChildComponentUpdateVisitorTest extends TestCase {
         }
         if (target.getParent() != null) {
             String msg = target.getClass().getName() + " canPaste " + target.getParent().getClass().getName();
-            if (target.getParent() instanceof ExtensibilityElement) {
+            if (GenericExtensibilityElement.class.isAssignableFrom(target.getParent().getClass())) {
                 assertTrue(msg, target.canPaste(target.getParent()));
             } else {
                 assertFalse(msg, target.canPaste(target.getParent()));
             }
         }
+    }
+
+    public void testCannotAddSoapExtensibilityElement() throws Exception {
+        model = TestCatalogModel.getDefault().getWSDLModel(NamespaceLocation.VEHICLE);
+        assertFalse(model.getDefinitions().canPaste(new SOAPHeaderImpl(model)));
     }
 }

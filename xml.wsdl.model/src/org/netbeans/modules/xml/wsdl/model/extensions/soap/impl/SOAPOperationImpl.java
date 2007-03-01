@@ -21,6 +21,7 @@ package org.netbeans.modules.xml.wsdl.model.extensions.soap.impl;
 
 import java.util.Collection;
 import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
@@ -28,6 +29,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding.Style;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPQName;
+import org.netbeans.modules.xml.xam.Component;
 import org.w3c.dom.Element;
 
 /**
@@ -81,5 +83,13 @@ public class SOAPOperationImpl extends SOAPComponentImpl implements SOAPOperatio
 
         return Style.valueOf(s.toUpperCase());
 
+    }
+
+    @Override
+    public boolean canBeAddedTo(Component target) {
+        if (target instanceof BindingOperation) {
+            return true;
+        }
+        return false;
     }
 }

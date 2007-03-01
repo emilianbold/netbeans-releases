@@ -20,6 +20,7 @@
 package org.netbeans.modules.xml.wsdl.model.impl;
 
 import org.netbeans.modules.xml.wsdl.model.*;
+import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.Component;
@@ -30,7 +31,7 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
  * Visitor to add or remove a child of a WSDL component.
  * @author Nam Nguyen
  */
-public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSDLVisitor, ComponentUpdater<T>, ComponentUpdater.Query<T> {
+public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSDLVisitor, ComponentUpdater<T> {
     
     private Operation operation;
     private WSDLComponent parent;
@@ -349,12 +350,12 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
             ComponentUpdater<ExtensibilityElement> updater = target.getComponentUpdater();
             if (operation != null) {
                 updater.update(target, child, index, operation);
-            } else if (updater instanceof ComponentUpdater.Query) {
-                canAdd = ((ComponentUpdater.Query) updater).canAdd(target, child);
             } else {
                 canAdd = false;
+                if (updater instanceof ComponentUpdater.Query) {
+                    canAdd = ((ComponentUpdater.Query) updater).canAdd(target, child);
+                } 
             }
-            
         } else {
             if (operation == Operation.ADD) {
                 parent.addExtensibilityElement(child);
@@ -362,13 +363,18 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
                 parent.removeExtensibilityElement(child);
             } else if (operation == null) {
                 canAdd = true;
+                if (child instanceof ExtensibilityElement.ParentSelector) {
+                    canAdd = ((ExtensibilityElement.ParentSelector)child).canBeAddedTo(parent);
+                }
             }
         }
     }
 
     private void checkOperationOnUnmatchedParent() {
         if (operation != null) {
-            throw new IllegalArgumentException("Unmatched parent-child components"); //NO18N
+            // note this unmatch should be caught by validation, 
+            // we don't want the UI view to go blank on invalid but still well-formed document
+            //throw new IllegalArgumentException("Unmatched parent-child components"); //NO18N
         } else {
             canAdd = false;
         }

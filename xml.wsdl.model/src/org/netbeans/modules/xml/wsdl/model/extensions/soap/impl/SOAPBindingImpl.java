@@ -20,11 +20,13 @@
 
 package org.netbeans.modules.xml.wsdl.model.extensions.soap.impl;
 
+import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding.Style;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPQName;
+import org.netbeans.modules.xml.xam.Component;
 import org.w3c.dom.Element;
 
 /**
@@ -73,5 +75,14 @@ public class SOAPBindingImpl extends SOAPComponentImpl implements SOAPBinding{
         } else {
             return super.getAttributeValueOf(attr, s);
         }
+    }
+
+
+    @Override
+    public boolean canBeAddedTo(Component target) {
+        if (target instanceof Binding) {
+            return true;
+        }
+        return false;
     }
 }

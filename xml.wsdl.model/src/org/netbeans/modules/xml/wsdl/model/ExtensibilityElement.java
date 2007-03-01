@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.wsdl.model;
 import java.io.IOException;
 import java.util.List;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 
@@ -94,5 +95,12 @@ public interface ExtensibilityElement extends WSDLComponent {
      */
     interface EmbeddedModel extends ExtensibilityElement {
         DocumentModel getEmbeddedModel();
+    }
+
+    /**
+     * An extensibility element with ability to select parent to be added to.
+     */
+    interface ParentSelector extends ExtensibilityElement {
+        boolean canBeAddedTo(Component target);
     }
 }

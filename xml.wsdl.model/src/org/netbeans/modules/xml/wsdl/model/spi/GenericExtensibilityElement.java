@@ -27,6 +27,7 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
 
@@ -34,7 +35,7 @@ import org.w3c.dom.Element;
  *
  * @author Nam Nguyen
  */
-public class GenericExtensibilityElement extends WSDLComponentBase implements ExtensibilityElement {
+public class GenericExtensibilityElement extends WSDLComponentBase implements ExtensibilityElement.ParentSelector {
     
     /** Creates a new instance of GenericExtensibilityElement */
     public GenericExtensibilityElement(WSDLModel model, Element e) {
@@ -93,5 +94,15 @@ public class GenericExtensibilityElement extends WSDLComponentBase implements Ex
             }
         }
         return Collections.unmodifiableList(result);
+    }
+
+    /**
+     * Generic extensibility by default can be added to any WSDL component.
+     */
+    public boolean canBeAddedTo(Component target) {
+        if (target instanceof WSDLComponent) {
+            return true;
+        }
+        return false;
     }
 }

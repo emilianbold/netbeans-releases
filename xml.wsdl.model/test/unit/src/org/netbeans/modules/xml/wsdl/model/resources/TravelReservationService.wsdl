@@ -58,7 +58,7 @@
                 <soap:body use="literal"/>
             </output>
             <fault name="itineraryProblem">
-                <soap:body use="literal"/>
+                <soap:fault name="itineraryProblem" use="literal"/>
             </fault>			
         </operation>		
     </binding>

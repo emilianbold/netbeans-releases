@@ -20,12 +20,14 @@
 package org.netbeans.modules.xml.wsdl.model.extensions.soap.impl;
 
 import java.util.Collection;
-import org.netbeans.modules.xml.xam.ComponentUpdater;
+import org.netbeans.modules.xml.wsdl.model.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.BindingOutput;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeader;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeaderFault;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPQName;
+import org.netbeans.modules.xml.xam.Component;
 import org.w3c.dom.Element;
 
 /**
@@ -57,5 +59,13 @@ public class SOAPHeaderImpl extends SOAPHeaderBaseImpl implements SOAPHeader {
 
     public Collection<SOAPHeaderFault> getSOAPHeaderFaults() {
         return getChildren(SOAPHeaderFault.class);
+    }
+
+    @Override
+    public boolean canBeAddedTo(Component target) {
+        if (target instanceof BindingInput || target instanceof BindingOutput) {
+            return true;
+        }
+        return false;
     }
 }

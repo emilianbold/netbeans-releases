@@ -19,11 +19,13 @@
 
 package org.netbeans.modules.xml.wsdl.model.extensions.soap.impl;
 
+import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPAddress;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPQName;
 import org.netbeans.modules.xml.wsdl.model.impl.WSDLAttribute;
+import org.netbeans.modules.xml.xam.Component;
 import org.w3c.dom.Element;
 
 /**
@@ -51,5 +53,13 @@ public class SOAPAddressImpl extends SOAPComponentImpl implements SOAPAddress {
 
     public String getLocation() {
         return getAttribute(WSDLAttribute.LOCATION);
+    }
+
+    @Override
+    public boolean canBeAddedTo(Component target) {
+        if (target instanceof Port) {
+            return true;
+        }
+        return false;
     }
 }

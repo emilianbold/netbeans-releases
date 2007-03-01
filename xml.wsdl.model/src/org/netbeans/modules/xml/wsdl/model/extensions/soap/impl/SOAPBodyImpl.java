@@ -23,12 +23,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.xml.wsdl.model.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.BindingOutput;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPQName;
 import org.netbeans.modules.xml.wsdl.model.impl.Util;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Reference;
 import org.w3c.dom.Element;
 
@@ -120,4 +123,12 @@ public class SOAPBodyImpl extends SOAPMessageBaseImpl implements SOAPBody {
         return ret;
     }
 
+
+    @Override
+    public boolean canBeAddedTo(Component target) {
+        if (target instanceof BindingInput || target instanceof BindingOutput) {
+            return true;
+        }
+        return false;
+    }
 }

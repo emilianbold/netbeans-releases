@@ -19,10 +19,12 @@
 
 package org.netbeans.modules.xml.wsdl.model.extensions.soap.impl;
 
+import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.Fault;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPFault;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPQName;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Reference;
 import org.w3c.dom.Element;
 
@@ -61,5 +63,14 @@ public class SOAPFaultImpl extends SOAPMessageBaseImpl implements SOAPFault {
     public Reference<Fault> getFault() {
         String v = getName();
         return v == null ? null : new FaultReference(this, v); 
+    }
+
+
+    @Override
+    public boolean canBeAddedTo(Component target) {
+        if (target instanceof BindingFault) {
+            return true;
+        }
+        return false;
     }
 }
