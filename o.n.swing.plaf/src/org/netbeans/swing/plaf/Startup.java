@@ -114,7 +114,8 @@ public final class Startup {
               // GTK L&F quality unacceptable for earlier versions.
               String javaVersion = System.getProperty("java.version");
               if ("1.6.0_01".compareTo(javaVersion) >= 0) {
-                  if (uiClassName.indexOf("gtk") >= 0 && !Boolean.getBoolean("useGtk")) {
+                  if (uiClassName.indexOf("gtk") >= 0 && System.getProperty("useGtk") != null && !Boolean.getBoolean("useGtk")) {
+                      System.err.println("Use javax.swing.plaf.metal.MetalLookAndFeel");
                       uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
                   }
               }
