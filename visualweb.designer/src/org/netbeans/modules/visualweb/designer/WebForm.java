@@ -1893,8 +1893,11 @@ public class WebForm implements Designer {
         return htmlDomProvider.getRootBeanNode();
     }
 
-    public void deleteBean(DesignBean designBean) {
-        htmlDomProvider.deleteBean(designBean);
+//    public void deleteBean(DesignBean designBean) {
+//        htmlDomProvider.deleteBean(designBean);
+//    }
+    public void deleteComponent(Element componentRootElement) {
+        htmlDomProvider.deleteComponent(componentRootElement);
     }
 
 //    boolean canCreateBean(String className, DesignBean parent, Position pos) {
