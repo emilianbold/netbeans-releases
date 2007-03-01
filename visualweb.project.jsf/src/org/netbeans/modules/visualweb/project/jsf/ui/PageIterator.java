@@ -23,6 +23,7 @@ import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
 import java.awt.Component;
 import java.io.IOException;
@@ -165,6 +166,18 @@ public class PageIterator implements TemplateWizard.Iterator {
         FileObject dir = Templates.getTargetFolder(wizard);
         DataFolder df = DataFolder.findFolder(dir);
         FileObject template = Templates.getTemplate(wizard);
+        Project project = Templates.getProject(wizard);
+
+        // Java EE 5 / JSF 1.2 project needs different template
+        if (J2eeModule.JAVA_EE_5.equals(JsfProjectUtils.getJ2eePlatformVersion(project))) {
+            // XXX should use Jsf12Apps/$NAME.$EXT instead of JsfApps/$NAME12.$EXT after disable the old project type
+            String name = "Templates/JsfApps/" + template.getName() + "12." + template.getExt();
+            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(name);
+            if (fo != null) {
+                template = fo;
+            }
+        }
+
         DataObject dTemplate = DataObject.find(template);                
         String targetName = Templates.getTargetName(wizard);
 
