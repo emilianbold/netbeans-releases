@@ -334,6 +334,15 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     errorPage.setLocation("/error/ExceptionHandler");
                     ddRoot.addErrorPage(errorPage);
 
+                    // The JSP Configuration
+                    if (!J2eeModule.J2EE_13.equals(j2eeLevel)) {
+                        JspConfig jspConfig = (JspConfig)ddRoot.addBean("JspConfig"); // NOI18N
+                        JspPropertyGroup jspGroup = (JspPropertyGroup)jspConfig.createBean("JspPropertyGroup"); // NOI18N
+                        jspGroup.addUrlPattern("*.jspf");
+                        jspGroup.setIsXml(true);
+                        jspConfig.addJspPropertyGroup(jspGroup);
+                    }
+                    
                     if (isMyFaces) {
                         Listener facesListener = (Listener) ddRoot.createBean("Listener");
                         facesListener.setListenerClass("org.apache.myfaces.webapp.StartupServletContextListener");
