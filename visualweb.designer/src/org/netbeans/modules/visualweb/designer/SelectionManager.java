@@ -891,71 +891,73 @@ public class SelectionManager {
                 }
 //                }
 
-                DesignBean lb = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
-                BeanInfo bi = lb.getBeanInfo();
-                if (bi != null) {
-                    int defaultProp = bi.getDefaultPropertyIndex();
-
-                    if (defaultProp != -1) {
-                        FeatureDescriptor defProp = bi.getPropertyDescriptors()[defaultProp];
-
-                        // How do we launch the property sheet editing a
-                        // particular property?
-                        final JTable jt =
-//                            org.netbeans.modules.visualweb.designer.DesignerUtils.findPropSheetTable(true, true);
-                                findPropSheetTable(true, true);
-
-                        if (jt == null) {
-                            return false;
-                        }
-
-                        TableModel model = jt.getModel();
-
-                        // Set focus of jt?
-                        for (int row = 0, n = model.getRowCount(); row < n; row++) {
-                            Object o = model.getValueAt(row, 0);
-
-                            if (!(o instanceof FeatureDescriptor)) {
-                                continue;
-                            }
-
-                            FeatureDescriptor desc = (FeatureDescriptor)o;
-
-                            if (defProp.getName().equals(desc.getName())) {
-                                // Edit the cell XXX only if readonly!
-                                if (desc instanceof Node.Property) {
-                                    Node.Property prop = (Node.Property)desc;
-
-                                    if (!prop.canWrite()) {
-                                        return false;
-                                    }
-                                }
-
-                                final int r = row;
-                                final String content = event.getActionCommand();
-                                SwingUtilities.invokeLater(new Runnable() {
-                                        public void run() {
-                                            jt.editCellAt(r, 1, null);
-                                            jt.requestFocus();
-
-                                            Object ce = jt.getCellEditor(r, 1);
-
-                                            // Hack Alert: try to transfer the
-                                            // original keypress into the text field
-                                            Component comp =
-                                                getInplaceEditorComponentForSheetCellEditor(ce);
-
-                                            if (comp instanceof javax.swing.text.JTextComponent) {
-                                                javax.swing.text.JTextComponent jtc =
-                                                    (javax.swing.text.JTextComponent)comp;
-                                                jtc.replaceSelection(content);
-                                            }
-                                        }
-                                    });
-
-                                return true;
-                            }
-                        }
+//                DesignBean lb = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
+//                BeanInfo bi = lb.getBeanInfo();
+//                if (bi != null) {
+//                    int defaultProp = bi.getDefaultPropertyIndex();
+//
+//                    if (defaultProp != -1) {
+                if (WebForm.getHtmlDomProviderService().hasDefaultProperty(sc.componentRootElement)) {
+//                        FeatureDescriptor defProp = bi.getPropertyDescriptors()[defaultProp];
+//
+//                        // How do we launch the property sheet editing a
+//                        // particular property?
+//                        final JTable jt =
+////                            org.netbeans.modules.visualweb.designer.DesignerUtils.findPropSheetTable(true, true);
+//                                findPropSheetTable(true, true);
+//
+//                        if (jt == null) {
+//                            return false;
+//                        }
+//
+//                        TableModel model = jt.getModel();
+//
+//                        // Set focus of jt?
+//                        for (int row = 0, n = model.getRowCount(); row < n; row++) {
+//                            Object o = model.getValueAt(row, 0);
+//
+//                            if (!(o instanceof FeatureDescriptor)) {
+//                                continue;
+//                            }
+//
+//                            FeatureDescriptor desc = (FeatureDescriptor)o;
+//
+//                            if (defProp.getName().equals(desc.getName())) {
+//                                // Edit the cell XXX only if readonly!
+//                                if (desc instanceof Node.Property) {
+//                                    Node.Property prop = (Node.Property)desc;
+//
+//                                    if (!prop.canWrite()) {
+//                                        return false;
+//                                    }
+//                                }
+//
+//                                final int r = row;
+//                                final String content = event.getActionCommand();
+//                                SwingUtilities.invokeLater(new Runnable() {
+//                                        public void run() {
+//                                            jt.editCellAt(r, 1, null);
+//                                            jt.requestFocus();
+//
+//                                            Object ce = jt.getCellEditor(r, 1);
+//
+//                                            // Hack Alert: try to transfer the
+//                                            // original keypress into the text field
+//                                            Component comp =
+//                                                getInplaceEditorComponentForSheetCellEditor(ce);
+//
+//                                            if (comp instanceof javax.swing.text.JTextComponent) {
+//                                                javax.swing.text.JTextComponent jtc =
+//                                                    (javax.swing.text.JTextComponent)comp;
+//                                                jtc.replaceSelection(content);
+//                                            }
+//                                        }
+//                                    });
+//
+//                                return true;
+//                            }
+//                        }
+                        return WebForm.getHtmlDomProviderService().focusDefaultProperty(sc.componentRootElement, event.getActionCommand());
                     } else {
                         // Is it a MarkupBean that has a TextNode child?
                         // (for example a <div> or a <table>. If so,
@@ -999,7 +1001,7 @@ public class SelectionManager {
                             }
                         }
                     }
-                }
+//                }
             }
         }
 
@@ -1039,103 +1041,103 @@ public class SelectionManager {
     }
 
     
-    // XXX Moved from DesignerUtils.
-    /** Locate the JTable within the property sheet in the IDE.
-     * WARNING: Implementation hacks!
-     * @param focus If set, focus the top component
-     * @param visible If set, ensure the top component is fronted
-     */
-    private static JTable findPropSheetTable(boolean focus, boolean visible) {
-        WindowManager mgr = WindowManager.getDefault();
-        TopComponent properties = mgr.findTopComponent("properties"); // NOI18N
-        
-        if ((properties != null) && (visible || properties.isShowing())) {
-            if (focus) {
-                properties.requestActive();
-            }
-            
-            if (visible) {
-                properties.requestVisible();
-            }
-            
-            return findTable(properties);
-        }
-        
-        return null;
-    }
-    
-    /** Fish the given Container hierarchy for a JTable */
-    private static JTable findTable(Container c) {
-//        if(DEBUG) {
-//            debugLog(DesignerUtils.class.getName() + ".findTable(Container)");
+//    // XXX Moved from DesignerUtils.
+//    /** Locate the JTable within the property sheet in the IDE.
+//     * WARNING: Implementation hacks!
+//     * @param focus If set, focus the top component
+//     * @param visible If set, ensure the top component is fronted
+//     */
+//    private static JTable findPropSheetTable(boolean focus, boolean visible) {
+//        WindowManager mgr = WindowManager.getDefault();
+//        TopComponent properties = mgr.findTopComponent("properties"); // NOI18N
+//        
+//        if ((properties != null) && (visible || properties.isShowing())) {
+//            if (focus) {
+//                properties.requestActive();
+//            }
+//            
+//            if (visible) {
+//                properties.requestVisible();
+//            }
+//            
+//            return findTable(properties);
 //        }
-        if(c == null) {
-            return(null);
-        }
-        if (c instanceof JTable) {
-            return (JTable)c;
-        }
-        
-        int n = c.getComponentCount();
-        
-        for (int i = 0; i < n; i++) {
-            Component comp = c.getComponent(i);
-            
-            if (comp instanceof JTable) {
-                return (JTable)comp;
-            }
-            
-            if (comp instanceof Container) {
-                JTable table = findTable((Container)comp);
-                
-                if (table != null) {
-                    return table;
-                }
-            }
-        }
-        
-        return null;
-    }
-
-    // XXX Using reflection, But it is still better than changing NB code
-    // The task from UI point of view looks very strange... why the text isn't inserted into the component, as user expect,
-    // but surprisinlgy the focus is moved into property sheet? That kind of solutions cause problems like this.
-    private static Component getInplaceEditorComponentForSheetCellEditor(Object ce) {
-        if (ce == null) {
-            return null;
-        }
-
-        Object inplaceEditor;
-
-        try {
-            ClassLoader cl =
-                org.openide.explorer.propertysheet.PropertySheet.class.getClassLoader();
-            Class sheetCellEditorClass =
-                Class.forName("org.openide.explorer.propertysheet.SheetCellEditor", true, cl); // NOI18N
-            java.lang.reflect.Method getInplaceEditorMethod =
-                sheetCellEditorClass.getDeclaredMethod("getInplaceEditor", new Class[0]); // NOI18N
-            getInplaceEditorMethod.setAccessible(true);
-            inplaceEditor = getInplaceEditorMethod.invoke(ce, new Object[0]);
-        } catch (ClassNotFoundException cnfe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, cnfe);
-            inplaceEditor = null;
-        } catch (NoSuchMethodException nsme) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, nsme);
-            inplaceEditor = null;
-        } catch (IllegalAccessException iae) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, iae);
-            inplaceEditor = null;
-        } catch (java.lang.reflect.InvocationTargetException ite) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ite);
-            inplaceEditor = null;
-        }
-
-        if (inplaceEditor instanceof org.openide.explorer.propertysheet.InplaceEditor) {
-            return ((org.openide.explorer.propertysheet.InplaceEditor)inplaceEditor).getComponent();
-        } else {
-            return null;
-        }
-    }
+//        
+//        return null;
+//    }
+//    
+//    /** Fish the given Container hierarchy for a JTable */
+//    private static JTable findTable(Container c) {
+////        if(DEBUG) {
+////            debugLog(DesignerUtils.class.getName() + ".findTable(Container)");
+////        }
+//        if(c == null) {
+//            return(null);
+//        }
+//        if (c instanceof JTable) {
+//            return (JTable)c;
+//        }
+//        
+//        int n = c.getComponentCount();
+//        
+//        for (int i = 0; i < n; i++) {
+//            Component comp = c.getComponent(i);
+//            
+//            if (comp instanceof JTable) {
+//                return (JTable)comp;
+//            }
+//            
+//            if (comp instanceof Container) {
+//                JTable table = findTable((Container)comp);
+//                
+//                if (table != null) {
+//                    return table;
+//                }
+//            }
+//        }
+//        
+//        return null;
+//    }
+//
+//    // XXX Using reflection, But it is still better than changing NB code
+//    // The task from UI point of view looks very strange... why the text isn't inserted into the component, as user expect,
+//    // but surprisinlgy the focus is moved into property sheet? That kind of solutions cause problems like this.
+//    private static Component getInplaceEditorComponentForSheetCellEditor(Object ce) {
+//        if (ce == null) {
+//            return null;
+//        }
+//
+//        Object inplaceEditor;
+//
+//        try {
+//            ClassLoader cl =
+//                org.openide.explorer.propertysheet.PropertySheet.class.getClassLoader();
+//            Class sheetCellEditorClass =
+//                Class.forName("org.openide.explorer.propertysheet.SheetCellEditor", true, cl); // NOI18N
+//            java.lang.reflect.Method getInplaceEditorMethod =
+//                sheetCellEditorClass.getDeclaredMethod("getInplaceEditor", new Class[0]); // NOI18N
+//            getInplaceEditorMethod.setAccessible(true);
+//            inplaceEditor = getInplaceEditorMethod.invoke(ce, new Object[0]);
+//        } catch (ClassNotFoundException cnfe) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, cnfe);
+//            inplaceEditor = null;
+//        } catch (NoSuchMethodException nsme) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, nsme);
+//            inplaceEditor = null;
+//        } catch (IllegalAccessException iae) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, iae);
+//            inplaceEditor = null;
+//        } catch (java.lang.reflect.InvocationTargetException ite) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ite);
+//            inplaceEditor = null;
+//        }
+//
+//        if (inplaceEditor instanceof org.openide.explorer.propertysheet.InplaceEditor) {
+//            return ((org.openide.explorer.propertysheet.InplaceEditor)inplaceEditor).getComponent();
+//        } else {
+//            return null;
+//        }
+//    }
 
     /**
      * Determine if the given point overlaps a selection handle.

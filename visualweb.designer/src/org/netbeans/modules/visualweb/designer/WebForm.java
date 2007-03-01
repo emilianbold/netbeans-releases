@@ -2392,6 +2392,14 @@ public class WebForm implements Designer {
         public boolean isContainerTypeComponent(Element componentRootElement) {
             return false;
         }
+
+        public boolean hasDefaultProperty(Element componentRootElement) {
+            return false;
+        }
+
+        public boolean focusDefaultProperty(Element componentRootElement, String content) {
+            return false;
+        }
     } // End of DummyHtmlDomProviderService.
     
     
