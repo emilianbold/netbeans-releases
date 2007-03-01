@@ -23,6 +23,7 @@ import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
+import org.openide.awt.UndoRedo;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 
@@ -113,7 +114,7 @@ public class DiffExecutor {
     public static File [] getModifiedFiles(Context context, int includeStatus) {
         CvsFileTableModel model = CvsVersioningSystem.getInstance().getFileTableModel(context, includeStatus);
         CvsFileNode [] nodes = model.getNodes();
-        List files = new ArrayList();
+        List<File> files = new ArrayList<File>();
         for (int i = 0; i < nodes.length; i++) {
             File file = nodes[i].getFile();
             if (CvsModuleConfig.getDefault().isExcludedFromCommit(file) == false) {
@@ -145,6 +146,11 @@ public class DiffExecutor {
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
         }
         
+        public UndoRedo getUndoRedo() {
+            DiffMainPanel mainPanel = ((DiffMainPanel) getComponent(0));
+            return mainPanel.getUndoRedo();
+        }
+
         public int getPersistenceType(){
             return TopComponent.PERSISTENCE_NEVER;
         }
@@ -168,7 +174,7 @@ public class DiffExecutor {
             mainPanel.requestActive();
         }
 
-        public Collection getSetups() {
+        public Collection<Setup> getSetups() {
             DiffSetupSource mainPanel = ((DiffSetupSource) getComponent(0));
             return mainPanel.getSetups();
         }

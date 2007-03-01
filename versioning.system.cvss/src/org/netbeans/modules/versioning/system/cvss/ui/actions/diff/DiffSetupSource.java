@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -38,7 +38,7 @@ public interface DiffSetupSource {
      *
      * @return read-only {@link Setup}s copy never <code>null</code>
      */
-    Collection getSetups();
+    Collection<Setup> getSetups();
 
     /**
      * Prefered display name or null.

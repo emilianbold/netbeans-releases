@@ -23,6 +23,7 @@ import java.awt.*;
 import java.util.*;
 import org.openide.util.*;
 import org.openide.windows.*;
+import org.openide.awt.UndoRedo;
 
 /**
  * Diff TopComponent, synchronizing selected node and providing
@@ -43,6 +44,10 @@ public class DiffTopComponent extends TopComponent implements DiffSetupSource {
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
     }
 
+    public UndoRedo getUndoRedo() {
+        return panel.getUndoRedo();
+    }
+    
     public int getPersistenceType(){
         return TopComponent.PERSISTENCE_NEVER;
     }
