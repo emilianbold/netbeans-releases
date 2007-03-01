@@ -46,22 +46,22 @@ public class Factory implements HighlightsLayerFactory {
         ArrayList<HighlightsLayer> layers = new ArrayList<HighlightsLayer>();
         
         layers.add(HighlightsLayer.create(
-            CaretRowHighlighting.LAYER_TYPE_ID,
+            CaretBasedBlockHighlighting.CaretRowHighlighting.LAYER_TYPE_ID,
             ZOrder.CARET_RACK,
             true,
-            new CaretRowHighlighting(context.getComponent()))
+            new CaretBasedBlockHighlighting.CaretRowHighlighting(context.getComponent()))
         );
 
         layers.add(HighlightsLayer.create(
-            TextSelectionHighlighting.LAYER_TYPE_ID,
-            ZOrder.SHOW_OFF_RACK.aboveLayers(CaretRowHighlighting.LAYER_TYPE_ID), 
+            CaretBasedBlockHighlighting.TextSelectionHighlighting.LAYER_TYPE_ID,
+            ZOrder.SHOW_OFF_RACK.aboveLayers(CaretBasedBlockHighlighting.CaretRowHighlighting.LAYER_TYPE_ID), 
             true, 
-            new TextSelectionHighlighting(context.getComponent()))
+            new CaretBasedBlockHighlighting.TextSelectionHighlighting(context.getComponent()))
         );
 
         layers.add(HighlightsLayer.create(
             BLOCK_SEARCH_LAYER, 
-            ZOrder.SHOW_OFF_RACK.aboveLayers(CaretRowHighlighting.LAYER_TYPE_ID),
+            ZOrder.SHOW_OFF_RACK.aboveLayers(CaretBasedBlockHighlighting.CaretRowHighlighting.LAYER_TYPE_ID),
             true,
             new BlockHighlighting(BLOCK_SEARCH_LAYER, context.getComponent()))
         );
@@ -75,7 +75,7 @@ public class Factory implements HighlightsLayerFactory {
 
         layers.add(HighlightsLayer.create(
             INC_SEARCH_LAYER, 
-            ZOrder.SHOW_OFF_RACK.aboveLayers(TextSearchHighlighting.LAYER_TYPE_ID).belowLayers(TextSelectionHighlighting.LAYER_TYPE_ID),
+            ZOrder.SHOW_OFF_RACK.aboveLayers(TextSearchHighlighting.LAYER_TYPE_ID).belowLayers(CaretBasedBlockHighlighting.TextSelectionHighlighting.LAYER_TYPE_ID),
             true,
             new BlockHighlighting(INC_SEARCH_LAYER, context.getComponent()))
         );
