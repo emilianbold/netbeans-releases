@@ -1788,16 +1788,20 @@ public class SelectionManager {
         Iterator<SelectedComponent> it = selectedComponents.iterator();
         assert it.hasNext();
         SelectedComponent sc = it.next();
-        MarkupDesignBean currentBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
+//        MarkupDesignBean currentBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
         
 //        MarkupDesignBean leafBean = leaf;
-        MarkupDesignBean leafBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(leaf);
+//        MarkupDesignBean leafBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(leaf);
         
-        if (leafBean == null) {
-            leafBean = currentBean;
+//        if (leafBean == null) {
+//            leafBean = currentBean;
+//        }
+        if (leaf == null) {
+            leaf = sc.componentRootElement;
         }
 
-        paintOrSelectAncestor(g2d, metrics, boldMetrics, leafBean, x, y, yadj, currentBean, -1);
+//        paintOrSelectAncestor(g2d, metrics, boldMetrics, leafBean, x, y, yadj, currentBean, -1);
+        paintOrSelectAncestor(g2d, metrics, boldMetrics, leaf, x, y, yadj, sc.componentRootElement, -1);
     }
 
     // XXX HACKY CODE! Clean up once we agree on the UI & operation for this!
@@ -1832,33 +1836,41 @@ public class SelectionManager {
 
     // XXX HACKY CODE! Clean up once we agree on the UI & operation for this!
     private int paintOrSelectAncestor(Graphics2D g2d, FontMetrics metrics, FontMetrics boldMetrics,
-        MarkupDesignBean bean, int x, int ytop, int y, DesignBean selected, int target) {
-        if (bean.getBeanParent() instanceof MarkupDesignBean &&
-//                !FacesSupport.isSpecialBean(/*webform, */bean)) {
-//                !Util.isSpecialBean(bean)) {
-                !WebForm.getHtmlDomProviderService().isSpecialComponent(
-                    WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean))) {
+    Element componentRootElement, /*MarkupDesignBean bean,*/ int x, int ytop, int y, Element selectedComponentRootElement, /*DesignBean selected,*/ int target) {
+//        if (bean.getBeanParent() instanceof MarkupDesignBean &&
+////                !FacesSupport.isSpecialBean(/*webform, */bean)) {
+////                !Util.isSpecialBean(bean)) {
+//                !WebForm.getHtmlDomProviderService().isSpecialComponent(
+//                    WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean))) {
+        if (!WebForm.getHtmlDomProviderService().isSpecialComponent(componentRootElement)) {
+//            x = paintOrSelectAncestor(g2d, metrics, boldMetrics,
+//                    (MarkupDesignBean)bean.getBeanParent(), x, ytop, y, selected, target);
             x = paintOrSelectAncestor(g2d, metrics, boldMetrics,
-                    (MarkupDesignBean)bean.getBeanParent(), x, ytop, y, selected, target);
+                    WebForm.getHtmlDomProviderService().getParentComponent(componentRootElement), x, ytop, y, selectedComponentRootElement, target);
 
             if (x < 0) {
                 return x;
             }
         }
 
-        String s = bean.getInstanceName();
-
+//        String s = bean.getInstanceName();
+//
+//        if (s == null) {
+//            s = "<unknown>";
+//        }
+//
+//        if (x > SELECTIONVIEW_LEFT) {
+//            s = "- " + bean.getInstanceName();
+//        }
+        String s = WebForm.getHtmlDomProviderService().getInstanceName(componentRootElement);
         if (s == null) {
-            s = "<unknown>";
-        }
-
-        if (x > SELECTIONVIEW_LEFT) {
-            s = "- " + bean.getInstanceName();
+            s = "<unknown>"; // TODO I18N
         }
 
         if (g2d != null) { // painting, not selecting
 
-            if (bean == selected) {
+//            if (bean == selected) {
+            if (componentRootElement == selectedComponentRootElement) {
                 g2d.setFont(boldMetrics.getFont());
             } else {
                 g2d.setFont(metrics.getFont());
@@ -1868,11 +1880,12 @@ public class SelectionManager {
         }
 
         if (paintBeanIcon) {
-            BeanInfo bi = bean.getBeanInfo();
-            Image icon = null;
-
-            if (bi != null) {
-                icon = bi.getIcon(BeanInfo.ICON_COLOR_16x16);
+//            BeanInfo bi = bean.getBeanInfo();
+//            Image icon = null;
+//
+//            if (bi != null) {
+//                icon = bi.getIcon(BeanInfo.ICON_COLOR_16x16);
+            Image icon = WebForm.getHtmlDomProviderService().getIcon(componentRootElement);
 
                 if (icon != null) {
                     if (g2d != null) {
@@ -1884,7 +1897,7 @@ public class SelectionManager {
 
                     x += (16 + 2); // spacing
                 }
-            }
+//            }
         }
 
         if (g2d != null) {
@@ -1893,7 +1906,8 @@ public class SelectionManager {
             // XXX restore font?
         }
 
-        if (bean == selected) {
+//        if (bean == selected) {
+        if (componentRootElement == selectedComponentRootElement) {
             x += boldMetrics.stringWidth(s);
         } else {
             x += metrics.stringWidth(s);
@@ -1907,7 +1921,7 @@ public class SelectionManager {
             // interested in
             if (x > target) {
 //                setSelected(bean, true);
-                setSelected(WebForm.getHtmlDomProviderService().getComponentRootElementForMarkupDesignBean(bean), true);
+                setSelected(componentRootElement, true);
 
                 return -1;
             }
@@ -1941,16 +1955,20 @@ public class SelectionManager {
         Iterator<SelectedComponent> it = selectedComponents.iterator();
         assert it.hasNext();
         SelectedComponent sc = it.next();
-        MarkupDesignBean currentBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
+//        MarkupDesignBean currentBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
         
 //        MarkupDesignBean leafBean = leaf;
-        MarkupDesignBean leafBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(leaf);
+//        MarkupDesignBean leafBean = WebForm.getHtmlDomProviderService().getMarkupDesignBeanForElement(leaf);
 
-        if (leafBean == null) {
-            leafBean = currentBean;
+//        if (leafBean == null) {
+//            leafBean = currentBean;
+//        }
+        if (leaf == null) {
+            leaf = sc.componentRootElement;
         }
 
-        paintOrSelectAncestor(null, metrics, boldMetrics, leafBean, x, y, yadj, currentBean, targetx);
+//        paintOrSelectAncestor(null, metrics, boldMetrics, leafBean, x, y, yadj, currentBean, targetx);
+        paintOrSelectAncestor(null, metrics, boldMetrics, leaf, x, y, yadj, sc.componentRootElement, targetx);
     }
 
     /**

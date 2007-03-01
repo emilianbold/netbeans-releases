@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
+import java.awt.Image;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider;
 import org.netbeans.modules.visualweb.api.designer.HtmlDomProvider.InlineEditorSupport;
@@ -2399,6 +2400,10 @@ public class WebForm implements Designer {
 
         public boolean focusDefaultProperty(Element componentRootElement, String content) {
             return false;
+        }
+
+        public Image getIcon(Element componentRootElement) {
+            return null;
         }
     } // End of DummyHtmlDomProviderService.
     
