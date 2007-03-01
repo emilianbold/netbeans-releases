@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.debug;
@@ -64,8 +64,8 @@ public class ElementNode extends AbstractNode implements Highlight {
         super(nodes.isEmpty() ? Children.LEAF: new NodeChilren(nodes));
         this.element = element;
         this.info = info;
-        setDisplayName(element.getKind().toString() + ":" + element.toString());
-        setIconBaseWithExtension("org/netbeans/modules/java/debug/resources/element.png");
+        setDisplayName(element.getKind().toString() + ":" + element.toString()); //NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/java/debug/resources/element.png"); //NOI18N
     }
 
     public int getStart() {

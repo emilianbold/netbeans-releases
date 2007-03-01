@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.debug;
@@ -39,6 +39,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -68,18 +69,18 @@ public class TreeNavigatorProviderImpl implements NavigatorPanel {
                             result.add((Highlight) n);
                     }
                     
-                    Highlighter.getDefault().setHighlights(file, "tree", result);
+                    Highlighter.getDefault().setHighlights(file, "tree", result); //NOI18N
                 }
             }
         });
     }
     
     public String getDisplayName() {
-        return "Trees";
+        return NbBundle.getMessage(TreeNavigatorProviderImpl.class, "NM_Trees");
     }
     
     public String getDisplayHint() {
-        return "Trees View";
+        return NbBundle.getMessage(TreeNavigatorProviderImpl.class, "SD_Trees");
     }
     
     public JComponent getComponent() {

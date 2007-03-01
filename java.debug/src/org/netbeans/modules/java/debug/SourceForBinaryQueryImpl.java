@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.debug;
@@ -59,7 +59,7 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
                 }
             }
         } catch (MalformedURLException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger("global").log(Level.INFO, null, e); //NOI18N
         }
         return null;
     }

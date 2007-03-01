@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.debug;
@@ -79,6 +79,7 @@ import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -106,14 +107,14 @@ public class TreeNode extends AbstractNode implements Highlight {
         this.tree = tree;
         this.info = info;
         this.synthetic = info.getTreeUtilities().isSynthetic(tree);
-        setDisplayName(tree.getLeaf().getKind().toString() + ":" + tree.getLeaf().toString());
-        setIconBaseWithExtension("org/netbeans/modules/java/debug/resources/tree.png");
+        setDisplayName(tree.getLeaf().getKind().toString() + ":" + tree.getLeaf().toString()); //NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/java/debug/resources/tree.png"); //NOI18N
     }
 
     @Override
     public String getHtmlDisplayName() {
         if (synthetic) {
-            return "<html><font color='#808080'>" + translate(getDisplayName());
+            return "<html><font color='#808080'>" + translate(getDisplayName()); //NOI18N
         }
         
         return null;
@@ -759,7 +760,7 @@ public class TreeNode extends AbstractNode implements Highlight {
             if (el != null) {
                 below.add(new ElementNode(info, el, Collections.EMPTY_LIST));
             } else {
-                below.add(new NotFoundElementNode("<cannot-resolve>"));
+                below.add(new NotFoundElementNode(NbBundle.getMessage(TreeNode.class, "Cannot_Resolve_Element")));
             }
         }
 
@@ -769,13 +770,13 @@ public class TreeNode extends AbstractNode implements Highlight {
             if (tm != null) {
                 below.add(new TypeNode(tm));
             } else {
-                below.add(new NotFoundTypeNode("<cannot-resolve>"));
+                below.add(new NotFoundTypeNode(NbBundle.getMessage(TreeNode.class, "Cannot_Resolve_Type")));
             }
         }
         
         private void addCorrespondingComments(List<Node> below) {
-            below.add(new CommentsNode("Preceding Comments", info.getTreeUtilities().getComments(getCurrentPath().getLeaf(), true)));
-            below.add(new CommentsNode("Trailing Comments", info.getTreeUtilities().getComments(getCurrentPath().getLeaf(), false)));
+            below.add(new CommentsNode(NbBundle.getMessage(TreeNode.class, "NM_Preceding_Comments"), info.getTreeUtilities().getComments(getCurrentPath().getLeaf(), true)));
+            below.add(new CommentsNode(NbBundle.getMessage(TreeNode.class, "NM_Trailing_Comments"), info.getTreeUtilities().getComments(getCurrentPath().getLeaf(), false)));
         }
     }
     
@@ -785,7 +786,7 @@ public class TreeNode extends AbstractNode implements Highlight {
             super(Children.LEAF);
             setName(name);
             setDisplayName(name);
-            setIconBaseWithExtension("org/netbeans/modules/java/debug/resources/element.png");
+            setIconBaseWithExtension("org/netbeans/modules/java/debug/resources/element.png"); //NOI18N
         }
         
     }
@@ -794,8 +795,8 @@ public class TreeNode extends AbstractNode implements Highlight {
         
         public TypeNode(TypeMirror type) {
             super(Children.LEAF);
-            setDisplayName(type.getKind().toString() + ":" + type.toString());
-            setIconBaseWithExtension("org/netbeans/modules/java/debug/resources/type.png");
+            setDisplayName(type.getKind().toString() + ":" + type.toString()); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/java/debug/resources/type.png"); //NOI18N
         }
         
     }
@@ -806,7 +807,7 @@ public class TreeNode extends AbstractNode implements Highlight {
             super(Children.LEAF);
             setName(name);
             setDisplayName(name);
-            setIconBaseWithExtension("org/netbeans/modules/java/debug/resources/type.png");
+            setIconBaseWithExtension("org/netbeans/modules/java/debug/resources/type.png"); //NOI18N
         }
         
     }    
