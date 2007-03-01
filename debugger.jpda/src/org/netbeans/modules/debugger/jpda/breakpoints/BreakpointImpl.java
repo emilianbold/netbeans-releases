@@ -34,6 +34,8 @@ import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -111,6 +113,12 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
     protected boolean isEnabled() {
         return true;
     }
+    
+    protected final void setValidity(Breakpoint.VALIDITY validity, String reason) {
+        if (breakpoint instanceof ChangeListener) {
+            ((ChangeListener) breakpoint).stateChanged(new ValidityChangeEvent(validity, reason));
+        }
+    }
 
     public void propertyChange (PropertyChangeEvent evt) {
         if (Breakpoint.PROP_DISPOSED.equals(evt.getPropertyName())) {
@@ -128,6 +136,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
     protected final void remove () {
         removeAllEventRequests ();
         breakpoint.removePropertyChangeListener(this);
+        setValidity(Breakpoint.VALIDITY.UNKNOWN, null);
     }
 
     protected JPDABreakpoint getBreakpoint () {
@@ -365,5 +374,19 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                 pattern.substring (0, pattern.length () - 1)
             );
         return name.equals (pattern);
+    }
+    
+    private static final class ValidityChangeEvent extends ChangeEvent {
+        
+        private String reason;
+        
+        public ValidityChangeEvent(Breakpoint.VALIDITY validity, String reason) {
+            super(validity);
+            this.reason = reason;
+        }
+        
+        public String toString() {
+            return reason;
+        }
     }
 }

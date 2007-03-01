@@ -21,6 +21,9 @@ package org.netbeans.api.debugger.jpda;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -302,7 +305,8 @@ public class LineBreakpoint extends JPDABreakpoint {
         return "LineBreakpoint " + url + " : " + lineNumber;
     }
     
-    private static class LineBreakpointImpl extends LineBreakpoint implements Comparable, FileChangeListener {
+    private static class LineBreakpointImpl extends LineBreakpoint 
+                                            implements Comparable, FileChangeListener, ChangeListener {
         
        // We need to hold our FileObject so that it's not GC'ed, because we'd loose our listener.
        private FileObject fo;
@@ -359,5 +363,14 @@ public class LineBreakpoint extends JPDABreakpoint {
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
     
+        public void stateChanged(ChangeEvent chev) {
+            Object source = chev.getSource();
+            if (source instanceof Breakpoint.VALIDITY) {
+                setValidity((Breakpoint.VALIDITY) source, chev.toString());
+            } else {
+                throw new UnsupportedOperationException(chev.toString());
+            }
+        }
+
     }
 }

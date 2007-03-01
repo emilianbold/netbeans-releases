@@ -30,7 +30,6 @@ import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -39,13 +38,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
-
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.openide.ErrorManager;
@@ -138,6 +136,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             ErrorManager.getDefault().log(ErrorManager.WARNING,
                     "Unable to submit line breakpoint to "+referenceType.name()+
                     " at line "+lineNumber+", reason: "+reason[0]);
+            setValidity(Breakpoint.VALIDITY.INVALID, reason[0]);
             return;
         } 
         for (Iterator it = locations.iterator(); it.hasNext();) {
@@ -146,6 +145,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 BreakpointRequest br = getEventRequestManager ().
                     createBreakpointRequest (location);
                 addEventRequest (br);
+                setValidity(Breakpoint.VALIDITY.VALID, null);
                 //System.out.println("Breakpoint " + br + location + "created");
             } catch (VMDisconnectedException e) {
             }
@@ -193,14 +193,14 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 }
             }*/
             if (locations.isEmpty() && reason[0] == null) {
-                reason[0] = "No executable location available at line "+lineNumber;
+                reason[0] = NbBundle.getMessage(LineBreakpointImpl.class, "MSG_NoLocation", Integer.toString(lineNumber));
             }
             return locations;
         } catch (AbsentInformationException ex) {
             // we are not able to create breakpoint in this situation. 
             // should we write some message?!?
             // We should indicate somehow that the breakpoint is invalid...
-            reason[0] = "Line number information is missing in the class file.";
+            reason[0] = NbBundle.getMessage(LineBreakpointImpl.class, "MSG_NoLineInfo");
         } catch (ObjectCollectedException ex) {
             // no problem, breakpoint will be created next time the class 
             // is loaded

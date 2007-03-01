@@ -77,17 +77,27 @@ public class IOManager {
     private RequestProcessor.Task task;
     
     /**
-    * Prints given text to the output.
-    */
+     * Prints given text to the output.
+     */
     public void println (
-        final String text, 
-    //    final int where, 
-        final Line line
+        String text, 
+        Line line
+    ) {
+        println(text, line, false);
+    }
+    
+    /**
+     * Prints given text to the output.
+     */
+    public void println (
+        String text, 
+        Line line,
+        boolean important
     ) {
         if (text == null)
             throw new NullPointerException ();
         synchronized (buffer) {
-            buffer.addLast (new Text (text, line));
+            buffer.addLast (new Text (text, line, important));
         }
         if (task == null)
             task = RequestProcessor.getDefault ().post (new Runnable () {
@@ -99,7 +109,10 @@ public class IOManager {
                             try {
                                 //if ((t.where & DEBUGGER_OUT) != 0) {
                                     if (t.line != null) {
-                                        debuggerOut.println (t.text, listener);
+                                        debuggerOut.println (t.text, listener, t.important);
+                                        if (t.important) {
+                                            debuggerIO.select();
+                                        }
                                         lines.put (t.text, t.line);
                                     } else
                                         debuggerOut.println (t.text);
@@ -149,12 +162,12 @@ public class IOManager {
     private static class Text {
         private String text;
         private Line line;
-     //   private int where;
+        private boolean important;
         
-        private Text (String text, Line line) {
+        private Text (String text, Line line, boolean important) {
             this.text = text;
-            //this.where = where;
             this.line = line;
+            this.important = important;
         }
     }
     

@@ -19,25 +19,20 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
-import java.net.URL;
 import java.util.Vector;
+
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.jpda.CallStackFrame;
 
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
-import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
@@ -247,8 +242,33 @@ public class BreakpointsNodeModel implements NodeModel {
     }
     
     public String getShortDescription (Object o) throws UnknownTypeException {
+        String appendMsg = null;
+        if (o instanceof Breakpoint) {
+            boolean valid = false;
+            boolean invalid = false;
+            String message = null;
+            Breakpoint brkp = (Breakpoint) o;
+            Breakpoint.VALIDITY validity = brkp.getValidity();
+            valid = validity == Breakpoint.VALIDITY.VALID;
+            invalid = validity == Breakpoint.VALIDITY.INVALID;
+            message = brkp.getValidityMessage();
+            if (valid) {
+                appendMsg = NbBundle.getMessage(BreakpointsNodeModel.class,
+                                                "CTL_APPEND_BP_Valid");
+            }
+            if (invalid) {
+                if (message != null) {
+                    appendMsg = NbBundle.getMessage(BreakpointsNodeModel.class,
+                                                    "CTL_APPEND_BP_Invalid_with_reason", message);
+                } else {
+                    appendMsg = NbBundle.getMessage(BreakpointsNodeModel.class,
+                                                    "CTL_APPEND_BP_Invalid");
+                }
+            }
+        }
+        String description;
         if (o instanceof LineBreakpoint) {
-            return 
+            description = 
                 NbBundle.getMessage (
                     BreakpointsNodeModel.class,
                     "CTL_Line_Breakpoint",
@@ -259,18 +279,18 @@ public class BreakpointsNodeModel implements NodeModel {
         if (o instanceof ThreadBreakpoint) {
             ThreadBreakpoint b = (ThreadBreakpoint) o;
             if (b.getBreakpointType () == b.TYPE_THREAD_STARTED)
-                return NbBundle.getMessage (
+                description = NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Thread_Started_Breakpoint"
                     );
             else
             if (b.getBreakpointType () == b.TYPE_THREAD_DEATH)
-                return NbBundle.getMessage (
+                description = NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Thread_Death_Breakpoint"
                     );
             else
-                return NbBundle.getMessage (
+                description = NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Thread_Breakpoint"
                     );
@@ -278,7 +298,7 @@ public class BreakpointsNodeModel implements NodeModel {
         if (o instanceof FieldBreakpoint) {
             FieldBreakpoint b = (FieldBreakpoint) o;
             if (b.getBreakpointType () == b.TYPE_ACCESS)
-                return 
+                description = 
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Field_Access_Breakpoint",
@@ -286,7 +306,7 @@ public class BreakpointsNodeModel implements NodeModel {
                         b.getFieldName ()
                     );
             else
-                return 
+                description = 
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Field_Modification_Breakpoint",
@@ -300,14 +320,14 @@ public class BreakpointsNodeModel implements NodeModel {
             String[] fs = b.getClassFilters ();
             if (fs.length > 0) className = fs [0];
             if ("".equals (b.getMethodName ()))
-                return
+                description =
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_All_Methods_Breakpoint",
                         className
                     );
             else
-                return 
+                description = 
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Method_Breakpoint",
@@ -326,7 +346,7 @@ public class BreakpointsNodeModel implements NodeModel {
                 if (fs.length > 0) className = fs [0];
             }
             if (b.getBreakpointType () == b.TYPE_CLASS_LOADED)
-                return 
+                description = 
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Class_Loaded_Breakpoint",
@@ -334,14 +354,14 @@ public class BreakpointsNodeModel implements NodeModel {
                     );
             else
             if (b.getBreakpointType () == b.TYPE_CLASS_UNLOADED)
-                return 
+                description = 
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Class_Unloaded_Breakpoint",
                         className
                     );
             else
-                return 
+                description = 
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Class_Breakpoint",
@@ -351,7 +371,7 @@ public class BreakpointsNodeModel implements NodeModel {
         if (o instanceof ExceptionBreakpoint) {
             ExceptionBreakpoint b = (ExceptionBreakpoint) o;
             if (b.getCatchType () == b.TYPE_EXCEPTION_CATCHED)
-                return 
+                description = 
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Exception_Catched_Breakpoint",
@@ -359,14 +379,14 @@ public class BreakpointsNodeModel implements NodeModel {
                     );
             else
             if (b.getCatchType () == b.TYPE_EXCEPTION_UNCATCHED)
-                return 
+                description = 
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Exception_Uncatched_Breakpoint",
                         b.getExceptionClassName ()
                     );
             else
-                return 
+                description = 
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Exception_Breakpoint",
@@ -374,6 +394,10 @@ public class BreakpointsNodeModel implements NodeModel {
                     );
         } else
         throw new UnknownTypeException (o);
+        if (appendMsg != null) {
+            description = description + " " + appendMsg;
+        }
+        return description;
     }
     
     public String getIconBase (Object o) throws UnknownTypeException {

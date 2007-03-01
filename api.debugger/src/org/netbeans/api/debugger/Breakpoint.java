@@ -36,10 +36,17 @@ public abstract class Breakpoint {
     public static final String          PROP_DISPOSED = "disposed"; // NOI18N
     /** Property name for name of group of the breakpoint. */
     public static final String          PROP_GROUP_NAME = "groupName"; // NOI18N
+    /** Property name for breakpoint validity */
+    public static final String          PROP_VALIDITY = "validity"; // NOI18N
+    
+    /** Validity values */
+    public static enum                  VALIDITY { UNKNOWN, VALID, INVALID }
     
     /** Support for property listeners. */
     private PropertyChangeSupport       pcs;
     private String                      groupName = "";
+    private VALIDITY                    validity = VALIDITY.UNKNOWN;
+    private String                      validityMessage;
     
     { pcs = new PropertyChangeSupport (this); }
 
@@ -64,6 +71,40 @@ public abstract class Breakpoint {
      * Enables the breakpoint.
      */
     public abstract void enable ();
+    
+    /**
+     * Get the validity of this breakpoint.
+     * @return The breakpoint validity.
+     */
+    public final synchronized VALIDITY getValidity() {
+        return validity;
+    }
+    
+    /**
+     * Get the message describing the current validity. For invalid breakpoints
+     * this should describe the reason why it is invalid.<p>
+     * Intended for use by ui implementation code, NodeModel.getShortDescription(), for example.
+     * @return The validity message.
+     */
+    public final synchronized String getValidityMessage() {
+        return validityMessage;
+    }
+    
+    /**
+     * Set the validity of this breakpoint.
+     * @param validity The new breakpoint validity.
+     * @param reason The message describing why is this validity being set, or <code>null</code>.
+     */
+    protected final void setValidity(VALIDITY validity, String reason) {
+        VALIDITY old;
+        synchronized (this) {
+            this.validityMessage = reason;
+            if (this.validity == validity) return ;
+            old = this.validity;
+            this.validity = validity;
+        }
+        firePropertyChange(PROP_VALIDITY, old, validity);
+    }
     
     public String getGroupName () {
         return groupName;

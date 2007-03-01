@@ -55,16 +55,45 @@ public class BreakpointsTest extends DebuggerApiTestBase {
 
         dm.removeDebuggerListener(dml);
     }
+    
+    public void testBreakpointValidity() throws Exception {
+        DebuggerManager dm = DebuggerManager.getDebuggerManager();
+        TestBreakpoint tb = new TestBreakpoint();
+        TestDebuggerManagerListener dml = new TestDebuggerManagerListener();
+        dm.addDebuggerListener(dml);
+
+        initBreakpoints(dm, dml);
+        addBreakpoint(dm, tb, dml);
+        assertEquals("Wrong initial validity", Breakpoint.VALIDITY.UNKNOWN, tb.getValidity());
+        final PropertyChangeEvent[] propEventPtr = new PropertyChangeEvent[] { null };
+        tb.addPropertyChangeListener(Breakpoint.PROP_VALIDITY, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                propEventPtr[0] = evt;
+            }
+        });
+        tb.doSetValidity(Breakpoint.VALIDITY.VALID, null);
+        assertNotNull("Got no prop change event!", propEventPtr[0]);
+        assertEquals("Bad event, unexpected new validity", Breakpoint.VALIDITY.VALID, propEventPtr[0].getNewValue());
+        assertEquals("Unexpected validity", Breakpoint.VALIDITY.VALID, tb.getValidity());
+        propEventPtr[0] = null;
+        tb.doSetValidity(Breakpoint.VALIDITY.INVALID, "Some crazy breakpoint");
+        assertNotNull("Got no prop change event!", propEventPtr[0]);
+        assertEquals("Bad event, unexpected new validity", Breakpoint.VALIDITY.INVALID, propEventPtr[0].getNewValue());
+        assertEquals("Unexpected validity", Breakpoint.VALIDITY.INVALID, tb.getValidity());
+        assertEquals("Unexpected reason", "Some crazy breakpoint", tb.getValidityMessage());
+    }
 
     private void initBreakpoints(DebuggerManager dm, TestDebuggerManagerListener dml) {
         dm.getBreakpoints();    // trigger the "breakpointsInit" property change
         TestDebuggerManagerListener.Event event;
         List events = dml.getEvents();
-        assertEquals("Wrong PCS", 1, events.size());
+        assertEquals("Wrong PCS", 0, events.size());
+        /*
         event = (TestDebuggerManagerListener.Event) events.get(0);
         assertEquals("Wrong PCS", "propertyChange", event.getName());
         PropertyChangeEvent pce = (PropertyChangeEvent) event.getParam();
         assertEquals("Wrong PCE name", "breakpointsInit", pce.getPropertyName());
+         */
     }
 
     private void removeBreakpoint(DebuggerManager dm, TestBreakpoint tb, TestDebuggerManagerListener dml) {
@@ -118,11 +147,10 @@ public class BreakpointsTest extends DebuggerApiTestBase {
         public void enable() {
             isEnabled = true;
         }
-
-        public void addPropertyChangeListener(PropertyChangeListener l) {
+        
+        public void doSetValidity(Breakpoint.VALIDITY validity, String reason) {
+            setValidity(validity, reason);
         }
 
-        public void removePropertyChangeListener(PropertyChangeListener l) {
-        }
     }
 }

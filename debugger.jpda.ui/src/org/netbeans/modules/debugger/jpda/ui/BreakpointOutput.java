@@ -29,12 +29,12 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.ui.models.BreakpointsNodeModel;
 import org.netbeans.spi.debugger.ContextProvider;
-
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import org.netbeans.spi.viewmodel.NodeModel;
+import org.openide.util.NbBundle;
 
 /**
  * Listener on all breakpoints and prints text specified in the breakpoint when a it hits.
@@ -147,6 +147,31 @@ PropertyChangeListener {
     // PropertyChangeListener ..................................................
     
     public void propertyChange (PropertyChangeEvent evt) {
+        if (JPDABreakpoint.PROP_VALIDITY.equals(evt.getPropertyName())) {
+            if (JPDABreakpoint.VALIDITY.INVALID.equals(evt.getNewValue())) {
+                JPDABreakpoint bp = (JPDABreakpoint) evt.getSource();
+                String msg = bp.getValidityMessage();
+                synchronized (lock) {
+                    if (ioManager == null) {
+                        lookupIOManager ();
+                        if (ioManager == null) return;
+                    }
+                    String printText = (msg != null) ?
+                                       NbBundle.getMessage(BreakpointOutput.class, "MSG_InvalidBreakpointWithReason", bp.toString(), msg) :
+                                       NbBundle.getMessage(BreakpointOutput.class, "MSG_InvalidBreakpoint", bp.toString());
+                    IOManager.Line line = null;
+                    if (bp instanceof LineBreakpoint) {
+                        line = new IOManager.Line (
+                            ((LineBreakpoint) bp).getURL(),
+                            ((LineBreakpoint) bp).getLineNumber(),
+                            debugger
+                        );
+                    }
+                    ioManager.println (printText, line, true);
+                }
+            }
+            return ;
+        }
         synchronized (lock) {
             if (debugger == null ||
                 evt.getPropertyName () != debugger.PROP_STATE ||
@@ -297,6 +322,7 @@ PropertyChangeListener {
         if (breakpoint instanceof JPDABreakpoint) {
             JPDABreakpoint jpdaBreakpoint = (JPDABreakpoint) breakpoint;
             jpdaBreakpoint.addJPDABreakpointListener (this);
+            jpdaBreakpoint.addPropertyChangeListener(JPDABreakpoint.PROP_VALIDITY, this);
         }
     }
 
@@ -304,6 +330,7 @@ PropertyChangeListener {
         if (breakpoint instanceof JPDABreakpoint) {
             JPDABreakpoint jpdaBreakpoint = (JPDABreakpoint) breakpoint;
             jpdaBreakpoint.removeJPDABreakpointListener (this);
+            jpdaBreakpoint.removePropertyChangeListener(JPDABreakpoint.PROP_VALIDITY, this);
         }
     }
     

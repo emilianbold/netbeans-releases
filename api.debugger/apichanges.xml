@@ -200,6 +200,32 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
+    <change>
+        <api name="DebuggerCoreAPI"/>
+        <summary>Support for breakpoint validity.</summary>
+        <version major="1" minor="10"/>
+        <date day="21" month="2" year="2007"/>
+        <author login="mentlicher"/>
+        <compatibility>
+            <p>
+                Compatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Added fields:
+                <code>Breakpoint.PROP_VALIDITY</code> - 
+                This constant is used in property change events as a notification about change in validity.<br/>
+                <code>Breakpoint.VALIDITY</code> - enumeration of constants for breakpoint validity.
+            </p>
+            <p>
+                Added methods:
+                <code>Breakpoint.getValidity()</code>,
+                <code>Breakpoint.getValidityMessage()</code>,
+                <code>Breakpoint.setValidity()</code> - validity management.
+            </p>
+        </description>
+    </change>
 
 </changes>
 
