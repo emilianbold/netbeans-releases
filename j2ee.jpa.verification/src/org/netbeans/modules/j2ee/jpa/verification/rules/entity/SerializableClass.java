@@ -22,10 +22,13 @@ package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 import java.util.Arrays;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule.ClassConstraints;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.fixes.ImplementSerializable;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
@@ -48,7 +51,8 @@ public class SerializableClass  extends JPAClassRule {
             }
         }
         
-        return new ErrorDescription[]{createProblem(subject, ctx)};
+        Fix fix = new ImplementSerializable(ctx.getFileObject(), ElementHandle.create(subject));
+        return new ErrorDescription[]{createProblem(subject, ctx, fix)};
     }
     
     @Override public String getDescription(){
