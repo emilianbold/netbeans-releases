@@ -1,0 +1,22 @@
+/*
+ * ${name}.java
+ *
+ * Created on ${date}, ${time}
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package ${package};
+
+/**
+ *
+ * @author ${user}
+ */
+public final class ${name} implements java.io.Serializable {
+
+    <#list seq as field>
+        ${field.returnType} ${field.name};
+    </#list>
+
+}

@@ -20,7 +20,6 @@ package org.netbeans.modules.j2ee.persistence.entitygenerator;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import org.openide.filesystems.FileObject;
 
@@ -37,8 +36,8 @@ public class EntityClass {
     private final String className;
     private final String packageName;
     
-    private List roles;
-    private List fields;
+    private List<RelationshipRole> roles;
+    private List<EntityMember> fields;
     private boolean usePkField;
     private String pkFieldName;
     private CMPMappingModel mappingModel;
@@ -49,35 +48,34 @@ public class EntityClass {
         this.packageName = packageName;
         this.className = className;
         
-        roles = Collections.EMPTY_LIST;
-        fields = new ArrayList();
+        roles = Collections.<RelationshipRole>emptyList();
+        fields = new ArrayList<EntityMember>();
         mappingModel = new CMPMappingModel();
     }
     
     public void addRole(RelationshipRole role) {
-        if (roles == Collections.EMPTY_LIST) {
-            roles = new ArrayList();
+        if (roles == Collections.<RelationshipRole>emptyList()) {
+            roles = new ArrayList<RelationshipRole>();
         }
         roles.add(role);
     }
     
-    public List getRoles() {
+    public List<RelationshipRole> getRoles() {
         return roles;
     }
     
-    public List getFields() {
+    public List<EntityMember> getFields() {
         return fields;
     }
     
-    public void setFields(List fields) {
+    public void setFields(List<EntityMember> fields) {
         this.fields = fields;
     }
     
     public String toString() {
         String cmpFields = ""; // NOI18N
-        for (Iterator it = getFields().iterator(); it.hasNext();) {
-            EntityMember m = (EntityMember) it.next();
-            cmpFields += " " + m.getMemberName() + (m.isPrimaryKey()?" (PK) ":" "); // NOI18N
+        for (EntityMember entityMember : getFields()) {
+            cmpFields += " " + entityMember.getMemberName() + (entityMember.isPrimaryKey() ? " (PK) " : " "); // NOI18N
         }
         return "bean name " + getClassName() + // NOI18N
                 "\ncmp-fields "+ cmpFields;  // NOI18N
@@ -106,12 +104,9 @@ public class EntityClass {
     
     public CMPMappingModel getCMPMapping() {
         mappingModel.getCMPFieldMapping().clear();
-        Iterator fields = getFields().iterator();
-        while (fields.hasNext()) {
-            EntityMember member = (EntityMember) fields.next();
-            mappingModel.setTableName(member.getTableName());
-            mappingModel.getCMPFieldMapping().put(
-                    member.getMemberName(), member.getColumnName());
+        for (EntityMember entityMember : getFields()) {
+            mappingModel.setTableName(entityMember.getTableName());
+            mappingModel.getCMPFieldMapping().put(entityMember.getMemberName(), entityMember.getColumnName());
         }
         return mappingModel;
     }

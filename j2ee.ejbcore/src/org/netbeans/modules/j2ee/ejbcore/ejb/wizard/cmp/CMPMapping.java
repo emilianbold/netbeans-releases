@@ -19,55 +19,58 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp;
 
-//import org.netbeans.modules.j2ee.persistence.entitygenerator.*;
+import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel;
+import org.openide.filesystems.FileObject;
 
 /**
  * This class provides the mapping for entity cmp beans to the database table.
  * This class is used by the application server plug-in to facilitate mapping.
+ * 
  * @author Chris Webster
  */
-//TODO: RETOUCHE
-public class CMPMapping /*implements OriginalCMPMapping */{
-//    private String ejbName;
-//    private CMPMappingModel model;
-//    private FileObject schema;
-//
-//
-//    public CMPMapping(String ejbName, CMPMappingModel m, FileObject schema) {
-//        this.ejbName = ejbName;
-//        model = m;
-//        this.schema = schema;
-//    }
-//
-//    public String getEjbName() {
-//        return ejbName;
-//    }
-//    
-//    public String getFieldColumn(String cmpFieldName) {
-//        return (String) model.getCMPFieldMapping().get(cmpFieldName);
-//    }
-//    
-//    public String[] getRelationshipColumn(String cmrFieldName) {
-//        return (String[]) model.getCmrFieldMapping().get(cmrFieldName);
-//    }
-//    
-//    public FileObject getSchema() {
-//        return schema;
-//    }
-//    
-//    public void setTableName(String tableName) {
-//        model.setTableName(tableName);
-//    }
-//    
-//    public String getTableName() {
-//        return model.getTableName();
-//    }
-//    
-//    public String getRelationshipJoinTable(String cmrFieldName) {
-//        return (String) model.getJoinTableMapping().get(cmrFieldName);
-//    }
-//    
-//    public CMPMappingModel getMappingModel() {
-//        return model;
-//    }
+public class CMPMapping implements OriginalCMPMapping {
+    
+    private String ejbName;
+    private CMPMappingModel model;
+    private FileObject schema;
+
+
+    public CMPMapping(String ejbName, CMPMappingModel m, FileObject schema) {
+        this.ejbName = ejbName;
+        model = m;
+        this.schema = schema;
+    }
+
+    public String getEjbName() {
+        return ejbName;
+    }
+    
+    public String getFieldColumn(String cmpFieldName) {
+        return (String) model.getCMPFieldMapping().get(cmpFieldName);
+    }
+    
+    public String[] getRelationshipColumn(String cmrFieldName) {
+        return (String[]) model.getCmrFieldMapping().get(cmrFieldName);
+    }
+    
+    public FileObject getSchema() {
+        return schema;
+    }
+    
+    public void setTableName(String tableName) {
+        model.setTableName(tableName);
+    }
+    
+    public String getTableName() {
+        return model.getTableName();
+    }
+    
+    public String getRelationshipJoinTable(String cmrFieldName) {
+        return (String) model.getJoinTableMapping().get(cmrFieldName);
+    }
+    
+    public CMPMappingModel getMappingModel() {
+        return model;
+    }
 }
