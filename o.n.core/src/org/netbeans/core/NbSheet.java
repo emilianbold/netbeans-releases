@@ -283,6 +283,7 @@ public final class NbSheet extends TopComponent {
         // re-attach to listen to new nodes
         snListener.detach();
         snListener.attach(nodes);
+        setActivatedNodes( nodes );
     }
 
     /** Helper method, called from SheetNodesListener inner class */
