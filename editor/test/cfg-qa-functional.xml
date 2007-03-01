@@ -31,29 +31,16 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-    
-    <!-- Pre-commit validation -->
-    <testbag testattribs="validation" name="Pre-commit Validation">
-        <testset dir="qa-functional/src">
-            <patternset>                               
-                <include name="keyboard_shortcuts/*Test.class"/>
-                <include name="general/*Test.class"/>
-                <include name="popup_menus/MainMenuTest.class"/>
-                <include name="search_replace/SearchAndReplaceTestSuite.class"/>
-                <include name="org/netbeans/test/editor/formatting/*.class"/>            
-                <exclude name="org/netbeans/test/editor/formatting/BasicTest.class/testReformat2"/>            
-            </patternset>
-        </testset>
-    </testbag>
-    
+                            
     <!-- Stable -->
-    <testbag testattribs="stable" name="Stable Tests">
+    <testbag testattribs="stable,validation" name="Stable Tests">
         <testset dir="qa-functional/src">            
             <patternset>
                 <include name="keyboard_shortcuts/*Test.class"/>
                 <include name="general/*Test.class"/>
                 <include name="popup_menus/MainMenuTest.class"/>
-                <include name="search_replace/SearchAndReplaceTestSuite.class"/>
+                <include name="search_replace/SearchAndReplaceTest.class/"/>
+                <exclude name="search_replace/SearchAndReplaceTest.class/testSearch2"/>
                 <include name="org/netbeans/test/editor/formatting/*.class"/>            
                 <exclude name="org/netbeans/test/editor/formatting/BasicTest.class/testReformat2"/>            
                 <include name="org/netbeans/test/editor/suites/abbrevs/AbbreviationsAddRemovePerformer.class"/>                
@@ -121,6 +108,25 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
+    <!-- Key bindings tests  -->    
+    <testbag testattribs="keymap,all" name="Key bindings tests">
+        <testset dir="qa-functional/src">
+            <patternset>            
+                <include name="org/netbeans/test/editor/suites/keybindings/KeyMapTest.class"/>            
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Syntax highlighting  -->    
+    <testbag testattribs="highlight,all" name="Syntax highlighting">
+        <testset dir="qa-functional/src">
+            <patternset>                              
+                <include name="org/netbeans/test/editor/highlight/SyntaxHighlightTest.class"/>            
+            </patternset>
+        </testset>
+    </testbag>
+    
+    
     <!--
     =====================================================================
     Following test cases are unstable and need fixing/rewritting or can
@@ -155,6 +161,7 @@ Microsystems, Inc. All Rights Reserved.
     -->                
             
     <!-- Focus tests -->
+    <!--
     <testbag testattribs="focus" name="FocusTests">
         <testset dir="qa-functional/src">
             <patternset>            
@@ -162,16 +169,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-    
-    <!-- Key bindings tests  - should be fixed with BasicOptionsOperator, keybindings were removed from Advanced options -->    
-    <testbag testattribs="keybindings" name="KeyBindings-Actions">
-        <testset dir="qa-functional/src">
-            <patternset>            
-                <include name="org/netbeans/test/editor/suites/keybindings/*Performer.class"/>            
-            </patternset>
-        </testset>
-    </testbag>
-    
+                
     <testbag testattribs="apps" name="TestApplication">
         <testset dir="qa-functional/src">
             <patternset>
@@ -182,7 +180,7 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class" />
             </patternset>
         </testset>
-    </testbag>
+    </testbag>-->
     
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <executor name="ide-nogui" antfile="build-qa-functional.xml" target="runidetest-nogui"/>

@@ -48,7 +48,7 @@ public class Find extends JDialogOperator {
     private JCheckBoxOperator _cbHighlightSearch;
     private JCheckBoxOperator _cbIncrementalSearch;
     private JCheckBoxOperator _cbMatchCase;
-    private JCheckBoxOperator _cbSmartCase;
+    //private JCheckBoxOperator _cbSmartCase;
     private JCheckBoxOperator _cbMatchWholeWordsOnly;
     private JCheckBoxOperator _cbBackwardSearch;
     private JCheckBoxOperator _cbWrapSearch;
@@ -116,12 +116,12 @@ public class Find extends JDialogOperator {
     /** Tries to find " Smart Case" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
-    public JCheckBoxOperator cbSmartCase() {
+    /*public JCheckBoxOperator cbSmartCase() {
         if (_cbSmartCase==null) {
             _cbSmartCase = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-smart-case"));
         }
         return _cbSmartCase;
-    }
+    }*/
 
     /** Tries to find " Match Whole Words Only" JCheckBox in this dialog.
      * @return JCheckBoxOperator
@@ -259,11 +259,11 @@ public class Find extends JDialogOperator {
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
-    public void checkSmartCase(boolean state) {
+    /*public void checkSmartCase(boolean state) {
         if (cbSmartCase().isSelected()!=state) {
             cbSmartCase().push();
         }
-    }
+    }*/
 
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
@@ -341,7 +341,7 @@ public class Find extends JDialogOperator {
         cbHighlightSearch();
         cbIncrementalSearch();
         cbMatchCase();
-        cbSmartCase();
+        //cbSmartCase();
         cbMatchWholeWordsOnly();
         cbBackwardSearch();
         cbWrapSearch();
@@ -405,7 +405,7 @@ public class Find extends JDialogOperator {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        //new Find().verify();
+        new Find().verify();
         System.out.println("Find verification finished.");
         try {
             Robot robot=new Robot();

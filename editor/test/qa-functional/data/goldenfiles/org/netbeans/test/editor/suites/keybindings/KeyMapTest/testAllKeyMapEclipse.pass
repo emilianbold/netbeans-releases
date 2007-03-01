@@ -1,0 +1,195 @@
+Build|Build Main Project
+  F11
+Build|Clean and Build Main Project
+  Shift+F11
+Build|Compile File
+  F9
+Edit|<unknown action>
+  Ctrl+C
+  COPY
+  Ctrl+INSERT
+Edit|<unknown action>
+  Ctrl+X
+  CUT
+  Shift+DELETE
+Edit|<unknown action>
+  DELETE
+Edit|<unknown action>
+  FIND
+Edit|find-next
+  Ctrl+K
+Edit|find-previous
+  Ctrl+Shift+K
+Edit|Find Usages
+  Alt+F7
+Edit|Find/Replace in Projects...
+  Ctrl+H
+Edit|<unknown action>
+  PASTE
+  Shift+INSERT
+  Ctrl+V
+Edit|<unknown action>
+  Ctrl+Y
+Edit|<unknown action>
+  Ctrl+Shift+F
+Edit|start-macro-recording
+  Ctrl+J S
+Edit|stop-macro-recording
+  Ctrl+J E
+Edit|<unknown action>
+  Ctrl+Z
+  UNDO
+File|New File...
+  Ctrl+N
+File|New Project...
+  Ctrl+Shift+N
+File|Open File...
+  Ctrl+O
+File|Open Project...
+  Ctrl+Shift+O
+File|Print...
+  Ctrl+P
+File|Save
+  Ctrl+S
+File|Save All
+  Ctrl+Shift+S
+Go To|goto-declaration
+  F3
+Go To|<unknown action>
+  Ctrl+L
+Go To|Go to Previous Document
+  Ctrl+F6
+Go To|goto-source
+  Ctrl+F3
+Go To|Go to Test
+  Alt+Shift+E
+Go To|Next Error
+  Ctrl+PERIOD
+Go To|Next Inner View
+  Alt+Shift+RIGHT
+Go To|Next Tab
+  Alt+RIGHT
+Go To|Previous Bookmark
+  Shift+F2
+Go To|Previous Error
+  Ctrl+COMMA
+Go To|Previous Inner View
+  Alt+Shift+LEFT
+Go To|Previous Tab
+  Alt+LEFT
+Go To|Select Node in Files
+  Ctrl+Shift+2
+Go To|Select Node in Projects
+  Ctrl+Shift+1
+Go To|Select in Favorites
+  Ctrl+Shift+3
+Go To|Toggle Bookmark
+  Ctrl+F2
+Help|Help
+  F1
+Run|Continue
+  F8
+Run|Debug File
+  Ctrl+Shift+F5
+Run|Debug Main Project
+  F11
+Run|Debug Test for File
+  Ctrl+Shift+F6
+Run|Evaluate Expression...
+  Ctrl+F9
+Run|Finish Debugger Session
+  Shift+F5
+Run|Make Callee Current
+  Ctrl+Alt+UP
+Run|Make Caller Current
+  Ctrl+Alt+DOWN
+Run|New Breakpoint...
+  Ctrl+Shift+F8
+Run|New Watch...
+  Ctrl+Shift+F7
+Run|Pop Topmost Call
+  F7
+Run|Run File
+  Shift+F6
+Run|Run Into Method
+  Ctrl+F5
+Run|Run Main Project
+  Ctrl+Shift+F11
+Run|Run to Cursor
+  Ctrl+R
+Run|Step Into
+  F5
+Run|Step Out
+  Ctrl+F7
+Run|Step Over
+  F6
+Run|Test File
+  Ctrl+F6
+Run|Toggle Breakpoint
+  Ctrl+Shift+B
+Source|fix-imports
+  Ctrl+Shift+O
+Source|word-match-next
+  Alt+SLASH
+System|Rename...
+  F2
+Tools|Create JUnit Tests
+  Ctrl+Shift+U
+Tools|Insert Internationalized String...
+  Ctrl+Shift+J
+View|collapse-all-folds
+  Ctrl+Shift+SUBTRACT
+View|collapse-fold
+  Ctrl+SUBTRACT
+View|expand-all-folds
+  Ctrl+MULTIPLY
+View|expand-fold
+  Ctrl+ADD
+Window|Breakpoints
+  Alt+Shift+5
+Window|Call Stack
+  Alt+Shift+3
+Window|Classes
+  Alt+Shift+4
+Window|Close All Documents
+  Ctrl+Shift+W
+  Ctrl+Shift+F4
+Window|Close Window
+  Ctrl+F4
+  Ctrl+W
+Window|Documents...
+  Ctrl+Shift+E
+Window|Editor
+  F12
+Window|Favorites
+  Ctrl+3
+Window|Find Usages Results
+  Alt+Shift+U
+Window|Local Variables
+  Alt+Shift+1
+Window|Maximize Window
+  Ctrl+M
+Window|Navigator
+  Ctrl+7
+Window|Output
+  Ctrl+4
+Window|Palette
+  Ctrl+Shift+8
+Window|Properties
+  Ctrl+Shift+7
+Window|Runtime
+  Ctrl+5
+Window|Search Results
+  Ctrl+Shift+0
+Window|Sessions
+  Alt+Shift+6
+Window|Sources
+  Alt+Shift+8
+Window|Threads
+  Alt+Shift+7
+Window|To Do
+  Ctrl+6
+Window|Watches
+  Alt+Shift+2
+XML|XSL Transformation...
+  Ctrl+Alt+T

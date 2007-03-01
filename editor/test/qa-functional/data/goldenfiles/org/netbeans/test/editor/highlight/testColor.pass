@@ -1,0 +1,269 @@
+0 6 /*
+ */
+    default comment
+    foreground java.awt.Color[r=115,g=115,b=115]
+    display name Comment
+    name comment
+6 7 
+
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+7 14 package
+    default keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    display name Keyword
+    name keyword
+    bold true
+    italic false
+14 15  
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+15 18 org
+    default identifier
+    display name Identifier
+    name identifier
+18 19 .
+19 27 netbeans
+    default identifier
+    display name Identifier
+    name identifier
+27 28 .
+28 32 test
+    default identifier
+    display name Identifier
+    name identifier
+32 33 .
+33 39 editor
+    default identifier
+    display name Identifier
+    name identifier
+39 40 .
+40 49 highlight
+    default identifier
+    display name Identifier
+    name identifier
+49 50 ;
+50 52 
+
+
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+52 58 public
+    default keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    display name Keyword
+    name keyword
+    bold true
+    italic false
+58 59  
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+59 64 class
+    default keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    display name Keyword
+    name keyword
+    bold true
+    italic false
+64 65  
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+65 74 testColor
+    default identifier
+    display name Identifier
+    name identifier
+74 75  
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+75 76 {
+76 83   
+    
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+83 86 int
+    default keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    display name Keyword
+    name keyword
+    bold true
+    italic false
+86 87  
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+87 88 a
+    default identifier
+    display name Identifier
+    name identifier
+88 89  
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+89 90 =
+    default operator
+    display name Operator
+    name operator
+90 91  
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+91 92 3
+    default number
+    foreground java.awt.Color[r=120,g=0,b=0]
+    display name Number
+    name number
+92 93 ;
+93 98 
+    
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+98 104 static
+    default keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    display name Keyword
+    name keyword
+    bold true
+    italic false
+104 105  
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+105 108 int
+    default keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    display name Keyword
+    name keyword
+    bold true
+    italic false
+108 109  
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+109 114 color
+    default identifier
+    display name Identifier
+    name identifier
+114 115 ;
+115 124     
+    
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+124 131 private
+    default keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    display name Keyword
+    name keyword
+    bold true
+    italic false
+131 132  
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+132 135 int
+    default keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    display name Keyword
+    name keyword
+    bold true
+    italic false
+135 136  
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+136 142 unused
+    default identifier
+    display name Identifier
+    name identifier
+142 143 ;
+143 149  
+    
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+149 155 public
+    default keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    display name Keyword
+    name keyword
+    bold true
+    italic false
+155 156  
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+156 165 testColor
+    default identifier
+    display name Identifier
+    name identifier
+165 166 (
+166 169 int
+    default keyword
+    foreground java.awt.Color[r=0,g=0,b=153]
+    display name Keyword
+    name keyword
+    bold true
+    italic false
+169 170  
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+170 171 x
+    default identifier
+    display name Identifier
+    name identifier
+171 172 )
+172 173  
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+173 174 {
+174 198                    
+    
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+198 199 }
+199 213         
+    
+
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace
+213 214 }
+214 215 
+
+    default whitespace
+    foreground java.awt.Color[r=0,g=0,b=0]
+    display name Whitespace
+    name whitespace

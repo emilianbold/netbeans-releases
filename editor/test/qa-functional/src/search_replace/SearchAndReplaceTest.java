@@ -496,7 +496,19 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             checkIncrementalSearch(find, "x", 347, 350);
             checkIncrementalSearch(find, "t", 295, 299);
             checkIncrementalSearch(find, "X", -1, -1); // fails - behind selected area
-            find.close();
+            find.close();                       
+        } finally {
+            closeFileWithDiscard();
+        }
+    }
+    
+    public void testSearch2(){
+        openDefaultProject();
+        openDefaultSampleFile();
+        Find find;
+        try {
+            editor = getDefaultSampleEditorOperator();
+            txtOper = editor.txtEditorPane();
             
             //#52115
             // firstly try CTRL+V
@@ -506,12 +518,12 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             editor.setCaretPosition(1, 1);
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
             find.cboFindWhat().requestFocus(); // [temp] failing tests on SunOS & Linux
-            waitForAWTThread();                        
+            waitForAWTThread();
             pasteViaStrokes(find, KeyEvent.VK_V, KeyEvent.CTRL_MASK, null);
             waitForAWTThread();
             find.btFind().requestFocus();
             waitForAWTThread();
-            log("Searching for: "+find.cboFindWhat().getTextField().getText());            
+            log("Searching for: "+find.cboFindWhat().getTextField().getText());
             find.find();
             find.close();
             checkSelection(txtOper, 8, 14, "Issue #52115 testing failed on CTRL+V!");
@@ -522,25 +534,24 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             editor.setCaretPosition(1, 1);
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
             find.cboFindWhat().requestFocus(); // [temp] failing tests on SunOS & Linux
-            waitForAWTThread();                        
+            waitForAWTThread();
             pasteViaStrokes(find, KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK, null);
             waitForAWTThread();
             find.btFind().requestFocus();
             waitForAWTThread();
-            log("Searching for: "+find.cboFindWhat().getTextField().getText());            
+            log("Searching for: "+find.cboFindWhat().getTextField().getText());
             find.find();
             find.close();
             checkSelection(txtOper, 167, 171, "Issue #52115 testing failed on Shift+Insert!");
-            
         } finally {
             closeFileWithDiscard();
         }
+        
     }
-    
     public void waitForAWTThread() {
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {                    
+                public void run() {
                     log("Stop waiting");
                 }
             });
@@ -548,7 +559,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             //ignored
         }
     }
-      
+    
     public void testRegExSearch(){
         openDefaultProject();
         openDefaultSampleFile();

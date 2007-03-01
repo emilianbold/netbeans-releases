@@ -14,13 +14,13 @@ import org.netbeans.jemmy.util.NameComponentChooser;
  * @version 1.0
  */
 public class Replace extends JDialogOperator {
-
+    
     /** Creates new Replace that can handle it.
      */
     public Replace() {
-        super("Replace");
+        super(java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("replace-title"));
     }
-
+    
     private JLabelOperator _lblFindWhat;
     private JComboBoxOperator _cboFindWhat;
     private JLabelOperator _lblReplaceWith;
@@ -28,7 +28,7 @@ public class Replace extends JDialogOperator {
     private JCheckBoxOperator _cbHighlightSearch;
     private JCheckBoxOperator _cbIncrementalSearch;
     private JCheckBoxOperator _cbMatchCase;
-    private JCheckBoxOperator _cbSmartCase;
+    //private JCheckBoxOperator _cbSmartCase;
     private JCheckBoxOperator _cbMatchWholeWordsOnly;
     private JCheckBoxOperator _cbBackwardSearch;
     private JCheckBoxOperator _cbWrapSearch;
@@ -39,22 +39,22 @@ public class Replace extends JDialogOperator {
     private JButtonOperator _btReplaceAll;
     private JButtonOperator _btClose;
     private JButtonOperator _btHelp;
-
-
+    
+    
     //******************************
     // Subcomponents definition part
     //******************************
-
+    
     /** Tries to find "Find What:" JLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblFindWhat() {
         if (_lblFindWhat==null) {
-            _lblFindWhat = new JLabelOperator(this, "Find What:");
+            _lblFindWhat = new JLabelOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-what"));
         }
         return _lblFindWhat;
     }
-
+    
     /** Tries to find null JComboBox in this dialog.
      * @return JComboBoxOperator
      */
@@ -64,17 +64,17 @@ public class Replace extends JDialogOperator {
         }
         return _cboFindWhat;
     }
-
+    
     /** Tries to find "Replace With:" JLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblReplaceWith() {
         if (_lblReplaceWith==null) {
-            _lblReplaceWith = new JLabelOperator(this, "Replace With:");
+            _lblReplaceWith = new JLabelOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-replace-with"));
         }
         return _lblReplaceWith;
     }
-
+    
     /** Tries to find null JComboBox in this dialog.
      * @return JComboBoxOperator
      */
@@ -84,194 +84,184 @@ public class Replace extends JDialogOperator {
         }
         return _cboReplaceWith;
     }
-
+    
     /** Tries to find " Highlight Search" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
     public JCheckBoxOperator cbHighlightSearch() {
         if (_cbHighlightSearch==null) {
-            _cbHighlightSearch = new JCheckBoxOperator(this, " Highlight Search");
+            _cbHighlightSearch = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-highlight-search"));
         }
         return _cbHighlightSearch;
     }
-
+    
     /** Tries to find " Incremental Search" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
     public JCheckBoxOperator cbIncrementalSearch() {
         if (_cbIncrementalSearch==null) {
-            _cbIncrementalSearch = new JCheckBoxOperator(this, " Incremental Search");
+            _cbIncrementalSearch = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-inc-search"));            
         }
         return _cbIncrementalSearch;
     }
-
+    
     /** Tries to find " Match Case" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
     public JCheckBoxOperator cbMatchCase() {
         if (_cbMatchCase==null) {
-            _cbMatchCase = new JCheckBoxOperator(this, " Match Case");
+            _cbMatchCase = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-match-case"));
         }
         return _cbMatchCase;
     }
-
-    /** Tries to find " Smart Case" JCheckBox in this dialog.
-     * @return JCheckBoxOperator
-     */
-    public JCheckBoxOperator cbSmartCase() {
-        if (_cbSmartCase==null) {
-            _cbSmartCase = new JCheckBoxOperator(this, " Smart Case");
-        }
-        return _cbSmartCase;
-    }
-
+       
     /** Tries to find " Match Whole Words Only" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
     public JCheckBoxOperator cbMatchWholeWordsOnly() {
         if (_cbMatchWholeWordsOnly==null) {
-            _cbMatchWholeWordsOnly = new JCheckBoxOperator(this, " Match Whole Words Only");
+            _cbMatchWholeWordsOnly = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-whole-words"));
         }
         return _cbMatchWholeWordsOnly;
     }
-
+    
     /** Tries to find " Backward Search" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
     public JCheckBoxOperator cbBackwardSearch() {
         if (_cbBackwardSearch==null) {
-            _cbBackwardSearch = new JCheckBoxOperator(this, " Backward Search");
+            _cbBackwardSearch = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-backward-search"));
         }
         return _cbBackwardSearch;
     }
-
+    
     /** Tries to find " Wrap Search" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
     public JCheckBoxOperator cbWrapSearch() {
         if (_cbWrapSearch==null) {
-            _cbWrapSearch = new JCheckBoxOperator(this, " Wrap Search");
+            _cbWrapSearch = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-wrap-search"));
         }
         return _cbWrapSearch;
     }
-
+    
     /** Tries to find " Regular Expressions" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
     public JCheckBoxOperator cbRegularExpressions() {
         if (_cbRegularExpressions==null) {
-            _cbRegularExpressions = new JCheckBoxOperator(this, " Regular Expressions");
+            _cbRegularExpressions = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-reg-exp"));
         }
         return _cbRegularExpressions;
     }
-
+    
     /** Tries to find " Search Selection" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
     public JCheckBoxOperator cbSearchSelection() {
         if (_cbSearchSelection==null) {
-            _cbSearchSelection = new JCheckBoxOperator(this, " Search Selection");
+            _cbSearchSelection = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-block-search"));
         }
         return _cbSearchSelection;
     }
-
+    
     /** Tries to find "Find" JButton in this dialog.
      * @return JButtonOperator
      */
     public JButtonOperator btFind() {
         if (_btFind==null) {
-            _btFind = new JButtonOperator(this, "Find");
+            _btFind = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-button-find"));
         }
         return _btFind;
     }
-
+    
     /** Tries to find "Replace" JButton in this dialog.
      * @return JButtonOperator
      */
     public JButtonOperator btReplace() {
         if (_btReplace==null) {
-            _btReplace = new JButtonOperator(this, "Replace");
+            _btReplace = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-button-replace"));
         }
         return _btReplace;
     }
-
+    
     /** Tries to find "Replace All" JButton in this dialog.
      * @return JButtonOperator
      */
     public JButtonOperator btReplaceAll() {
         if (_btReplaceAll==null) {
-            _btReplaceAll = new JButtonOperator(this, "Replace All");
+            _btReplaceAll = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-button-replace-all"));
         }
         return _btReplaceAll;
     }
-
+    
     /** Tries to find "Close" JButton in this dialog.
      * @return JButtonOperator
      */
     public JButtonOperator btClose() {
         if (_btClose==null) {
-            _btClose = new JButtonOperator(this, "Close");
+            _btClose = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-button-cancel"));
         }
         return _btClose;
     }
-
+    
     /** Tries to find "Help" JButton in this dialog.
      * @return JButtonOperator
      */
     public JButtonOperator btHelp() {
         if (_btHelp==null) {
-            _btHelp = new JButtonOperator(this, "Help");
+            _btHelp = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.openide.explorer.propertysheet.Bundle").getString("CTL_Help"));
         }
         return _btHelp;
     }
-
-
+    
+    
     //****************************************
     // Low-level functionality definition part
     //****************************************
-
+    
     /** returns selected item for cboFindWhat
      * @return String item
      */
     public String getSelectedFindWhat() {
         return cboFindWhat().getSelectedItem().toString();
     }
-
+    
     /** selects item for cboFindWhat
      * @param item String item
      */
     public void selectFindWhat(String item) {
         cboFindWhat().selectItem(item);
     }
-
+    
     /** types text for cboFindWhat
      * @param text String text
      */
     public void typeFindWhat(String text) {
         cboFindWhat().typeText(text);
     }
-
+    
     /** returns selected item for cboReplaceWith
      * @return String item
      */
     public String getSelectedReplaceWith() {
         return cboReplaceWith().getSelectedItem().toString();
     }
-
+    
     /** selects item for cboReplaceWith
      * @param item String item
      */
     public void selectReplaceWith(String item) {
         cboReplaceWith().selectItem(item);
     }
-
+    
     /** types text for cboReplaceWith
      * @param text String text
      */
     public void typeReplaceWith(String text) {
         cboReplaceWith().typeText(text);
     }
-
+    
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -280,7 +270,7 @@ public class Replace extends JDialogOperator {
             cbHighlightSearch().push();
         }
     }
-
+    
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -289,7 +279,7 @@ public class Replace extends JDialogOperator {
             cbIncrementalSearch().push();
         }
     }
-
+    
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -298,16 +288,8 @@ public class Replace extends JDialogOperator {
             cbMatchCase().push();
         }
     }
-
-    /** checks or unchecks given JCheckBox
-     * @param state boolean requested state
-     */
-    public void checkSmartCase(boolean state) {
-        if (cbSmartCase().isSelected()!=state) {
-            cbSmartCase().push();
-        }
-    }
-
+    
+        
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -316,7 +298,7 @@ public class Replace extends JDialogOperator {
             cbMatchWholeWordsOnly().push();
         }
     }
-
+    
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -325,7 +307,7 @@ public class Replace extends JDialogOperator {
             cbBackwardSearch().push();
         }
     }
-
+    
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -334,7 +316,7 @@ public class Replace extends JDialogOperator {
             cbWrapSearch().push();
         }
     }
-
+    
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -343,7 +325,7 @@ public class Replace extends JDialogOperator {
             cbRegularExpressions().push();
         }
     }
-
+    
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -352,42 +334,42 @@ public class Replace extends JDialogOperator {
             cbSearchSelection().push();
         }
     }
-
+    
     /** clicks on "Find" JButton
      */
     public void find() {
         btFind().push();
     }
-
+    
     /** clicks on "Replace" JButton
      */
     public void replace() {
         btReplace().push();
     }
-
+    
     /** clicks on "Replace All" JButton
      */
     public void replaceAll() {
         btReplaceAll().push();
     }
-
+    
     /** clicks on "Close" JButton
      */
     public void close() {
         btClose().push();
     }
-
+    
     /** clicks on "Help" JButton
      */
     public void help() {
         btHelp().push();
     }
-
-
+    
+    
     //*****************************************
     // High-level functionality definition part
     //*****************************************
-
+    
     /** Performs verification of Replace by accessing all its components.
      */
     public void verify() {
@@ -398,7 +380,6 @@ public class Replace extends JDialogOperator {
         cbHighlightSearch();
         cbIncrementalSearch();
         cbMatchCase();
-        cbSmartCase();
         cbMatchWholeWordsOnly();
         cbBackwardSearch();
         cbWrapSearch();
@@ -410,10 +391,10 @@ public class Replace extends JDialogOperator {
         btClose();
         btHelp();
     }
-
+    
     /** Performs simple test of Replace
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         new Replace().verify();
         System.out.println("Replace verification finished.");

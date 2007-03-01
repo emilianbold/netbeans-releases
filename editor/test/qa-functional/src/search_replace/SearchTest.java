@@ -52,6 +52,15 @@ public class SearchTest extends EditorTestCase {
         super(testMethodName);
     }
     
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        closeFindDialogIfOpened();
+    }
+
+    
+    
+    
     /**
      * TC1 - open and close find dialog
      */
@@ -112,13 +121,13 @@ public class SearchTest extends EditorTestCase {
             Find find2 = new Find();
             text = find2.cboFindWhat().getTextField().getText();
             // compare
-            assertEquals(text, "testFindSelectionRepeated");
+            assertEquals("testFindSelectionRepeated",text);
             find2.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find2.close();
             // check status bar
             waitForLabel("'testFindSelectionRepeated' found at 15:35");
-
+            
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
@@ -136,7 +145,7 @@ public class SearchTest extends EditorTestCase {
             
             // first search
             editor.setCaretPosition(1, 1);
-            new EventTool().waitNoEvent(FIND_TIMEOUT);            
+            new EventTool().waitNoEvent(FIND_TIMEOUT);
             new FindAction().perform();
             Find find = new Find();
             find.cboFindWhat().typeText("package");
@@ -146,7 +155,7 @@ public class SearchTest extends EditorTestCase {
             
             // second search
             editor.setCaretPosition(1, 1);
-            new EventTool().waitNoEvent(FIND_TIMEOUT);            
+            new EventTool().waitNoEvent(FIND_TIMEOUT);
             new FindAction().perform();
             Find find2 = new Find();
             find2.cboFindWhat().typeText("class");
@@ -159,6 +168,7 @@ public class SearchTest extends EditorTestCase {
             Find find3 = new Find();
             JComboBoxOperator cbo = find3.cboFindWhat();
             cbo.selectItem(1);
+            find3.cbWrapSearch().setSelected(true);
             find3.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find3.close();
@@ -183,7 +193,7 @@ public class SearchTest extends EditorTestCase {
             
             // perform search with all options unselected
             editor.setCaretPosition(1, 1);
-            new EventTool().waitNoEvent(FIND_TIMEOUT);            
+            new EventTool().waitNoEvent(FIND_TIMEOUT);
             new FindAction().perform();
             Find find = new Find();
             find.cboFindWhat().typeText("cLaSs");
@@ -218,12 +228,12 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
             // check status bar
-            waitForLabel("'foo' not found");            
+            waitForLabel("'foo' not found");
             
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
-        }        
+        }
     }
     
     /**
@@ -235,7 +245,7 @@ public class SearchTest extends EditorTestCase {
         try {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
-            // perform case sensitive search - nothing found 
+            // perform case sensitive search - nothing found
             new FindAction().perform();
             Find find = new Find();
             find.cboFindWhat().typeText("Package");
@@ -246,10 +256,10 @@ public class SearchTest extends EditorTestCase {
             find.close();
             // check status bar
             waitForLabel("'Package' not found");
-
+            
             // perform case sensitive search - package found
             editor.setCaretPosition(1, 1);
-            new EventTool().waitNoEvent(FIND_TIMEOUT);            
+            new EventTool().waitNoEvent(FIND_TIMEOUT);
             new FindAction().perform();
             Find find2 = new Find();
             find2.cboFindWhat().typeText("package");
@@ -262,19 +272,19 @@ public class SearchTest extends EditorTestCase {
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
-        }                
+        }
     }
-
+    
     /**
      * TC7 - Smart Case
      */
-    public void testSmartCase() {
+    /*public void testSmartCase() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
-            // perform smart case search 
+            // perform smart case search
             new FindAction().perform();
             Find find = new Find();
             find.cboFindWhat().typeText("smarttest");
@@ -284,49 +294,49 @@ public class SearchTest extends EditorTestCase {
             find.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
-            // check status bar            
+            // check status bar
             waitForLabel("'smarttest' found at 17:16");
             
-            // perform smart case search 
+            // perform smart case search
             new FindAction().perform();
             Find find2 = new Find();
             find2.cboFindWhat().typeText("smarttest");
             find2.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find2.close();
-            // check status bar            
+            // check status bar
             waitForLabel("'smarttest' found at 18:16");
-
-            // perform smart case search 
+            
+            // perform smart case search
             new FindAction().perform();
             Find find3 = new Find();
             find3.cboFindWhat().typeText("smarttest");
             find3.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find3.close();
-            // check status bar            
+            // check status bar
             waitForLabel("'smarttest' found at 19:16");
-
+            
             // perform smart case search - negative
             new FindAction().perform();
             Find find4 = new Find();
             find4.cboFindWhat().typeText("smarttest");
-            find4.find(); 
-            new EventTool().waitNoEvent(FIND_TIMEOUT); 
-            find4.close(); 
-            // check status bar             
-            waitForLabel("'smarttest' not found"); 
+            find4.find();
+            new EventTool().waitNoEvent(FIND_TIMEOUT);
+            find4.close();
+            // check status bar
+            waitForLabel("'smarttest' not found");
             
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
-        }        
-    }    
-
+        }
+    }*/
+    
     /**
      * TC8 - Smart Case Reverse
      */
-    public void testSmartCaseReverse() {
+    /*public void testSmartCaseReverse() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -337,29 +347,29 @@ public class SearchTest extends EditorTestCase {
             Find find = new Find();
             uncheckAll();
             // check smart case
-            find.cbSmartCase().setSelected(true);            
+            find.cbSmartCase().setSelected(true);
             find.cboFindWhat().typeText("Smarttest");
             find.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
             // check status bar
             waitForLabel("'Smarttest' found at 18:16");
-
+            
             // perform smart case search - negative
             new FindAction().perform();
             Find find2 = new Find();
             find2.cboFindWhat().typeText("Smarttest");
-            find2.find(); 
-            new EventTool().waitNoEvent(FIND_TIMEOUT); 
-            find2.close(); 
-            // check status bar             
-            waitForLabel("'Smarttest' not found"); 
+            find2.find();
+            new EventTool().waitNoEvent(FIND_TIMEOUT);
+            find2.close();
+            // check status bar
+            waitForLabel("'Smarttest' not found");
             
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
-        }        
-    }
+        }
+    }*/
     
     /**
      * TC9 - Match Whole Words Only
@@ -381,7 +391,7 @@ public class SearchTest extends EditorTestCase {
             find.close();
             // check status bar
             waitForLabel("'word' found at 18:16");
-
+            
             // perform search for "word"
             new FindAction().perform();
             Find find2 = new Find();
@@ -391,7 +401,7 @@ public class SearchTest extends EditorTestCase {
             find2.close();
             // check status bar
             waitForLabel("'word' found at 18:24");
-
+            
             // perform search for "word"
             new FindAction().perform();
             Find find3 = new Find();
@@ -401,7 +411,7 @@ public class SearchTest extends EditorTestCase {
             find3.close();
             // check status bar
             waitForLabel("'word' found at 19:25");
-
+            
             // perform search for "word" - negative
             new FindAction().perform();
             Find find4 = new Find();
@@ -415,12 +425,12 @@ public class SearchTest extends EditorTestCase {
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
-        }        
-    }    
+        }
+    }
     
     /**
      * TC10 - Highlight Search
-     */    
+     */
     public void testHighlightSearch() {
         openDefaultProject();
         openDefaultSampleFile();
@@ -448,7 +458,7 @@ public class SearchTest extends EditorTestCase {
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
-        }                
+        }
     }
     
     /**
@@ -476,11 +486,11 @@ public class SearchTest extends EditorTestCase {
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
-        }                
+        }
     }
     
     /**
-     * TC12 - Backward Search 
+     * TC12 - Backward Search
      */
     public void testBackwardSearch() {
         openDefaultProject();
@@ -496,7 +506,7 @@ public class SearchTest extends EditorTestCase {
             find.find();
             waitForLabel("'first' found at 21:12");
             find.cboFindWhat().clearText();
-            find.cboFindWhat().typeText("second");            
+            find.cboFindWhat().typeText("second");
             find.cbBackwardSearch().setSelected(true);
             find.find();
             waitForLabel("'second' found at 20:12");
@@ -507,15 +517,15 @@ public class SearchTest extends EditorTestCase {
             find.cboFindWhat().clearText();
             find.cboFindWhat().typeText("fourth");
             find.find();
-            waitForLabel("'fourth' found at 18:12");            
+            waitForLabel("'fourth' found at 18:12");
             find.close();
             
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
-        }                
-    }    
-
+        }
+    }
+    
     /**
      * TC13 - Wrap Search
      */
@@ -538,7 +548,7 @@ public class SearchTest extends EditorTestCase {
             }
             find.find();
             waitForLabel("'wrapWord' found at 18:12; End of document reached. "
-                        +"Continuing search from beginning.");
+                    +"Continuing search from beginning.");
             for (int i = 0; i<3; i++) {
                 find.find();
                 waitForLabel("'wrapWord' found at "+String.valueOf(i+19)
@@ -549,8 +559,8 @@ public class SearchTest extends EditorTestCase {
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
-        }                
-    }    
+        }
+    }
     
     /**
      * TC14 - Find Next - Previous
@@ -575,7 +585,7 @@ public class SearchTest extends EditorTestCase {
             
             // search next word
             for (int i = 0; i<7; i++) {
-                MainWindowOperator.getDefault().pushKey(KeyEvent.VK_F3);                
+                MainWindowOperator.getDefault().pushKey(KeyEvent.VK_F3);
                 waitForLabel("'testWord' found at "+String.valueOf(i+19)
                         +":12");
             }
@@ -586,11 +596,11 @@ public class SearchTest extends EditorTestCase {
                         KeyEvent.SHIFT_MASK);
                 waitForLabel("'testWord' found at "+String.valueOf(i+17)
                         +":12");
-            }                        
+            }
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
-        }                
+        }
     }
     
     /**
@@ -608,22 +618,22 @@ public class SearchTest extends EditorTestCase {
                 MainWindowOperator.getDefault().pushKey(KeyEvent.VK_F3);
                 waitForLabel("'testWord' found at "+String.valueOf(i+19)
                         +":12");
-            }            
+            }
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
-        }                
+        }
     }
-
+    
     /**
      * TC16 - Search Selection
      */
-/*    public void testSearchSelection() {
+    public void testSearchSelection() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
             EditorOperator editor = getDefaultSampleEditorOperator();
-            
+ 
             // perform selection search
             editor.select(24, 20);
             new EventTool().waitNoEvent(FIND_TIMEOUT);
@@ -637,22 +647,22 @@ public class SearchTest extends EditorTestCase {
             find.find();
             waitForLabel("'testWord2' found at 22:12");
             find.close();
-
+ 
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
         }
-    }*/
-
+    }
+    
     /**
      * TC17 - Search Selection Negative
      */
-/*    public void testSearchSelectionNegative() {
+    public void testSearchSelectionNegative() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
             EditorOperator editor = getDefaultSampleEditorOperator();
-            
+ 
             // perform negative selection search
             editor.select(25, 22);
             new EventTool().waitNoEvent(FIND_TIMEOUT);
@@ -666,13 +676,13 @@ public class SearchTest extends EditorTestCase {
             find2.find();
             waitForLabel("'testWord2' not found");
             find2.close();
-            
+ 
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
-        }                
-    }*/
-
+        }
+    }
+    
     /**
      * TC18 - Regexp Search - Simple
      */
@@ -717,9 +727,9 @@ public class SearchTest extends EditorTestCase {
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
-        }                
-    }    
-
+        }
+    }
+    
     /**
      * TC19 - Regexp Search - Complex
      */
@@ -760,10 +770,10 @@ public class SearchTest extends EditorTestCase {
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
-        }                
-    }    
+        }
+    }
     
-    /**     
+    /**
      * Unchecks all checkboxes in find dialog.
      */
     public void uncheckAll() {
@@ -775,12 +785,12 @@ public class SearchTest extends EditorTestCase {
         find.cbMatchCase().setSelected(false);
         find.cbMatchWholeWordsOnly().setSelected(false);
         find.cbRegularExpressions().setSelected(false);
-        find.cbSmartCase().setSelected(false);
-        find.cbWrapSearch().setSelected(false);        
+        //find.cbSmartCase().setSelected(false);
+        find.cbWrapSearch().setSelected(false);
     }
     
     /**
-     * Waits for label to appear on Status Bar, checks it 10 times before 
+     * Waits for label to appear on Status Bar, checks it 10 times before
      * failing.
      * @param label label which should be displayed on status bar
      */
@@ -790,9 +800,9 @@ public class SearchTest extends EditorTestCase {
             if (editor.lblStatusBar().getText().equals(label)) break;
             new EventTool().waitNoEvent(FIND_TIMEOUT);
         }
-        assertEquals(editor.lblStatusBar().getText(), label);
+        assertEquals(label,editor.lblStatusBar().getText());
     }
-
+    
     
     /**
      * Checks if a find dialog is opened and if yes it closes it.

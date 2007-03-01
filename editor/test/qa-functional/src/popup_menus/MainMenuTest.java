@@ -44,29 +44,29 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
  * Test behavior of main menus - Edit, View
  * @author Martin Roskanin
  */
-  public class MainMenuTest extends MenuTest {
-
-    String xmlFile =  "testMainMenu.xml";      
+public class MainMenuTest extends MenuTest {
+    
+    String xmlFile =  "testMainMenu.xml";
     
     /** Creates a new instance of Main */
     public MainMenuTest(String testMethodName) {
         super(testMethodName);
     }
-
-
+    
+    
     public void testMainMenu(){
         openDefaultProject();
         openDefaultSampleFile();
         try {
-
+            
             EditorOperator editor = getDefaultSampleEditorOperator();
             JTextComponentOperator text = new JTextComponentOperator(editor);
             final JTextComponent target = (JTextComponent)text.getSource();
-
             
-            boolean lineNumberVisibleSetting = SettingsUtil.getBoolean(org.netbeans.editor.Utilities.getKitClass(target), 
-                                           SettingsNames.LINE_NUMBER_VISIBLE,
-                                           SettingsDefaults.defaultLineNumberVisible);
+            
+            boolean lineNumberVisibleSetting = SettingsUtil.getBoolean(org.netbeans.editor.Utilities.getKitClass(target),
+                    SettingsNames.LINE_NUMBER_VISIBLE,
+                    SettingsDefaults.defaultLineNumberVisible);
             
             //enable line number
             JEditorPaneOperator txtOper = editor.txtEditorPane();
@@ -80,30 +80,31 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
                             Boolean.FALSE);
                 }
             };
-         
+            
             waitMaxMilisForValue(2000, resolver, Boolean.TRUE);
             
-            lineNumberVisibleSetting = SettingsUtil.getBoolean(org.netbeans.editor.Utilities.getKitClass(target), 
-                                           SettingsNames.LINE_NUMBER_VISIBLE,
-                                           SettingsDefaults.defaultLineNumberVisible);
-
+            lineNumberVisibleSetting = SettingsUtil.getBoolean(org.netbeans.editor.Utilities.getKitClass(target),
+                    SettingsNames.LINE_NUMBER_VISIBLE,
+                    SettingsDefaults.defaultLineNumberVisible);
+            
             if (lineNumberVisibleSetting == false){
-                log("XML editor set line number fails:"+org.netbeans.editor.Utilities.getKitClass(target));
+                log("Java editor set line number fails:"+org.netbeans.editor.Utilities.getKitClass(target));
             }
             
-            assert lineNumberVisibleSetting == true;
-
+            //assert lineNumberVisibleSetting == true;
+            assertTrue("Java editor - line numbers not visible", lineNumberVisibleSetting);
+            
             openSourceFile(getDefaultSamplePackage(), xmlFile);
             
             EditorOperator editorXML = new EditorOperator(xmlFile);
             JTextComponentOperator textXML = new JTextComponentOperator(editorXML);
             final JTextComponent targetXML = (JTextComponent)textXML.getSource();
-
+            
             //enable line number
             JEditorPaneOperator txtOperXML = editorXML.txtEditorPane();
             txtOperXML.pushKey(KeyEvent.VK_V, KeyEvent.ALT_DOWN_MASK);
             txtOperXML.pushKey(KeyEvent.VK_S);
-
+            
             ValueResolver resolverXML = new ValueResolver(){
                 public Object getValue(){
                     return SettingsUtil.getValue(org.netbeans.editor.Utilities.getKitClass(targetXML),
@@ -111,37 +112,37 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
                             Boolean.FALSE);
                 }
             };
-         
+            
             
             waitMaxMilisForValue(2000, resolverXML, Boolean.TRUE);
             
-            lineNumberVisibleSetting = SettingsUtil.getBoolean(org.netbeans.editor.Utilities.getKitClass(targetXML), 
-                                           SettingsNames.LINE_NUMBER_VISIBLE,
-                                           SettingsDefaults.defaultLineNumberVisible);
-
+            lineNumberVisibleSetting = SettingsUtil.getBoolean(org.netbeans.editor.Utilities.getKitClass(targetXML),
+                    SettingsNames.LINE_NUMBER_VISIBLE,
+                    SettingsDefaults.defaultLineNumberVisible);
+            
             if (lineNumberVisibleSetting == false){
                 log("XML editor set line number fails:"+org.netbeans.editor.Utilities.getKitClass(targetXML));
             }
             
-            assert lineNumberVisibleSetting == true;
-
+            // assert lineNumberVisibleSetting == true;
+            assertTrue("XML editor - line numbers not visible", lineNumberVisibleSetting);
         } finally {
             // now close XML file
             try {
-               //find editor
-               EditorOperator editor = new EditorOperator(xmlFile);
-               editor.closeDiscard();
+                //find editor
+                EditorOperator editor = new EditorOperator(xmlFile);
+                editor.closeDiscard();
             } catch ( TimeoutExpiredException ex) {
                 log(ex.getMessage());
                 log("Can't close the file:"+xmlFile);
             }
-
+            
             //and java file
             closeFileWithDiscard();
             
             
         }
     }
-
+    
     
 }

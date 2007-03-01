@@ -46,6 +46,14 @@ public class ReplaceTest extends EditorTestCase {
         super(testMethodName);
     }
     
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        closeReplaceDialogIfOpened();
+    }
+
+    
+    
     /**
      * TC1 - open and close replace dialog
      */
@@ -55,7 +63,7 @@ public class ReplaceTest extends EditorTestCase {
         try {
             EditorOperator editor = getDefaultSampleEditorOperator();
             JEditorPaneOperator txtOper = editor.txtEditorPane();
-                        
+            
             // open replace and close
             new ReplaceAction().perform();
             txtOper.pushKey(KeyEvent.VK_ESCAPE);
@@ -76,12 +84,12 @@ public class ReplaceTest extends EditorTestCase {
             closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
-    }   
+    }
     
     /**
      * TC2 - Replace Dialog Open - Selection
      */
-/*    public void testReplaceSelectionRepeated() {
+    public void testReplaceSelectionRepeated() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -124,7 +132,7 @@ public class ReplaceTest extends EditorTestCase {
             // check status bar
             waitForLabel("'testReplaceSelectionRepeated' found at 2:4; End of document reached. "
                     +"Continuing search from beginning.");
-        
+            
             ref(editor.getText());
             compareReferenceFiles();
             
@@ -132,7 +140,7 @@ public class ReplaceTest extends EditorTestCase {
             closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
-    }*/
+    }
     
     /**
      * TC3 - Replace Dialog Combo Box
@@ -145,7 +153,7 @@ public class ReplaceTest extends EditorTestCase {
             
             editor.setCaretPosition(1,1);
             editor.txtEditorPane().pushKey(KeyEvent.VK_H, KeyEvent.CTRL_MASK);
-            Replace replace = new Replace();            
+            Replace replace = new Replace();
             replace.cboFindWhat().removeAllItems();
             replace.cboReplaceWith().removeAllItems();
             
@@ -170,12 +178,12 @@ public class ReplaceTest extends EditorTestCase {
             replace.replace();
             // check status bar
             waitForLabel("'class' not found");
-
+            
             replace.cboFindWhat().clearText();
             replace.cboFindWhat().typeText("testReplaceDialogComboBox");
             replace.cboReplaceWith().clearText();
             replace.cboReplaceWith().typeText("testReplaceDialogComboBox2");
-            replace.replace();            
+            replace.replace();
             // check status bar
             waitForLabel("'testReplaceDialogComboBox' found at 13:35");
             
@@ -183,44 +191,44 @@ public class ReplaceTest extends EditorTestCase {
             boolean found2 = false;
             boolean found3 = false;
             for (int i = 0; i<replace.cboFindWhat().getItemCount(); i++) {
-                if (((String)replace.cboFindWhat().getItemAt(i)).equals( 
-                    "testReplaceDialogComboBox")) found1 = true;
-                if (((String)replace.cboFindWhat().getItemAt(i)).equals( 
-                    "class")) found2 = true;
-                if (((String)replace.cboFindWhat().getItemAt(i)).equals( 
-                    "package")) found3 = true;
+                if (((String)replace.cboFindWhat().getItemAt(i)).equals(
+                        "testReplaceDialogComboBox")) found1 = true;
+                if (((String)replace.cboFindWhat().getItemAt(i)).equals(
+                        "class")) found2 = true;
+                if (((String)replace.cboFindWhat().getItemAt(i)).equals(
+                        "package")) found3 = true;
             }
             assertEquals(found1, true);
             assertEquals(found2, true);
             assertEquals(found3, true);
-
+            
             found1 = false;
             found2 = false;
             found3 = false;
             for (int i = 0; i<replace.cboReplaceWith().getItemCount(); i++) {
-                if (((String)replace.cboReplaceWith().getItemAt(i)).equals( 
-                    "testReplaceDialogComboBox2")) found1 = true;
-                if (((String)replace.cboReplaceWith().getItemAt(i)).equals( 
-                    "klasa")) found2 = true;
-                if (((String)replace.cboReplaceWith().getItemAt(i)).equals( 
-                    "pakaz")) found3 = true;
+                if (((String)replace.cboReplaceWith().getItemAt(i)).equals(
+                        "testReplaceDialogComboBox2")) found1 = true;
+                if (((String)replace.cboReplaceWith().getItemAt(i)).equals(
+                        "klasa")) found2 = true;
+                if (((String)replace.cboReplaceWith().getItemAt(i)).equals(
+                        "pakaz")) found3 = true;
             }
             assertEquals(found1, true);
             assertEquals(found2, true);
             assertEquals(found3, true);
-                        
+            
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);
             replace.close();
             
             ref(editor.getText());
             compareReferenceFiles();
-        
+            
         } finally {
             closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
     }
-
+    
     /**
      * TC4 - Replace Match Case
      */
@@ -245,7 +253,7 @@ public class ReplaceTest extends EditorTestCase {
             replace.replace();
             
             replace.close();
-
+            
             ref(editor.getText());
             compareReferenceFiles();
             
@@ -278,9 +286,9 @@ public class ReplaceTest extends EditorTestCase {
             replace.replaceAll();
             // check status bar
             waitForLabel("14 of 14 items replaced");
-
+            
             replace.close();
-
+            
             ref(editor.getText());
             compareReferenceFiles();
             
@@ -305,7 +313,7 @@ public class ReplaceTest extends EditorTestCase {
             
             // check only selected checkboxes
             uncheckAll();
-            replace.cbSearchSelection().doClick();            
+            replace.cbSearchSelection().doClick();
             replace.cboFindWhat().clearText();
             replace.cboFindWhat().typeText("testWord");
             replace.cboReplaceWith().clearText();
@@ -313,9 +321,9 @@ public class ReplaceTest extends EditorTestCase {
             replace.replaceAll();
             // check status bar
             waitForLabel("5 of 5 items replaced");
-
+            
             replace.close();
-
+            
             ref(editor.getText());
             compareReferenceFiles();
             
@@ -323,9 +331,9 @@ public class ReplaceTest extends EditorTestCase {
             closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
-    }      
+    }
     
-    /**     
+    /**
      * Unchecks all checkboxes in find dialog.
      */
     public void uncheckAll() {
@@ -337,12 +345,12 @@ public class ReplaceTest extends EditorTestCase {
         replace.cbMatchCase().setSelected(false);
         replace.cbMatchWholeWordsOnly().setSelected(false);
         replace.cbRegularExpressions().setSelected(false);
-        replace.cbSmartCase().setSelected(false);
-        replace.cbWrapSearch().setSelected(false);        
+        //replace.cbSmartCase().setSelected(false);
+        replace.cbWrapSearch().setSelected(false);
     }
     
     /**
-     * Waits for label to appear on Status Bar, checks it 10 times before 
+     * Waits for label to appear on Status Bar, checks it 10 times before
      * failing.
      * @param label label which should be displayed on status bar
      */
@@ -353,7 +361,7 @@ public class ReplaceTest extends EditorTestCase {
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);
         }
         assertEquals(editor.lblStatusBar().getText(), label);
-    }    
+    }
     
     /**
      * Checks if a replace dialog is opened and if yes it closes it.
