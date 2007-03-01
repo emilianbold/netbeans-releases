@@ -33,6 +33,7 @@ import java.util.zip.ZipInputStream;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -43,7 +44,7 @@ import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
 
 /**
  * Misc methods to simplify interface to IDE
- *
+ * 
  * @author Edwin Goei
  */
 public class IdeUtil {
@@ -80,7 +81,7 @@ public class IdeUtil {
 
     /**
      * Return the Project that is currently active according to the Designer.
-     *
+     * 
      * @return currently active project or null, if none.
      */
     public static Project getActiveProject() {
@@ -93,8 +94,29 @@ public class IdeUtil {
     }
 
     /**
+     * Returns a NB Project for a project directory or else null if not a
+     * project.
+     * 
+     * @param projectDir
+     * @return NB Project object or null if not a project
+     */
+    public static Project fileToProject(File projectDir) {
+        try {
+            FileObject fo = FileUtil.toFileObject(projectDir);
+            if (fo != null && /* #60518 */fo.isFolder()) {
+                return ProjectManager.getDefault().findProject(fo);
+            } else {
+                return null;
+            }
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            return null;
+        }
+    }
+
+    /**
      * Remove whitespace in a String and replace with underscores
-     *
+     * 
      * @param str
      * @return new String with whitespace replaced with underscores
      */
@@ -116,7 +138,7 @@ public class IdeUtil {
     /**
      * Unzip a zip or jar file into a dest directory. Derived from jar command
      * in JDK.
-     *
+     * 
      * @param zipFile
      *            a zip or jar file
      * @param dest
@@ -223,9 +245,9 @@ public class IdeUtil {
      * @return
      */
     public static File getNetBeansInstallDirectory() {
-	File dir = getRaveClusterDirectory();
-	if (dir != null) {
-           return dir.getParentFile();
+        File dir = getRaveClusterDirectory();
+        if (dir != null) {
+            return dir.getParentFile();
         }
         return null;
         // return getRaveClusterDirectory().getParentFile();
@@ -249,7 +271,8 @@ public class IdeUtil {
         // Isn't there a better way to find the top level rave directory??
         if (raveClusterDir == null) {
             File file = InstalledFileLocator.getDefault().locate(
-                    "modules/org-netbeans-modules-visualweb-complib.jar", null, false); // NOI18N
+                    "modules/org-netbeans-modules-visualweb-complib.jar", null,
+                    false); // NOI18N
             if (file != null) {
                 raveClusterDir = file.getParentFile().getParentFile();
             }

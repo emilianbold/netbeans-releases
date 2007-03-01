@@ -64,7 +64,7 @@ import com.sun.rave.designtime.impl.BasicBeanCreateInfo;
 /**
  * DataObject for palette item file. It reads the file and creates PaletteItem
  * and node from it.
- *
+ * 
  * @author Tomas Pavek
  * @author Edwin Goei
  */
@@ -107,7 +107,7 @@ class ComplibPaletteItemDataObject extends MultiDataObject {
      * muck with their userdir such that they remove a complib, but yet the
      * palette data still exists and now refers to a non-existant complib. In
      * this case, null will be returned here.
-     *
+     * 
      * @return associated complib or null
      */
     public Complib getComplib() {
@@ -322,7 +322,7 @@ class ComplibPaletteItemDataObject extends MultiDataObject {
         }
 
         public Transferable clipboardCopy() throws IOException {
-            ensureComplibCopiedToProject();
+            // ensureComplibCopiedToProject();
             Transferable t = super.clipboardCopy();
             addPaletteFlavor(t);
             return t;
@@ -335,7 +335,7 @@ class ComplibPaletteItemDataObject extends MultiDataObject {
         }
 
         public Transferable drag() throws IOException {
-            ensureComplibCopiedToProject();
+            // ensureComplibCopiedToProject();
             Transferable t = super.drag();
             addPaletteFlavor(t);
 

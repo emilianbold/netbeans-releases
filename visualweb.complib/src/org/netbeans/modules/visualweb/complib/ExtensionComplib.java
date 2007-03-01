@@ -31,17 +31,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.jar.Manifest;
 
+import org.netbeans.modules.visualweb.classloaderprovider.CommonClassloaderProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
-
-import org.netbeans.modules.visualweb.classloaderprovider.CommonClassloaderProvider;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 
 /**
  * Represents an extension component library provided by a third party. There

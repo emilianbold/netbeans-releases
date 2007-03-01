@@ -33,6 +33,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +44,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.prefs.Preferences;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -54,19 +56,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.spi.palette.PaletteFilter;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
-
 import org.netbeans.modules.visualweb.api.complib.ComplibEvent;
 import org.netbeans.modules.visualweb.api.complib.ComplibListener;
 import org.netbeans.modules.visualweb.api.complib.ComplibService;
@@ -78,18 +67,32 @@ import org.netbeans.modules.visualweb.complib.PaletteUtil.Category;
 import org.netbeans.modules.visualweb.complib.PaletteUtil.Item;
 import org.netbeans.modules.visualweb.complib.PaletteUtil.Palette;
 import org.netbeans.modules.visualweb.complib.ui.ComplibsRootNode;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectClassPathExtender;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.netbeans.modules.visualweb.project.jsf.api.LibraryDefinition;
+import org.netbeans.spi.palette.PaletteFilter;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
+
 import com.sun.rave.designtime.BeanCreateInfo;
 import com.sun.rave.designtime.BeanCreateInfoSet;
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.DisplayItem;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectClassPathExtender;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
-import org.netbeans.modules.visualweb.project.jsf.api.LibraryDefinition;
 
 /**
  * Singleton used to manage component libraries. The old name of this class used
  * to be ComponentLibraryManger.
- *
+ * 
  * @author Edwin Goei
  */
 public class ComplibServiceProvider implements ComplibService {
@@ -160,12 +163,22 @@ public class ComplibServiceProvider implements ComplibService {
 
         private boolean isVisible(DataObject dataObj) {
             if (dataObj instanceof ComplibPaletteItemDataObject) {
+                // This is a complib component on the palette
+                ComplibPaletteItemDataObject cpido = (ComplibPaletteItemDataObject) dataObj;
+                Complib itemComplib = cpido.getComplib();
+                if (itemComplib == null) {
+                    // Abnormal condition: complib cannot be found so hide it
+                    return false;
+                }
+
                 /*
                  * Get the list of complibs for a project. This part only
                  * changes when a complib is added or removed from a project and
                  * does not need to be recalculated for each palette item.
                  * Optimize this if this is a bottleneck.
                  */
+
+                // Check the embedded project complibs
                 Scope scope;
                 try {
                     scope = Scope.getScopeForProject(project);
@@ -174,41 +187,23 @@ public class ComplibServiceProvider implements ComplibService {
                     return true;
                 }
                 Set<ExtensionComplib> projectComplibs = scope.getComplibs();
-
-                // This is a complib component on the palette
-                ComplibPaletteItemDataObject cpido = (ComplibPaletteItemDataObject) dataObj;
-                Complib itemComplib = cpido.getComplib();
-                if (itemComplib == null) {
-                    // Abnormal condition: complib cannot be found so hide it
-                    return false;
-                }
                 Identifier itemId = itemComplib.getIdentifier();
                 for (ExtensionComplib complib : projectComplibs) {
                     if (itemId.equals(complib.getIdentifier())) {
                         return true;
                     }
                 }
-                return false;
 
-                // URI ns = itemId.getNamespaceUri();
-                // Version version = itemId.getVersion();
-                // for (ExtensionComplib prjComplib : projectComplibs) {
-                // Identifier anId = prjComplib.getIdentifier();
-                // if (ns.equals(anId.getNamespaceUri())) {
-                // if (version.equals(anId.getVersion())) {
-                // // Show this item
-                // return true;
-                // } else {
-                // // Hide this item
-                // return false;
-                // }
-                // } else {
-                // // No match, go on to next complib
-                // continue;
-                // }
-                // }
-                // // Complib item does not match any complibs in project
-                // return true;
+                // Check any shared complibs used by the project
+                Set<SharedComplib> sharedComplibs = SharedComplibState
+                        .getInstance().getSharedComplibs(project);
+                for (SharedComplib complib : sharedComplibs) {
+                    if (itemId.equals(complib.getIdentifier())) {
+                        return true;
+                    }
+                }
+
+                return false;
             } else {
                 // By default, show the object
                 return true;
@@ -417,13 +412,14 @@ public class ComplibServiceProvider implements ComplibService {
      * This should only be called once via ComplibService Lookup.
      */
     public ComplibServiceProvider() {
-        installNewComplibPackages();
+        installNewComplibPackages(userComplibsDir);
 
         // Get initial set of open projects
         Project[] projectsArray = OpenProjects.getDefault().getOpenProjects();
         final HashSet<Project> initialProjects = new HashSet<Project>(Arrays
                 .asList(projectsArray));
         initProjectComplibs(initialProjects);
+        initSharedComplibs(initialProjects);
 
         // Listen for project open events and ensure complib library defs and
         // refs are initialized
@@ -449,6 +445,7 @@ public class ComplibServiceProvider implements ComplibService {
                                     allProjects);
                             newProjects.removeAll(previousProjects);
                             initProjectComplibs(newProjects);
+                            initSharedComplibs(newProjects);
                         } else {
                             // Project was closed since last time
                             HashSet<Project> closedProjects = new HashSet<Project>(
@@ -461,6 +458,13 @@ public class ComplibServiceProvider implements ComplibService {
                         previousProjects = allProjects;
                     }
                 });
+    }
+
+    private void initSharedComplibs(HashSet<Project> projects) {
+        for (Project project : projects) {
+            // Load in shared complib info used by this project
+            SharedComplibState.getInstance().getSharedComplibs(project);
+        }
     }
 
     /**
@@ -554,6 +558,7 @@ public class ComplibServiceProvider implements ComplibService {
      * public so that NetBeans can access it.
      */
     public static class LibraryLocalizationBundle extends ListResourceBundle {
+        // TODO Bundle needs to be persisted
         private static HashMap<String, String[]> l10nMap = new HashMap<String, String[]>();
 
         static void add(String key, String value) {
@@ -685,24 +690,29 @@ public class ComplibServiceProvider implements ComplibService {
     }
 
     /**
-     * Attempt to install any new complib package files in the user Complibs
+     * Attempt to install any new complib package files in the specified
      * directory. Any problems are logged and the problem complib is then
      * skipped.
+     * 
+     * @param dir
+     *            Directory that contains complib package files
      */
-    private void installNewComplibPackages() {
-        if (userComplibsDir == null || !userComplibsDir.exists()) {
+    private void installNewComplibPackages(final File dir) {
+        if (dir == null || !dir.exists()) {
             return;
         }
 
-        // Typically, this code will run in the
-        // SwingUtilities.isEventDispatchThread() which causes problems when
-        // modifying the palette so we run this in a new thread.
+        /*
+         * Typically, this code will run in the
+         * SwingUtilities.isEventDispatchThread() which causes problems when
+         * modifying the palette so we run this in a new thread.
+         */
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 // TODO Need to have modified timestamp per complib
                 long scopeLastModified = Scope.USER.getLastModified();
 
-                FileObject complibFo = FileUtil.toFileObject(userComplibsDir);
+                FileObject complibFo = FileUtil.toFileObject(dir);
                 FileObject[] children = complibFo.getChildren();
                 for (int i = 0; i < children.length; i++) {
                     FileObject fo = children[i];
@@ -760,6 +770,20 @@ public class ComplibServiceProvider implements ComplibService {
                 return complib;
             }
         }
+
+        // Check any shared complibs
+        /*
+         * XXX Warning this may cause some interaction problems with older
+         * complib code.
+         */
+        HashSet<SharedComplib> shComplibs = SharedComplibState.getInstance()
+                .getAllSharedComplibs();
+        for (SharedComplib complib : shComplibs) {
+            if (complib.getIdentifier().equals(id)) {
+                return complib;
+            }
+        }
+
         return null;
     }
 
@@ -844,15 +868,12 @@ public class ComplibServiceProvider implements ComplibService {
     }
 
     /**
-     * Add components in complib to user palette(s). Assumes that complib is
-     * already been installed.
+     * Add components in complib to user palette(s).
      * 
      * @param complib
      * @throws ComplibException
      */
     private void addToPalette(Complib complib) throws ComplibException {
-        assert isInstalled(complib.getIdentifier());
-
         // Get the palette roots to add categories to
         List<Palette> palRoots = PaletteUtil.getPaletteRoots(complib);
 
@@ -1312,6 +1333,7 @@ public class ComplibServiceProvider implements ComplibService {
 
         HashSet<ExtensionComplib> result = new HashSet<ExtensionComplib>(
                 Scope.USER.getComplibs());
+
         Set<ExtensionComplib> prjComplibs = getComplibsForProject(project);
         for (Iterator iter = result.iterator(); iter.hasNext();) {
             ExtensionComplib usrComplib = (ExtensionComplib) iter.next();
@@ -1398,5 +1420,411 @@ public class ComplibServiceProvider implements ComplibService {
         }
 
         return i == 0 ? null : buf.toString();
+    }
+
+    private static class SharedComplibState {
+        /*
+         * Preferences key = value format is:
+         * 
+         * "sharedComplibs." + project-dir-full-path = CSV of
+         * dependent-project-base-names
+         */
+        private static final String SHARED_COMPLIBS = "sharedComplibs.";
+
+        private static final SharedComplibState INSTANCE = new SharedComplibState();
+
+        private Preferences prefs = NbPreferences
+                .forModule(ComplibServiceProvider.class);
+
+        /**
+         * Maps Project-s to Set-s containing the SharedComplib-s for a project
+         */
+        private Map<Project, Set<SharedComplib>> map;
+
+        private HashSet<SharedComplib> allSharedComplibs = new HashSet<SharedComplib>();
+
+        public static SharedComplibState getInstance() {
+            return INSTANCE;
+        }
+
+        private SharedComplibState() {
+            map = new HashMap<Project, Set<SharedComplib>>();
+        }
+
+        public void addSharedComplib(Project project, SharedComplib complib) {
+            allSharedComplibs.add(complib);
+
+            Set<SharedComplib> complibs = map.get(project);
+            if (complibs == null) {
+                complibs = new HashSet<SharedComplib>();
+            }
+            complibs.add(complib);
+            map.put(project, complibs);
+            saveSharedComplibsForProject(project, complibs);
+        }
+
+        public Set<SharedComplib> getSharedComplibs(Project project) {
+            Set<SharedComplib> complibs = map.get(project);
+            if (complibs == null) {
+                complibs = loadSharedComplibsForProject(project);
+                allSharedComplibs.addAll(complibs);
+            }
+            return complibs;
+        }
+
+        public HashSet<SharedComplib> getAllSharedComplibs() {
+            return allSharedComplibs;
+        }
+
+        public void removeSharedComplib(Project project,
+            SharedComplib complibToRemove) {
+            Set<SharedComplib> complibs = getSharedComplibs(project);
+            if (complibs.remove(complibToRemove)) {
+                // Remove from set of all shared complibs if no longer used
+                boolean found = false;
+                Collection<Set<SharedComplib>> allShared = map.values();
+                for (Set<SharedComplib> set : allShared) {
+                    if (set.contains(complibToRemove)) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    allSharedComplibs.remove(complibToRemove);
+                }
+
+                saveSharedComplibsForProject(project, complibs);
+            }
+        }
+
+        /**
+         * Factory method to create a SharedComplib from a NetBeans Project.
+         * Note that a particular build structure is assumed.
+         * 
+         * @param project
+         * @return SharedComplib or throws exception
+         * @throws ComplibException
+         * @throws IOException
+         */
+        public SharedComplib createSharedComplibFromProject(Project project)
+                throws ComplibException, IOException {
+            FileObject complibRoot = projectToSharedComplibDir(project);
+            if (complibRoot == null) {
+                throw new ComplibException(
+                        "Shared component library project must have a built 'build/complib' directory.");
+            }
+
+            SharedComplib complib = new SharedComplib(FileUtil
+                    .toFile(complibRoot));
+            return complib;
+        }
+
+        public FileObject projectToSharedComplibDir(Project project) {
+            FileObject projectDirFo = project.getProjectDirectory();
+
+            // XXX Warning assumes a particular build dir structure
+            FileObject complibRoot = projectDirFo
+                    .getFileObject("build/complib");
+            return complibRoot;
+        }
+
+        /**
+         * Returns the Project directory corresponding to a SharedComplib.
+         * Assumes a particular directory structure. Return null if there is a
+         * problem.
+         * 
+         * @param complib
+         * @return
+         */
+        public File sharedComplibDirToProjectDir(SharedComplib complib) {
+            // XXX Assumes structure is projectDir/build/complib/
+            File complibDir = complib.getDirectory();
+            File parentFile = complibDir.getParentFile();
+            if (parentFile == null) {
+                // Somethings wrong so skip it
+                return null;
+            }
+            parentFile = parentFile.getParentFile();
+            if (parentFile == null) {
+                // Somethings wrong so skip it
+                return null;
+            }
+            return parentFile;
+        }
+
+        private Set<SharedComplib> loadSharedComplibsForProject(Project project) {
+            HashSet<SharedComplib> complibs = new HashSet<SharedComplib>();
+
+            String key = SHARED_COMPLIBS
+                    + project.getProjectDirectory().getPath();
+
+            // Init from the persisted projects list
+            String projectCSV = prefs.get(key, "");
+            String[] projectBasenames = projectCSV.split(",");
+            for (String projectName : projectBasenames) {
+                Project[] openProjects = OpenProjects.getDefault()
+                        .getOpenProjects();
+                for (Project iProject : openProjects) {
+                    if (iProject.getProjectDirectory().getNameExt().equals(
+                            projectName)) {
+                        SharedComplib complib;
+                        try {
+                            complib = createSharedComplibFromProject(iProject);
+                        } catch (Exception e) {
+                            IdeUtil
+                                    .logWarning("Skipping bad shared complib",
+                                            e);
+                            continue;
+                        }
+                        complibs.add(complib);
+                        break;
+                    }
+                }
+            }
+            return complibs;
+        }
+
+        /**
+         * @param project
+         * @param complibs
+         */
+        private void saveSharedComplibsForProject(Project project,
+            Set<SharedComplib> complibs) {
+            String key = SHARED_COMPLIBS
+                    + project.getProjectDirectory().getPath();
+
+            StringBuffer sb = new StringBuffer();
+            for (SharedComplib complib : complibs) {
+                File projectDir = sharedComplibDirToProjectDir(complib);
+                if (projectDir == null) {
+                    // Skip if there is a problem
+                    continue;
+                }
+
+                if (sb.length() > 0) {
+                    sb.append(",");
+                }
+                sb.append(projectDir.getName());
+            }
+            prefs.put(key, sb.toString());
+        }
+    }
+
+    private Project getActiveProject() throws ComplibException {
+        Project activeProject = IdeUtil.getActiveProject();
+        if (activeProject == null) {
+            throw new ComplibException(
+                    "Error: No active project. Select one in designer.");
+        }
+        return activeProject;
+    }
+
+    public List<Project> getEligibleSharedComplibProjects() {
+        ArrayList<Project> result = new ArrayList<Project>();
+        Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+        SharedComplibState scs = SharedComplibState.getInstance();
+        for (Project project : openProjects) {
+            if (scs.projectToSharedComplibDir(project) != null) {
+                result.add(project);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Attempt to add project as a shared complib project to the active project.
+     * 
+     * @param shComplibProject
+     * @throws IOException
+     * @throws ComplibException
+     */
+    public void addSharedComplibProject(Project shComplibProject)
+            throws ComplibException, IOException {
+        Project activeProject = getActiveProject();
+        SharedComplibState scs = SharedComplibState.getInstance();
+        SharedComplib complib = scs
+                .createSharedComplibFromProject(shComplibProject);
+
+        // Only add to palette if it is not already there
+        if (!scs.getAllSharedComplibs().contains(complib)) {
+            try {
+                addToPalette(complib);
+            } catch (ComplibException e1) {
+                // Rollback
+                removeFromPaletteCategories(complib);
+                throw e1;
+            }
+        }
+
+        scs.addSharedComplib(activeProject, complib);
+        addSharedComplibLibraryDefAndRefs(activeProject, complib);
+    }
+
+    public Set<SharedComplib> getSharedComplibsForActiveProject()
+            throws ComplibException {
+        Project activeProject = getActiveProject();
+        return SharedComplibState.getInstance()
+                .getSharedComplibs(activeProject);
+    }
+
+    public void removeSharedComplibsFromActiveProject(
+        Set<SharedComplib> complibsToRemove) throws IOException,
+            ComplibException {
+        Project activeProject = getActiveProject();
+        SharedComplibState scs = SharedComplibState.getInstance();
+        for (SharedComplib complib : complibsToRemove) {
+            removeSharedComplibLibraryDefAndRefs(activeProject, complib);
+
+            scs.removeSharedComplib(activeProject, complib);
+
+            // Remove from palette only when no longer in use
+            Set<SharedComplib> allShared = scs.getAllSharedComplibs();
+            if (!allShared.contains(complib)) {
+                removeFromPaletteCategories(complib);
+            }
+        }
+    }
+
+    public void refreshSharedComplibsForActiveProject() throws ComplibException {
+        Set<SharedComplib> complibs = getSharedComplibsForActiveProject();
+        for (SharedComplib complib : complibs) {
+            removeFromPaletteCategories(complib);
+            addToPalette(complib);
+        }
+    }
+
+    /**
+     * Add any needed library definition and references for a shared complib to
+     * a project.
+     * 
+     * @param project
+     * @param sharedComplib
+     * @throws IOException
+     */
+    private void addSharedComplibLibraryDefAndRefs(Project project,
+        SharedComplib sharedComplib) throws IOException {
+        String localizingBundle = LibraryLocalizationBundle.class.getName();
+
+        LibraryDescriptor libDescriptor = deriveSharedComplibLibraryName(sharedComplib);
+        String libName = libDescriptor.getLibName();
+
+        Library libDef = LibraryManager.getDefault().getLibrary(libName);
+        if (libDef != null) {
+            // Assume the definition is correct, if not the user can manually
+            // remove it and it will be recreated when the project is re-opened
+            return;
+        }
+
+        // Use the name of the library as a key for the description
+        LibraryLocalizationBundle.add(libName, libDescriptor.getDescription());
+
+        List<URL> rtPath = fileListToUrlList(sharedComplib.getRuntimePath());
+        List<URL> dtPath = fileListToUrlList(sharedComplib.getDesignTimePath());
+        List<URL> javadocPath = fileListToUrlList(sharedComplib
+                .getJavadocPath());
+        List<URL> sourcePath = fileListToUrlList(sharedComplib.getSourcePath());
+        libDef = JsfProjectUtils.createComponentLibrary(libName, libName,
+                localizingBundle, LibraryDefinition.LIBRARY_DOMAIN_PROJECT,
+                rtPath, sourcePath, javadocPath, dtPath);
+
+        // If needed, create new compile-time Library Ref
+        if (!JsfProjectUtils.hasLibraryReference(project, libDef,
+                JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
+            if (!JsfProjectUtils.addLibraryReferences(project,
+                    new Library[] { libDef },
+                    JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
+                IdeUtil
+                        .logError("Failed to add compile-time library reference to project: "
+                                + libDef.getName());
+            }
+        }
+
+        // If needed, create new "deploy" Library Ref
+        if (!JsfProjectUtils.hasLibraryReference(project, libDef,
+                JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
+            if (!JsfProjectUtils.addLibraryReferences(project,
+                    new Library[] { libDef },
+                    JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
+                IdeUtil
+                        .logError("Failed to add deploy library reference to project: "
+                                + libDef.getName());
+            }
+        }
+    }
+
+    /**
+     * Remove any existing NB Library Defs and Refs corresponding to a shared
+     * complib for a project
+     * 
+     * @param project
+     * @param sharedComplib
+     * @throws IOException
+     */
+    private void removeSharedComplibLibraryDefAndRefs(Project project,
+        SharedComplib sharedComplib) throws IOException {
+        LibraryDescriptor libDescriptor = deriveSharedComplibLibraryName(sharedComplib);
+        String libName = libDescriptor.getLibName();
+
+        Library libDef = LibraryManager.getDefault().getLibrary(libName);
+        if (libDef != null) {
+            // Existing definition so first remove any existing references
+
+            if (JsfProjectUtils.hasLibraryReference(project, libDef,
+                    JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN)) {
+                JsfProjectUtils.removeLibraryReferences(project,
+                        new Library[] { libDef },
+                        JsfProjectClassPathExtender.LIBRARY_ROLE_DESIGN);
+            }
+
+            if (JsfProjectUtils.hasLibraryReference(project, libDef,
+                    JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY)) {
+                JsfProjectUtils.removeLibraryReferences(project,
+                        new Library[] { libDef },
+                        JsfProjectClassPathExtender.LIBRARY_ROLE_DEPLOY);
+            }
+
+            JsfProjectUtils.removeLibrary(libName,
+                    LibraryDefinition.LIBRARY_DOMAIN_PROJECT);
+
+            // Cleanup bundle
+            LibraryLocalizationBundle.remove(libName);
+        }
+    }
+
+    private static class LibraryDescriptor {
+        private String libName;
+
+        private String description;
+
+        public LibraryDescriptor(String libName, String description) {
+            this.libName = libName;
+            this.description = description;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public String getLibName() {
+            return libName;
+        }
+
+    }
+
+    /**
+     * Derive name and description for global NB Library Defs for a shared
+     * component library.
+     * 
+     * @param sharedComplib
+     * @return
+     */
+    private LibraryDescriptor deriveSharedComplibLibraryName(
+        SharedComplib sharedComplib) {
+        String description = SharedComplibState.getInstance()
+                .sharedComplibDirToProjectDir(sharedComplib).getName()
+                + " Shared Component Library";
+        String libName = IdeUtil.removeWhiteSpace(description);
+        return new LibraryDescriptor(libName, description);
     }
 }
