@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.exceptions.settings;
+package org.netbeans.modules.exceptions;
 
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;

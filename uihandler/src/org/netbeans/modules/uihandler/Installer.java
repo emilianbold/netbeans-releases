@@ -63,7 +63,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.netbeans.modules.exceptions.ReportPanel;
-import org.netbeans.modules.exceptions.settings.ExceptionsSettings;
+import org.netbeans.modules.exceptions.ExceptionsSettings;
 import org.netbeans.modules.uihandler.api.Activated;
 import org.netbeans.modules.uihandler.api.Deactivated;
 import org.openide.DialogDescriptor;

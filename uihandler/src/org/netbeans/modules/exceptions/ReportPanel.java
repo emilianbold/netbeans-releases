@@ -21,7 +21,6 @@ package org.netbeans.modules.exceptions;
 
 import java.awt.Cursor;
 import java.net.MalformedURLException;
-import org.netbeans.modules.exceptions.settings.ExceptionsSettings;
 import org.openide.awt.HtmlBrowser;
 
 /**

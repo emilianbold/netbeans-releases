@@ -20,7 +20,6 @@
 package org.netbeans.modules.exceptions;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.exceptions.settings.ExceptionsSettings;
 
 /**
  *
