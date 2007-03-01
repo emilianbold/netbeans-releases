@@ -22,7 +22,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -32,6 +32,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 
 /**
@@ -158,35 +159,22 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
 
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        output.writeUTF(name);
-        output.writeUTF(body);
-        output.writeBoolean(system);
-        int size = params == null ? 0 : params.size();
-        output.writeInt(size);
-        if (size > 0) {
-            for (String param : params) {
-                output.writeUTF((String)param);
-            }
-        }
+        assert this.name != null;
+        output.writeUTF(this.name);
+        output.writeUTF(this.body);
+        output.writeBoolean(this.system);
+        String[] out = this.params == null?null:this.params.toArray(new String[params.size()]);
+        PersistentUtils.writeStrings(out, output);
     }
 
-    /*package*/ MacroImpl(DataInput input) throws IOException {
+    public MacroImpl(DataInput input) throws IOException {
         super(input);
-        name = TextCache.getString(input.readUTF());
-        body = TextCache.getString(input.readUTF());
-        system = input.readBoolean();
-        int size = input.readInt();
-        if (size > 0) {
-            List readParams = new ArrayList<String>();
-            for (int i = 0; i < size; i++) {
-                String param = TextCache.getString(input.readUTF());
-                assert param != null;
-                readParams.add(param);
-            }
-            this.params = Collections.unmodifiableList(readParams);
-        } else {
-            this.params = null;
-        }
+        this.name = TextCache.getString(input.readUTF());
+        assert this.name != null;
+        this.body = TextCache.getString(input.readUTF());
+        this.system = input.readBoolean();
+        String[] out = PersistentUtils.readStrings(input, TextCache.getManager());
+        this.params = out == null ? null : Collections.unmodifiableList(Arrays.asList(out));
     }
 
 

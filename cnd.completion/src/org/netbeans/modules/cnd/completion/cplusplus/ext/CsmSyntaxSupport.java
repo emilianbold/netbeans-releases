@@ -1054,4 +1054,74 @@ abstract public class CsmSyntaxSupport extends ExtSyntaxSupport {
         }
         return res;
     }
+    
+    protected boolean isAbbrevDisabled(int offset) {
+        boolean abbrevDisabled = false;
+        TokenID[] disableTokenIds = BRACKET_SKIP_TOKENS;
+        if (disableTokenIds != null) {
+            TokenItem token;
+            try {
+                token = getTokenChain(offset, offset + 1);
+            } catch (BadLocationException e) {
+                token = null;
+            }
+            if (token != null) {
+                if (offset > token.getOffset()) { // not right at token's begining
+                    for (int i = disableTokenIds.length - 1; i >= 0; i--) {
+                        if (token.getTokenID() == disableTokenIds[i]) {
+                            abbrevDisabled = true;
+                            break;
+                        }
+                    }
+                }
+                if (!abbrevDisabled) { // check whether not right after line comment
+                    if (token.getOffset() == offset) {
+                        TokenItem prevToken = token.getPrevious();
+                        if (prevToken != null
+                            && prevToken.getTokenID() == CCTokenContext.LINE_COMMENT
+                        ) {
+                            abbrevDisabled = true;
+                        }
+                    }
+                }
+            }
+        }
+        return abbrevDisabled;
+    }
+    
+    public boolean isCompletionDisabled(int offset) {
+        boolean completionDisabled = false;
+        TokenID[] disableTokenIds = BRACKET_SKIP_TOKENS;
+        if (disableTokenIds != null) {
+            TokenItem token;
+            try {
+                token = getTokenChain(offset, offset + 1);
+            } catch (BadLocationException e) {
+                token = null;
+            }
+            if (token != null) {
+                if (offset > token.getOffset()) { // not right at token's begining
+                    for (int i = disableTokenIds.length - 1; i >= 0; i--) {
+                        if (token.getTokenID() == disableTokenIds[i]) {
+                            completionDisabled = true;
+                            break;
+                        }
+                    }
+                }
+                if (!completionDisabled) { // check whether not right after line comment or float constant
+                    if (token.getOffset() == offset) {
+                        TokenItem prevToken = token.getPrevious();
+                        if (prevToken != null
+                            && (prevToken.getTokenID() == CCTokenContext.LINE_COMMENT
+                                || prevToken.getTokenID() == CCTokenContext.FLOAT_LITERAL
+                                || prevToken.getTokenID() == CCTokenContext.DOUBLE_LITERAL)
+                        ) {
+                            completionDisabled = true;
+                        }
+                    }
+                }
+            }
+        }
+        return completionDisabled;
+    }        
 }

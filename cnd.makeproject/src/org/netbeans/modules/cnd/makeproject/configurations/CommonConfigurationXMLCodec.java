@@ -46,6 +46,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerCo
 
 /**
  * History:
+ * V33:
+ *   Added DEPENDENCY_CHECKING (makefile dependency checking)
+ * V32:
+ *   Added Folder level configurations (FolderXMLCodc)
  * V31:
  *   Now emitting compiler tool info for makefile based projects. This affects 
  *   cCompilerTool, ccCompilerTool, and fortranCompilerTool elements.
@@ -58,7 +62,7 @@ abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    protected final static int CURRENT_VERSION = 31;
+    protected final static int CURRENT_VERSION = 33;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -78,6 +82,7 @@ abstract class CommonConfigurationXMLCodec
     protected final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
     protected final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
     protected final static String PLATFORM_ELEMENT = "platform"; // NOI18N
+    protected final static String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
     // Compile Type
     protected final static String NEO_CONF_ELEMENT = "neoConf"; // Old style. FIXUP : should be removed.... // NOI18N
     protected final static String COMPILE_TYPE_ELEMENT = "compileType"; // NOI18N
@@ -240,6 +245,8 @@ abstract class CommonConfigurationXMLCodec
 	xes.elementOpen(TOOLS_SET_ELEMENT);
 	xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getValue()); // NOI18N
 	xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getPlatform().getValue()); // NOI18N
+        if (makeConfiguration.getDependencyChecking().getModified())
+            xes.element(DEPENDENCY_CHECKING, "" + makeConfiguration.getDependencyChecking().getValue()); // NOI18N
 	xes.elementClose(TOOLS_SET_ELEMENT);
     }
 
@@ -295,6 +302,8 @@ abstract class CommonConfigurationXMLCodec
     }
 
     public static void writeCCompilerConfiguration(XMLEncoderStream xes, CCompilerConfiguration cCompilerConfiguration) {
+        if (!cCompilerConfiguration.getModified())
+            return;
 	xes.elementOpen(CCOMPILERTOOL_ELEMENT);
 	if (cCompilerConfiguration.getDevelopmentMode().getModified())
 	    xes.element(DEVELOPMENT_MODE_ELEMENT, "" + cCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
@@ -328,6 +337,8 @@ abstract class CommonConfigurationXMLCodec
     }
 
     public static void writeCCCompilerConfiguration(XMLEncoderStream xes, CCCompilerConfiguration ccCompilerConfiguration) {
+        if (!ccCompilerConfiguration.getModified())
+            return;
 	xes.elementOpen(CCCOMPILERTOOL_ELEMENT);
 	if (ccCompilerConfiguration.getDevelopmentMode().getModified())
 	    xes.element(DEVELOPMENT_MODE_ELEMENT, "" + ccCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
@@ -363,6 +374,8 @@ abstract class CommonConfigurationXMLCodec
     }
     
     public static void writeFortranCompilerConfiguration(XMLEncoderStream xes, FortranCompilerConfiguration fortranCompilerConfiguration) {
+        if (!fortranCompilerConfiguration.getModified())
+            return;
 	xes.elementOpen(FORTRANCOMPILERTOOL_ELEMENT);
 	if (fortranCompilerConfiguration.getDevelopmentMode().getModified())
 	    xes.element(DEVELOPMENT_MODE_ELEMENT, "" + fortranCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
@@ -376,6 +389,8 @@ abstract class CommonConfigurationXMLCodec
 	    xes.element(COMMAND_LINE_ELEMENT, "" + fortranCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
 	if (fortranCompilerConfiguration.getWarningLevel().getModified())
 	    xes.element(WARNING_LEVEL_ELEMENT, "" + fortranCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
+	if (fortranCompilerConfiguration.getAdditionalDependencies().getModified())
+	    xes.element(ADDITIONAL_DEP_ELEMENT, "" + fortranCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
 	xes.elementClose(FORTRANCOMPILERTOOL_ELEMENT);
     }
 

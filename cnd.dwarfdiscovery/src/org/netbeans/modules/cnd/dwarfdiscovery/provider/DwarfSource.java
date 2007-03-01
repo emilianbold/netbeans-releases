@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.FileNameMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -150,7 +151,12 @@ public class DwarfSource implements SourceFileProperties{
         systemIncludes = new ArrayList<String>();
         userMacros = new HashMap<String,String>();
         includedFiles = new HashSet<String>();
-        fullName = PathCache.getString(fixFileName(cu.getSourceFileAbsolutePath()));
+        File file = new File(cu.getSourceFileAbsolutePath());
+        fullName = FileUtil.normalizeFile(file).getAbsolutePath();
+        fullName = PathCache.getString(fixFileName(fullName));
+        if (fullName != null && Utilities.isWindows()) {
+            fullName = fullName.replace('/', '\\');
+        }
         compilePath = PathCache.getString(fixFileName(cu.getCompilationDir()));
         sourceName = PathCache.getString(cu.getSourceFileName());
         

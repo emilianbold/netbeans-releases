@@ -32,8 +32,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
@@ -78,18 +80,22 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     }
             
     public void showCustomizer() {
-        showCustomizer(null, null);
+        showCustomizer(null, null, null);
     }
 
     public void showCustomizer(Item item) {
-        showCustomizer(null, item);
+        showCustomizer(null, item, null);
+    }
+    
+    public void showCustomizer(Folder folder) {
+        showCustomizer(null, null, folder);
     }
 
     public void showCustomizer(String preselectedNodeName) {
-        showCustomizer(preselectedNodeName, null);
+        showCustomizer(preselectedNodeName, null, null);
     }
     
-    public void showCustomizer(String preselectedNodeName, Item item) {
+    public void showCustomizer(String preselectedNodeName, Item item, Folder folder) {
         
         if (customizerPerProject.containsKey (project)) {
             Dialog dlg = (Dialog)customizerPerProject.get (project);
@@ -99,6 +105,14 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 // make it showed
                 dlg.setVisible(true);
                 return ;
+            }
+        }
+        
+        if (folder != null) {
+            // Make sure all FolderConfigurations are created (they are lazyly created)
+            Configuration[] configurations = projectDescriptorProvider.getConfigurationDescriptor().getConfs().getConfs();
+            for (int i = 0; i < configurations.length; i++) {
+                folder.getFolderConfiguration(configurations[i]);
             }
         }
 
@@ -129,7 +143,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 	ConfigurationDescriptor clonedProjectdescriptor = projectDescriptorProvider.getConfigurationDescriptor().cloneProjectDescriptor();
 	Vector controls = new Vector();
 	controls.add(options[OPTION_OK]);
-        MakeCustomizer innerPane = new MakeCustomizer(project, preselectedNodeName, clonedProjectdescriptor, item, controls);
+        MakeCustomizer innerPane = new MakeCustomizer(project, preselectedNodeName, clonedProjectdescriptor, item, folder, controls);
         ActionListener optionsListener = new OptionListener( project, projectDescriptorProvider.getConfigurationDescriptor(), clonedProjectdescriptor, antProjectHelper, innerPane);
         options[ OPTION_OK ].addActionListener( optionsListener );
         options[ OPTION_CANCEL ].addActionListener( optionsListener );

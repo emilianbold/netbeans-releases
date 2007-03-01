@@ -25,17 +25,19 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocState;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.platform.*;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 
 /**
  * @author Vladimir Kvasihn
  */
-public class LibProjectImpl extends ProjectBase {
+public final class LibProjectImpl extends ProjectBase {
     
-    private String includePath;
+    private final String includePath;
     
     public LibProjectImpl(ModelImpl model, String includePathName) {
         super(model, new File(includePathName), includePathName);
         this.includePath = includePathName;
+        // RepositoryUtils.put(this);
     }
     
     protected void ensureFilesCreated() {
@@ -70,6 +72,7 @@ public class LibProjectImpl extends ProjectBase {
     
     public void onFileRemoved(NativeFileItem file) {}
     public void onFileAdded(NativeFileItem file) {}
+    public void onFilePropertyChanged(NativeFileItem nativeFile) {}
     
     /**
      * called to inform that file was #included from another file with specific callback
@@ -123,12 +126,14 @@ public class LibProjectImpl extends ProjectBase {
     
     public void write(DataOutput aStream) throws IOException {
         super.write(aStream);
-        aStream.writeUTF(includePath);
+        assert this.includePath != null;
+        aStream.writeUTF(this.includePath);
     }
     
     public LibProjectImpl (DataInput aStream)  throws IOException {
         super(aStream);
-        includePath = FilePathCache.getString(aStream.readUTF());
-        setPlatformProject(new File(includePath));
+        this.includePath = FilePathCache.getString(aStream.readUTF());
+        assert this.includePath != null;
+        setPlatformProject(new File(this.includePath));
     }
 }

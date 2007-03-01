@@ -29,17 +29,16 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
-import java.util.Map;
-import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 import javax.swing.event.DocumentEvent;
+import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.TokenID;
+import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.WeakEventListenerList;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.ErrorManager;
@@ -67,7 +66,7 @@ public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
 
     protected boolean jcValid;
     
-    private ParsingListener parsingListener;
+//    private ParsingListener parsingListener;
     
     private static boolean parsingListenerInitialized;
 
@@ -77,12 +76,12 @@ public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
     public NbCsmSyntaxSupport(BaseDocument doc) {
         super(doc);
         
-        initParsingListener();
-
-        if (parsingListener == null) {
-            parsingListener = new ParsingListenerImpl();
-            addParsingListener(parsingListener);
-        }
+//        initParsingListener();
+//
+//        if (parsingListener == null) {
+//            parsingListener = new ParsingListenerImpl();
+//            addParsingListener(parsingListener);
+//        }
     }
     
     public CsmFinder getSupportJCFinder(){
@@ -95,25 +94,25 @@ public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
         FileObject fo = dobj.getPrimaryFile();
         return CsmFinderFactory.getDefault().getFinder(fo);
     }
-
-    /** Add weak listener to listen to java module parsing events */
-    private static synchronized void addParsingListener(ParsingListener l) {
-        listenerList.add(ParsingListener.class, l);
-    }
-
-    /** Remove listener from java module parsing events */
-    private static synchronized void removeParsingListener(ParsingListener l) {
-        listenerList.remove(ParsingListener.class, l);
-    }
-
-    private static synchronized void fireParsingEvent(ParsingEvent evt) {
-        ParsingListener[] listeners = (ParsingListener[])
-             listenerList.getListeners(ParsingListener.class);
-
-        for (int i = 0; i < listeners.length; i++) {
-            listeners[i].objectParsed(evt);
-        }
-    }
+    
+//    /** Add weak listener to listen to java module parsing events */
+//    private static synchronized void addParsingListener(ParsingListener l) {
+//        listenerList.add(ParsingListener.class, l);
+//    }
+//
+//    /** Remove listener from java module parsing events */
+//    private static synchronized void removeParsingListener(ParsingListener l) {
+//        listenerList.remove(ParsingListener.class, l);
+//    }
+//
+//    private static synchronized void fireParsingEvent(ParsingEvent evt) {
+//        ParsingListener[] listeners = (ParsingListener[])
+//             listenerList.getListeners(ParsingListener.class);
+//
+//        for (int i = 0; i < listeners.length; i++) {
+//            listeners[i].objectParsed(evt);
+//        }
+//    }
     
     protected void documentModified(DocumentEvent evt) {
         super.documentModified(evt);
@@ -709,107 +708,107 @@ public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
 //        return cp.findResource(resourceName);
 //    }
     
-    class ParsingListenerImpl implements ParsingListener {
-        
-        public ParsingListenerImpl(){
-        }
-        
-        public void objectParsed(ParsingEvent evt){
-            if (evt==null) {
-                return;
-            }
-            DataObject dob = NbEditorUtilities.getDataObject(getDocument());
-            if (dob != null && dob == evt.getDataObject()) {
-//                SourceElement se = evt.getSourceElement();
-//                if (se==null) {
-//                    return;
-//                }
-//                
-//                SourceCookie sc = (SourceCookie)dob.getCookie(SourceCookie.class);
-//                if (sc != null) {
-//                    SourceElement seLocal = sc.getSource();
-//                    if (seLocal != null && seLocal.equals(se)) {
-//                        jcValid = false;
-//                    }
-//                }
-            }
-        }
-    }
-
-    /** Attach listener on java source hierarchy parser */
-    private static synchronized void initParsingListener(){
-        if (parsingListenerInitialized == false){
-            try {
-                final ClassLoader loader = (ClassLoader)org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
-                Class parsingClass = Class.forName(
-                    "org.netbeans.modules.java.Parsing", false, loader); //NOI18N
-                Class listenerClass = Class.forName(
-                    "org.netbeans.modules.java.Parsing$Listener", false, loader); //NOI18N
-                InvocationHandler ih =  new InvocationHandler(){
-                        public Object invoke(Object proxy, Method method, Object[] args) {
-                            if (args!=null && args[0]!=null){
-                                try{
-                                    Class parsingEventClass = args[0].getClass();
-                                    Method getJavaDataObjectMethod = parsingEventClass.getMethod(
-                                        "getJavaDataObject", EMPTY_CLASS_ARRAY); //NOI18N
-
-                                    DataObject dob = (DataObject)getJavaDataObjectMethod.invoke(
-                                        args[0], EMPTY_OBJECT_ARRAY);
-
-                                    if (dob != null) {
-                                        // getSourceElement() costly in refactoring
-                                        // so should be done only if dataObject matches
-                                        // Not checking se.getStatus()==SourceElement.STATUS_OK){
-                                        // as it's always STATUS_OK anyway in refactoring builds
-                                        fireParsingEvent(new ParsingEvent(dob));
-                                    }
-                                } catch (Throwable t) {
-                                    org.netbeans.editor.Utilities.annotateLoggable(t);
-                                }
-
-                            }
-                            return null;
-                        }
-                    };
-                Object proxyListener = java.lang.reflect.Proxy.newProxyInstance(loader, 
-                    new Class[] { listenerClass }, ih);
-                Method addParsingListener = parsingClass.getMethod(
-                    "addParsingListener",new Class[]{listenerClass});//NOI18N
-                addParsingListener.invoke(parsingClass, new Object[]{proxyListener});
-                parsingListenerInitialized = true;
-            } catch (Throwable t) {
-                org.netbeans.editor.Utilities.annotateLoggable(t);
-            }
-        }        
-    }
-    
-    /** The event class used in Listener. */
-    static class ParsingEvent extends java.util.EventObject {
-        
-        ParsingEvent(DataObject dob) {
-            super(dob);
-        }
-        
-        public DataObject getDataObject() {
-            return (DataObject)getSource();
-        }
-
-        /** @return the source element which was parsed. */
-//        public SourceElement getSourceElement() {
-//            SourceCookie sc = (SourceCookie)getDataObject().getCookie(SourceCookie.class);
-//            return (sc != null) ? sc.getSource() : null;
+//    class ParsingListenerImpl implements ParsingListener {
+//        
+//        public ParsingListenerImpl(){
 //        }
+//        
+//        public void objectParsed(ParsingEvent evt){
+//            if (evt==null) {
+//                return;
+//            }
+//            DataObject dob = NbEditorUtilities.getDataObject(getDocument());
+//            if (dob != null && dob == evt.getDataObject()) {
+////                SourceElement se = evt.getSourceElement();
+////                if (se==null) {
+////                    return;
+////                }
+////                
+////                SourceCookie sc = (SourceCookie)dob.getCookie(SourceCookie.class);
+////                if (sc != null) {
+////                    SourceElement seLocal = sc.getSource();
+////                    if (seLocal != null && seLocal.equals(se)) {
+////                        jcValid = false;
+////                    }
+////                }
+//            }
+//        }
+//    }
 
-    }
-    
-    /** The listener interface for everybody who want to control all
-    * parsed JavaDataObjects.
-    */
-    static interface ParsingListener extends java.util.EventListener {
-        /** Method which is called everytime when some object is parsed.
-        * @param evt The event with the details.
-        */
-        public void objectParsed(ParsingEvent evt);
-    }
+//    /** Attach listener on java source hierarchy parser */
+//    private static synchronized void initParsingListener(){
+//        if (parsingListenerInitialized == false){
+//            try {
+//                final ClassLoader loader = (ClassLoader)org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+//                Class parsingClass = Class.forName(
+//                    "org.netbeans.modules.java.Parsing", false, loader); //NOI18N
+//                Class listenerClass = Class.forName(
+//                    "org.netbeans.modules.java.Parsing$Listener", false, loader); //NOI18N
+//                InvocationHandler ih =  new InvocationHandler(){
+//                        public Object invoke(Object proxy, Method method, Object[] args) {
+//                            if (args!=null && args[0]!=null){
+//                                try{
+//                                    Class parsingEventClass = args[0].getClass();
+//                                    Method getJavaDataObjectMethod = parsingEventClass.getMethod(
+//                                        "getJavaDataObject", EMPTY_CLASS_ARRAY); //NOI18N
+//
+//                                    DataObject dob = (DataObject)getJavaDataObjectMethod.invoke(
+//                                        args[0], EMPTY_OBJECT_ARRAY);
+//
+//                                    if (dob != null) {
+//                                        // getSourceElement() costly in refactoring
+//                                        // so should be done only if dataObject matches
+//                                        // Not checking se.getStatus()==SourceElement.STATUS_OK){
+//                                        // as it's always STATUS_OK anyway in refactoring builds
+//                                        fireParsingEvent(new ParsingEvent(dob));
+//                                    }
+//                                } catch (Throwable t) {
+//                                    org.netbeans.editor.Utilities.annotateLoggable(t);
+//                                }
+//
+//                            }
+//                            return null;
+//                        }
+//                    };
+//                Object proxyListener = java.lang.reflect.Proxy.newProxyInstance(loader, 
+//                    new Class[] { listenerClass }, ih);
+//                Method addParsingListener = parsingClass.getMethod(
+//                    "addParsingListener",new Class[]{listenerClass});//NOI18N
+//                addParsingListener.invoke(parsingClass, new Object[]{proxyListener});
+//                parsingListenerInitialized = true;
+//            } catch (Throwable t) {
+//                org.netbeans.editor.Utilities.annotateLoggable(t);
+//            }
+//        }        
+//    }
+//    
+//    /** The event class used in Listener. */
+//    static class ParsingEvent extends java.util.EventObject {
+//        
+//        ParsingEvent(DataObject dob) {
+//            super(dob);
+//        }
+//        
+//        public DataObject getDataObject() {
+//            return (DataObject)getSource();
+//        }
+//
+//        /** @return the source element which was parsed. */
+////        public SourceElement getSourceElement() {
+////            SourceCookie sc = (SourceCookie)getDataObject().getCookie(SourceCookie.class);
+////            return (sc != null) ? sc.getSource() : null;
+////        }
+//
+//    }
+//    
+//    /** The listener interface for everybody who want to control all
+//    * parsed JavaDataObjects.
+//    */
+//    static interface ParsingListener extends java.util.EventListener {
+//        /** Method which is called everytime when some object is parsed.
+//        * @param evt The event with the details.
+//        */
+//        public void objectParsed(ParsingEvent evt);
+//    }
     
 }

@@ -62,8 +62,8 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         excluded = new BooleanConfiguration(null, false);
         // Compilers
         customToolConfiguration = new CustomToolConfiguration();
-        cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), ((MakeConfiguration)configuration).getCCompilerConfiguration());
-        ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), ((MakeConfiguration)configuration).getCCCompilerConfiguration());
+        cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), item.getFolder().getFolderConfiguration(configuration).getCCompilerConfiguration());
+        ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), item.getFolder().getFolderConfiguration(configuration).getCCCompilerConfiguration());
         fortranCompilerConfiguration = new FortranCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), ((MakeConfiguration)configuration).getFortranCompilerConfiguration());
         clearChanged();
     }

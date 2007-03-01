@@ -31,9 +31,12 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -88,13 +91,13 @@ public class ProjectBridge {
     public Item getProjectItem(String path){
         return makeConfigurationDescriptor.findProjectItemByPath(path);
     }
-
+    
     public Object getAuxObject(Item item){
         MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
         ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         return itemConfiguration;
     }
-
+    
     public void setAuxObject(Item item, Object pao){
         if (pao instanceof ItemConfiguration) {
             ItemConfiguration conf = (ItemConfiguration)pao;
@@ -223,10 +226,33 @@ public class ProjectBridge {
                 extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
             }
         }
+        makeConfigurationDescriptor.setModified();
     }
     
     public void setupFolder(Vector includes, boolean inheriteIncludes, String macros, boolean inheriteMacros, boolean isCPP, Folder folder) {
-        // TODO: implement folder configuration
+        MakeConfiguration makeConfiguration = (MakeConfiguration)folder.getConfigurationDescriptor().getConfs().getActive();
+        //FolderConfiguration folderConfiguration = (FolderConfiguration)makeConfiguration.getAuxObject(folder.getId());
+        FolderConfiguration folderConfiguration = folder.getFolderConfiguration(makeConfiguration);
+        if (folderConfiguration == null) {
+            return;
+        }
+        if (isCPP) {
+            CCCompilerConfiguration ccCompilerConfiguration = folderConfiguration.getCCCompilerConfiguration();
+            if (ccCompilerConfiguration != null) {
+                ccCompilerConfiguration.getIncludeDirectories().setValue(includes);
+                ccCompilerConfiguration.getInheritIncludes().setValue(inheriteIncludes);
+                ccCompilerConfiguration.getPreprocessorConfiguration().setValue(macros);
+                ccCompilerConfiguration.getInheritPreprocessor().setValue(inheriteMacros);
+            }
+        } else {
+            CCompilerConfiguration cCompilerConfiguration = folderConfiguration.getCCompilerConfiguration();
+            if (cCompilerConfiguration != null) {
+                cCompilerConfiguration.getIncludeDirectories().setValue(includes);
+                cCompilerConfiguration.getInheritIncludes().setValue(inheriteIncludes);
+                cCompilerConfiguration.getPreprocessorConfiguration().setValue(macros);
+                cCompilerConfiguration.getInheritPreprocessor().setValue(inheriteMacros);
+            }
+        }
     }
     
     public void setupFile(String compilepath, Vector includes, boolean inheriteIncludes, String macros, boolean inheriteMacros, Item item) {

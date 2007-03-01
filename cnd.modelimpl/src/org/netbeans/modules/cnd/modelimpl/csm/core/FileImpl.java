@@ -213,10 +213,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private Object changeStateLock = new Object();
     public void stateChanged(javax.swing.event.ChangeEvent e) {
-        stateChanged(e, false);
+        stateChanged(false);
     }
 
-    public void stateChanged(javax.swing.event.ChangeEvent e, boolean invalidateCache) {
+    public void stateChanged(boolean invalidateCache) {
         synchronized (changeStateLock) {
             state = STATE_MODIFIED;
             if (invalidateCache) {
@@ -276,11 +276,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (ast != null) {
                 disposeAll(false);
                 render(ast);
-                Notificator.instance().registerChangedFile(this);
             }
 	}
 	finally {
 	    //Notificator.instance().endTransaction();
+            Notificator.instance().registerChangedFile(this);
             Notificator.instance().flush();
 	}
 	    
@@ -311,7 +311,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     ((Disposable) arr.get(i)).dispose();
                 }
             }            
-            if (false) RepositoryUtils.remove(uids);
+            RepositoryUtils.remove(uids);
         } else {
             Object[] arr;
             synchronized (declarationsOLD) {
@@ -380,22 +380,21 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	
 	Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
 	
-        AST ast = doParse();
-        if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw.stopAndReport("Parsing of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
-
-        if( ast != null ) {            
-	    Diagnostic.StopWatch sw2 = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
-            //Notificator.instance().startTransaction();
-            try {
+        try {
+            AST ast = doParse();
+            if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw.stopAndReport("Parsing of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
+            
+            if( ast != null ) {
+                Diagnostic.StopWatch sw2 = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
+                //Notificator.instance().startTransaction();
                 render(ast);
-                Notificator.instance().registerChangedFile(this);
+                if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw2.stopAndReport("Rendering of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
+                return ast;
             }
-            finally {
-                //Notificator.instance().endTransaction();
-                Notificator.instance().flush();
-            }
-	    if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw2.stopAndReport("Rendering of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
-            return ast;
+        } finally {
+            //Notificator.instance().endTransaction();
+            Notificator.instance().registerChangedFile(this);
+            Notificator.instance().flush();
         }
         return null;
     }

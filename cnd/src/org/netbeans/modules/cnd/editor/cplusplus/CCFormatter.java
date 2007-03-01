@@ -34,10 +34,10 @@ import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.editor.ext.FormatWriter;
 
 /**
-* CC indentation services are located here
-*
-*  duped from editor/libsrc/org/netbeans/editor/ext/java/JavaFormatter.java
-*/
+ * CC indentation services are located here.
+ *
+ * (Copied from from editor/libsrc/org/netbeans/editor/ext/java/JavaFormatter.java)
+ */
 
 public class CCFormatter extends ExtFormatter {
 
@@ -116,7 +116,6 @@ public class CCFormatter extends ExtFormatter {
             CCFormatSupport ccfs = (CCFormatSupport)createFormatSupport(fw);
 
             FormatTokenPosition pos = ccfs.getFormatStartPosition();
-
             if (ccfs.isIndentOnly()) { 
 		// don't do anything
             } else { // remove end-line whitespace
@@ -183,11 +182,93 @@ public class CCFormatter extends ExtFormatter {
             }
         }
 
+        private void removeLineBeforeToken(TokenItem token, CCFormatSupport ccfs, boolean checkRBraceBefore){
+            FormatTokenPosition tokenPos = ccfs.getPosition(token, 0);
+            // Check that nothing exists before token
+            if (ccfs.findNonWhitespace(tokenPos, null, true, true) != null){
+                return;
+            }
+
+            // Check that the backward nonWhite is }
+            if (checkRBraceBefore){
+                FormatTokenPosition ftpos = ccfs.findNonWhitespace(tokenPos, null, false, true);
+                if (ftpos == null || ftpos.getToken().getTokenID().getNumericID() != CCTokenContext.RBRACE_ID){
+                    return;
+                }
+            } 
+            
+            // Check that nothing exists after token, but ignore comments
+            if (ccfs.getNextPosition(tokenPos) != null){
+                FormatTokenPosition ftp = ccfs.findImportant(ccfs.getNextPosition(tokenPos), null, true, false);
+                if (ftp != null){
+                    insertNewLineBeforeToken(ftp.getToken(), ccfs);
+                }
+            }
+
+            // check that on previous line is some stmt
+            FormatTokenPosition ftp = ccfs.findLineStart(tokenPos); // find start of current line
+            FormatTokenPosition endOfPreviousLine = ccfs.getPreviousPosition(ftp); // go one position back - means previous line
+            if (endOfPreviousLine == null || endOfPreviousLine.getToken().getTokenID() != CCTokenContext.WHITESPACE){
+                return;
+            }
+            ftp = ccfs.findLineStart(endOfPreviousLine); // find start of the previous line - now we have limit position
+            ftp = ccfs.findImportant(tokenPos, ftp, false, true); // find something important till the limit
+            if (ftp == null){
+                return;
+            }
+
+            // check that previous line does not end with "{" or line comment
+            ftp = ccfs.findNonWhitespace(endOfPreviousLine, null, true, true);
+            if (ftp.getToken().getTokenID() == CCTokenContext.LINE_COMMENT ||
+                ftp.getToken().getTokenID() == CCTokenContext.LBRACE){
+                return;
+            }
+
+            // now move the token to the end of previous line
+            boolean remove = true;
+            while (remove)
+            {
+                if (token.getPrevious() == endOfPreviousLine.getToken()){
+                    remove = false;
+                }
+                if (ccfs.canRemoveToken(token.getPrevious())){
+                    ccfs.removeToken(token.getPrevious());
+                }else{
+                    return;  // should never get here!
+                }
+            }
+            // insert one space before token
+            if (ccfs.canInsertToken(token)){
+                ccfs.insertSpaces(token, 1);
+            }
+        
+        }
+
+        /** insertNewLineBeforeKeyword such as else, catch, finally
+         *  if getFormatNewlineBeforeBrace is true
+         */
+        private void insertNewLineBeforeToken(TokenItem token, CCFormatSupport ccfs){
+            FormatTokenPosition elsePos = ccfs.getPosition(token, 0);
+            FormatTokenPosition imp = ccfs.findImportant(elsePos,
+                    null, true, true); // stop on line start
+            if (imp != null && imp.getToken().getTokenContextPath()
+                                    == ccfs.getTokenContextPath()
+            ) {
+                // Insert new-line
+                if (ccfs.canInsertToken(token)) {
+                    ccfs.insertToken(token, ccfs.getValidWhitespaceTokenID(),
+                        ccfs.getValidWhitespaceTokenContextPath(), "\n"); // NOI18N
+                    ccfs.removeLineEndWhitespace(imp);
+                    // reindent newly created line
+                    ccfs.indentLine(elsePos);
+                }
+            }
+        }
 
         protected void formatLine(CCFormatSupport ccfs, FormatTokenPosition pos) {
             TokenItem token = ccfs.findLineStart(pos).getToken();
             while (token != null) {
-/*                if (jfs.findLineEnd(jfs.getPosition(token, 0)).getToken() == token) {
+/*                if (ccfs.findLineEnd(ccfs.getPosition(token, 0)).getToken() == token) {
                     break; // at line end
                 }
  */
@@ -271,7 +352,7 @@ public class CCFormatter extends ExtFormatter {
                                 if (ccfs.canInsertToken(token))
                                     ccfs.insertSpaces(token, 1);
                             }
-                            } // !jfs.isIndentOnly()
+                            } // !ccfs.isIndentOnly()
                             break;
 
                         case CCTokenContext.LPAREN_ID:

@@ -178,7 +178,7 @@ public class CompilationUnit {
             Object atType = typeEntry.getAttributeValue(ATTR.DW_AT_type);
             
             if (atType == null) {
-                return "const void";
+                return "const void"; // NOI18N
             }
             
             if (atType instanceof Integer) {

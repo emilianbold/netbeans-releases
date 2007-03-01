@@ -33,8 +33,9 @@ import java.io.IOException;
 public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements CsmConstructor {
 
     public ConstructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
-        super(ast, cls, visibility);
+        super(ast, cls, visibility, false);
         setName(cls.getName());
+        registerInProject();
     }
 
     public List getInitializerList() {

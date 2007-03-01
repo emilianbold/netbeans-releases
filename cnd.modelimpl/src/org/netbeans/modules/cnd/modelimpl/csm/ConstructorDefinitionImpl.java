@@ -31,7 +31,7 @@ import java.io.IOException;
 public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl {
 
     public ConstructorDefinitionImpl(AST ast, CsmFile file, CsmScope scope) {
-        super(ast, file, scope);
+        super(ast, file, scope, true);
     }
     
     public CsmType getReturnType() {

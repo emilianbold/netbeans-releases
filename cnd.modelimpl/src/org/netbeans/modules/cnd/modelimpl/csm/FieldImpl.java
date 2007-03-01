@@ -21,15 +21,17 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  * CsmVariable + CsmMember implementation
  * @author Vladimir Kvashin
  */
-public class FieldImpl extends VariableImpl<CsmField> implements CsmField {
+public final class FieldImpl extends VariableImpl<CsmField> implements CsmField {
 
     private final CsmVisibility visibility;
     
@@ -53,4 +55,17 @@ public class FieldImpl extends VariableImpl<CsmField> implements CsmField {
     public CsmVisibility getVisibility() {
         return visibility;
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);      
+        PersistentUtils.writeVisibility(this.visibility, output);
+    }  
+    
+    public FieldImpl(DataInput input) throws IOException {
+        super(input);
+        this.visibility = PersistentUtils.readVisibility(input);
+    }     
 }

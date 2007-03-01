@@ -38,7 +38,11 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
     private boolean _abstract = false;
 
     public MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
-        super(ast, cls.getContainingFile(), cls);
+        this(ast, cls, visibility, true);
+    }
+    
+    protected MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) {
+        super(ast, cls.getContainingFile(), cls, false);
         this.visibility = visibility;
         //this(cls, visibility, AstUtil.findId(ast), 0, 0);
         //setAst(ast);
@@ -48,6 +52,9 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
                 setStatic(true);                    
                 break;
             }
+        }
+        if (register) {
+            registerInProject();
         }
     }
 

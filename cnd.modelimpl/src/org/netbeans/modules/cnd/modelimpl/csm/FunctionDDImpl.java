@@ -40,8 +40,9 @@ public final class FunctionDDImpl extends FunctionImpl<CsmFunctionDefinition> im
     private final CsmCompoundStatement body;
 
     public FunctionDDImpl(AST ast, CsmFile file, CsmScope scope) {
-        super(ast, file, scope);
+        super(ast, file, scope, false);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile());
+        registerInProject();
     }
 
     public CsmCompoundStatement getBody() {

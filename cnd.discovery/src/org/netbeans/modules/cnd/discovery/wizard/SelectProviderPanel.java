@@ -86,7 +86,6 @@ public final class SelectProviderPanel extends JPanel {
         instructionsTextArea.setEditable(false);
         instructionsTextArea.setLineWrap(true);
         instructionsTextArea.setWrapStyleWord(true);
-        instructionsTextArea.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

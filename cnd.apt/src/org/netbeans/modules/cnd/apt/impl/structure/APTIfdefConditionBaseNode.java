@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.apt.impl.structure;
 
 import antlr.Token;
 import java.io.Serializable;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
@@ -52,8 +53,13 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
     public boolean accept(Token token) {
         /** base implementation of #ifdef/#ifndef */        
         if (APTUtils.isID(token)) {
-            assert (macroName == null) : "init macro name only once"; // NOI18N            
-            this.macroName = token;
+            if (macroName != null) {
+                // init macro name only once
+                APTUtils.LOG.log(Level.SEVERE, "line {1}: extra tokens after {2} at end of {0} directive", // NOI18N
+                        new Object[] {getToken().getText().trim(), getToken().getLine(), macroName.getText()} );
+            } else {
+                this.macroName = token;
+            }
         }
         // eat all till END_PREPROC_DIRECTIVE     
         if (APTUtils.isEndDirectiveToken(token.getType())) {

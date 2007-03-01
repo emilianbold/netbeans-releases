@@ -242,7 +242,7 @@ public class CsmUtilities {
                 nativeProject = (NativeProject) prj.getLookup().lookup(NativeProject.class);
             } 
             CsmProject csmPrj = CsmModelAccessor.getModel().getProject(nativeProject);
-            File file = FileUtil.toFile(fo);
+            File file = FileUtil.normalizeFile(FileUtil.toFile(fo));
             if (csmPrj != null) {
                 csmFile = csmPrj.findFile(file.getAbsolutePath());
             } else {

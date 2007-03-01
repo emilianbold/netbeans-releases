@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 function main {
 
@@ -26,8 +26,7 @@ function main {
 		echo "Error: there are ${#dirs[*]} elements in dirs and ${#projects[*]} in projects!"
 		return
 	fi
-	#cnt=${#dirs[*]}
-	cnt=1
+	cnt=${#dirs[*]}
 	
 	root=${TESTCODE}
 	initdata=${root}/_initdata
@@ -47,7 +46,7 @@ function main {
 		(
 			cd ${script_dir}
 			set -x
-			./test.sh --init ${init} -d ${dir} 
+			./test.sh --init ${init} -d ${dir} -t /tmp/${USER}/prepare-whitebox
 			cd ${init}
 			rc=$?
 			if [ ${rc} != 0 ]; then

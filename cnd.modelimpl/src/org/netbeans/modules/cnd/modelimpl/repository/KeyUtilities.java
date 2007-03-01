@@ -28,7 +28,6 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.apt.utils.APTStringManager;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
@@ -107,6 +106,15 @@ public class KeyUtilities {
         public PersistentFactory getPersistentFactory() {
             return CsmObjectFactory.instance();
         }
+
+        public int getSecondaryDepth() {
+            return 1;
+        }
+        
+        public int getSecondaryAt(int level) {
+            assert level == 0;
+            return KeyObjectFactory.KEY_FILE_KEY;
+        }  
     }
     
     /*package*/ static final class NamespaceKey extends ProjectNameBasedKey {
@@ -146,12 +154,38 @@ public class KeyUtilities {
         
         public void write(DataOutput aStream) throws IOException {
             super.write(aStream);
+            assert fqn != null;
             aStream.writeUTF(fqn);
         }   
         
         /*package*/ NamespaceKey(DataInput aStream) throws IOException {
             super(aStream);
             fqn = QualifiedNameCache.getString(aStream.readUTF());
+            assert fqn != null;
+        }      
+        
+        public int getDepth() {
+            return super.getDepth() + 1;
+        }
+        
+        public String getAt(int level) {
+            switch (level) {
+                case 0:
+                    return super.getAt(0);
+                case 1:
+                    return this.fqn;
+                default:
+                    throw new IllegalArgumentException("not supported level" + level); // NOI18N
+            }
+        }
+        
+        public int getSecondaryDepth() {
+            return 1;
+        }
+        
+        public int getSecondaryAt(int level) {
+            assert level == 0;
+            return KeyObjectFactory.KEY_NAMESPACE_KEY;
         }        
     }
     
@@ -175,6 +209,14 @@ public class KeyUtilities {
             return CsmObjectFactory.instance();
         }
         
+        public int getSecondaryDepth() {
+            return 1;
+        }
+
+        public int getSecondaryAt(int level) {
+            assert (level == 0);
+            return KeyObjectFactory.KEY_PROJECT_KEY;
+        }           
     }
     
     /*package*/ final static class MacroKey extends OffsetableKey {
@@ -202,6 +244,18 @@ public class KeyUtilities {
             retValue = "MacroKey: " + super.toString(); // NOI18N
             return retValue;
         }
+        
+        public int getSecondaryDepth() {
+            return super.getSecondaryDepth() + 1;
+        }
+
+        public int getSecondaryAt(int level) {
+            if (level == 0) {
+                return KeyObjectFactory.KEY_MACRO_KEY;
+            } else {
+                return super.getSecondaryAt(level - 1);
+            }
+        }         
     }
     
     /*package*/ final static class IncludeKey extends OffsetableKey {
@@ -229,6 +283,18 @@ public class KeyUtilities {
             retValue = "InclKey: " + super.toString(); // NOI18N
             return retValue;
         }
+        
+        public int getSecondaryDepth() {
+            return super.getSecondaryDepth() + 1;
+        }
+
+        public int getSecondaryAt(int level) {
+            if (level == 0) {
+                return KeyObjectFactory.KEY_INCLUDE_KEY;
+            } else {
+                return super.getSecondaryAt(level - 1);
+            }
+        }        
     }
     
     /*package*/ final static class OffsetableDeclarationKey extends OffsetableKey {
@@ -259,6 +325,17 @@ public class KeyUtilities {
             return retValue;
         }
 
+        public int getSecondaryDepth() {
+            return super.getSecondaryDepth() + 1;
+        }
+
+        public int getSecondaryAt(int level) {
+            if (level == 0) {
+                return KeyObjectFactory.KEY_DECLARATION_KEY;
+            } else {
+                return super.getSecondaryAt(level - 1);
+            }
+        }
     }
     
     private abstract static class OffsetableKey extends ProjectFileNameBasedKey implements Comparable {
@@ -278,18 +355,22 @@ public class KeyUtilities {
         
         public void write(DataOutput aStream) throws IOException {
             super.write(aStream);
-            aStream.writeInt(startOffset);
-            aStream.writeInt(endOffset);
-            aStream.writeUTF(kind);
-            aStream.writeUTF(name);            
+            aStream.writeInt(this.startOffset);
+            aStream.writeInt(this.endOffset);
+            assert this.kind != null;
+            aStream.writeUTF(this.kind);
+            assert this.name != null;
+            aStream.writeUTF(this.name);            
         }
         
         protected OffsetableKey(DataInput aStream) throws IOException {
             super(aStream);
-            startOffset = aStream.readInt();
-            endOffset = aStream.readInt();
-            kind = TextCache.getString(aStream.readUTF());
-            name = TextCache.getString(aStream.readUTF());
+            this.startOffset = aStream.readInt();
+            this.endOffset = aStream.readInt();
+            this.kind = TextCache.getString(aStream.readUTF());
+            assert this.kind != null;
+            this.name = TextCache.getString(aStream.readUTF());
+            assert this.name != null;
         }
         
         public String toString() {
@@ -333,6 +414,39 @@ public class KeyUtilities {
                 return (ofs1 - ofs2);
             }
         }
+        
+        public int getDepth() {
+            return super.getDepth() + 2;
+        }
+        
+        public String getAt(int level) {
+            switch (level) {
+                case 0:
+                case 1:
+                    return super.getAt(level);
+                case 2:
+                    return this.kind;
+                case 3:
+                    return this.name;
+                default:
+                    throw new IllegalArgumentException("not supported level" + level); // NOI18N
+            }
+        }
+        
+        public int getSecondaryDepth() {
+            return 2;
+        }
+        
+        public int getSecondaryAt(int level) {
+            switch (level) {
+                case 0:
+                    return this.startOffset;
+                case 1:
+                    return this.endOffset;
+                default:
+                    throw new IllegalArgumentException("not supported level" + level); // NOI18N                    
+            }
+        }          
     }
     
     private abstract static class ProjectFileNameBasedKey extends ProjectNameBasedKey {
@@ -347,12 +461,6 @@ public class KeyUtilities {
             this(getProjectName(file), file.getAbsolutePath());
         }
         
-        protected ProjectFileNameBasedKey(DataInput aStream) throws IOException {
-            super(aStream);
-            fileName = FilePathCache.getString(aStream.readUTF());
-            assert fileName != null;
-        }       
-        
         private static String getProjectName(CsmFile file) {
             assert (file != null);
             CsmProject prj= file.getProject();
@@ -362,8 +470,15 @@ public class KeyUtilities {
         
         public void write(DataOutput aStream) throws IOException {
             super.write(aStream);
+            assert this.fileName != null;
             aStream.writeUTF(fileName);
-        }
+        }      
+        
+        protected ProjectFileNameBasedKey(DataInput aStream) throws IOException {
+            super(aStream);
+            this.fileName = FilePathCache.getString(aStream.readUTF());
+            assert this.fileName != null;
+        }  
         
         public int hashCode() {
             int key = super.hashCode();
@@ -383,6 +498,21 @@ public class KeyUtilities {
         protected String getFileName() {
             return this.fileName;
         }
+        
+        public int getDepth() {
+            return super.getDepth() + 1;
+        }
+        
+        public String getAt(int level) {
+            switch (level) {
+                case 0:
+                    return super.getAt(0);
+                case 1:
+                    return this.fileName;
+                default:
+                    throw new IllegalArgumentException("not supported level" + level); // NOI18N
+            }
+        }       
     }
     
     
@@ -416,13 +546,22 @@ public class KeyUtilities {
         }
         
         public void write(DataOutput aStream) throws IOException {
-            aStream.writeUTF(projectName);
+            assert this.projectName != null;
+            aStream.writeUTF(this.projectName);
         }
         
         protected ProjectNameBasedKey(DataInput aStream) throws IOException {
-            projectName = ProjectNameCache.getString(aStream.readUTF());
+            this.projectName = ProjectNameCache.getString(aStream.readUTF());
+            assert this.projectName != null;
         }  
         
+        public int getDepth() {
+            return 1;
+        }
+        
+        public String getAt(int level) {
+            return this.projectName;
+        }
     }
     
     // nave to be public or UID factory does not work
@@ -447,21 +586,12 @@ public class KeyUtilities {
             return true;
         }
         
-        public int getDepth() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-        }
+        abstract public int getDepth();
         
-        public String getAt(int level) {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-        }
+        abstract public String getAt(int level);
         
-        public int getSecondaryDepth() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-        }
+        abstract public int getSecondaryDepth();
         
-        public int getSecondaryAt(int level) {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-        }       
+        abstract public int getSecondaryAt(int level);
     }  
-
 }

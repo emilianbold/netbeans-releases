@@ -32,6 +32,7 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -43,6 +44,9 @@ public class MakeConfiguration extends Configuration {
     public static final String BUILD_FOLDER = "build"; // NOI18N
     public static final String DIST_FOLDER = "dist"; // NOI18N
     public static final String EXT_FOLDER = "_ext"; // NOI18N
+    
+    public static final String OBJECTDIR_MACRO_NAME = "OBJECTDIR"; // NOI18N
+    public static final String OBJECTDIR_MACRO = "${" + OBJECTDIR_MACRO_NAME + "}"; // NOI18N
     
     // Project Types
     private static String[] TYPE_NAMES = {
@@ -61,6 +65,7 @@ public class MakeConfiguration extends Configuration {
     private MakefileConfiguration makefileConfiguration;
     private IntConfiguration compilerSet;
     private IntConfiguration platform;
+    private BooleanConfiguration dependencyChecking;
     private CCompilerConfiguration cCompilerConfiguration;
     private CCCompilerConfiguration ccCompilerConfiguration;
     private FortranCompilerConfiguration fortranCompilerConfiguration;
@@ -78,6 +83,7 @@ public class MakeConfiguration extends Configuration {
         compilerSet = new IntConfiguration(null, MakeOptions.getInstance().getCompilerSet(), CompilerSets.getCompilerSetDisplayNames(), null);
         platform = new IntConfiguration(null, MakeOptions.getInstance().getPlatform(), Platforms.getPlatformDisplayNames(), null);
         makefileConfiguration = new MakefileConfiguration(this);
+        dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeOptions.getInstance().getDepencyChecking());
         cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
         ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null);
         fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);
@@ -99,6 +105,14 @@ public class MakeConfiguration extends Configuration {
     
     public void setConfigurationType(IntConfiguration configurationType) {
         this.configurationType = configurationType;
+    }
+    
+    public BooleanConfiguration getDependencyChecking() {
+        return dependencyChecking;
+    }
+
+    public void setDependencyChecking(BooleanConfiguration dependencyChecking) {
+        this.dependencyChecking = dependencyChecking;
     }
     
     public IntConfiguration getCompilerSet() {
@@ -192,6 +206,7 @@ public class MakeConfiguration extends Configuration {
         getConfigurationType().assign(makeConf.getConfigurationType());
         getCompilerSet().assign(makeConf.getCompilerSet());
         getPlatform().assign(makeConf.getPlatform());
+        getDependencyChecking().assign(makeConf.getDependencyChecking());
         
         getMakefileConfiguration().assign(makeConf.getMakefileConfiguration());
         getCCompilerConfiguration().assign(makeConf.getCCompilerConfiguration());
@@ -237,6 +252,7 @@ public class MakeConfiguration extends Configuration {
         clone.setCompilerSet((IntConfiguration)getCompilerSet().clone());
         clone.setPlatform((IntConfiguration)getPlatform().clone());
         clone.setMakefileConfiguration((MakefileConfiguration)getMakefileConfiguration().clone());
+        clone.setDependencyChecking((BooleanConfiguration)getDependencyChecking().clone());
         clone.setCCompilerConfiguration((CCompilerConfiguration)getCCompilerConfiguration().clone());
         clone.setCCCompilerConfiguration((CCCompilerConfiguration)getCCCompilerConfiguration().clone());
         clone.setFortranCompilerConfiguration((FortranCompilerConfiguration)getFortranCompilerConfiguration().clone());
@@ -266,6 +282,12 @@ public class MakeConfiguration extends Configuration {
         set.put(new IntNodeProp(getPlatform(), true, "Platform", getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
         set.put(new IntNodeProp(getConfigurationType(), true, "ConfigurationType", getString("ConfigurationTypeTxt"), getString("ConfigurationTypeHint"))); // NOI18N
         sheet.put(set);
+        
+        if (isCompileConfiguration()) {
+            set = Sheet.createExpertSet();
+            set.put(new BooleanNodeProp(getDependencyChecking(), true, "DependencyChecking", getString("DependencyCheckingTxt"), getString("DependencyCheckingHint"))); // NOI18N
+            sheet.put(set);
+        }
         
         return sheet;
     }
@@ -420,4 +442,5 @@ public class MakeConfiguration extends Configuration {
     private static String getString(String s) {
         return NbBundle.getMessage(MakeConfiguration.class, s);
     }
+
 }

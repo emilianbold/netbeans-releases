@@ -69,6 +69,17 @@ public class Folder {
         return name;
     }
     
+    public String getPath() {
+        String un = getName(); // NOI18N
+        Folder parent = getParent();
+        while (parent != null) {
+            if (parent.getParent() != null)
+                un = parent.getName() + '/' + un;
+            parent = parent.getParent();
+        }
+        return un;
+    }
+    
     public void setName(String name) {
         this.name = name;
         configurationDescriptor.setModified();
@@ -156,14 +167,59 @@ public class Folder {
             if (configurationDescriptor.getConfs() == null)
                 return item;
             Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
-            for (int i = 0; i < configurations.length; i++)
+            for (int i = 0; i < configurations.length; i++) {
+                FolderConfiguration folderConfiguration = getFolderConfiguration(configurations[i]);
                 configurations[i].addAuxObject(new ItemConfiguration(configurations[i], item));
+            }
         }
         return item;
     }
     
     public void addFolder(Folder folder) {
         addElement(folder);
+        if (isProjectFiles()) {
+            // Add configuration to all configurations
+            if (configurationDescriptor.getConfs() == null)
+                return;
+            Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
+            for (int i = 0; i < configurations.length; i++) {
+                folder.getFolderConfiguration(configurations[i]);
+            }
+        }
+    }
+    
+    /**
+     * Returns an unique id (String) used to retrive this object from the
+     * pool of aux objects
+     */
+    public String getId() {
+        return "folder-" + getPath(); // NOI18N
+    }
+    
+    public FolderConfiguration getFolderConfiguration(Configuration configuration) {
+        FolderConfiguration folderConfiguration = null;
+        if (isProjectFiles()) {
+            String id = getId();
+            folderConfiguration = (FolderConfiguration)configuration.getAuxObject(getId());
+            if (folderConfiguration == null) {
+                CCompilerConfiguration parentCCompilerConfiguration;
+                CCCompilerConfiguration parentCCCompilerConfiguration;
+                FolderConfiguration parentFolderConfiguration = null;
+                if (getParent() != null)
+                    parentFolderConfiguration = getParent().getFolderConfiguration(configuration);
+                if (parentFolderConfiguration != null) {
+                    parentCCompilerConfiguration = parentFolderConfiguration.getCCompilerConfiguration();
+                    parentCCCompilerConfiguration = parentFolderConfiguration.getCCCompilerConfiguration();
+                }
+                else {
+                    parentCCompilerConfiguration = ((MakeConfiguration)configuration).getCCompilerConfiguration();
+                    parentCCCompilerConfiguration = ((MakeConfiguration)configuration).getCCCompilerConfiguration();
+                }
+                folderConfiguration = new FolderConfiguration(configuration, parentCCompilerConfiguration, parentCCCompilerConfiguration, this);
+                configuration.addAuxObject(folderConfiguration);
+            }
+        }
+        return folderConfiguration;
     }
     
     public Folder addNewFolder(boolean projectFiles) {
@@ -216,6 +272,12 @@ public class Folder {
         if (folder != null) {
             folder.removeAll();
             ret = items.removeElement(folder);
+            if (isProjectFiles()) {
+                // Remove it form all configurations
+                Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
+                for (int i = 0; i < configurations.length; i++)
+                    configurations[i].removeAuxObject(folder.getId());
+            }
         }
         if (ret)
             fireChangeEvent();
@@ -253,8 +315,6 @@ public class Folder {
     public Folder findFolderByName(String name) {
         if (name == null)
             return null;
-        if (getName().equals(name))
-            return this;
         Folder[] folders = getFoldersAsArray();
         for (int i = 0; i < folders.length; i++) {
             if (name.equals(folders[i].getName()))
@@ -266,14 +326,25 @@ public class Folder {
     public Folder findFolderByDisplayName(String name) {
         if (name == null)
             return null;
-        if (getDisplayName().equals(name))
-            return this;
         Folder[] folders = getFoldersAsArray();
         for (int i = 0; i < folders.length; i++) {
             if (name.equals(folders[i].getDisplayName()))
                 return folders[i];
         }
         return null;
+    }
+    
+    public Folder findFolderByPath(String path) {
+        int i = path.indexOf('/');
+        if (i >= 0) {
+            String name = path.substring(0, i);
+            Folder folder = findFolderByName(name);
+            if (folder == null)
+                return null;
+            return folder.findFolderByPath(path.substring(i+1));
+        }
+        else
+            return findFolderByName(path);
     }
     
     public Item[] getItemsAsArray() {

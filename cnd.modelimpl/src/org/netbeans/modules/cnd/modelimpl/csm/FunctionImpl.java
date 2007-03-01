@@ -60,6 +60,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     private final boolean _const;
     
     public FunctionImpl(AST ast, CsmFile file, CsmScope scope) {
+        this(ast, file, scope, true);
+    }
+    
+    protected FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) {
         super(ast, file);
 
         // set scope, do it in constructor to have final fields
@@ -94,12 +98,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         if( name == null ) {
             name = "<null>"; // just to avoid NPE // NOI18N
         }
-        initBeforeRegister(ast);
-        registerInProject();
-    }
-    
-    protected void initBeforeRegister(AST ast) {
-        
+        if (register) {
+            registerInProject();
+        }
     }
     
     protected String initName(AST node) {
@@ -424,6 +425,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     
     public void write(DataOutput output) throws IOException {
         super.write(output);
+        assert this.name != null;
         output.writeUTF(this.name);
         PersistentUtils.writeType(this.returnType, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
@@ -432,12 +434,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         PersistentUtils.writeStrings(this.rawName, output);
         output.writeBoolean(this._const);
         
-        output.writeUTF(this.signature);
+        PersistentUtils.writeUTF(this.signature, output);
     }
     
     public FunctionImpl(DataInput input) throws IOException {
         super(input);
         this.name = TextCache.getString(input.readUTF());
+        assert this.name != null;
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.parameters = (List<CsmUID<CsmParameter>>) factory.readUIDCollection(new ArrayList<CsmUID<CsmParameter>>(), input);
@@ -449,6 +452,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         parametersOLD = null;
         this.scopeOLD = null;
         
-        this.signature = QualifiedNameCache.getString(input.readUTF());
+        this.signature = PersistentUtils.readUTF(input);
+        if (this.signature != null) {
+            this.signature = QualifiedNameCache.getString(this.signature);
+        }
     }    
 }

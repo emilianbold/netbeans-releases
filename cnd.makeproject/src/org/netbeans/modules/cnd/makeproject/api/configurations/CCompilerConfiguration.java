@@ -94,40 +94,55 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     }
     
     public String getAllOptions(BasicCompiler compiler) {
-        CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
+        CCompilerConfiguration master;
         
         String options = ""; // NOI18N
         options += getCFlagsBasic(compiler) + " "; // NOI18N
-        if (master != null)
+        master = (CCompilerConfiguration)getMaster();
+        while (master != null) {
             options += master.getCommandLineConfiguration().getValue() + " "; // NOI18N
+            master = (CCompilerConfiguration)master.getMaster();
+        }
         options += getAllOptions2(compiler) + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
     
     public String getAllOptions2(BasicCompiler compiler) {
-        CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
+        CCompilerConfiguration master;
         
         String options = ""; // NOI18N
         options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
         options += compiler.getWarningLevelOptions(getWarningLevel().getValue()) + " "; // NOI18N
         options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
-        if (master != null && getInheritPreprocessor().getValue())
+        master = (CCompilerConfiguration)getMaster();
+        while (master != null && getInheritPreprocessor().getValue()) {
             options += master.getPreprocessorConfiguration().getOptions("-D") + " "; // NOI18N
+            if (master.getInheritPreprocessor().getValue())
+                master = (CCompilerConfiguration)master.getMaster();
+            else
+                master = null;
+        }
         options += getPreprocessorConfiguration().getOptions("-D") + " " ; // NOI18N
-        if (master != null && getInheritIncludes().getValue())
+        master = (CCompilerConfiguration)getMaster();
+        while (master != null && getInheritIncludes().getValue()) {
             options += master.getIncludeDirectories().getOption("-I") + " "; // NOI18N
+            if (master.getInheritIncludes().getValue())
+                master = (CCompilerConfiguration)master.getMaster();
+            else
+                master = null;
+        }
         options += getIncludeDirectories().getOption("-I") + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
     
     // Sheet
-    public Sheet getGeneralSheet(MakeConfiguration conf) {
+    public Sheet getGeneralSheet(MakeConfiguration conf, Folder folder) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = CompilerSets.getCompilerSet(conf.getCompilerSet().getValue());
         BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
         
         sheet.put(getSet());
-        if (conf.isCompileConfiguration()) {
+        if (conf.isCompileConfiguration() && folder == null) {
             sheet.put(getBasicSet());
             if (conf.getCompilerSet().getValue() == CompilerSets.SUN_COMPILER_SET) { // FIXUP: should be moved to SunCCompiler
                 Sheet.Set set2 = new Sheet.Set();

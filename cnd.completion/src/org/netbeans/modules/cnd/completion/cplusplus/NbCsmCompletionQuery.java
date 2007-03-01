@@ -49,44 +49,6 @@ import org.openide.loaders.DataObject;
  */
 public class NbCsmCompletionQuery extends CsmCompletionQuery {
 
-//    protected JCFinder getJCFinder(){
-//        BaseDocument bDoc = getBaseDocument();
-//        if (bDoc!=null){
-//            SyntaxSupport support = bDoc.getSyntaxSupport();
-//            if (support!=null){
-//                NbCsmSyntaxSupport nbSupport = (NbCsmSyntaxSupport)support.get(NbCsmSyntaxSupport.class);
-//                if (nbSupport!=null){
-//                    CsmFinder finder = nbSupport.getSupportJCFinder();
-//		    return null;
-////                    if (finder!=null) return finder;    
-//                }
-//            }
-//        }        
-//        
-//        DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
-//        FileObject fo = dobj.getPrimaryFile();
-//        return com.netbeans.modules.editor.java.JCFinderFactory.getDefault().getFinder(fo);
-//    }
-//    
-//    protected CsmFinder getFinder(){
-//        BaseDocument bDoc = getBaseDocument();
-////        if (bDoc!=null){
-////            SyntaxSupport support = bDoc.getSyntaxSupport();
-////            if (support!=null){
-////                NbCsmSyntaxSupport nbSupport = (NbCsmSyntaxSupport)support.get(NbCsmSyntaxSupport.class);
-////                if (nbSupport!=null){
-////                    CsmFinder finder = nbSupport.getSupportJCFinder();
-////		    return null;
-//////                    if (finder!=null) return finder;    
-////                }
-////            }
-////        }        
-//        
-//        DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
-//        FileObject fo = dobj.getPrimaryFile();
-//        return CsmFinderFactory.getDefault().getFinder(fo);
-//    }
-    
     protected CsmFinder getFinder() {
 	CsmFinder finder = null; 
         BaseDocument bDoc = getBaseDocument();
@@ -135,7 +97,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         return false;
     }
 
-    public static class NbCsmItemFactory implements CsmCompletionQuery.CsmItemFactory{
+    public static class NbCsmItemFactory implements CsmCompletionQuery.CsmItemFactory {
         public NbCsmItemFactory(){
             
         }
@@ -191,5 +153,9 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         public CsmResultItem.TypedefResultItem createTypedefResultItem(CsmTypedef def, int classDisplayOffset, boolean displayFQN) {
             return new NbCsmResultItem.NbTypedefResultItem(def, classDisplayOffset, displayFQN);  
         }
+        
+        public CsmResultItem.StringResultItem createStringResultItem(String str) {
+            return new NbCsmResultItem.NbStringResultItem(str);
+        }        
     }
 }

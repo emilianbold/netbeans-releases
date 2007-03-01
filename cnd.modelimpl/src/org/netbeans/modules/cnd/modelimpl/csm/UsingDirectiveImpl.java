@@ -129,6 +129,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     
     public void write(DataOutput output) throws IOException {
         super.write(output);
+        assert this.name != null;
         output.writeUTF(this.name);
         output.writeInt(this.startOffset);
         PersistentUtils.writeStrings(this.rawName, output);
@@ -140,6 +141,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     public UsingDirectiveImpl(DataInput input) throws IOException {
         super(input);
         this.name = TextCache.getString(input.readUTF());
+        assert this.name != null;
         this.startOffset = input.readInt();
         this.rawName = PersistentUtils.readStrings(input, TextCache.getManager());
         

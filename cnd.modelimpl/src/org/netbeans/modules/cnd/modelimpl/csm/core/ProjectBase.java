@@ -23,8 +23,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.*;
 
 import org.netbeans.modules.cnd.api.model.*;
@@ -54,6 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyHolder;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -77,13 +76,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         this.name = name;
         if (TraceFlags.USE_REPOSITORY) {
             // remember in repository
-            RepositoryUtils.put(this);
+            RepositoryUtils.hang(this);
         }
         _setGlobalNamespace(new NamespaceImpl(this));
-    }
-    
-    /* package */ ProjectBase () {
-        
     }
     
     public CsmNamespace getGlobalNamespace() {
@@ -160,26 +155,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     public CsmClassifier findClassifier(String qualifiedName) {
         CsmClassifier result = _getClassifier(qualifiedName);
-        if( result == null ) {
-//TODO think over: of the project isn't completely parsed, classifier might not be found
-//            waitParse();
-            
-            
-//            result = (CsmCompoundClassifier) classifiers.get(qualifiedName);
-//            if( result == null ) {
-//                CsmDeclaration decl = (CsmDeclaration) declarations.get(qualifiedName);
-//                if( decl != null && decl.getKind() == CsmDeclaration.Kind.TYPEDEF ) {
-//                    CsmTypedef typedef = (CsmTypedef) decl;
-//                    CsmType type = typedef.getType();
-//                    if( type != null ) {
-//                        CsmClassifier classifier = type.getClassifier();
-//                        if( classifier instanceof CsmCompoundClassifier ) {
-//                            result = (CsmCompoundClassifier) classifier;
-//                        }
-//                    }
-//                }
-//            }
-        }
         return result;
     }
     
@@ -249,7 +224,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         // WAS: don't put unnamed declarations
         assert decl != null;
         assert decl.getName() != null;
-//        return decl.getName().length() > 0 || (decl instanceof CsmClassifier);
         return decl.getName().length() > 0;
     }
     
@@ -308,11 +282,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         } else {
             classifiersOLD.remove(decl.getQualifiedName());
         }
-    }    
-//    public Collection /*<CsmFile>*/ getFiles() {
-//        return files;
-//    }
-    
+    }      
     
     public void waitParse() {
         boolean insideParser = ParserThreadManager.instance().isParserThread();
@@ -334,14 +304,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             }
         }
     }
-    
-//    protected synchronized void parseAllIfNeed() {
-//        ModelSupport.instance().visitProjectFiles(this, platformProject, new FileVisitor() {
-//            public void visit(NativeFileItem file) throws FileVisitor.StopException {
-//                createIfNeed(file);
-//            }
-//        });
-//    }
     
     protected void ensureChangedFilesEnqueued() {
     }
@@ -482,7 +444,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     protected APTPreprocState.State getPreprocStateState(File file) {
         String path = getFileKey(file, false);
-        return (APTPreprocState.State) filesHandlers.get(path);
+        return filesHandlers.get(path);
     }
     
     public void invalidateFiles() {
@@ -541,7 +503,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         } else if (!curState.isStateCorrect() && preprocState.isStateCorrect()) {
             update = true;
             // invalidate file
-            csmFile.stateChanged(null, true);
+            csmFile.stateChanged(true);
         }
         if( update ) {
             state = preprocState.getState();
@@ -549,8 +511,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         }
         return state;
     }
-    
-    protected Map/*<String, APTPreprocState.State>*/ filesHandlers = Collections.synchronizedMap(new HashMap(/*<File, APTPreprocState.State>*/));
     
     public ProjectBase resolveFileProject(String absPath) {
         return resolveFileProject(absPath, false);
@@ -591,6 +551,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     protected abstract FileImpl findFile(File file, int fileType, APTPreprocState preprocState, boolean scheduleParseIfNeed);
     public abstract void onFileAdded(NativeFileItem nativeFile);
     public abstract void onFileRemoved(NativeFileItem nativeFile);
+    public abstract void onFilePropertyChanged(NativeFileItem nativeFile);
     protected abstract void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocState.State state);
     
     public CsmFile findFile(String absolutePath) {
@@ -659,7 +620,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     private String getFileKey(File file, boolean sharedText) {
         String key = null;
-        if (TraceFlags.USE_CANONICAL_PATH) {
+        if (false && TraceFlags.USE_CANONICAL_PATH) {
             try {
                 key = file.getCanonicalPath();
             } catch (IOException ex) {
@@ -738,7 +699,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     private void _clearDeclarations() {
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmUID<CsmDeclaration>> uids = new ArrayList<CsmUID<CsmDeclaration>>(declarations.values());
-            if (true) RepositoryUtils.remove(uids);
         } else {
             declarationsOLD.clear();
         }
@@ -1068,9 +1028,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     private Object waitParseLock = new Object();
     
-    private ModelImpl model;
+    private final ModelImpl model;
     private Unresolved unresolved;
-    private String name = "<MyProject>"; // NOI18N
+    private final String name;
     
     // only one of globalNamespace/globalNamespaceOLD must be used (based on USE_REPOSITORY)
     private NamespaceImpl globalNamespaceOLD;
@@ -1098,6 +1058,8 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     private Object namespaceLock = new String("namespaceLock in Projectbase "+hashCode()); // NOI18N
     
+    protected Map<String, APTPreprocState.State> filesHandlers = Collections.synchronizedMap(new HashMap<String, APTPreprocState.State>());
+        
     //private NamespaceImpl fakeNamespace;
     
     // test variables.
@@ -1124,13 +1086,14 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         assert aStream != null;
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null;
-        
-        aStream.writeUTF(name);
-        aFactory.writeUID(globalNamespaceUID, aStream);
-        aFactory.writeStringToUIDMap(namespaces, aStream);
-        aFactory.writeStringToUIDMap(files, aStream);
-        aFactory.writeStringToUIDMap(classifiers, aStream);
-        aFactory.writeStringToUIDMap(declarations, aStream);
+        assert this.name != null;
+        aStream.writeUTF(this.name);
+        aFactory.writeUID(this.globalNamespaceUID, aStream);
+        aFactory.writeStringToUIDMap(this.namespaces, aStream);
+        aFactory.writeStringToUIDMap(this.files, aStream);
+        aFactory.writeStringToUIDMap(this.classifiers, aStream);
+        aFactory.writeStringToUIDMap(this.declarations, aStream);
+        PersistentUtils.writeStringToStateMap(this.filesHandlers, aStream);
     }
 
     protected ProjectBase(DataInput aStream) throws IOException {
@@ -1138,11 +1101,15 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null;
         
-        name = ProjectNameCache.getString(aStream.readUTF());
-        globalNamespaceUID = aFactory.readUID(aStream);
-        aFactory.readStringToUIDMap(namespaces, aStream, QualifiedNameCache.getManager());
-        aFactory.readStringToUIDMap(files, aStream, FilePathCache.getManager());
-        aFactory.readStringToUIDMap(classifiers, aStream, QualifiedNameCache.getManager());
-        aFactory.readStringToUIDMap(declarations, aStream, TextCache.getManager());        
+        this.name = ProjectNameCache.getString(aStream.readUTF());
+        assert this.name != null;
+        this.globalNamespaceUID = aFactory.readUID(aStream);
+        aFactory.readStringToUIDMap(this.namespaces, aStream, QualifiedNameCache.getManager());
+        aFactory.readStringToUIDMap(this.files, aStream, FilePathCache.getManager());
+        aFactory.readStringToUIDMap(this.classifiers, aStream, QualifiedNameCache.getManager());
+        aFactory.readStringToUIDMap(this.declarations, aStream, TextCache.getManager());      
+        PersistentUtils.readStringToStateMap(this.filesHandlers, aStream);
+        
+        this.model = (ModelImpl) CsmModelAccessor.getModel();
     }    
 }

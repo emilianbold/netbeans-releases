@@ -66,7 +66,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
 
     public APTMacro getMacro(Token token) { 
         if (isDefined(token)) {
-            return new APTPredifMacroImpl(token);        
+            return new APTPredefinedMacroImpl(token);        
         }
         return null;
     }
@@ -111,10 +111,10 @@ public class APTPredefinedMacroMap implements APTMacroMap {
     }
     
     
-    private static class APTPredifMacroImpl implements APTMacro {   
+    private static class APTPredefinedMacroImpl implements APTMacro {   
         private Token macro;
         
-        public APTPredifMacroImpl(Token macro) {
+        public APTPredefinedMacroImpl(Token macro) {
             this.macro =  macro;           
         }
 

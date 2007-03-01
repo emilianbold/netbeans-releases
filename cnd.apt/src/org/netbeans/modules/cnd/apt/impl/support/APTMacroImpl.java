@@ -21,11 +21,13 @@ package org.netbeans.modules.cnd.apt.impl.support;
 
 import antlr.Token;
 import antlr.TokenStream;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
-import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
 
@@ -114,4 +116,12 @@ public class APTMacroImpl implements APTMacro {
         }
         return retValue.toString();
     }       
+
+    public void write(DataOutput output) throws IOException {
+        throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
+    }
+    
+    public APTMacroImpl(DataInput input) throws IOException {
+        throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
+    }
 }

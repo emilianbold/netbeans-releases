@@ -321,7 +321,7 @@ public class PanelProjectLocationVisual extends SettingsPanel
             if (workingDir != null && workingDir.length() > 0 && templateName.equals(getString("NativeMakefileName")))
                 name = IpeUtils.getBaseName(workingDir);
             int baseCount = 1;
-            String formater = name + "{0}"; // NOI18N
+            String formater = name + "_{0}"; // NOI18N
             while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
                 baseCount++;
             settings.putProperty(NewMakeProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));

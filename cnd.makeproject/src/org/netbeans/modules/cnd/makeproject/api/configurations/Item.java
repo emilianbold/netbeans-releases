@@ -188,6 +188,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     public File getFile() {
+        return FileUtil.normalizeFile(new File(getAbsPath()));
+    }
+
+    public File getCanonicalFile() {
         if (file == null) {
             try {
                 file = new File(getAbsPath()).getCanonicalFile();
@@ -199,7 +203,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     public FileObject getFileObject() {
-        File file = getFile();
+        File file = getCanonicalFile();
         FileObject fo = null;
         try {
             fo = FileUtil.toFileObject(file.getCanonicalFile());
@@ -293,8 +297,14 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             // Get include paths from project/file
             Vector vec2 = new Vector();
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
-            if (cccCompilerConfiguration.getMaster() != null && cccCompilerConfiguration.getInheritIncludes().getValue())
-                vec2.addAll(((CCCCompilerConfiguration)cccCompilerConfiguration.getMaster()).getIncludeDirectories().getValue());
+            CCCCompilerConfiguration master = (CCCCompilerConfiguration)cccCompilerConfiguration.getMaster();
+            while (master != null && cccCompilerConfiguration.getInheritIncludes().getValue()) {
+                vec2.addAll(master.getIncludeDirectories().getValue());
+                if (master.getInheritIncludes().getValue())
+                    master = (CCCCompilerConfiguration)master.getMaster();
+                else
+                    master = null;
+            }
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
             // Convert all paths to absolute paths
             Iterator iter = vec2.iterator();
@@ -335,8 +345,14 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // get macro definitions from project/file
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
-            if (cccCompilerConfiguration.getMaster() != null && cccCompilerConfiguration.getInheritPreprocessor().getValue())
-                vec.addAll(((CCCCompilerConfiguration)cccCompilerConfiguration.getMaster()).getPreprocessorConfiguration().getValuesAsVector());
+            CCCCompilerConfiguration master = (CCCCompilerConfiguration)cccCompilerConfiguration.getMaster();
+            while (master != null && cccCompilerConfiguration.getInheritPreprocessor().getValue()) {
+                vec.addAll(master.getPreprocessorConfiguration().getValuesAsVector());
+                if (master.getInheritPreprocessor().getValue())
+                    master = (CCCCompilerConfiguration)master.getMaster();
+                else
+                    master = null;
+            }
             vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValuesAsVector());
         }
         return vec;
@@ -355,22 +371,28 @@ public class Item implements NativeFileItem, PropertyChangeListener {
      * NativeFileItem interface
      **/
     public Language getLanguage() {
+        int tool;
+        Language language;
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         ItemConfiguration itemConfiguration = (ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
-        if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {// FIXUP: itemConfiguration should never be null
-            if (isHeaderFile()) {
-                return NativeFileItem.Language.C_HEADER;
-            } else {
-                return NativeFileItem.Language.OTHER;
-            }
-        } else if (itemConfiguration.getTool() == Tool.CCompiler) 
-            return NativeFileItem.Language.C;
-        else if (itemConfiguration.getTool() == Tool.CCCompiler)
-            return NativeFileItem.Language.CPP;
-        else if (itemConfiguration.getTool() == Tool.FortranCompiler)
-            return NativeFileItem.Language.FORTRAN;
+            
+        if (itemConfiguration != null)
+            tool = itemConfiguration.getTool();
         else
-            return NativeFileItem.Language.OTHER;
+            tool = getDefaultTool();
+            
+        if (tool == Tool.CCompiler) 
+            language = NativeFileItem.Language.C;
+        else if (tool == Tool.CCCompiler)
+            language = NativeFileItem.Language.CPP;
+        else if (tool == Tool.FortranCompiler)
+            language = NativeFileItem.Language.FORTRAN;
+        else if (isHeaderFile())
+            language = NativeFileItem.Language.C_HEADER;
+        else
+            language = NativeFileItem.Language.OTHER;
+            
+        return language;
     }
     
     /**

@@ -434,7 +434,14 @@ public class NbCompletionJavaDoc extends CompletionJavaDoc {
         return null;
     }
     
-    
+    private NbCsmSyntaxSupport jmiSup;
+    protected NbCsmSyntaxSupport getCsmSyntaxSupport() {
+        if (jmiSup == null) {
+            SyntaxSupport sup = Utilities.getSyntaxSupport(extEditorUI.getComponent());
+            jmiSup = (NbCsmSyntaxSupport)sup.get(NbCsmSyntaxSupport.class);
+        }
+        return jmiSup;
+    }    
     
     class ParsingThread implements Runnable{
         

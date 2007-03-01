@@ -38,8 +38,15 @@ public class MethodDDImpl extends MethodImpl<CsmFunctionDefinition> implements C
     private final CsmCompoundStatement body;
     
     public MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
-        super(ast, cls, visibility);
+        this(ast, cls, visibility, true);
+    }
+    
+    protected MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) {
+        super(ast, cls, visibility, false);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile());
+        if (register) {
+            registerInProject();
+        }
     }
 
     public CsmFunction getDeclaration() {

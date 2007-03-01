@@ -83,6 +83,9 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
 	else if (item.getTool() == Tool.CCCompiler) {
 	    CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, item.getCCCompilerConfiguration());
 	}
+	else if (item.getTool() == Tool.FortranCompiler) {
+	    CommonConfigurationXMLCodec.writeFortranCompilerConfiguration(xes, item.getFortranCompilerConfiguration());
+	}
 	else if (item.getTool() == Tool.CustomTool) {
 	    CommonConfigurationXMLCodec.writeCustomToolConfiguration(xes, item.getCustomToolConfiguration());
 	}

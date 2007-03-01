@@ -65,10 +65,14 @@ public abstract class KeyBasedUID<T extends CsmIdentifiable> implements CsmUID<T
     }
 
     public boolean equals(Object obj) {
-        boolean retValue;
-        
-        retValue = key.equals(obj);
-        return retValue;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        }
+        KeyBasedUID other = (KeyBasedUID)obj;
+        return this.key.equals(other.key);
     }
 
     public void write(DataOutput aStream) throws IOException {

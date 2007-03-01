@@ -60,7 +60,11 @@ public class MakeOptions extends SystemOption implements PropertyChangeListener 
     };
     static final String PATH_MODE = "pathMode"; // NOI18N
     static private int pathMode = PATH_REL;
-    //
+    
+    // Dependency checking
+    static final String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
+    static private boolean dependencyChecking = false;
+    
     // Fortran
     static final String FORTRAN = "fortran"; // NOI18N
     static private boolean fortran = false;
@@ -148,6 +152,17 @@ public class MakeOptions extends SystemOption implements PropertyChangeListener 
         this.pathMode = pathMode;
         if (oldValue != pathMode)
             firePropertyChange(MAKE_COMMAND, new Integer(oldValue), new Integer(pathMode));
+    }
+    
+    public void setDepencyChecking(boolean dependencyChecking) {
+        boolean oldValue = getDepencyChecking();
+        this.dependencyChecking = dependencyChecking;
+        if (oldValue != dependencyChecking)
+            firePropertyChange(DEPENDENCY_CHECKING, new Boolean(oldValue), new Boolean(dependencyChecking));
+    }
+    
+    public boolean getDepencyChecking() {
+        return dependencyChecking;
     }
     
     public void setFortran(boolean fortran) {

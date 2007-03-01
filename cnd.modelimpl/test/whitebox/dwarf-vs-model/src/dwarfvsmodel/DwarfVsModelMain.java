@@ -22,6 +22,8 @@ package dwarfvsmodel;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.NumberFormat;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import java.util.List;
@@ -34,6 +36,9 @@ import java.io.PrintStream;
 import java.util.Collection;
 
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 
 /**
  * Main class for "Dwarf vs Model"
@@ -44,6 +49,7 @@ public class DwarfVsModelMain {
     private ModelDump modelDump;
     private File tempDir = null;
     boolean printToScreen = false;
+    private File errorStatisticsFile;
     private int verbosity = 1;
     
     public static void main(String[] args) {
@@ -85,6 +91,8 @@ public class DwarfVsModelMain {
 	    }
 	    
 	    PrintStream globalTraceLog = printToScreen ? System.out : DMUtils.createStream(tempDir, "_all", "trace"); // NOI18N
+	    
+	    initErrorStatistics();
             
             String logFile = DMFlags.logFile.getValue();
             PrintStream resultLog = (logFile == null) ? System.out : new PrintStream(logFile);
@@ -127,30 +135,32 @@ public class DwarfVsModelMain {
 	    long time = System.currentTimeMillis();
 	    
             for (Iterator<FileInfo> i = filesToProcess.iterator(); i.hasNext(); ) {
-		FileInfo file = i.next();
+		FileInfo fileInfo = i.next();
 
+		Dwarf dwarfDump = null;
 		CompilationUnit dwarfData = null;
 		try {
-		    Dwarf dwarfDump = new Dwarf(file.getObjFileName());
-		    dwarfData = dwarfDump.getCompilationUnit(file.getSrcFileName());
+		    dwarfDump = new Dwarf(fileInfo.getObjFileName());
+		    dwarfData = dwarfDump.getCompilationUnit(fileInfo.getSrcFileName());
 		}
 		catch( IOException e ) {
 		    resultLog.println(e.toString());
+		    continue;
 		}
 
 		if (dwarfData == null) {
-		    resultLog.println("Cannot get DWARF data from " + file.getObjFileName() + " for " + file.getSrcFileName()); // NOI18N
+		    resultLog.println("Cannot get DWARF data from " + fileInfo.getObjFileName() + " for " + fileInfo.getSrcFileName()); // NOI18N
 		    continue;
 		}
 		
-		PrintStream traceLog = getTraceStream(file, DMFlags.COMPILE_ALL_FIRST);		
+		PrintStream traceLog = getTraceStream(fileInfo, DMFlags.COMPILE_ALL_FIRST);		
 		if( ! DMFlags.COMPILE_ALL_FIRST ) {
-		    compileFile(traceLog, file);
+		    compileFile(traceLog, fileInfo);
 		}
-		CsmFile codeModel = file.getCsmFile();
-		traceLog.println("Comparing file: " + file.getSrcFileName()); // NOI18N
+		CsmFile codeModel = fileInfo.getCsmFile();
+		traceLog.println("Comparing file: " + fileInfo.getSrcFileName()); // NOI18N
 
-		ModelComparator comparator = new ModelComparator(codeModel, dwarfData, resultLog, traceLog);
+		ModelComparator comparator = new ModelComparator(codeModel, dwarfData, dwarfDump, fileInfo, resultLog, traceLog);
 		comparator.setBidirectional(DMFlags.bidirectional.getValue());
 		comparator.setPrintToScreen(printToScreen);
 		comparator.setCompareBodies(!DMFlags.flat.getValue());
@@ -160,7 +170,7 @@ public class DwarfVsModelMain {
 		    result.add(comparator.compare());
 		}
 		catch( Exception e ) {
-		    System.err.println("Error when processing files " + file.getObjFileName() + " and " + file.getSrcFileName());
+		    System.err.println("Error when processing files " + fileInfo.getObjFileName() + " and " + fileInfo.getSrcFileName());
 		    e.printStackTrace(System.err);
 		    //return;
 		}
@@ -168,6 +178,7 @@ public class DwarfVsModelMain {
             
             //resultLog.println("Final statistics:"); // NOI18N
             result.dump(resultLog);
+	    resultLog.printf("Total parser error count: %5d", calculateTotalErrorCount());
 	    
 	    if( DMFlags.COMPILE_ALL_FIRST ) {
 		printTime("\nTotal comparison time:", time, resultLog); // NOI18N
@@ -188,7 +199,8 @@ public class DwarfVsModelMain {
                 modelDump.stopModel();
             }
         }
-    }    
+	printErrorStatistics();
+    }
 
     private void compileFile(final PrintStream traceLog, final FileInfo file) {
 	traceLog.println("Compiling file: " + file.getSrcFileName()); // NOI18N
@@ -252,5 +264,46 @@ public class DwarfVsModelMain {
 	//ps.println(text + nf.format((delta)/1000) + " Kb"); // NOI18N
 	ps.printf("%s %s seconds\n", text, nf.format((delta)/1000));	// NOI18N
     }
+
+    private void initErrorStatistics() {
+	errorStatisticsFile = new File(tempDir, "_errorStat");
+//	if( errorStatisticsFile.exists() ) {
+//	    errorStatisticsFile.delete();
+//	}
+	Diagnostic.setStatisticsLevel(Integer.getInteger("cnd.modelimpl.stat.level", 1).intValue());
+	Diagnostic.initFileStatistics(errorStatisticsFile.getAbsolutePath());
+    }
     
+    private void printErrorStatistics() {
+	try {
+	    Diagnostic.dumpUnresolvedStatistics(errorStatisticsFile.getAbsolutePath(), false);
+	    Diagnostic.dumpFileStatistics(errorStatisticsFile.getAbsolutePath(), true);
+	}
+	catch( Exception e ) {
+	    e.printStackTrace(System.err);
+	}
+    }
+    
+    private int calculateTotalErrorCount() {
+	int cnt = 0;
+	Set<CsmProject> processedProjects = new HashSet<CsmProject>();
+	Set<CsmFile> processedFiles = new HashSet<CsmFile>();
+	for( CsmProject prj : (Collection<CsmProject>) CsmModelAccessor.getModel().projects() ) {
+	    cnt += calculateTotalErrorCount(prj, processedProjects, processedFiles);
+	}
+	return cnt;
+    }
+    
+    private int calculateTotalErrorCount(CsmProject prj, Set<CsmProject> processedProjects, Set<CsmFile> processedFiles) {
+	int cnt = 0;
+	if( ! processedProjects.contains(prj) ) {
+	    for( CsmProject lib : (Collection<CsmProject>) prj.getLibraries() ) {
+		cnt += calculateTotalErrorCount(lib, processedProjects, processedFiles);
+	    }
+	    for( FileImpl file : ((ProjectBase) prj).getFileList() ) {
+		cnt += file.getErrorCount();
+	    }
+	}
+	return cnt;
+    }
 }

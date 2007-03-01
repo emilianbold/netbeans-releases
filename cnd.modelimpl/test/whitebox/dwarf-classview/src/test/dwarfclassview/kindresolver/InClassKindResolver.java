@@ -38,7 +38,7 @@ public class InClassKindResolver {
             return KIND.DESTRUCTOR;
         }
         
-        if (name.matches("operator[!<>+-=&| ]+.*")) { // NOI18N
+        if (name.matches("operator[\\*!<>+-=&| ]+.*")) { // NOI18N
             return KIND.OPERATOR;
         }
 
@@ -47,6 +47,10 @@ public class InClassKindResolver {
         }
         
         if (dwarfKind.equals(TAG.DW_TAG_variable)) {
+            return KIND.FIELD;
+        }
+        
+        if (dwarfKind.equals(TAG.DW_TAG_member)) {
             return KIND.FIELD;
         }
         

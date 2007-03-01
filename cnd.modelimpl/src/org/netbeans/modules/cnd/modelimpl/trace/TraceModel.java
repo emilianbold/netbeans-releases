@@ -56,6 +56,8 @@ import org.netbeans.modules.cnd.apt.utils.APTMacroUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -208,6 +210,7 @@ public class TraceModel {
 	private boolean printUserFileList = false;
 	private boolean quiet = false;
 	private boolean memBySize = false;
+	private boolean doCleanRepository = false;
 	
 	private boolean testFolding = false;
 	
@@ -356,6 +359,8 @@ public class TraceModel {
 			printUserFileList = true;
 		} else if( "mbs".equals(flag) ) { // NOI18N
 			memBySize = true;
+		} else if( "cleanrepository".equals(flag) ) { // NOI18N
+			doCleanRepository = true;
 		} else if ( "folding".equals(flag)) { // NOI18N
 			testFolding = true;
 		}
@@ -1193,10 +1198,12 @@ public class TraceModel {
 		if (filter) {
 			ts = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP).getFilteredStream(new APTCommentsFilter(ts));
 		}
-		for( Token t = ts.nextToken(); !APTUtils.isEOF(t); t = ts.nextToken() ) {
+                int lastLine = -1;
+		for(Token t = ts.nextToken() ; !APTUtils.isEOF(t); t = ts.nextToken() ) {
 			if( printTokens) {
-				print("" + t);
+				print(" " + t.getText(), t.getLine() != lastLine);
 			}
+                        lastLine = t.getLine();
 		}
 		time = System.currentTimeMillis() - time;
 		
@@ -1489,6 +1496,11 @@ public class TraceModel {
 			print("AST stored; time: " + t2 + " ms"); // NOI18N
 		}
 		
+                if ( doCleanRepository )
+                {
+                    RepositoryAccessor.getRepository().flush();
+                }
+                
 		if( dumpModel ) {
 			if( fileImpl != null ) {
 				tracer.setDeep(deep);
@@ -1589,6 +1601,10 @@ public class TraceModel {
 		tracer.print(s);
 	}
 	
+	private void print(String s, boolean newLine) {
+		tracer.print(s, newLine);
+	}
+        
 	private void indent() {
 		tracer.indent();
 	}

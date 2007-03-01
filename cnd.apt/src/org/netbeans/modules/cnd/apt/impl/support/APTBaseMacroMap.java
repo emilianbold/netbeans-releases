@@ -20,18 +20,17 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import antlr.Token;
-import antlr.TokenStream;
-import java.util.ArrayList;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
+import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
 
 /**
  * APTMacroMap base implementation
@@ -102,7 +101,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
         active = makeSnapshot(((StateImpl)state).snap);
     }
     
-    protected static class StateImpl implements State {
+    public static class StateImpl implements State {
         public APTMacroMapSnapshot snap;
         
         public StateImpl(APTMacroMapSnapshot snap) {
@@ -123,6 +122,17 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
             }
             return cleaned;
         }
+        
+        ////////////////////////////////////////////////////////////////////////
+        // persistence support
+
+        public void write(DataOutput output) throws IOException {
+            APTSerializeUtils.writeSnapshot(this.snap, output);
+        }
+
+        public StateImpl(DataInput input) throws IOException {
+            this.snap = APTSerializeUtils.readSnapshot(input);
+        }         
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -211,7 +221,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
         }
 
         public State getState() {
-            return new StateImpl(null);
+            return new StateImpl((APTMacroMapSnapshot )null);
         }               
     };    
 }

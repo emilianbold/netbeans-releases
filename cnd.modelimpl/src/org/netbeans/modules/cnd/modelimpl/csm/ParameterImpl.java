@@ -21,16 +21,17 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.deep.*;
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * Implements CsmParameter
  * @author Vladimir Kvashin
  */
-public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
+public final class ParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
     private final boolean varArg;
 
     public ParameterImpl(AST ast, CsmFile file, CsmType type, String name) {
@@ -42,4 +43,16 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
         return varArg;
     }
     
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);      
+        output.writeBoolean(this.varArg);
+    }  
+    
+    public ParameterImpl(DataInput input) throws IOException {
+        super(input);
+        this.varArg = input.readBoolean();
+    } 
 }

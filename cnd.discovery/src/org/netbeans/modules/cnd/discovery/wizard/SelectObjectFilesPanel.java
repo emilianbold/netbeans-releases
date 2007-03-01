@@ -195,7 +195,6 @@ public final class SelectObjectFilesPanel extends JPanel {
         instructionsTextArea.setLineWrap(true);
         instructionsTextArea.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle").getString("BuildActionsInstructions"));
         instructionsTextArea.setWrapStyleWord(true);
-        instructionsTextArea.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

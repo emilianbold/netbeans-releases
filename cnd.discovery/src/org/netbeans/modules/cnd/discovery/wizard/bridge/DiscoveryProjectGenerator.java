@@ -38,6 +38,7 @@ import org.netbeans.modules.cnd.discovery.wizard.checkedtree.AbstractRoot;
 import org.netbeans.modules.cnd.discovery.wizard.checkedtree.UnusedFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -46,9 +47,11 @@ import org.openide.util.Utilities;
  */
 public class DiscoveryProjectGenerator {
     private static boolean DEBUG = Boolean.getBoolean("cnd.discovery.trace.project_update"); // NOI18N
+    private static boolean KEEP_UNUSED = Boolean.getBoolean("cnd.discovery.keep_unused"); // NOI18N
     private ProjectBridge projectBridge;
     private DiscoveryDescriptor wizard;
     private String baseFolder;
+    private String level;
     
     /** Creates a new instance of PrjectGenerator */
     public DiscoveryProjectGenerator(DiscoveryDescriptor wizard) throws IOException {
@@ -66,8 +69,9 @@ public class DiscoveryProjectGenerator {
     public Set makeProject(){
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
         Folder sourceRoot = projectBridge.getRoot();
+        level = wizard.getLevel();
         for (ProjectConfiguration config: projectConfigurations){
-            setupCompilerConfiguration(config, wizard.getLevel());
+            setupCompilerConfiguration(config);
             FolderConfiguration folderConfig = config.getRoot();
             addFolder(sourceRoot, folderConfig, config.getLanguageKind()==ItemProperties.LanguageKind.CPP, true);
         }
@@ -94,7 +98,7 @@ public class DiscoveryProjectGenerator {
         }
         AbstractRoot additional = UnusedFactory.createRoot(used);
         if (used.size()>0) {
-            addFolder(folder, additional);
+            addFolder(folder, additional, true);
         }
         // remove unused
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
@@ -132,7 +136,9 @@ public class DiscoveryProjectGenerator {
                 }
             }
         }
-        createUnusedFilder(unused);
+        if (KEEP_UNUSED) {
+            createUnusedFilder(unused);
+        }
     }
     
     private void createUnusedFilder(Map<String,Item> unused){
@@ -149,7 +155,7 @@ public class DiscoveryProjectGenerator {
         AbstractRoot additional = UnusedFactory.createRoot(unused.keySet());
         addFolder(added, additional, unused);
     }
-
+    
     private void addFolder(Folder folder, AbstractRoot used, Map<String,Item> unused){
         String name = used.getName();
         Folder added = folder.findFolderByName(name);
@@ -172,15 +178,20 @@ public class DiscoveryProjectGenerator {
     }
     
     
-    private void addFolder(Folder folder, AbstractRoot used){
+    private void addFolder(Folder folder, AbstractRoot used, boolean first){
         String name = used.getName();
-        Folder added = folder.findFolderByName(name);
+        Folder added = null;
+        if (first && folder.getName().equals(name)) {
+            added = folder;
+        } else {
+            added = folder.findFolderByName(name);
+        }
         if (added == null) {
             added = projectBridge.createFolder(folder, name);
             folder.addFolder(added);
         }
         for(AbstractRoot sub : used.getChildren()){
-            addFolder(added, sub);
+            addFolder(added, sub, false);
         }
         List<String> files = used.getFiles();
         if (files != null) {
@@ -246,25 +257,13 @@ public class DiscoveryProjectGenerator {
         }
     }
     
-    private void setupCompilerConfiguration(ProjectConfiguration config, String level){
+    private void setupCompilerConfiguration(ProjectConfiguration config){
         // TODO: set relative path when project system will be support it.
         //Vector vector = new Vector(config.getUserInludePaths(false));
         Set<String> set = new HashSet<String>();
         if ("project".equals(level)){ // NOI18N
             for(FileConfiguration file : config.getFiles()){
-                String compilePath = file.getCompilePath();
-                for (String path : file.getUserInludePaths()){
-                    String name = null;
-                    if (path.startsWith(File.separator)) {
-                        name = path;
-                    } else {
-                        name = compilePath+File.separator+path;
-                    }
-                    set.add(projectBridge.getRelativepath(name));
-                }
-                if (isDifferentCompilePath(file.getFilePath(),compilePath)){
-                    set.add(projectBridge.getRelativepath(compilePath));
-                }
+                reConsolidate(set, file);
             }
         }
         Vector vector = new Vector(set);
@@ -281,7 +280,14 @@ public class DiscoveryProjectGenerator {
     }
     
     private void setupFolder(FolderConfiguration config, Folder item, boolean isCPP) {
-        Vector vector = new Vector(config.getUserInludePaths(false));
+        //Vector vector = new Vector(config.getUserInludePaths(false));
+        Set<String> set = new HashSet<String>();
+        if ("folder".equals(level)){ // NOI18N
+            for(FileConfiguration file : config.getFiles()){
+                reConsolidate(set, file);
+            }
+        }
+        Vector vector = new Vector(set);
         StringBuffer buf = new StringBuffer();
         for(Map.Entry<String,String> entry : config.getUserMacros(false).entrySet()){
             buf.append(entry.getKey());
@@ -295,35 +301,10 @@ public class DiscoveryProjectGenerator {
                 buf.toString(), !config.overrideMacros(), isCPP, item);
     }
     
-    private boolean isDifferentCompilePath(String name, String path){
-        int i = name.lastIndexOf('/');
-        if (i > 0) {
-            name = name.substring(0,i);
-            if (!name.equals(path)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
     private void setupFile(FileConfiguration config, Item item) {
-        String compilePath = config.getCompilePath();
-        Vector vector = new Vector();
-        for (String path : config.getUserInludePaths(false)){
-            // TODO: set relative path when project system will be support it.
-            //vector.add(path);
-            String name = null;
-            if (path.startsWith(File.separator)) {
-                name = path;
-            } else {
-                name = compilePath+File.separator+path;
-            }
-            vector.add(projectBridge.getRelativepath(name));
-        }
-        // TODO: remove it when project system will be support compile path.
-        if (isDifferentCompilePath(config.getFilePath(),compilePath)){
-            vector.add(projectBridge.getRelativepath(compilePath));
-        }
+        Set<String> set = new HashSet<String>();
+        reConsolidate(set, config);
+        Vector vector = new Vector(set);
         StringBuffer buf = new StringBuffer();
         for(Map.Entry<String,String> entry : config.getUserMacros(false).entrySet()){
             buf.append(entry.getKey());
@@ -333,6 +314,39 @@ public class DiscoveryProjectGenerator {
             }
             buf.append('\n');
         }
-        projectBridge.setupFile(compilePath, vector, !config.overrideIncludes(), buf.toString(), !config.overrideMacros(), item);
+        projectBridge.setupFile(config.getCompilePath(), vector, !config.overrideIncludes(), buf.toString(), !config.overrideMacros(), item);
+    }
+
+    private void reConsolidate(Set set, FileConfiguration file){
+        String compilePath = file.getCompilePath();
+        for (String path : file.getUserInludePaths()){
+            if ( !( path.startsWith("/") || (path.length()>1 && path.charAt(1)==':') ) ) { // NOI18N
+                if (path.equals(".")) { // NOI18N
+                    path = compilePath;
+                } else {
+                    path = compilePath+File.separator+path;
+                }
+                File f = new File(path);
+                path = FileUtil.normalizeFile(f).getAbsolutePath();
+            }
+            set.add(projectBridge.getRelativepath(path));
+        }
+        if (isDifferentCompilePath(file.getFilePath(),compilePath)){
+            set.add(projectBridge.getRelativepath(compilePath));
+        }
+    }
+    
+    private boolean isDifferentCompilePath(String name, String path){
+        if (Utilities.isWindows()) {
+            name = name.replace('\\', '/');
+        }
+        int i = name.lastIndexOf('/');
+        if (i > 0) {
+            name = name.substring(0,i);
+            if (!name.equals(path)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

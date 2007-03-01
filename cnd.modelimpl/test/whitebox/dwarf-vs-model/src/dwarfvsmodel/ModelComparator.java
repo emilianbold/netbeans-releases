@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfDeclaration;
 import java.util.List;
@@ -62,6 +63,8 @@ public class ModelComparator {
 
     private CsmFile csmFile;
     private CompilationUnit dwarfData;
+    private Dwarf dwarf;
+    private FileInfo fileInfo;
     
     private boolean bidirectional = false;
     
@@ -90,9 +93,11 @@ public class ModelComparator {
 //    
 //    private int verbosity = VERBOSITY_HIGH;
     
-    public ModelComparator(CsmFile codeModel, CompilationUnit dwarfData, PrintStream resultLog, PrintStream traceLog) {
+    public ModelComparator(CsmFile codeModel, CompilationUnit dwarfData, 	    Dwarf dwarf, FileInfo fileInfo, PrintStream resultLog, PrintStream traceLog) {
 	this.csmFile = codeModel;
 	this.dwarfData = dwarfData;
+	this.dwarf = dwarf;
+	this.fileInfo = fileInfo;
 	this.resultStream = resultLog;
 	this.traceStream = traceLog;
 	this.tracer = new Tracer(traceLog);
@@ -123,13 +128,35 @@ public class ModelComparator {
 	dwarfListStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName(), "dwarf-list"); // NOI18N
     }
     
+    private void printFileInfo() {
+	modelStream.printf("Parse options:\n");
+	modelStream.printf("\tDefines\n");
+	for( String define : fileInfo.getDefines() ) {
+	    modelStream.printf("\t\t%s\n", define);
+	}
+	modelStream.printf("\t<> include path\n");
+	for( String incPath : fileInfo.getSysIncludes() ) {
+	    modelStream.printf("\t\t%s\n", incPath);
+	}
+	modelStream.printf("\t\"\" include path\n");
+	for( String incPath : fileInfo.getQuoteIncludes() ) {
+	    modelStream.printf("\t\t%s\n", incPath);
+	}
+    }
+    
     public ComparationResult compare() throws IOException {
 	
 	setupStreams();
-	diffStream.println("Differences for " + csmFile.getAbsolutePath()); //NOI18N
 	
+	diffStream.println("Differences for " + csmFile.getAbsolutePath()); //NOI18N
+	diffStream.println("Object file: " + dwarf.getFileName());
+	dwarfStream.println("Object file: " + dwarf.getFileName());
 	dwarfData.dump(dwarfStream);
-	(new CsmTracer(modelStream)).dumpModel(csmFile);
+	
+	modelStream.printf("===== Dumping model %s\n", csmFile.getAbsolutePath());
+	printFileInfo();
+	(new CsmTracer(modelStream)).dumpModel(csmFile, "\n");
+	
 	modelStream.println();
 	
 	clearTotal();
@@ -180,7 +207,23 @@ public class ModelComparator {
     private CsmDeclaration find(DwarfEntry entry, DwarfList dwarfList, ModelList modelList) {
 
 	String qualifiedName = dwarfList.getQualifiedName(entry);
+	
+//	{
+//	    String qn2 = dwarfList.qualifiedNameFromMangled(entry);
+//	    System.err.printf("QN: %s MIPS: %s \n", qualifiedName, qn2);
+//	    if( qn2 != null && ! qn2.equals(qualifiedName) ) {
+//		System.err.println("@@@@@ qualified names differ !!");
+//	    }
+//	}
+		
 	Iterable<CsmDeclaration> declarations = modelList.getDeclarations(qualifiedName);
+	if( ! declarations.iterator().hasNext() ) {
+	    String qname2 = dwarfList.qualifiedNameFromMangled(entry);
+	    if( qname2 != null && qname2.indexOf("::") >= 0 ) {
+		qualifiedName = qname2;
+		declarations = modelList.getDeclarations(qualifiedName);
+	    }
+	}
 
 	if( ComparisonUtils.isFunction(entry) ) {
 	    // Gather information from dwarf site
@@ -291,13 +334,13 @@ public class ModelComparator {
 	    reportError("DwarfEntry for parameter is null " + dwarfDeclaration); // NOI18N
 	    return false;
 	}
-	else if( dwarfDeclaration.getName() == null ) {
+	else if( ComparisonUtils.getName(dwarfDeclaration) == null ) {
 	    reportError("DwarfEntry name is null " + dwarfDeclaration); // NOI18N
 	    return false;
 	}
         // Remove spaces from modelName (ex. "operator <<" => "operator<<")
         String modelName = modelDeclaration.getName().replaceAll(" ", ""); // NOI18N
-        String dwarfName = dwarfDeclaration.getName().replaceAll(" ", ""); // NOI18N
+        String dwarfName = ComparisonUtils.getName(dwarfDeclaration); // NOI18N
 	if( "...".equals(modelName) ) { // NOI18N
 	    modelName = "";
 	}

@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -92,7 +92,7 @@ public class MakeActionProvider implements ActionProvider {
         COMMAND_COPY,
         COMMAND_MOVE,
         COMMAND_RENAME,
-
+        
         
     };
     
@@ -162,17 +162,17 @@ public class MakeActionProvider implements ActionProvider {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return ;
         }
-
+        
         if (COMMAND_COPY.equals(command)) {
             DefaultProjectOperations.performDefaultCopyOperation(project);
             return ;
         }
-
+        
         if (COMMAND_MOVE.equals(command)) {
             DefaultProjectOperations.performDefaultMoveOperation(project);
             return ;
         }
-
+        
         if (COMMAND_RENAME.equals(command)) {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return ;
@@ -197,7 +197,7 @@ public class MakeActionProvider implements ActionProvider {
         
         // Execute actions
         if (actionEvents.size() > 0)
-        ProjectActionSupport.fireActionPerformed((ProjectActionEvent[])actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
+            ProjectActionSupport.fireActionPerformed((ProjectActionEvent[])actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
     }
     
     class BatchConfigurationSelector implements ActionListener {
@@ -340,7 +340,7 @@ public class MakeActionProvider implements ActionProvider {
                         }
                         if (!path.equals("")) { // NOI18N
                             runProfile.getEnvironment().putenv("PATH", path); // NOI18N
-                        // } else { // no need to set empty path
+                            // } else { // no need to set empty path
                         }
                     }
                     
@@ -450,13 +450,13 @@ public class MakeActionProvider implements ActionProvider {
                         String outputFile = null;
                         if (itemConfiguration.getTool() == Tool.CCompiler) {
                             CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
-                            outputFile = cCompilerConfiguration.getOutputFile(item.getPath(true), conf);
+                            outputFile = cCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
                         } else if (itemConfiguration.getTool() == Tool.CCCompiler) {
                             CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
-                            outputFile = ccCompilerConfiguration.getOutputFile(item.getPath(true), conf);
+                            outputFile = ccCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
                         } else if (itemConfiguration.getTool() == Tool.FortranCompiler) {
                             FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
-                            outputFile = fortranCompilerConfiguration.getOutputFile(item.getPath(true), conf);
+                            outputFile = fortranCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
                         } else if (itemConfiguration.getTool() == Tool.CustomTool) {
                             CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                             outputFile = customToolConfiguration.getOutputs().getValue();
@@ -574,9 +574,11 @@ public class MakeActionProvider implements ActionProvider {
                 if (itemConfiguration == null)
                     return false;
                 if (itemConfiguration.getExcluded().getValue())
-                    return false;;
-                    if (itemConfiguration.getTool() == Tool.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified())
-                        return false;
+                    return false;
+                if (itemConfiguration.getTool() == Tool.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified())
+                    return false;
+                if (conf.isMakefileConfiguration())
+                    return false;
             }
             return enabled;
         } else if (command.equals(COMMAND_DELETE) ||
@@ -599,7 +601,7 @@ public class MakeActionProvider implements ActionProvider {
             } catch (NullPointerException ex) {
                 // not found item
             }
-        }  
+        }
         return item;
     }
     

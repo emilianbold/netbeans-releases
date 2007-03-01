@@ -141,6 +141,7 @@ public class BuiltinTypes {
         public void write(DataOutput output) throws IOException {
             BuiltinImpl ref = (BuiltinImpl) getObject();
             assert ref != null;
+            assert ref.getName() != null;
             output.writeUTF(ref.getName());
         }
     }     

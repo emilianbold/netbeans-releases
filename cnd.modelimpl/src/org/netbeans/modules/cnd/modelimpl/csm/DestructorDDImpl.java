@@ -31,7 +31,7 @@ import java.io.IOException;
 public final class DestructorDDImpl extends MethodDDImpl {
 
     public DestructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
-        super(ast, cls, visibility);
+        super(ast, cls, visibility, true);
     }
 
     public CsmType getReturnType() {

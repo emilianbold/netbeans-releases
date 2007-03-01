@@ -443,7 +443,11 @@ public class CsmTracer {
     }
     
     public void dumpModel(CsmFile file) {
-        print("\n========== Dumping model of FILE " + file.getName()); // NOI18N
+	dumpModel(file, "\n========== Dumping model of FILE " + file.getName()); // NOI18N
+    }
+
+    public void dumpModel(CsmFile file, String title) {
+        print(title);
         List includes = file.getIncludes();
         print("Includes:"); // NOI18N
         if (includes.size() > 0) {

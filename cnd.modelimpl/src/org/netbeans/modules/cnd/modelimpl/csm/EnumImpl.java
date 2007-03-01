@@ -43,7 +43,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
     
     public EnumImpl(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
         super(AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file, containingClass, ast);
-        register();
+        RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             if( token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
                 for( AST t = token.getFirstChild(); t != null; t = t.getNextSibling() ) {
@@ -53,6 +53,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
                 }
             }
         }
+        register();
     }
 
     public List getEnumerators() {

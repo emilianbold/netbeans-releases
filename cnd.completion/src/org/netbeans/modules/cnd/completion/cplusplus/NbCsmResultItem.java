@@ -224,4 +224,14 @@ public abstract class NbCsmResultItem extends CsmResultItem{
         }
     }
 
+    public static class NbStringResultItem extends StringResultItem {
+
+        public NbStringResultItem(String str) {
+            super(str);
+        }
+
+        protected CsmPaintComponent.StringPaintComponent createStringPaintComponent() {
+            return new NbCsmPaintComponent.NbStringPaintComponent();
+        }        
+    }    
 }

@@ -46,6 +46,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
@@ -58,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProviders;
 import org.netbeans.spi.project.ActionProvider;
@@ -91,6 +94,8 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Template;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -305,13 +310,14 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     
     /** Filter node containin additional features for the Make physical
      */
-    private final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListener {
+    private final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListener, LookupListener {
         
         private Image icon;
         private Lookup lookup;
         private Action brokenLinksAction;
         private boolean broken;
         private Folder folder;
+        private final Lookup.Result brokenIncludesResult;
         
         public MakeLogicalViewRootNode(Folder folder) {
             super(new LogicalViewChildren(folder), Lookups.fixed(new Object[] {
@@ -322,7 +328,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             this.folder = folder;
             setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
             setName( ProjectUtils.getInformation( project ).getDisplayName() );
-            if (hasBrokenLinks(helper, resolver)) {
+            
+            brokenIncludesResult = Lookup.getDefault().lookup(new Lookup.Template(BrokenIncludes.class));
+            brokenIncludesResult.addLookupListener(this);
+            resultChanged(null);
+            
+            if (hasBrokenLinks(helper, resolver) || hasBrokenIncludes(project)) {
                 broken = true;
             }
             brokenLinksAction = new BrokenLinksAction();
@@ -359,6 +370,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
          * Something in the folder has changed
          **/
         public void stateChanged(ChangeEvent e) {
+            broken = hasBrokenLinks(helper, resolver) || hasBrokenIncludes(project);
             updateAnnotationFiles();
             fireIconChange();
             fireOpenedIconChange();
@@ -495,11 +507,45 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 CommonProjectActions.copyProjectAction(),
                 CommonProjectActions.deleteProjectAction(),
                 null,
-                (broken ? brokenLinksAction : null),
+                (broken ? getBrokenIncludesAction(project) : null),
             };
             
         }
+
+        public void resultChanged(LookupEvent ev) {
+            for (Iterator it = brokenIncludesResult.allInstances().iterator(); it.hasNext();) {
+                BrokenIncludes elem = (BrokenIncludes) it.next();
+                elem.addChangeListener(this);
+            };
+        }
         
+        private boolean hasBrokenIncludes(Project project) {
+            BrokenIncludes provider = (BrokenIncludes) Lookup.getDefault().lookup(BrokenIncludes.class);
+            if (provider != null) {
+                NativeProject id = (NativeProject) project.getLookup().lookup(NativeProject.class);
+                if (id != null) {
+                    Project[] projects = OpenProjects.getDefault().getOpenProjects();
+                    for(int i = 0; i < projects.length; i++) {
+                        if (project.equals(projects[i])){
+                            return provider.isBroken(id);
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        private Action getBrokenIncludesAction(Project project) {
+            BrokenIncludes provider = (BrokenIncludes) Lookup.getDefault().lookup(BrokenIncludes.class);
+            if (provider != null) {
+                NativeProject id = (NativeProject) project.getLookup().lookup(NativeProject.class);
+                if (id != null) {
+                    return provider.getViewAction(id);
+                }
+            }
+            return null;
+        }
+    
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
          */
@@ -664,8 +710,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
         return makeConfigurationDescriptor;
     }
-    
-    
+
+
     /** Yet another cool filter node just to add properties action
      */
     /* FIXUP
@@ -749,7 +795,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
         
         private void updateAnnotationFiles() {
-            new UpdateAnnotationFilesTHread(this).start();
+            RequestProcessor.getDefault().post(new UpdateAnnotationFilesTHread(this));
         }
         
         class UpdateAnnotationFilesTHread extends Thread {
@@ -888,7 +934,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 null,
                 SystemAction.get(org.openide.actions.FindAction.class ),
                 null,
-                SystemAction.get(PropertiesAction.class),
+                SystemAction.get(PropertiesFolderAction.class),
             };
         }
     }
@@ -943,7 +989,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     if (IpeUtils.isPathAbsolute(item.getPath()) || item.getPath().startsWith("..")) { // NOI18N
                         Toolkit.getDefaultToolkit().beep();
                     } else {
-                        FileObject fo = FileUtil.toFileObject(item.getFile());
+                        FileObject fo = FileUtil.toFileObject(item.getCanonicalFile());
                         String parent = FileUtil.toFile(fo.getParent()).getPath();
                         String ext = fo.getExt();
                         String newName = IpeUtils.createUniqueFileName(parent, fo.getName(), ext);
@@ -1096,7 +1142,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             this.childrenKeys = childrenKeys;
             this.folder = folder;
             this.item = item;
-            File file = item.getFile();
+            File file = item.getCanonicalFile();
             setShortDescription(file.getPath());
         }
         
@@ -1224,7 +1270,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             this.childrenKeys = childrenKeys;
             this.folder = folder;
             this.item = item;
-            File file = item.getFile();
+            File file = item.getCanonicalFile();
             setName(file.getPath());
             setDisplayName(file.getName());
             setShortDescription(NbBundle.getMessage(getClass(), "BrokenTxt", file.getPath())); // NOI18N

@@ -164,7 +164,9 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
     
     public void write(DataOutput output) throws IOException {
         super.write(output);
+        assert this.alias != null;
         output.writeUTF(this.alias);
+        assert this.namespace != null;
         output.writeUTF(this.namespace);
         PersistentUtils.writeStrings(this.rawName, output);
         
@@ -175,7 +177,9 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
     public NamespaceAliasImpl(DataInput input) throws IOException {
         super(input);
         this.alias = TextCache.getString(input.readUTF());
+        assert this.alias != null;
         this.namespace = TextCache.getString(input.readUTF());
+        assert this.namespace != null;
         this.rawName = PersistentUtils.readStrings(input, TextCache.getManager());
         
         // read cached namespace

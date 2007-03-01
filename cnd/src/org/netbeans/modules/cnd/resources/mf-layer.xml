@@ -33,6 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="PreviewExamples">
             <folder name="text">
                 <file name="x-c++" url="cplusplus/CCExample"/>
+                <file name="x-c" url="cplusplus/CExample"/>
             </folder>
         </folder>
     </folder>
@@ -99,7 +100,9 @@ Microsystems, Inc. All Rights Reserved.
 	    </folder>
 
 	    <folder name="x-c">
-		<file name="Settings.settings" url="CCOptions.settings"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                
+		<file name="Settings.settings" url="COptions.settings"/>
 		<folder name="Defaults">
                     <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
                 </folder>

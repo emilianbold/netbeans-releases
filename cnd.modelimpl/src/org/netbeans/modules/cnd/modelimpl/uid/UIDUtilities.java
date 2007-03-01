@@ -48,38 +48,40 @@ public class UIDUtilities {
     }
  
     public static CsmUID<CsmProject> createProjectUID(CsmProject prj) {
-        return new ProjectUID(prj);
+        return UIDManager.instance().getSharedUID(new ProjectUID(prj));
     } 
     
     public static CsmUID<CsmFile> createFileUID(CsmFile file) {
-        return new FileUID(file);
+        return UIDManager.instance().getSharedUID(new FileUID(file));
     } 
 
     public static CsmUID<CsmNamespace> createNamespaceUID(CsmNamespace ns) {
-        return new NamespaceUID(ns);
+        return UIDManager.instance().getSharedUID(new NamespaceUID(ns));
     }
 
     public static <T extends CsmOffsetableDeclaration> CsmUID<T> createDeclarationUID(T declaration) {
         assert (! (declaration instanceof CsmBuiltIn)) : "built-in have own UIDs";
+        CsmUID<T> uid;
         if (!ProjectBase.canRegisterDeclaration(declaration)) {
-            return handleUnnamedDeclaration((CsmOffsetableDeclaration)declaration);
+            uid = handleUnnamedDeclaration((CsmOffsetableDeclaration)declaration);
         } else {
             if (declaration instanceof CsmTypedef) {
-                return new TypedefUID((CsmTypedef)declaration);
+                uid = new TypedefUID((CsmTypedef)declaration);
             } else if (declaration instanceof CsmClassifier) {
-                return new ClassifierUID(declaration);
+                uid = new ClassifierUID(declaration);
             } else {
-                return new DeclarationUID(declaration);
+                uid = new DeclarationUID(declaration);
             }
         }
+        return UIDManager.instance().getSharedUID(uid);
     }
     
     public static CsmUID<CsmMacro> createMacroUID(CsmMacro macro) {
-        return new MacroUID(macro);
+        return UIDManager.instance().getSharedUID(new MacroUID(macro));
     }    
 
     public static CsmUID<CsmInclude> createIncludeUID(CsmInclude incl) {
-        return new IncludeUID(incl);
+        return UIDManager.instance().getSharedUID(new IncludeUID(incl));
     }    
 
     private static CsmUID handleUnnamedDeclaration(CsmOffsetableDeclaration decl) {

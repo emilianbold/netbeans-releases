@@ -71,7 +71,7 @@ public class ModelSource implements SourceFileProperties {
         }
         return itemPath;
     }
-
+    
     /**
      * Path is include path like:
      * .
@@ -94,7 +94,7 @@ public class ModelSource implements SourceFileProperties {
         }
         return path;
     }
-
+    
     private static final String PATTERN = "/../"; // NOI18N
     public static String cutLocalRelative(String path){
         String pattern = PATTERN;
@@ -117,7 +117,7 @@ public class ModelSource implements SourceFileProperties {
         }
         return path;
     }
-
+    
     public String getItemName() {
         return item.getFile().getName();
     }
@@ -213,7 +213,16 @@ public class ModelSource implements SourceFileProperties {
                 return path;
             }
         }
-        //System.out.println("Not found "+name);
+        if (TRACE_AMBIGUOUS) {
+            System.out.println("Unresolved name for item: "+getItemPath()); // NOI18N
+            System.out.println("  from: "+include.getContainingFile().getAbsolutePath()); // NOI18N
+            System.out.println("  name: "+include.getIncludeName()); // NOI18N
+            if (result != null && result.size()>0){
+                for(int j = 0; j < result.size(); j++){
+                    System.out.println("  candidate: "+result.get(j)); // NOI18N
+                }
+            }
+        }
         return null;
     }
     

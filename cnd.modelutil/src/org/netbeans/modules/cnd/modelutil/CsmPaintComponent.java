@@ -541,7 +541,6 @@ public abstract class CsmPaintComponent extends JPanel {
         }
     }
     
-    
     public static class UnionPaintComponent extends ClassPaintComponent{
         
         private Color UNION_COLOR = Color.red.darker();
@@ -997,4 +996,21 @@ public abstract class CsmPaintComponent extends JPanel {
         }    
     } 
     
+    public static class StringPaintComponent extends CsmPaintComponent {
+
+        private String str;
+
+        public void setString(String str){
+            this.str = str;            
+        }
+        
+        protected void draw(Graphics g){
+            drawIcon(g, null);
+            drawString(g, str, TYPE_COLOR);
+        }
+
+        public String toString() {
+            return str;
+        }
+    }    
 }

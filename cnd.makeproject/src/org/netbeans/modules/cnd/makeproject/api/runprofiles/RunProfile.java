@@ -701,7 +701,8 @@ public class RunProfile implements ConfigurationAuxObject {
         public void propertyChange(PropertyChangeEvent evt) {
             if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
                 File file = getSelectedFile();
-                editor.setValue(file.getPath());
+                if (file != null)
+                    editor.setValue(file.getPath());
             }
         }
     }

@@ -87,15 +87,15 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
 
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        output.writeUTF(name);
-        PersistentUtils.writeStrings(nameParts, output);
+        assert this.name != null;
+        output.writeUTF(this.name);
+        PersistentUtils.writeStrings(this.nameParts, output);
     }
     
     public ClassForwardDeclarationImpl(DataInput input) throws IOException {
         super(input);
-        String str = input.readUTF();
-        assert str != null;
-        this.name = TextCache.getString(str);
+        this.name = TextCache.getString(input.readUTF());
+        assert this.name != null;
         this.nameParts = PersistentUtils.readStrings(input, TextCache.getManager());
     }
 }

@@ -247,6 +247,12 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             return newIcon;            
         }
         
-    }
+    }    
     
+    public static class NbStringPaintComponent extends CsmPaintComponent.StringPaintComponent {
+        
+        public NbStringPaintComponent(){
+            super();
+        }
+    }    
 }

@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
@@ -29,7 +30,6 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmField;
-import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -39,18 +39,26 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtFormatter;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
 import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsNames;
+import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionTask;
 
 /**
  *
@@ -59,7 +67,7 @@ import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsNames;
  */
 
 public abstract class CsmResultItem
-        implements CompletionQuery.ResultItem, CompletionQuery.ResultItemAssociatedObject {
+        implements CompletionQuery.ResultItem, CompletionQuery.ResultItemAssociatedObject, CompletionItem {
     
     CsmObject associatedObject;
     private static final Color KEYWORD_COLOR = Color.gray;
@@ -113,8 +121,8 @@ public abstract class CsmResultItem
             // Update the text
             doc.atomicLock();
             try {
-                String textToReplace = doc.getText(offset, len);
-                if (text.equals(textToReplace)) return false;
+                CharSequence textToReplace = DocumentUtilities.getText(doc, offset, len);
+                if (CharSequenceUtilities.textEquals(text, textToReplace)) return false;
                 
                 doc.remove(offset, len);
                 doc.insertString(offset, text, null);
@@ -157,6 +165,98 @@ public abstract class CsmResultItem
         return typ.getText();
     }
     
+    // CompletionItem implementation
+
+    public int getPreferredWidth(Graphics g, Font defaultFont) {
+        Component renderComponent = getPaintComponent(false);
+        return renderComponent.getPreferredSize().width;
+    }
+
+    public void render(Graphics g, Font defaultFont, Color defaultColor,
+    Color backgroundColor, int width, int height, boolean selected) {
+        Component renderComponent = getPaintComponent(selected);
+        renderComponent.setFont(defaultFont);
+        renderComponent.setForeground(defaultColor);
+        renderComponent.setBackground(backgroundColor);
+        renderComponent.setBounds(0, 0, width, height);
+        ((CsmPaintComponent)renderComponent).paintComponent(g);
+    }
+
+    public static final String COMPLETION_SUBSTITUTE_TEXT= "completion-substitute-text"; //NOI18N
+
+    static String toAdd;
+
+    public void processKeyEvent(KeyEvent evt) {
+        if (evt.getID() == KeyEvent.KEY_TYPED) {
+            Completion completion = Completion.get();
+            switch (evt.getKeyChar()) {
+                case ' ':
+                    if (evt.getModifiers() == 0) {
+                        completion.hideCompletion();
+                        completion.hideDocumentation();
+                    }
+                    break;
+                case ';':
+                case ',':
+                    completion.hideCompletion();
+                    completion.hideDocumentation();
+                case '.':
+                    if (defaultAction((JTextComponent)evt.getSource(), Character.toString(evt.getKeyChar()))) {
+                        evt.consume();
+                        break;
+                    }
+            }
+        }
+    }
+
+    public CharSequence getSortText() {
+        return getItemText();
+    }
+    
+    public CharSequence getInsertPrefix() {
+        return getItemText();
+    }
+
+    public CompletionTask createDocumentationTask() {
+        return null;
+//        return new AsyncCompletionTask(new JavaCompletionProvider.DocQuery(this),
+//            org.netbeans.editor.Registry.getMostActiveComponent());
+    }
+    
+    public CompletionTask createToolTipTask() {
+        return null;
+    }
+
+    public boolean instantSubstitution(JTextComponent c) {
+        Completion completion = Completion.get();
+        completion.hideCompletion();
+        completion.hideDocumentation();
+        defaultAction(c);
+        return true;
+    }
+
+    public void defaultAction(JTextComponent component) {
+        Completion completion = Completion.get();
+        completion.hideCompletion();
+        completion.hideDocumentation();
+        defaultAction(component, "");
+    }
+
+
+    boolean defaultAction(JTextComponent component, String addText) {
+        int substOffset = substituteOffset;
+        if (substOffset == -1)
+            substOffset = component.getCaret().getDot();
+        CsmResultItem.toAdd = addText;
+        return substituteText(component, substOffset, component.getCaret().getDot() - substOffset, false);
+    }
+    
+    protected int substituteOffset = -1;
+
+    public void setSubstituteOffset(int substituteOffset) {
+        this.substituteOffset = substituteOffset;
+    }
+    
     public static class FileLocalVariableResultItem extends VariableResultItem {
         
         public FileLocalVariableResultItem(CsmVariable fld){
@@ -166,6 +266,10 @@ public abstract class CsmResultItem
         protected CsmPaintComponent.FieldPaintComponent createPaintComponent(){
             return new CsmPaintComponent.FileLocalVariablePaintComponent();
         }
+        
+        public int getSortPriority() {
+            return 100;
+        }        
     }   
     
     public static class GlobalVariableResultItem extends VariableResultItem {
@@ -177,6 +281,10 @@ public abstract class CsmResultItem
         protected CsmPaintComponent.FieldPaintComponent createPaintComponent(){
             return new CsmPaintComponent.GlobalVariablePaintComponent();
         }
+        
+        public int getSortPriority() {
+            return 500;
+        }        
     }    
     
     public static class LocalVariableResultItem extends VariableResultItem {
@@ -187,6 +295,10 @@ public abstract class CsmResultItem
         
         protected CsmPaintComponent.FieldPaintComponent createPaintComponent(){
             return new CsmPaintComponent.LocalVariablePaintComponent();
+        }
+
+        public int getSortPriority() {
+            return 100;
         }
     }  
     
@@ -199,8 +311,24 @@ public abstract class CsmResultItem
         protected CsmPaintComponent.FieldPaintComponent createPaintComponent(){
             return new CsmPaintComponent.FieldPaintComponent();
         }
+        
+        public int getSortPriority() {
+            return 300;
+        }        
     }
     
+    /**
+     * Check whether this paint component renders an outer method/constructor
+     * which should be rendered in grey with black active parameter.
+     *
+     * @return true if this paint component renders outer method/constructor
+     *  or false otherwise.
+     */
+    static /*temporary*/ boolean isEnclosingCall() {
+        return false;
+        //return (activeParameterIndex != -1);
+    }
+        
     public static class MacroResultItem extends CsmResultItem {
         private String macName;
         private List params;
@@ -220,6 +348,10 @@ public abstract class CsmResultItem
 
         public String getItemText() {
             return getName();
+        }
+        
+        public int getSortPriority() {
+            return isEnclosingCall() ? 10 : 500;
         }
         
         protected CsmPaintComponent.MacroPaintComponent createPaintComponent(){
@@ -259,6 +391,10 @@ public abstract class CsmResultItem
         
         public String getItemText() {
             return fldName;
+        }
+        
+        public int getSortPriority() {
+            return 200;
         }
         
         abstract protected CsmPaintComponent.FieldPaintComponent createPaintComponent();
@@ -383,7 +519,7 @@ public abstract class CsmResultItem
         }
     }
     
-    public static class ConstructorResultItem extends CsmResultItem{
+    public static class ConstructorResultItem extends CsmResultItem {
         
         private CsmFunction ctr;
         private CsmCompletionExpression substituteExp;
@@ -476,7 +612,7 @@ public abstract class CsmResultItem
                                 addSpace = true;
                             }
                             // XXX CPP settings
-                            o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.PAIR_CHARACTERS_COMPLETION);
+                            o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
                             if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
                                 addClosingParen = true;
                             }
@@ -524,7 +660,7 @@ public abstract class CsmResultItem
                         if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
                             addSpace = true;
                         }
-                        o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.PAIR_CHARACTERS_COMPLETION);
+                        o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
                         if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
                             addClosingParen = true;
                         }
@@ -608,6 +744,10 @@ public abstract class CsmResultItem
             return ctr.getName();
         }
         
+        public int getSortPriority() {
+            return 200;
+        } 
+        
         protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent(){
             return new CsmPaintComponent.ConstructorPaintComponent();
         }
@@ -645,6 +785,10 @@ public abstract class CsmResultItem
         
         public String getItemText() {
             return displayFullNamespacePath ? pkg.getQualifiedName() : pkg.getName();
+        }
+        
+        public int getSortPriority() {
+            return 700;
         }
         
         protected CsmPaintComponent.NamespacePaintComponent createPaintComponent(){
@@ -703,6 +847,10 @@ public abstract class CsmResultItem
             return displayFQN ? enm.getQualifiedName() : enm.getName();
         }
         
+        public int getSortPriority() {
+            return 300;
+        } 
+        
         protected CsmPaintComponent.EnumPaintComponent createPaintComponent(){
             return new CsmPaintComponent.EnumPaintComponent();
         }
@@ -757,6 +905,10 @@ public abstract class CsmResultItem
             // TODO: do we need name of enum?
             return (displayFQN ? enmtr.getEnumeration().getQualifiedName() + CsmCompletion.SCOPE : "") + enmtr.getName(); //NOI18N
         }
+        
+        public int getSortPriority() {
+            return 400;
+        }  
         
         protected CsmPaintComponent.EnumeratorPaintComponent createPaintComponent(){
             return new CsmPaintComponent.EnumeratorPaintComponent();
@@ -817,6 +969,9 @@ public abstract class CsmResultItem
             return displayFQN ? cls.getQualifiedName() : cls.getName();
         }
         
+        public int getSortPriority() {
+            return 600;
+        }
         
         protected CsmPaintComponent.StructPaintComponent createStructPaintComponent(){
             return new CsmPaintComponent.StructPaintComponent();
@@ -859,7 +1014,7 @@ public abstract class CsmResultItem
     }
     
     
-    public static class TypedefResultItem extends CsmResultItem{
+    public static class TypedefResultItem extends CsmResultItem {
         
         private CsmTypedef def;
         private int defDisplayOffset;
@@ -898,6 +1053,9 @@ public abstract class CsmResultItem
             return displayFQN ? def.getQualifiedName() : def.getName();
         }
         
+        public int getSortPriority() {
+            return 500;
+        }        
         
         protected CsmPaintComponent.TypedefPaintComponent createTypedefPaintComponent(){
             return new CsmPaintComponent.TypedefPaintComponent();
@@ -914,7 +1072,41 @@ public abstract class CsmResultItem
         
     }
 
-    
+    public static class StringResultItem extends CsmResultItem {
+
+        private String str;
+        private static CsmPaintComponent.StringPaintComponent stringComponent = null;
+
+        public StringResultItem(String str) {
+            super(null);
+            this.str = str;
+        }
+
+        public String getItemText() {
+            return str;
+        }
+
+        public Component getPaintComponent(boolean isSelected) {
+            if (stringComponent == null) {
+                stringComponent = createStringPaintComponent();
+            }
+            stringComponent.setSelected(isSelected);
+            stringComponent.setString(str);
+            return stringComponent;
+        }
+        
+        public int getSortPriority() {
+            return 50;
+        }
+        
+        public Object getAssociatedObject(){
+            return str;
+        }     
+        
+        protected CsmPaintComponent.StringPaintComponent createStringPaintComponent() {
+            return new CsmPaintComponent.StringPaintComponent();
+        }
+    }
     
 //    static class ParamStr {
 //        private String type, simpleType, prm;

@@ -35,7 +35,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
  */
 public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmMember<CsmClass> {
 
-    private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
+    private final CsmDeclaration.Kind kind;
     
     private List/*<CsmMember>*/ membersOLD = new ArrayList/*<CsmMember>*/();
     private List<CsmUID<CsmMember>> members = new ArrayList<CsmUID<CsmMember>>();
@@ -61,7 +61,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         
         public void render(AST ast) {
 	    boolean rcurlyFound = false;
-            boolean registered = false;
             CsmTypedef[] typedefs;
             for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 switch( token.getType() ) {
@@ -74,14 +73,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         break;
                     // class / struct / union
                     case CPPTokenTypes.LITERAL_class:
-                        setKind(CsmDeclaration.Kind.CLASS);
                         break;
                     case CPPTokenTypes.LITERAL_union:
-                        setKind(CsmDeclaration.Kind.UNION);
                         curentVisibility = CsmVisibility.PUBLIC;
                         break;
                     case CPPTokenTypes.LITERAL_struct:
-                        setKind(CsmDeclaration.Kind.STRUCT);
                         curentVisibility = CsmVisibility.PUBLIC;
                         break;
 
@@ -99,10 +95,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     // inner classes and enums
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
                     case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
-                        if (!registered) {
-                            registered = true;
-                            register();
-                        }
                         ClassImpl innerClass = new ClassImpl(token, getContainingNamespaceImpl(), getContainingFile(), ClassImpl.this);
                         innerClass.setVisibility(curentVisibility);
                         addMember(innerClass);
@@ -117,10 +109,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         renderVariableInClassifier(token, innerClass, null, null);
                         break;
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
-                        if (!registered) {
-                            registered = true;
-                            register();
-                        }
                         EnumImpl innerEnum = new EnumImpl(token, getContainingNamespaceImpl(), getContainingFile(), ClassImpl.this);
                         innerEnum.setVisibility(curentVisibility);
                         addMember(innerEnum);
@@ -130,31 +118,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     // other members
                     case CPPTokenTypes.CSM_CTOR_DEFINITION:
                     case CPPTokenTypes.CSM_CTOR_DECLARATION:
-                        if (!registered) {
-                            registered = true;
-                            register();
-                        }
                         addMember(new ConstructorImpl(token, ClassImpl.this, curentVisibility));
                         break;
                     case CPPTokenTypes.CSM_DTOR_DEFINITION:
-                        if (!registered) {
-                            registered = true;
-                            register();
-                        }
                         addMember(new DestructorDDImpl(token, ClassImpl.this, curentVisibility));
                         break;
                     case CPPTokenTypes.CSM_DTOR_DECLARATION:
-                        if (!registered) {
-                            registered = true;
-                            register();
-                        }
                         addMember(new DestructorImpl(token, ClassImpl.this, curentVisibility));
                         break;
                     case CPPTokenTypes.CSM_FIELD:
-                        if (!registered) {
-                            registered = true;
-                            register();
-                        }
                         //addMember(new FieldImpl(token, this, curentVisibility));
                         if( ! renderVariable(token, null, null) ) {
                             typedefs = renderTypedef(token, (FileImpl) getContainingFile(), ClassImpl.this);
@@ -168,17 +140,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         }
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
-                        if (!registered) {
-                            registered = true;
-                            register();
-                        }
                         addMember(new MethodImpl(token, ClassImpl.this, curentVisibility));
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
-                        if (!registered) {
-                            registered = true;
-                            register();
-                        }
                         addMember(new MethodDDImpl(token, ClassImpl.this, curentVisibility));
                         break;
                     case CPPTokenTypes.CSM_USER_TYPE_CAST:
@@ -228,6 +192,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
         super(name, namespace, file, containingClass, null);
         leftBracketPos = 0;
+        this.kind = CsmDeclaration.Kind.CLASS;
         register();
     }
 
@@ -238,12 +203,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     public ClassImpl(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
         super(AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file, containingClass, ast);
         leftBracketPos = initLeftBracketPos(ast);
+        this.kind = findKind(ast);
+        RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         new ClassAstRenderer().render(ast);
         register();
-    }
-    
-    private void setKind(CsmDeclaration.Kind kind) {
-        this.kind = kind;
     }
 
     public CsmDeclaration.Kind getKind() {
@@ -302,5 +265,20 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             membersOLD.clear();
         }        
     }    
+
+    private CsmDeclaration.Kind findKind(AST ast) {
+        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
+            switch( token.getType() ) {
+                // class / struct / union
+                case CPPTokenTypes.LITERAL_class:
+                    return CsmDeclaration.Kind.CLASS;
+                case CPPTokenTypes.LITERAL_union:
+                    return CsmDeclaration.Kind.UNION;
+                case CPPTokenTypes.LITERAL_struct:
+                    return CsmDeclaration.Kind.STRUCT;
+            }
+        }
+        return CsmDeclaration.Kind.CLASS;
+    }
 }
 

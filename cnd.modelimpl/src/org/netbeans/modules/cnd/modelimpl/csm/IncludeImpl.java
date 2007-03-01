@@ -122,16 +122,18 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
     
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        output.writeUTF(name);
-        output.writeBoolean(system);
-        UIDObjectFactory.getDefaultFactory().writeUID(includeFileUID, output);
+        assert this.name != null;
+        output.writeUTF(this.name);
+        output.writeBoolean(this.system);
+        UIDObjectFactory.getDefaultFactory().writeUID(this.includeFileUID, output);
     }
 
-    /*package*/ IncludeImpl(DataInput input) throws IOException {
+    public IncludeImpl(DataInput input) throws IOException {
         super(input);
-        name = FileNameCache.getString(input.readUTF());
-        system = input.readBoolean();
-        includeFileUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        this.name = FileNameCache.getString(input.readUTF());
+        assert this.name != null;
+        this.system = input.readBoolean();
+        this.includeFileUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         
         assert TraceFlags.USE_REPOSITORY;
         this.includeFileOLD = null;// to prevent error with "final"        

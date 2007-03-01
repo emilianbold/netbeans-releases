@@ -33,15 +33,17 @@ import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 
 /**
  * Project implementation
  * @author Vladimir Kvashin
  */
-public class ProjectImpl extends ProjectBase {
+public final class ProjectImpl extends ProjectBase {
 
     public ProjectImpl(ModelImpl model, Object platformProject, String name) {
         super(model, platformProject, name);
+        // RepositoryUtils.put(this);
     }
     
     protected void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile) {
@@ -126,6 +128,18 @@ public class ProjectImpl extends ProjectBase {
             }
             file.setBuffer(buf);
             ParserQueue.instance().addFirst(file, getPreprocState(buf.getFile()).getState(), false);
+        }
+    }
+    
+    public void onFilePropertyChanged(NativeFileItem nativeFile) {
+	if( ! isLanguageSupported(nativeFile.getLanguage() )) {
+	    return;
+	}
+        if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getFile().getName()); // NOI18N
+        FileImpl file = (FileImpl) getFile(nativeFile.getFile());	
+        if( file != null ) {
+            file.stateChanged(true);
+            ParserQueue.instance().addFirst(file, getPreprocState(nativeFile.getFile()).getState(), false);
         }
     }
     

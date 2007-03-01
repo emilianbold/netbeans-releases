@@ -1321,7 +1321,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                    int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed) {
             super(component, 
                     getTitle(data, title, isProjectBeeingParsed), 
-                    convertData(data, classDisplayOffset, substituteExp), 
+                    convertData(data, classDisplayOffset, substituteExp, substituteOffset), 
                     substituteOffset, 
                     substituteLength);
             
@@ -1344,24 +1344,26 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             return out;
         }
         
-        private static List convertData(List dataList, int classDisplayOffset, CsmCompletionExpression substituteExp){
+        private static List convertData(List dataList, int classDisplayOffset, CsmCompletionExpression substituteExp, int substituteOffset){
             Iterator iter = dataList.iterator();
             List ret = new ArrayList();
             while (iter.hasNext()){
                 Object obj = iter.next();
+                CsmResultItem item;
                 if (obj instanceof CompletionQuery.ResultItem){
-                    ret.add(obj);
+                    item = (CsmResultItem)obj;
                 }else{
-                    CompletionQuery.ResultItem item = createResultItem(obj, classDisplayOffset, substituteExp);
-                    if (item != null) {
-                        ret.add(item);
-                    }
+                    item = createResultItem(obj, classDisplayOffset, substituteExp);
+                }
+                if (item != null) {
+                    item.setSubstituteOffset(substituteOffset);
+                    ret.add(item);
                 }
             }
             return ret;
         }
         
-        private static CompletionQuery.ResultItem createResultItem(Object obj, int classDisplayOffset, CsmCompletionExpression substituteExp){
+        private static CsmResultItem createResultItem(Object obj, int classDisplayOffset, CsmCompletionExpression substituteExp){
             if (CsmKindUtilities.isCsmObject(obj)) {
                 CsmObject csmObj = (CsmObject)obj;
                 if (CsmKindUtilities.isNamespace(csmObj)) {
@@ -1404,7 +1406,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             return substituteLength;
         }
         
-        protected int getSubstituteOffset(){
+        public int getSubstituteOffset(){
             return substituteOffset;
         }
         
@@ -1657,6 +1659,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         public CsmResultItem.ConstructorResultItem createConstructorResultItem(CsmConstructor ctr, CsmCompletionExpression substituteExp);
         public CsmResultItem.MacroResultItem createMacroResultItem(CsmMacro mac);
         public CsmResultItem.TypedefResultItem createTypedefResultItem(CsmTypedef def, int classDisplayOffset, boolean displayFQN);
+        public CsmResultItem.StringResultItem createStringResultItem(String str);
     }
     
     public static class DefaultCsmItemFactory implements CsmItemFactory{
@@ -1710,6 +1713,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         public CsmResultItem.TypedefResultItem createTypedefResultItem(CsmTypedef def, int classDisplayOffset, boolean displayFQN) {
             return new CsmResultItem.TypedefResultItem(def, classDisplayOffset, displayFQN); 
+        }
+
+        public CsmResultItem.StringResultItem createStringResultItem(String str) {
+            return new CsmResultItem.StringResultItem(str);
         }
     }
 

@@ -23,6 +23,7 @@ import java.io.PrintStream;
 import java.util.*;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 
 /**
@@ -72,13 +73,22 @@ public class DwarfList {
     }
     
     private void add(DwarfEntry entry) {
-	
+
 	String fqn = getQualifiedName(entry);
 	
 	List<DwarfEntry> overloads = fqn2entry.get(fqn);
 	if( overloads == null ) {
 	    overloads = new ArrayList<DwarfEntry>();
 	    fqn2entry.put(fqn, overloads);
+	}
+	
+	// for templates, dwarf places an instance for each template instantiation
+	// skip them
+	for( DwarfEntry overload : overloads ) {
+	    if( overload.getLine() == entry.getLine() ) {
+		//System.err.println("\Excluding \n\t" + entry + " \n\tbecause found \n\t" + overload + "\n");
+		return;
+	    }
 	}
 
 	if( overloads.size() > 0 ) {
@@ -226,20 +236,62 @@ public class DwarfList {
 		    switch( rule ) {
 			case Add:
 			case AddChildren:
-			    return entry.getName();
+			    return ComparisonUtils.getName(entry);
 			case Ignore:
 			default:
 			    return "";
 		    }
 		}
 		else {
-		    return parentQName + "::" + entry.getName(); // NOI18N
+		    return parentQName + "::" + ComparisonUtils.getName(entry); // NOI18N
 		}
 	    }
 	}	
 	else {
 	    return fqn;
 	}
+    }
+    
+    public String qualifiedNameFromMangled(DwarfEntry entry) {
+	String ln = (String) entry.getAttributeValue(ATTR.DW_AT_MIPS_linkage_name);
+	if( ln != null ) {
+	    if( ln.startsWith("_ZN") ) {
+		int pos = 3;
+		StringBuilder qn = new StringBuilder();
+		if( ln.startsWith("_ZNSt") ) {
+		    pos += 2;
+		    qn.append("std::");
+		}		
+		while( pos < ln.length() && Character.isDigit(ln.charAt(pos)) ) {
+		    int len = 0;
+		    int mul = 1;
+		    for( char c = ln.charAt(pos); pos < ln.length() && Character.isDigit(c); c = ln.charAt(++pos) ) {
+			len *= 10;
+			len += (int) c - (int) '0';
+		    }
+		    if( len <= 0 ) {
+			return null;
+		    }
+		    if( pos+len > ln.length() ) {
+			return null;
+		    }
+		    if( qn.length() > 0 ) {
+			qn.append("::");
+		    }
+		    qn.append(ln.substring(pos, pos+len));
+		    pos += len;
+		}
+		if( qn.length() > 0 ) {
+		    String name = entry.getName();
+		    if( name.startsWith("operator") && ! Character.isJavaIdentifierPart(name.charAt(8)) ) {
+			qn.append("::");
+			qn.append(name);
+		    }
+		    return qn.toString();
+		}
+	    }
+	}
+	return null;
     }
     
     public void dump(PrintStream ps, boolean bodies) {

@@ -70,16 +70,15 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     abstract public Kind getKind();
     
     protected void register() {
+        if (TraceFlags.USE_REPOSITORY) {
+            RepositoryUtils.put(this);
+        }
         if( ProjectBase.canRegisterDeclaration(this) ) {
             registerInProject();
             NamespaceImpl ns = _getNamespaceImpl();
             if (ns != null) {
                 // It can be local class
                 ns.addDeclaration(this);
-            }
-        } else {
-            if (TraceFlags.USE_REPOSITORY) {
-                RepositoryUtils.put(this);
             }
         }
     }

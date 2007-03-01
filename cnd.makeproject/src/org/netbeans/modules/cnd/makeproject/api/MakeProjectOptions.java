@@ -54,4 +54,12 @@ public class MakeProjectOptions {
     public static boolean getFortranSupport() {
         return MakeOptions.getInstance().getFortran();
     }
+    
+    public static void setDepencyChecking(boolean val) {
+        MakeOptions.getInstance().setDepencyChecking(val);
+    }
+    
+    public static boolean getDepencyChecking() {
+        return MakeOptions.getInstance().getDepencyChecking();
+    }
 }

@@ -20,6 +20,9 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -33,18 +36,27 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  *
  * @author Alexander Simon
  */
-public class VariableDefinitionImpl extends VariableImpl<CsmVariableDefinition> implements CsmVariableDefinition {
+public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefinition> implements CsmVariableDefinition {
     private CsmVariable declaration;
+    private CsmUID<CsmVariable> declarationUID;
+    
     private String qualifiedName;
     private final String[] classOrNspNames;
 
@@ -67,12 +79,34 @@ public class VariableDefinitionImpl extends VariableImpl<CsmVariableDefinition> 
     }
     
     public CsmVariable getDeclaration() {
+        CsmVariable declaration = _getDeclaration(); 
 	if( declaration == null ) {
+            _setDeclaration(null);
 	    declaration = findDeclaration();
+            _setDeclaration(declaration);
 	}
 	return declaration;
     }
 
+    private CsmVariable _getDeclaration() {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmVariable declaration = UIDCsmConverter.UIDtoDeclaration(this.declarationUID);
+            assert declaration != null || this.declarationUID == null;
+            return declaration;
+        } else {
+            return this.declaration;
+        }
+    }
+    
+    private void _setDeclaration(CsmVariable decl) {
+        if (TraceFlags.USE_REPOSITORY) {
+            this.declarationUID = UIDCsmConverter.declarationToUID(decl);
+            assert declarationUID != null || decl == null;
+        } else {
+            this.declaration = decl;
+        }        
+    }
+    
     public String getQualifiedName() {
 	if( qualifiedName == null ) {
 	    qualifiedName = findQualifiedName();
@@ -81,6 +115,7 @@ public class VariableDefinitionImpl extends VariableImpl<CsmVariableDefinition> 
     }
     
     private String findQualifiedName() {
+        CsmVariable declaration = _getDeclaration();
 	if( declaration != null ) {
 	    return declaration.getQualifiedName();
 	}
@@ -211,4 +246,25 @@ public class VariableDefinitionImpl extends VariableImpl<CsmVariableDefinition> 
         }
         return null;
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
+    
+    public void write(DataOutput output) throws IOException {
+        super.write(output);    
+        assert this.qualifiedName != null;
+        output.writeUTF(this.qualifiedName);
+        PersistentUtils.writeStrings(this.classOrNspNames, output);
+        
+        UIDObjectFactory.getDefaultFactory().writeUID(this.declarationUID, output);
+    }  
+    
+    public VariableDefinitionImpl(DataInput input) throws IOException {
+        super(input);
+        this.qualifiedName = QualifiedNameCache.getString(input.readUTF());
+        assert this.qualifiedName != null;
+        this.classOrNspNames = PersistentUtils.readStrings(input, TextCache.getManager());
+        
+        this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+    }     
 }

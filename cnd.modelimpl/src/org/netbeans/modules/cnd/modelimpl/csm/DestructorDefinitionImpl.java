@@ -31,7 +31,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  */
 public final class DestructorDefinitionImpl extends FunctionDefinitionImpl {
     public DestructorDefinitionImpl(AST ast, CsmFile file) {
-        super(ast, file, null);
+        super(ast, file, null, true);
     }
 
     public CsmType getReturnType() {

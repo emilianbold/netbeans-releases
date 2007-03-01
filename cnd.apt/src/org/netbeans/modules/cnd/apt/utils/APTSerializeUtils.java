@@ -22,14 +22,26 @@ package org.netbeans.modules.cnd.apt.utils;
 import java.io.File;
 import java.io.BufferedOutputStream;
 import java.io.BufferedInputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap;
+import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
+import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
+import org.netbeans.modules.cnd.apt.impl.support.APTMacroImpl;
+import org.netbeans.modules.cnd.apt.impl.support.APTMacroMapSnapshot;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.APTMacro;
+import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 
 /**
  * utilities for APT serialization
@@ -154,4 +166,127 @@ public class APTSerializeUtils {
         }
         return aptRead;
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // persistence support
+    
+    public static void writeSystemMacroMap(APTMacroMap macroMap, DataOutput output) throws IOException {
+        throw new UnsupportedOperationException("Not yet supported"); // NOI18N
+    }
+    
+    public static APTMacroMap readSystemMacroMap(DataInput input) throws IOException {
+        throw new UnsupportedOperationException("Not yet supported"); // NOI18N
+    }
+    
+    public static void writeMacroMapState(APTMacroMap.State state, DataOutput output) throws IOException {
+        assert state != null;
+        if (state instanceof APTFileMacroMap.FileStateImpl) {
+            output.writeInt(MACRO_MAP_FILE_STATE_IMPL);
+            ((APTFileMacroMap.FileStateImpl)state).write(output);
+        } else {
+            assert state instanceof APTBaseMacroMap.StateImpl;
+            output.writeInt(MACRO_MAP_STATE_IMPL);
+            ((APTBaseMacroMap.StateImpl)state).write(output);
+        }
+    }
+    
+    public static APTMacroMap.State readMacroMapState(DataInput input) throws IOException {
+        int handler = input.readInt();
+        APTMacroMap.State state;
+        if (handler == MACRO_MAP_FILE_STATE_IMPL) {
+            state = new APTFileMacroMap.FileStateImpl(input);
+        } else {
+            assert handler == MACRO_MAP_STATE_IMPL;
+            state = new APTBaseMacroMap.StateImpl(input);
+        }
+        return state;
+    }
+    
+    public static void writeIncludeState(APTIncludeHandler.State state, DataOutput output) throws IOException {
+        assert state != null;
+        assert state instanceof APTIncludeHandlerImpl.StateImpl;
+        ((APTIncludeHandlerImpl.StateImpl)state).write(output);
+    }
+    
+    public static APTIncludeHandler.State readIncludeState(DataInput input) throws IOException {
+        APTIncludeHandler.State state = new APTIncludeHandlerImpl.StateImpl(input);
+        return state;
+    }    
+
+    ////////////////////////////////////////////////////////////////////////////
+    // persist snapshots
+    
+    public static void writeSnapshot(APTMacroMapSnapshot snap, DataOutput output) throws IOException {
+        if (snap == null) {
+            output.writeInt(NULL_POINTER);
+        } else {
+            output.write(MACRO_MAP_SNAPSHOT);
+            snap.write(output);
+        }
+    }
+
+    public static APTMacroMapSnapshot readSnapshot(DataInput input) throws IOException {
+        int handler = input.readInt();
+        APTMacroMapSnapshot snap = null;
+        if (handler != NULL_POINTER) {
+            assert handler == MACRO_MAP_SNAPSHOT;
+            snap = new APTMacroMapSnapshot(input);
+        }
+        return snap;
+    }
+
+    public static void writeStringToMacroMap(Map<String, APTMacro> macros, DataOutput output) throws IOException {
+        assert macros != null;
+        output.writeInt(macros.size());
+        for (Entry<String, APTMacro> entry : macros.entrySet()) {
+            assert entry != null;
+            String key = entry.getKey();
+            assert key != null;
+            output.writeUTF(key);
+            APTMacro macro = entry.getValue();
+            assert macro != null;
+            writeMacro(macro, output);            
+        }
+    }
+
+    public static void readStringToMacroMap(Map<String, APTMacro> macros, DataInput input) throws IOException {
+        int collSize = input.readInt();
+        for (int i = 0; i < collSize; ++i) {
+            String key = TextCache.getString(input.readUTF());
+            assert key != null;
+            APTMacro macro = readMacro(input);
+            assert macro != null;
+            macros.put(key, macro);
+        }
+    }
+    
+    private static void writeMacro(APTMacro macro, DataOutput output) throws IOException {
+        assert macro != null;
+        if (macro == APTMacroMapSnapshot.UNDEFINED_MACRO) {
+            output.writeInt(UNDEFINED_MACRO);
+        } else if (macro instanceof APTMacroImpl) {
+            output.writeInt(MACRO_IMPL);
+            ((APTMacroImpl)macro).write(output);
+        }
+    }
+    
+    private static APTMacro readMacro(DataInput input) throws IOException {
+        int handler = input.readInt();
+        APTMacro macro;
+        if (handler == UNDEFINED_MACRO) {
+            macro = APTMacroMapSnapshot.UNDEFINED_MACRO;
+        } else {
+            assert handler == MACRO_IMPL;
+            macro = new APTMacroImpl(input);
+        }
+        return macro;
+    }
+    
+    private static final int NULL_POINTER               = -1;
+    private static final int MACRO_MAP_STATE_IMPL       = 1;
+    private static final int MACRO_MAP_FILE_STATE_IMPL  = 2;
+    private static final int MACRO_MAP_SNAPSHOT         = 3;
+    private static final int UNDEFINED_MACRO            = 4;
+    private static final int MACRO_IMPL                 = 5;
+    
 }

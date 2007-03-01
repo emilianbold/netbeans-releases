@@ -253,5 +253,26 @@ public class ComparisonUtils {
 	}
     }
 	
-    
+    public static String getName(DwarfEntry entry) {
+	String name = entry.getName();
+	if( name.indexOf('<') >= 0 ) {
+	    StringBuilder sb = new StringBuilder();
+	    int level = 0;
+	    for( int i = 0; i < name.length(); i++ ) {
+		char c = name.charAt(i);
+		if( c == '<' ) {
+		    level++;
+		}
+		else if( c == '<' ) {
+		    level--;
+		}
+		else if(level == 0) {
+		    sb.append(c);
+		}
+	    }
+	    name = sb.toString();
+	}
+	name = name.replaceAll(" ", "");
+	return name;
+    }
 }

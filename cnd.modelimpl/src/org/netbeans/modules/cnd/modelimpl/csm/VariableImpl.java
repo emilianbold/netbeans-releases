@@ -244,7 +244,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     // impl of SelfPersistent
     
     public void write(DataOutput output) throws IOException {
-        super.write(output);      
+        super.write(output); 
+        assert this.name != null;
         output.writeUTF(this.name);
         output.writeBoolean(this._static);
         output.writeBoolean(this._extern);
@@ -256,6 +257,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public VariableImpl(DataInput input) throws IOException {
         super(input);
         this.name = TextCache.getString(input.readUTF());
+        assert this.name != null;
         this._static = input.readBoolean();
         this._extern = input.readBoolean();
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);

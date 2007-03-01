@@ -256,10 +256,6 @@ tokens {
 
     //	The statements in this block appear only in CPPParser.cpp and not in CPPLexer.cpp
 
-    protected
-    boolean codeFoldingParse = true;	// When parsing non-preprocessed code we want to accept qiVar
-					// where qiType is expected.
-
     public static final
     int statementTrace = 0;	// Used to control selected (level) tracing (see support.cpp)
 				// 1 Shows which external and member statements selected
@@ -2173,6 +2169,7 @@ template_parameter
 assigned_type_name
 	{/*TypeSpecifier*/int ts;}
 	:
+	(LITERAL_typename)?
 	(options{generateAmbigWarnings = false;}:
 		qualified_type abstract_declarator	
 	|

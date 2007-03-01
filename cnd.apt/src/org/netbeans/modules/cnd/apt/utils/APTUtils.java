@@ -329,7 +329,7 @@ public class APTUtils {
         return text;
     }
     
-    public static Object getTokenTextKey(Token token) {
+    public static String getTokenTextKey(Token token) {
         assert (token != null);
         // now use text, but it will be faster to use textID
         return token.getText();

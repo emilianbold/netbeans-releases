@@ -155,9 +155,6 @@ public class CPPParserEx extends CPPParser {
     // Shorthand for a string of (qualifiedItemIs()==xxx||...)
     protected final boolean qualifiedItemIsOneOf(/*QualifiedItem*/int qiFlags, int lookahead_offset) { 
 	/*QualifiedItem*/int qi = qualifiedItemIs(lookahead_offset); 
-	if (codeFoldingParse && (qiFlags & (qiType | qiCtor)) > 0) {
-	    qiFlags |= qiVar;
-	}
 	return (qi & qiFlags) != 0; 
     }
     
@@ -284,11 +281,7 @@ public class CPPParserEx extends CPPParser {
 	    // Do not allow id::
 	    if (LT(tmp_k+1).getType() == SCOPE) {
 		//printf("support.cpp qualifiedItemIs qiInvalid(3) returned\n");
-		if (codeFoldingParse) {
-		    return qiVar;
-		} else {
-		    return qiInvalid;
-		}
+		return qiInvalid;
 	    }
 	    if (strcmp(enclosingClass,(LT(tmp_k).getText()))==0) {
 		// Like class T  T()
@@ -960,28 +953,27 @@ public class CPPParserEx extends CPPParser {
     }
     
     protected final boolean _isCtor() { 
-	if (codeFoldingParse) {
-            String lastID, refID;
-	    /*
-	     * The hard case. We really don't have enough information. What do we look for?
-	     * A list of SCOPE separated IDs, with the last 2 IDs being identical.
-	     */
-	    int i = 1;
-	    Token ref, last = null;
-	    if (LT(i).getType() == SCOPE) {
-		i++;
-	    }
-	    while ((ref = LT(i)).getType() == ID && LT(i + 1).getType() == SCOPE) {
-		i += 2;
-		last = ref;
-	    }
-            lastID = last != null ? last.getText() : null;
-            refID = ref != null ? ref.getText() : null;
-	    return lastID != null && refID != null && strcmp(lastID, refID) == 0;
-	} else {
-	    // The easy case...
-	    return qualifiedItemIsOneOf(qiCtor);
-	}
+//	if (codeFoldingParse) {
+//            String lastID, refID;
+//	    /*
+//	     * The hard case. We really don't have enough information. What do we look for?
+//	     * A list of SCOPE separated IDs, with the last 2 IDs being identical.
+//	     */
+//	    int i = 1;
+//	    Token ref, last = null;
+//	    if (LT(i).getType() == SCOPE) {
+//		i++;
+//	    }
+//	    while ((ref = LT(i)).getType() == ID && LT(i + 1).getType() == SCOPE) {
+//		i += 2;
+//		last = ref;
+//	    }
+//            lastID = last != null ? last.getText() : null;
+//            refID = ref != null ? ref.getText() : null;
+//	    return lastID != null && refID != null && strcmp(lastID, refID) == 0;
+//	} else {
+//	    // The easy case...
+	return qualifiedItemIsOneOf(qiCtor);
     }
     
     

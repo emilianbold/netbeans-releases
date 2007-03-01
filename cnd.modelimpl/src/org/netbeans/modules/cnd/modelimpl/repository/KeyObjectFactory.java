@@ -150,12 +150,12 @@ public class KeyObjectFactory extends AbstractObjectFactory {
     
     private static final int FIRST_INDEX        = AbstractObjectFactory.LAST_INDEX + 1;
     
-    private static final int KEY_PROJECT_KEY    = FIRST_INDEX;
-    private static final int KEY_NAMESPACE_KEY  = KEY_PROJECT_KEY + 1;
-    private static final int KEY_FILE_KEY       = KEY_NAMESPACE_KEY + 1;
-    private static final int KEY_MACRO_KEY      = KEY_FILE_KEY + 1;
-    private static final int KEY_INCLUDE_KEY    = KEY_MACRO_KEY + 1;
-    private static final int KEY_DECLARATION_KEY = KEY_INCLUDE_KEY + 1;
+    public static final int KEY_PROJECT_KEY    = FIRST_INDEX;
+    public static final int KEY_NAMESPACE_KEY  = KEY_PROJECT_KEY + 1;
+    public static final int KEY_FILE_KEY       = KEY_NAMESPACE_KEY + 1;
+    public static final int KEY_MACRO_KEY      = KEY_FILE_KEY + 1;
+    public static final int KEY_INCLUDE_KEY    = KEY_MACRO_KEY + 1;
+    public static final int KEY_DECLARATION_KEY = KEY_INCLUDE_KEY + 1;
     
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX    

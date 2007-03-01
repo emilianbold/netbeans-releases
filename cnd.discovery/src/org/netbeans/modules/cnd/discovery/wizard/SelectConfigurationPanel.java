@@ -149,6 +149,7 @@ public final class SelectConfigurationPanel extends JPanel {
 
         setLayout(new java.awt.BorderLayout());
 
+        setPreferredSize(new java.awt.Dimension(400, 400));
         jSplitPane1.setBorder(null);
         jSplitPane1.setDividerLocation(200);
         jPanel1.setLayout(new java.awt.GridBagLayout());

@@ -407,6 +407,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         output.writeBoolean(reference);
         output.writeInt(arrayDepth);
         output.writeBoolean(_const);
+        assert this.classifierText != null;
         output.writeUTF(classifierText);
         
         PersistentUtils.writeStrings(qname, output);
@@ -421,6 +422,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         this.arrayDepth= input.readInt();
         this._const = input.readBoolean();
         this.classifierText = TextCache.getString(input.readUTF());
+        assert this.classifierText != null;
         
         this.qname = PersistentUtils.readStrings(input, TextCache.getManager());
         this.firstOffset = input.readInt();

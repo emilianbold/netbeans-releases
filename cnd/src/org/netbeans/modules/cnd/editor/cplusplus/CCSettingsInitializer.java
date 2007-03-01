@@ -13,27 +13,25 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.TreeMap;
 import javax.swing.KeyStroke;
-import org.netbeans.editor.*;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.MultiKeyBinding;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsNames;
+import org.netbeans.editor.SettingsUtil;
+import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.editor.ext.ExtSettingsInitializer;
-
-// popup menu actions
-import org.openide.actions.SaveAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.CopyAction;
 import org.openide.actions.PasteAction;
@@ -43,11 +41,7 @@ import org.openide.actions.ToolsAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.windows.TopComponent;
 
-/**
-* Extended settings for CC.
-*
-*/
-
+/** Extended settings for CC */ 
 public class CCSettingsInitializer extends Settings.AbstractInitializer {
 
     /** Name assigned to initializer */
@@ -55,10 +49,11 @@ public class CCSettingsInitializer extends Settings.AbstractInitializer {
 
     private Class ccKitClass;
 
-    /** Construct new cc-settings-initializer.
-    * @param ccKitClass the real kit class for which the settings are created.
-    *   It's unknown here so it must be passed to this constructor.
-    */
+    /**
+     * Construct new cc-settings-initializer.
+     * @param ccKitClass the real kit class for which the settings are created.
+     *   It's unknown here so it must be passed to this constructor.
+     */
     public CCSettingsInitializer(Class ccKitClass) {
         super(NAME);
         this.ccKitClass = ccKitClass;
@@ -77,11 +72,6 @@ public class CCSettingsInitializer extends Settings.AbstractInitializer {
         // Update cc colorings
         if (kitClass == BaseKit.class) {
             new CCSettingsDefaults.CCTokenColoringInitializer().updateSettingsMap(kitClass, settingsMap);
-        }
-        
-        if (kitClass == ExtKit.class) {
-	    // set up cut,paste,etc buttons
-	    new ExtSettingsInitializer().updateSettingsMap(kitClass, settingsMap);
         }
         
         if (kitClass == ccKitClass) {
@@ -128,7 +118,7 @@ public class CCSettingsInitializer extends Settings.AbstractInitializer {
                                            }
                                           );
 	    
-            settingsMap.put(SettingsNames.ABBREV_MAP, CCSettingsDefaults.getCCAbbrevMap());
+            settingsMap.put(SettingsNames.ABBREV_MAP, CCSettingsDefaults.getCCAbbrevMap(kitClass));
 
             settingsMap.put(ExtSettingsNames.CARET_SIMPLE_MATCH_BRACE,
                             CCSettingsDefaults.defaultCaretSimpleMatchBrace);

@@ -97,13 +97,15 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
 
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        output.writeUTF(name);
-        UIDObjectFactory.getDefaultFactory().writeUID(enumerationUID, output);
+        assert this.name != null;
+        output.writeUTF(this.name);
+        UIDObjectFactory.getDefaultFactory().writeUID(this.enumerationUID, output);
     }
     
     public EnumeratorImpl(DataInput input) throws IOException {
         super(input);
         this.name = TextCache.getString(input.readUTF());
+        assert this.name != null;
         this.enumerationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         
         assert TraceFlags.USE_REPOSITORY;

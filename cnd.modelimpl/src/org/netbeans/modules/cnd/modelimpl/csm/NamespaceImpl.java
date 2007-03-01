@@ -358,14 +358,16 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     
     public void write(DataOutput output) throws IOException {
         UIDObjectFactory theFactory = UIDObjectFactory.getDefaultFactory();
-        theFactory.writeUID(projectUID, output);
-        theFactory.writeUID(parentUID, output);
-        output.writeUTF(name);
-        output.writeUTF(qualifiedName);
-        theFactory.writeStringToUIDMap(nestedMap, output);
-        theFactory.writeStringToUIDMap(declarations, output);
-        theFactory.writeStringToUIDMap(nsDefinitions, output);
-        output.writeBoolean(global);
+        theFactory.writeUID(this.projectUID, output);
+        theFactory.writeUID(this.parentUID, output);
+        assert this.name != null;
+        output.writeUTF(this.name);
+        assert this.qualifiedName != null;
+        output.writeUTF(this.qualifiedName);
+        theFactory.writeStringToUIDMap(this.nestedMap, output);
+        theFactory.writeStringToUIDMap(this.declarations, output);
+        theFactory.writeStringToUIDMap(this.nsDefinitions, output);
+        output.writeBoolean(this.global);
     }
 
     public NamespaceImpl (DataInput input) throws IOException {
@@ -373,10 +375,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.projectUID = theFactory.readUID(input);
         this.parentUID = theFactory.readUID(input);
         this.name = TextCache.getString(input.readUTF());
+        assert this.name != null;
         this.qualifiedName = QualifiedNameCache.getString(input.readUTF());
-        theFactory.readStringToUIDMap(nestedMap, input, QualifiedNameCache.getManager());
-        theFactory.readStringToUIDMap(declarations, input, TextCache.getManager());
-        theFactory.readStringToUIDMap(nsDefinitions, input, QualifiedNameCache.getManager());
+        assert this.qualifiedName != null;
+        theFactory.readStringToUIDMap(this.nestedMap, input, QualifiedNameCache.getManager());
+        theFactory.readStringToUIDMap(this.declarations, input, TextCache.getManager());
+        theFactory.readStringToUIDMap(this.nsDefinitions, input, QualifiedNameCache.getManager());
         this.global = input.readBoolean();
     }
     

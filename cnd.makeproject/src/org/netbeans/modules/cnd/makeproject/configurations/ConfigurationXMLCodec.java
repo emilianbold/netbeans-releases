@@ -40,6 +40,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.VersionException;
+import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.openide.filesystems.FileObject;
@@ -60,6 +61,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private Vector confs = new Vector();
     private Configuration currentConf = null;
     private ItemConfiguration currentItemConfiguration = null;
+    private FolderConfiguration currentFolderConfiguration = null;
     private CCCCompilerConfiguration currentCCCCompilerConfiguration = null;
     private BasicCompilerConfiguration currentBasicCompilerConfiguration = null;
     private CCompilerConfiguration currentCCompilerConfiguration = null;
@@ -168,10 +170,21 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else {
                 ;// FIXUP
             }
+        } else if (element.equals(FolderXMLCodec.FOLDER_ELEMENT)) {
+            String path = atts.getValue(0);
+            Folder folder = ((MakeConfigurationDescriptor)projectDescriptor).findFolderByPath(path);
+            if (folder != null) {
+                FolderConfiguration folderConfiguration = folder.getFolderConfiguration(currentConf);
+                currentFolderConfiguration = folderConfiguration;
+            } else {
+                ;// FIXUP
+            }
         } else if (element.equals(COMPILERTOOL_ELEMENT)) {
         } else if (element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
             if (currentItemConfiguration != null)
                 currentCCompilerConfiguration = currentItemConfiguration.getCCompilerConfiguration();
+            if (currentFolderConfiguration != null)
+                currentCCompilerConfiguration = currentFolderConfiguration.getCCompilerConfiguration();
             else
                 currentCCompilerConfiguration = ((MakeConfiguration)currentConf).getCCompilerConfiguration();
             currentCCCCompilerConfiguration = currentCCompilerConfiguration;
@@ -179,6 +192,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(CCCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
             if (currentItemConfiguration != null)
                 currentCCCompilerConfiguration = currentItemConfiguration.getCCCompilerConfiguration();
+            if (currentFolderConfiguration != null)
+                currentCCCompilerConfiguration = currentFolderConfiguration.getCCCompilerConfiguration();
             else
                 currentCCCompilerConfiguration = ((MakeConfiguration)currentConf).getCCCompilerConfiguration();
             currentCCCCompilerConfiguration = currentCCCompilerConfiguration;
@@ -254,6 +269,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(PLATFORM_ELEMENT)) {
             int set = new Integer(currentText).intValue();
             ((MakeConfiguration)currentConf).getPlatform().setValue(set);
+        } else if (element.equals(DEPENDENCY_CHECKING)) {
+            boolean ds = currentText.equals(TRUE_VALUE);
+            ((MakeConfiguration)currentConf).getDependencyChecking().setValue(ds);
         } else if (element.equals(DEFAULT_CONF_ELEMENT)) {
             defaultConf = new Integer(currentText).intValue();
         } else if (element.equals(PROJECT_MAKEFILE_ELEMENT)) {
@@ -330,6 +348,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(ItemXMLCodec.ITEM_ELEMENT)) {
             currentItemConfiguration.clearChanged();
             currentItemConfiguration = null;
+        } else if (element.equals(FolderXMLCodec.FOLDER_ELEMENT)) {
+            currentFolderConfiguration.clearChanged();
+            currentFolderConfiguration = null;
         } else if (element.equals(COMPILERTOOL_ELEMENT)) { // FIXUP: < 10
         } else if (element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <=23
             currentCCompilerConfiguration = null;

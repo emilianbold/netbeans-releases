@@ -65,22 +65,23 @@ run() {
 params() {
     while [ -n "$1" ]
     do
-		case "$1" in
-	    -r)
-		    	shift
-		    	root=$1
-		    	;;
-	    	*)
-		    	dirs="${dirs} $1"
-		    	;;
-		esac
+	case "$1" in
+	    -r|--res)
 		shift
+		root=$1
+		;;
+	    *)
+		dirs="${dirs} $1"
+		;;
+	esac
+	shift
     done
 }
 
 main() {
 	#setting defaults
-	root=${HOME}/_testcode/_res
+	TESTCODE=${TESTCODE-${HOME}/_testcode}
+	root=${TESTCODE}/_res
 	
 	#processing parameters
 	params $@

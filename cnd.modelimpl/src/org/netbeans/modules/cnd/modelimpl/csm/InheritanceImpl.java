@@ -142,7 +142,8 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     public void write(DataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeVisibility(this.visibility, output);
-        output.writeBoolean(virtual);
+        output.writeBoolean(this.virtual);
+        assert this.ancestorName != null;
         output.writeUTF(ancestorName);        
 
         // save cache
@@ -154,6 +155,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         this.visibility = PersistentUtils.readVisibility(input);
         this.virtual = input.readBoolean();
         this.ancestorName = TextCache.getString(input.readUTF());
+        assert this.ancestorName != null;
 
         // restore cached value
         this.ancestorCacheUID = UIDObjectFactory.getDefaultFactory().readUID(input);        

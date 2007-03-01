@@ -18,50 +18,24 @@
  */
 
 package org.netbeans.modules.cnd.editor.cplusplus;
+
 import java.awt.Color;
 import java.awt.Dimension;
 
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-
-import org.netbeans.editor.Settings;
-import org.netbeans.modules.editor.options.*;
-import org.netbeans.editor.Formatter;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ExtSettingsNames;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.openide.util.HelpCtx;
+import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.modules.editor.options.OptionSupport;
 
-/**
- * Options for the CC editor kit
- *
- */
-public class CCOptions extends org.netbeans.modules.editor.options.BaseOptions {
+/** Options for the CC editor kit */
+public class CCOptions extends BaseOptions {
+    
     static final long serialVersionUID = 6972381723748170673L;
     
-    public static final String CC = "cc"; //NOI18N
-
-    public CCOptions() {
-        super (CCKit.class, CC);
-	Settings.setValue(CCKit.class, NbEditorDocument.FORMATTER, 
-			  Formatter.getFormatter(CCKit.class));
-    }
-
-    /** @return localized string */
-    protected String getString(String s) {
-        try {
-            String res = NbBundle.getBundle(CCOptions.class).getString(s);
-            return (res == null) ? super.getString(s) : res;
-        }
-        catch (Exception e) {
-            return super.getString(s);
-        }
-    }
-  
-    /** Return the CC Indent Engine class */
-    protected Class getDefaultIndentEngineClass() {
-        return CCIndentEngine.class;
-    }
+    public static final String CC = "CPLUSPLUS"; //NOI18N
 
     public static final String DOCUMENTATION_URLBASE_PROP = "documentationURLBase"; // NOI18N
 
@@ -107,6 +81,19 @@ public class CCOptions extends org.netbeans.modules.editor.options.BaseOptions {
                                                 CODE_FOLDING_ENABLE_PROP,
                                                 PAIR_CHARACTERS_COMPLETION
                                             });
+
+    public CCOptions() {
+        super(CCKit.class, CC);
+    }
+    
+    public CCOptions(Class kitClass, String typeName) {
+        super(kitClass, typeName);
+    }
+  
+    /** Return the CC Indent Engine class */
+    protected Class getDefaultIndentEngineClass() {
+        return CCIndentEngine.class;
+    }
                                             
     public String getDocumentationURLBase() {
         String s = (String)getSettingValue(CCSettingsNames.DOCUMENTATION_URLBASE);
@@ -117,17 +104,6 @@ public class CCOptions extends org.netbeans.modules.editor.options.BaseOptions {
     }
     
     public void setDocumentationURLBase(String v) {
-	/*
-	try {
-	    MessageFormat mf = new MessageFormat(v);
-	    Object[] o = mf.parse(""); // NOI18N
-	} catch (ParseException e) {
-	    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-				NbBundle.getBundle(CCKit.class).getString(
-					  "InvalidUrlBase"))); // NOI18N
-	    return;
-	}
-	*/
         setSettingValue(CCSettingsNames.DOCUMENTATION_URLBASE, v,
 			DOCUMENTATION_URLBASE_PROP);
     }
@@ -247,5 +223,19 @@ public class CCOptions extends org.netbeans.modules.editor.options.BaseOptions {
     
     public HelpCtx getHelpCtx() {
         return new HelpCtx(HELP_ID);
+    }
+
+    /**
+     * Get the localized string from the argument. This method is called up the stack.
+     * So even though its not called inside this class, its definately needed!
+     */
+    protected String getString(String s) {
+        try {
+            String res = NbBundle.getBundle(CCOptions.class).getString(s);
+            return (res == null) ? super.getString(s) : res;
+        }
+        catch (Exception e) {
+            return super.getString(s);
+        }
     }
 }

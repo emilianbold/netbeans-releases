@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -27,6 +30,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
@@ -97,7 +101,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         return new StateImpl();
     }
     
-    protected static class StateImpl implements State {
+    public static class StateImpl implements State {
         // for now just remember lists
         private List/*<String>*/ systemIncludePaths;
         private List/*<String>*/ userIncludePaths;   
@@ -105,6 +109,9 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         
         private Map/*<String, Integer>*/ recurseIncludes = null;   
         private Stack/*IncludeInfo*/ inclStack = null;        
+        
+        public StateImpl() {
+        }
         
         void initFrom(APTIncludeHandlerImpl handler) {
             this.systemIncludePaths = handler.systemIncludePaths;
@@ -156,6 +163,14 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             this.inclStack = null;
             return out;
         }        
+
+        public void write(DataOutput output) {
+            throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
+        }
+        
+        public StateImpl(DataInput input) throws IOException {
+            throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
+        }         
     }
     
     ////////////////////////////////////////////////////////////////////////////

@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import modelutils.Config;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
 import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
@@ -71,7 +72,7 @@ public class ModelDump {
     
     public ModelDump(PrintStream log) {
         this.log = log;
-        model = new ModelImpl();
+        model = (ModelImpl) CsmModelAccessor.getModel(); //new ModelImpl();
     }
     
     public void setLog(PrintStream log) {

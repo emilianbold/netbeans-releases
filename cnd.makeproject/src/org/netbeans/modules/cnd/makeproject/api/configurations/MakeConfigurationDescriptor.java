@@ -249,7 +249,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         Iterator it = coll.iterator();
         while (it.hasNext()) {
             Item item = (Item)it.next();
-            File itemFile = item.getFile();
+            File itemFile = item.getCanonicalFile();
             if (itemFile == file || itemFile.getPath().equals(file.getPath()))
                 return item;
         }
@@ -284,6 +284,10 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
             item = (Item)(Item)externalFileItems.findItemByPath(newPath);
         }
         return item;
+    }
+    
+    public Folder findFolderByPath(String path) {
+        return getLogicalFolders().findFolderByPath(path);
     }
     
     public void addProjectItem(Item item) {

@@ -53,4 +53,12 @@ public class HashMapRepository implements Repository {
     public void remove(Key key) {
         map.remove(key);
     }
+
+    public void hang(Key key, Persistent obj) {
+        put(key, obj);
+    }
+
+    public void flush() {
+        // do nothing
+    }
 }

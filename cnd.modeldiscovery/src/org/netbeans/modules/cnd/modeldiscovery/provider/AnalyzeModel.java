@@ -232,7 +232,7 @@ public class AnalyzeModel implements DiscoveryProvider {
                 Item item = items[i];
                 Language lang = item.getLanguage();
                 if (lang == Language.C || lang == Language.CPP){
-                    String path = item.getAbsPath();
+                    String path = item.getFile().getAbsolutePath();
                     CsmFile langFile = langProject.findFile(path);
                     SourceFileProperties source = new ModelSource(item, langFile, searchBase);
                     res.add(source);

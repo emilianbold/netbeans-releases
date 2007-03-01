@@ -31,7 +31,7 @@ import org.netbeans.modules.cnd.api.model.*;
 public final class DestructorImpl extends MethodImpl{
 
     public DestructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
-        super(ast, cls, visibility);
+        super(ast, cls, visibility, true);
     }
 
     public CsmType getReturnType() {

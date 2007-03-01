@@ -75,6 +75,10 @@ public class ShellDataLoader extends CndAbstractDataLoader {
     public static ShellDataLoader getInstance() {
 	return instance;
     }
+    
+    protected String actionsContext () {
+        return "Loaders/text/x-shell/Actions/"; // NOI18N
+    }
 
     protected String getMimeType() {
         return MIMENames.SHELL_MIME_TYPE;

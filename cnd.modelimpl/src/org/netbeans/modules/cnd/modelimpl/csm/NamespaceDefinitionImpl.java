@@ -137,8 +137,8 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmUID<CsmDeclaration>> uids = new ArrayList(declarations);
-            declarations.clear();
-            if (false) RepositoryUtils.remove(uids);
+            RepositoryUtils.remove(uids);
+            declarations.clear();            
         } else {
             declarationsOLD.clear();
         }    
@@ -161,8 +161,9 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         super.write(output);  
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUIDCollection(this.declarations, output);
-        factory.writeUID(namespaceUID, output);
-        output.writeUTF(name);
+        factory.writeUID(this.namespaceUID, output);
+        assert this.name != null;
+        output.writeUTF(this.name);
     }  
     
     public NamespaceDefinitionImpl(DataInput input) throws IOException {
@@ -171,6 +172,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         this.declarations = (List<CsmUID<CsmDeclaration>>) factory.readUIDCollection(Collections.synchronizedList(new ArrayList<CsmUID<CsmDeclaration>>()), input);
         this.namespaceUID = factory.readUID(input);
         this.name = TextCache.getString(input.readUTF());
+        assert this.name != null;
         
         assert TraceFlags.USE_REPOSITORY;
         this.declarationsOLD = null;

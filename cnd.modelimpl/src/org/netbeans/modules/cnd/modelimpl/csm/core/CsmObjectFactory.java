@@ -29,16 +29,21 @@ import org.netbeans.modules.cnd.modelimpl.csm.DestructorDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.DestructorDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.DestructorImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceAliasImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.VariableDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -64,6 +69,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     public boolean canWrite(Persistent obj) {
         if (obj instanceof FileImpl) {
             return ((FileImpl)obj).getBuffer().isFileBased();
+        } else if (obj instanceof ProjectBase) {
+            return false;
         } else {
             return true;
         }
@@ -124,13 +131,21 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             }
         } else if (object instanceof VariableImpl) {
             // we have several VariableImpl subclasses
-            if (false) {
-                aHandler = -1;
+            if (object instanceof VariableDefinitionImpl) {
+                aHandler = VARIABLE_DEF_IMPL;
+            } else if (object instanceof FieldImpl) {
+                aHandler = FIELD_IMPL;
+            } else if (object instanceof ParameterImpl) {
+                aHandler = PARAMETER_IMPL;
             } else {
                 aHandler = VARIABLE_IMPL;
             }
         } else if (object instanceof EnumeratorImpl) {
             aHandler = ENUMERATOR_IMPL;
+        } else if (object instanceof IncludeImpl) {
+            aHandler = INCLUDE_IMPL;
+        } else if (object instanceof MacroImpl) {
+            aHandler = MACRO_IMPL;
         } else {
             throw new IllegalArgumentException("instance of unknown class" + object.getClass().getName());  //NOI18N
         }
@@ -217,12 +232,32 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new FunctionDDImpl(stream);
                 break;
                 
+            case VARIABLE_DEF_IMPL:
+                obj = new VariableDefinitionImpl(stream);
+                break;
+                
+            case FIELD_IMPL:
+                obj = new FieldImpl(stream);
+                break;
+                
+            case PARAMETER_IMPL:
+                obj = new ParameterImpl(stream);
+                break;
+                
             case VARIABLE_IMPL:
                 obj = new VariableImpl(stream);
                 break;
                 
             case ENUMERATOR_IMPL:
                 obj = new EnumeratorImpl(stream);
+                break;
+                
+            case INCLUDE_IMPL:
+                obj = new IncludeImpl(stream);
+                break;
+                
+            case MACRO_IMPL:
+                obj = new MacroImpl(stream);
                 break;
                 
             default:
@@ -278,10 +313,16 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     
     // variables
     private static final int VARIABLE_IMPL                  = FUNCTION_DEF_DECL_IMPL + 1;
+    private static final int VARIABLE_DEF_IMPL              = VARIABLE_IMPL + 1;
+    private static final int FIELD_IMPL                     = VARIABLE_DEF_IMPL + 1;
+    private static final int PARAMETER_IMPL                 = FIELD_IMPL + 1;
     
-    private static final int ENUMERATOR_IMPL                = VARIABLE_IMPL + 1;
+    private static final int ENUMERATOR_IMPL                = PARAMETER_IMPL + 1;
+
+    private static final int INCLUDE_IMPL                   = ENUMERATOR_IMPL + 1;
+    private static final int MACRO_IMPL                     = INCLUDE_IMPL + 1;
     
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
-    public static final int LAST_INDEX = ENUMERATOR_IMPL;    
+    public static final int LAST_INDEX = MACRO_IMPL;    
 }

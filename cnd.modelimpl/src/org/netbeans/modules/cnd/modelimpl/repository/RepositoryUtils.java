@@ -79,6 +79,18 @@ public class RepositoryUtils {
         return uid;
     }
     
+    public static void hang(CsmIdentifiable csmObj) {
+        CsmUID uid = null;
+        if (csmObj != null) {
+            uid = csmObj.getUID();
+            assert uid != null;
+            Key key = UIDtoKey(uid);
+            if (key != null) {
+                RepositoryAccessor.getRepository().hang(key, (Persistent)csmObj);
+            }
+        }
+    }
+    
     public static <T extends CsmOffsetableDeclaration> List<CsmUID<T>> put(List<T> decls) {
         assert decls != null;
         List<CsmUID<T>> uids = new ArrayList<CsmUID<T>>(decls.size());

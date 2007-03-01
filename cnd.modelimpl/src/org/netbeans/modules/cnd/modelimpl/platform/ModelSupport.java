@@ -181,6 +181,16 @@ public class ModelSupport implements PropertyChangeListener {
     protected void onProjectItemChanged(final NativeFileItem item) {
         // invalidate cache for this file
         CacheManager.getInstance().invalidate(item.getFile().getAbsolutePath());
+        try {
+            final ProjectBase project = getProject(item, false);
+            if( project != null ) {
+                project.onFilePropertyChanged(item);
+            }
+        } catch( Exception e ) {
+            //TODO: FIX (most likely in Makeproject: path == null in this situation,
+            //this cause NPE
+            e.printStackTrace(System.err);
+        }
     }
 
 //    // FIXUP: used only in old project api

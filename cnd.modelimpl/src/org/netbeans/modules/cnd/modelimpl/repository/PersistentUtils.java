@@ -23,12 +23,16 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.apt.support.APTPreprocState;
 import org.netbeans.modules.cnd.apt.utils.APTStringManager;
+import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NoType;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
@@ -37,6 +41,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyCompoundStatementImpl;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTPreprocStateImpl;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 
 /**
@@ -70,7 +75,7 @@ public class PersistentUtils {
     }
     
     ////////////////////////////////////////////////////////////////////////////
-    // support string arrays
+    // support string (arrays)
     
     public static void writeStrings(String[] arr, DataOutput output) throws IOException {
         if (arr == null) {
@@ -79,6 +84,7 @@ public class PersistentUtils {
             int len = arr.length;
             output.writeInt(len);
             for (int i = 0; i < len; i++) {
+                assert arr[i] != null;
                 output.writeUTF(arr[i]);
             }
         }
@@ -98,6 +104,20 @@ public class PersistentUtils {
         return arr;
     }   
     
+    public static void writeUTF(String st, DataOutput aStream) throws IOException
+    {
+        if (st != null) {
+            aStream.writeBoolean(true);
+            aStream.writeUTF(st);
+        } else {
+            aStream.writeBoolean(false);
+        }
+    }
+    
+    public static String readUTF(DataInput aStream) throws IOException
+    {
+        return aStream.readBoolean() ? aStream.readUTF() : null;
+    }
     ////////////////////////////////////////////////////////////////////////////
     // support CsmExpression
 
@@ -283,7 +303,59 @@ public class PersistentUtils {
     }
     
     ////////////////////////////////////////////////////////////////////////////
-    // support function bodies
+    // support preprocessor states
+    
+
+    public static void writeStringToStateMap(Map<String, APTPreprocState.State> filesHandlers, DataOutput output) throws IOException {
+        assert filesHandlers != null;
+        int collSize = filesHandlers.size();
+        output.writeInt(collSize);
+
+        for (Entry<String, APTPreprocState.State> entry: filesHandlers.entrySet()) {
+            assert entry != null;
+            String key = entry.getKey();
+            output.writeUTF(key);
+            assert key != null;
+            APTPreprocState.State state = entry.getValue();
+            writePreprocStateState(state, output);
+        }         
+    }
+
+    public static void readStringToStateMap(Map<String, APTPreprocState.State> filesHandlers, DataInput input) throws IOException {
+        assert filesHandlers != null;
+        int collSize = input.readInt();
+        
+        for (int i = 0; i < collSize; i++) {
+            String key = FilePathCache.getString(input.readUTF());
+            assert key != null;
+            APTPreprocState.State state = readPreprocStateState(input);
+            assert state != null;
+            filesHandlers.put(key, state);
+        }
+    }
+    
+    private static void writePreprocStateState(APTPreprocState.State state, DataOutput output) throws IOException {
+        assert state != null;
+        if (state instanceof APTPreprocStateImpl.StateImpl) {
+            output.writeInt(PREPROC_STATE_STATE_IMPL);
+            ((APTPreprocStateImpl.StateImpl)state).write(output);
+        } else {
+            throw new IllegalArgumentException("unknown preprocessor state" + state);  //NOI18N
+        }        
+    }
+    
+    private static APTPreprocState.State readPreprocStateState(DataInput input) throws IOException {
+        int handler = input.readInt();
+        APTPreprocState.State out;
+        switch (handler) {
+            case PREPROC_STATE_STATE_IMPL:
+                out = new APTPreprocStateImpl.StateImpl(input);
+                break;
+            default:
+                throw new IllegalArgumentException("unknown preprocessor state handler" + handler);  //NOI18N
+        }
+        return out;
+    }    
     
     ////////////////////////////////////////////////////////////////////////////
     // indices
@@ -303,7 +375,10 @@ public class PersistentUtils {
     private static final int NO_TYPE                = FILE_BUFFER_FILE + 1;
     private static final int TYPE_IMPL              = NO_TYPE + 1;
     
+    // state 
+    private static final int PREPROC_STATE_STATE_IMPL = TYPE_IMPL + 1;
+    
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
-    public static final int LAST_INDEX              = TYPE_IMPL;
+    public static final int LAST_INDEX              = PREPROC_STATE_STATE_IMPL;
 }

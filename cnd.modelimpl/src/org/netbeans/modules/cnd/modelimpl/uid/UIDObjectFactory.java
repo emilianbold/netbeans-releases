@@ -172,7 +172,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     protected SelfPersistent createObject(int handler, DataInput aStream) throws IOException {
         
         SelfPersistent anUID;
-        
+        boolean share = true;
         switch (handler) {
             case UID_PROJECT_UID:
                 anUID = new ProjectUID(aStream);
@@ -217,12 +217,20 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             case UID_BUILT_IN_UID:
                 {
                     anUID = BuiltinTypes.readUID(aStream);
+                    share = false;
                 }
                 break;
             default:
                 throw new IllegalArgumentException("The UID is an instance of unknow class"); //NOI18N
         }
-        
+        if (share) {
+            assert anUID != null;
+            assert anUID instanceof CsmUID;
+            CsmUID shared = UIDManager.instance().getSharedUID((CsmUID)anUID);
+            assert shared != null;
+            assert shared instanceof SelfPersistent;
+            anUID = (SelfPersistent)anUID;
+        }
         return anUID;
     }
     

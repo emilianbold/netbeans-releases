@@ -20,10 +20,13 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import antlr.Token;
-import antlr.TokenStream;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
+import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
@@ -100,7 +103,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         }
     }
     
-    private static class FileStateImpl extends StateImpl {
+    public static class FileStateImpl extends StateImpl {
         public final APTMacroMap sysMacroMap;
         
         public FileStateImpl(APTMacroMapSnapshot snap, APTMacroMap sysMacroMap) {
@@ -118,7 +121,18 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             return retValue.toString();
         }
         
-        
+        ////////////////////////////////////////////////////////////////////////
+        // persistence support
+
+        public void write(DataOutput output) throws IOException {
+            super.write(output);
+            APTSerializeUtils.writeSystemMacroMap(this.sysMacroMap, output);
+        }
+
+        public FileStateImpl(DataInput input) throws IOException {
+            super(input);
+            this.sysMacroMap = APTSerializeUtils.readSystemMacroMap(input);
+        }          
     }
     ////////////////////////////////////////////////////////////////////////////
     // manage macro expanding stack

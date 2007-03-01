@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
@@ -81,6 +82,16 @@ public class BasicCompilerConfiguration {
 	additionalDependencies = new StringConfiguration(master != null ? master.getAdditionalDependencies() : null, ""); // NOI18N
 	tool = new StringConfiguration(master != null ? master.getTool() : null, ""); // NOI18N
 	commandLineConfiguration = new OptionsConfiguration();
+    }
+    
+    public boolean getModified() {
+        return developmentMode.getModified() ||
+                warningLevel.getModified() ||
+                sixtyfourBits.getModified() ||
+                strip.getModified() ||
+                additionalDependencies.getModified() ||
+                tool.getModified() ||
+                commandLineConfiguration.getModified();
     }
 
     // baseDir
@@ -164,7 +175,7 @@ public class BasicCompilerConfiguration {
 	this.commandLineConfiguration = commandLineConfiguration;
     }
 
-    public String getOutputFile(String filePath, MakeConfiguration conf) {
+    public String getOutputFile(String filePath, MakeConfiguration conf, boolean expanded) {
 	String fileName = filePath;
 	int i = fileName.lastIndexOf("."); // NOI18N
 	if (i >= 0)
@@ -172,7 +183,12 @@ public class BasicCompilerConfiguration {
 	else
 	    fileName = fileName + ".o"; // NOI18N
 
-	String dirName = MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + '/' + conf.getVariant(); // UNIX path
+	String dirName;
+        if (expanded)
+            dirName = ConfigurationMakefileWriter.getObjectDir(conf);
+        else
+            dirName = MakeConfiguration.OBJECTDIR_MACRO;
+        
 	if (IpeUtils.isPathAbsolute(fileName)) {
             String absPath = fileName;
             if (absPath.charAt(0) != '/')

@@ -45,18 +45,20 @@ public class FunctionDefinitionImpl extends FunctionImpl<CsmFunctionDefinition> 
     private String qualifiedName;
     private final CsmCompoundStatement body;
     private boolean qualifiedNameIsFake = false;
-    private String[] classOrNspNames;
+    private final String[] classOrNspNames;
     
     public FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope) {
-        super(ast, file, scope);
-        body = AstRenderer.findCompoundStatement(ast, getContainingFile());
+        this(ast, file, scope, true);
     }
     
-    protected void initBeforeRegister(AST ast) {
-        super.initBeforeRegister(ast);
+    protected  FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) {
+        super(ast, file, scope, false);
         classOrNspNames = initClassOrNspNames(ast);
+        body = AstRenderer.findCompoundStatement(ast, getContainingFile());
+        if (register) {
+            registerInProject();
+        }
     }
-
     
     public CsmCompoundStatement getBody() {
         return body;
@@ -259,6 +261,7 @@ public class FunctionDefinitionImpl extends FunctionImpl<CsmFunctionDefinition> 
     
     public void write(DataOutput output) throws IOException {
         super.write(output);
+        assert this.qualifiedName != null;
         output.writeUTF(this.qualifiedName);
         output.writeBoolean(this.qualifiedNameIsFake);
         PersistentUtils.writeStrings(this.classOrNspNames, output);
@@ -271,6 +274,7 @@ public class FunctionDefinitionImpl extends FunctionImpl<CsmFunctionDefinition> 
     public FunctionDefinitionImpl(DataInput input) throws IOException {
         super(input);
         this.qualifiedName = input.readUTF();
+        assert this.qualifiedName != null;
         this.qualifiedNameIsFake = input.readBoolean();
         this.classOrNspNames = PersistentUtils.readStrings(input, TextCache.getManager());
         this.body = PersistentUtils.readCompoundStatement(input);

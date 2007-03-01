@@ -57,7 +57,7 @@ public class ConsolidationStrategyPanel extends JPanel {
     
     boolean valid(DiscoveryDescriptor settings) {
         // TOD: remove when folder can be configured
-        return !FOLDER_LEVEL.equals(level);
+        return true;
     }
 
     private void update(String level) {
@@ -92,7 +92,6 @@ public class ConsolidationStrategyPanel extends JPanel {
         instructionsTextArea.setLineWrap(true);
         instructionsTextArea.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle").getString("ConsolidationDescription"));
         instructionsTextArea.setWrapStyleWord(true);
-        instructionsTextArea.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
