@@ -115,7 +115,6 @@ public final class Startup {
               String javaVersion = System.getProperty("java.version");
               if ("1.6.0_01".compareTo(javaVersion) >= 0) {
                   if (uiClassName.indexOf("gtk") >= 0 && System.getProperty("useGtk") != null && !Boolean.getBoolean("useGtk")) {
-                      System.err.println("Use javax.swing.plaf.metal.MetalLookAndFeel");
                       uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
                   }
               }
